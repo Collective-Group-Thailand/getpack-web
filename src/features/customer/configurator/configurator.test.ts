@@ -233,7 +233,9 @@ describe("the calculate body", () => {
     expect(readyToPrice(configurator, alike)).toBe(true);
     // Printed alike: both parts, both printed.
     const together = buildConfiguration(configurator, alike) as Schemas["CorrugateConfigurationDto"];
-    expect(together.parts.map((part) => [part.subPatternId, part.printFront.map((ink) => ink.inkColourId)])).toEqual([
+    expect(
+      together.parts.map((part) => [part.subPatternId, (part.printFront ?? []).map((ink) => ink.inkColourId)]),
+    ).toEqual([
       [parts[0]!.subPatternId, [cmyk!.id]],
       [parts[1]!.subPatternId, [cmyk!.id]],
     ]);
@@ -246,7 +248,10 @@ describe("the calculate body", () => {
       },
     };
     const separate = buildConfiguration(configurator, apart) as Schemas["CorrugateConfigurationDto"];
-    expect(separate.parts.map((part) => part.printFront.map((ink) => ink.inkColourId))).toEqual([[], [black!.id]]);
+    expect(separate.parts.map((part) => (part.printFront ?? []).map((ink) => ink.inkColourId))).toEqual([
+      [],
+      [black!.id],
+    ]);
     const [both, lidOnly] = await Promise.all([
       price(buildCalculateBody(configurator, alike)),
       price(buildCalculateBody(configurator, apart)),

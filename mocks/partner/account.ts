@@ -32,6 +32,8 @@ import { pageQuery, PDF, signed, statementStates } from "./billing";
 import { factoryJobs } from "./jobs";
 import { canPartner, PARTNER_PERSONAS, type PartnerPersona, type PartnerRole } from "./personas";
 import { once, own, ownScope } from "./support";
+import { CLAIM_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 const now = () => bangkokIso();
 const invalid = (path: string, code: string, message: string) =>
@@ -54,6 +56,7 @@ function toPartnerClaimDto(claim: Claim, who: PartnerPersona): Schemas["PartnerC
     type: claim.type,
     origin: claim.origin,
     status: claim.status,
+    ...statusLabels("status", CLAIM_STATUS, claim.status),
     orderId: claim.order.id,
     orderCode: claim.order.orderCode,
     jobId: job?.id ?? null,

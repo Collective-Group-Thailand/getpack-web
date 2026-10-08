@@ -30,6 +30,8 @@ import type { Input, Payment, Preview } from "./model";
 import { toStoreOrderDto } from "./order-dto";
 import { ownerIdOf } from "./owner";
 import { checkCode, PROMOTIONS, quotesOf, type StoreQuote } from "./quotes";
+import { INSTALMENT_STATUS, ORDER_GROUP_STATUS, PAYMENT_STATUS, SLIP_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 /** The mock's record of a payment: its own view plus what the published one adds. */
 type StoredPayment = Payment & { groupId: string; persona: string; orderPaymentId: string | null; createdAt: string };
@@ -683,6 +685,7 @@ function instalmentsOf(group: Group): Schemas["InstalmentDto"][] {
     openAmount: entry.paid ? "0.00" : baht(entry.gross),
     paidAt: entry.paid ? (first?.payments.find((payment) => payment.paidAt)?.paidAt ?? null) : null,
     status: statusOf(entry),
+    ...statusLabels("status", INSTALMENT_STATUS, statusOf(entry)),
   }));
 }
 
@@ -961,12 +964,14 @@ function toGroupDto(
   poNumber: string | null,
 ): Schemas["OrderGroupDto"] {
   const gross = baht(priced.gross);
+  const status = priced.schedule.parts.some((part) => DUE_AT_CHECKOUT.has(part.dueTrigger))
+    ? "waiting_payment"
+    : "in_progress";
   return {
     id: group.id,
     groupCode: group.code,
-    status: priced.schedule.parts.some((part) => DUE_AT_CHECKOUT.has(part.dueTrigger))
-      ? "waiting_payment"
-      : "in_progress",
+    status,
+    ...statusLabels("status", ORDER_GROUP_STATUS, status),
     channel: "web",
     customerId: customer.id,
     poNumber,
@@ -1000,6 +1005,7 @@ export function toPaymentDto(payment: StoredPayment): Schemas["PaymentDto"] {
     groupId: payment.groupId,
     method: shown.method,
     status: shown.status,
+    ...statusLabels("status", PAYMENT_STATUS, shown.status),
     amount: shown.amount,
     whtAmount: "0.00",
     cashAmount: shown.amount,
@@ -1026,6 +1032,7 @@ export function toPaymentDto(payment: StoredPayment): Schemas["PaymentDto"] {
       id: slip.id,
       fileId: slipDeclared.get(slip.id)?.fileId ?? slip.id,
       status: slip.status,
+      ...statusLabels("status", SLIP_STATUS, slip.status),
       lastCheck: slip.status === "passed" ? "pass" : slip.status === "pending" ? null : "mismatch",
       slaDueAt: slip.reviewDueAt,
       declaredAmount: slipDeclared.get(slip.id)?.amount ?? shown.amount,
@@ -1112,6 +1119,7 @@ export const storeCheckoutHandlers = [
           id: group.id,
           groupCode: group.code,
           status: list[0]?.group.status ?? "waiting_payment",
+          ...statusLabels("status", ORDER_GROUP_STATUS, list[0]?.group.status ?? "waiting_payment"),
           channel: list[0]?.channel ?? "web",
           customerId: customer.id,
           poNumber: null,

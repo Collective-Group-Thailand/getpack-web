@@ -35,6 +35,8 @@ import { byId, catalogProducts, imageUrl, live, typeCodeOf, type Row } from "./c
 import { customerOf } from "./customers";
 import { BasisError, caliperOf, convert, familyOf, type Basis, type Size } from "./specs";
 import { unitOf } from "./order-dto";
+import { QUOTE_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type Step = Schemas["QuoteStepDto"];
 export type StoreQuote = z.output<typeof storeQuote>;
@@ -1346,6 +1348,7 @@ export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
     id: quote.id,
     quoteCode: uncoded.has(quote.id) ? null : quote.quoteCode,
     status: expired ? "expired" : quote.status,
+    ...statusLabels("status", QUOTE_STATUS, expired ? "expired" : quote.status),
     source: quote.source,
     productTypeCode: quote.productType.code,
     summary: quoteSummaryOf(quote),

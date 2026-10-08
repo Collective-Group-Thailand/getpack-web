@@ -35,6 +35,8 @@ import { catalogueRows } from "./catalogue";
 import { customers, orders } from "./commerce";
 import { toGroupDto } from "./orders";
 import { approvals, files, openApproval, settings } from "./platform";
+import { QUOTE_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type Quote = Schemas["AdminSavedQuoteDto"];
 type Memo = Schemas["DiscountMemoDto"];
@@ -328,6 +330,7 @@ export const quotations: Quote[] = [
     productTypeCode: "folding_carton",
     source: "instant",
     status: "saved",
+    ...statusLabels("status", QUOTE_STATUS, "saved"),
     channel: "cs",
     customer: customerRef(1),
     customerCode: customers[1]!.customerCode,
@@ -352,6 +355,7 @@ export const quotations: Quote[] = [
     productTypeCode: "label_sticker",
     source: "instant",
     status: "expired",
+    ...statusLabels("status", QUOTE_STATUS, "expired"),
     channel: "web",
     customer: customerRef(0),
     customerCode: customers[0]!.customerCode,
@@ -542,6 +546,7 @@ export const salesHandlers = [
       productTypeCode: body.productTypeCode,
       source: "instant",
       status: "saved",
+      ...statusLabels("status", QUOTE_STATUS, "saved"),
       channel: "cs",
       customer: customer ? { id: customer.id, displayName: customer.displayName } : null,
       customerCode: customer?.customerCode ?? null,

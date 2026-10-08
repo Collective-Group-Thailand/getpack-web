@@ -22,6 +22,13 @@ import { bangkokIso, mockId, paginate, problem } from "../support";
 import { provinceRefOf } from "./catalog";
 import { customerMe, customerOf, type MockCustomer } from "./customers";
 import { ownerIdOf } from "./owner";
+import { MILESTONE_STATUS, SHIPMENT_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
+import { createTranslator } from "next-intl";
+
+import { timelineTitle } from "@/features/customer/orders/timeline";
+import ordersEn from "@/i18n/messages/en/customer/my-orders.json";
+import ordersTh from "@/i18n/messages/th/customer/my-orders.json";
 
 type PrivacyRequest = Schemas["PrivacyRequestDto"];
 
@@ -94,17 +101,14 @@ export function stepsOf(order: MockOrder): Schemas["ProgressStepDto"][] {
     : {};
   const keys = Object.keys(STEPS) as StepKey[];
   const current = order.status === "cancelled" ? null : (keys.find((key) => !done[key]) ?? null);
+  const statusOf = (key: StepKey) =>
+    done[key] ? "completed" : key === current ? "in_progress" : order.status === "cancelled" ? "skipped" : "pending";
   return keys.map((key) => ({
     key,
     labelTh: STEPS[key][0],
     labelEn: STEPS[key][1],
-    status: done[key]
-      ? "completed"
-      : key === current
-        ? "in_progress"
-        : order.status === "cancelled"
-          ? "skipped"
-          : "pending",
+    status: statusOf(key),
+    ...statusLabels("status", MILESTONE_STATUS, statusOf(key)),
     completedAt: done[key] ? (at[key] ?? null) : null,
     // The factory's plan (D-075), as far as the row has one: production finishes the day before the
     // promised ship date, delivery is the estimate.
@@ -154,8 +158,8 @@ export function toTimeline(order: MockOrder): Schemas["TimelineEntryDto"][] {
     occurredAt: string,
     type: string,
     extra: Partial<Pick<Schemas["TimelineEntryDto"], "params" | "photoFileIds" | "shipment">> = {},
-  ) =>
-    entries.push({
+  ) => {
+    const entry = {
       id,
       occurredAt,
       type,
@@ -163,7 +167,21 @@ export function toTimeline(order: MockOrder): Schemas["TimelineEntryDto"][] {
       params: extra.params ?? {},
       photoFileIds: extra.photoFileIds ?? [],
       shipment: extra.shipment ?? null,
-    });
+      count: 1,
+    };
+    // D-313: the API words each entry; the mock borrows the storefront's sentence for its type.
+    const words = (locale: "th" | "en") =>
+      timelineTitle(
+        createTranslator({
+          locale,
+          messages: { orders: locale === "th" ? ordersTh : ordersEn },
+          namespace: "orders",
+        }) as (key: string, values?: Record<string, string>) => string,
+        locale,
+        { ...entry, messageTh: "", messageEn: "" },
+      ) ?? type;
+    entries.push({ ...entry, messageTh: words("th"), messageEn: words("en") });
+  };
   add(`${order.id}:placed`, order.createdAt, "order.placed", { params: { orderCode: order.orderCode } });
   for (const payment of order.payments.filter((entry) => entry.status === "succeeded" && entry.paidAt))
     add(`${payment.id}:paid`, payment.paidAt!, "payment.received");
@@ -206,6 +224,7 @@ export function toShipments(order: MockOrder): Schemas["StoreShipmentDto"][] {
     id: shipment.id,
     shipmentNo: shipment.shipmentNo,
     status: shipment.status,
+    ...statusLabels("status", SHIPMENT_STATUS, shipment.status),
     carrier: CARRIER[shipment.carrier],
     trackingNo: shipment.trackingNo,
     trackingUrl: null,
@@ -227,13 +246,21 @@ export function toShipments(order: MockOrder): Schemas["StoreShipmentDto"][] {
         deliveredQuantity: shipment.pod?.deliveredQuantity ?? null,
       },
     ],
-    events: [
-      { occurredAt: bangkokIso(-DAY * 9), status: "picked_up", location: "โรงงานพาร์ตเนอร์" },
-      { occurredAt: bangkokIso(-DAY * 9 + 180), status: "in_transit", location: null },
-      ...(shipment.deliveredAt
-        ? [{ occurredAt: shipment.deliveredAt, status: "delivered" as const, location: shipment.destination.province }]
-        : []),
-    ],
+    events: (
+      [
+        { occurredAt: bangkokIso(-DAY * 9), status: "picked_up", location: "โรงงานพาร์ตเนอร์" },
+        { occurredAt: bangkokIso(-DAY * 9 + 180), status: "in_transit", location: null },
+        ...(shipment.deliveredAt
+          ? [
+              {
+                occurredAt: shipment.deliveredAt,
+                status: "delivered",
+                location: shipment.destination.province,
+              } as const,
+            ]
+          : []),
+      ] as const
+    ).map((event) => ({ ...event, ...statusLabels("status", SHIPMENT_STATUS, event.status) })),
     proofOfDelivery: shipment.pod
       ? {
           receiverName: shipment.pod.receiverName,

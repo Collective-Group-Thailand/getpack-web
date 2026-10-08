@@ -20,6 +20,8 @@ import type { RfqRow } from "../admin/rfq-model";
 import { bangkokIso, mockId, paginate, problem, RFQ_V2_EMPTY } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 import { nextQuoteId, quotesOf, QUOTE_VALIDITY_DAYS, type StoreQuote } from "./quotes";
+import { RFQ_QUOTE_STATUS, RFQ_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type AdminRfq = RfqRow;
 type Form = Schemas["StoreRfqFormDto"];
@@ -230,6 +232,7 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
     id: rfq.id,
     rfqCode: rfq.rfqCode,
     status: rfq.status,
+    ...statusLabels("status", RFQ_STATUS, rfq.status),
     productTypeCode: rfq.productType.code,
     productTypeName: rfq.productType.name,
     quantities: rfq.quantities,
@@ -254,6 +257,7 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
         id: quote.id,
         versionNo: quote.versionNo,
         status: quote.status,
+        ...statusLabels("status", RFQ_QUOTE_STATUS, quote.status),
         sentAt: quote.sentAt,
         validUntil: quote.validUntil ? `${quote.validUntil}T23:59:59+07:00` : null,
         note: quote.customerNote ?? "",

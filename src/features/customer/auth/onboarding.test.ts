@@ -4,6 +4,8 @@ import { consentsToAsk, needsProfile, type Consent } from "./onboarding";
 
 const consent = (purpose: string, required: boolean, granted: boolean | null, outdated = false): Consent => ({
   purpose,
+  labelTh: purpose,
+  labelEn: purpose,
   required,
   granted,
   outdated,

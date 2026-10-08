@@ -22,6 +22,8 @@ import { journals, movement, post, satangOf, today } from "./books";
 import { runs } from "./payouts";
 import { payments, recordInstalment, refunds } from "./receivables";
 import { finance, invalid, isMoney, notFound } from "./support";
+import { PAYMENT_STATUS } from "@/domain/status";
+import { statusLabels } from "../../status-labels";
 
 type Line = Schemas["BankStatementLineDto"];
 type Settlement = Schemas["SettlementDto"] & { companyBankAccountId: string; providerRefs: string[]; posted: boolean };
@@ -671,6 +673,7 @@ export const bankingHandlers = [
         provider: "bank_transfer",
         providerRef: receipt.reference ?? `UNR-${receipt.id.slice(-4)}`,
         status: "succeeded",
+        ...statusLabels("status", PAYMENT_STATUS, "succeeded"),
         amount: receipt.amount,
         cashAmount: receipt.amount,
         whtAmount: "0.00",

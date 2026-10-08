@@ -73,9 +73,7 @@ export function ConsentStep({
       <li key={consent.purpose}>
         <Checkbox
           checked={Boolean(choices[consent.purpose])}
-          onCheckedChange={(checked) =>
-            setChoices((current) => ({ ...current, [consent.purpose]: checked === true }))
-          }
+          onCheckedChange={(checked) => setChoices((current) => ({ ...current, [consent.purpose]: checked === true }))}
           disabled={pending}
           required={consent.required}
           label={name}

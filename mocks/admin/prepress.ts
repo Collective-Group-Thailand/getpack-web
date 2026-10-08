@@ -27,6 +27,8 @@ import { designProductRefOf, storeDesignDtoForStaff, storeDesignOwnerForStaff } 
 import { baht, customers, orders, satang } from "./commerce";
 import { registerQueue } from "./console";
 import type { DesignDocumentRow, DesignRoundRow, PrepressRow, ProofRow } from "./prepress-model";
+import { ARTWORK_STATUS, PREFLIGHT_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type Detail = PrepressRow;
 type Proof = ProofRow;
@@ -564,11 +566,13 @@ export function queueItems(kind: QueueKind): Schemas["PrepressQueueItemDto"][] {
           customer: { id: order.customer.id, displayName: order.customer.displayName },
           productTypeCode: order.productType.code,
           artworkStatus: detail.artworkStatus,
+          ...statusLabels("artworkStatus", ARTWORK_STATUS, detail.artworkStatus),
           assignee: detail.assignee,
           kind,
           itemId: item.id,
           versionNo: item.versionNo,
           preflightStatus: item.preflightStatus,
+          ...statusLabels("preflightStatus", PREFLIGHT_STATUS, item.preflightStatus),
           since,
           dueAt: bangkokIsoOf(dueOf(since)),
           overdue: dueOf(since).getTime() < Date.now(),
@@ -591,11 +595,13 @@ export function queueItems(kind: QueueKind): Schemas["PrepressQueueItemDto"][] {
           customer: { id: order.customer.id, displayName: order.customer.displayName },
           productTypeCode: order.productType.code,
           artworkStatus: detail.artworkStatus,
+          ...statusLabels("artworkStatus", ARTWORK_STATUS, detail.artworkStatus),
           assignee: detail.assignee,
           kind,
           itemId: item.id,
           versionNo: item.versionNo,
           preflightStatus: null,
+          ...statusLabels("preflightStatus", PREFLIGHT_STATUS, null),
           since,
           dueAt: waiting ? null : bangkokIsoOf(dueOf(since)),
           overdue: !waiting && dueOf(since).getTime() < Date.now(),
@@ -951,6 +957,9 @@ function toDesignDto(id: string, readerId: string | undefined): Schemas["AdminDe
     patternId: null,
     materialId: null,
     semiDesignTemplateId: null,
+    hasIssues: null,
+    issueCount: null,
+    issueSummary: [],
     lengthMm: null,
     widthMm: null,
     heightMm: null,
