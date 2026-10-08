@@ -39,6 +39,8 @@ const inbox = [
   {
     id: "00000000-0000-4000-8000-00000000e001",
     eventType: "order.paid",
+    eventTypeLabelTh: "การชำระเงิน",
+    eventTypeLabelEn: "Payment",
     title: "รับชำระเงินแล้ว (ข้อมูลจำลอง)",
     body: "คำสั่งซื้อ PK-2569-00042 ชำระเงินครบแล้ว",
     readAt: null as string | null,
@@ -48,6 +50,8 @@ const inbox = [
   {
     id: "00000000-0000-4000-8000-00000000e002",
     eventType: "artwork.changes_requested",
+    eventTypeLabelTh: "ไฟล์งาน",
+    eventTypeLabelEn: "Artwork",
     title: "ขอให้แก้ไขไฟล์งาน (ข้อมูลจำลอง)",
     body: "ไฟล์ของ PK-2569-00041 ต้องเพิ่มระยะตัดตก 3 มม.",
     readAt: "2026-09-23T10:00:00+07:00" as string | null,

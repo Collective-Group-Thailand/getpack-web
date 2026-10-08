@@ -308,6 +308,10 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
     printSides: null,
     finishes: [],
     spec: null,
+    // D-278: the print check runs on the API's worker; the mock never has, so nothing is counted yet.
+    hasIssues: null,
+    issueCount: null,
+    issueSummary: [],
     ...studioFieldsOf(row.box),
     lock: locks.get(design.id) ?? null,
     document: withDocument ? { spec: design.document.spec, content: design.document.content } : null,
@@ -335,7 +339,9 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
   };
 }
 
-function studioFieldsOf(box: StudioBox | null): Partial<Schemas["DesignDocumentDto"]> {
+function studioFieldsOf(
+  box: StudioBox | null,
+): Partial<Omit<Schemas["DesignDocumentDto"], "hasIssues" | "issueCount" | "issueSummary">> {
   if (!box) return {};
   return {
     ...(box.patternId ? { patternId: box.patternId } : {}),

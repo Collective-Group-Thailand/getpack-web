@@ -39,6 +39,8 @@ import { PARTICIPATION, stores } from "./partners";
 import { files as uploadedFiles, settings } from "./platform";
 import type { ConsultationRow, QuoteLineRow, QuoteRow, RfqActionRow, RfqMessageRow, RfqRow } from "./rfq-model";
 import { quotations } from "./sales";
+import { QUOTE_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type Rfq = RfqRow;
 type Consultation = ConsultationRow;
@@ -599,6 +601,7 @@ function toQuotation(rfq: Rfq, quote: Quote, quantities: readonly number[], by: 
     productTypeCode: rfq.productType.code,
     source: "rfq",
     status: "saved",
+    ...statusLabels("status", QUOTE_STATUS, "saved"),
     channel: "cs",
     customer: { id: rfq.customer.id, displayName: rfq.customer.displayName },
     customerCode: rfq.customer.customerCode,
@@ -771,6 +774,7 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
     id: rfq.id,
     rfqCode: rfq.rfqCode,
     status: rfq.status,
+    ...statusLabels("status", RFQ_STATUS, rfq.status),
     channel: rfq.channel,
     customer,
     assignedTo: rfq.assignee,
@@ -831,6 +835,7 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
       id: quote.id,
       versionNo: quote.versionNo,
       status: quote.status,
+      ...statusLabels("status", RFQ_QUOTE_STATUS, quote.status),
       // A draft has no validity yet: the API sets it when the version is sent (D-051).
       validUntil: quote.status === "draft" ? null : validityOf(quote),
       sentAt: quote.sentAt,

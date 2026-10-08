@@ -15,6 +15,8 @@ vi.mock("./onboarding", () => ({ recordConsents: (...args: unknown[]) => recordC
 const consents: Consent[] = [
   {
     purpose: "terms_of_service",
+    labelTh: "ข้อกำหนดการใช้บริการ",
+    labelEn: "Terms of service",
     required: true,
     granted: null,
     outdated: false,
@@ -24,6 +26,8 @@ const consents: Consent[] = [
   },
   {
     purpose: "privacy_notice",
+    labelTh: "ประกาศความเป็นส่วนตัว",
+    labelEn: "Privacy notice",
     required: true,
     granted: null,
     outdated: false,
@@ -33,6 +37,8 @@ const consents: Consent[] = [
   },
   {
     purpose: "marketing_line",
+    labelTh: "ข่าวสารทาง LINE",
+    labelEn: "Marketing on LINE",
     required: false,
     granted: null,
     outdated: false,

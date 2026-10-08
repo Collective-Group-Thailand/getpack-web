@@ -34,6 +34,8 @@ import { provinceRefOf } from "../store/catalog";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
 import { permissionsOf, type PartnerPersona } from "./personas";
 import { once, own, type Own } from "./support";
+import { JOB_STATUS, MILESTONE_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type Job = MockOrder["jobs"][number];
 type JobDto = Schemas["PartnerJobDto"];
@@ -226,6 +228,7 @@ export function milestonesOf(job: Job): Milestone[] {
       nameTh: route.nameTh,
       nameEn: route.nameEn,
       status: milestone.status,
+      ...statusLabels("status", MILESTONE_STATUS, milestone.status),
       dueAt: milestone.dueAt,
       startedAt: step.startedAt,
       completedAt: milestone.completedAt,
@@ -321,6 +324,7 @@ export function jobCore(order: MockOrder, job: Job) {
     jobNo: job.jobNo,
     kind: job.kind,
     status: job.status,
+    ...statusLabels("status", JOB_STATUS, job.status),
     productTypeCode: order.productType.code,
     productTypeNameTh: order.productType.name,
     title: `${titleOf(order)} · ${order.quantity.toLocaleString("th-TH")} ชิ้น`,

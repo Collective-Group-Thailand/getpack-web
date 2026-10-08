@@ -25,6 +25,8 @@ import { bangkokIso, matchesQuery, mockId, paginate, problem, versionTag } from 
 import { baht, FACTORY, orders, type MockOrder } from "./commerce";
 import { registerQueue } from "./console";
 import { adminShipmentActions, partnerShipmentActions, type ShipmentFacts } from "./floor-actions";
+import { SHIPMENT_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type UserRef = Schemas["UserRefDto"];
 
@@ -70,7 +72,8 @@ export interface Shipment {
   cartonList: { seq: number; labelCode: string; weightG: number | null }[];
   weightG: number;
   volumeCm3: number | null;
-  events: Schemas["ShipmentEventDto"][];
+  /** Labelled when served (`statusLabels`), so a status set later never carries stale words. */
+  events: Omit<Schemas["ShipmentEventDto"], "statusLabelTh" | "statusLabelAdminTh">[];
   pod: {
     kind: Schemas["PodKind"];
     receiverName: string;
@@ -391,6 +394,7 @@ function common(item: Shipment) {
     id: item.id,
     shipmentNo: item.shipmentNo,
     status: item.status,
+    ...statusLabels("status", SHIPMENT_STATUS, item.status),
     carrier: item.carrier,
     trackingNo: item.trackingNo,
     destination: {
@@ -416,7 +420,7 @@ function common(item: Shipment) {
     cartons: item.cartonList.map((carton) => ({ ...carton })),
     weightG: item.weightG,
     volumeCm3: item.volumeCm3,
-    events: item.events.map((event) => ({ ...event })),
+    events: item.events.map((event) => ({ ...event, ...statusLabels("status", SHIPMENT_STATUS, event.status) })),
     proofOfDelivery: item.pod
       ? {
           kind: item.pod.kind,

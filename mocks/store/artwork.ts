@@ -49,6 +49,14 @@ import { bangkokIso, mockId, problem } from "../support";
 import { groupForOrder } from "./checkout";
 import { customerOf, type MockCustomer } from "./customers";
 import { ownerIdOf } from "./owner";
+import {
+  DESIGN_ROUND_STATUS,
+  DESIGN_SERVICE_STATUS,
+  PREFLIGHT_STATUS,
+  PROOF_STATUS,
+  SUBMISSION_STATUS,
+} from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type Proof = PrepressDetail["proofs"][number];
 type Submission = PrepressDetail["submissions"][number];
@@ -182,6 +190,7 @@ export function toSubmission(detail: PrepressDetail, submission: Submission): Sc
     channel: "web",
     source: submission.source,
     status: submission.status,
+    ...statusLabels("status", SUBMISSION_STATUS, submission.status),
     note: null,
     files: submission.files.map((entry) => ({
       id: entry.file.id,
@@ -193,6 +202,7 @@ export function toSubmission(detail: PrepressDetail, submission: Submission): Sc
       linkUrl: null,
     })),
     preflightStatus: submission.preflightStatus,
+    ...statusLabels("preflightStatus", PREFLIGHT_STATUS, submission.preflightStatus),
     preflightCompletedAt: submission.preflightCompletedAt,
     preflightReport:
       submission.preflightStatus === "pending" || submission.preflightStatus === "running"
@@ -258,6 +268,7 @@ export function toProof(
     orderCode: detail.orderCode,
     versionNo: proof.versionNo,
     status: proof.status,
+    ...statusLabels("status", PROOF_STATUS, proof.status),
     submissionId: submission?.id ?? null,
     // The mock's proof is a drawn SVG, so the viewer can show and point at it.
     proofFile: {
@@ -287,6 +298,7 @@ export function toProof(
           previousProofId: previous.id,
           previousVersionNo: previous.versionNo,
           previousStatus: previous.status,
+          ...statusLabels("previousStatus", PROOF_STATUS, previous.status),
           previousProofFileId: drawnId("prp", previous.id),
           previousDecisionComment: decisionComments.get(previous.id) ?? null,
           openAnnotationsOnPrevious: (proofAnnotations.get(previous.id) ?? []).filter(
@@ -372,6 +384,7 @@ export function toDesignService(detail: PrepressDetail, service: Service): Schem
     orderId: detail.orderId,
     orderCode: detail.orderCode,
     status: service.status,
+    ...statusLabels("status", DESIGN_SERVICE_STATUS, service.status),
     assignee: service.designer,
     brief: briefOf(service),
     briefSubmittedAt: service.rounds[0]?.requestedAt ?? null,
@@ -398,6 +411,7 @@ export function toDesignService(detail: PrepressDetail, service: Service): Schem
       chargeable: round.chargeable,
       feeNet: round.feeAmount,
       status: round.status,
+      ...statusLabels("status", DESIGN_ROUND_STATUS, round.status),
       requestedAt: round.requestedAt,
       startedAt: round.startedAt,
       deliveredAt: round.deliveredAt,
