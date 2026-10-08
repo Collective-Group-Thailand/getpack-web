@@ -93,6 +93,9 @@ jobs:
       # the lock together, so it shows up in the diff of a PR rather than in a build.
       - name: Generated API surface is up to date
         run: pnpm gen:api:check
+      # decisions.md and api-conventions.md are packio-api's: synced at the pinned tag, never edited here.
+      - name: Shared docs match packio-api
+        run: pnpm docs:sync:check
 
   storybook:
     name: storybook
