@@ -14,13 +14,16 @@ import type { Schemas } from "@/lib/api/types";
 import { groupsOf, isProcessInk, optionsById, sizeKindOf, type MeasurementBasis } from "./model";
 import {
   NO_DIMS,
+  partsOf,
   patternOf,
+  printOfPart,
   POSTCODE,
   TARGET,
   type Axis,
   type Configurator,
   type ConfiguratorState,
   type GroupKind,
+  type PartPrint,
 } from "./state";
 
 export type FoldingConfiguration = Schemas["FoldingConfigurationDto"];
@@ -88,6 +91,25 @@ function common(configurator: Configurator, state: ConfiguratorState) {
   };
 }
 
+/**
+ * A box is priced part by part (`FoldingPartDto`, `CorrugatePartDto`): a telescope box is its body
+ * and its lid, and the calculator refuses a pattern's parts sent as one. Each part prints what the
+ * customer chose for it (`printOfPart`); a coating or die-cut is the whole box's, so every part has
+ * it; a placed finish or an assembly is counted once, on the first part.
+ */
+function eachPart<P>(
+  configurator: Configurator,
+  state: ConfiguratorState,
+  part: (print: PartPrint, first: boolean) => P,
+) {
+  const parts = partsOf(configurator, state);
+  if (parts.length === 0) return [part(printOfPart(state, undefined), true)];
+  return parts.map(({ subPatternId }, index) => ({
+    subPatternId,
+    ...part(printOfPart(state, subPatternId), index === 0),
+  }));
+}
+
 function folding(configurator: Configurator, state: ConfiguratorState): FoldingConfiguration {
   const pattern = patternOf(configurator, state);
   return {
@@ -99,18 +121,17 @@ function folding(configurator: Configurator, state: ConfiguratorState): FoldingC
     materialId: one(state, "material") ?? "",
     // An instant product always has one (D-043); without it nothing is asked (`readyToPrice`).
     difficultyLevelId: configurator.difficultyLevelId ?? "",
-    parts: [
-      {
-        ...optional("subPatternId", pattern?.parts[0]?.subPatternId),
-        printFront: printColours(configurator, all(state, "print_front")),
-        printBack: printColours(configurator, all(state, "print_back")),
-        ...optional("finish1FrontId", one(state, "coating_front")),
-        ...optional("finish1BackId", one(state, "coating_back")),
-        finish2: all(state, "finish").map((finishId) => ({ finishId, ...placedPieces(state, finishId) })),
-        ...optional("diecutTypeId", one(state, "diecut")),
-        assemblies: all(state, "assembly").map((assemblyId) => ({ assemblyId, ...placedPieces(state, assemblyId) })),
-      },
-    ],
+    parts: eachPart(configurator, state, (print, first) => ({
+      printFront: printColours(configurator, print.print_front),
+      printBack: printColours(configurator, print.print_back),
+      ...optional("finish1FrontId", one(state, "coating_front")),
+      ...optional("finish1BackId", one(state, "coating_back")),
+      finish2: first ? all(state, "finish").map((finishId) => ({ finishId, ...placedPieces(state, finishId) })) : [],
+      ...optional("diecutTypeId", one(state, "diecut")),
+      assemblies: first
+        ? all(state, "assembly").map((assemblyId) => ({ assemblyId, ...placedPieces(state, assemblyId) }))
+        : [],
+    })),
   };
 }
 
@@ -126,24 +147,23 @@ function corrugate(configurator: Configurator, state: ConfiguratorState): Corrug
     d: mm(state, "d"),
     materialId: one(state, "material") ?? "",
     difficultyLevelId: configurator.difficultyLevelId ?? "",
-    parts: [
-      {
-        ...optional("subPatternId", pattern?.parts[0]?.subPatternId),
-        printFront: colours(all(state, "print_front")),
-        printBack: colours(all(state, "print_back")),
-        ...optional("coatingFrontId", one(state, "coating_front")),
-        ...optional("coatingBackId", one(state, "coating_back")),
-        assemblies: all(state, "assembly").map((assemblyId) => {
-          const piece = state.areas[assemblyId];
-          return {
-            assemblyId,
-            ...optional("amount", piece?.amount || null),
-            ...optional("w", piece?.widthMm),
-            ...optional("l", piece?.lengthMm),
-          };
-        }),
-      },
-    ],
+    parts: eachPart(configurator, state, (print, first) => ({
+      printFront: colours(print.print_front),
+      printBack: colours(print.print_back),
+      ...optional("coatingFrontId", one(state, "coating_front")),
+      ...optional("coatingBackId", one(state, "coating_back")),
+      assemblies: first
+        ? all(state, "assembly").map((assemblyId) => {
+            const piece = state.areas[assemblyId];
+            return {
+              assemblyId,
+              ...optional("amount", piece?.amount || null),
+              ...optional("w", piece?.widthMm),
+              ...optional("l", piece?.lengthMm),
+            };
+          })
+        : [],
+    })),
   };
 }
 
@@ -295,6 +315,25 @@ export function seedFromConfiguration(
       break;
   }
 
+  // A multi-part box: the first part's print is the box's; a part printed otherwise keeps its own.
+  const partPrints: ConfiguratorState["partPrints"] = {};
+  if (configurator.calculator === "folding" || configurator.calculator === "corrugate") {
+    const offered =
+      (kind: GroupKind) =>
+      (id: unknown): id is string =>
+        typeof id === "string" && groups.some((group) => group.kind === kind && group.options.some((o) => o.id === id));
+    const printOf = (value: unknown): PartPrint => ({
+      print_front: [...new Set(colourIds(record(value).printFront).filter(offered("print_front")))],
+      print_back: [...new Set(colourIds(record(value).printBack).filter(offered("print_back")))],
+    });
+    const parts = list(configuration.parts).map((value) => ({ id: record(value).subPatternId, print: printOf(value) }));
+    const same = (a: PartPrint, b: PartPrint) =>
+      a.print_front.join() === b.print_front.join() && a.print_back.join() === b.print_back.join();
+    if (parts.length > 1 && parts.some((other) => !same(other.print, parts[0]!.print))) {
+      for (const { id, print } of parts) if (typeof id === "string") partPrints[id] = print;
+    }
+  }
+
   const quantities = list(configuration.quantities).filter((value): value is number => typeof value === "number");
   const printArea = record(list(part.printFront)[0]).area;
   const patternId =
@@ -319,6 +358,7 @@ export function seedFromConfiguration(
       cs: num(configuration.cs),
     },
     choices,
+    partPrints,
     ...(typeof printArea === "string" && configurator.printAreas.includes(printArea as never)
       ? { printArea: printArea as ConfiguratorState["printArea"] }
       : {}),

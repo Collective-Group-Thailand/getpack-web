@@ -153,8 +153,8 @@
     "heading": "File preparation and paper, explained",
     "body": "Once a month — paper, print and cost. No pushy promotions.",
     "email": "E-mail",
-    "consent": "I agree to receive news and promotions from Packio by e-mail; I can unsubscribe at any time.",
-    "privacy": "Read the privacy policy",
+    "consent": "I agree to news and offers by e-mail; unsubscribe any time.",
+    "privacy": "Privacy policy",
     "subscribe": "Subscribe",
     "done": "Subscribed — thank you.",
     "failed": "That did not work. Try again.",
@@ -181,14 +181,25 @@
     "custom": "Custom",
     "priceCaption": "Per piece · {qty} pcs · incl. VAT",
     "total": "total {total}",
-    "lead": "Delivered in about {days} working days",
-    "lock": "price held {days} days",
+    "lead": "Made in about {days} working days",
+    "lock": "price held until {date}",
     "calculating": "Calculating the price…",
     "unpriced": "This size or quantity has no instant price yet — continue designing to see it in the next step, or chat with us on LINE",
     "noSetup": "No box has an instant price right now — start designing and see the price in the next step",
     "continue": "Continue designing",
     "configure": "See the price breakdown and more options",
     "sizeChip": "{w} × {d} × {h}",
-    "box": "box"
+    "box": "box",
+    "shapes": {
+      "mailer": "Mailer",
+      "lid": "Lid & base",
+      "tuck": "Tuck end"
+    },
+    "boards": {
+      "kraft350": "Kraft 350g",
+      "art350": "Art card 350g",
+      "corrE": "E-flute"
+    },
+    "retry": "We can't price this choice right now — try another, or carry on designing and see the price next."
   }
 }

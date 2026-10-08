@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.42.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.43.1) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -4818,6 +4818,116 @@ export interface paths {
          *     Implements: D-304.
          */
         patch: operations["admin.cmsGlossaryTerms.update"];
+        trace?: never;
+    };
+    "/v1/admin/cms/home-cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List customer stories
+         * @description Filters, sort and `q` (free text over brandNameTh, productTh). Shown on the home page only while `approved` with the written permission on file, and only with at least 3 approved (D-311). Editing an approved story sends it back to `draft`. Approve and withdraw with `actions/approve` / `actions/withdraw`.
+         *
+         *     Implements: D-311.
+         */
+        get: operations["admin.cmsHomeCases.list"];
+        put?: never;
+        /**
+         * Create a customer story
+         * @description Audited (config) and published as `catalog.home_case.created`. Shown on the home page only while `approved` with the written permission on file, and only with at least 3 approved (D-311). Editing an approved story sends it back to `draft`. Approve and withdraw with `actions/approve` / `actions/withdraw`.
+         *
+         *     Implements: D-311.
+         *
+         *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["admin.cmsHomeCases.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cms/home-cases/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one customer story
+         * @description Returns the customer story and its ETag for a later update. Shown on the home page only while `approved` with the written permission on file, and only with at least 3 approved (D-311). Editing an approved story sends it back to `draft`. Approve and withdraw with `actions/approve` / `actions/withdraw`.
+         *
+         *     Implements: D-311.
+         */
+        get: operations["admin.cmsHomeCases.get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a customer story
+         * @description Soft delete (`deleted_at`, schema-design §1.6): the customer story disappears from every read; guarded by `If-Match`. Published as `catalog.home_case.deleted`.
+         *
+         *     Implements: D-311.
+         */
+        delete: operations["admin.cmsHomeCases.delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a customer story
+         * @description Partial update guarded by `If-Match`. Rows are archived through `status`, never deleted (schema-design §1.6). Audited and published as `catalog.home_case.updated`. Shown on the home page only while `approved` with the written permission on file, and only with at least 3 approved (D-311). Editing an approved story sends it back to `draft`. Approve and withdraw with `actions/approve` / `actions/withdraw`.
+         *
+         *     Implements: D-311.
+         *
+         *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        patch: operations["admin.cmsHomeCases.update"];
+        trace?: never;
+    };
+    "/v1/admin/cms/home-cases/{id}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a customer story for the home page
+         * @description Needs the customer’s written permission (`consentFileId`) and a photo on file; records who and when, audited, event `catalog.home_case.approved` (D-311). The story shows once at least 3 are approved.
+         *
+         *     Implements: D-311.
+         */
+        post: operations["admin.cmsHomeCases.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cms/home-cases/{id}/actions/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a customer story from the home page
+         * @description Takes the story off the home page at once (the customer revoked their permission, or it is out of date); audited, event `catalog.home_case.withdrawn` (D-311). Editing it brings it back as a draft.
+         *
+         *     Implements: D-311.
+         */
+        post: operations["admin.cmsHomeCases.withdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/admin/cms/home-sections": {
@@ -20337,6 +20447,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/catalog/hero-presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the homepage Studio hero presets
+         * @description Shapes (`mailer`, `lid`, `tuck`) with the catalogue product each opens and its standard sizes, boards (`kraft350`, `art350`, `corrE`) and prints (`none`, `one`, `full`) with the option ids they mean on each shape, and the quantities — from the setting `catalog.hero_presets` kept by Admin, never the CMS (D-310). Only what the live catalogue can price instantly is listed; everything is empty until Admin sets the presets (the hero then points to the studio). Price a choice with `store.quotes.preview`. Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
+         *
+         *     Implements: D-310, D-043.
+         */
+        get: operations["store.catalog.getHeroPresets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/catalog/home-sections": {
         parameters: {
             query?: never;
@@ -20903,6 +21035,28 @@ export interface paths {
          *     Implements: D-263, D-199, D-082.
          */
         get: operations["store.claims.getTimeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/cms/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the home page photos and customer stories
+         * @description Photos of the published `home-photos` home section as a list with their place on the page (`hero`, `mosaic-1..5`, `frame-4` / `frame-9`, `sage`, `template-<style code>`; entries without a scanned catalogue image or alt text are left out), and customer stories that are approved with the customer’s written permission on file — none below 3 (D-311). An empty block is an empty list, never placeholder content: the storefront leaves it out. Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
+         *
+         *     Implements: D-311, D-005.
+         */
+        get: operations["store.cms.getHome"];
         put?: never;
         post?: never;
         delete?: never;
@@ -23773,6 +23927,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/public-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the figures the storefront states
+         * @description Every figure has one source and is null without one — the storefront then leaves the sentence out, never a number of its own (D-309): minimum quantities from the catalogue (D-307), the price lock (`quotes.validity_days`, D-051), the claim window (`claims.window_days`, D-082), the first-proof turnaround, support hours and reply time (settings kept by Prepress and the CS Lead), the template library size, the partner count (null below `trust.network_min_factories`, D-264) and the contacts (D-221). Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
+         *
+         *     Implements: D-309, D-051, D-082, D-221, D-264, D-307.
+         */
+        get: operations["store.publicConfig.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/quotes": {
         parameters: {
             query?: never;
@@ -24059,6 +24235,28 @@ export interface paths {
          *     Implements: D-100, D-043, D-050, D-051, D-101, D-247.
          */
         post: operations["store.quotes.calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/quotes/actions/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Price a homepage Studio hero choice
+         * @description The hero’s shape, board, print, inside size (mm, D-182) and quantity, mapped by `catalog.hero_presets` to the catalogue product and options (`store.catalog.getHeroPresets`), priced by the very `store.quotes.calculate` path `/configure` uses — no formula of its own (D-310, D-043); `calculation` is the body it priced. Anonymous, 30 requests per minute per client. 409 `quotes.preview_unavailable` when the presets do not offer the choice, `pricing.not_instant` when the quantity has no instant price. No factory data (D-050).
+         *
+         *     Implements: D-310, D-043, D-051, D-050.
+         */
+        post: operations["store.quotes.preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -24839,6 +25037,28 @@ export interface paths {
          *     Implements: D-182, D-183.
          */
         post: operations["store.specs.convertDimensions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/status-labels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the words for every status
+         * @description For each labelled status enum (order, order group, payment, instalment, slip, refund, artwork, submission, Proof, preflight, production job, milestone, shipment, claim, quotation, RFQ, RFQ quotation, sample, design service and round) its values with the customer’s words (`labelTh`: "ตรวจแบบก่อนพิมพ์" / "แบบตัวอย่าง", never a factory — D-050), the back office’s and factories’ words (`labelAdminTh`: "Proof") and English. The same words are on every response next to the status (`statusLabelTh`, `statusLabelAdminTh`); enum values never change (D-313). Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
+         *
+         *     Implements: D-313, D-050.
+         */
+        get: operations["store.statusLabels.list"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -26856,6 +27076,16 @@ export interface components {
             /** @example under_review */
             status: components["schemas"]["ClaimStatus"];
             /**
+             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313).
+             * @example แจ้งเคลมแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ClaimStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example แจ้งเคลมแล้ว
+             */
+            statusLabelTh: string;
+            /**
              * Format: date-time
              * @example 2026-10-22T09:00:00+07:00
              */
@@ -27020,6 +27250,13 @@ export interface components {
              * @example true
              */
             granted: boolean | null;
+            /** @example News and offers on LINE */
+            labelEn: string;
+            /**
+             * @description The purpose in Thai words (render this, not `purpose`)
+             * @example รับข่าวสารและโปรโมชันทาง LINE
+             */
+            labelTh: string;
             /**
              * @description The latest decision was for an older text version
              * @example true
@@ -27181,6 +27418,11 @@ export interface components {
              */
             finishes: string[];
             /**
+             * @description `issueCount > 0`; null until checked
+             * @example true
+             */
+            hasIssues: boolean | null;
+            /**
              * @description mm
              * @example 40
              */
@@ -27190,6 +27432,13 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e5001
              */
             id: string;
+            /**
+             * @description What still needs checking on the current version (D-278): its blocks plus the warnings the customer has not acknowledged, from the latest print check — run by the worker when the design is saved; null until checked
+             * @example 2
+             */
+            issueCount: number | null;
+            /** @description Per rule, blocks first; empty when none or not checked */
+            issueSummary: components["schemas"]["DesignIssueDto"][];
             /**
              * @description mm
              * @example 100
@@ -27425,6 +27674,16 @@ export interface components {
             /** @example released */
             status: components["schemas"]["ProductionJobStatus"];
             /**
+             * @description `status` (ProductionJobStatus) in Thai for staff and partner factories (D-313).
+             * @example รอโรงงานรับงาน
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ProductionJobStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เตรียมผลิต
+             */
+            statusLabelTh: string;
+            /**
              * @description Short label: product type and quantity
              * @example กล่องพับ · 1000 ชิ้น
              */
@@ -27506,6 +27765,16 @@ export interface components {
             /** @example awaiting_template */
             artworkStatus: components["schemas"]["ArtworkStatus"];
             /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelAdminTh: string;
+            /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelTh: string;
+            /**
              * Format: date-time
              * @example null
              */
@@ -27570,6 +27839,16 @@ export interface components {
              * @example 2026-09-25T10:00:00+07:00
              */
             statusChangedAt: string;
+            /**
+             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313).
+             * @example รอชำระเงิน
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (OrderStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอชำระเงิน
+             */
+            statusLabelTh: string;
             /** @description Product, product type, sales unit and spec lines to display (from the quote it was made from) */
             summary: components["schemas"]["LineSummaryDto"];
             /**
@@ -27652,6 +27931,16 @@ export interface components {
             /** @example waiting_payment */
             status: components["schemas"]["OrderGroupStatus"];
             /**
+             * @description `status` (OrderGroupStatus) in Thai for staff and partner factories (D-313).
+             * @example รอผู้อนุมัติของบริษัท
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (OrderGroupStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอผู้อนุมัติของบริษัท
+             */
+            statusLabelTh: string;
+            /**
              * @description The tax profile the documents are issued to, as placed (snapshot)
              * @example {
              *       "branchCode": "00000",
@@ -27704,6 +27993,16 @@ export interface components {
         AdminOrderListItemDto: {
             /** @example approved */
             artworkStatus: components["schemas"]["ArtworkStatus"];
+            /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelAdminTh: string;
+            /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelTh: string;
             /** @example web */
             channel: components["schemas"]["SalesChannel"];
             /** @example THB */
@@ -27756,6 +28055,16 @@ export interface components {
             slipReviewDueAt: string | null;
             /** @example in_production */
             status: components["schemas"]["OrderStatus"];
+            /**
+             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313).
+             * @example รอชำระเงิน
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (OrderStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอชำระเงิน
+             */
+            statusLabelTh: string;
             /** @example piece */
             unit: string;
         };
@@ -27837,6 +28146,16 @@ export interface components {
             slips: components["schemas"]["SlipDto"][];
             /** @example pending */
             status: components["schemas"]["PaymentStatus"];
+            /**
+             * @description `status` (PaymentStatus) in Thai for staff and partner factories (D-313).
+             * @example เริ่มชำระเงิน
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (PaymentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เริ่มชำระเงิน
+             */
+            statusLabelTh: string;
             /** @example 0.00 */
             whtAmount: string;
         };
@@ -28358,6 +28677,16 @@ export interface components {
              */
             statusChangedAt: string;
             /**
+             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313).
+             * @example รอใบเสนอราคา
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (SampleStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอใบเสนอราคา
+             */
+            statusLabelTh: string;
+            /**
              * Format: date-time
              * @example null
              */
@@ -28457,6 +28786,16 @@ export interface components {
             source: components["schemas"]["QuoteSource"];
             /** @example saved */
             status: components["schemas"]["QuoteStatus"];
+            /**
+             * @description `status` (QuoteStatus) in Thai for staff and partner factories (D-313).
+             * @example คำนวณแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (QuoteStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example คำนวณแล้ว
+             */
+            statusLabelTh: string;
             /** @description Product, product type, sales unit and spec lines to display (frozen when the quote was made) */
             summary: components["schemas"]["LineSummaryDto"];
             /**
@@ -28662,6 +29001,16 @@ export interface components {
             splitFrom: components["schemas"]["ShipmentRefDto"] | null;
             /** @example ready */
             status: components["schemas"]["ShipmentStatus"];
+            /**
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
+             * @example ร่างรอบส่ง
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ShipmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เตรียมจัดส่ง
+             */
+            statusLabelTh: string;
             /** @example null */
             trackingNo: string | null;
             /** @example null */
@@ -30181,6 +30530,16 @@ export interface components {
             preflightReport: components["schemas"]["PreflightReportDto"] | null;
             /** @example blocked */
             preflightStatus: components["schemas"]["PreflightStatus"];
+            /**
+             * @description `preflightStatus` (PreflightStatus) in Thai for staff and partner factories (D-313).
+             * @example รอตรวจไฟล์อัตโนมัติ
+             */
+            preflightStatusLabelAdminTh: string;
+            /**
+             * @description `preflightStatus` (PreflightStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `preflightStatus` never changes.
+             * @example รอตรวจไฟล์อัตโนมัติ
+             */
+            preflightStatusLabelTh: string;
             /** @example null */
             rejectReason: string | null;
             /**
@@ -30192,6 +30551,16 @@ export interface components {
             source: components["schemas"]["ArtworkSource"];
             /** @example submitted */
             status: components["schemas"]["SubmissionStatus"];
+            /**
+             * @description `status` (SubmissionStatus) in Thai for staff and partner factories (D-313).
+             * @example ส่งไฟล์แล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (SubmissionStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ส่งไฟล์แล้ว
+             */
+            statusLabelTh: string;
             /**
              * Format: date-time
              * @example 2026-09-27T10:00:00+07:00
@@ -34375,6 +34744,13 @@ export interface components {
              * @example true
              */
             granted: boolean | null;
+            /** @example News and offers on LINE */
+            labelEn: string;
+            /**
+             * @description The purpose in Thai words (render this, not `purpose`)
+             * @example รับข่าวสารและโปรโมชันทาง LINE
+             */
+            labelTh: string;
             /**
              * @description The latest decision was for an older text version
              * @example false
@@ -34400,6 +34776,13 @@ export interface components {
         ConsentPurposeDto: {
             /** @example marketing_line */
             key: string;
+            /** @example News and offers on LINE */
+            labelEn: string;
+            /**
+             * @description The purpose in Thai words (render this, not `purpose`)
+             * @example รับข่าวสารและโปรโมชันทาง LINE
+             */
+            labelTh: string;
             /** @example false */
             required: boolean;
             versions: components["schemas"]["ConsentPurposeVersionDto"][];
@@ -34434,6 +34817,14 @@ export interface components {
         };
         /** @enum {string} */
         ConsultationStatus: "requested" | "responded" | "declined" | "expired";
+        ContactDto: {
+            /** @example support@example.invalid */
+            email: string | null;
+            /** @example @packio-test */
+            lineOaId: string | null;
+            /** @example 0800000000 */
+            phone: string | null;
+        };
         /** @enum {string} */
         ContentStatus: "draft" | "published" | "archived";
         ContextCardDto: {
@@ -36302,6 +36693,40 @@ export interface components {
             termEn?: string | null;
             /** @example ลอนอี */
             termTh: string;
+        };
+        CreateHomeCaseDto: {
+            /** @example ร้านขนมทดสอบ (fake) */
+            brandNameTh: string;
+            /**
+             * Format: uuid
+             * @description Uploaded written permission (private)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c5003
+             */
+            consentFileId: string | null;
+            /**
+             * @description Days from order to delivery
+             * @example 9
+             */
+            leadTimeDays: number;
+            /**
+             * Format: uuid
+             * @description Uploaded photo (shown on the home page)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c5002
+             */
+            photoFileId: string | null;
+            /** @example กล่องไปรษณีย์พิมพ์ 1 สี */
+            productTh: string;
+            /** @example เชียงใหม่ */
+            provinceTh: string;
+            /** @example 1000 */
+            quantity: number;
+            /** @example กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ) */
+            quoteTh: string;
+            /**
+             * @description Display order (ascending)
+             * @example 10
+             */
+            sort?: number;
         };
         CreateHomeSectionDto: {
             /**
@@ -38754,6 +39179,11 @@ export interface components {
              */
             finishes: string[];
             /**
+             * @description `issueCount > 0`; null until checked
+             * @example true
+             */
+            hasIssues: boolean | null;
+            /**
              * @description mm
              * @example 40
              */
@@ -38763,6 +39193,13 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e5001
              */
             id: string;
+            /**
+             * @description What still needs checking on the current version (D-278): its blocks plus the warnings the customer has not acknowledged, from the latest print check — run by the worker when the design is saved; null until checked
+             * @example 2
+             */
+            issueCount: number | null;
+            /** @description Per rule, blocks first; empty when none or not checked */
+            issueSummary: components["schemas"]["DesignIssueDto"][];
             /**
              * @description mm
              * @example 100
@@ -39138,6 +39575,27 @@ export interface components {
          * @enum {string}
          */
         DesignImportSkipReason: "product_not_found" | "document_too_large" | "deleted";
+        DesignIssueDto: {
+            /**
+             * @description Print-check rule id (`studio.print_rules`)
+             * @example image_resolution
+             */
+            code: string;
+            /**
+             * @description Elements breaking it
+             * @example 2
+             */
+            count: number;
+            /** @example Low-resolution image: it may print soft */
+            messageEn: string;
+            /** @example รูปความละเอียดต่ำ อาจพิมพ์ไม่คม */
+            messageTh: string;
+            /**
+             * @description `block` or `warn` (info findings are not issues)
+             * @example warn
+             */
+            severity: components["schemas"]["PreflightSeverity"];
+        };
         /** @enum {string} */
         DesignLinkFilter: "any" | "linked" | "unlinked";
         DesignLockDto: {
@@ -39275,6 +39733,16 @@ export interface components {
             /** @example in_progress */
             status: components["schemas"]["DesignRoundStatus"];
             /**
+             * @description `status` (DesignRoundStatus) in Thai for staff and partner factories (D-313).
+             * @example รอชำระค่าแก้ไขเพิ่ม
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (DesignRoundStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอชำระค่าแก้ไขเพิ่ม
+             */
+            statusLabelTh: string;
+            /**
              * Format: uuid
              * @description The artwork version delivered
              * @example null
@@ -39335,6 +39803,16 @@ export interface components {
             rounds: components["schemas"]["DesignRoundDto"][];
             /** @example in_progress */
             status: components["schemas"]["DesignServiceStatus"];
+            /**
+             * @description `status` (DesignServiceStatus) in Thai for staff and partner factories (D-313).
+             * @example รอบรีฟงานออกแบบ
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (DesignServiceStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอบรีฟงานออกแบบ
+             */
+            statusLabelTh: string;
             /**
              * Format: date-time
              * @description 5 business days from the start (D-071)
@@ -42299,6 +42777,262 @@ export interface components {
         };
         /** @enum {string} */
         HealthStatus: "ok" | "error" | "shutting_down";
+        HeroDefaultDto: {
+            /**
+             * @description Inside height (mm)
+             * @example 50
+             */
+            heightMm: number;
+            /**
+             * @description Inside length (mm)
+             * @example 180
+             */
+            lengthMm: number;
+            /** @example corrE */
+            material: components["schemas"]["HeroMaterial"];
+            /** @example one */
+            print: components["schemas"]["HeroPrint"];
+            /** @example 500 */
+            qty: number;
+            /** @example mailer */
+            shape: components["schemas"]["HeroShape"];
+            /** @example mailer:s0 */
+            sizeId: string;
+            /**
+             * @description Inside width (mm)
+             * @example 120
+             */
+            widthMm: number;
+        };
+        /** @enum {string} */
+        HeroMaterial: "kraft350" | "art350" | "corrE";
+        HeroMaterialDto: {
+            /** @example kraft350 */
+            id: components["schemas"]["HeroMaterial"];
+            /** @example Kraft 350 gsm */
+            labelEn: string;
+            /**
+             * @description The catalogue material’s name
+             * @example กระดาษคราฟท์ 350 แกรม
+             */
+            labelTh: string;
+            /** @description What the board is on each shape that offers it */
+            options: components["schemas"]["HeroMaterialOptionDto"][];
+        };
+        HeroMaterialOptionDto: {
+            /**
+             * Format: uuid
+             * @description Material option id
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a0003
+             */
+            materialId: string;
+            /** @example mailer */
+            shapeId: components["schemas"]["HeroShape"];
+        };
+        HeroPresetsDto: {
+            /** @description The selection to open on; null when nothing is offered */
+            default: components["schemas"]["HeroDefaultDto"] | null;
+            /**
+             * @description The owner’s default is not offered by the catalogue (e.g. a board the shape cannot take): `default` is the nearest offered selection instead
+             * @example true
+             */
+            defaultAdjusted: boolean;
+            materials: components["schemas"]["HeroMaterialDto"][];
+            prints: components["schemas"]["HeroPrintDto"][];
+            /**
+             * @description Every quantity some shape offers
+             * @example [
+             *       300,
+             *       500,
+             *       1000,
+             *       2000
+             *     ]
+             */
+            qtys: number[];
+            shapes: components["schemas"]["HeroShapeDto"][];
+            sizes: components["schemas"]["HeroSizeDto"][];
+        };
+        HeroPreviewDto: {
+            /**
+             * @description The `store.quotes.calculate` body this preview priced — `/configure` sends the same for the same choices
+             * @example {
+             *       "configuration": {
+             *         "d": 80,
+             *         "l": 200,
+             *         "patternId": "…",
+             *         "w": 150
+             *       },
+             *       "productTypeCode": "corrugated"
+             *     }
+             */
+            calculation: {
+                [key: string]: unknown;
+            };
+            /** @example THB */
+            currency: string;
+            /** @description Production lead time (business days) */
+            leadTimeBusinessDays: components["schemas"]["BusinessDayRangeDto"];
+            /**
+             * @description The preset size the dimensions match; null for a size of the customer’s own
+             * @example mailer:s0
+             */
+            presetId?: string | null;
+            /**
+             * Format: date-time
+             * @description Until when a quotation saved now keeps this price (`quotes.validity_days`, D-051); the preview itself locks nothing
+             * @example 2026-10-22T10:15:00+07:00
+             */
+            priceLockUntil: string;
+            /**
+             * @description Total incl. VAT — the calculation’s `grossAmount` (no shipping without a postcode; decimal string)
+             * @example 13380.00
+             */
+            total: string;
+            /**
+             * @description Price per piece incl. VAT (decimal string)
+             * @example 13.38
+             */
+            unitPrice: string;
+            /**
+             * @description Prices include VAT
+             * @example true
+             */
+            vatIncluded: boolean;
+        };
+        HeroPreviewRequestDto: {
+            /**
+             * @description Inside height (mm)
+             * @example 80
+             */
+            heightMm: number;
+            /**
+             * @description Inside length (mm, D-182)
+             * @example 200
+             */
+            lengthMm: number;
+            /** @example kraft350 */
+            material: components["schemas"]["HeroMaterial"];
+            /** @example one */
+            print: components["schemas"]["HeroPrint"];
+            /**
+             * @description One of `qtys` of `store.catalog.getHeroPresets`
+             * @example 1000
+             */
+            qty: number;
+            /** @example mailer */
+            shape: components["schemas"]["HeroShape"];
+            /**
+             * @description Inside width (mm)
+             * @example 150
+             */
+            widthMm: number;
+        };
+        /** @enum {string} */
+        HeroPrint: "none" | "one" | "full";
+        HeroPrintDto: {
+            /** @example one */
+            id: components["schemas"]["HeroPrint"];
+            /** @example One colour */
+            labelEn: string;
+            /** @example พิมพ์ 1 สี */
+            labelTh: string;
+            options: components["schemas"]["HeroPrintOptionDto"][];
+        };
+        HeroPrintOptionDto: {
+            /**
+             * @description Front ink option ids; empty for no print
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-0000000a0004"
+             *     ]
+             */
+            inkIds: string[];
+            /** @example mailer */
+            shapeId: components["schemas"]["HeroShape"];
+        };
+        /** @enum {string} */
+        HeroShape: "mailer" | "lid" | "tuck";
+        HeroShapeDto: {
+            /**
+             * @description The calculator that prices it (folding or corrugate)
+             * @example corrugate
+             */
+            calculator: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a0001
+             */
+            catalogProductId: string;
+            /** @example FEFCO-0427 */
+            dielineKey: string | null;
+            /** @example mailer */
+            id: components["schemas"]["HeroShape"];
+            /**
+             * @description The product’s box style name
+             * @example กล่องไปรษณีย์
+             */
+            labelTh: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a0002
+             */
+            patternId: string;
+            /**
+             * @description The catalogue product `/configure` opens
+             * @example mailer-box
+             */
+            productSlug: string;
+            /** @example corrugated */
+            productTypeCode: string;
+            /**
+             * @description Quantities this shape offers (the product’s own minimum and maximum applied)
+             * @example [
+             *       300,
+             *       500,
+             *       1000,
+             *       2000
+             *     ]
+             */
+            qtys: number[];
+            /**
+             * @description The style-library code of the shape (the preset’s, else the pattern’s)
+             * @example PK-CF-01
+             */
+            styleCode: string | null;
+        };
+        HeroSizeDto: {
+            /**
+             * @description The preset size’s index, as `s<index>`
+             * @example s0
+             */
+            code: string;
+            /**
+             * @description Inside height (mm)
+             * @example 80
+             */
+            heightMm: number;
+            /**
+             * @description `<shape>:s<index of the preset size>`, returned as `presetId`
+             * @example mailer:s0
+             */
+            id: string;
+            /**
+             * @description Inside W × D × H in centimetres
+             * @example 18×12×5 ซม.
+             */
+            labelTh: string;
+            /**
+             * @description Inside length (mm, D-182)
+             * @example 200
+             */
+            lengthMm: number;
+            /** @example mailer */
+            shapeId: components["schemas"]["HeroShape"];
+            /**
+             * @description Inside width (mm)
+             * @example 150
+             */
+            widthMm: number;
+        };
         HoldJobDto: {
             /** @example ลูกค้าขอพักงานเพื่อแก้ไฟล์ */
             reason: string;
@@ -42308,6 +43042,92 @@ export interface components {
          * @enum {string}
          */
         HolidayObservance: "all" | "government_only" | "financial_institutions";
+        HomeCaseCardDto: {
+            /** @example ร้านขนมทดสอบ (fake) */
+            brandNameTh: string;
+            /** @example 9 */
+            leadTimeDays: number;
+            /** @example /v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-0000000c5002 */
+            photoUrl: string;
+            /** @example กล่องไปรษณีย์พิมพ์ 1 สี */
+            productTh: string;
+            /** @example เชียงใหม่ */
+            provinceTh: string;
+            /** @example 1000 */
+            qty: number;
+            /** @example กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ) */
+            quoteTh: string;
+        };
+        HomeCaseDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-07T10:00:00+07:00
+             */
+            approvedAt: string | null;
+            /**
+             * @description Who approved it
+             * @example การตลาด (fake)
+             */
+            approvedBy: string | null;
+            /**
+             * @description The customer’s brand, as they allowed it to be shown
+             * @example ร้านขนมทดสอบ (fake)
+             */
+            brandNameTh: string;
+            /**
+             * Format: uuid
+             * @description The customer’s written permission (a private file, never on the storefront); required to approve
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c5003
+             */
+            consentFileId: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c5001
+             */
+            id: string;
+            /**
+             * @description Days from order to delivery
+             * @example 9
+             */
+            leadTimeDays: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c5002
+             */
+            photoFileId: string | null;
+            /** @example กล่องไปรษณีย์พิมพ์ 1 สี */
+            productTh: string;
+            /** @example เชียงใหม่ */
+            provinceTh: string;
+            /** @example 1000 */
+            quantity: number;
+            /** @example กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ) */
+            quoteTh: string;
+            /** @example 10 */
+            sort: number;
+            /** @example approved */
+            status: components["schemas"]["HomeCaseStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-10-07T10:00:00+07:00
+             */
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        HomeCaseStatus: "draft" | "approved" | "withdrawn";
+        HomePhotoDto: {
+            /** @example กล่องไปรษณีย์คราฟท์วางบนโต๊ะ */
+            altTh: string;
+            /** @example กล่องไปรษณีย์ พิมพ์ 1 สี */
+            captionTh: string | null;
+            /**
+             * @description `hero`, `mosaic-1` … `mosaic-5`, `frame-4` / `frame-9` (sample / packing), `sage` or `template-<style code>`
+             * @example hero
+             */
+            position: string;
+            /** @example /v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-0000000c5002 */
+            url: string;
+        };
         HomeSectionDto: {
             /**
              * @description What the section shows (ids, limits, layout) — interpreted by the storefront
@@ -42607,7 +43427,7 @@ export interface components {
             rows?: components["schemas"]["StatementRowDto"][];
         };
         InboxItemDto: {
-            /** @example คำขอ discount_memo รอการอนุมัติของคุณ */
+            /** @example คำขออนุมัติ บันทึกขอส่วนลด รอการตัดสินใจของคุณ */
             body: string;
             /**
              * Format: date-time
@@ -42616,6 +43436,13 @@ export interface components {
             createdAt: string;
             /** @example approval.requested */
             eventType: string;
+            /** @example Approval */
+            eventTypeLabelEn: string;
+            /**
+             * @description What the item is about, in Thai, for the inbox chip — never the raw event or policy key (D-313)
+             * @example คำขออนุมัติ
+             */
+            eventTypeLabelTh: string;
             /**
              * Format: uuid
              * @description Event id; also the item id
@@ -43018,6 +43845,16 @@ export interface components {
             seq: number;
             /** @example due */
             status: components["schemas"]["InstalmentStatus"];
+            /**
+             * @description `status` (InstalmentStatus) in Thai for staff and partner factories (D-313).
+             * @example ยังไม่ถึงกำหนด
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (InstalmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ยังไม่ถึงกำหนด
+             */
+            statusLabelTh: string;
             /**
              * @description Expected customer withholding (D-174)
              * @example 0.00
@@ -44052,7 +44889,7 @@ export interface components {
         LocalisedLabelDto: {
             /** @example Preview, not a contract proof */
             en: string;
-            /** @example ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา */
+            /** @example ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่แบบตัวอย่างสำหรับอนุมัติพิมพ์ */
             th: string;
         };
         LoyaltySummaryDto: {
@@ -44429,6 +45266,16 @@ export interface components {
             startedAt: string | null;
             /** @example in_progress */
             status: components["schemas"]["MilestoneStatus"];
+            /**
+             * @description `status` (MilestoneStatus) in Thai for staff and partner factories (D-313).
+             * @example ยังไม่เริ่ม
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (MilestoneStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ยังไม่เริ่ม
+             */
+            statusLabelTh: string;
             /** @example true */
             tracksQuantity: boolean;
         };
@@ -44465,6 +45312,18 @@ export interface components {
             job: components["schemas"]["PartnerJobDto"];
             /** @example null */
             reason: components["schemas"]["MilestoneUpdateOutcome"] | null;
+        };
+        MinOrderQtyDto: {
+            /**
+             * @description Lowest minimum quantity among active made-to-order catalogue products (D-307); null without one
+             * @example 500
+             */
+            custom: number | null;
+            /**
+             * @description Lowest minimum order quantity among active stock products; null without one
+             * @example 1
+             */
+            readyStock: number | null;
         };
         /** @enum {string} */
         MockupKind: "with_print" | "without_print";
@@ -45035,6 +45894,16 @@ export interface components {
             /** @example awaiting_template */
             artworkStatus: components["schemas"]["ArtworkStatus"];
             /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelAdminTh: string;
+            /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelTh: string;
+            /**
              * Format: date-time
              * @example null
              */
@@ -45098,6 +45967,16 @@ export interface components {
              * @example 2026-09-25T10:00:00+07:00
              */
             statusChangedAt: string;
+            /**
+             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313).
+             * @example รอชำระเงิน
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (OrderStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอชำระเงิน
+             */
+            statusLabelTh: string;
             /** @description Product, product type, sales unit and spec lines to display (from the quote it was made from) */
             summary: components["schemas"]["LineSummaryDto"];
             /**
@@ -45163,6 +46042,16 @@ export interface components {
             poNumber: string | null;
             /** @example waiting_payment */
             status: components["schemas"]["OrderGroupStatus"];
+            /**
+             * @description `status` (OrderGroupStatus) in Thai for staff and partner factories (D-313).
+             * @example รอผู้อนุมัติของบริษัท
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (OrderGroupStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอผู้อนุมัติของบริษัท
+             */
+            statusLabelTh: string;
             totals: components["schemas"]["MoneyTotalsDto"];
         };
         /** @enum {string} */
@@ -45286,6 +46175,16 @@ export interface components {
         OrderQueueItemDto: {
             /** @example uploaded */
             artworkStatus: components["schemas"]["ArtworkStatus"];
+            /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelAdminTh: string;
+            /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelTh: string;
             /** @example สมชาย ทดสอบ */
             customerName: string;
             /** @example 14182.80 */
@@ -45323,6 +46222,16 @@ export interface components {
             promisedShipDate: string | null;
             /** @example paid_for_production */
             status: components["schemas"]["OrderStatus"];
+            /**
+             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313).
+             * @example รอชำระเงิน
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (OrderStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอชำระเงิน
+             */
+            statusLabelTh: string;
         };
         OrderReceiptDto: {
             /**
@@ -45675,6 +46584,16 @@ export interface components {
             /** @example under_review */
             status: components["schemas"]["ClaimStatus"];
             /**
+             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313).
+             * @example แจ้งเคลมแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ClaimStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example แจ้งเคลมแล้ว
+             */
+            statusLabelTh: string;
+            /**
              * Format: date-time
              * @example 2026-10-22T09:00:00+07:00
              */
@@ -45804,6 +46723,16 @@ export interface components {
             };
             /** @example released */
             status: components["schemas"]["ProductionJobStatus"];
+            /**
+             * @description `status` (ProductionJobStatus) in Thai for staff and partner factories (D-313).
+             * @example รอโรงงานรับงาน
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ProductionJobStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เตรียมผลิต
+             */
+            statusLabelTh: string;
             /**
              * @description Short label: product type and quantity
              * @example กล่องพับ · 1000 ชิ้น
@@ -46038,6 +46967,16 @@ export interface components {
             quantity: number;
             /** @example in_production */
             status: components["schemas"]["SampleStatus"];
+            /**
+             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313).
+             * @example รอใบเสนอราคา
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (SampleStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอใบเสนอราคา
+             */
+            statusLabelTh: string;
         };
         PartnerShipmentDto: {
             /**
@@ -46101,6 +47040,16 @@ export interface components {
             shipmentNo: string;
             /** @example ready */
             status: components["schemas"]["ShipmentStatus"];
+            /**
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
+             * @example ร่างรอบส่ง
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ShipmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เตรียมจัดส่ง
+             */
+            statusLabelTh: string;
             /** @example null */
             trackingNo: string | null;
             /** @example 120000 */
@@ -46472,6 +47421,16 @@ export interface components {
             slips: components["schemas"]["SlipDto"][];
             /** @example pending */
             status: components["schemas"]["PaymentStatus"];
+            /**
+             * @description `status` (PaymentStatus) in Thai for staff and partner factories (D-313).
+             * @example เริ่มชำระเงิน
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (PaymentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เริ่มชำระเงิน
+             */
+            statusLabelTh: string;
             /** @example 0.00 */
             whtAmount: string;
         };
@@ -47438,7 +48397,10 @@ export interface components {
              */
             warnCount: number;
         };
-        /** @enum {string} */
+        /**
+         * @description `block` or `warn` (info findings are not issues)
+         * @enum {string}
+         */
         PreflightSeverity: "block" | "warn" | "info";
         PreflightSizeDto: {
             /**
@@ -47457,6 +48419,16 @@ export interface components {
         PrepressQueueItemDto: {
             /** @example in_review */
             artworkStatus: components["schemas"]["ArtworkStatus"];
+            /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelAdminTh: string;
+            /**
+             * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
+             * @example รอแบบไดคัท
+             */
+            artworkStatusLabelTh: string;
             /** @description The Prepress owner */
             assignee: components["schemas"]["UserRefDto"] | null;
             /** @description The customer */
@@ -47486,6 +48458,16 @@ export interface components {
             overdue: boolean;
             /** @example passed_with_warnings */
             preflightStatus: components["schemas"]["PreflightStatus"] | null;
+            /**
+             * @description `preflightStatus` (PreflightStatus) in Thai for staff and partner factories (D-313).
+             * @example รอตรวจไฟล์อัตโนมัติ
+             */
+            preflightStatusLabelAdminTh: string | null;
+            /**
+             * @description `preflightStatus` (PreflightStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `preflightStatus` never changes. Null when `preflightStatus` is null.
+             * @example รอตรวจไฟล์อัตโนมัติ
+             */
+            preflightStatusLabelTh: string | null;
             /** @example folding_box */
             productTypeCode: string;
             /**
@@ -48785,6 +49767,16 @@ export interface components {
             promisedAt: string | null;
             /** @example completed */
             status: components["schemas"]["MilestoneStatus"];
+            /**
+             * @description `status` (MilestoneStatus) in Thai for staff and partner factories (D-313).
+             * @example ยังไม่เริ่ม
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (MilestoneStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ยังไม่เริ่ม
+             */
+            statusLabelTh: string;
         };
         /** @enum {string} */
         PromotionAction: "activate" | "pause" | "end";
@@ -49045,6 +50037,16 @@ export interface components {
             previousProofId: string;
             /** @example changes_requested */
             previousStatus: components["schemas"]["ProofStatus"];
+            /**
+             * @description `previousStatus` (ProofStatus) in Thai for staff and partner factories (D-313).
+             * @example รอ Proof จากลูกค้า
+             */
+            previousStatusLabelAdminTh: string;
+            /**
+             * @description `previousStatus` (ProofStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `previousStatus` never changes.
+             * @example รอคุณตรวจแบบตัวอย่าง
+             */
+            previousStatusLabelTh: string;
             /** @example 1 */
             previousVersionNo: number;
         };
@@ -49114,6 +50116,16 @@ export interface components {
             sentAt: string;
             /** @example pending_customer */
             status: components["schemas"]["ProofStatus"];
+            /**
+             * @description `status` (ProofStatus) in Thai for staff and partner factories (D-313).
+             * @example รอ Proof จากลูกค้า
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ProofStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอคุณตรวจแบบตัวอย่าง
+             */
+            statusLabelTh: string;
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e2006
@@ -49468,6 +50480,43 @@ export interface components {
              * @example 1000.00
              */
             targetAmount: string;
+        };
+        PublicConfigDto: {
+            /**
+             * @description Days after receipt a customer may open a claim — `claims.window_days` (D-082)
+             * @example 7
+             */
+            claimWindowDays: number;
+            /** @description From `storefront.support_channels` (D-221) */
+            contact: components["schemas"]["ContactDto"];
+            /**
+             * @description Active partner factories, published only from `trust.network_min_factories` (D-264); null below it
+             * @example null
+             */
+            factoryCount: number | null;
+            minOrderQty: components["schemas"]["MinOrderQtyDto"];
+            /**
+             * @description Days a quotation’s price stays locked — `quotes.validity_days` (D-051)
+             * @example 15
+             */
+            priceLockDays: number;
+            /**
+             * @description Business days from an accepted file to the first proof — `artwork.first_proof_business_days` (Prepress); null until set: omit the sentence
+             * @example null
+             */
+            proofSlaBusinessDays: number | null;
+            /** @description CS answering hours — `storefront.support_hours` (CS Lead); null until set */
+            supportHours: components["schemas"]["SupportHoursDto"] | null;
+            /**
+             * @description Typical CS reply time within support hours — `support.reply_minutes` (CS Lead); null until set
+             * @example null
+             */
+            supportReplyMinutes: number | null;
+            /**
+             * @description Published styles in the template library (the count `store.styles.list` shows)
+             * @example 42
+             */
+            templateCount: number;
         };
         PublicGuaranteeDto: {
             /**
@@ -51044,6 +52093,16 @@ export interface components {
             reasonNote: string;
             /** @example pending_approval */
             status: components["schemas"]["RefundStatus"];
+            /**
+             * @description `status` (RefundStatus) in Thai for staff and partner factories (D-313).
+             * @example ขอคืนเงินแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (RefundStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ขอคืนเงินแล้ว
+             */
+            statusLabelTh: string;
         };
         /** @enum {string} */
         RefundStatus: "requested" | "pending_approval" | "approved" | "processing" | "succeeded" | "failed" | "rejected";
@@ -52378,6 +53437,16 @@ export interface components {
             };
             /** @example quoted */
             status: components["schemas"]["RfqStatus"];
+            /**
+             * @description `status` (RfqStatus) in Thai for staff and partner factories (D-313).
+             * @example ได้รับคำขอแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (RfqStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ได้รับคำขอแล้ว
+             */
+            statusLabelTh: string;
             /** @description The style variant asked for (D-269) */
             style: components["schemas"]["RfqStyleDto"] | null;
             /**
@@ -52519,6 +53588,16 @@ export interface components {
             sentAt: string | null;
             /** @example sent */
             status: components["schemas"]["RfqQuoteStatus"];
+            /**
+             * @description `status` (RfqQuoteStatus) in Thai for staff and partner factories (D-313).
+             * @example ร่างใบเสนอราคา
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (RfqQuoteStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ร่างใบเสนอราคา
+             */
+            statusLabelTh: string;
             /**
              * Format: date-time
              * @example 2026-10-16T09:00:00+07:00
@@ -53140,6 +54219,16 @@ export interface components {
              */
             statusChangedAt: string;
             /**
+             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313).
+             * @example รอใบเสนอราคา
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (SampleStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอใบเสนอราคา
+             */
+            statusLabelTh: string;
+            /**
              * Format: date-time
              * @example null
              */
@@ -53446,6 +54535,16 @@ export interface components {
             source: components["schemas"]["QuoteSource"];
             /** @example saved */
             status: components["schemas"]["QuoteStatus"];
+            /**
+             * @description `status` (QuoteStatus) in Thai for staff and partner factories (D-313).
+             * @example คำนวณแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (QuoteStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example คำนวณแล้ว
+             */
+            statusLabelTh: string;
             /** @description Product, product type, sales unit and spec lines to display (frozen when the quote was made) */
             summary: components["schemas"]["LineSummaryDto"];
             /**
@@ -54820,6 +55919,16 @@ export interface components {
             source: components["schemas"]["ShipmentEventSource"];
             /** @example in_transit */
             status: components["schemas"]["ShipmentStatus"];
+            /**
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
+             * @example ร่างรอบส่ง
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ShipmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เตรียมจัดส่ง
+             */
+            statusLabelTh: string;
         };
         /** @enum {string} */
         ShipmentEventSource: "factory" | "carrier_webhook" | "carrier_poll" | "staff";
@@ -55281,6 +56390,16 @@ export interface components {
             slaDueAt: string | null;
             /** @example passed */
             status: components["schemas"]["SlipStatus"];
+            /**
+             * @description `status` (SlipStatus) in Thai for staff and partner factories (D-313).
+             * @example รอตรวจสลิป
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (SlipStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอตรวจสลิป
+             */
+            statusLabelTh: string;
         };
         SlipQueueItemDto: {
             /**
@@ -55341,6 +56460,16 @@ export interface components {
             slaDueAt: string | null;
             /** @example passed */
             status: components["schemas"]["SlipStatus"];
+            /**
+             * @description `status` (SlipStatus) in Thai for staff and partner factories (D-313).
+             * @example รอตรวจสลิป
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (SlipStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example รอตรวจสลิป
+             */
+            statusLabelTh: string;
         };
         SlipReceiverAccountDto: {
             /** @example บจก. ทดสอบ */
@@ -55843,6 +56972,16 @@ export interface components {
             specLines: components["schemas"]["SpecLineDto"][];
             /** @example quoted */
             status: components["schemas"]["RfqStatus"];
+            /**
+             * @description `status` (RfqStatus) in Thai for staff and partner factories (D-313).
+             * @example ได้รับคำขอแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (RfqStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ได้รับคำขอแล้ว
+             */
+            statusLabelTh: string;
             /** @description The style variant asked for (D-269) */
             style: components["schemas"]["RfqStyleDto"] | null;
             /**
@@ -55917,6 +57056,16 @@ export interface components {
             sentAt: string | null;
             /** @example sent */
             status: components["schemas"]["RfqQuoteStatus"];
+            /**
+             * @description `status` (RfqQuoteStatus) in Thai for staff and partner factories (D-313).
+             * @example ร่างใบเสนอราคา
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (RfqQuoteStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ร่างใบเสนอราคา
+             */
+            statusLabelTh: string;
             /**
              * Format: date-time
              * @example 2026-10-16T09:00:00+07:00
@@ -56087,17 +57236,29 @@ export interface components {
              */
             body: string | null;
             /**
+             * @description Consecutive repeats of the same event (same type and words) are one entry in the customer timeline: how many it stands for; `occurredAt` is the latest. Always 1 in the staff timeline.
+             * @example 1
+             */
+            count: number;
+            /**
              * @description Stable id of the entry within the timeline
              * @example a:1042
              */
             id: string;
             /** @description Staff @mentioned in a note */
             mentions: components["schemas"]["UserRefDto"][];
+            /** @example Your proof is ready to check */
+            messageEn: string;
             /**
-             * @description i18n key the client renders
+             * @description i18n key (kept for compatibility; render `messageTh` / `messageEn` instead)
              * @example activity.production.milestone_reached
              */
             messageKey: string;
+            /**
+             * @description What happened, in Thai, for this entry’s reader — one sentence per action or shipment step (customers: "แบบตัวอย่าง" / "ตรวจแบบก่อนพิมพ์", never a factory, D-050; D-313)
+             * @example แบบตัวอย่างพร้อมให้ตรวจ
+             */
+            messageTh: string;
             /**
              * Format: date-time
              * @example 2026-10-12T10:15:00+07:00
@@ -56401,6 +57562,33 @@ export interface components {
              */
             valueDate?: string | null;
         };
+        StatusLabelEnumDto: {
+            /**
+             * @description The OpenAPI enum component the values belong to
+             * @example ProofStatus
+             */
+            enumName: string;
+            values: components["schemas"]["StatusLabelValueDto"][];
+        };
+        StatusLabelValueDto: {
+            /**
+             * @description Back-office and factory words ("Proof")
+             * @example รอ Proof จากลูกค้า
+             */
+            labelAdminTh: string;
+            /** @example Awaiting customer */
+            labelEn: string;
+            /**
+             * @description Customer words (glossary; never a factory, D-050)
+             * @example รอคุณตรวจแบบตัวอย่าง
+             */
+            labelTh: string;
+            /**
+             * @description The enum value, as every response carries it
+             * @example pending_customer
+             */
+            value: string;
+        };
         /** @enum {string} */
         StockAttribute: "material" | "type" | "sub_type" | "shape" | "shoulder" | "neck" | "colour" | "size_text" | "cap_type";
         StockAttributeInput: {
@@ -56671,6 +57859,16 @@ export interface components {
             sla: components["schemas"]["ClaimSlaDto"];
             /** @example under_review */
             status: components["schemas"]["ClaimStatus"];
+            /**
+             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313).
+             * @example แจ้งเคลมแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ClaimStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example แจ้งเคลมแล้ว
+             */
+            statusLabelTh: string;
             /**
              * Format: date-time
              * @example 2026-10-22T09:00:00+07:00
@@ -56947,6 +58145,11 @@ export interface components {
             /** @example 10200 */
             postcode: string;
         };
+        StoreHomeContentDto: {
+            /** @description Approved stories with written permission on file; empty below 3 (hide the section) */
+            cases: components["schemas"]["HomeCaseCardDto"][];
+            photos: components["schemas"]["HomePhotoDto"][];
+        };
         StoreHomeSectionDto: {
             /**
              * @example {
@@ -57046,6 +58249,16 @@ export interface components {
             seq: number;
             /** @example due */
             status: components["schemas"]["InstalmentStatus"];
+            /**
+             * @description `status` (InstalmentStatus) in Thai for staff and partner factories (D-313).
+             * @example ยังไม่ถึงกำหนด
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (InstalmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example ยังไม่ถึงกำหนด
+             */
+            statusLabelTh: string;
             /**
              * @description Expected customer withholding (D-174)
              * @example 0.00
@@ -57583,6 +58796,16 @@ export interface components {
             shipmentNo: string;
             /** @example delivered */
             status: components["schemas"]["ShipmentStatus"];
+            /**
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
+             * @example ร่างรอบส่ง
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ShipmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เตรียมจัดส่ง
+             */
+            statusLabelTh: string;
             /** @example null */
             trackingNo: string | null;
             /** @example null */
@@ -57598,6 +58821,16 @@ export interface components {
             occurredAt: string;
             /** @example in_transit */
             status: components["schemas"]["ShipmentStatus"];
+            /**
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
+             * @example ร่างรอบส่ง
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ShipmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เตรียมจัดส่ง
+             */
+            statusLabelTh: string;
         };
         StoreShipmentItemDto: {
             /** @example 590 */
@@ -59259,6 +60492,11 @@ export interface components {
              */
             phone?: string;
         };
+        /**
+         * @description `business_days` = working days of the national calendar (D-161)
+         * @enum {string}
+         */
+        SupportDays: "daily" | "business_days" | "mon_fri" | "mon_sat";
         SupportHandoffDto: {
             /**
              * @description The guided-help answers (≤ 16 KB)
@@ -59292,6 +60530,22 @@ export interface components {
              *     ]
              */
             recommended?: string[];
+        };
+        SupportHoursDto: {
+            /** @example 18:00 */
+            close: string;
+            /**
+             * @description `business_days` = working days of the national calendar (D-161)
+             * @example mon_fri
+             */
+            days: components["schemas"]["SupportDays"];
+            /** @example 09:00 */
+            open: string;
+            /**
+             * @description Time zone of `open` and `close`
+             * @example Asia/Bangkok
+             */
+            tz: string;
         };
         SupportTicketDto: {
             /**
@@ -59898,15 +61152,27 @@ export interface components {
         };
         TimelineEntryDto: {
             /**
+             * @description Consecutive repeats of the same event (same type and words) are one entry in the customer timeline: how many it stands for; `occurredAt` is the latest. Always 1 in the staff timeline.
+             * @example 1
+             */
+            count: number;
+            /**
              * @description Stable id of the entry within the timeline
              * @example a:1042
              */
             id: string;
+            /** @example Your proof is ready to check */
+            messageEn: string;
             /**
-             * @description i18n key the client renders
+             * @description i18n key (kept for compatibility; render `messageTh` / `messageEn` instead)
              * @example activity.production.milestone_reached
              */
             messageKey: string;
+            /**
+             * @description What happened, in Thai, for this entry’s reader — one sentence per action or shipment step (customers: "แบบตัวอย่าง" / "ตรวจแบบก่อนพิมพ์", never a factory, D-050; D-313)
+             * @example แบบตัวอย่างพร้อมให้ตรวจ
+             */
+            messageTh: string;
             /**
              * Format: date-time
              * @example 2026-10-12T10:15:00+07:00
@@ -60206,6 +61472,11 @@ export interface components {
             shipmentNo: string;
             /** @example in_transit */
             status: components["schemas"]["TrackingStatus"];
+            /**
+             * @description `status` in Thai for the customer (D-313); the enum value never changes
+             * @example กำลังส่ง
+             */
+            statusLabelTh: string;
             steps: components["schemas"]["TrackingStepDto"][];
             /** @example null */
             trackingNo: string | null;
@@ -60222,6 +61493,11 @@ export interface components {
             occurredAt: string;
             /** @example in_transit */
             status: components["schemas"]["TrackingStatus"];
+            /**
+             * @description `status` in Thai for the customer (D-313); the enum value never changes
+             * @example กำลังส่ง
+             */
+            statusLabelTh: string;
         };
         TrafficDeviceDto: {
             /** @example 1200 */
@@ -61148,6 +62424,40 @@ export interface components {
             /** @example ลอนอี */
             termTh?: string;
         };
+        UpdateHomeCaseDto: {
+            /** @example ร้านขนมทดสอบ (fake) */
+            brandNameTh?: string;
+            /**
+             * Format: uuid
+             * @description Uploaded written permission (private)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c5003
+             */
+            consentFileId?: string | null;
+            /**
+             * @description Days from order to delivery
+             * @example 9
+             */
+            leadTimeDays?: number;
+            /**
+             * Format: uuid
+             * @description Uploaded photo (shown on the home page)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c5002
+             */
+            photoFileId?: string | null;
+            /** @example กล่องไปรษณีย์พิมพ์ 1 สี */
+            productTh?: string;
+            /** @example เชียงใหม่ */
+            provinceTh?: string;
+            /** @example 1000 */
+            quantity?: number;
+            /** @example กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ) */
+            quoteTh?: string;
+            /**
+             * @description Display order (ascending)
+             * @example 10
+             */
+            sort?: number;
+        };
         UpdateHomeSectionDto: {
             /**
              * @example {
@@ -61324,7 +62634,7 @@ export interface components {
              * @example 2026-10-01T15:04:00+07:00
              */
             clientReportedAt?: string;
-            /** @example พิมพ์เสร็จ สีตรงตามพรูฟ */
+            /** @example พิมพ์เสร็จ สีตรงตาม Proof */
             note?: string;
             /**
              * @description Photos uploaded through `partner.files`
@@ -67573,10 +68883,14 @@ export interface operations {
                      *         "warnCount": 0
                      *       },
                      *       "preflightStatus": "blocked",
+                     *       "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *       "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *       "rejectReason": null,
                      *       "reviewedAt": null,
                      *       "source": "upload",
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *       "statusLabelTh": "ส่งไฟล์แล้ว",
                      *       "submittedAt": "2026-09-27T10:00:00+07:00",
                      *       "versionNo": 2
                      *     }
@@ -67727,10 +69041,14 @@ export interface operations {
                      *         "warnCount": 0
                      *       },
                      *       "preflightStatus": "passed",
+                     *       "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *       "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *       "rejectReason": null,
                      *       "reviewedAt": null,
                      *       "source": "upload",
                      *       "status": "accepted_for_proof",
+                     *       "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *       "statusLabelTh": "ส่งไฟล์แล้ว",
                      *       "submittedAt": "2026-09-27T10:00:00+07:00",
                      *       "versionNo": 2
                      *     }
@@ -67901,10 +69219,14 @@ export interface operations {
                      *         "warnCount": 0
                      *       },
                      *       "preflightStatus": "blocked",
+                     *       "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *       "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *       "rejectReason": "ขนาดไฟล์ไม่ตรงกับแบบแปลน",
                      *       "reviewedAt": null,
                      *       "source": "upload",
                      *       "status": "rejected",
+                     *       "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *       "statusLabelTh": "ส่งไฟล์แล้ว",
                      *       "submittedAt": "2026-09-27T10:00:00+07:00",
                      *       "versionNo": 2
                      *     }
@@ -68071,10 +69393,14 @@ export interface operations {
                      *         "warnCount": 0
                      *       },
                      *       "preflightStatus": "pending",
+                     *       "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *       "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *       "rejectReason": null,
                      *       "reviewedAt": null,
                      *       "source": "upload",
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *       "statusLabelTh": "ส่งไฟล์แล้ว",
                      *       "submittedAt": "2026-09-27T10:00:00+07:00",
                      *       "versionNo": 2
                      *     }
@@ -92692,6 +94018,8 @@ export interface operations {
                      *             "responseOverdue": false
                      *           },
                      *           "status": "under_review",
+                     *           "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *           "statusLabelTh": "กำลังพิจารณาเคลม",
                      *           "submittedAt": "2026-10-22T09:00:00+07:00",
                      *           "tolerance": {
                      *             "colourDeltaE": "3.00",
@@ -92864,6 +94192,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "under_review",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -93047,6 +94377,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "closed",
+                     *       "statusLabelAdminTh": "ดำเนินการเรียบร้อย",
+                     *       "statusLabelTh": "ดำเนินการเรียบร้อย",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -93245,6 +94577,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "approved",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -93443,6 +94777,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "under_review",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -93641,6 +94977,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "need_info",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -93848,6 +95186,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "resolved",
+                     *       "statusLabelAdminTh": "ดำเนินการเรียบร้อย",
+                     *       "statusLabelTh": "ดำเนินการเรียบร้อย",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -94042,6 +95382,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "under_review",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -94236,6 +95578,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "factory_review",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -99996,6 +101340,915 @@ export interface operations {
             };
         };
     };
+    "admin.cmsHomeCases.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["HomeCaseStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "approvedAt": "2026-10-07T10:00:00+07:00",
+                     *           "approvedBy": "การตลาด (fake)",
+                     *           "brandNameTh": "ร้านขนมทดสอบ (fake)",
+                     *           "consentFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5003",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c5001",
+                     *           "leadTimeDays": 9,
+                     *           "photoFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5002",
+                     *           "productTh": "กล่องไปรษณีย์พิมพ์ 1 สี",
+                     *           "provinceTh": "เชียงใหม่",
+                     *           "quantity": 1000,
+                     *           "quoteTh": "กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ)",
+                     *           "sort": 10,
+                     *           "status": "approved",
+                     *           "updatedAt": "2026-10-07T10:00:00+07:00"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["HomeCaseDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cmsHomeCases.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateHomeCaseDto"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    Location: components["headers"]["Location"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": "2026-10-07T10:00:00+07:00",
+                     *       "approvedBy": "การตลาด (fake)",
+                     *       "brandNameTh": "ร้านขนมทดสอบ (fake)",
+                     *       "consentFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5003",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c5001",
+                     *       "leadTimeDays": 9,
+                     *       "photoFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5002",
+                     *       "productTh": "กล่องไปรษณีย์พิมพ์ 1 สี",
+                     *       "provinceTh": "เชียงใหม่",
+                     *       "quantity": 1000,
+                     *       "quoteTh": "กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ)",
+                     *       "sort": 10,
+                     *       "status": "approved",
+                     *       "updatedAt": "2026-10-07T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HomeCaseDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.code_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cmsHomeCases.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Public id of the customer story */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The customer story */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": "2026-10-07T10:00:00+07:00",
+                     *       "approvedBy": "การตลาด (fake)",
+                     *       "brandNameTh": "ร้านขนมทดสอบ (fake)",
+                     *       "consentFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5003",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c5001",
+                     *       "leadTimeDays": 9,
+                     *       "photoFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5002",
+                     *       "productTh": "กล่องไปรษณีย์พิมพ์ 1 สี",
+                     *       "provinceTh": "เชียงใหม่",
+                     *       "quantity": 1000,
+                     *       "quoteTh": "กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ)",
+                     *       "sort": 10,
+                     *       "status": "approved",
+                     *       "updatedAt": "2026-10-07T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HomeCaseDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cmsHomeCases.delete": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                /** @description Public id of the customer story */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cmsHomeCases.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                /** @description Public id of the customer story */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateHomeCaseDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": "2026-10-07T10:00:00+07:00",
+                     *       "approvedBy": "การตลาด (fake)",
+                     *       "brandNameTh": "ร้านขนมทดสอบ (fake)",
+                     *       "consentFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5003",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c5001",
+                     *       "leadTimeDays": 9,
+                     *       "photoFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5002",
+                     *       "productTh": "กล่องไปรษณีย์พิมพ์ 1 สี",
+                     *       "provinceTh": "เชียงใหม่",
+                     *       "quantity": 1000,
+                     *       "quoteTh": "กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ)",
+                     *       "sort": 10,
+                     *       "status": "approved",
+                     *       "updatedAt": "2026-10-07T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HomeCaseDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.code_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cmsHomeCases.approve": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Approved story */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": "2026-10-07T10:00:00+07:00",
+                     *       "approvedBy": "การตลาด (fake)",
+                     *       "brandNameTh": "ร้านขนมทดสอบ (fake)",
+                     *       "consentFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5003",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c5001",
+                     *       "leadTimeDays": 9,
+                     *       "photoFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5002",
+                     *       "productTh": "กล่องไปรษณีย์พิมพ์ 1 สี",
+                     *       "provinceTh": "เชียงใหม่",
+                     *       "quantity": 1000,
+                     *       "quoteTh": "กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ)",
+                     *       "sort": 10,
+                     *       "status": "approved",
+                     *       "updatedAt": "2026-10-07T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HomeCaseDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cms.case_invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cms.case_consent_required` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cmsHomeCases.withdraw": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Withdrawn story */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": "2026-10-07T10:00:00+07:00",
+                     *       "approvedBy": "การตลาด (fake)",
+                     *       "brandNameTh": "ร้านขนมทดสอบ (fake)",
+                     *       "consentFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5003",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c5001",
+                     *       "leadTimeDays": 9,
+                     *       "photoFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000c5002",
+                     *       "productTh": "กล่องไปรษณีย์พิมพ์ 1 สี",
+                     *       "provinceTh": "เชียงใหม่",
+                     *       "quantity": 1000,
+                     *       "quoteTh": "กล่องสวย ส่งตรงเวลา (ข้อความทดสอบ)",
+                     *       "sort": 10,
+                     *       "status": "withdrawn",
+                     *       "updatedAt": "2026-10-07T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HomeCaseDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cms.case_invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.cmsHomeSections.list": {
         parameters: {
             query?: {
@@ -104321,6 +106574,8 @@ export interface operations {
                      * @example [
                      *       {
                      *         "key": "marketing_line",
+                     *         "labelEn": "News and offers on LINE",
+                     *         "labelTh": "รับข่าวสารและโปรโมชันทาง LINE",
                      *         "required": false,
                      *         "versions": [
                      *           {
@@ -104420,6 +106675,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "key": "marketing_line",
+                     *       "labelEn": "News and offers on LINE",
+                     *       "labelTh": "รับข่าวสารและโปรโมชันทาง LINE",
                      *       "required": false,
                      *       "versions": [
                      *         {
@@ -112399,6 +114656,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -112476,6 +114735,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -112536,6 +114797,8 @@ export interface operations {
                      *       "placedById": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "taxProfile": null,
                      *       "totals": {
                      *         "cashAmount": "14182.80",
@@ -112902,6 +115165,8 @@ export interface operations {
                      *       {
                      *         "decidedVersionNo": 1,
                      *         "granted": true,
+                     *         "labelEn": "News and offers on LINE",
+                     *         "labelTh": "รับข่าวสารและโปรโมชันทาง LINE",
                      *         "outdated": true,
                      *         "purpose": "marketing_line",
                      *         "recordedAt": "2026-10-01T10:00:00+07:00",
@@ -114305,10 +116570,14 @@ export interface operations {
                      *               "roundNo": 1,
                      *               "startedAt": "2026-09-27T10:00:00+07:00",
                      *               "status": "in_progress",
+                     *               "statusLabelAdminTh": "กำลังแก้ไข",
+                     *               "statusLabelTh": "กำลังแก้ไข",
                      *               "submissionId": null
                      *             }
                      *           ],
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังออกแบบ",
+                     *           "statusLabelTh": "กำลังออกแบบ",
                      *           "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *         }
                      *       ],
@@ -114438,10 +116707,14 @@ export interface operations {
                      *           "roundNo": 1,
                      *           "startedAt": "2026-09-27T10:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังแก้ไข",
+                     *           "statusLabelTh": "กำลังแก้ไข",
                      *           "submissionId": null
                      *         }
                      *       ],
                      *       "status": "in_progress",
+                     *       "statusLabelAdminTh": "กำลังออกแบบ",
+                     *       "statusLabelTh": "กำลังออกแบบ",
                      *       "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *     }
                      */
@@ -114578,10 +116851,14 @@ export interface operations {
                      *           "roundNo": 1,
                      *           "startedAt": "2026-09-27T10:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังแก้ไข",
+                     *           "statusLabelTh": "กำลังแก้ไข",
                      *           "submissionId": null
                      *         }
                      *       ],
                      *       "status": "in_progress",
+                     *       "statusLabelAdminTh": "กำลังออกแบบ",
+                     *       "statusLabelTh": "กำลังออกแบบ",
                      *       "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *     }
                      */
@@ -114735,10 +117012,14 @@ export interface operations {
                      *           "roundNo": 1,
                      *           "startedAt": "2026-09-27T10:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังแก้ไข",
+                     *           "statusLabelTh": "กำลังแก้ไข",
                      *           "submissionId": null
                      *         }
                      *       ],
                      *       "status": "cancelled",
+                     *       "statusLabelAdminTh": "กำลังออกแบบ",
+                     *       "statusLabelTh": "กำลังออกแบบ",
                      *       "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *     }
                      */
@@ -114895,10 +117176,14 @@ export interface operations {
                      *           "roundNo": 1,
                      *           "startedAt": "2026-09-27T10:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังแก้ไข",
+                     *           "statusLabelTh": "กำลังแก้ไข",
                      *           "submissionId": null
                      *         }
                      *       ],
                      *       "status": "delivered",
+                     *       "statusLabelAdminTh": "กำลังออกแบบ",
+                     *       "statusLabelTh": "กำลังออกแบบ",
                      *       "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *     }
                      */
@@ -115055,10 +117340,14 @@ export interface operations {
                      *           "roundNo": 1,
                      *           "startedAt": "2026-09-27T10:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังแก้ไข",
+                     *           "statusLabelTh": "กำลังแก้ไข",
                      *           "submissionId": null
                      *         }
                      *       ],
                      *       "status": "requoted",
+                     *       "statusLabelAdminTh": "กำลังออกแบบ",
+                     *       "statusLabelTh": "กำลังออกแบบ",
                      *       "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *     }
                      */
@@ -115212,8 +117501,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -115405,8 +117705,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -115584,8 +117895,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -115804,8 +118126,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -135788,9 +138121,11 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
-                     *           "body": "คำขอ discount_memo รอการอนุมัติของคุณ",
+                     *           "body": "คำขออนุมัติ บันทึกขอส่วนลด รอการตัดสินใจของคุณ",
                      *           "createdAt": "2026-09-23T14:05:00+07:00",
                      *           "eventType": "approval.requested",
+                     *           "eventTypeLabelEn": "Approval",
+                     *           "eventTypeLabelTh": "คำขออนุมัติ",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
                      *           "readAt": null,
                      *           "title": "มีคำขออนุมัติรอคุณ",
@@ -136329,6 +138664,8 @@ export interface operations {
                      *           "orders": [
                      *             {
                      *               "artworkStatus": "awaiting_template",
+                     *               "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *               "artworkStatusLabelTh": "รอแบบไดคัท",
                      *               "cancelReasonCode": null,
                      *               "cancelReasonNameEn": null,
                      *               "cancelReasonNameTh": null,
@@ -136406,6 +138743,8 @@ export interface operations {
                      *               },
                      *               "status": "waiting_payment",
                      *               "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *               "statusLabelAdminTh": "รอชำระเงิน",
+                     *               "statusLabelTh": "รอชำระเงิน",
                      *               "summary": {
                      *                 "product": {
                      *                   "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -136466,6 +138805,8 @@ export interface operations {
                      *           "placedById": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
                      *           "poNumber": null,
                      *           "status": "waiting_payment",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "taxProfile": null,
                      *           "totals": {
                      *             "cashAmount": "14182.80",
@@ -136591,6 +138932,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -136668,6 +139011,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -136728,6 +139073,8 @@ export interface operations {
                      *       "placedById": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "taxProfile": null,
                      *       "totals": {
                      *         "cashAmount": "14182.80",
@@ -136859,6 +139206,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -136936,6 +139285,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -136996,6 +139347,8 @@ export interface operations {
                      *       "placedById": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "taxProfile": null,
                      *       "totals": {
                      *         "cashAmount": "14182.80",
@@ -137160,6 +139513,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -137237,6 +139592,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -137297,6 +139654,8 @@ export interface operations {
                      *       "placedById": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
                      *       "poNumber": null,
                      *       "status": "cancelled",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "taxProfile": null,
                      *       "totals": {
                      *         "cashAmount": "14182.80",
@@ -137468,6 +139827,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -137545,6 +139906,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -137605,6 +139968,8 @@ export interface operations {
                      *       "placedById": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "taxProfile": null,
                      *       "totals": {
                      *         "cashAmount": "14182.80",
@@ -137777,6 +140142,8 @@ export interface operations {
                      *           "requiredBefore": "production",
                      *           "seq": 1,
                      *           "status": "due",
+                     *           "statusLabelAdminTh": "ถึงกำหนดชำระ",
+                     *           "statusLabelTh": "ถึงกำหนดชำระ",
                      *           "whtAmount": "0.00"
                      *         },
                      *         {
@@ -137802,6 +140169,8 @@ export interface operations {
                      *           "requiredBefore": "shipping",
                      *           "seq": 2,
                      *           "status": "pending",
+                     *           "statusLabelAdminTh": "ถึงกำหนดชำระ",
+                     *           "statusLabelTh": "ถึงกำหนดชำระ",
                      *           "whtAmount": "0.00"
                      *         }
                      *       ],
@@ -137939,6 +140308,8 @@ export interface operations {
                      *           "requiredBefore": "production",
                      *           "seq": 1,
                      *           "status": "due",
+                     *           "statusLabelAdminTh": "ถึงกำหนดชำระ",
+                     *           "statusLabelTh": "ถึงกำหนดชำระ",
                      *           "whtAmount": "0.00"
                      *         },
                      *         {
@@ -137964,6 +140335,8 @@ export interface operations {
                      *           "requiredBefore": "shipping",
                      *           "seq": 2,
                      *           "status": "pending",
+                     *           "statusLabelAdminTh": "ถึงกำหนดชำระ",
+                     *           "statusLabelTh": "ถึงกำหนดชำระ",
                      *           "whtAmount": "0.00"
                      *         }
                      *       ],
@@ -138137,6 +140510,8 @@ export interface operations {
                      *       "refundedAmount": "0.00",
                      *       "slips": [],
                      *       "status": "pending",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "whtAmount": "0.00"
                      *     }
                      */
@@ -138275,6 +140650,8 @@ export interface operations {
                      *       "data": [
                      *         {
                      *           "artworkStatus": "uploaded",
+                     *           "artworkStatusLabelAdminTh": "อัปโหลดไฟล์แล้ว",
+                     *           "artworkStatusLabelTh": "อัปโหลดไฟล์แล้ว",
                      *           "customerName": "สมชาย ทดสอบ",
                      *           "grossAmount": "14182.80",
                      *           "groupCode": "OG-2610-00042",
@@ -138285,7 +140662,9 @@ export interface operations {
                      *           "placedAt": "2026-10-01T10:00:00+07:00",
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
-                     *           "status": "paid_for_production"
+                     *           "status": "paid_for_production",
+                     *           "statusLabelAdminTh": "ชำระเงินแล้ว",
+                     *           "statusLabelTh": "ชำระเงินแล้ว"
                      *         }
                      *       ],
                      *       "meta": {
@@ -138401,6 +140780,8 @@ export interface operations {
                      *       "data": [
                      *         {
                      *           "artworkStatus": "approved",
+                     *           "artworkStatusLabelAdminTh": "อนุมัติไฟล์แล้ว",
+                     *           "artworkStatusLabelTh": "อนุมัติแบบตัวอย่างแล้ว",
                      *           "channel": "web",
                      *           "currency": "THB",
                      *           "customer": {
@@ -138431,6 +140812,8 @@ export interface operations {
                      *           "quantity": 1000,
                      *           "slipReviewDueAt": null,
                      *           "status": "in_production",
+                     *           "statusLabelAdminTh": "กำลังผลิต",
+                     *           "statusLabelTh": "กำลังผลิต",
                      *           "unit": "piece"
                      *         }
                      *       ],
@@ -138528,6 +140911,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "artworkStatus": "awaiting_template",
+                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
@@ -138605,6 +140990,8 @@ export interface operations {
                      *       },
                      *       "status": "waiting_payment",
                      *       "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -138859,6 +141246,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "artworkStatus": "awaiting_template",
+                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
@@ -138936,6 +141325,8 @@ export interface operations {
                      *       },
                      *       "status": "cancelled",
                      *       "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -139108,6 +141499,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "artworkStatus": "awaiting_template",
+                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
@@ -139185,6 +141578,8 @@ export interface operations {
                      *       },
                      *       "status": "waiting_payment",
                      *       "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -139555,6 +141950,8 @@ export interface operations {
                      *           "seq": 4,
                      *           "startedAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังทำ",
+                     *           "statusLabelTh": "กำลังทำ",
                      *           "tracksQuantity": true
                      *         }
                      *       ],
@@ -139588,6 +141985,8 @@ export interface operations {
                      *         "quantity": 1000
                      *       },
                      *       "status": "released",
+                     *       "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *       "statusLabelTh": "เตรียมผลิต",
                      *       "title": "กล่องพับ · 1000 ชิ้น",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -139760,10 +142159,14 @@ export interface operations {
                      *           "warnCount": 0
                      *         },
                      *         "preflightStatus": "blocked",
+                     *         "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *         "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *         "rejectReason": null,
                      *         "reviewedAt": null,
                      *         "source": "upload",
                      *         "status": "submitted",
+                     *         "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *         "statusLabelTh": "ส่งไฟล์แล้ว",
                      *         "submittedAt": "2026-09-27T10:00:00+07:00",
                      *         "versionNo": 2
                      *       }
@@ -139884,10 +142287,14 @@ export interface operations {
                      *       "preflightCompletedAt": null,
                      *       "preflightReport": null,
                      *       "preflightStatus": "pending",
+                     *       "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *       "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *       "rejectReason": null,
                      *       "reviewedAt": null,
                      *       "source": "upload",
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *       "statusLabelTh": "ส่งไฟล์แล้ว",
                      *       "submittedAt": "2026-09-27T10:00:00+07:00",
                      *       "versionNo": 2
                      *     }
@@ -140079,6 +142486,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -141264,7 +143673,9 @@ export interface operations {
                      *           "labelEn": "Printing",
                      *           "labelTh": "กำลังพิมพ์",
                      *           "promisedAt": "2026-10-14T18:00:00+07:00",
-                     *           "status": "completed"
+                     *           "status": "completed",
+                     *           "statusLabelAdminTh": "เสร็จแล้ว",
+                     *           "statusLabelTh": "เสร็จแล้ว"
                      *         }
                      *       ]
                      *     }
@@ -141391,6 +143802,8 @@ export interface operations {
                      *           "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *           "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *           "previousStatus": "changes_requested",
+                     *           "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *           "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *           "previousVersionNo": 1
                      *         },
                      *         "decidedAt": null,
@@ -141411,6 +143824,8 @@ export interface operations {
                      *         },
                      *         "sentAt": "2026-09-27T11:00:00+07:00",
                      *         "status": "pending_customer",
+                     *         "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *         "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *         "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *         "versionNo": 2
                      *       }
@@ -141544,6 +143959,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": null,
@@ -141564,6 +143981,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -141734,6 +144153,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "quoted",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -142195,9 +144616,12 @@ export interface operations {
                      *             "type": "user"
                      *           },
                      *           "body": null,
+                     *           "count": 1,
                      *           "id": "a:1042",
                      *           "mentions": [],
+                     *           "messageEn": "Printing",
                      *           "messageKey": "activity.production.milestone_reached",
+                     *           "messageTh": "กำลังพิมพ์",
                      *           "occurredAt": "2026-10-14T16:00:00+07:00",
                      *           "params": {
                      *             "labelEn": "Printing",
@@ -143184,6 +145608,8 @@ export interface operations {
                      *           "refundedAmount": "0.00",
                      *           "slips": [],
                      *           "status": "pending",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "whtAmount": "0.00"
                      *         }
                      *       ],
@@ -143300,6 +145726,8 @@ export interface operations {
                      *       "refundedAmount": "0.00",
                      *       "slips": [],
                      *       "status": "pending",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "whtAmount": "0.00"
                      *     }
                      */
@@ -143423,6 +145851,8 @@ export interface operations {
                      *       "refundedAmount": "0.00",
                      *       "slips": [],
                      *       "status": "pending",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "whtAmount": "0.00"
                      *     }
                      */
@@ -143557,7 +145987,9 @@ export interface operations {
                      *       "paymentId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
                      *       "providerRef": null,
                      *       "reasonNote": "ยกเลิกคำสั่งซื้อก่อนผลิต",
-                     *       "status": "pending_approval"
+                     *       "status": "pending_approval",
+                     *       "statusLabelAdminTh": "รออนุมัติคืนเงิน",
+                     *       "statusLabelTh": "รออนุมัติคืนเงิน"
                      *     }
                      */
                     "application/json": components["schemas"]["RefundDto"];
@@ -143700,6 +146132,8 @@ export interface operations {
                      *       "refundedAmount": "0.00",
                      *       "slips": [],
                      *       "status": "pending",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "whtAmount": "0.00"
                      *     }
                      */
@@ -145367,6 +147801,8 @@ export interface operations {
                      *       "data": [
                      *         {
                      *           "artworkStatus": "in_review",
+                     *           "artworkStatusLabelAdminTh": "กำลังตรวจไฟล์",
+                     *           "artworkStatusLabelTh": "กำลังตรวจแบบก่อนพิมพ์",
                      *           "assignee": null,
                      *           "customer": {
                      *             "displayName": "สมชาย ทดสอบ",
@@ -145379,6 +147815,8 @@ export interface operations {
                      *           "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
                      *           "overdue": false,
                      *           "preflightStatus": "passed_with_warnings",
+                     *           "preflightStatusLabelAdminTh": "ผ่านแต่มีคำเตือน",
+                     *           "preflightStatusLabelTh": "ผ่านแต่มีคำเตือน",
                      *           "productTypeCode": "folding_box",
                      *           "since": "2026-09-27T10:00:00+07:00",
                      *           "versionNo": 2
@@ -147884,6 +150322,8 @@ export interface operations {
                      *               "seq": 4,
                      *               "startedAt": "2026-10-01T09:00:00+07:00",
                      *               "status": "in_progress",
+                     *               "statusLabelAdminTh": "กำลังทำ",
+                     *               "statusLabelTh": "กำลังทำ",
                      *               "tracksQuantity": true
                      *             }
                      *           ],
@@ -147917,6 +150357,8 @@ export interface operations {
                      *             "quantity": 1000
                      *           },
                      *           "status": "released",
+                     *           "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *           "statusLabelTh": "เตรียมผลิต",
                      *           "title": "กล่องพับ · 1000 ชิ้น",
                      *           "tolerance": {
                      *             "colourDeltaE": "3.00",
@@ -148086,6 +150528,8 @@ export interface operations {
                      *           "seq": 4,
                      *           "startedAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังทำ",
+                     *           "statusLabelTh": "กำลังทำ",
                      *           "tracksQuantity": true
                      *         }
                      *       ],
@@ -148119,6 +150563,8 @@ export interface operations {
                      *         "quantity": 1000
                      *       },
                      *       "status": "released",
+                     *       "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *       "statusLabelTh": "เตรียมผลิต",
                      *       "title": "กล่องพับ · 1000 ชิ้น",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -148292,6 +150738,8 @@ export interface operations {
                      *           "seq": 4,
                      *           "startedAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังทำ",
+                     *           "statusLabelTh": "กำลังทำ",
                      *           "tracksQuantity": true
                      *         }
                      *       ],
@@ -148325,6 +150773,8 @@ export interface operations {
                      *         "quantity": 1000
                      *       },
                      *       "status": "on_hold",
+                     *       "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *       "statusLabelTh": "เตรียมผลิต",
                      *       "title": "กล่องพับ · 1000 ชิ้น",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -148518,6 +150968,8 @@ export interface operations {
                      *           "seq": 4,
                      *           "startedAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังทำ",
+                     *           "statusLabelTh": "กำลังทำ",
                      *           "tracksQuantity": true
                      *         }
                      *       ],
@@ -148551,6 +151003,8 @@ export interface operations {
                      *         "quantity": 1000
                      *       },
                      *       "status": "released",
+                     *       "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *       "statusLabelTh": "เตรียมผลิต",
                      *       "title": "กล่องพับ · 1000 ชิ้น",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -148740,6 +151194,8 @@ export interface operations {
                      *           "seq": 4,
                      *           "startedAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังทำ",
+                     *           "statusLabelTh": "กำลังทำ",
                      *           "tracksQuantity": true
                      *         }
                      *       ],
@@ -148773,6 +151229,8 @@ export interface operations {
                      *         "quantity": 1000
                      *       },
                      *       "status": "in_progress",
+                     *       "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *       "statusLabelTh": "เตรียมผลิต",
                      *       "title": "กล่องพับ · 1000 ชิ้น",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -150727,6 +153185,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": null,
@@ -150747,6 +153207,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -150872,6 +153334,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": null,
@@ -150892,6 +153356,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -151024,6 +153490,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": "2026-09-27T12:00:00+07:00",
@@ -151044,6 +153512,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "approved",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -151193,6 +153663,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": "2026-09-27T12:00:00+07:00",
@@ -151213,6 +153685,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "changes_requested",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -151362,6 +153836,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": null,
@@ -151382,6 +153858,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -151889,6 +154367,8 @@ export interface operations {
                      *           "sharedAt": null,
                      *           "source": "instant",
                      *           "status": "saved",
+                     *           "statusLabelAdminTh": "บันทึกแล้ว",
+                     *           "statusLabelTh": "บันทึกแล้ว",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -152151,6 +154631,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -152421,6 +154903,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -152681,6 +155165,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -152951,6 +155437,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -153180,6 +155668,8 @@ export interface operations {
                      *         "sharedAt": null,
                      *         "source": "instant",
                      *         "status": "shared",
+                     *         "statusLabelAdminTh": "บันทึกแล้ว",
+                     *         "statusLabelTh": "บันทึกแล้ว",
                      *         "summary": {
                      *           "product": {
                      *             "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -153646,6 +156136,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -154684,7 +157176,9 @@ export interface operations {
                      *           "paymentId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
                      *           "providerRef": null,
                      *           "reasonNote": "ยกเลิกคำสั่งซื้อก่อนผลิต",
-                     *           "status": "pending_approval"
+                     *           "status": "pending_approval",
+                     *           "statusLabelAdminTh": "รออนุมัติคืนเงิน",
+                     *           "statusLabelTh": "รออนุมัติคืนเงิน"
                      *         }
                      *       ],
                      *       "meta": {
@@ -154791,7 +157285,9 @@ export interface operations {
                      *       "paymentId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
                      *       "providerRef": null,
                      *       "reasonNote": "ยกเลิกคำสั่งซื้อก่อนผลิต",
-                     *       "status": "pending_approval"
+                     *       "status": "pending_approval",
+                     *       "statusLabelAdminTh": "รออนุมัติคืนเงิน",
+                     *       "statusLabelTh": "รออนุมัติคืนเงิน"
                      *     }
                      */
                     "application/json": components["schemas"]["RefundDto"];
@@ -154905,7 +157401,9 @@ export interface operations {
                      *       "paymentId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
                      *       "providerRef": null,
                      *       "reasonNote": "ยกเลิกคำสั่งซื้อก่อนผลิต",
-                     *       "status": "succeeded"
+                     *       "status": "succeeded",
+                     *       "statusLabelAdminTh": "รออนุมัติคืนเงิน",
+                     *       "statusLabelTh": "รออนุมัติคืนเงิน"
                      *     }
                      */
                     "application/json": components["schemas"]["RefundDto"];
@@ -157401,6 +159899,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -157427,6 +159927,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -157682,6 +160184,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -157708,6 +160212,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -157930,6 +160436,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -157956,6 +160464,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "accepted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -158184,6 +160694,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -158210,6 +160722,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -158456,6 +160970,8 @@ export interface operations {
                      *               "note": "Price includes delivery to Bangkok (fake)",
                      *               "sentAt": "2026-10-01T09:00:00+07:00",
                      *               "status": "sent",
+                     *               "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *               "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *               "validUntil": "2026-10-16T09:00:00+07:00",
                      *               "versionNo": 1
                      *             }
@@ -158482,6 +160998,8 @@ export interface operations {
                      *             }
                      *           ],
                      *           "status": "quoted",
+                     *           "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *           "statusLabelTh": "เสนอราคาแล้ว",
                      *           "style": null,
                      *           "submittedAt": "2026-09-30T15:00:00+07:00",
                      *           "targetDate": "2026-11-15",
@@ -158692,6 +161210,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -158718,6 +161238,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -158944,6 +161466,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -158970,6 +161494,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -159179,6 +161705,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -159205,6 +161733,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -159437,6 +161967,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -159463,6 +161995,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "declined",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -159692,6 +162226,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -159718,6 +162254,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "need_info",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -159943,6 +162481,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -159969,6 +162509,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -160296,6 +162838,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -160322,6 +162866,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -160551,6 +163097,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -160577,6 +163125,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -160809,6 +163359,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -160835,6 +163387,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -161209,6 +163763,8 @@ export interface operations {
                      *           "shippedAt": "2026-10-09T09:00:00+07:00",
                      *           "status": "delivered",
                      *           "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *           "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *           "validUntil": null
                      *         }
                      *       ],
@@ -161354,6 +163910,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "delivered",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -161503,6 +164061,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "cancelled",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -161672,6 +164232,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "quoted",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -161841,6 +164403,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "delivered",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -163545,7 +166109,9 @@ export interface operations {
                      *               "note": null,
                      *               "occurredAt": "2026-10-19T16:00:00+07:00",
                      *               "source": "factory",
-                     *               "status": "ready"
+                     *               "status": "ready",
+                     *               "statusLabelAdminTh": "พร้อมส่ง",
+                     *               "statusLabelTh": "พร้อมส่ง"
                      *             }
                      *           ],
                      *           "exception": null,
@@ -163576,6 +166142,8 @@ export interface operations {
                      *           "shipmentNo": "SH-2610-0001",
                      *           "splitFrom": null,
                      *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง",
                      *           "trackingNo": null,
                      *           "trackingUrl": null,
                      *           "volumeCm3": 120000,
@@ -163719,7 +166287,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "exception": null,
@@ -163750,6 +166320,8 @@ export interface operations {
                      *       "shipmentNo": "SH-2610-0001",
                      *       "splitFrom": null,
                      *       "status": "ready",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
@@ -163902,7 +166474,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "exception": null,
@@ -163933,6 +166507,8 @@ export interface operations {
                      *       "shipmentNo": "SH-2610-0001",
                      *       "splitFrom": null,
                      *       "status": "ready",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": "TH0123",
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
@@ -164122,7 +166698,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "exception": null,
@@ -164153,6 +166731,8 @@ export interface operations {
                      *       "shipmentNo": "SH-2610-0001",
                      *       "splitFrom": null,
                      *       "status": "cancelled",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
@@ -164335,7 +166915,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "exception": null,
@@ -164366,6 +166948,8 @@ export interface operations {
                      *       "shipmentNo": "SH-2610-0001",
                      *       "splitFrom": null,
                      *       "status": "in_transit",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
@@ -164533,7 +167117,9 @@ export interface operations {
                      *             "note": null,
                      *             "occurredAt": "2026-10-19T16:00:00+07:00",
                      *             "source": "factory",
-                     *             "status": "ready"
+                     *             "status": "ready",
+                     *             "statusLabelAdminTh": "พร้อมส่ง",
+                     *             "statusLabelTh": "พร้อมส่ง"
                      *           }
                      *         ],
                      *         "exception": null,
@@ -164567,6 +167153,8 @@ export interface operations {
                      *           "shipmentNo": "SH-2610-0001"
                      *         },
                      *         "status": "draft",
+                     *         "statusLabelAdminTh": "พร้อมส่ง",
+                     *         "statusLabelTh": "พร้อมส่ง",
                      *         "trackingNo": null,
                      *         "trackingUrl": null,
                      *         "volumeCm3": 120000,
@@ -164601,7 +167189,9 @@ export interface operations {
                      *             "note": null,
                      *             "occurredAt": "2026-10-19T16:00:00+07:00",
                      *             "source": "factory",
-                     *             "status": "ready"
+                     *             "status": "ready",
+                     *             "statusLabelAdminTh": "พร้อมส่ง",
+                     *             "statusLabelTh": "พร้อมส่ง"
                      *           }
                      *         ],
                      *         "exception": null,
@@ -164632,6 +167222,8 @@ export interface operations {
                      *         "shipmentNo": "SH-2610-0001",
                      *         "splitFrom": null,
                      *         "status": "draft",
+                     *         "statusLabelAdminTh": "พร้อมส่ง",
+                     *         "statusLabelTh": "พร้อมส่ง",
                      *         "trackingNo": null,
                      *         "trackingUrl": null,
                      *         "volumeCm3": 120000,
@@ -164932,7 +167524,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "exception": null,
@@ -164963,6 +167557,8 @@ export interface operations {
                      *       "shipmentNo": "SH-2610-0001",
                      *       "splitFrom": null,
                      *       "status": "out_for_delivery",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
@@ -165133,7 +167729,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "exception": null,
@@ -165182,6 +167780,8 @@ export interface operations {
                      *       "shipmentNo": "SH-2610-0001",
                      *       "splitFrom": null,
                      *       "status": "delivered",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
@@ -165361,7 +167961,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "exception": null,
@@ -165402,6 +168004,8 @@ export interface operations {
                      *       "shipmentNo": "SH-2610-0001",
                      *       "splitFrom": null,
                      *       "status": "delivered",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
@@ -168831,7 +171435,9 @@ export interface operations {
                      *           "overdue": false,
                      *           "paymentId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
                      *           "slaDueAt": "2026-10-01T14:30:00+07:00",
-                     *           "status": "manual_review"
+                     *           "status": "manual_review",
+                     *           "statusLabelAdminTh": "รอการเงินตรวจสอบ",
+                     *           "statusLabelTh": "รอเจ้าหน้าที่ตรวจสอบ"
                      *         }
                      *       ],
                      *       "meta": {
@@ -168954,6 +171560,8 @@ export interface operations {
                      *       "refundedAmount": "0.00",
                      *       "slips": [],
                      *       "status": "pending",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "whtAmount": "0.00"
                      *     }
                      */
@@ -180085,6 +182693,8 @@ export interface operations {
                      *           "orders": [
                      *             {
                      *               "artworkStatus": "awaiting_template",
+                     *               "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *               "artworkStatusLabelTh": "รอแบบไดคัท",
                      *               "cancelReasonCode": null,
                      *               "cancelReasonNameEn": null,
                      *               "cancelReasonNameTh": null,
@@ -180154,6 +182764,8 @@ export interface operations {
                      *               },
                      *               "status": "waiting_payment",
                      *               "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *               "statusLabelAdminTh": "รอชำระเงิน",
+                     *               "statusLabelTh": "รอชำระเงิน",
                      *               "summary": {
                      *                 "product": {
                      *                   "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -180209,6 +182821,8 @@ export interface operations {
                      *           "placedAt": "2026-10-01T10:00:00+07:00",
                      *           "poNumber": null,
                      *           "status": "waiting_payment",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "totals": {
                      *             "cashAmount": "14182.80",
                      *             "currency": "THB",
@@ -180328,6 +182942,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -180397,6 +183013,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -180452,6 +183070,8 @@ export interface operations {
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "totals": {
                      *         "cashAmount": "14182.80",
                      *         "currency": "THB",
@@ -180577,6 +183197,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "artworkStatus": "awaiting_template",
+                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
@@ -180646,6 +183268,8 @@ export interface operations {
                      *       },
                      *       "status": "waiting_payment",
                      *       "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -180884,6 +183508,8 @@ export interface operations {
                      *           "sharedAt": null,
                      *           "source": "instant",
                      *           "status": "saved",
+                     *           "statusLabelAdminTh": "บันทึกแล้ว",
+                     *           "statusLabelTh": "บันทึกแล้ว",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -182903,6 +185529,8 @@ export interface operations {
                      *             "responseOverdue": false
                      *           },
                      *           "status": "factory_review",
+                     *           "statusLabelAdminTh": "รอโรงงานตรวจสอบ",
+                     *           "statusLabelTh": "กำลังพิจารณาเคลม",
                      *           "submittedAt": "2026-10-22T09:00:00+07:00",
                      *           "tolerance": {
                      *             "colourDeltaE": "3.00",
@@ -183051,6 +185679,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "factory_review",
+                     *       "statusLabelAdminTh": "รอโรงงานตรวจสอบ",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -183206,6 +185836,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "under_review",
+                     *       "statusLabelAdminTh": "รอโรงงานตรวจสอบ",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -192013,7 +194645,9 @@ export interface operations {
                      *           "productTypeCode": "folding_carton",
                      *           "productionJobId": "0192f3a0-7c1e-7d2a-9b1f-00000000f107",
                      *           "quantity": 1,
-                     *           "status": "in_production"
+                     *           "status": "in_production",
+                     *           "statusLabelAdminTh": "กำลังทำตัวอย่าง",
+                     *           "statusLabelTh": "กำลังทำตัวอย่างจริง"
                      *         }
                      *       ],
                      *       "meta": {
@@ -192141,7 +194775,9 @@ export interface operations {
                      *       "productTypeCode": "folding_carton",
                      *       "productionJobId": "0192f3a0-7c1e-7d2a-9b1f-00000000f107",
                      *       "quantity": 1,
-                     *       "status": "in_production"
+                     *       "status": "in_production",
+                     *       "statusLabelAdminTh": "กำลังทำตัวอย่าง",
+                     *       "statusLabelTh": "กำลังทำตัวอย่างจริง"
                      *     }
                      */
                     "application/json": components["schemas"]["PartnerSampleDto"];
@@ -193528,6 +196164,8 @@ export interface operations {
                      *               "seq": 4,
                      *               "startedAt": "2026-10-01T09:00:00+07:00",
                      *               "status": "in_progress",
+                     *               "statusLabelAdminTh": "กำลังทำ",
+                     *               "statusLabelTh": "กำลังทำ",
                      *               "tracksQuantity": true
                      *             }
                      *           ],
@@ -193556,6 +196194,8 @@ export interface operations {
                      *             "quantity": 1000
                      *           },
                      *           "status": "released",
+                     *           "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *           "statusLabelTh": "เตรียมผลิต",
                      *           "title": "กล่องพับ · 1000 ชิ้น",
                      *           "tolerance": {
                      *             "colourDeltaE": "3.00",
@@ -196050,9 +198690,11 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
-                     *           "body": "คำขอ discount_memo รอการอนุมัติของคุณ",
+                     *           "body": "คำขออนุมัติ บันทึกขอส่วนลด รอการตัดสินใจของคุณ",
                      *           "createdAt": "2026-09-23T14:05:00+07:00",
                      *           "eventType": "approval.requested",
+                     *           "eventTypeLabelEn": "Approval",
+                     *           "eventTypeLabelTh": "คำขออนุมัติ",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
                      *           "readAt": null,
                      *           "title": "มีคำขออนุมัติรอคุณ",
@@ -196670,6 +199312,8 @@ export interface operations {
                      *               "seq": 4,
                      *               "startedAt": "2026-10-01T09:00:00+07:00",
                      *               "status": "in_progress",
+                     *               "statusLabelAdminTh": "กำลังทำ",
+                     *               "statusLabelTh": "กำลังทำ",
                      *               "tracksQuantity": true
                      *             }
                      *           ],
@@ -196698,6 +199342,8 @@ export interface operations {
                      *             "quantity": 1000
                      *           },
                      *           "status": "released",
+                     *           "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *           "statusLabelTh": "เตรียมผลิต",
                      *           "title": "กล่องพับ · 1000 ชิ้น",
                      *           "tolerance": {
                      *             "colourDeltaE": "3.00",
@@ -196850,6 +199496,8 @@ export interface operations {
                      *           "seq": 4,
                      *           "startedAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังทำ",
+                     *           "statusLabelTh": "กำลังทำ",
                      *           "tracksQuantity": true
                      *         }
                      *       ],
@@ -196878,6 +199526,8 @@ export interface operations {
                      *         "quantity": 1000
                      *       },
                      *       "status": "released",
+                     *       "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *       "statusLabelTh": "เตรียมผลิต",
                      *       "title": "กล่องพับ · 1000 ชิ้น",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -197033,6 +199683,8 @@ export interface operations {
                      *           "seq": 4,
                      *           "startedAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังทำ",
+                     *           "statusLabelTh": "กำลังทำ",
                      *           "tracksQuantity": true
                      *         }
                      *       ],
@@ -197061,6 +199713,8 @@ export interface operations {
                      *         "quantity": 1000
                      *       },
                      *       "status": "accepted",
+                     *       "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *       "statusLabelTh": "เตรียมผลิต",
                      *       "title": "กล่องพับ · 1000 ชิ้น",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -197240,6 +199894,8 @@ export interface operations {
                      *           "seq": 4,
                      *           "startedAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังทำ",
+                     *           "statusLabelTh": "กำลังทำ",
                      *           "tracksQuantity": true
                      *         }
                      *       ],
@@ -197268,6 +199924,8 @@ export interface operations {
                      *         "quantity": 1000
                      *       },
                      *       "status": "rejected",
+                     *       "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *       "statusLabelTh": "เตรียมผลิต",
                      *       "title": "กล่องพับ · 1000 ชิ้น",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -197955,6 +200613,8 @@ export interface operations {
                      *             "seq": 4,
                      *             "startedAt": "2026-10-01T09:00:00+07:00",
                      *             "status": "completed",
+                     *             "statusLabelAdminTh": "กำลังทำ",
+                     *             "statusLabelTh": "กำลังทำ",
                      *             "tracksQuantity": true
                      *           }
                      *         ],
@@ -197983,6 +200643,8 @@ export interface operations {
                      *           "quantity": 1000
                      *         },
                      *         "status": "in_progress",
+                     *         "statusLabelAdminTh": "รอโรงงานรับงาน",
+                     *         "statusLabelTh": "เตรียมผลิต",
                      *         "title": "กล่องพับ · 1000 ชิ้น",
                      *         "tolerance": {
                      *           "colourDeltaE": "3.00",
@@ -199127,7 +201789,9 @@ export interface operations {
                      *               "note": null,
                      *               "occurredAt": "2026-10-19T16:00:00+07:00",
                      *               "source": "factory",
-                     *               "status": "ready"
+                     *               "status": "ready",
+                     *               "statusLabelAdminTh": "พร้อมส่ง",
+                     *               "statusLabelTh": "พร้อมส่ง"
                      *             }
                      *           ],
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -199152,6 +201816,8 @@ export interface operations {
                      *           "readyAt": "2026-10-19T16:00:00+07:00",
                      *           "shipmentNo": "SH-2610-0001",
                      *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง",
                      *           "trackingNo": null,
                      *           "volumeCm3": 120000,
                      *           "weightG": 18000
@@ -199294,7 +201960,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -199319,6 +201987,8 @@ export interface operations {
                      *       "readyAt": null,
                      *       "shipmentNo": "SH-2610-0001",
                      *       "status": "draft",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "weightG": 18000
@@ -199476,7 +202146,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -199501,6 +202173,8 @@ export interface operations {
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
                      *       "shipmentNo": "SH-2610-0001",
                      *       "status": "ready",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "weightG": 18000
@@ -199645,7 +202319,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -199670,6 +202346,8 @@ export interface operations {
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
                      *       "shipmentNo": "SH-2610-0001",
                      *       "status": "cancelled",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "weightG": 18000
@@ -199830,7 +202508,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -199855,6 +202535,8 @@ export interface operations {
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
                      *       "shipmentNo": "SH-2610-0001",
                      *       "status": "picked_up",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "weightG": 18000
@@ -200015,7 +202697,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -200040,6 +202724,8 @@ export interface operations {
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
                      *       "shipmentNo": "SH-2610-0001",
                      *       "status": "ready",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "weightG": 18000
@@ -200217,7 +202903,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -200242,6 +202930,8 @@ export interface operations {
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
                      *       "shipmentNo": "SH-2610-0001",
                      *       "status": "ready",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "weightG": 18000
@@ -200406,7 +203096,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -200431,6 +203123,8 @@ export interface operations {
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
                      *       "shipmentNo": "SH-2610-0001",
                      *       "status": "out_for_delivery",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "weightG": 18000
@@ -200595,7 +203289,9 @@ export interface operations {
                      *           "note": null,
                      *           "occurredAt": "2026-10-19T16:00:00+07:00",
                      *           "source": "factory",
-                     *           "status": "ready"
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
                      *         }
                      *       ],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -200630,6 +203326,8 @@ export interface operations {
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
                      *       "shipmentNo": "SH-2610-0001",
                      *       "status": "delivered",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "weightG": 18000
@@ -206543,6 +209241,134 @@ export interface operations {
             };
         };
     };
+    "store.catalog.getHeroPresets": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hero presets */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "default": {
+                     *         "heightMm": 50,
+                     *         "lengthMm": 180,
+                     *         "material": "corrE",
+                     *         "print": "one",
+                     *         "qty": 500,
+                     *         "shape": "mailer",
+                     *         "sizeId": "mailer:s0",
+                     *         "widthMm": 120
+                     *       },
+                     *       "defaultAdjusted": true,
+                     *       "materials": [
+                     *         {
+                     *           "id": "corrE",
+                     *           "labelEn": "E-flute kraft",
+                     *           "labelTh": "ลูกฟูก E",
+                     *           "options": [
+                     *             {
+                     *               "materialId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
+                     *               "shapeId": "mailer"
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "prints": [
+                     *         {
+                     *           "id": "one",
+                     *           "labelEn": "One colour",
+                     *           "labelTh": "1 สี",
+                     *           "options": [
+                     *             {
+                     *               "inkIds": [
+                     *                 "0192f3a0-7c1e-7d2a-9b1f-0000000a0004"
+                     *               ],
+                     *               "shapeId": "mailer"
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "qtys": [
+                     *         300,
+                     *         500,
+                     *         1000,
+                     *         2000
+                     *       ],
+                     *       "shapes": [
+                     *         {
+                     *           "calculator": "corrugate",
+                     *           "catalogProductId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
+                     *           "dielineKey": "FEFCO-0427",
+                     *           "id": "mailer",
+                     *           "labelTh": "ไปรษณีย์",
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0002",
+                     *           "productSlug": "mailer-box",
+                     *           "productTypeCode": "corrugated",
+                     *           "qtys": [
+                     *             300,
+                     *             500,
+                     *             1000,
+                     *             2000
+                     *           ],
+                     *           "styleCode": "PK-CF-01"
+                     *         }
+                     *       ],
+                     *       "sizes": [
+                     *         {
+                     *           "code": "s0",
+                     *           "heightMm": 50,
+                     *           "id": "mailer:s0",
+                     *           "labelTh": "18×12×5 ซม.",
+                     *           "lengthMm": 180,
+                     *           "shapeId": "mailer",
+                     *           "widthMm": 120
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HeroPresetsDto"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.catalog.listHomeSections": {
         parameters: {
             query?: never;
@@ -208519,6 +211345,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -208588,6 +211416,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -208643,6 +211473,8 @@ export interface operations {
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "totals": {
                      *         "cashAmount": "14182.80",
                      *         "currency": "THB",
@@ -209047,6 +211879,8 @@ export interface operations {
                      *             "responseOverdue": false
                      *           },
                      *           "status": "under_review",
+                     *           "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *           "statusLabelTh": "กำลังพิจารณาเคลม",
                      *           "submittedAt": "2026-10-22T09:00:00+07:00",
                      *           "tolerance": {
                      *             "colourDeltaE": "3.00",
@@ -209185,6 +212019,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "under_review",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -209330,6 +212166,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "under_review",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -209517,6 +212355,68 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.cms.getHome": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Home content */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cases": [],
+                     *       "photos": [
+                     *         {
+                     *           "altTh": "กล่องไปรษณีย์คราฟท์วางบนโต๊ะ",
+                     *           "captionTh": "กล่องไปรษณีย์ พิมพ์ 1 สี",
+                     *           "position": "hero",
+                     *           "url": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-0000000c5004"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StoreHomeContentDto"];
                 };
             };
             /** @description Problem: `http.too_many_requests` */
@@ -215401,6 +218301,8 @@ export interface operations {
                      *         "sharedAt": null,
                      *         "source": "instant",
                      *         "status": "saved",
+                     *         "statusLabelAdminTh": "บันทึกแล้ว",
+                     *         "statusLabelTh": "บันทึกแล้ว",
                      *         "summary": {
                      *           "product": {
                      *             "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -217796,8 +220698,19 @@ export interface operations {
                      *           "finishes": [
                      *             "dev-matt"
                      *           ],
+                     *           "hasIssues": true,
                      *           "heightMm": 40,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *           "issueCount": 1,
+                     *           "issueSummary": [
+                     *             {
+                     *               "code": "image_resolution",
+                     *               "count": 1,
+                     *               "messageEn": "Low-resolution image: it may print soft",
+                     *               "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *               "severity": "warn"
+                     *             }
+                     *           ],
                      *           "lengthMm": 100,
                      *           "lock": {
                      *             "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -217968,8 +220881,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -218155,8 +221079,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -218328,8 +221263,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -218620,8 +221566,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -218904,8 +221861,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -219068,8 +222036,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -219241,8 +222220,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -219807,8 +222797,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -221743,6 +224744,8 @@ export interface operations {
                      *           "requiredBefore": "production",
                      *           "seq": 1,
                      *           "status": "due",
+                     *           "statusLabelAdminTh": "ถึงกำหนดชำระ",
+                     *           "statusLabelTh": "ถึงกำหนดชำระ",
                      *           "whtAmount": "0.00"
                      *         }
                      *       ],
@@ -222138,6 +225141,8 @@ export interface operations {
                      * @example [
                      *       {
                      *         "granted": true,
+                     *         "labelEn": "News and offers on LINE",
+                     *         "labelTh": "รับข่าวสารและโปรโมชันทาง LINE",
                      *         "outdated": false,
                      *         "purpose": "marketing_line",
                      *         "required": false,
@@ -222233,6 +225238,8 @@ export interface operations {
                      * @example [
                      *       {
                      *         "granted": true,
+                     *         "labelEn": "News and offers on LINE",
+                     *         "labelTh": "รับข่าวสารและโปรโมชันทาง LINE",
                      *         "outdated": false,
                      *         "purpose": "marketing_line",
                      *         "required": false,
@@ -223333,9 +226340,11 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
-                     *           "body": "คำขอ discount_memo รอการอนุมัติของคุณ",
+                     *           "body": "คำขออนุมัติ บันทึกขอส่วนลด รอการตัดสินใจของคุณ",
                      *           "createdAt": "2026-09-23T14:05:00+07:00",
                      *           "eventType": "approval.requested",
+                     *           "eventTypeLabelEn": "Approval",
+                     *           "eventTypeLabelTh": "คำขออนุมัติ",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
                      *           "readAt": null,
                      *           "title": "มีคำขออนุมัติรอคุณ",
@@ -223603,6 +226612,8 @@ export interface operations {
                      *           "orders": [
                      *             {
                      *               "artworkStatus": "awaiting_template",
+                     *               "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *               "artworkStatusLabelTh": "รอแบบไดคัท",
                      *               "cancelReasonCode": null,
                      *               "cancelReasonNameEn": null,
                      *               "cancelReasonNameTh": null,
@@ -223672,6 +226683,8 @@ export interface operations {
                      *               },
                      *               "status": "waiting_payment",
                      *               "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *               "statusLabelAdminTh": "รอชำระเงิน",
+                     *               "statusLabelTh": "รอชำระเงิน",
                      *               "summary": {
                      *                 "product": {
                      *                   "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -223727,6 +226740,8 @@ export interface operations {
                      *           "placedAt": "2026-10-01T10:00:00+07:00",
                      *           "poNumber": null,
                      *           "status": "waiting_payment",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "totals": {
                      *             "cashAmount": "14182.80",
                      *             "currency": "THB",
@@ -223842,6 +226857,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -223911,6 +226928,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -223966,6 +226985,8 @@ export interface operations {
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "totals": {
                      *         "cashAmount": "14182.80",
                      *         "currency": "THB",
@@ -224087,6 +227108,8 @@ export interface operations {
                      *       "orders": [
                      *         {
                      *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
@@ -224156,6 +227179,8 @@ export interface operations {
                      *           },
                      *           "status": "waiting_payment",
                      *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -224211,6 +227236,8 @@ export interface operations {
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "poNumber": null,
                      *       "status": "cancelled",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "totals": {
                      *         "cashAmount": "14182.80",
                      *         "currency": "THB",
@@ -224372,6 +227399,8 @@ export interface operations {
                      *           "requiredBefore": "production",
                      *           "seq": 1,
                      *           "status": "due",
+                     *           "statusLabelAdminTh": "ถึงกำหนดชำระ",
+                     *           "statusLabelTh": "ถึงกำหนดชำระ",
                      *           "whtAmount": "0.00"
                      *         },
                      *         {
@@ -224389,6 +227418,8 @@ export interface operations {
                      *           "requiredBefore": "shipping",
                      *           "seq": 2,
                      *           "status": "pending",
+                     *           "statusLabelAdminTh": "ถึงกำหนดชำระ",
+                     *           "statusLabelTh": "ถึงกำหนดชำระ",
                      *           "whtAmount": "0.00"
                      *         }
                      *       ],
@@ -224519,6 +227550,8 @@ export interface operations {
                      *           "referenceCode": "PKAB23CD45EF67GH",
                      *           "slips": [],
                      *           "status": "pending",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
                      *           "whtAmount": "0.00"
                      *         }
                      *       ],
@@ -224647,6 +227680,8 @@ export interface operations {
                      *       "referenceCode": "PKAB23CD45EF67GH",
                      *       "slips": [],
                      *       "status": "pending",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "whtAmount": "0.00"
                      *     }
                      */
@@ -224773,6 +227808,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "artworkStatus": "awaiting_template",
+                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
@@ -224842,6 +227879,8 @@ export interface operations {
                      *       },
                      *       "status": "waiting_payment",
                      *       "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -224990,6 +228029,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "artworkStatus": "awaiting_template",
+                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
@@ -225059,6 +228100,8 @@ export interface operations {
                      *       },
                      *       "status": "completed",
                      *       "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -225614,10 +228657,14 @@ export interface operations {
                      *           "warnCount": 0
                      *         },
                      *         "preflightStatus": "blocked",
+                     *         "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *         "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *         "rejectReason": null,
                      *         "reviewedAt": null,
                      *         "source": "upload",
                      *         "status": "submitted",
+                     *         "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *         "statusLabelTh": "ส่งไฟล์แล้ว",
                      *         "submittedAt": "2026-09-27T10:00:00+07:00",
                      *         "versionNo": 2
                      *       }
@@ -225741,10 +228788,14 @@ export interface operations {
                      *       "preflightCompletedAt": null,
                      *       "preflightReport": null,
                      *       "preflightStatus": "pending",
+                     *       "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *       "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *       "rejectReason": null,
                      *       "reviewedAt": null,
                      *       "source": "upload",
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *       "statusLabelTh": "ส่งไฟล์แล้ว",
                      *       "submittedAt": "2026-09-27T10:00:00+07:00",
                      *       "versionNo": 2
                      *     }
@@ -225912,10 +228963,14 @@ export interface operations {
                      *         "warnCount": 0
                      *       },
                      *       "preflightStatus": "blocked",
+                     *       "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *       "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *       "rejectReason": null,
                      *       "reviewedAt": null,
                      *       "source": "upload",
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *       "statusLabelTh": "ส่งไฟล์แล้ว",
                      *       "submittedAt": "2026-09-27T10:00:00+07:00",
                      *       "versionNo": 2
                      *     }
@@ -226025,10 +229080,14 @@ export interface operations {
                      *       "preflightCompletedAt": null,
                      *       "preflightReport": null,
                      *       "preflightStatus": "pending",
+                     *       "preflightStatusLabelAdminTh": "ไม่ผ่าน ต้องแก้ไฟล์",
+                     *       "preflightStatusLabelTh": "ไม่ผ่าน ต้องแก้ไฟล์",
                      *       "rejectReason": null,
                      *       "reviewedAt": null,
                      *       "source": "designer",
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "ส่งไฟล์แล้ว",
+                     *       "statusLabelTh": "ส่งไฟล์แล้ว",
                      *       "submittedAt": "2026-09-27T10:00:00+07:00",
                      *       "versionNo": 2
                      *     }
@@ -226330,6 +229389,8 @@ export interface operations {
                      *         "responseOverdue": false
                      *       },
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "กำลังพิจารณาเคลม",
+                     *       "statusLabelTh": "กำลังพิจารณาเคลม",
                      *       "submittedAt": "2026-10-22T09:00:00+07:00",
                      *       "tolerance": {
                      *         "colourDeltaE": "3.00",
@@ -226487,10 +229548,14 @@ export interface operations {
                      *           "roundNo": 1,
                      *           "startedAt": "2026-09-27T10:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังแก้ไข",
+                     *           "statusLabelTh": "กำลังแก้ไข",
                      *           "submissionId": null
                      *         }
                      *       ],
                      *       "status": "in_progress",
+                     *       "statusLabelAdminTh": "กำลังออกแบบ",
+                     *       "statusLabelTh": "กำลังออกแบบ",
                      *       "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *     }
                      */
@@ -226627,10 +229692,14 @@ export interface operations {
                      *           "roundNo": 1,
                      *           "startedAt": "2026-09-27T10:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังแก้ไข",
+                     *           "statusLabelTh": "กำลังแก้ไข",
                      *           "submissionId": null
                      *         }
                      *       ],
                      *       "status": "revision_requested",
+                     *       "statusLabelAdminTh": "กำลังออกแบบ",
+                     *       "statusLabelTh": "กำลังออกแบบ",
                      *       "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *     }
                      */
@@ -226784,10 +229853,14 @@ export interface operations {
                      *           "roundNo": 1,
                      *           "startedAt": "2026-09-27T10:00:00+07:00",
                      *           "status": "in_progress",
+                     *           "statusLabelAdminTh": "กำลังแก้ไข",
+                     *           "statusLabelTh": "กำลังแก้ไข",
                      *           "submissionId": null
                      *         }
                      *       ],
                      *       "status": "in_progress",
+                     *       "statusLabelAdminTh": "กำลังออกแบบ",
+                     *       "statusLabelTh": "กำลังออกแบบ",
                      *       "targetDueAt": "2026-10-04T10:00:00+07:00"
                      *     }
                      */
@@ -226921,7 +229994,9 @@ export interface operations {
                      *           "labelEn": "Printing",
                      *           "labelTh": "กำลังพิมพ์",
                      *           "promisedAt": "2026-10-14T18:00:00+07:00",
-                     *           "status": "completed"
+                     *           "status": "completed",
+                     *           "statusLabelAdminTh": "เสร็จแล้ว",
+                     *           "statusLabelTh": "เสร็จแล้ว"
                      *         }
                      *       ]
                      *     }
@@ -227048,6 +230123,8 @@ export interface operations {
                      *           "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *           "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *           "previousStatus": "changes_requested",
+                     *           "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *           "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *           "previousVersionNo": 1
                      *         },
                      *         "decidedAt": null,
@@ -227068,6 +230145,8 @@ export interface operations {
                      *         },
                      *         "sentAt": "2026-09-27T11:00:00+07:00",
                      *         "status": "pending_customer",
+                     *         "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *         "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *         "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *         "versionNo": 2
                      *       }
@@ -227548,12 +230627,16 @@ export interface operations {
                      *           {
                      *             "location": null,
                      *             "occurredAt": "2026-10-20T08:00:00+07:00",
-                     *             "status": "picked_up"
+                     *             "status": "picked_up",
+                     *             "statusLabelAdminTh": "ออกจากโรงงานแล้ว",
+                     *             "statusLabelTh": "ออกจากโรงงานแล้ว"
                      *           },
                      *           {
                      *             "location": null,
                      *             "occurredAt": "2026-10-21T14:05:00+07:00",
-                     *             "status": "delivered"
+                     *             "status": "delivered",
+                     *             "statusLabelAdminTh": "ส่งถึงแล้ว",
+                     *             "statusLabelTh": "ส่งถึงแล้ว"
                      *           }
                      *         ],
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -227574,6 +230657,8 @@ export interface operations {
                      *         },
                      *         "shipmentNo": "SH-2610-0001",
                      *         "status": "delivered",
+                     *         "statusLabelAdminTh": "ส่งถึงแล้ว",
+                     *         "statusLabelTh": "ส่งถึงแล้ว",
                      *         "trackingNo": null,
                      *         "trackingUrl": null
                      *       }
@@ -227886,8 +230971,11 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
+                     *           "count": 1,
                      *           "id": "a:1042",
+                     *           "messageEn": "Printing",
                      *           "messageKey": "activity.production.milestone_reached",
+                     *           "messageTh": "กำลังพิมพ์",
                      *           "occurredAt": "2026-10-14T16:00:00+07:00",
                      *           "params": {
                      *             "labelEn": "Printing",
@@ -228121,6 +231209,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "artworkStatus": "awaiting_template",
+                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
@@ -228190,6 +231280,8 @@ export interface operations {
                      *       },
                      *       "status": "waiting_payment",
                      *       "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -228340,6 +231432,8 @@ export interface operations {
                      *       "referenceCode": "PKAB23CD45EF67GH",
                      *       "slips": [],
                      *       "status": "pending",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "whtAmount": "0.00"
                      *     }
                      */
@@ -228458,6 +231552,8 @@ export interface operations {
                      *       "referenceCode": "PKAB23CD45EF67GH",
                      *       "slips": [],
                      *       "status": "pending",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
                      *       "whtAmount": "0.00"
                      *     }
                      */
@@ -228823,6 +231919,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": null,
@@ -228843,6 +231941,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -228968,6 +232068,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": null,
@@ -228988,6 +232090,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -229120,6 +232224,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": "2026-09-27T12:00:00+07:00",
@@ -229140,6 +232246,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "approved",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -229289,6 +232397,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": "2026-09-27T12:00:00+07:00",
@@ -229309,6 +232419,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "changes_requested",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -229458,6 +232570,8 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
+                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
                      *       "decidedAt": null,
@@ -229478,6 +232592,8 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
+                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
                      *     }
@@ -229543,6 +232659,80 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.publicConfig.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Storefront figures */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "claimWindowDays": 7,
+                     *       "contact": {
+                     *         "email": "support@example.invalid",
+                     *         "lineOaId": "@packio-test",
+                     *         "phone": "0800000000"
+                     *       },
+                     *       "factoryCount": null,
+                     *       "minOrderQty": {
+                     *         "custom": 500,
+                     *         "readyStock": 1
+                     *       },
+                     *       "priceLockDays": 15,
+                     *       "proofSlaBusinessDays": null,
+                     *       "supportHours": {
+                     *         "close": "18:00",
+                     *         "days": "mon_fri",
+                     *         "open": "09:00",
+                     *         "tz": "Asia/Bangkok"
+                     *       },
+                     *       "supportReplyMinutes": null,
+                     *       "templateCount": 42
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicConfigDto"];
                 };
             };
             /** @description Problem: `http.too_many_requests` */
@@ -229689,6 +232879,8 @@ export interface operations {
                      *           "sharedAt": null,
                      *           "source": "instant",
                      *           "status": "saved",
+                     *           "statusLabelAdminTh": "บันทึกแล้ว",
+                     *           "statusLabelTh": "บันทึกแล้ว",
                      *           "summary": {
                      *             "product": {
                      *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -229908,6 +233100,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -230148,6 +233342,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -230369,6 +233565,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -230608,6 +233806,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "declined",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -230848,6 +234048,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -231075,6 +234277,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -231428,6 +234632,8 @@ export interface operations {
                      *         "sharedAt": null,
                      *         "source": "instant",
                      *         "status": "shared",
+                     *         "statusLabelAdminTh": "บันทึกแล้ว",
+                     *         "statusLabelTh": "บันทึกแล้ว",
                      *         "summary": {
                      *           "product": {
                      *             "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -231814,6 +235020,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -232141,6 +235349,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -232413,6 +235623,124 @@ export interface operations {
             };
         };
     };
+    "store.quotes.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HeroPreviewRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Hero price */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "calculation": {
+                     *         "configuration": {
+                     *           "d": 80,
+                     *           "l": 200,
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0002",
+                     *           "quantities": [
+                     *             1000
+                     *           ],
+                     *           "w": 150
+                     *         },
+                     *         "productTypeCode": "corrugated"
+                     *       },
+                     *       "currency": "THB",
+                     *       "leadTimeBusinessDays": {
+                     *         "max": 7,
+                     *         "min": 7
+                     *       },
+                     *       "presetId": "mailer:s0",
+                     *       "priceLockUntil": "2026-10-22T10:15:00+07:00",
+                     *       "total": "13380.00",
+                     *       "unitPrice": "13.38",
+                     *       "vatIncluded": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HeroPreviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `quotes.preview_unavailable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.not_instant`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.vat_rate_missing` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.quotes.getShared": {
         parameters: {
             query?: never;
@@ -232525,6 +235853,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "shared",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -235014,6 +238344,8 @@ export interface operations {
                      *               "note": "Price includes delivery to Bangkok (fake)",
                      *               "sentAt": "2026-10-01T09:00:00+07:00",
                      *               "status": "sent",
+                     *               "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *               "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *               "validUntil": "2026-10-16T09:00:00+07:00",
                      *               "versionNo": 1
                      *             }
@@ -235026,6 +238358,8 @@ export interface operations {
                      *             "print": "1 colour one side"
                      *           },
                      *           "status": "quoted",
+                     *           "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *           "statusLabelTh": "เสนอราคาแล้ว",
                      *           "style": null,
                      *           "submittedAt": "2026-09-30T15:00:00+07:00",
                      *           "targetDate": "2026-11-15",
@@ -235172,6 +238506,8 @@ export interface operations {
                      *         "print": "1 colour one side"
                      *       },
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -235349,6 +238685,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -235361,6 +238699,8 @@ export interface operations {
                      *         "print": "1 colour one side"
                      *       },
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -235525,6 +238865,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -235537,6 +238879,8 @@ export interface operations {
                      *         "print": "1 colour one side"
                      *       },
                      *       "status": "accepted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -235728,6 +239072,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -235740,6 +239086,8 @@ export interface operations {
                      *         "print": "1 colour one side"
                      *       },
                      *       "status": "declined",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -235921,6 +239269,8 @@ export interface operations {
                      *           "note": "Price includes delivery to Bangkok (fake)",
                      *           "sentAt": "2026-10-01T09:00:00+07:00",
                      *           "status": "sent",
+                     *           "statusLabelAdminTh": "ส่งใบเสนอราคาแล้ว",
+                     *           "statusLabelTh": "ส่งใบเสนอราคาแล้ว",
                      *           "validUntil": "2026-10-16T09:00:00+07:00",
                      *           "versionNo": 1
                      *         }
@@ -235933,6 +239283,8 @@ export interface operations {
                      *         "print": "1 colour one side"
                      *       },
                      *       "status": "quoted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -236196,6 +239548,8 @@ export interface operations {
                      *           "shippedAt": "2026-10-09T09:00:00+07:00",
                      *           "status": "delivered",
                      *           "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *           "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *           "validUntil": null
                      *         }
                      *       ],
@@ -236335,6 +239689,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "requested",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -236482,6 +239838,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "delivered",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -236623,6 +239981,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "approved",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -236905,6 +240265,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "rejected",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -237066,6 +240428,8 @@ export interface operations {
                      *       "shippedAt": "2026-10-09T09:00:00+07:00",
                      *       "status": "changes_requested",
                      *       "statusChangedAt": "2026-10-10T10:00:00+07:00",
+                     *       "statusLabelAdminTh": "ถึงแล้ว รอตรวจ",
+                     *       "statusLabelTh": "ถึงแล้ว รอตรวจ",
                      *       "validUntil": null
                      *     }
                      */
@@ -237576,6 +240940,88 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.statusLabels.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status words per enum */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "enumName": "ProofStatus",
+                     *         "values": [
+                     *           {
+                     *             "labelAdminTh": "รอ Proof จากลูกค้า",
+                     *             "labelEn": "Awaiting customer",
+                     *             "labelTh": "รอคุณตรวจแบบตัวอย่าง",
+                     *             "value": "pending_customer"
+                     *           },
+                     *           {
+                     *             "labelAdminTh": "Proof อนุมัติแล้ว",
+                     *             "labelEn": "Approved",
+                     *             "labelTh": "อนุมัติแบบตัวอย่างแล้ว",
+                     *             "value": "approved"
+                     *           },
+                     *           {
+                     *             "labelAdminTh": "ขอให้แก้ไข Proof",
+                     *             "labelEn": "Changes requested",
+                     *             "labelTh": "ขอแก้ไขแบบตัวอย่าง",
+                     *             "value": "changes_requested"
+                     *           },
+                     *           {
+                     *             "labelAdminTh": "มี Proof ฉบับใหม่แทนแล้ว",
+                     *             "labelEn": "Superseded",
+                     *             "labelTh": "มีแบบตัวอย่างฉบับใหม่แล้ว",
+                     *             "value": "superseded"
+                     *           }
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["StatusLabelEnumDto"][];
                 };
             };
             /** @description Problem: `http.too_many_requests` */
@@ -239405,6 +242851,8 @@ export interface operations {
                      *       "sharedAt": null,
                      *       "source": "instant",
                      *       "status": "saved",
+                     *       "statusLabelAdminTh": "บันทึกแล้ว",
+                     *       "statusLabelTh": "บันทึกแล้ว",
                      *       "summary": {
                      *         "product": {
                      *           "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
@@ -239619,6 +243067,8 @@ export interface operations {
                      *         "print": "1 colour one side"
                      *       },
                      *       "status": "submitted",
+                     *       "statusLabelAdminTh": "เสนอราคาแล้ว",
+                     *       "statusLabelTh": "เสนอราคาแล้ว",
                      *       "style": null,
                      *       "submittedAt": "2026-09-30T15:00:00+07:00",
                      *       "targetDate": "2026-11-15",
@@ -240761,7 +244211,7 @@ export interface operations {
                      *       "softProof": {
                      *         "label": {
                      *           "en": "Preview, not a contract proof",
-                     *           "th": "ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา"
+                     *           "th": "ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่แบบตัวอย่างสำหรับอนุมัติพิมพ์"
                      *         },
                      *         "profiles": []
                      *       },
@@ -241109,8 +244559,19 @@ export interface operations {
                      *       "finishes": [
                      *         "dev-matt"
                      *       ],
+                     *       "hasIssues": true,
                      *       "heightMm": 40,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e5001",
+                     *       "issueCount": 1,
+                     *       "issueSummary": [
+                     *         {
+                     *           "code": "image_resolution",
+                     *           "count": 1,
+                     *           "messageEn": "Low-resolution image: it may print soft",
+                     *           "messageTh": "รูปความละเอียดต่ำ อาจพิมพ์ไม่คม",
+                     *           "severity": "warn"
+                     *         }
+                     *       ],
                      *       "lengthMm": 100,
                      *       "lock": {
                      *         "lockedAt": "2026-09-27T11:00:00+07:00",
@@ -243165,14 +246626,17 @@ export interface operations {
                      *           "cartonsCount": 3,
                      *           "shipmentNo": "SH-2610-0001",
                      *           "status": "in_transit",
+                     *           "statusLabelTh": "กำลังส่ง",
                      *           "steps": [
                      *             {
                      *               "occurredAt": "2026-10-19T08:00:00+07:00",
-                     *               "status": "picked_up"
+                     *               "status": "picked_up",
+                     *               "statusLabelTh": "ออกจากโรงงานแล้ว"
                      *             },
                      *             {
                      *               "occurredAt": "2026-10-19T12:00:00+07:00",
-                     *               "status": "in_transit"
+                     *               "status": "in_transit",
+                     *               "statusLabelTh": "กำลังส่ง"
                      *             }
                      *           ],
                      *           "trackingNo": null,
@@ -243188,7 +246652,9 @@ export interface operations {
                      *           "labelEn": "Printing",
                      *           "labelTh": "กำลังพิมพ์",
                      *           "promisedAt": "2026-10-14T18:00:00+07:00",
-                     *           "status": "completed"
+                     *           "status": "completed",
+                     *           "statusLabelAdminTh": "เสร็จแล้ว",
+                     *           "statusLabelTh": "เสร็จแล้ว"
                      *         }
                      *       ]
                      *     }

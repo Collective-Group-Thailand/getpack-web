@@ -93,6 +93,22 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
       .or(z.literal("").transform(() => undefined))
       .transform((value) => value ?? 0),
 
+    /**
+     * Dev only: `1` fills the home page's photo slots the CMS leaves empty from
+     * `public/media/home/manifest.json` (local stacks run packio-api with fake, in-memory file
+     * storage, so CMS photos cannot be served there). Refused in production, so a deployment
+     * never shows the interim photos.
+     */
+    HOME_PHOTOS_LOCAL_MANIFEST: isProduction
+      ? optionalText.refine(
+          (value) => value === undefined,
+          "a dev-only fallback (interim photos); must not be set in production",
+        )
+      : z
+          .enum(["0", "1"])
+          .optional()
+          .or(z.literal("").transform(() => undefined)),
+
     SENTRY_DSN: optionalText,
     SENTRY_ENVIRONMENT: optionalText,
     SENTRY_RELEASE: optionalText,

@@ -27,13 +27,13 @@ type Consent = Schemas["AdminConsentDto"];
 
 const DAY = 24 * 60;
 const CONSENT_PURPOSES = [
-  { key: "terms_of_service", required: true },
-  { key: "privacy_notice", required: true },
-  { key: "marketing_email", required: false },
-  { key: "marketing_line", required: false },
-  { key: "marketing_sms", required: false },
-  { key: "analytics_cookies", required: false },
-  { key: "personalisation", required: false },
+  { key: "terms_of_service", labelTh: "ข้อกำหนดการใช้บริการ", labelEn: "Terms of service", required: true },
+  { key: "privacy_notice", labelTh: "ประกาศความเป็นส่วนตัว", labelEn: "Privacy notice", required: true },
+  { key: "marketing_email", labelTh: "ข่าวสารทางอีเมล", labelEn: "Marketing by email", required: false },
+  { key: "marketing_line", labelTh: "ข่าวสารทาง LINE", labelEn: "Marketing on LINE", required: false },
+  { key: "marketing_sms", labelTh: "ข่าวสารทาง SMS", labelEn: "Marketing by SMS", required: false },
+  { key: "analytics_cookies", labelTh: "คุกกี้วิเคราะห์", labelEn: "Analytics cookies", required: false },
+  { key: "personalisation", labelTh: "การแนะนำเฉพาะคุณ", labelEn: "Personalisation", required: false },
 ] as const;
 
 const value = (points: number) => (points * Number(settingValue<string>("loyalty.point_value"))).toFixed(2);
@@ -116,6 +116,8 @@ function consentsOf(index: number): Consent[] {
     const asked = purpose.required || at % 2 === index % 2 || at === 3;
     return {
       purpose: purpose.key,
+      labelTh: purpose.labelTh,
+      labelEn: purpose.labelEn,
       required: purpose.required,
       granted: asked ? purpose.required || (index + at) % 3 !== 0 : null,
       // The text in force; privacy notice v2 is newer than what some customers decided on.

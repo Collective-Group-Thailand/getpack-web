@@ -115,6 +115,14 @@ const TABLES: Record<string, TableConfig> = {
         publishedAt: null,
         status: "draft",
       },
+      // Two parts, each priced: the body and its lid (sub-patterns below).
+      {
+        code: "TELE-01",
+        name: "กล่องฝาครอบ",
+        technicalName: "Telescope box with lid",
+        dielineKey: null,
+        styleCode: "PK-CT-02",
+      },
     ],
   },
   subPatterns: {
@@ -124,7 +132,11 @@ const TABLES: Record<string, TableConfig> = {
     ns: "sbp",
     search: ["name"],
     filters: ["patternId"],
-    variants: [{ name: "ฝาบน", seq: 2 }],
+    // The contract's example is the tuck-end's body; the telescope box (`ptn` 4) is a body and a lid.
+    variants: [
+      { name: "ตัวกล่อง", seq: 1, patternId: mockId("ptn", 4) },
+      { name: "ฝาบน", seq: 2, patternId: mockId("ptn", 4), corrugateFormula: "tele_lid" },
+    ],
   },
   printTypes: {
     path: "/v1/admin/catalog/print-types",
@@ -509,6 +521,20 @@ const TABLES: Record<string, TableConfig> = {
         patterns: [],
         sort: 90,
       },
+      {
+        slug: "telescope-box",
+        nameTh: "กล่องฝาครอบ",
+        nameEn: "Telescope box",
+        descriptionTh: "กล่องลูกฟูกตัวกล่องกับฝาครอบแยกชิ้น (ข้อมูลจำลอง)",
+        descriptionEn: "A corrugated body with a separate lid (mock data)",
+        productTypeId: typeId("corrugated"),
+        templateAvailability: "none",
+        images: [],
+        patterns: [
+          { factorNd: 1, factorNl: 1, factorNw: 1, patternCode: "TELE-01", patternId: mockId("ptn", 4), sort: 0 },
+        ],
+        sort: 45,
+      },
     ],
   },
   standardSizes: {
@@ -533,6 +559,8 @@ const TABLES: Record<string, TableConfig> = {
           ["mailer-box", 1, "C", "เบอร์ C 30×22×10 ซม.", 300, 220, 100],
           ["shipping-box", 3, "S", "ขนาดเล็ก 20×15×10 ซม.", 200, 150, 100],
           ["shipping-box", 3, "M", "ขนาดกลาง 30×20×15 ซม.", 300, 200, 150],
+          ["telescope-box", 9, "S", "ขนาดเล็ก 25×25×10 ซม.", 250, 250, 100],
+          ["telescope-box", 9, "M", "ขนาดกลาง 35×25×12 ซม.", 350, 250, 120],
         ] as const
       ).map(([, product, code, name, lengthMm, widthMm, heightMm], index) => ({
         id: mockId("sts", 51 + index),

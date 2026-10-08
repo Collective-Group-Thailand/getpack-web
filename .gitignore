@@ -38,3 +38,7 @@ storybook-static/
 # U-F0.5: accounts the integration setup provisions on the local packio-api
 e2e/integration/.state/
 lighthouse/.port-*.json
+
+# Interim third-party home photos (dev-only fallback, HOME_PHOTOS_LOCAL_MANIFEST): copied from
+# packio-api public/media/home, never committed — their per-asset source is unverified.
+/public/media/home/

@@ -13,6 +13,7 @@ import { apiInternalUrl } from "@/lib/env/lazy-server";
 import type { Configurator } from "@/features/customer/configurator/model";
 import { toCatalogView, type DesignerCatalog } from "@/features/designer/data/catalog-view";
 
+import { publishableFaqs } from "./faq-hygiene";
 import { pick } from "./localize";
 
 /**
@@ -328,7 +329,7 @@ export async function listArticleCategories(): Promise<ArticleCategory[]> {
 
 export async function listFaqs(): Promise<FaqGroup[]> {
   const { data } = await (await publicApi("content")).GET("/v1/store/catalog/faqs");
-  return data ?? [];
+  return publishableFaqs(data ?? []);
 }
 
 /** Catalogue search (products, stock, showcase, articles, FAQs). Short-lived: a query is not content. */

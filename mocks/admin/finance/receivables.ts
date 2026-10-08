@@ -28,6 +28,8 @@ import { registerQueue } from "../console";
 import { approvals, onApprovalDecided, openApproval } from "../platform";
 import { journalsOf, movement, post, satangOf, SELLER, today, type PostLine } from "./books";
 import { finance, invalid, isMoney, notFound, persona } from "./support";
+import { PAYMENT_STATUS, REFUND_STATUS, SLIP_STATUS } from "@/domain/status";
+import { statusLabels } from "../../status-labels";
 
 type Doc = Schemas["CustomerDocumentDto"];
 type DocLine = Schemas["CustomerDocumentLineDto"];
@@ -316,6 +318,7 @@ function paymentFrom(order: MockOrder, source: CommercePayment): Payment {
     provider: source.method.startsWith("scb") ? "scb" : source.method.includes("2c2p") ? "2c2p" : "bank_transfer",
     providerRef: source.providerRef,
     status: refunded ? existing.status : (source.status as Payment["status"]),
+    ...statusLabels("status", PAYMENT_STATUS, refunded ? existing.status : source.status),
     amount: source.amount,
     cashAmount: source.amount,
     whtAmount: "0.00",
@@ -338,6 +341,7 @@ function paymentFrom(order: MockOrder, source: CommercePayment): Payment {
       declaredAmount: slip.declaredAmount,
       declaredTransferredAt: slip.declaredTransferredAt,
       status: slip.verificationStatus as Schemas["SlipStatus"],
+      ...statusLabels("status", SLIP_STATUS, slip.verificationStatus),
       lastCheck: lastCheckOf(slip),
       slaDueAt: slip.slaDueAt,
       createdAt: slip.uploadedAt,
@@ -549,6 +553,7 @@ export function collect(
     provider: "bank_transfer",
     providerRef: `CT-${invoice.docNumber}`,
     status: "succeeded",
+    ...statusLabels("status", PAYMENT_STATUS, "succeeded"),
     amount: baht(gross),
     cashAmount: baht(gross - wht),
     whtAmount: baht(wht),
@@ -866,6 +871,7 @@ function requestRefund(
     currency: "THB",
     channel,
     status: "pending_approval",
+    ...statusLabels("status", REFUND_STATUS, "pending_approval"),
     reasonNote: body.reasonNote,
     approvalRequestId: approval.id,
     providerRef: null,
@@ -986,6 +992,7 @@ for (const order of orders) {
       provider: "scb",
       providerRef: `TXN${9000 + orders.indexOf(order)}`,
       status: "succeeded",
+      ...statusLabels("status", PAYMENT_STATUS, "succeeded"),
       amount: second.grossAmount,
       cashAmount: second.grossAmount,
       whtAmount: "0.00",
@@ -1172,6 +1179,7 @@ export function pendingSlips(): SlipItem[] {
           slaDueAt: slip.slaDueAt,
           overdue: slip.slaDueAt ? Date.parse(slip.slaDueAt) < Date.now() : false,
           status: "manual_review",
+          ...statusLabels("status", SLIP_STATUS, "manual_review"),
           createdAt: slip.uploadedAt,
         })),
     ),

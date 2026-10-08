@@ -55,13 +55,55 @@ export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
 };
 
 export const CONSENT_PURPOSES = [
-  { purpose: "terms_of_service", required: true, summary: "ข้อกำหนดการใช้บริการ Packio" },
-  { purpose: "privacy_notice", required: true, summary: "ประกาศความเป็นส่วนตัว" },
-  { purpose: "marketing_email", required: false, summary: "รับข่าวสารและโปรโมชันทางอีเมล" },
-  { purpose: "marketing_line", required: false, summary: "รับข่าวสารและโปรโมชันทาง LINE" },
-  { purpose: "marketing_sms", required: false, summary: "รับข่าวสารและโปรโมชันทาง SMS" },
-  { purpose: "analytics_cookies", required: false, summary: "คุกกี้เพื่อการวิเคราะห์" },
-  { purpose: "personalisation", required: false, summary: "แนะนำสินค้าให้ตรงกับความสนใจ" },
+  {
+    purpose: "terms_of_service",
+    required: true,
+    labelTh: "ข้อกำหนดการใช้บริการ",
+    labelEn: "Terms of service",
+    summary: "ข้อกำหนดการใช้บริการ Packio",
+  },
+  {
+    purpose: "privacy_notice",
+    required: true,
+    labelTh: "ประกาศความเป็นส่วนตัว",
+    labelEn: "Privacy notice",
+    summary: "ประกาศความเป็นส่วนตัว",
+  },
+  {
+    purpose: "marketing_email",
+    required: false,
+    labelTh: "ข่าวสารทางอีเมล",
+    labelEn: "Marketing by email",
+    summary: "รับข่าวสารและโปรโมชันทางอีเมล",
+  },
+  {
+    purpose: "marketing_line",
+    required: false,
+    labelTh: "ข่าวสารทาง LINE",
+    labelEn: "Marketing on LINE",
+    summary: "รับข่าวสารและโปรโมชันทาง LINE",
+  },
+  {
+    purpose: "marketing_sms",
+    required: false,
+    labelTh: "ข่าวสารทาง SMS",
+    labelEn: "Marketing by SMS",
+    summary: "รับข่าวสารและโปรโมชันทาง SMS",
+  },
+  {
+    purpose: "analytics_cookies",
+    required: false,
+    labelTh: "คุกกี้วิเคราะห์",
+    labelEn: "Analytics cookies",
+    summary: "คุกกี้เพื่อการวิเคราะห์",
+  },
+  {
+    purpose: "personalisation",
+    required: false,
+    labelTh: "การแนะนำเฉพาะคุณ",
+    labelEn: "Personalisation",
+    summary: "แนะนำสินค้าให้ตรงกับความสนใจ",
+  },
 ] as const;
 
 type Consent = { granted: boolean; versionNo: number };
@@ -239,10 +281,12 @@ export function customerMe(customer: MockCustomer): Schemas["StoreMeDto"] {
 }
 
 export function consentsOf(customer: MockCustomer): Schemas["ConsentDto"][] {
-  return CONSENT_PURPOSES.map(({ purpose, required, summary }) => {
+  return CONSENT_PURPOSES.map(({ purpose, required, labelTh, labelEn, summary }) => {
     const record = customer.consents.get(purpose);
     return {
       purpose,
+      labelTh,
+      labelEn,
       required,
       granted: record?.granted ?? null,
       outdated: false,

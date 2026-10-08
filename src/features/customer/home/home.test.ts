@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import { publishableFaqs } from "@/features/customer/catalog/faq-hygiene";
+
 import { casesOf, MIN_CASES, photosOf } from "./content.server";
+import { isPackagingCategory } from "./HomeSections";
+import { candidates, reconcile, requestOf, selectionOfDefault, shapesOf } from "./studio-hero";
+import enHome from "@/i18n/messages/en/customer/home.json";
+import thHome from "@/i18n/messages/th/customer/home.json";
 import { isoBox, MATERIAL_TINT } from "./iso-box";
 
 const photo = (id: string) => ({ url: `/v1/store/catalog/images/${id}`, alt: { th: `รูป ${id}`, en: `Photo ${id}` } });
@@ -71,5 +77,159 @@ describe("isoBox", () => {
         .map(Number);
       expect(Math.max(...numbers.map(Math.abs))).toBeLessThanOrEqual(160);
     }
+  });
+});
+
+describe("home data hygiene (Main board review)", () => {
+  const faq = (questionTh: string, answerTh: string) => ({ questionTh, answerTh, questionEn: null, answerEn: null });
+  const group = (categoryNameTh: string | null, faqs: ReturnType<typeof faq>[]) => ({
+    categoryCode: categoryNameTh ? "x" : null,
+    categoryNameTh,
+    categoryNameEn: null,
+    faqs,
+  });
+
+  it("drops [DEV] fixtures and strips decision references from FAQs", () => {
+    const groups = publishableFaqs([
+      group(null, [
+        faq("[DEV] คำถามทดสอบ", "[DEV] คำตอบ"),
+        faq("ล็อกราคากี่วัน", "15 วัน (D-051) ตามใบเสนอราคา (D-051, D-176)"),
+      ]),
+      group("[DEV] การสั่งซื้อ", [faq("ข้อ", "ตอบ")]),
+    ]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]!.faqs).toEqual([faq("ล็อกราคากี่วัน", "15 วัน ตามใบเสนอราคา")]);
+  });
+
+  it("lists only packaging categories", () => {
+    const category = (...codes: string[]) =>
+      ({ code: "c", types: codes.map((code) => ({ code })) }) as unknown as Parameters<typeof isPackagingCategory>[0];
+    expect(isPackagingCategory(category("standard_product"))).toBe(false);
+    expect(isPackagingCategory(category("service", "standard_product"))).toBe(false);
+    expect(isPackagingCategory(category("folding_carton", "service"))).toBe(true);
+  });
+});
+
+describe("Studio hero presets (Main board review)", () => {
+  type Shape = "mailer" | "lid" | "tuck";
+  const uuid = (n: number) => `00000000-0000-4000-8000-00000000000${n}`;
+  // `store.catalog.getHeroPresets` as v0.43.1 publishes it: flat lists, each option per shape.
+  const presets = {
+    shapes: (["mailer", "tuck"] as const).map((id) => ({
+      id,
+      labelTh: id,
+      productSlug: id,
+      catalogProductId: uuid(1),
+      productTypeCode: "x",
+      calculator: "folding",
+      patternId: uuid(2),
+      dielineKey: null,
+      styleCode: null,
+      qtys: id === "mailer" ? [300, 500] : [500, 1000],
+    })),
+    sizes: (["mailer", "tuck"] as Shape[]).flatMap((shapeId) =>
+      [0, 1].map((i) => ({
+        id: `${shapeId}:s${i}`,
+        shapeId,
+        code: `s${i}`,
+        labelTh: "",
+        lengthMm: 100 + i * 50,
+        widthMm: 100,
+        heightMm: 50,
+      })),
+    ),
+    materials: [
+      {
+        id: "kraft350" as const,
+        labelTh: "",
+        labelEn: "",
+        options: [{ shapeId: "tuck" as Shape, materialId: uuid(3) }],
+      },
+      { id: "art350" as const, labelTh: "", labelEn: "", options: [{ shapeId: "tuck" as Shape, materialId: uuid(4) }] },
+      {
+        id: "corrE" as const,
+        labelTh: "",
+        labelEn: "",
+        options: [{ shapeId: "mailer" as Shape, materialId: uuid(5) }],
+      },
+    ],
+    prints: [
+      {
+        id: "none" as const,
+        labelTh: "",
+        labelEn: "",
+        options: (["mailer", "tuck"] as Shape[]).map((shapeId) => ({ shapeId, inkIds: [] })),
+      },
+      {
+        id: "one" as const,
+        labelTh: "",
+        labelEn: "",
+        options: (["mailer", "tuck"] as Shape[]).map((shapeId) => ({ shapeId, inkIds: [uuid(6)] })),
+      },
+    ],
+    qtys: [300, 500, 1000],
+    default: {
+      shape: "mailer" as const,
+      sizeId: "mailer:s0",
+      lengthMm: 100,
+      widthMm: 100,
+      heightMm: 50,
+      material: "corrE" as const,
+      print: "one" as const,
+      qty: 300,
+    },
+    defaultAdjusted: true,
+  };
+  const shapes = shapesOf(presets);
+
+  it("labels every shape and board in at most 14 characters, so a chip never overflows the panel", () => {
+    for (const messages of [thHome, enHome]) {
+      for (const label of [...Object.values(messages.panel.shapes), ...Object.values(messages.panel.boards)])
+        // Characters as read — a Thai mark (์) sits on its letter, it is not a character of its own.
+        expect([...new Intl.Segmenter("th", { granularity: "grapheme" }).segment(label)].length).toBeLessThanOrEqual(
+          14,
+        );
+    }
+    expect(thHome.panel.shapes).toEqual({ mailer: "ไปรษณีย์", lid: "ฝาครอบ", tuck: "ฝาเสียบ" });
+    expect(thHome.panel.boards).toEqual({ kraft350: "คราฟท์ 350g", art350: "อาร์ตการ์ด 350g", corrE: "ลูกฟูก E" });
+  });
+
+  it("gathers each shape's offer from the presets' lists, and previews a size as inside millimetres", () => {
+    expect(shapes.map((shape) => [shape.id, shape.materials.map((m) => m.id), shape.sizes.map((z) => z.id)])).toEqual([
+      ["mailer", ["corrE"], ["mailer:s0", "mailer:s1"]],
+      ["tuck", ["kraft350", "art350"], ["tuck:s0", "tuck:s1"]],
+    ]);
+    const first = selectionOfDefault(presets)!;
+    expect(requestOf({ ...first, sizeId: "mailer:s1" }, shapes)).toEqual({
+      shape: "mailer",
+      lengthMm: 150,
+      widthMm: 100,
+      heightMm: 50,
+      material: "corrE",
+      print: "one",
+      qty: 300,
+    });
+    expect(requestOf({ ...first, sizeId: "tuck:s0" }, shapes)).toBeNull();
+  });
+
+  it("falls back from the default to the nearest offered presets, never repeating one", () => {
+    const first = selectionOfDefault(presets)!;
+    expect(candidates(first, shapes)).toEqual([
+      first,
+      { ...first, qty: 500 },
+      { shape: "tuck", sizeId: "tuck:s0", material: "kraft350", print: "one", qty: 500 },
+    ]);
+    expect(candidates(null, [])).toEqual([]);
+  });
+
+  it("moves a choice the new shape does not offer to that shape's own first one, keeping the size's place", () => {
+    const onMailer = { ...selectionOfDefault(presets)!, sizeId: "mailer:s1" };
+    expect(reconcile({ ...onMailer, shape: "tuck" }, shapes)).toEqual({
+      shape: "tuck",
+      sizeId: "tuck:s1",
+      material: "kraft350",
+      print: "one",
+      qty: 500,
+    });
   });
 });
