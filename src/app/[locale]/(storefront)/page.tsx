@@ -1,6 +1,12 @@
 import { setRequestLocale } from "next-intl/server";
 
-import { getCatalogueTree, getSupportChannels, listFaqs, listStyles } from "@/features/customer/catalog/api.server";
+import {
+  getCatalogueTree,
+  getSupportChannels,
+  listFaqs,
+  listStyles,
+  publicApi,
+} from "@/features/customer/catalog/api.server";
 import { getHomeContent } from "@/features/customer/home/content.server";
 import {
   CustomerCases,
@@ -18,7 +24,6 @@ import {
 } from "@/features/customer/home/HomeSections";
 import { getStudioHero } from "@/features/customer/home/studio-hero.server";
 import { getGuarantee, getNetworkStats } from "@/features/customer/trust/api.server";
-import { serverRequests } from "@/lib/api/requests/server";
 
 /**
  * The storefront home, Studio-first (Phase 4, the V4 "Main" board — design language v3): the hero
@@ -43,10 +48,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     getGuarantee().catch(() => null),
     getNetworkStats().catch(() => null),
   ]);
-  // CONTRACT-REQUEST store.public-config (D-309): the minimum order the storefront states.
+  // `store.publicConfig.get` (D-309): the minimum order the storefront states.
   const [config, hero] = await Promise.all([
-    serverRequests("customer")
-      .then((api) => api.call("GET /v1/store/public-config"))
+    publicApi("catalogue")
+      .then((api) => api.GET("/v1/store/public-config"))
+      .then((response) => response.data ?? null)
       .catch(() => null),
     getStudioHero(),
   ]);
