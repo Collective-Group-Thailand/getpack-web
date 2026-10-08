@@ -16,7 +16,7 @@ import type { CustomerCase, HomePhoto } from "./content.server";
 import { HOME_WRAP, Photo, TemplateCard, UNDERLINE } from "./parts";
 import { NewsletterForm } from "./NewsletterForm";
 import { StudioHeroPanel } from "./StudioHeroPanel";
-import type { HeroShapeSetup } from "./studio-hero.server";
+import type { StudioHero } from "./studio-hero.server";
 
 /**
  * The home page's sections, to the V4 "Main" board (design language v3): one wrap of 1320 px with
@@ -36,11 +36,11 @@ export interface HeroFacts {
 }
 
 export async function HomeHero({
-  setup,
+  hero,
   photo,
   facts,
 }: {
-  setup: HeroShapeSetup[];
+  hero: StudioHero;
   photo: HomePhoto | null;
   facts: HeroFacts;
 }) {
@@ -89,7 +89,7 @@ export async function HomeHero({
             </div>
           </div>
         </div>
-        <StudioHeroPanel setup={setup} />
+        <StudioHeroPanel shapes={hero.shapes} initial={hero.initial} />
       </div>
     </section>
   );
@@ -504,14 +504,23 @@ export async function QualityBand({
             <Photo photo={photo} className="absolute inset-0" />
           </figure>
         ) : null}
+        {/* Left-aligned on the page's own edge with or without the photo (the board); the title
+            keeps to two lines at 36px — its one break is the copy's. */}
         <div
-          className={cn("w-full max-w-[45rem] px-5 py-14 md:px-8 lg:py-20", photo ? "lg:ps-18 lg:pe-12" : "mx-auto")}
+          className={cn(
+            photo
+              ? "w-full max-w-[45rem] px-5 py-14 md:px-8 lg:py-20 lg:ps-18 lg:pe-12"
+              : cn(HOME_WRAP, "py-14 lg:py-20"),
+          )}
         >
-          <h2 id="home-quality" className="text-fg-inverse text-[1.75rem] leading-[1.15] md:text-4xl">
+          <h2
+            id="home-quality"
+            className="text-fg-inverse max-w-[18em] text-start text-[1.75rem] leading-[1.15] md:text-[2.25rem]"
+          >
             {t.rich("title", br)}
           </h2>
           <p className="text-fg-inverse mt-4.5 max-w-[30em]">{t("body")}</p>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+          <ul className="mt-8 grid max-w-[45rem] gap-4 sm:grid-cols-2">
             {(
               [
                 ["upload", "/studio/upload"],
@@ -530,7 +539,7 @@ export async function QualityBand({
               </li>
             ))}
           </ul>
-          <p className="border-fg-inverse/25 text-fg-inverse mt-9 max-w-[32em] border-t pt-6 text-[0.9375rem]">
+          <p className="border-fg-inverse/25 text-fg-inverse mt-9 max-w-[45rem] border-t pt-6 text-[0.9375rem]">
             {facts}
           </p>
         </div>
@@ -540,6 +549,13 @@ export async function QualityBand({
 }
 
 /* ----------------------------------------------------------------------------------------- 9 */
+
+/** Product types that are not a packaging range (packio-api `prisma/seed/data/catalog.ts`). */
+const NOT_A_RANGE = new Set(["standard_product", "service"]);
+
+/** A category the home page lists: one with at least one packaging type in it. */
+export const isPackagingCategory = (category: CatalogueCategory): boolean =>
+  category.types.some((type) => !NOT_A_RANGE.has(type.code));
 
 export async function ProductRows({ categories, locale }: { categories: CatalogueCategory[]; locale: string }) {
   const [t, format] = await Promise.all([getTranslations("home.products"), getFormat()]);

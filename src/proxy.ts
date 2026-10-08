@@ -71,6 +71,14 @@ const ROOT_ASSETS = new Set([
  */
 const CRAWLER_FILES = new Set(["/robots.txt", "/sitemap.xml"]);
 
+/**
+ * Storefront media files in `public/media/` (the dev-only home photos, `HOME_PHOTOS_LOCAL_MANIFEST`):
+ * passed through unprefixed on the customer host, or next-intl negotiates `/media/x.jpg` into
+ * `/th/media/x.jpg` and the image 404s. A production build refuses untracked files there
+ * (`build-checks/no-untracked-third-party-assets.mjs`).
+ */
+const STOREFRONT_MEDIA = "/media/";
+
 export default async function proxy(request: NextRequest): Promise<NextResponse> {
   const zone = resolveZone(request.headers.get("host"), zoneHosts, enabledZones);
   const isSecure = isHttpsRequest(request.headers, request.nextUrl.protocol);
@@ -147,6 +155,10 @@ function route(request: NextRequest, zone: Zone, requestHeaders: Headers): NextR
   const { routePrefix, bffPath } = ZONE_CONFIG[zone];
 
   if (ROOT_ASSETS.has(pathname)) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
+  if (zone === "customer" && pathname.startsWith(STOREFRONT_MEDIA)) {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 

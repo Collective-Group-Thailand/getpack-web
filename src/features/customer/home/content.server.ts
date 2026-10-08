@@ -1,8 +1,14 @@
 import "server-only";
 
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import { getHomeSections, type HomeSection } from "@/features/customer/catalog/api.server";
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
+import { homePhotosLocalManifest } from "@/lib/env/lazy-server";
+
+import { fillEmptySlots, type LocalManifestAsset, photosFromManifest } from "./local-photos";
 
 /**
  * The home page's CMS content (Phase 4, the V4 "Main" board), from the back office's home
@@ -87,10 +93,25 @@ export interface HomeContent {
 /** The page's CMS content. A failed read is an empty page of extras, never a failed page. */
 export async function getHomeContent(locale: string): Promise<HomeContent> {
   const sections = await getHomeSections().catch(() => [] as HomeSection[]);
+  const photos = photosOf(locale, section(sections, "home-photos"));
   return {
-    photos: photosOf(locale, section(sections, "home-photos")),
+    photos: (await homePhotosLocalManifest()) ? fillEmptySlots(photos, await localPhotos(locale)) : photos,
     cases: casesOf(locale, section(sections, "customer-cases")),
   };
+}
+
+let warned = false;
+
+/** Dev only (`HOME_PHOTOS_LOCAL_MANIFEST=1`, refused in production): see `local-photos.ts`. */
+async function localPhotos(locale: string): Promise<HomePhotos> {
+  if (!warned) {
+    warned = true;
+    console.warn("home photos: local manifest fallback");
+  }
+  const manifest = await readFile(join(process.cwd(), "public", "media", "home", "manifest.json"), "utf8")
+    .then((body) => JSON.parse(body) as { assets?: LocalManifestAsset[] })
+    .catch(() => ({ assets: [] }));
+  return photosFromManifest(locale, manifest.assets ?? []);
 }
 
 export function photosOf(locale: string, config: Record<string, unknown> | null): HomePhotos {

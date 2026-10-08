@@ -68,11 +68,13 @@ export function NewsletterForm() {
       <Checkbox
         checked={consent}
         onCheckedChange={(next) => setConsent(next === true)}
+        // One 12px line (the board): short copy, and the link stays with it.
+        size="sm"
         className="text-muted"
         label={
           <>
             {t("consent")}{" "}
-            <Link href="/legal/privacy" className="text-primary underline underline-offset-4">
+            <Link href="/legal/privacy" className="text-primary whitespace-nowrap underline underline-offset-4">
               {t("privacy")}
             </Link>
           </>

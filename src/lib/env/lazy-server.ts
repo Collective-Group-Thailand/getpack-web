@@ -30,3 +30,9 @@ export async function zoneHostOf(zone: "customer" | "admin" | "partner"): Promis
   const { zoneHosts } = await import("./server");
   return zoneHosts[zone];
 }
+
+/** Dev only: whether the home page may fill empty photo slots from the local media manifest. */
+export async function homePhotosLocalManifest(): Promise<boolean> {
+  const { serverEnv } = await import("./server");
+  return serverEnv.HOME_PHOTOS_LOCAL_MANIFEST === "1";
+}

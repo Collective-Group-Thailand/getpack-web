@@ -16,6 +16,8 @@ import { baht, FACTORY, orders } from "./commerce";
 import { registerQueue } from "./console";
 import type { ClaimDetail } from "./logistics-model";
 import { etagOf } from "./tables";
+import { CLAIM_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 export { shipments, type Shipment } from "./shipments";
 export type Claim = ClaimDetail & { updatedAt: string };
@@ -358,6 +360,7 @@ export function toAdminClaimDto(item: Claim, who: StaffPersona | null): Schemas[
     type: item.type,
     origin: item.origin,
     status: item.status,
+    ...statusLabels("status", CLAIM_STATUS, item.status),
     orderId: item.order.id,
     orderCode: item.order.orderCode,
     customer: item.customer,

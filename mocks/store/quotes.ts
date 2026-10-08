@@ -35,6 +35,8 @@ import { byId, catalogProducts, imageUrl, live, typeCodeOf, type Row } from "./c
 import { customerOf } from "./customers";
 import { BasisError, caliperOf, convert, familyOf, type Basis, type Size } from "./specs";
 import { unitOf } from "./order-dto";
+import { QUOTE_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 type Step = Schemas["QuoteStepDto"];
 export type StoreQuote = z.output<typeof storeQuote>;
@@ -322,8 +324,10 @@ function patternsOf(product: Row, kind: SizeKind): Pattern[] {
         // The catalogue's key resolved to a style `@packio/dieline` draws (`rte` → reverse tuck end).
         dielineKey: resolveStyleId(String(pattern.dielineKey ?? "")),
         imageUrl: null,
-        // A single-part box prices its body only; multi-part patterns list their parts.
-        parts: subs.length > 0 ? [{ subPatternId: String(subs[0]!.id), name: String(subs[0]!.name) }] : [],
+        // A multi-part pattern lists every part (a telescope body and lid), each priced; none = one part.
+        parts: [...subs]
+          .sort((a, b) => Number(a.seq ?? 0) - Number(b.seq ?? 0))
+          .map((sub) => ({ subPatternId: String(sub.id), name: String(sub.name) })),
         rules: rulesOf(pattern, kind),
         styleCode: str(pattern.styleCode),
         internationalName: pattern.internationalNameVerifiedAt ? str(pattern.internationalName) : null,
@@ -816,7 +820,9 @@ export function inputsOf(productTypeCode: string, raw: Record<string, unknown>):
     if (bad) return bad;
   }
   const list = (value: unknown) => (Array.isArray(value) ? (value as unknown[]) : []);
-  const part = (list(raw.parts)[0] ?? raw) as Record<string, unknown>;
+  // Every part is priced: a box's colours and extras add up over its parts (a body and its lid).
+  const parts = (list(raw.parts).length > 0 ? list(raw.parts) : [raw]) as Record<string, unknown>[];
+  const sum = (count: (part: Record<string, unknown>) => number) => parts.reduce((total, p) => total + count(p), 0);
   const colours = (() => {
     switch (configurator.calculator) {
       case "label":
@@ -827,16 +833,19 @@ export function inputsOf(productTypeCode: string, raw: Record<string, unknown>):
       case "pouch":
         return raw.printColourId ? 4 : 0;
       default:
-        return list(part.printFront).length + list(part.printBack).length;
+        return sum((part) => list(part.printFront).length + list(part.printBack).length);
     }
   })();
   const extras =
     configurator.calculator === "pouch"
       ? list(raw.optionIds).length
-      : (part.finish1FrontId || part.coatingFrontId || raw.finishFrontId ? 1 : 0) +
-        (part.finish1BackId || part.coatingBackId || raw.finishBackId ? 1 : 0) +
-        list(part.finish2).length +
-        list(part.assemblies).length;
+      : sum(
+          (part) =>
+            (part.finish1FrontId || part.coatingFrontId || part.finishFrontId ? 1 : 0) +
+            (part.finish1BackId || part.coatingBackId || part.finishBackId ? 1 : 0) +
+            list(part.finish2).length +
+            list(part.assemblies).length,
+        );
   return {
     configurator,
     product,
@@ -1339,6 +1348,7 @@ export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
     id: quote.id,
     quoteCode: uncoded.has(quote.id) ? null : quote.quoteCode,
     status: expired ? "expired" : quote.status,
+    ...statusLabels("status", QUOTE_STATUS, expired ? "expired" : quote.status),
     source: quote.source,
     productTypeCode: quote.productType.code,
     summary: quoteSummaryOf(quote),

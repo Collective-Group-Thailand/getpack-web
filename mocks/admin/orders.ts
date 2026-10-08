@@ -33,6 +33,15 @@ import type { MockOrder } from "./commerce";
 import { companyStores } from "./companies";
 import { lineSummaryOf } from "./catalog";
 import { toAdminJobDto } from "./production";
+import {
+  ARTWORK_STATUS,
+  INSTALMENT_STATUS,
+  ORDER_GROUP_STATUS,
+  ORDER_STATUS,
+  PAYMENT_STATUS,
+  SLIP_STATUS,
+} from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
 const notFound = () => problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
@@ -209,6 +218,7 @@ export function toGroupDto(groupId: string, who: StaffPersona | null): Schemas["
     id: first.groupId,
     groupCode: first.groupCode,
     status: first.group.status,
+    ...statusLabels("status", ORDER_GROUP_STATUS, first.group.status),
     channel: first.channel,
     customerId: first.customer.id,
     customer: { ...first.customer },
@@ -282,6 +292,7 @@ function toSchedule(order: MockOrder): Schemas["AdminPaymentScheduleDto"] {
       openAmount: (Math.round((Number(item.grossAmount) - Number(item.paidAmount)) * 100) / 100).toFixed(2),
       paidAt: item.status === "paid" ? order.createdAt : null,
       status: item.status,
+      ...statusLabels("status", INSTALMENT_STATUS, item.status),
       allocations: [
         { orderId: order.id, orderCode: order.orderCode, grossAmount: item.grossAmount, cashAmount: item.grossAmount },
       ],
@@ -298,6 +309,10 @@ function toTimelineEntry(entry: ReturnType<typeof timelineOf>[number]): Schemas[
     type: milestone ? "production.milestone_reached" : entry.kind,
     messageKey: milestone ? "timeline.production.milestone_reached" : `timeline.${entry.kind}`,
     params: milestone ? { labelTh: entry.title, labelEn: entry.title } : {},
+    // D-313: the API words each entry for staff; the mock's own Thai title, in both languages.
+    messageTh: entry.title,
+    messageEn: entry.title,
+    count: 1,
     body: entry.detail,
     source: milestone ? "production_job" : "order",
     visibility: entry.visibility === "customer" ? ["customer", "internal"] : [entry.visibility],
@@ -340,7 +355,9 @@ function toListItem(order: MockOrder, who: StaffPersona | null): Schemas["AdminO
     grossAmount: order.grossAmount,
     currency: "THB",
     status: order.status,
+    ...statusLabels("status", ORDER_STATUS, order.status),
     artworkStatus: order.artwork.status,
+    ...statusLabels("artworkStatus", ARTWORK_STATUS, order.artwork.status),
     nextInstalment: next
       ? {
           seq: next.seq,
@@ -442,7 +459,9 @@ export const orderHandlers = [
         customerName: order.customer.displayName,
         productTypeCode: order.productType.code,
         status: order.status,
+        ...statusLabels("status", ORDER_STATUS, order.status),
         artworkStatus: order.artworkStatus,
+        ...statusLabels("artworkStatus", ARTWORK_STATUS, order.artworkStatus),
         grossAmount: order.grossAmount,
         promisedShipDate: order.promisedShipDate,
         placedAt: order.createdAt,
@@ -762,6 +781,7 @@ function paymentDto(order: MockOrder, payment: MockOrder["payments"][number]): S
     provider: "bank_transfer",
     providerRef: payment.providerRef,
     status: payment.status as Schemas["PaymentStatus"],
+    ...statusLabels("status", PAYMENT_STATUS, payment.status),
     amount: payment.amount,
     cashAmount: payment.amount,
     whtAmount: "0.00",
@@ -783,6 +803,7 @@ function paymentDto(order: MockOrder, payment: MockOrder["payments"][number]): S
       declaredAmount: slip.declaredAmount,
       declaredTransferredAt: slip.declaredTransferredAt,
       status: slip.verificationStatus as Schemas["SlipStatus"],
+      ...statusLabels("status", SLIP_STATUS, slip.verificationStatus),
       lastCheck: null,
       slaDueAt: slip.slaDueAt,
       createdAt: slip.uploadedAt,

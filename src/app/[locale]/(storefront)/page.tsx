@@ -1,6 +1,12 @@
 import { setRequestLocale } from "next-intl/server";
 
-import { getCatalogueTree, getSupportChannels, listFaqs, listStyles } from "@/features/customer/catalog/api.server";
+import {
+  getCatalogueTree,
+  getSupportChannels,
+  listFaqs,
+  listStyles,
+  publicApi,
+} from "@/features/customer/catalog/api.server";
 import { getHomeContent } from "@/features/customer/home/content.server";
 import {
   CustomerCases,
@@ -8,6 +14,7 @@ import {
   HomeFaq,
   HomeHero,
   PhotoMosaic,
+  isPackagingCategory,
   ProductRows,
   QualityBand,
   ScreenToFactory,
@@ -15,7 +22,7 @@ import {
   TemplateGallery,
   TrustRow,
 } from "@/features/customer/home/HomeSections";
-import { getStudioHeroSetup } from "@/features/customer/home/studio-hero.server";
+import { getStudioHero } from "@/features/customer/home/studio-hero.server";
 import { getGuarantee, getNetworkStats } from "@/features/customer/trust/api.server";
 
 /**
@@ -41,28 +48,37 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     getGuarantee().catch(() => null),
     getNetworkStats().catch(() => null),
   ]);
-  const setup = await getStudioHeroSetup(locale);
+  // `store.publicConfig.get` (D-309): the minimum order the storefront states.
+  const [config, hero] = await Promise.all([
+    publicApi("catalogue")
+      .then((api) => api.GET("/v1/store/public-config"))
+      .then((response) => response.data ?? null)
+      .catch(() => null),
+    getStudioHero(),
+  ]);
 
-  // Instant-price categories lead, as they lead the catalogue (UX audit step 4).
-  const categories = [...tree].sort(
-    (a, b) =>
-      Number(b.types.some((type) => type.availability !== "rfq")) -
-      Number(a.types.some((type) => type.availability !== "rfq")),
-  );
+  // Instant-price categories lead, as they lead the catalogue (UX audit step 4). Only packaging
+  // a customer configures: the `standard_product` and `service` types are bookkeeping, not a range.
+  const categories = tree
+    .filter(isPackagingCategory)
+    .sort(
+      (a, b) =>
+        Number(b.types.some((type) => type.availability !== "rfq")) -
+        Number(a.types.some((type) => type.availability !== "rfq")),
+    );
   const styleCategories = styles?.facets.category ?? [];
   const templateCount = styleCategories.reduce((sum, facet) => sum + facet.count, 0);
-  // The minimum order is policy: the configurators' own `quantity.min`, the value /configure enforces.
-  const minimums = setup.map((shape) => shape.configurator.quantity.min).filter((min): min is number => min !== null);
   const factories = network?.network.published ? network.network.partnerCount : null;
 
   return (
     <>
       <HomeHero
-        setup={setup}
+        hero={hero}
         photo={content.photos.hero}
         facts={{
           templates: templateCount > 0 ? templateCount : null,
-          moq: minimums.length ? Math.min(...minimums) : null,
+          // The made-to-order minimum from public config — never a catalogue floor worked out here.
+          moq: config?.minOrderQty.custom ?? null,
         }}
       />
       <TrustRow />

@@ -42,6 +42,8 @@ import {
 } from "./orders";
 import { toStoreOrderDto } from "./order-dto";
 import { nextQuoteId, quotesOf } from "./quotes";
+import { CLAIM_STATUS, SHIPMENT_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 const DAY = 24 * 60;
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
@@ -96,6 +98,7 @@ function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
     type: row.type,
     origin: row.origin,
     status: row.status,
+    ...statusLabels("status", CLAIM_STATUS, row.status),
     description: row.description,
     requestedResolution: row.requestedResolution,
     claimedQuantity: row.claimedQuantity,
@@ -312,12 +315,21 @@ export const storeFulfilmentHandlers = [
       shipments: toShipments(order).map((shipment) => ({
         shipmentNo: shipment.shipmentNo,
         status: TRACKING_OF[shipment.status] ?? "ready",
+        ...statusLabels("status", SHIPMENT_STATUS, TRACKING_OF[shipment.status] ?? "ready"),
         carrier: shipment.carrier,
         trackingNo: shipment.trackingNo,
         trackingUrl: shipment.trackingUrl,
         cartonsCount: shipment.cartonsCount,
         steps: shipment.events.flatMap((event) =>
-          TRACKING_OF[event.status] ? [{ status: TRACKING_OF[event.status]!, occurredAt: event.occurredAt }] : [],
+          TRACKING_OF[event.status]
+            ? [
+                {
+                  status: TRACKING_OF[event.status]!,
+                  statusLabelTh: statusLabels("status", SHIPMENT_STATUS, TRACKING_OF[event.status]!).statusLabelTh,
+                  occurredAt: event.occurredAt,
+                },
+              ]
+            : [],
         ),
       })),
     } satisfies Schemas["PublicTrackingDto"]);

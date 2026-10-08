@@ -129,6 +129,13 @@ describe("root assets", () => {
   });
 });
 
+describe("storefront media", () => {
+  it("serves /media/* unprefixed on the customer host only", async () => {
+    expect(rewriteTarget(await proxy(request("packio.co.th", "/media/home/wrap.jpg")))).toBeNull();
+    expect(rewriteTarget(await proxy(request("admin.packio.co.th", "/media/home/wrap.jpg")))).not.toBeNull();
+  });
+});
+
 describe("crawler files", () => {
   it("serves robots.txt and sitemap.xml unprefixed on the indexed zone", async () => {
     // Unprefixed matters: passed to next-intl these become `/th/robots.txt`, and a crawler

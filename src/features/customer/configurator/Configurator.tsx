@@ -31,8 +31,10 @@ import {
   isConverted,
   missingAreas,
   missingChoices,
+  partsOf,
   patternOf,
   POSTCODE,
+  printOfPart,
   readyToPrice,
   sizeProblems,
   stepsOf,
@@ -212,7 +214,22 @@ export function Configurator({
       .filter(Boolean)
       .join(" · ");
   })();
-  const choiceSummary = (step: StepKey) => {
+  const choiceSummary = (step: StepKey): string => {
+    const parts = partsOf(configurator, state);
+    if (step === "printing" && parts.some((part) => state.partPrints[part.subPatternId])) {
+      const names = (ids: string[]) =>
+        ids.flatMap((id) => {
+          const option = byId.get(id);
+          return option ? [pick(locale, option.nameTh, option.nameEn)] : [];
+        });
+      return parts
+        .map((part) => {
+          const print = printOfPart(state, part.subPatternId);
+          const colours = [...new Set([...names(print.print_front), ...names(print.print_back)])];
+          return `${part.name}: ${colours.join(", ") || t("choices.perPart.blank")}`;
+        })
+        .join(" · ");
+    }
     const chosen = groupsIn(configurator, step)
       .flatMap((group) => state.choices[group.kind] ?? [])
       .map((id) => byId.get(id))

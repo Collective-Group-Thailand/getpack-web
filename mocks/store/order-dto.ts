@@ -15,6 +15,8 @@ import { lineSummaryOf } from "../admin/catalog";
 import { baht, satang, type MockOrder } from "../admin/commerce";
 import { bangkokIso, mockId } from "../support";
 import { catalogProducts, imageUrl } from "./catalog";
+import { ARTWORK_STATUS, ORDER_STATUS } from "@/domain/status";
+import { statusLabels } from "../status-labels";
 
 const DAY_MS = 86_400_000;
 /** `claims.window_days` (D-082) and `orders.auto_complete_days` (D-081), as the mock settings have them. */
@@ -174,7 +176,9 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
     id: order.id,
     orderCode: order.orderCode,
     status: order.status,
+    ...statusLabels("status", ORDER_STATUS, order.status),
     artworkStatus: order.artwork.status,
+    ...statusLabels("artworkStatus", ARTWORK_STATUS, order.artwork.status),
     productTypeCode: order.productType.code,
     summary: summaryOf(order),
     quoteId: sibling(order, "qte"),

@@ -316,11 +316,12 @@
     "unavailable": "Provider unavailable"
   },
   "quotes": {
+    "no_target": "This quotation has no target price",
     "not_live": "Quotation not valid",
     "not_repriceable": "Cannot re-price",
     "nothing_to_save": "Nothing to save",
-    "still_valid": "Price still locked",
-    "no_target": "This quotation has no target price"
+    "preview_unavailable": "This choice cannot be priced on the home page yet — open the designer to see its price",
+    "still_valid": "Price still locked"
   },
   "receivables": {
     "allowance_rates_unset": "Allowance rates not set",

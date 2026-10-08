@@ -159,6 +159,11 @@
       "side": "Sides",
       "top_side": "Top and sides",
       "all_round": "All round"
+    },
+    "perPart": {
+      "label": "Print each part differently",
+      "description": "Otherwise {parts} print alike. Every part is always priced.",
+      "blank": "Unprinted"
     }
   },
   "quantity": {

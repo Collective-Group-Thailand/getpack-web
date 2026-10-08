@@ -29,6 +29,7 @@ import { launchpadHandlers } from "./launchpad";
 import { rfqBasketHandlers } from "./rfq-baskets";
 import { contentHandlers } from "./content";
 import { assistantHandlers } from "./assistant";
+import { heroHandlers } from "./hero";
 import { homeHandlers } from "./home";
 
 export const storeHandlers = [
@@ -40,6 +41,7 @@ export const storeHandlers = [
   ...contentHandlers,
   ...assistantHandlers,
   ...homeHandlers,
+  ...heroHandlers,
   ...structuralHandlers,
   ...repeatHandlers,
   ...storeAccountHandlers,

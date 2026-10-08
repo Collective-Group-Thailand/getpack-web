@@ -76,6 +76,8 @@ test.describe("configurator v2", () => {
 
   test("the Structure Advisor recommends a board, and taking one re-prices", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/configure/shipping-box`);
+    // The carton opens on its standard sizes (Phase 4); a size of the customer's own asks its basis.
+    await page.getByRole("radio", { name: "กำหนดเอง" }).click();
     await page.getByRole("radio", { name: /ขนาดภายใน/ }).click();
     await page.getByRole("textbox", { name: "ยาว" }).fill("400");
     await page.getByRole("textbox", { name: "กว้าง" }).fill("300");
