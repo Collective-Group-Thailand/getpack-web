@@ -10,7 +10,14 @@ import { MaterialSwatch } from "@/ui/components/MaterialSwatch";
 import { RadioCards } from "@/ui/components/RadioCards";
 
 import { isProcessInk, placementOf, type ChoiceGroup, type Placement, type StoreOption } from "./model";
-import type { AreaInput, Configurator, ConfiguratorState } from "./state";
+import {
+  partsOf,
+  printOfPart,
+  type AreaInput,
+  type Configurator,
+  type ConfiguratorState,
+  type PartPrint,
+} from "./state";
 import { GlossaryChip } from "@/features/customer/learn/GlossaryChip";
 
 /** "None" for a single-choice group the customer may leave unanswered. */
@@ -77,7 +84,9 @@ function AreaFields({
  *
  * Printing (U2.F1): the ink colours the product offers, per side; a process ink is one full-colour
  * pass (CMYK), any other ink one colour. Corrugated boxes also ask where the colours print. Group
- * names are the storefront's, per kind — the API publishes the options only.
+ * names are the storefront's, per kind — the API publishes the options only. A box of several
+ * parts (a telescope body and lid) prints alike unless the customer prints each part on its own;
+ * every part is priced either way.
  */
 export function ChoicesStep({ configurator, groups, state, onChange, missing }: ChoicesStepProps) {
   const t = useTranslations("configurator.choices");
@@ -96,12 +105,100 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
     const note = isProcessInk(option) ? t("ink.process") : kind ? t(`ink.${kind}`) : null;
     return [note, own].filter(Boolean).join(" · ") || undefined;
   };
-  const printing = groups.some((group) => group.kind === "print_front" || group.kind === "print_back");
-  const anyColour = (state.choices.print_front?.length ?? 0) + (state.choices.print_back?.length ?? 0) > 0;
+  const isPrint = (group: ChoiceGroup): group is ChoiceGroup & { kind: keyof PartPrint } =>
+    group.kind === "print_front" || group.kind === "print_back";
+  const printing = groups.some(isPrint);
+  const parts = printing ? partsOf(configurator, state) : [];
+  const perPart = parts.length > 1 && parts.some((part) => state.partPrints[part.subPatternId]);
+  const prints = perPart ? parts.map((part) => printOfPart(state, part.subPatternId)) : [printOfPart(state, undefined)];
+  const anyColour = prints.some((print) => print.print_front.length + print.print_back.length > 0);
+  const setPerPart = (next: boolean) => {
+    if (next) {
+      const box = printOfPart(state, undefined);
+      onChange({ partPrints: Object.fromEntries(parts.map((part) => [part.subPatternId, box])) });
+    } else {
+      // The parts print alike again, as the first one did.
+      const first = printOfPart(state, parts[0]?.subPatternId);
+      onChange({ partPrints: {}, choices: { ...state.choices, ...first } });
+    }
+  };
+
+  const optionList = (group: ChoiceGroup, chosen: string[], set: (ids: string[]) => void, placed: boolean) => {
+    const hasSwatch = group.options.some((option) => option.swatchHex || option.imageUrl);
+    return (
+      <ul className="mt-1 flex flex-col gap-3">
+        {group.options.map((option) => {
+          const checked = chosen.includes(option.id);
+          const placement = placed ? placementOf(group, option) : null;
+          return (
+            <li key={option.id} className="flex items-start gap-2">
+              {hasSwatch ? <MaterialSwatch colour={option.swatchHex} imageUrl={option.imageUrl} size="sm" /> : null}
+              <div className="min-w-0 flex-1">
+                <Checkbox
+                  checked={checked}
+                  onCheckedChange={(next) =>
+                    set(next === true ? [...chosen, option.id] : chosen.filter((id) => id !== option.id))
+                  }
+                  label={pick(locale, option.nameTh, option.nameEn)}
+                  description={describe(group, option)}
+                />
+                {checked && placement ? (
+                  <AreaFields
+                    placement={placement}
+                    value={state.areas[option.id]}
+                    onChange={(area) => onChange({ areas: { ...state.areas, [option.id]: area } })}
+                  />
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+  const printHint = (
+    <p className="text-muted text-xs">
+      {t("ink.hint")} <GlossaryChip slug="offset" />
+    </p>
+  );
 
   return (
     <div className="flex flex-col gap-6">
+      {parts.length > 1 ? (
+        <Checkbox
+          checked={perPart}
+          onCheckedChange={(next) => setPerPart(next === true)}
+          label={t("perPart.label")}
+          description={t("perPart.description", { parts: parts.map((part) => part.name).join(", ") })}
+        />
+      ) : null}
+      {perPart
+        ? parts.map((part) => (
+            <fieldset key={part.subPatternId} className="border-border flex flex-col gap-4 rounded-lg border p-4">
+              <legend className="px-1 text-sm font-semibold">{part.name}</legend>
+              {printHint}
+              {groups.filter(isPrint).map((group) => {
+                const print = printOfPart(state, part.subPatternId);
+                return (
+                  <fieldset key={group.kind} className="flex flex-col gap-2">
+                    <legend className="text-sm font-medium">{t(`groups.${group.kind}`)}</legend>
+                    {optionList(
+                      group,
+                      print[group.kind],
+                      (ids) =>
+                        onChange({
+                          partPrints: { ...state.partPrints, [part.subPatternId]: { ...print, [group.kind]: ids } },
+                        }),
+                      false,
+                    )}
+                  </fieldset>
+                );
+              })}
+            </fieldset>
+          ))
+        : null}
       {groups.map((group) => {
+        if (perPart && isPrint(group)) return null;
         const chosen = state.choices[group.kind] ?? [];
         const name = t(`groups.${group.kind}`);
         const hasSwatch = group.options.some((option) => option.swatchHex || option.imageUrl);
@@ -136,44 +233,8 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
         return (
           <fieldset key={group.kind} className="flex flex-col gap-2">
             <legend className="text-sm font-medium">{name}</legend>
-            {group.step === "printing" ? (
-              <p className="text-muted text-xs">
-                {t("ink.hint")} <GlossaryChip slug="offset" />
-              </p>
-            ) : null}
-            <ul className="mt-1 flex flex-col gap-3">
-              {group.options.map((option) => {
-                const checked = chosen.includes(option.id);
-                const placement = placementOf(group, option);
-                return (
-                  <li key={option.id} className="flex items-start gap-2">
-                    {hasSwatch ? (
-                      <MaterialSwatch colour={option.swatchHex} imageUrl={option.imageUrl} size="sm" />
-                    ) : null}
-                    <div className="min-w-0 flex-1">
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={(next) =>
-                          setChoice(
-                            group,
-                            next === true ? [...chosen, option.id] : chosen.filter((id) => id !== option.id),
-                          )
-                        }
-                        label={pick(locale, option.nameTh, option.nameEn)}
-                        description={describe(group, option)}
-                      />
-                      {checked && placement ? (
-                        <AreaFields
-                          placement={placement}
-                          value={state.areas[option.id]}
-                          onChange={(area) => onChange({ areas: { ...state.areas, [option.id]: area } })}
-                        />
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            {group.step === "printing" ? printHint : null}
+            {optionList(group, chosen, (ids) => setChoice(group, ids), true)}
           </fieldset>
         );
       })}

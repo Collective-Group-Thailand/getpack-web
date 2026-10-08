@@ -223,6 +223,43 @@ describe("the calculate body", () => {
     expect(result.steps.every((step) => step.instant)).toBe(true);
   });
 
+  it("prices every part of a box of several parts, each with its own print", async () => {
+    const configurator = await configuratorOf("telescope-box");
+    const parts = configurator.patterns[0]!.parts;
+    expect(parts.map((part) => part.name)).toEqual(["ตัวกล่อง", "ฝาบน"]);
+    const base = initialState(configurator);
+    const [cmyk, black] = groupsOf(configurator).find((group) => group.kind === "print_front")!.options;
+    const alike = { ...base, choices: { ...base.choices, print_front: [cmyk!.id] } };
+    expect(readyToPrice(configurator, alike)).toBe(true);
+    // Printed alike: both parts, both printed.
+    const together = buildConfiguration(configurator, alike) as Schemas["CorrugateConfigurationDto"];
+    expect(together.parts.map((part) => [part.subPatternId, part.printFront.map((ink) => ink.inkColourId)])).toEqual([
+      [parts[0]!.subPatternId, [cmyk!.id]],
+      [parts[1]!.subPatternId, [cmyk!.id]],
+    ]);
+    // The lid printed in one colour and the body left blank — each part as chosen.
+    const apart: ConfiguratorState = {
+      ...alike,
+      partPrints: {
+        [parts[0]!.subPatternId]: { print_front: [], print_back: [] },
+        [parts[1]!.subPatternId]: { print_front: [black!.id], print_back: [] },
+      },
+    };
+    const separate = buildConfiguration(configurator, apart) as Schemas["CorrugateConfigurationDto"];
+    expect(separate.parts.map((part) => part.printFront.map((ink) => ink.inkColourId))).toEqual([[], [black!.id]]);
+    const [both, lidOnly] = await Promise.all([
+      price(buildCalculateBody(configurator, alike)),
+      price(buildCalculateBody(configurator, apart)),
+    ]);
+    expect(both.steps.every((step) => step.instant)).toBe(true);
+    expect(Number(lidOnly.steps[0]!.unitPrice)).toBeLessThan(Number(both.steps[0]!.unitPrice));
+    // Reopened, each part keeps its print; printed alike, nothing per part is kept.
+    expect(initialState(configurator, seedFromConfiguration(configurator, separate as never)).partPrints).toEqual(
+      apart.partPrints,
+    );
+    expect(initialState(configurator, seedFromConfiguration(configurator, together as never)).partPrints).toEqual({});
+  });
+
   it("is the published label, and the published pouch with its gusset", async () => {
     const label = await configuratorOf("product-label");
     const labelState = custom(initialState(label), { w: 60, l: 40 }, "product");
