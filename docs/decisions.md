@@ -1,3 +1,4 @@
+<!-- Synced from packio-api v0.42.0 by `pnpm docs:sync` — do not edit here; change it in packio-api. -->
 # Packio — Decision Log
 
 > Same file in `packio-api/docs/decisions.md` and `packio-web/docs/decisions.md`. Prompts reference decisions by id (`D-###`). A decision changes only by a new entry that supersedes the old one.

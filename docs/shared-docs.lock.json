@@ -1,0 +1,9 @@
+{
+  "$comment": "Shared with packio-api, which owns them. Written by `pnpm docs:sync`; `pnpm docs:sync --check` fails on hand edits.",
+  "tag": "v0.42.0",
+  "commit": "7017562f6b4bdebf568b77be38896aac1b77e9a3",
+  "files": {
+    "docs/decisions.md": "e957273a32e01867e9bd3612a91c89f51c312663e69a3febb57bda8e76da9010",
+    "docs/contract/api-conventions.md": "09e430a347698e8d972b5fbf0464b886e1db3427f856bfbe84a0b5f42c0d074c"
+  }
+}
