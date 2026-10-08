@@ -52,6 +52,12 @@ export interface LoadInput {
   pallet: { pattern: Schemas["AdvisoryPalletPattern"]; overhang: boolean } | null;
 }
 
+/** The print sides of one part of a multi-part box. */
+export interface PartPrint {
+  print_front: string[];
+  print_back: string[];
+}
+
 /** The board the customer took from a recommendation (D-240). */
 export interface AdvisoryChoice {
   recommendationId: string;
@@ -75,6 +81,12 @@ export interface ConfiguratorState {
   unit: LengthUnit;
   /** Group kind → chosen option ids. A single-choice group holds at most one. */
   choices: Partial<Record<GroupKind, string[]>>;
+  /**
+   * A box of several parts (a telescope body and lid): sub-pattern id → that part's print, when the
+   * customer prints the parts differently. A part not listed prints as `choices.print_*` — every
+   * part is priced either way (`build.ts`).
+   */
+  partPrints: Record<string, PartPrint>;
   /** Option id → where a placed finish or assembly goes. */
   areas: Record<string, AreaInput>;
   /** Corrugate: where the colours print (`CorrugatePrintColourDto.area`). */
@@ -111,6 +123,20 @@ export const DEFAULT_LOAD: LoadInput = {
 
 export function patternOf(configurator: Configurator, state: Pick<ConfiguratorState, "patternId">) {
   return patternById(configurator, state.patternId);
+}
+
+/** The parts the calculator prices, in order: a pattern without parts is one part, sent without a sub-pattern. */
+export function partsOf(configurator: Configurator, state: Pick<ConfiguratorState, "patternId">) {
+  return [...(patternOf(configurator, state)?.parts ?? [])].sort((a, b) => a.seq - b.seq);
+}
+
+/** What one part prints: its own print when the parts differ, else the box's. */
+export function printOfPart(
+  state: Pick<ConfiguratorState, "choices" | "partPrints">,
+  subPatternId: string | undefined,
+): PartPrint {
+  const own = subPatternId ? state.partPrints[subPatternId] : undefined;
+  return own ?? { print_front: state.choices.print_front ?? [], print_back: state.choices.print_back ?? [] };
 }
 
 /** The axes a product is sized by, in the order they are asked. */
@@ -164,6 +190,7 @@ export function initialState(configurator: Configurator, seed: Partial<Configura
     flatStyle: false,
     unit: "mm",
     choices,
+    partPrints: {},
     areas: {},
     printArea: configurator.printAreas[0] ?? null,
     quantities: tiers,
