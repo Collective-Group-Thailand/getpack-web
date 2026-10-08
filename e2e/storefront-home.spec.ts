@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { acceptCookies, signInAsCustomer } from "./helpers/customer";
+import { expectHeroParity } from "./helpers/hero";
 import { gotoHydrated } from "./helpers/session";
 
 /**
@@ -53,45 +54,28 @@ test("the home page: the v10 sections in the board's order, and no stories witho
   await expectNoViolations(page);
 });
 
-test("the hero's Studio panel prices exactly what the configurator prices for the same choices", async ({ page }) => {
-  await gotoHydrated(page, HOSTS.customer);
-  const panel = page.getByRole("region", { name: "สตูดิโอ · แบบร่างใหม่" });
-  // Every chip is the catalogue's: the shapes are products priced online, the rest their configurator's.
-  await panel.getByRole("group", { name: "ทรงกล่อง" }).getByRole("button", { name: "กล่องฝาเสียบ" }).click();
-  await panel.getByRole("group", { name: "ขนาด (ซม.)" }).getByRole("button", { name: "15 × 15 × 7" }).click();
-  await panel.getByRole("group", { name: "จำนวน" }).getByRole("button", { name: "1,000" }).click();
-  await expect(panel.getByRole("button", { name: "1,000" })).toHaveAttribute("aria-pressed", "true");
-  await expect(panel.getByText("ราคาต่อชิ้น · 1,000 ชิ้น · รวม VAT")).toBeVisible();
-  // The price has settled for these choices (the panel marks an update in flight as busy).
-  await expect(panel.locator("[aria-busy]")).toHaveCount(0);
-  const unit = (
-    await panel
-      .getByText(/^฿[\d,]+\.\d{2}/)
-      .first()
-      .innerText()
-  ).match(/฿[\d,]+\.\d{2}/)![0];
-
-  await panel.getByRole("link", { name: "ดูรายละเอียดราคาและปรับสเปกเพิ่ม" }).click();
-  await expect(page).toHaveURL(/\/configure\/tuck-end-box\?.*size=M.*qty=1000/);
-  const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
-  await expect(dock).toContainText("1,000 ชิ้น");
-  await expect(dock).toContainText(`${unit} / ชิ้น`);
-});
+for (const shape of ["mailer", "lid", "tuck"] as const) {
+  test(`the hero prices the ${shape} shape exactly as the configurator prices the same choices`, async ({ page }) => {
+    await gotoHydrated(page, HOSTS.customer);
+    // Every shape is offered by the mock's presets; the lid is a two-part box (body and lid).
+    expect(await expectHeroParity(page, shape)).toBe(true);
+  });
+}
 
 test("the panel's shapes and quantities are the catalogue's, not fixed in the page", async ({ page }) => {
   await gotoHydrated(page, HOSTS.customer);
   const panel = page.getByRole("region", { name: "สตูดิโอ · แบบร่างใหม่" });
   await expect(panel.getByRole("group", { name: "ทรงกล่อง" }).getByRole("button")).toHaveText([
-    "กล่องฝาเสียบ",
-    "กล่องไปรษณีย์",
-    "กล่องลูกฟูกฝาชน",
+    "ไปรษณีย์",
+    "ฝาครอบ",
+    "ฝาเสียบ",
   ]);
-  // The mock configurators' presets (500 … 10,000), the first four.
+  // The mock's `catalog.hero_presets` quantities, within the opening shape's limits.
   await expect(panel.getByRole("group", { name: "จำนวน" }).getByRole("button")).toHaveText([
+    "300",
     "500",
     "1,000",
     "2,000",
-    "3,000",
   ]);
 });
 

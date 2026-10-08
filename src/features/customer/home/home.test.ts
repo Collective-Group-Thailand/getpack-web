@@ -4,7 +4,7 @@ import { publishableFaqs } from "@/features/customer/catalog/faq-hygiene";
 
 import { casesOf, MIN_CASES, photosOf } from "./content.server";
 import { isPackagingCategory } from "./HomeSections";
-import { candidates, reconcile } from "./studio-hero";
+import { candidates, reconcile, requestOf, selectionOfDefault, shapesOf } from "./studio-hero";
 import enHome from "@/i18n/messages/en/customer/home.json";
 import thHome from "@/i18n/messages/th/customer/home.json";
 import { isoBox, MATERIAL_TINT } from "./iso-box";
@@ -111,22 +111,76 @@ describe("home data hygiene (Main board review)", () => {
 });
 
 describe("Studio hero presets (Main board review)", () => {
-  const shape = (id: "mailer" | "lid" | "tuck", quantities: number[], boards: ("kraft350" | "art350" | "corrE")[]) => ({
-    id,
-    productSlug: id,
-    catalogProductId: "00000000-0000-4000-8000-000000000001",
-    patternId: "00000000-0000-4000-8000-000000000002",
-    dielineKey: null,
-    sizes: [{ code: "S", lengthMm: 100, widthMm: 100, heightMm: 50 }],
-    boards: boards.map((board) => ({ id: board, optionId: "00000000-0000-4000-8000-000000000003" })),
-    prints: [
-      { id: "none" as const, inkOptionIds: [] },
-      { id: "one" as const, inkOptionIds: ["00000000-0000-4000-8000-000000000004"] },
+  type Shape = "mailer" | "lid" | "tuck";
+  const uuid = (n: number) => `00000000-0000-4000-8000-00000000000${n}`;
+  // `store.catalog.getHeroPresets` as v0.43.1 publishes it: flat lists, each option per shape.
+  const presets = {
+    shapes: (["mailer", "tuck"] as const).map((id) => ({
+      id,
+      labelTh: id,
+      productSlug: id,
+      catalogProductId: uuid(1),
+      productTypeCode: "x",
+      calculator: "folding",
+      patternId: uuid(2),
+      dielineKey: null,
+      styleCode: null,
+      qtys: id === "mailer" ? [300, 500] : [500, 1000],
+    })),
+    sizes: (["mailer", "tuck"] as Shape[]).flatMap((shapeId) =>
+      [0, 1].map((i) => ({
+        id: `${shapeId}:s${i}`,
+        shapeId,
+        code: `s${i}`,
+        labelTh: "",
+        lengthMm: 100 + i * 50,
+        widthMm: 100,
+        heightMm: 50,
+      })),
+    ),
+    materials: [
+      {
+        id: "kraft350" as const,
+        labelTh: "",
+        labelEn: "",
+        options: [{ shapeId: "tuck" as Shape, materialId: uuid(3) }],
+      },
+      { id: "art350" as const, labelTh: "", labelEn: "", options: [{ shapeId: "tuck" as Shape, materialId: uuid(4) }] },
+      {
+        id: "corrE" as const,
+        labelTh: "",
+        labelEn: "",
+        options: [{ shapeId: "mailer" as Shape, materialId: uuid(5) }],
+      },
     ],
-    quantities,
-    quoteValidityDays: 15,
-  });
-  const shapes = [shape("mailer", [300, 500], ["corrE"]), shape("tuck", [500, 1000], ["kraft350", "art350"])];
+    prints: [
+      {
+        id: "none" as const,
+        labelTh: "",
+        labelEn: "",
+        options: (["mailer", "tuck"] as Shape[]).map((shapeId) => ({ shapeId, inkIds: [] })),
+      },
+      {
+        id: "one" as const,
+        labelTh: "",
+        labelEn: "",
+        options: (["mailer", "tuck"] as Shape[]).map((shapeId) => ({ shapeId, inkIds: [uuid(6)] })),
+      },
+    ],
+    qtys: [300, 500, 1000],
+    default: {
+      shape: "mailer" as const,
+      sizeId: "mailer:s0",
+      lengthMm: 100,
+      widthMm: 100,
+      heightMm: 50,
+      material: "corrE" as const,
+      print: "one" as const,
+      qty: 300,
+    },
+    defaultAdjusted: true,
+  };
+  const shapes = shapesOf(presets);
 
   it("labels every shape and board in at most 14 characters, so a chip never overflows the panel", () => {
     for (const messages of [thHome, enHome]) {
@@ -140,35 +194,42 @@ describe("Studio hero presets (Main board review)", () => {
     expect(thHome.panel.boards).toEqual({ kraft350: "คราฟท์ 350g", art350: "อาร์ตการ์ด 350g", corrE: "ลูกฟูก E" });
   });
 
+  it("gathers each shape's offer from the presets' lists, and previews a size as inside millimetres", () => {
+    expect(shapes.map((shape) => [shape.id, shape.materials.map((m) => m.id), shape.sizes.map((z) => z.id)])).toEqual([
+      ["mailer", ["corrE"], ["mailer:s0", "mailer:s1"]],
+      ["tuck", ["kraft350", "art350"], ["tuck:s0", "tuck:s1"]],
+    ]);
+    const first = selectionOfDefault(presets)!;
+    expect(requestOf({ ...first, sizeId: "mailer:s1" }, shapes)).toEqual({
+      shape: "mailer",
+      lengthMm: 150,
+      widthMm: 100,
+      heightMm: 50,
+      material: "corrE",
+      print: "one",
+      qty: 300,
+    });
+    expect(requestOf({ ...first, sizeId: "tuck:s0" }, shapes)).toBeNull();
+  });
+
   it("falls back from the default to the nearest offered presets, never repeating one", () => {
-    const first = {
-      shape: "mailer" as const,
-      sizeCode: "S",
-      board: "corrE" as const,
-      print: "one" as const,
-      quantity: 300,
-    };
+    const first = selectionOfDefault(presets)!;
     expect(candidates(first, shapes)).toEqual([
       first,
-      { ...first, quantity: 500 },
-      { shape: "tuck", sizeCode: "S", board: "kraft350", print: "one", quantity: 500 },
+      { ...first, qty: 500 },
+      { shape: "tuck", sizeId: "tuck:s0", material: "kraft350", print: "one", qty: 500 },
     ]);
     expect(candidates(null, [])).toEqual([]);
   });
 
-  it("moves a choice the new shape does not offer to that shape's own first one", () => {
-    const onMailer = {
-      shape: "mailer" as const,
-      sizeCode: "S",
-      board: "corrE" as const,
-      print: "one" as const,
-      quantity: 300,
-    };
+  it("moves a choice the new shape does not offer to that shape's own first one, keeping the size's place", () => {
+    const onMailer = { ...selectionOfDefault(presets)!, sizeId: "mailer:s1" };
     expect(reconcile({ ...onMailer, shape: "tuck" }, shapes)).toEqual({
-      ...onMailer,
       shape: "tuck",
-      board: "kraft350",
-      quantity: 500,
+      sizeId: "tuck:s1",
+      material: "kraft350",
+      print: "one",
+      qty: 500,
     });
   });
 });

@@ -18,11 +18,6 @@ export const AWAITING_TRIAGE: readonly string[] = [
   // U-F3 (2026-10-06): the footer's company identity, the newsletter sign-up.
   "GET /v1/store/company-identity",
   "POST /v1/store/newsletter/actions/subscribe",
-  // Main board review (2026-10-08): the Studio hero presets and price (D-310), the public config (D-309) —
-  // built in packio-api, not yet in a tagged contract.
-  "GET /v1/store/catalog/hero-presets",
-  "POST /v1/store/quotes/actions/preview",
-  "GET /v1/store/public-config",
   // U3.6 (2026-10-06): the staff a structural design request can be assigned to.
   "GET /v1/admin/structural-requests/designers",
 ];

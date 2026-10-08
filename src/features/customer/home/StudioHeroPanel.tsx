@@ -8,13 +8,12 @@ import { useDebounced } from "@/features/customer/configurator/pricing";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { HeroPreview, HeroSelection } from "@/lib/api/requests/store-hero";
+import { browserApi, isApiError } from "@/lib/api/browser";
 import { buttonVariants } from "@/ui/components/Button";
 import { cn } from "@/ui/lib/cn";
 
 import { isoBox, MATERIAL_TINT } from "./iso-box";
-import { pricedStep, reconcile } from "./studio-hero";
+import { reconcile, requestOf, sameSelection, type HeroPriced, type HeroSelection } from "./studio-hero";
 import type { HeroShape } from "./studio-hero.server";
 
 const SHAPES = ["mailer", "lid", "tuck"] as const;
@@ -23,40 +22,37 @@ const PRINTS = ["none", "one", "full"] as const;
 /** The panel asks for a price once the customer pauses for this long (Phase 4 §4.3). */
 const PRICE_DELAY_MS = 250;
 /** The drawing when there is no catalogue to show: the board's first size, 18 × 12 × 5 cm. */
-const NO_SIZE = { code: "", lengthMm: 180, widthMm: 120, heightMm: 50 };
-
-const same = (a: HeroSelection, b: HeroSelection) =>
-  a.shape === b.shape &&
-  a.sizeCode === b.sizeCode &&
-  a.board === b.board &&
-  a.print === b.print &&
-  a.quantity === b.quantity;
+const NO_SIZE = { id: "", lengthMm: 180, widthMm: 120, heightMm: 50 };
 
 /**
  * The hero's working mini studio (Phase 4 §4.3, the "Main" board): shape, size, board, print and
  * quantity as chips, the box drawn isometrically from them, and the price.
  *
- * Every chip is a hero preset (D-310, `store.catalog.heroPresets`): three short shapes, three
+ * Every chip is a hero preset (D-310, `store.catalog.getHeroPresets`): three short shapes, three
  * boards and the quantities the catalogue backs — a board or print the current shape does not
- * offer is shown, disabled. The price is `store.quotes.preview`, which prices the product's
- * reference configuration with the selection by the `store.quotes.calculate` path, and hands back
- * that configuration — so `/configure` opens on the same price. The panel opens on a selection the
- * server already priced (`initial`), so its first state is always a price; only a change the
- * customer makes can meet "no instant price". Nothing here computes money.
+ * offer is shown, disabled. The price is `store.quotes.preview`, which prices the selection by the
+ * `store.quotes.calculate` path, every part of a multi-part box included — the body `/configure`
+ * sends for the same choices, so it opens on the same price. The panel opens on a selection the
+ * server already priced (`initial`), so its first state is a price; only a change the customer
+ * makes can meet "no instant price". Nothing here computes money.
  */
-export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; initial: HeroPreview | null }) {
+export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; initial: HeroPriced | null }) {
   const t = useTranslations("home.panel");
   const format = useFormat();
   const ids = useId();
   const [selection, setSelection] = useState<HeroSelection | null>(initial?.selection ?? null);
   const settled = useDebounced(selection, PRICE_DELAY_MS);
   const current = shapes.find((shape) => shape.id === selection?.shape) ?? null;
-  const fresh = settled !== null && initial !== null && same(settled, initial.selection);
+  const fresh = settled !== null && initial !== null && sameSelection(settled, initial.selection);
+  const body = settled ? requestOf(settled, shapes) : null;
 
   const preview = useQuery({
-    queryKey: [...queryKeys.zone("customer"), "hero-preview", settled],
-    queryFn: () => browserRequests().call("POST /v1/store/quotes/actions/preview", { body: settled! }),
-    enabled: settled !== null && !fresh,
+    queryKey: [...queryKeys.zone("customer"), "hero-preview", body],
+    queryFn: async (): Promise<HeroPriced> => {
+      const { data } = await browserApi().POST("/v1/store/quotes/actions/preview", { body: body! });
+      return { selection: settled!, preview: data! };
+    },
+    enabled: body !== null && !fresh,
     // The opening price is the server's; a later one stays up (marked updating) for the same shape only.
     initialData: fresh ? initial! : undefined,
     placeholderData: (previous) => (previous?.selection.shape === settled?.shape ? previous : undefined),
@@ -65,14 +61,14 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
   });
   const pending = selection !== settled || preview.isFetching;
   const shown = preview.data ?? null;
-  const step = shown ? pricedStep(shown) : null;
+  const priced = shown?.preview ?? null;
 
   const pick = (next: Partial<HeroSelection>) =>
     setSelection((prev) => (prev ? reconcile({ ...prev, ...next }, shapes) : prev));
 
-  const size = current?.sizes.find((entry) => entry.code === selection?.sizeCode) ?? current?.sizes[0] ?? NO_SIZE;
-  const board = current?.boards.find((entry) => entry.id === selection?.board) ?? null;
-  const inks = current?.prints.find((entry) => entry.id === selection?.print)?.inkOptionIds ?? [];
+  const size = current?.sizes.find((entry) => entry.id === selection?.sizeId) ?? current?.sizes[0] ?? NO_SIZE;
+  const board = current?.materials.find((entry) => entry.id === selection?.material) ?? null;
+  const inks = current?.prints.find((entry) => entry.id === selection?.print)?.inkIds ?? [];
   const cm = (mm: number) => format.number(mm / 10, { maximumFractionDigits: 1 });
   const sizeName = t("sizeChip", { w: cm(size.lengthMm), d: cm(size.widthMm), h: cm(size.heightMm) });
   const shapeName = current ? t(`shapes.${current.id}`) : t("box");
@@ -88,18 +84,21 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
     ...(current?.styleId
       ? { style: current.styleId, l: String(size.lengthMm), w: String(size.widthMm), h: String(size.heightMm) }
       : {}),
-    ...(board ? { material: board.optionId } : {}),
+    ...(board ? { material: board.materialId } : {}),
     ...(current ? { pattern: current.patternId } : {}),
   });
   const studioHref = `/studio/new?${studioQuery.toString()}`;
-  // The query `/configure` reads (`seedFromDesign`): the same selection, so it shows this price.
+  // The query `/configure` reads (`seedFromDesign`): the same selection on the inside size, so it
+  // builds the body the preview priced (every part printed alike) and shows this price.
   const configureHref =
     current && board && selection
       ? `/configure/${current.productSlug}?${new URLSearchParams({
           pattern: current.patternId,
-          material: board.optionId,
-          size: size.code,
-          qty: String(selection.quantity),
+          material: board.materialId,
+          l: String(size.lengthMm),
+          w: String(size.widthMm),
+          d: String(size.heightMm),
+          qty: String(selection.qty),
           from: "home",
           ink: inks.length ? inks.join(",") : "none",
         })}`
@@ -165,11 +164,7 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
               </Row>
               <Row label={t("labels.size")}>
                 {current.sizes.map((entry) => (
-                  <Chip
-                    key={entry.code}
-                    pressed={size.code === entry.code}
-                    onClick={() => pick({ sizeCode: entry.code })}
-                  >
+                  <Chip key={entry.id} pressed={size.id === entry.id} onClick={() => pick({ sizeId: entry.id })}>
                     {t("sizeChip", { w: cm(entry.lengthMm), d: cm(entry.widthMm), h: cm(entry.heightMm) })}
                   </Chip>
                 ))}
@@ -181,9 +176,9 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
                 {BOARDS.map((id) => (
                   <Chip
                     key={id}
-                    pressed={selection.board === id}
-                    disabled={!current.boards.some((entry) => entry.id === id)}
-                    onClick={() => pick({ board: id })}
+                    pressed={selection.material === id}
+                    disabled={!current.materials.some((entry) => entry.id === id)}
+                    onClick={() => pick({ material: id })}
                   >
                     {t(`boards.${id}`)}
                   </Chip>
@@ -202,8 +197,8 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
                 ))}
               </Row>
               <Row label={t("labels.quantity")}>
-                {current.quantities.map((value) => (
-                  <Chip key={value} pressed={selection.quantity === value} onClick={() => pick({ quantity: value })}>
+                {current.qtys.map((value) => (
+                  <Chip key={value} pressed={selection.qty === value} onClick={() => pick({ qty: value })}>
                     {format.number(value)}
                   </Chip>
                 ))}
@@ -216,10 +211,10 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
               <div className="min-h-[5.5rem] min-w-0">
                 {!current || !selection ? (
                   <p className="text-muted max-w-[22em] text-sm">{t("noSetup")}</p>
-                ) : step ? (
+                ) : priced ? (
                   <>
                     <p className="text-muted text-[13px]">
-                      {t("priceCaption", { qty: format.number(shown!.selection.quantity) })}
+                      {t("priceCaption", { qty: format.number(shown!.selection.qty) })}
                     </p>
                     <p
                       className={cn(
@@ -227,26 +222,28 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
                         pending && "opacity-60",
                       )}
                     >
-                      {format.thb(step.unitPrice!)}{" "}
-                      {step.productAmount ? (
-                        <small className="text-muted text-sm font-normal tracking-normal">
-                          {t("total", { total: format.thb(step.productAmount) })}
-                        </small>
-                      ) : null}
+                      {format.thb(priced.unitPrice)}{" "}
+                      <small className="text-muted text-sm font-normal tracking-normal">
+                        {t("total", { total: format.thb(priced.total) })}
+                      </small>
                     </p>
                     <p className="text-muted text-[13px]">
                       {[
-                        step.leadTimeDays !== null ? t("lead", { days: step.leadTimeDays }) : null,
-                        t("lock", { days: current.quoteValidityDays }),
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
+                        t("lead", {
+                          days:
+                            priced.leadTimeBusinessDays.min === priced.leadTimeBusinessDays.max
+                              ? format.number(priced.leadTimeBusinessDays.min)
+                              : `${format.number(priced.leadTimeBusinessDays.min)}–${format.number(priced.leadTimeBusinessDays.max)}`,
+                        }),
+                        t("lock", { date: format.date(priced.priceLockUntil) }),
+                      ].join(" · ")}
                     </p>
                   </>
                 ) : preview.isError ? (
-                  <p className="text-muted max-w-[22em] text-sm">{t("retry")}</p>
-                ) : shown && !pending ? (
-                  <p className="text-muted max-w-[22em] text-sm">{t("unpriced")}</p>
+                  <p className="text-muted max-w-[22em] text-sm">
+                    {/* A 4xx: the API cannot price this choice instantly; a failure may pass on a retry. */}
+                    {isApiError(preview.error) && preview.error.status < 500 ? t("unpriced") : t("retry")}
+                  </p>
                 ) : (
                   <p className="text-muted text-sm">{t("calculating")}</p>
                 )}
@@ -256,7 +253,7 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
               </Link>
             </div>
             {/* Always takes its line, so the panel does not grow when the price arrives (CLS). */}
-            {configureHref && step ? (
+            {configureHref && priced ? (
               <Link href={configureHref} className="text-muted mt-2 inline-block border-b border-current text-[13px]">
                 {t("configure")}
               </Link>
