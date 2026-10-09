@@ -178,7 +178,6 @@ describe("Studio hero presets (Main board review)", () => {
       print: "one" as const,
       qty: 300,
     },
-    defaultAdjusted: true,
   };
   const shapes = shapesOf(presets);
 

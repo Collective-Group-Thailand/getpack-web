@@ -144,7 +144,6 @@ function presets(): Schemas["HeroPresetsDto"] {
             qty: first.shape.qtys[0]!,
           }
         : null,
-    defaultAdjusted: false,
   };
 }
 
