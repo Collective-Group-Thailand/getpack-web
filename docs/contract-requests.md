@@ -261,14 +261,14 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 - **Ask:** packio-api adopts `docs/ui/glossary.md` for its Thai problem details, notification texts, settings labels and examples, then a contract release.
 - **Web meanwhile:** `src/i18n/terms.ts` maps the old words at display — every API problem `title`/`detail` (audience from the request's surface: store → แบบตัวอย่าง, admin/partner → Proof), notification titles and bodies, the studio's soft-proof label — so no user reads the old term while this is pending.
 
-## `partner.price-components` — which product types read each component (partner UX, 2026-10-09)
+## ~~`partner.price-components` — which product types read each component (partner UX, 2026-10-09)~~ — shipped in packio-api v0.43.4, adopted
 
 - **Today:** `GET /v1/partner/price-components` returns every registered component (≈65) with no product type, so a folding-carton price list offered pouch film, corrugated board and label rolls as empty tabs.
 - **Ask:** on `PriceComponentDto`, `productTypeCodes: string[]` — the product types whose calculator reads the component (the `pl*` models each `*-snapshot.loader.ts` queries). Optionally on `PriceListVersionDto`, `componentLineCounts: Record<PriceComponent, number>` so tabs can show how many lines each holds without one read per component (each read is audited, D-044).
-- **Web meanwhile:** `src/features/partner/prices/components-by-type.ts` copies the pairing (`// CONTRACT-GAP partner.price-components-by-type`). **Built** in packio-api branch `feat/partner-ux-contract` as `PriceComponentDto.productTypeCodes` (with a spec that checks the lists against the loaders), awaiting its checks, contract build and a tag; then `componentsFor` reads the field and the copy goes.
+- **Web meanwhile:** `src/features/partner/prices/components-by-type.ts` copies the pairing (`// CONTRACT-GAP partner.price-components-by-type`). **Done (v0.43.4, 2026-10-10):** `PriceComponentDto.productTypeCodes`; `componentsFor` reads it, the copy stays only as a fallback for an API older than v0.43.4 (delete once every stack serves it).
 
 ## Partner UX pass — figures the factory screens need from the API (2026-10-09)
 
-- **`partner.priceLists.shippingCard` zone names:** partner shipping rates carry only `zoneCode` (`uat_bkk_metro`); the zone's name is admin-only (`/v1/admin/shipping/zones`). **Ask:** `zoneNameTh`/`zoneNameEn` on each partner shipping rate. **Web meanwhile:** the code is shown. **Built** in packio-api branch `feat/partner-ux-contract` (`FactoryRateDto.zoneNameTh/En`), awaiting its checks, contract build and a tag.
+- ~~**`partner.priceLists.shippingCard` zone names:**~~ **Done (v0.43.4):** partner shipping rates carry only `zoneCode` (`uat_bkk_metro`); the zone's name is admin-only (`/v1/admin/shipping/zones`). **Ask:** `zoneNameTh`/`zoneNameEn` on each partner shipping rate. **Web meanwhile:** the code is shown. `FactoryRateDto.zoneNameTh/En`, shown on `/prices/shipping` (the code only when an older API omits it).
 - ~~**`partner.payouts.schedule` totals**~~ — not needed: `partner.payables.financeSummary` (published) already gives the month's earned / paid / retained and what Packio owes; `/payouts` opens with it (2026-10-09).
 - **Data check, not a contract change:** UAT job `UATJOB-2610-00009` reads `quantityOrdered: 1` while its destination reads `quantity: 500` — the factory sees two different quantities on one job.

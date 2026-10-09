@@ -169,14 +169,19 @@ export const stores = new Map<string, Store>();
 let seq = 100;
 export const nextId = (ns: string) => mockId(ns, seq++);
 
-const ZONES = [
-  ["BKK", "กรุงเทพฯ และปริมณฑล"],
-  ["CEN", "ภาคกลาง"],
-  ["N", "ภาคเหนือ"],
-  ["NE", "ภาคตะวันออกเฉียงเหนือ"],
-  ["E", "ภาคตะวันออก"],
-  ["S", "ภาคใต้"],
-].map(([code, nameTh], index) => ({ id: mockId("zon", index + 1), code: code!, nameTh: nameTh!, nameEn: code! }));
+export const ZONES = [
+  ["BKK", "กรุงเทพฯ และปริมณฑล", "Bangkok metropolitan"],
+  ["CEN", "ภาคกลาง", "Central"],
+  ["N", "ภาคเหนือ", "North"],
+  ["NE", "ภาคตะวันออกเฉียงเหนือ", "Northeast"],
+  ["E", "ภาคตะวันออก", "East"],
+  ["S", "ภาคใต้", "South"],
+].map(([code, nameTh, nameEn], index) => ({
+  id: mockId("zon", index + 1),
+  code: code!,
+  nameTh: nameTh!,
+  nameEn: nameEn!,
+}));
 
 const version = <T extends object>(values: T, reason = "ตกลงกับโรงงานตอนเริ่มต้น") => ({
   approvalRequestId: null,
@@ -525,6 +530,7 @@ SEEDS.forEach((seed, index) => stores.set(seed.id, build(seed, index)));
 export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   {
     component: "material_prices",
+    productTypeCodes: ["folding_carton", "tag_sleeve", "corrugated"],
     group: "materials",
     dimensions: [
       { key: "materialId", type: "ref", nullable: false, scale: null },
@@ -535,6 +541,7 @@ export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   },
   {
     component: "print_prices",
+    productTypeCodes: ["folding_carton", "tag_sleeve"],
     group: "process_rates",
     dimensions: [
       { key: "printTypeId", type: "ref", nullable: false, scale: null },
@@ -547,6 +554,7 @@ export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   },
   {
     component: "finish_prices",
+    productTypeCodes: ["folding_carton", "tag_sleeve", "corrugated"],
     group: "process_rates",
     dimensions: [{ key: "finishId", type: "ref", nullable: false, scale: null }],
     values: [
@@ -556,12 +564,14 @@ export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   },
   {
     component: "print_wastes",
+    productTypeCodes: ["folding_carton", "tag_sleeve"],
     group: "waste",
     dimensions: [{ key: "qtyFrom", type: "integer", nullable: false, scale: null }],
     values: [{ key: "sheets", type: "integer", nullable: false, scale: null }],
   },
   {
     component: "factory_margins",
+    productTypeCodes: ["folding_carton", "tag_sleeve", "corrugated"],
     group: "commercial_terms",
     dimensions: [{ key: "printTypeId", type: "ref", nullable: false, scale: null }],
     values: [{ key: "pct", type: "decimal", nullable: false, scale: 4 }],
