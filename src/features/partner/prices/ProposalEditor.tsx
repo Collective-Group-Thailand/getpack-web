@@ -477,7 +477,7 @@ export function ProposalEditor({
                       scope="col"
                       className={cn(
                         "border-border border-b px-2 py-2 text-start align-bottom font-medium",
-                        index < dimensions.length ? "bg-surface-subtle" : "bg-primary-subtle",
+                        index < dimensions.length ? "bg-surface-subtle" : "bg-sage-subtle",
                         index === dimensions.length && "border-s",
                       )}
                     >
@@ -685,7 +685,7 @@ export function ProposalEditor({
         <div
           role="region"
           aria-label={t("unsavedRegion")}
-          className="border-border bg-surface sticky bottom-3 z-20 flex flex-wrap items-center gap-3 rounded-xl border p-3 shadow-lg"
+          className="border-border bg-surface shadow-overlay sticky bottom-3 z-20 flex flex-wrap items-center gap-3 rounded-xl border p-3"
         >
           <Icon name="edit" size={18} className="text-warning" />
           <p className="min-w-0 flex-1 text-sm font-medium">{t("unsaved", { count: dirty })}</p>
