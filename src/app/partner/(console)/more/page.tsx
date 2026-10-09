@@ -33,7 +33,7 @@ export default async function MorePage() {
     <PartnerPage title={t("title")}>
       {groups.map((group) => (
         <section key={group.key} aria-labelledby={`more-${group.key}`} className="flex flex-col gap-2">
-          <h2 id={`more-${group.key}`} className="text-muted text-sm font-semibold tracking-[0.12em] uppercase">
+          <h2 id={`more-${group.key}`} className="text-muted text-sm font-semibold">
             {tGroups(group.key)}
           </h2>
           <ul className="flex flex-col gap-2">
@@ -46,7 +46,9 @@ export default async function MorePage() {
                   <Icon name={item.icon} size={28} className="text-primary shrink-0" />
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">{tItems(item.key)}</span>
-                    {t.has(bodyKey(item.key)) ? <span className="text-muted text-sm">{t(bodyKey(item.key))}</span> : null}
+                    {t.has(bodyKey(item.key)) ? (
+                      <span className="text-muted text-sm">{t(bodyKey(item.key))}</span>
+                    ) : null}
                   </span>
                   <Icon name="chevron-right" size={24} className="text-muted" />
                 </Link>

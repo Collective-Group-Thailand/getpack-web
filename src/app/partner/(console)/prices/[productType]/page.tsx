@@ -194,7 +194,9 @@ export default async function PriceListPage({ params, searchParams }: Props) {
                       aria-current={item.id === version.id ? "page" : undefined}
                       className={cn(
                         "rounded-control border-border inline-flex min-h-10 items-center border px-3",
-                        item.id === version.id ? "bg-fg text-bg border-fg" : "hover:bg-surface-subtle",
+                        item.id === version.id
+                          ? "bg-primary text-primary-fg border-primary font-medium"
+                          : "hover:bg-surface-subtle",
                       )}
                     >
                       {item.id === list.current?.id
@@ -228,9 +230,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
             >
               {byGroup.map((entry) => (
                 <div key={entry.group} className="shrink-0">
-                  <p className="text-muted px-1 text-xs font-semibold tracking-wide uppercase">
-                    {tGroups(entry.group)}
-                  </p>
+                  <p className="text-muted px-1 text-xs font-semibold">{tGroups(entry.group)}</p>
                   <ul className="mt-1 flex gap-1 xl:flex-col">
                     {entry.items.map((item) => (
                       <li key={item.component}>
