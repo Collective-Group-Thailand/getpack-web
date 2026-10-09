@@ -46,10 +46,11 @@ export function Checkbox({ label, description, size = "md", className, id, ...pr
         <label htmlFor={checkboxId} className={size === "sm" ? "text-xs leading-4" : "text-sm leading-normal"}>
           {label}
         </label>
+        {/* A div, not a p: a description may hold block content (the consent step's <details>). */}
         {description ? (
-          <p id={descriptionId} className="text-muted text-xs">
+          <div id={descriptionId} className="text-muted text-xs">
             {description}
-          </p>
+          </div>
         ) : null}
       </div>
     </div>
