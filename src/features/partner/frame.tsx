@@ -52,7 +52,7 @@ export function PartnerPage({
         </div>
         {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
       </header>
-      <div className="mt-6 flex flex-col gap-6 lg:mt-5 lg:gap-7">{children}</div>
+      <div className="mt-6 flex flex-col gap-6 md:mt-5 md:gap-7">{children}</div>
     </div>
   );
 }
@@ -75,7 +75,7 @@ export function PartnerSection({
     <section aria-labelledby={id ? `${id}-title` : undefined} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-2">
         <div className="min-w-0 flex-1">
-          <h2 id={id ? `${id}-title` : undefined} className="text-lg font-semibold lg:text-base">
+          <h2 id={id ? `${id}-title` : undefined} className="text-[1.0625rem] font-semibold md:text-base">
             {title}
           </h2>
           {description ? <p className="text-muted text-sm">{description}</p> : null}

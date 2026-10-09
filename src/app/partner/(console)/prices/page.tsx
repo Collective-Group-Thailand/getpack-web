@@ -8,6 +8,7 @@ import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame
 import { PartnerTable } from "@/features/partner/table";
 import { VersionSignOff } from "@/features/partner/prices/actions";
 import { loadPrices, OPEN_PROPOSAL } from "@/features/partner/prices/server";
+import { termsFrom, TermsHelp } from "@/features/partner/terms";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import { Button } from "@/ui/components/Button";
@@ -26,6 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PricesPage() {
   const t = await getTranslations("partnerPrices");
   const format = await getFormat();
+  const tTerms = await getTranslations("partner.terms");
   const context = await factoryContext();
   const prices = await loadPrices(context.factoryId);
   if (!prices.lists.data || !prices.config.data)
@@ -128,6 +130,10 @@ export default async function PricesPage() {
         </PartnerSection>
       ) : null}
 
+      <TermsHelp
+        title={tTerms("title")}
+        terms={termsFrom(tTerms.raw, ["priceVersion", "effectiveDate", "tier", "proposal"])}
+      />
       <PartnerSection title={t("lists.title")}>
         <PartnerTable
           caption={t("lists.title")}

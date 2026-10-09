@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { INSPECTION_STATUS, JOB_ISSUE_STATUS, JOB_STATUS, QC_RESULT } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { addressLine } from "@/features/partner/address";
+import { termsFrom, TermsHelp } from "@/features/partner/terms";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import {
   AcceptJob,
@@ -54,6 +55,7 @@ export default async function JobPage({ params }: Props) {
     getFormat(),
     getLocale(),
   ]);
+  const tTerms = await getTranslations("partner.terms");
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
   const path = { jobId };
@@ -457,6 +459,7 @@ export default async function JobPage({ params }: Props) {
         </PartnerSection>
       ) : null}
 
+      <TermsHelp title={tTerms("title")} terms={termsFrom(tTerms.raw, ["po", "tolerance", "proof"])} />
       <PartnerSection title={t("issues")} id="issues">
         {issues.data?.length ? (
           <ul className="flex flex-col gap-2">

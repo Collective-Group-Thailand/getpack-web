@@ -28,7 +28,9 @@ export async function JobsTable({ jobs, caption }: { jobs: JobSummary[]; caption
           key: "no",
           header: t("no"),
           primary: true,
-          cell: (job) => <span className="font-mono font-semibold whitespace-nowrap md:text-sm md:font-normal">{job.jobNo}</span>,
+          cell: (job) => (
+            <span className="font-mono font-semibold whitespace-nowrap lg:text-sm lg:font-normal">{job.jobNo}</span>
+          ),
         },
         {
           key: "product",

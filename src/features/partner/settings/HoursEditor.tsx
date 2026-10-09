@@ -64,73 +64,72 @@ export function HoursEditor({ current }: { current: Hours | null }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* A week reads as a timetable: one line a day, open/close side by side (a phone keeps the columns). */}
+      {/* A week reads as a timetable: one line a day, open and close side by side. On a narrow phone
+          the two times drop under the day instead of squeezing the time boxes. */}
       <div className="border-border bg-surface overflow-hidden rounded-xl border">
-        <table className="w-full border-collapse text-start">
-          <thead>
-            <tr className="border-border bg-surface-subtle border-b">
-              <th scope="col" className="text-muted px-3 py-2.5 text-start text-sm font-medium">
-                {t("table.day")}
-              </th>
-              <th scope="col" className="text-muted px-3 py-2.5 text-start text-sm font-medium">
-                {t("table.opens")}
-              </th>
-              <th scope="col" className="text-muted px-3 py-2.5 text-start text-sm font-medium">
-                {t("table.closes")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {DAYS.map((day) => {
-              const open = hours[day];
-              const name = t(`days.${day}`);
-              return (
-                <tr key={day} className="border-border border-b last:border-b-0">
-                  <th scope="row" className="px-3 py-2 text-start font-normal">
-                    <Checkbox
-                      label={name}
-                      checked={!!open}
-                      disabled={!editable}
-                      onCheckedChange={(on) =>
-                        setHours((h) => ({ ...h, [day]: on ? { from: "08:00", to: "17:00" } : null }))
-                      }
-                    />
-                  </th>
-                  {open ? (
-                    <>
-                      <td className="px-2 py-2 md:px-3">
-                        <Input
-                          type="time"
-                          className="max-w-40"
-                          aria-label={t("opens", { day: name })}
-                          value={open.from}
-                          disabled={!editable}
-                          onChange={(event) =>
-                            setHours((h) => ({ ...h, [day]: { ...open, from: event.target.value } }))
-                          }
-                        />
-                      </td>
-                      <td className="px-2 py-2 md:px-3">
-                        <Input
-                          type="time"
-                          className="max-w-40"
-                          aria-label={t("closes", { day: name })}
-                          value={open.to}
-                          disabled={!editable}
-                          onChange={(event) => setHours((h) => ({ ...h, [day]: { ...open, to: event.target.value } }))}
-                        />
-                      </td>
-                    </>
-                  ) : (
-                    <td colSpan={2} className="text-muted px-3 py-2">
-                      {t("closed")}
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div
+          aria-hidden="true"
+          className="border-border bg-surface-subtle text-muted hidden grid-cols-[minmax(0,1fr)_10rem_10rem] gap-3 border-b px-3 py-2.5 text-sm font-medium sm:grid"
+        >
+          <span>{t("table.day")}</span>
+          <span>{t("table.opens")}</span>
+          <span>{t("table.closes")}</span>
+        </div>
+        <ul>
+          {DAYS.map((day) => {
+            const open = hours[day];
+            const name = t(`days.${day}`);
+            return (
+              <li
+                key={day}
+                className="border-border grid grid-cols-2 items-center gap-x-3 gap-y-2 border-b px-3 py-2.5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_10rem_10rem]"
+              >
+                <span className="col-span-2 sm:col-span-1">
+                  <Checkbox
+                    label={name}
+                    checked={!!open}
+                    disabled={!editable}
+                    onCheckedChange={(on) =>
+                      setHours((h) => ({ ...h, [day]: on ? { from: "08:00", to: "17:00" } : null }))
+                    }
+                  />
+                </span>
+                {open ? (
+                  <>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span aria-hidden="true" className="text-muted text-sm sm:hidden">
+                        {t("table.opens")}
+                      </span>
+                      <Input
+                        type="time"
+                        className="min-w-0 px-2 sm:px-3"
+                        aria-label={t("opens", { day: name })}
+                        value={open.from}
+                        disabled={!editable}
+                        onChange={(event) => setHours((h) => ({ ...h, [day]: { ...open, from: event.target.value } }))}
+                      />
+                    </span>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span aria-hidden="true" className="text-muted text-sm sm:hidden">
+                        {t("table.closes")}
+                      </span>
+                      <Input
+                        type="time"
+                        className="min-w-0 px-2 sm:px-3"
+                        aria-label={t("closes", { day: name })}
+                        value={open.to}
+                        disabled={!editable}
+                        onChange={(event) => setHours((h) => ({ ...h, [day]: { ...open, to: event.target.value } }))}
+                      />
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-muted col-span-2">{t("closed")}</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </div>
       {editable ? (
         <>

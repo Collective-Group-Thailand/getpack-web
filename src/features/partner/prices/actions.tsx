@@ -81,14 +81,14 @@ export function CreateProposal({ productTypeId, typeName }: { productTypeId: str
     event.preventDefault();
     const next: typeof error = {};
     if (!from || from <= bangkokToday()) next.from = t("fromFuture");
-    if (reason.trim().length < 3) next.reason = t("reasonRequired");
+    // The reason helps Packio decide but is optional to the API: never a wall before editing.
     setError(next);
     if (Object.keys(next).length) return;
     setBusy(true);
     try {
       const { data } = await browserApi().POST("/v1/partner/factories/{factoryId}/price-proposals", {
         params: { path: { factoryId } },
-        body: { productTypeId, proposedEffectiveFrom: bangkokDay(from), comment: reason.trim() },
+        body: { productTypeId, proposedEffectiveFrom: bangkokDay(from), comment: reason.trim() || null },
       });
       toast.success(t("created", { type: typeName }));
       router.push(`/prices/proposals/${data!.id}`);
@@ -116,13 +116,7 @@ export function CreateProposal({ productTypeId, typeName }: { productTypeId: str
           onChange={(event) => setFrom(event.target.value)}
         />
       </Field>
-      <Field
-        label={t("reason")}
-        hint={t("reasonHint")}
-        required
-        requiredLabel={tCommon("state.required")}
-        error={error.reason}
-      >
+      <Field label={t("reason")} hint={t("reasonHint")} error={error.reason}>
         <Textarea
           placeholder={t("reasonPlaceholder")}
           rows={3}
