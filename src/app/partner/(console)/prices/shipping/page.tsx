@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { RATE_LINE_ACCEPTANCE, SETTING_VERSION_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
@@ -23,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ShippingRatesPage() {
   const t = await getTranslations("partnerPrices.shipping");
   const format = await getFormat();
+  const locale = await getLocale();
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
   const factoryId = context.factoryId;
@@ -51,9 +52,14 @@ export default async function ShippingRatesPage() {
     card.data.open ? versionOf(card.data.open.id) : null,
     card.data.current ? versionOf(card.data.current.id) : null,
   ]);
+  // The zone as the factory reads it (packio-api v0.43.4); an API that predates the name sends only the code.
+  const zoneOf = (rate: Schemas["FactoryRateDto"]) =>
+    (locale === "en" ? rate.zoneNameEn : rate.zoneNameTh) || rate.zoneNameTh || rate.zoneCode;
+  const zoneText = (rate: Schemas["FactoryRateDto"]) =>
+    rate.postcode ? t("zonePostcode", { zone: zoneOf(rate), postcode: rate.postcode }) : zoneOf(rate);
   const band = (rate: Schemas["FactoryRateDto"]) =>
     [
-      rate.postcode ? t("zonePostcode", { zone: rate.zoneCode, postcode: rate.postcode }) : rate.zoneCode,
+      zoneText(rate),
       rate.weightMaxG === null
         ? t("weightFrom", { from: format.number(rate.weightMinG / 1000) })
         : t("weightRange", { from: format.number(rate.weightMinG / 1000), to: format.number(rate.weightMaxG / 1000) }),
@@ -94,10 +100,7 @@ export default async function ShippingRatesPage() {
                   key: "zone",
                   header: t("table.zone"),
                   primary: true,
-                  // CONTRACT-GAP partner.shipping-rates — the zone's name arrives with packio-api
-                  // feat/partner-ux-contract (zoneNameTh); until then its code is what there is.
-                  cell: (rate) =>
-                    rate.postcode ? t("zonePostcode", { zone: rate.zoneCode, postcode: rate.postcode }) : rate.zoneCode,
+                  cell: (rate) => zoneText(rate),
                 },
                 {
                   key: "weight",

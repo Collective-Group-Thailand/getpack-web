@@ -37,9 +37,8 @@ const FOLDING: readonly Component[] = [
  * queries). The price screens show only these, so a folding-carton factory is not asked about
  * pouch film or corrugated board.
  *
- * CONTRACT-GAP partner.price-components-by-type — `PriceComponentDto` does not say which product
- * types read it (see docs/contract-requests.md). Until it does the pairing is copied here; a
- * product type not listed falls back to every component, as before.
+ * Fallback only: since packio-api v0.43.4 `PriceComponentDto.productTypeCodes` names the product
+ * types; this copy answers only for an API that predates the field (see `componentsFor`).
  */
 export const COMPONENTS_BY_TYPE: Record<string, readonly Component[]> = {
   folding_carton: FOLDING,
@@ -98,11 +97,18 @@ export const COMPONENTS_BY_TYPE: Record<string, readonly Component[]> = {
  * The component definitions a product type's price list uses, in the order a factory works
  * through them (materials first, rules last — the `COMPONENTS_BY_TYPE` order within a group).
  */
-export function componentsFor<T extends { component: Component }>(
+export function componentsFor<T extends { component: Component; productTypeCodes?: readonly string[] }>(
   definitions: readonly T[],
   productTypeCode: string | null | undefined,
 ): T[] {
-  const wanted = productTypeCode ? COMPONENTS_BY_TYPE[productTypeCode] : undefined;
+  if (!productTypeCode) return [...definitions];
+  // packio-api v0.43.4 names, per component, the product types whose calculator reads it
+  // (`PriceComponentDto.productTypeCodes`) — that is the answer. An API that predates it sends no
+  // field; only then does the copy below decide (remove it once every stack serves v0.43.4).
+  if (definitions.some((item) => Array.isArray(item.productTypeCodes))) {
+    return definitions.filter((item) => item.productTypeCodes?.includes(productTypeCode));
+  }
+  const wanted = COMPONENTS_BY_TYPE[productTypeCode];
   if (!wanted) return [...definitions];
   const rank = new Map(wanted.map((component, index) => [component, index]));
   return definitions
