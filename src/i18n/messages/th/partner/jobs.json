@@ -215,7 +215,7 @@
     "issues": "ปัญหา",
     "summaryNoDate": "{title} · {quantity} ชิ้น",
     "plannerOnly": "ผู้วางแผนหรือเจ้าของโรงงานเป็นผู้รับงาน",
-    "noMilestonePermission": "บทบาทของคุณอัปเดตขั้นตอนไม่ได้",
+    "noMilestonePermission": "ขั้นนี้ให้ผู้ปฏิบัติงานหรือผู้วางแผนการผลิตบันทึก — เพิ่มบทบาทให้ผู้ใช้ได้ที่ ตั้งค่าและผู้ใช้",
     "qcFirst": "บันทึกผลตรวจคุณภาพที่ผ่านก่อน แล้วจึงจบขั้นตอนนี้",
     "riskReasons": {
       "step_overdue": "ขั้นตอนปัจจุบันเลยกำหนดแล้ว",
@@ -226,7 +226,9 @@
     "defect": "{item} ({severity}) {count}",
     "inspectionSample": "สุ่มตรวจ {count} ชิ้น",
     "issueResolved": "แก้แล้ว: {note} · {name}",
-    "operatorStep": "ขั้นนี้ฝ่ายผลิตเป็นผู้บันทึก — ฝ่าย QC บันทึกที่ขั้นตรวจคุณภาพ"
+    "operatorStep": "ขั้นนี้ฝ่ายผลิตเป็นผู้บันทึก — ฝ่าย QC บันทึกที่ขั้นตรวจคุณภาพ",
+    "acceptFirst": "กด “รับงาน” ด้านบนก่อน แล้วขั้นตอนการผลิตจะเริ่ม",
+    "raiseIssueToggle": "แจ้งปัญหาของงานนี้"
   },
   "capacity": {
     "title": "กำลังผลิตรายสัปดาห์",
@@ -238,7 +240,8 @@
       "holiday": "{date} · {name}",
       "closure": "{date} · {name} (โรงงานหยุด)",
       "extra_working_day": "{date} · {name} (วันทำงานเพิ่ม)"
-    }
+    },
+    "noCapacity": "ยังไม่ได้ตั้งกำลังผลิต"
   },
   "samples": {
     "title": "งานตัวอย่าง",

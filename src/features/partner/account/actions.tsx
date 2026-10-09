@@ -307,6 +307,8 @@ export function EditUser({ user }: { user: User }) {
   const [roles, setRoles] = useState<StaffRole[]>(held.length ? held : ["factory_operator"]);
   const [confirm, setConfirm] = useState<"deactivate" | "reactivate" | null>(null);
   const [busy, setBusy] = useState(false);
+  // The role picker opens on demand: a list of six users stays a list, not six forms.
+  const [editing, setEditing] = useState(false);
 
   if (user.isSelf) return <p className="text-muted text-sm">{t("self")}</p>;
   if (user.roles.includes("factory_owner")) return <p className="text-muted text-sm">{t("ownerManaged")}</p>;
@@ -323,7 +325,16 @@ export function EditUser({ user }: { user: User }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {active ? (
+      {active && !editing ? (
+        <div className="flex flex-wrap gap-2">
+          <Button size="md" variant="secondary" iconStart="edit" onClick={() => setEditing(true)}>
+            {t("editRoles")}
+          </Button>
+          <Button size="md" variant="ghost" onClick={() => setConfirm("deactivate")}>
+            {t("deactivate")}
+          </Button>
+        </div>
+      ) : active ? (
         <>
           <RolePicker roles={roles} onChange={setRoles} />
           <div className="flex flex-wrap gap-2">
@@ -335,6 +346,7 @@ export function EditUser({ user }: { user: User }) {
                 setBusy(true);
                 try {
                   await setUserRoles(roles, t("rolesSaved", { name: user.displayName }));
+                  setEditing(false);
                 } catch (error) {
                   toast.error(problemMessage(error, t("failed")));
                 } finally {
@@ -344,8 +356,16 @@ export function EditUser({ user }: { user: User }) {
             >
               {t("saveRoles")}
             </Button>
-            <Button size="lg" variant="secondary" onClick={() => setConfirm("deactivate")}>
-              {t("deactivate")}
+            <Button
+              size="lg"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => {
+                setRoles(held.length ? held : ["factory_operator"]);
+                setEditing(false);
+              }}
+            >
+              {t("cancelEdit")}
             </Button>
           </div>
         </>

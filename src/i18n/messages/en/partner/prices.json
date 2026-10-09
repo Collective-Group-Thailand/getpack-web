@@ -565,7 +565,8 @@
     "up": "price up",
     "down": "price down",
     "sheetWarnTitle": "The file replaces the whole draft",
-    "unchanged": "No figure changed yet — edit it in the table below, or remove it from the draft"
+    "unchanged": "No figure changed yet — edit it in the table below, or remove it from the draft",
+    "draftLinesCount": "Changes in this draft ({count})"
   },
   "lines": {
     "empty": "No lines",

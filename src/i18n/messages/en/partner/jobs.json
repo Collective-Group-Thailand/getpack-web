@@ -215,7 +215,7 @@
     "issues": "Issues",
     "summaryNoDate": "{title} · {quantity} pcs",
     "plannerOnly": "The planner or owner accepts jobs.",
-    "noMilestonePermission": "Your role cannot update steps.",
+    "noMilestonePermission": "An operator or production planner records this step — add the role to a user in Settings and users",
     "qcFirst": "Record a passing QC first, then complete this step.",
     "riskReasons": {
       "step_overdue": "The current step is past due",
@@ -226,7 +226,9 @@
     "defect": "{item} ({severity}) {count}",
     "inspectionSample": "Sample of {count} pieces",
     "issueResolved": "Resolved: {note} · {name}",
-    "operatorStep": "Production records this step — QC records at the quality step"
+    "operatorStep": "Production records this step — QC records at the quality step",
+    "acceptFirst": "Press “Accept job” above first; the production steps start after that",
+    "raiseIssueToggle": "Report a problem with this job"
   },
   "capacity": {
     "title": "Weekly capacity",
@@ -238,7 +240,8 @@
       "holiday": "{date} · {name}",
       "closure": "{date} · {name} (factory closed)",
       "extra_working_day": "{date} · {name} (extra working day)"
-    }
+    },
+    "noCapacity": "No capacity set"
   },
   "samples": {
     "title": "Sample jobs",

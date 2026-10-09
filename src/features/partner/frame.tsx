@@ -32,10 +32,7 @@ export function PartnerPage({
 }) {
   return (
     <div
-      className={cn(
-        "mx-auto w-full px-4 py-5 md:px-6 md:py-8",
-        full ? "max-w-7xl" : wide ? "max-w-5xl" : "max-w-3xl",
-      )}
+      className={cn("mx-auto w-full px-4 py-5 md:px-6 md:py-8", full ? "max-w-7xl" : wide ? "max-w-5xl" : "max-w-3xl")}
     >
       {back ? (
         <Link

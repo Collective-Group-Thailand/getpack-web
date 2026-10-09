@@ -40,7 +40,9 @@ export async function PriceTable({
   const shown = needle
     ? sorted.filter((row) =>
         [...dimensions, ...values].some((column) =>
-          text(column, (row.values as Values)[column.key]).toLocaleLowerCase().includes(needle),
+          text(column, (row.values as Values)[column.key])
+            .toLocaleLowerCase()
+            .includes(needle),
         ),
       )
     : sorted;
@@ -49,7 +51,9 @@ export async function PriceTable({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-muted text-sm" aria-live="polite">
-        {needle ? t("table.filtered", { shown: shown.length, total: rows.length }) : t("table.count", { total: rows.length })}
+        {needle
+          ? t("table.filtered", { shown: shown.length, total: rows.length })
+          : t("table.count", { total: rows.length })}
       </p>
       {shown.length ? (
         <div
@@ -74,7 +78,7 @@ export async function PriceTable({
                   <th
                     scope="colgroup"
                     colSpan={values.length}
-                    className="bg-primary-subtle text-primary-subtle-fg border-border border-b border-s px-3 pt-2 text-start font-medium"
+                    className="bg-primary-subtle text-primary-subtle-fg border-border border-s border-b px-3 pt-2 text-start font-medium"
                   >
                     {t("table.values")}
                   </th>
