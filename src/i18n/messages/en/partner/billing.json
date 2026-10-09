@@ -22,7 +22,8 @@
     "noteHint": "E.g. shipping on S-2569-00801 should be THB 650",
     "done": "Dispute sent",
     "failed": "Could not send",
-    "lines": "The lines that are wrong (if you can name them)"
+    "lines": "The lines that are wrong (if you can name them)",
+    "notePlaceholder": "e.g. Line 2 shipping does not match what was agreed"
   },
   "invoice": {
     "noRequired": "Enter the invoice number",
@@ -50,7 +51,7 @@
     "amountFormat": "Enter a number with 2 decimals, e.g. 12500.00",
     "netAmount": "Amount before VAT on the tax invoice",
     "vatAmount": "VAT on the tax invoice",
-    "amountHint": "Type it as printed on your factory's tax invoice; Finance checks it against the statement",
+    "amountHint": "Filled in from the statement; change it if your invoice differs",
     "eTaxNoHint": "An e-Tax Invoice's number is its e-Tax reference",
     "eTaxFile": "e-Tax Invoice file",
     "eTaxRules": "PDF or XML, up to 20 MB",
@@ -110,7 +111,8 @@
       "qty": "Quantity",
       "vat": "VAT",
       "net": "Net"
-    }
+    },
+    "periodDay": "Run of {date}"
   },
   "payouts": {
     "title": "Payouts",

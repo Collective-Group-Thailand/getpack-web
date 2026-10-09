@@ -57,7 +57,8 @@
       "spec_not_feasible": "ผลิตตามสเปกนี้ไม่ได้",
       "price": "ราคาไม่ตรงกับที่ตกลง",
       "other": "เหตุผลอื่น"
-    }
+    },
+    "notePlaceholder": "เช่น เครื่องตัดเสีย รับงานได้อีกครั้งสัปดาห์หน้า"
   },
   "milestone": {
     "start": "เริ่มขั้น “{name}”",
@@ -151,7 +152,8 @@
     "resolveTitle": "ปิดปัญหานี้",
     "resolveNote": "แก้อย่างไร",
     "resolveNoteHint": "เช่น ซ่อมเครื่องเสร็จแล้ว วัสดุมาถึงแล้ว",
-    "descriptionPlaceholder": "เช่น กระดาษ KA125 หมดสต็อก ของเข้าวันที่ 14 ต.ค."
+    "descriptionPlaceholder": "เช่น กระดาษ KA125 หมดสต็อก ของเข้าวันที่ 14 ต.ค.",
+    "resolveNotePlaceholder": "เช่น กระดาษเข้าแล้ว เริ่มพิมพ์ต่อได้"
   },
   "scan": {
     "open": "สแกน QR",

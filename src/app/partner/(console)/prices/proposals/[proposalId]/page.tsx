@@ -104,7 +104,13 @@ export default async function ProposalPage({ params, searchParams }: Props) {
         </>
       ) : (
         <PartnerSection title={t("linesTitle")}>
-          <LineList lines={item.lines} definitions={prices.components} references={prices.references} />
+          <LineList
+            lines={item.lines}
+            definitions={prices.components}
+            references={prices.references}
+            // A withdrawn proposal has no decisions to wait for: its lines carry no "waiting" chip.
+            showDecision={item.status !== "withdrawn"}
+          />
         </PartnerSection>
       )}
 
@@ -148,8 +154,12 @@ export default async function ProposalPage({ params, searchParams }: Props) {
         </PartnerSection>
       ) : null}
 
-      {factoryOwn ? (
-        <PartnerSection title={t("evidenceTitle")} description={t("evidenceBody")}>
+      {factoryOwn && (OPEN_PROPOSAL.includes(item.status) || evidence?.data?.length) ? (
+        <PartnerSection
+          // Numbered only while it is a step to do (the draft's 1 · 2 · 3); afterwards it is just the record.
+          title={item.status === "draft" ? t("evidenceTitle") : t("evidenceTitlePlain")}
+          description={OPEN_PROPOSAL.includes(item.status) ? t("evidenceBody") : undefined}
+        >
           {evidence?.data?.length ? (
             <ul className="flex flex-col gap-1">
               {evidence.data.map((file) => (

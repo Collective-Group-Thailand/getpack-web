@@ -108,7 +108,10 @@ function Confirmation({
 >) {
   const inputId = useId();
   const [typed, setTyped] = useState("");
-  const locked = Boolean(confirmationPhrase) && typed.trim() !== confirmationPhrase;
+  // Case, spaces and dashes do not count: "uatbs 26 00003" is the same code as "UATBS-26-00003" —
+  // the check is that the person read which record this is, not that they type punctuation.
+  const plain = (value: string) => value.toUpperCase().replace(/[\s\-–_]/g, "");
+  const locked = Boolean(confirmationPhrase) && plain(typed) !== plain(confirmationPhrase ?? "");
 
   return (
     <>
@@ -122,7 +125,9 @@ function Confirmation({
             value={typed}
             onChange={(event) => setTyped(event.target.value)}
             autoComplete="off"
+            autoCapitalize="characters"
             spellCheck={false}
+            placeholder={confirmationPhrase}
             className={cn(controlVariants({ inputSize: "md" }), "font-mono")}
           />
         </div>

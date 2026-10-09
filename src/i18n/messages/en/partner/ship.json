@@ -81,7 +81,8 @@
     "confirm": "Send",
     "reason": "Why",
     "reasonHint": "E.g. outside the zones you deliver to",
-    "done": "Carrier requested"
+    "done": "Carrier requested",
+    "reasonPlaceholder": "e.g. Our truck is not free today"
   },
   "pod": {
     "receiverRequired": "Enter the receiver's name",
@@ -174,7 +175,8 @@
     "body": "{no} is cancelled and its pieces go back to be shipped; this cannot be undone.",
     "confirm": "Cancel the shipment",
     "reason": "Reason",
-    "done": "{no} cancelled"
+    "done": "{no} cancelled",
+    "reasonPlaceholder": "e.g. Customer asked to move the delivery"
   },
   "transit": {
     "status": "Status",

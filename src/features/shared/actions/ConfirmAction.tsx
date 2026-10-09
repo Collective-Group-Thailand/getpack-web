@@ -30,6 +30,8 @@ export interface ConfirmActionProps {
     minLength?: number;
     /** Text to start from — a message composed from the record, for the person to edit. */
     initial?: string;
+    /** An example of a good answer, from `src/i18n`. */
+    placeholder?: string;
   };
   /**
    * Called with an `Idempotency-Key` minted once when the dialog opened — so a retry after a
@@ -118,6 +120,7 @@ function ConfirmActionBody({
           className="mt-4"
         >
           <Textarea
+            placeholder={reason.placeholder}
             value={text}
             onChange={(event) => {
               setText(event.target.value);

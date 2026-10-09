@@ -140,7 +140,7 @@ export function RejectJob({ job }: { job: PartnerJob }) {
         description={t("body", { jobNo: job.jobNo })}
         confirmLabel={t("confirm")}
         confirmationPhrase={job.jobNo}
-        reason={{ label: t("note"), hint: t("noteHint") }}
+        reason={{ label: t("note"), hint: t("noteHint"), placeholder: t("notePlaceholder") }}
         onConfirm={async ({ idempotencyKey, reason: note }) => {
           const ok = await run(
             () =>
@@ -683,7 +683,12 @@ export function ResolveIssue({ jobId, issueId, description }: { jobId: string; i
         title={t("resolveTitle")}
         description={description}
         confirmLabel={t("resolve")}
-        reason={{ label: t("resolveNote"), required: true, hint: t("resolveNoteHint") }}
+        reason={{
+          label: t("resolveNote"),
+          required: true,
+          hint: t("resolveNoteHint"),
+          placeholder: t("resolveNotePlaceholder"),
+        }}
         onConfirm={async ({ idempotencyKey, reason }) => {
           const ok = await run(
             () =>

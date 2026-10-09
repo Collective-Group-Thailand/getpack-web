@@ -301,7 +301,13 @@ export function RequestCarrier({ shipmentId, shipmentNo }: { shipmentId: string;
         title={t("title")}
         description={t("body", { no: shipmentNo })}
         confirmLabel={t("confirm")}
-        reason={{ label: t("reason"), required: true, minLength: 3, hint: t("reasonHint") }}
+        reason={{
+          label: t("reason"),
+          required: true,
+          minLength: 3,
+          hint: t("reasonHint"),
+          placeholder: t("reasonPlaceholder"),
+        }}
         onConfirm={async ({ idempotencyKey, reason }) => {
           const ok = await run(
             () =>
@@ -336,7 +342,7 @@ export function CancelShipment({ shipmentId, shipmentNo }: { shipmentId: string;
         description={t("body", { no: shipmentNo })}
         confirmLabel={t("confirm")}
         confirmationPhrase={shipmentNo}
-        reason={{ label: t("reason"), required: true, minLength: 3 }}
+        reason={{ label: t("reason"), required: true, minLength: 3, placeholder: t("reasonPlaceholder") }}
         onConfirm={async ({ idempotencyKey, reason }) => {
           const ok = await run(
             () =>
