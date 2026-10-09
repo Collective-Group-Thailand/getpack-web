@@ -73,6 +73,12 @@ describe("the consent step", () => {
     await expectNoA11yViolations(container);
   });
 
+  it("keeps the full text's disclosure out of a paragraph, so it hydrates (no <details> in <p>)", () => {
+    const { container } = renderStep();
+    expect(container.querySelectorAll("details")).toHaveLength(1);
+    expect(container.querySelector("p details")).toBeNull();
+  });
+
   it("records an answer for every purpose shown, granted or not, then moves on", async () => {
     const { onDone } = renderStep();
     await userEvent.click(screen.getByRole("checkbox", { name: "ข้อกำหนดการใช้บริการ" }));
