@@ -509,7 +509,14 @@
     "scheduledTitle": "ฉบับถัดไป",
     "scheduledBody": "ฉบับที่ {version} มีผลตั้งแต่ {date}",
     "counterAmountPlaceholder": "เช่น 450",
-    "notePlaceholder": "เช่น ค่าน้ำมันขึ้น"
+    "notePlaceholder": "เช่น ค่าน้ำมันขึ้น",
+    "table": {
+      "zone": "พื้นที่ส่ง",
+      "weight": "น้ำหนักต่อกล่อง",
+      "amount": "ค่าส่งที่ได้รับ",
+      "extra": "กิโลที่เกิน (ต่อ กก.)",
+      "status": "สถานะ"
+    }
   },
   "editor": {
     "yes": "ใช่",

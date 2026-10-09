@@ -184,7 +184,9 @@
       "manage": "จัดการ"
     },
     "namePlaceholder": "เช่น สมชาย ใจดี",
-    "emailPlaceholder": "เช่น somchai@โรงงาน.com"
+    "emailPlaceholder": "เช่น somchai@โรงงาน.com",
+    "editRolesTitle": "แก้บทบาทของ {name}",
+    "editRolesBody": "เลือกได้มากกว่า 1 บทบาท ระบบจะแสดงเมนูตามบทบาทที่เลือก"
   },
   "notifications": {
     "saved": "บันทึกแล้ว",

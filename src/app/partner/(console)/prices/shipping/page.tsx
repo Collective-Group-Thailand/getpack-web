@@ -5,6 +5,7 @@ import { RATE_LINE_ACCEPTANCE, SETTING_VERSION_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { ShippingCardReview } from "@/features/partner/prices/ShippingCardReview";
+import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
@@ -84,20 +85,52 @@ export default async function ShippingRatesPage() {
                 accepted: format.date(current.data.factoryAcceptedAt),
               })}
             </p>
-            <ul className="flex flex-col gap-2">
-              {current.data.rates.map((rate) => (
-                <li key={rate.id}>
-                  <Card padding="md" className="flex flex-wrap items-center gap-2">
-                    <span className="flex-1">{band(rate)}</span>
-                    <span className="font-medium tabular-nums">{format.thb(rate.payoutAmount)}</span>
-                    {rate.perExtraKg ? (
-                      <span className="text-muted text-sm">{t("perKg", { amount: format.thb(rate.perExtraKg) })}</span>
-                    ) : null}
-                    <StatusChip map={RATE_LINE_ACCEPTANCE} value={rate.acceptance} />
-                  </Card>
-                </li>
-              ))}
-            </ul>
+            <PartnerTable
+              caption={t("currentTitle")}
+              rows={current.data.rates}
+              rowKey={(rate) => rate.id}
+              columns={[
+                {
+                  key: "zone",
+                  header: t("table.zone"),
+                  primary: true,
+                  // CONTRACT-GAP partner.shipping-rates — the zone's name arrives with packio-api
+                  // feat/partner-ux-contract (zoneNameTh); until then its code is what there is.
+                  cell: (rate) =>
+                    rate.postcode ? t("zonePostcode", { zone: rate.zoneCode, postcode: rate.postcode }) : rate.zoneCode,
+                },
+                {
+                  key: "weight",
+                  header: t("table.weight"),
+                  className: "whitespace-nowrap",
+                  cell: (rate) =>
+                    rate.weightMaxG === null
+                      ? t("weightFrom", { from: format.number(rate.weightMinG / 1000) })
+                      : t("weightRange", {
+                          from: format.number(rate.weightMinG / 1000),
+                          to: format.number(rate.weightMaxG / 1000),
+                        }),
+                },
+                {
+                  key: "amount",
+                  header: t("table.amount"),
+                  align: "end",
+                  cell: (rate) => <span className="font-semibold">{format.thb(rate.payoutAmount)}</span>,
+                },
+                {
+                  key: "extra",
+                  header: t("table.extra"),
+                  align: "end",
+                  cell: (rate) => (rate.perExtraKg ? format.thb(rate.perExtraKg) : "—"),
+                },
+                {
+                  key: "status",
+                  header: t("table.status"),
+                  className: "whitespace-nowrap",
+                  cell: (rate) => <StatusChip map={RATE_LINE_ACCEPTANCE} value={rate.acceptance} />,
+                },
+              ]}
+            />
           </>
         ) : (
           <EmptyState icon="truck" title={t("noCurrent")} />

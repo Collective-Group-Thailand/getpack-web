@@ -14,6 +14,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { CameraCapture, type CapturedPhoto } from "@/ui/components/CameraCapture";
 import { Checkbox } from "@/ui/components/Checkbox";
+import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -320,7 +321,6 @@ export function EditUser({ user }: { user: User }) {
   const [roles, setRoles] = useState<StaffRole[]>(held.length ? held : ["factory_operator"]);
   const [confirm, setConfirm] = useState<"deactivate" | "reactivate" | null>(null);
   const [busy, setBusy] = useState(false);
-  // The role picker opens on demand: a list of six users stays a list, not six forms.
   const [editing, setEditing] = useState(false);
 
   if (user.isSelf) return <p className="text-muted text-sm">{t("self")}</p>;
@@ -338,7 +338,7 @@ export function EditUser({ user }: { user: User }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {active && !editing ? (
+      {active ? (
         <div className="flex flex-wrap gap-2">
           <Button size="md" variant="secondary" iconStart="edit" onClick={() => setEditing(true)}>
             {t("editRoles")}
@@ -347,12 +347,35 @@ export function EditUser({ user }: { user: User }) {
             {t("deactivate")}
           </Button>
         </div>
-      ) : active ? (
-        <>
-          <RolePicker roles={roles} onChange={setRoles} />
-          <div className="flex flex-wrap gap-2">
+      ) : (
+        <Button size="md" variant="secondary" className="self-start" onClick={() => setConfirm("reactivate")}>
+          {t("reactivate")}
+        </Button>
+      )}
+      {/* The roles open in a dialog: a table row stays a row instead of growing a form inside a cell. */}
+      <Dialog
+        open={editing}
+        onOpenChange={(open) => {
+          if (open || busy) return;
+          setRoles(held.length ? held : ["factory_operator"]);
+          setEditing(false);
+        }}
+        title={t("editRolesTitle", { name: user.displayName })}
+        description={t("editRolesBody")}
+        closeLabel={t("cancelEdit")}
+        footer={
+          <>
             <Button
-              size="lg"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => {
+                setRoles(held.length ? held : ["factory_operator"]);
+                setEditing(false);
+              }}
+            >
+              {t("cancelEdit")}
+            </Button>
+            <Button
               loading={busy}
               disabled={!roles.length}
               onClick={async () => {
@@ -369,24 +392,11 @@ export function EditUser({ user }: { user: User }) {
             >
               {t("saveRoles")}
             </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              disabled={busy}
-              onClick={() => {
-                setRoles(held.length ? held : ["factory_operator"]);
-                setEditing(false);
-              }}
-            >
-              {t("cancelEdit")}
-            </Button>
-          </div>
-        </>
-      ) : (
-        <Button size="lg" variant="secondary" className="self-start" onClick={() => setConfirm("reactivate")}>
-          {t("reactivate")}
-        </Button>
-      )}
+          </>
+        }
+      >
+        <RolePicker roles={roles} onChange={setRoles} />
+      </Dialog>
       <ConfirmAction
         open={confirm !== null}
         onOpenChange={(open) => (open ? undefined : setConfirm(null))}
