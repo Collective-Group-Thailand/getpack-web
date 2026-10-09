@@ -32,7 +32,14 @@
     "factory_to_packio": "{type} price proposal",
     "packio_to_factory": "{type} rate card from Packio",
     "meta": "Created {date} · from {from} · {lines} lines",
-    "resulting": "Became version {version}"
+    "resulting": "Became version {version}",
+    "table": {
+      "what": "Proposal",
+      "created": "Created",
+      "from": "Applies from",
+      "lines": "Lines",
+      "status": "Status"
+    }
   },
   "readOnly": "Your role can view prices; the owner proposes or accepts them.",
   "back": "Back to all prices",
@@ -562,11 +569,18 @@
     "unsavedRegion": "Unsaved edits",
     "discard": "Discard",
     "save": "Save to draft",
-    "up": "price up",
-    "down": "price down",
+    "up": "up",
+    "down": "down",
     "sheetWarnTitle": "The file replaces the whole draft",
     "unchanged": "No figure changed yet — edit it in the table below, or remove it from the draft",
-    "draftLinesCount": "Changes in this draft ({count})"
+    "draftLinesCount": "Changes in this draft ({count})",
+    "table": {
+      "action": "Change",
+      "line": "Price line",
+      "change": "Old → new",
+      "removed": "Remove this line",
+      "drop": "Remove"
+    }
   },
   "lines": {
     "empty": "No lines",
@@ -626,6 +640,18 @@
     "values": "Prices and values",
     "search": "Search",
     "searchPlaceholder": "e.g. KA125 or flexo",
-    "noMatch": "No line matches “{query}”"
+    "noMatch": "No line matches “{query}”",
+    "type": "Product type",
+    "tier": "Price tier",
+    "version": "Prices in force",
+    "versionNo": "Version {version}",
+    "from": "From {date}",
+    "lines": "Lines",
+    "open": "Proposal / next version"
+  },
+  "tierShort": {
+    "A": "Instant price on every spec",
+    "B": "Instant price on some specs",
+    "C": "Packio asks per job"
   }
 }

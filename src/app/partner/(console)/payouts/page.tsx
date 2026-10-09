@@ -6,10 +6,10 @@ import { PAYABLE_STATUS, PAYOUT_ITEM_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Button } from "@/ui/components/Button";
-import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { cn } from "@/ui/lib/cn";
 
@@ -59,6 +59,20 @@ export default async function PayoutsPage({ searchParams }: Props) {
       async () => (await contract.GET("/v1/partner/factories/{factoryId}/finance-summary", { params: { path } })).data!,
     ),
   ]);
+
+  type ScheduleData = NonNullable<typeof schedule.data>["data"];
+  // The terms are snapshotted per order; when every order carries the same ones (the usual case) they
+  // are said once above the table instead of repeated on every row.
+  const termLines = (row: ScheduleData[number]) =>
+    [
+      t("terms.advance", { pct: format.percent(row.terms.advancePct) }),
+      Number(row.terms.retentionPct) > 0
+        ? t("terms.retention", { pct: format.percent(row.terms.retentionPct), days: row.terms.retentionReleaseDays })
+        : null,
+      t("terms.claimWindow", { days: row.terms.claimWindowDays }),
+    ].filter((line): line is string => Boolean(line));
+  const sameTerms =
+    !!schedule.data?.data.length && new Set(schedule.data.data.map((row) => termLines(row).join("|"))).size === 1;
 
   return (
     <PartnerPage
@@ -120,64 +134,88 @@ export default async function PayoutsPage({ searchParams }: Props) {
             }))}
           />
         ) : null}
+        {schedule.data && sameTerms ? (
+          <p className="text-muted text-sm">
+            {t("termsAll", { terms: termLines(schedule.data.data[0]!).join(" · ") })}
+          </p>
+        ) : null}
         {schedule.data ? (
           schedule.data.data.filter((row) => inView(view, row)).length ? (
-            <ul className="grid gap-3 md:grid-cols-2">
-              {schedule.data.data
-                .filter((row) => inView(view, row))
-                .map((row) => (
-                  <li key={row.purchaseOrderId}>
-                    <Card padding="md" className="flex flex-col gap-2">
-                      <div className="flex flex-wrap items-baseline gap-2">
-                        {/* CONTRACT-GAP partner.payouts — the schedule names the job by number only, so it does not link to it. */}
-                        <span className="font-mono font-semibold">{row.jobNo}</span>
-                        <span className="text-muted flex-1 text-sm">{row.orderCode}</span>
-                        <span className="text-sm">{t("po", { no: row.poNumber })}</span>
-                      </div>
-                      <p className="text-muted text-sm">
-                        {[
-                          t("terms.advance", { pct: format.percent(row.terms.advancePct) }),
-                          Number(row.terms.retentionPct) > 0
-                            ? t("terms.retention", {
-                                pct: format.percent(row.terms.retentionPct),
-                                days: row.terms.retentionReleaseDays,
-                              })
-                            : null,
-                          t("terms.claimWindow", { days: row.terms.claimWindowDays }),
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                      <ul className="flex flex-col gap-1">
-                        {row.items.map((item) => (
-                          <li
-                            key={item.id}
-                            className={cn(
-                              "flex flex-wrap items-center gap-x-2 gap-y-1 text-sm",
-                              // A cancelled advance (paid with the balance instead) is history, not money due.
-                              item.status === "cancelled" && "text-muted opacity-70 [&_.tabular-nums]:line-through",
-                            )}
-                          >
-                            <span className="w-36 font-medium">{t(`sources.${item.source}`)}</span>
-                            <span className="font-medium tabular-nums">{format.thb(item.netAmount)}</span>
-                            <StatusChip map={PAYABLE_STATUS} value={item.status} />
-                            <span className="text-muted">
-                              {item.paidOn
-                                ? t("paidOn", { date: format.date(item.paidOn) })
-                                : item.eligibleAt
-                                  ? t("eligibleOn", { date: format.date(item.eligibleAt) })
-                                  : item.waitingFor
-                                    ? t(`waiting.${item.waitingFor}`)
-                                    : null}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                      {row.balancePending ? <p className="text-muted text-sm">{t("balancePending")}</p> : null}
-                    </Card>
-                  </li>
-                ))}
-            </ul>
+            <PartnerTable
+              caption={t("scheduleTitle")}
+              rows={schedule.data.data.filter((row) => inView(view, row))}
+              rowKey={(row) => row.purchaseOrderId}
+              columns={[
+                {
+                  key: "job",
+                  header: t("table.job"),
+                  primary: true,
+                  // CONTRACT-GAP partner.payouts — the schedule names the job by number only, so it does not link to it.
+                  cell: (row) => (
+                    <span className="flex flex-col">
+                      <span className="font-mono text-sm whitespace-nowrap">{row.jobNo}</span>
+                      <span className="text-muted text-sm whitespace-nowrap">{t("po", { no: row.poNumber })}</span>
+                    </span>
+                  ),
+                },
+                ...(["advance", "goods_receipt", "retention"] as const).map((source) => ({
+                  key: source,
+                  header: t(`sources.${source}`),
+                  cell: (row: ScheduleData[number]) => {
+                    const item = row.items.find((candidate) => candidate.source === source);
+                    if (!item)
+                      return (
+                        <span className="text-muted text-sm">
+                          {source === "goods_receipt" && row.balancePending ? t("table.afterPod") : "—"}
+                        </span>
+                      );
+                    return (
+                      <span
+                        className={cn(
+                          "flex flex-col items-start gap-0.5",
+                          // A cancelled advance (paid with the balance instead) is history, not money due.
+                          item.status === "cancelled" && "text-muted",
+                        )}
+                      >
+                        <span
+                          className={cn("font-semibold tabular-nums", item.status === "cancelled" && "line-through")}
+                        >
+                          {format.thb(item.netAmount)}
+                        </span>
+                        <StatusChip map={PAYABLE_STATUS} value={item.status} />
+                        <span className="text-muted text-sm whitespace-nowrap">
+                          {item.status === "cancelled" && source === "advance"
+                            ? t("table.advanceMerged")
+                            : item.paidOn
+                              ? t("paidOn", { date: format.date(item.paidOn, { style: "dayMonth" }) })
+                              : item.eligibleAt
+                                ? t("eligibleOn", { date: format.date(item.eligibleAt, { style: "dayMonth" }) })
+                                : item.waitingFor
+                                  ? t(`waiting.${item.waitingFor}`)
+                                  : null}
+                        </span>
+                      </span>
+                    );
+                  },
+                })),
+                ...(sameTerms
+                  ? []
+                  : [
+                      {
+                        key: "terms",
+                        header: t("table.terms"),
+                        hideOnPhone: true,
+                        cell: (row: ScheduleData[number]) => (
+                          <ul className="text-muted text-sm whitespace-nowrap">
+                            {termLines(row).map((line) => (
+                              <li key={line}>{line}</li>
+                            ))}
+                          </ul>
+                        ),
+                      },
+                    ]),
+              ]}
+            />
           ) : (
             <EmptyState icon="wallet" title={view === "due" ? t("views.dueEmpty") : t("scheduleEmpty")} />
           )

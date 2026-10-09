@@ -229,7 +229,14 @@
     "issueResolved": "Resolved: {note} · {name}",
     "operatorStep": "Production records this step — QC records at the quality step",
     "acceptFirst": "Press “Accept job” above first; the production steps start after that",
-    "raiseIssueToggle": "Report a problem with this job"
+    "raiseIssueToggle": "Report a problem with this job",
+    "acceptSummary": {
+      "product": "Product",
+      "quantity": "Quantity (pcs)",
+      "ship": "Ship by",
+      "amount": "You will be paid (excl. VAT)",
+      "seeSpec": "Check the spec and artwork before accepting"
+    }
   },
   "capacity": {
     "title": "Weekly capacity",
@@ -242,7 +249,11 @@
       "closure": "{date} · {name} (factory closed)",
       "extra_working_day": "{date} · {name} (extra working day)"
     },
-    "noCapacity": "No capacity set"
+    "noCapacity": "No capacity set",
+    "table": {
+      "type": "Product type",
+      "week": "Week of {date}"
+    }
   },
   "samples": {
     "title": "Sample jobs",
@@ -374,6 +385,24 @@
     "recordSample": "Record sample",
     "pieces": "{count} pcs",
     "openJob": "Open checklist",
-    "startCheck": "Start check"
+    "startCheck": "Start check",
+    "table": {
+      "job": "Job",
+      "product": "Product",
+      "quantity": "Pieces",
+      "when": "Booked / step",
+      "action": "Action"
+    }
+  },
+  "table": {
+    "no": "Job",
+    "product": "Product",
+    "quantity": "Quantity (pcs)",
+    "ship": "Ship by",
+    "step": "Current step",
+    "due": "Due {date}",
+    "status": "Status",
+    "late": "Late",
+    "inspection": "Packio will inspect"
   }
 }

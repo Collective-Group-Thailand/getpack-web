@@ -5,14 +5,14 @@ import { getTranslations } from "next-intl/server";
 import { SHIPMENT_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { Code, Row, RowList, StatStrip, ViewTabs } from "@/features/partner/rows";
+import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PartnerTable } from "@/features/partner/table";
 import { CreateShipment } from "@/features/partner/ship/actions";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
-import { Badge } from "@/ui/components/Badge";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 /** `partner.shipments.list?view`, and everything. */
@@ -76,6 +76,12 @@ export default async function ShipPage({ searchParams }: Props) {
   // A job every destination of which has had all its pieces sent is done here (round 2, B3): the
   // plan still lists it, with nothing left to create.
   const waiting = plan.data?.filter((job) => job.destinations.some((destination) => destination.remainingQuantity > 0));
+
+  // A delivery by the factory's own fleet is not done until its proof of delivery is in.
+  const podDue = (shipment: { carrier: string; proofOfDelivery: unknown; status: string }) =>
+    shipment.carrier === "factory_fleet" &&
+    !shipment.proofOfDelivery &&
+    ["picked_up", "in_transit", "out_for_delivery"].includes(shipment.status);
 
   return (
     <PartnerPage title={t("title")} wide>
@@ -172,45 +178,64 @@ export default async function ShipPage({ searchParams }: Props) {
         />
         {list.data ? (
           list.data.data.length ? (
-            <RowList label={t("list.title")}>
-              {list.data.data.map((shipment) => {
-                const pieces = shipment.items.reduce((total, item) => total + item.quantity, 0);
-                const podDue =
-                  shipment.carrier === "factory_fleet" &&
-                  !shipment.proofOfDelivery &&
-                  ["picked_up", "in_transit", "out_for_delivery"].includes(shipment.status);
-                return (
-                  <Row
-                    key={shipment.id}
-                    href={`/ship/${shipment.id}`}
-                    icon="truck"
-                    tone={podDue ? "warning" : "neutral"}
-                    title={
-                      <>
-                        <Code>{shipment.shipmentNo}</Code>
-                        <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
-                        {podDue ? (
-                          <Badge tone="warning" size="sm" icon="warning">
-                            {t("list.podMissing")}
-                          </Badge>
-                        ) : null}
-                      </>
-                    }
-                    meta={
-                      <>
-                        <span className="text-fg">{shipment.destination.recipientName}</span>
-                        {" · "}
-                        {t("list.meta", {
-                          jobNo: [...new Set(shipment.items.map((item) => item.jobNo))].join(", "),
-                          quantity: format.number(pieces),
-                          cartons: shipment.cartonsCount,
-                        })}
-                      </>
-                    }
-                  />
-                );
-              })}
-            </RowList>
+            <PartnerTable
+              caption={t("list.title")}
+              rows={list.data.data}
+              rowKey={(shipment) => shipment.id}
+              rowHref={(shipment) => `/ship/${shipment.id}`}
+              rowTone={(shipment) => (podDue(shipment) ? "warning" : undefined)}
+              columns={[
+                {
+                  key: "no",
+                  header: t("list.table.no"),
+                  primary: true,
+                  cell: (shipment) => <span className="font-mono whitespace-nowrap">{shipment.shipmentNo}</span>,
+                },
+                {
+                  key: "to",
+                  header: t("list.table.to"),
+                  cell: (shipment) => (
+                    <span className="flex flex-col">
+                      <span>{shipment.destination.recipientName}</span>
+                      <span className="text-muted text-sm">{shipment.destination.province.nameTh}</span>
+                    </span>
+                  ),
+                },
+                {
+                  key: "jobs",
+                  header: t("list.table.jobs"),
+                  cell: (shipment) => (
+                    <span className="font-mono text-sm">
+                      {[...new Set(shipment.items.map((item) => item.jobNo))].join(", ")}
+                    </span>
+                  ),
+                },
+                {
+                  key: "pieces",
+                  header: t("list.table.pieces"),
+                  align: "end",
+                  cell: (shipment) => format.number(shipment.items.reduce((total, item) => total + item.quantity, 0)),
+                },
+                {
+                  key: "cartons",
+                  header: t("list.table.cartons"),
+                  align: "end",
+                  cell: (shipment) => shipment.cartonsCount,
+                },
+                {
+                  key: "status",
+                  header: t("list.table.status"),
+                  cell: (shipment) => (
+                    <span className="flex flex-col items-start gap-1">
+                      <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
+                      {podDue(shipment) ? (
+                        <span className="text-warning-subtle-fg text-sm font-medium">{t("list.podMissing")}</span>
+                      ) : null}
+                    </span>
+                  ),
+                },
+              ]}
+            />
           ) : (
             <EmptyState icon="truck" title={t(`list.empty.${view}`)} />
           )
