@@ -91,7 +91,7 @@ export default async function QcPage() {
           cell: (job) => (
             <Link
               href={`/jobs/${job.id}#qc`}
-              className="bg-primary text-primary-fg hover:bg-primary-hover rounded-control inline-flex min-h-12 w-full items-center justify-center gap-2 px-5 font-semibold lg:min-h-10 lg:w-auto lg:px-4 lg:text-sm"
+              className="bg-primary text-primary-fg hover:bg-primary-hover rounded-control inline-flex min-h-12 w-full items-center justify-center gap-2 px-5 font-semibold md:min-h-10 md:w-auto md:px-4 md:text-sm"
             >
               <Icon name="clipboard-check" size={18} aria-hidden="true" />
               {action}

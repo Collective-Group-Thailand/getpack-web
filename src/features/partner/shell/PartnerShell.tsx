@@ -52,10 +52,9 @@ export async function PartnerShell({ context, children }: { context: FactoryCont
       sidebarClassName="bg-surface"
       bottomNav={<PartnerBottomNav items={bottom} />}
       reserveBottomNavSpace
-      // 18 px base text on the shop floor (design-system.md §5); 15 px at a desk (lg), where the
-      // owner, planner and accountant read lists with a mouse — the admin console's density.
-      // The page a shade deeper than paper, so white panels (cards, tables, the menu) stand off it.
-      className="bg-bg-subtle text-[1.125rem] md:text-base lg:text-[0.9375rem]"
+      // 15 px base text everywhere — the admin console's density (sizes of controls: base.css,
+      // partner block); inputs stay 16 px on a phone so iOS does not zoom.
+      className="text-[0.9375rem]"
     >
       {children}
     </AppShell>

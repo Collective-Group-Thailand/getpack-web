@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { PAYABLE_STATUS, PAYOUT_ITEM_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { termsFrom, TermsHelp } from "@/features/partner/terms";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { StatStrip, ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
@@ -38,6 +39,7 @@ export default async function PayoutsPage({ searchParams }: Props) {
   const view: View = (VIEWS as readonly string[]).includes(query.view ?? "") ? (query.view as View) : "due";
   const t = await getTranslations("partnerBilling.payouts");
   const format = await getFormat();
+  const tTerms = await getTranslations("partner.terms");
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
@@ -121,6 +123,10 @@ export default async function PayoutsPage({ searchParams }: Props) {
         </section>
       ) : null}
 
+      <TermsHelp
+        title={tTerms("title")}
+        terms={termsFrom(tTerms.raw, ["advance", "balance", "retention", "claimWindow", "payoutRun"])}
+      />
       <PartnerSection title={t("scheduleTitle")} description={t("scheduleBody")}>
         {schedule.data ? (
           <ViewTabs

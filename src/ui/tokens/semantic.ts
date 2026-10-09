@@ -93,7 +93,7 @@ const D = ART.dark;
 
 /**
  * Light — the customer default and the admin zone's working theme (00-master-plan.md §2).
- * Warm paper page, white cards, warm ink text, one teal for actions (D-180).
+ * Near-white neutral page, white cards, cool ink text, one teal for actions (D-180).
  */
 const light = build(
   {

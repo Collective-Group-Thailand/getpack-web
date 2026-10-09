@@ -398,10 +398,68 @@
 }
 
 /*
- * The factory app at a desk (see the partner rule in the base layer). Unlayered on purpose: the
- * shop-floor sizes are utilities (h-14, text-lg), and a layered rule never beats a utility.
+ * The factory app's type and control sizes. Unlayered on purpose: the shop-floor sizes are
+ * utilities (h-14, text-lg), and a layered rule never beats a utility.
+ *
+ * Phone: 15 px body, 20 px page title, 44 px buttons — the size of a well-made phone app; inputs
+ * keep 16 px so iOS does not zoom the page when one is tapped.
  */
-@media (width >= 64rem) {
+[data-zone="partner"] main h1 {
+  font-size: 1.25rem;
+}
+[data-zone="partner"] main h2 {
+  font-size: 1rem;
+}
+[data-zone="partner"] main .text-lg {
+  font-size: 1rem;
+}
+[data-zone="partner"] main .text-xl {
+  font-size: 1.125rem;
+}
+[data-zone="partner"] main :not(input)[data-size="xl"] {
+  height: 2.75rem;
+  font-size: 0.9375rem;
+}
+[data-zone="partner"] main [data-size="lg"] {
+  height: 2.5rem;
+  font-size: 0.875rem;
+}
+[data-zone="partner"] main input[data-size="lg"] {
+  height: 2.75rem;
+  font-size: 1rem;
+}
+[data-zone="partner"] main [data-big] {
+  min-height: 3.25rem;
+}
+[data-zone="partner"] main [data-big] > svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+[data-zone="partner"] main [data-big] > span > span:first-child {
+  font-size: 1rem;
+}
+[data-zone="partner"] main [data-big] > span > span + span {
+  font-size: 0.8125rem;
+}
+[data-zone="partner"] main [data-stepper] li > div:last-child > p:first-child > .text-lg {
+  font-size: 1rem;
+}
+/* Term and value read as one line of a form, not a caption over a heading. */
+[data-zone="partner"] main dl:not([data-terms]) dt {
+  font-size: 0.8125rem;
+}
+
+[data-zone="partner"] main [data-segment="xl"] {
+  height: 2.75rem;
+  font-size: 0.9375rem;
+}
+/* An example in a field is a hint, not the answer: smaller and quieter than what gets typed. */
+[data-zone="partner"] main :is(input, textarea)::placeholder {
+  font-size: 0.875rem;
+}
+
+/* Tablet and desk (iPad portrait up): the admin console's density. */
+@media (width >= 48rem) {
   [data-zone="partner"] main h1 {
     font-size: 1.375rem;
   }
@@ -445,6 +503,16 @@
   [data-zone="partner"] main input[data-size="lg"] {
     height: 2.5rem;
     font-size: 0.9375rem;
+  }
+  [data-zone="partner"] main textarea {
+    font-size: 0.9375rem;
+  }
+  [data-zone="partner"] main [data-segment="xl"] {
+    height: 2.5rem;
+    font-size: 0.875rem;
+  }
+  [data-zone="partner"] main :is(input, textarea)::placeholder {
+    font-size: 0.8125rem;
   }
   [data-zone="partner"] main [data-stepper] li > div:first-child > span:first-child {
     width: 1.75rem;

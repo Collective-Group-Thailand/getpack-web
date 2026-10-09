@@ -114,7 +114,7 @@ export function ViewTabs({
               href={item.href}
               aria-current={item.key === current ? "page" : undefined}
               className={cn(
-                "rounded-control inline-flex min-h-11 items-center gap-2 border px-4 text-sm font-medium transition-colors lg:min-h-9 lg:px-3",
+                "rounded-control inline-flex min-h-11 items-center gap-2 border px-4 text-sm font-medium transition-colors md:min-h-9 md:px-3",
                 item.key === current
                   ? "bg-primary text-primary-fg border-primary"
                   : "border-border bg-surface text-fg hover:border-border-strong",

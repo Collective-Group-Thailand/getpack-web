@@ -86,8 +86,8 @@
   "noVersion": "No price list yet",
   "noVersionBody": "Start by proposing your first prices below",
   "propose": {
-    "title": "Propose new prices",
-    "body": "New prices apply to new orders from the date you choose; orders already priced keep theirs.",
+    "title": "Change prices",
+    "body": "1. Pick when new prices start → 2. edit prices in the sheet → 3. send to Packio; they apply once approved",
     "open": "You have an open proposal",
     "openLink": "Open it",
     "oneAtATime": "A proposal is already open (above) — send or withdraw it before starting another"
@@ -403,11 +403,11 @@
     "reasonRequired": "Give a reason of at least 3 characters",
     "created": "{type} draft proposal created",
     "failed": "Could not create the proposal",
-    "from": "Applies from",
-    "fromHint": "Never back-dated; Packio approves it before then",
-    "reason": "Reason",
-    "reasonHint": "E.g. paper prices rise next month",
-    "action": "Start a draft",
+    "from": "New prices start on",
+    "fromHint": "Set 7 days ahead; change it if needed. No back-dating; jobs already accepted keep their price",
+    "reason": "Reason (optional)",
+    "reasonHint": "Helps Packio approve sooner",
+    "action": "Start editing prices",
     "reasonPlaceholder": "e.g. corrugated board price rise from our supplier"
   },
   "submit": {
@@ -632,7 +632,7 @@
   "cta": {
     "continueDraft": "Continue the draft",
     "viewOpen": "View the sent proposal",
-    "propose": "Propose new prices"
+    "propose": "Change prices"
   },
   "openNotice": {
     "draft": "You have a draft price proposal not yet sent",
