@@ -37,7 +37,7 @@ export function PartnerPage({
       {back ? (
         <Link
           href={back.href}
-          className="text-muted hover:text-fg -ms-2 mb-2 inline-flex min-h-12 items-center gap-1 rounded-md px-2"
+          className="text-muted hover:text-fg -ms-2 mb-2 inline-flex min-h-11 items-center gap-1 rounded-md px-2 md:min-h-10"
         >
           <Icon name="arrow-left" size={20} />
           {back.label}
@@ -75,7 +75,7 @@ export function PartnerSection({
     <section aria-labelledby={id ? `${id}-title` : undefined} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-2">
         <div className="min-w-0 flex-1">
-          <h2 id={id ? `${id}-title` : undefined} className="text-[1.0625rem] font-semibold md:text-base">
+          <h2 id={id ? `${id}-title` : undefined} className="text-lg font-semibold">
             {title}
           </h2>
           {description ? <p className="text-muted text-sm">{description}</p> : null}

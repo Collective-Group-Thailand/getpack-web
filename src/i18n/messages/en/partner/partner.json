@@ -162,5 +162,9 @@
       "By the claim type's rules, who the issue most likely falls on — you can still explain"
     ],
     "deduction": ["Deduction", "If a claim is the factory's, Packio may deduct from what it pays instead of a remake"]
+  },
+  "select": {
+    "search": "Type to search",
+    "empty": "Nothing matches"
   }
 }

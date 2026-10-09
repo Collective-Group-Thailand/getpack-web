@@ -47,7 +47,7 @@ export function PartnerBottomNav({
               className={cn(
                 bottom
                   ? "flex h-16 flex-col items-center justify-center gap-0.5 text-sm"
-                  : "flex h-12 items-center gap-3 rounded-md px-3 font-medium",
+                  : "flex h-11 items-center gap-3 rounded-md px-3 font-medium md:h-10",
                 bottom && (current ? "text-primary-subtle-fg font-semibold" : "text-muted font-medium"),
                 !bottom && (current ? "bg-primary-subtle text-primary-subtle-fg" : "text-fg hover:bg-bg"),
               )}
