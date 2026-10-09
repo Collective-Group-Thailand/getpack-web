@@ -14,6 +14,7 @@ import { cn } from "@/ui/lib/cn";
 
 import type { CustomerCase, HomePhoto } from "./content.server";
 import { HOME_WRAP, Photo, TemplateCard, UNDERLINE } from "./parts";
+import { styleDieline } from "./style-dielines.server";
 import { NewsletterForm } from "./NewsletterForm";
 import { StudioHeroPanel } from "./StudioHeroPanel";
 import type { StudioHero } from "./studio-hero.server";
@@ -174,6 +175,7 @@ export async function TemplateGallery({
       locale={locale}
       big={big}
       photo={photos.get(style.code) ?? null}
+      dieline={{ card: styleDieline(style.code, "card"), thumb: styleDieline(style.code, "thumb") }}
       meta={`${facetLabel(words, "category", style.category)} · ${facetLabel(words, "materialClass", style.materialClass)}`}
       action={t("start")}
     />
