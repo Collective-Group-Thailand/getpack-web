@@ -16,6 +16,7 @@ import {
   missingChoices,
   NO_DIMS,
   readyToPrice,
+  seedFromDesign,
   sizeProblems,
   stepsOf,
   withTier,
@@ -263,6 +264,27 @@ describe("the calculate body", () => {
       apart.partPrints,
     );
     expect(initialState(configurator, seedFromConfiguration(configurator, together as never)).partPrints).toEqual({});
+  });
+
+  it("opens from the home hero on exactly the hero's choices, not the catalogue's optional defaults", async () => {
+    const published = await configuratorOf("tuck-end-box");
+    // A catalogue that defaults an ink and a coating, as UAT's does: the option is the default on every side.
+    const defaulted = (kind: string) => (group: Configurator["optionGroups"][number]) =>
+      group.kind === kind ? { ...group, options: group.options.map((o, i) => ({ ...o, isDefault: i === 0 })) } : group;
+    const configurator = {
+      ...published,
+      optionGroups: published.optionGroups.map(defaulted("ink_colour")).map(defaulted("coating")),
+    };
+    const material = groupsOf(configurator).find((group) => group.kind === "material")!.options[0]!.id;
+    const ink = groupsOf(configurator).find((group) => group.kind === "print_front")!.options[1]!.id;
+    expect(initialState(configurator).choices.print_back).toHaveLength(1);
+    const hero = initialState(
+      configurator,
+      seedFromDesign(configurator, { material, ink, l: "150", w: "150", d: "70", qty: "1000", from: "home" }),
+    );
+    expect(hero.choices).toMatchObject({ material: [material], print_front: [ink], print_back: [], coating_front: [] });
+    // Without the hero's print, a design's "order this" keeps the catalogue's defaults.
+    expect(initialState(configurator, seedFromDesign(configurator, { material })).choices.print_back).toHaveLength(1);
   });
 
   it("is the published label, and the published pouch with its gusset", async () => {
