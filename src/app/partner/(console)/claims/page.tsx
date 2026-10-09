@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { CLAIM_STATUS } from "@/domain/status";
 import { offered } from "@/features/partner/account/offered";
 import { attempt, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage } from "@/features/partner/frame";
+import { Code, Row, RowList } from "@/features/partner/rows";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerAccount.claims"))("title") };
@@ -32,38 +31,45 @@ export default async function ClaimsPage() {
   const rows = [...(list.data?.data ?? [])].sort((a, b) => Number(waiting(b)) - Number(waiting(a)));
 
   return (
-    <PartnerPage title={t("title")} description={t("body")}>
+    <PartnerPage wide title={t("title")} description={t("body")}>
       {list.data ? (
         rows.length ? (
-          <ul className="flex flex-col gap-2">
+          <RowList label={t("title")}>
             {rows.map((claim) => (
-              <li key={claim.id}>
-                <Link
-                  href={`/claims/${claim.id}`}
-                  className="border-border bg-surface hover:bg-surface-subtle flex min-h-20 flex-col gap-1 rounded-xl border p-3"
-                >
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono font-semibold">{claim.claimNo}</span>
+              <Row
+                key={claim.id}
+                href={`/claims/${claim.id}`}
+                icon="shield-alert"
+                tone={waiting(claim) ? "danger" : "neutral"}
+                title={
+                  <>
+                    <Code>{claim.claimNo}</Code>
                     <StatusChip map={CLAIM_STATUS} value={claim.status} />
                     {waiting(claim) ? (
                       <Badge tone="warning" size="sm" icon="warning">
                         {t("awaitingYou")}
                       </Badge>
                     ) : null}
-                    <Icon name="chevron-right" size={24} className="text-muted ms-auto" />
-                  </span>
-                  <span>{t(`types.${claim.type}`)}</span>
-                  <span className="text-muted text-sm">
+                  </>
+                }
+                meta={
+                  <>
+                    <span className="text-fg">{t(`types.${claim.type}`)}</span>
+                    {" · "}
                     {[claim.jobNo, claim.shipmentNo, format.date(claim.submittedAt)].filter(Boolean).join(" · ")}
-                    {/* The API names a recovered amount even when it is zero: show one only once there is a deduction. */}
-                    {claim.deductions.length
-                      ? ` · ${t("deduction", { amount: format.thb(claim.deductionAmount) })}`
-                      : ""}
-                  </span>
-                </Link>
-              </li>
+                  </>
+                }
+                // The API names a recovered amount even when it is zero: show one only once there is a deduction.
+                aside={
+                  claim.deductions.length ? (
+                    <span className="font-semibold">
+                      {t("deduction", { amount: format.thb(claim.deductionAmount) })}
+                    </span>
+                  ) : undefined
+                }
+              />
             ))}
-          </ul>
+          </RowList>
         ) : (
           <EmptyState icon="shield" title={t("empty")} />
         )

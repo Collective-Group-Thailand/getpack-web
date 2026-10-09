@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage } from "@/features/partner/frame";
+import { ViewTabs } from "@/features/partner/rows";
 import { JobScan } from "@/features/partner/jobs/actions";
 import { JobCard } from "@/features/partner/jobs/JobCard";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Input } from "@/ui/components/Input";
-import { cn } from "@/ui/lib/cn";
 
 /**
  * The floor's tabs, as `partner.production.list?view` names them, and everything.
@@ -54,31 +53,18 @@ export default async function JobsPage({ searchParams }: Props) {
 
   return (
     <PartnerPage title={t("title")} actions={<JobScan />} wide>
-      <nav aria-label={t("viewsLabel")} className="-mx-4 overflow-x-auto px-4">
-        <ul className="flex gap-2">
-          {VIEWS.map((key) => (
-            <li key={key} className="shrink-0">
-              <Link
-                href={href(key)}
-                aria-current={key === view ? "page" : undefined}
-                className={cn(
-                  "border-border inline-flex min-h-12 items-center rounded-control border px-4 font-medium",
-                  key === view ? "bg-primary text-primary-fg border-primary" : "bg-surface hover:bg-surface-subtle",
-                )}
-              >
-                {t(`views.${key}`)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <ViewTabs
+        label={t("viewsLabel")}
+        current={view}
+        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
+      />
       <form role="search" className="flex gap-2" action="/jobs">
         <input type="hidden" name="view" value={view} />
         <label htmlFor="jobs-q" className="sr-only">
           {t("search")}
         </label>
         <Input id="jobs-q" name="q" inputSize="lg" defaultValue={query.q ?? ""} placeholder={t("searchPlaceholder")} />
-        <Button type="submit" size="xl" variant="secondary" iconStart="search">
+        <Button type="submit" size="lg" variant="secondary" iconStart="search" className="h-12 shrink-0">
           {t("searchAction")}
         </Button>
       </form>

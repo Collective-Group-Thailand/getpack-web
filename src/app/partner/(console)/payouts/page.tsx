@@ -5,12 +5,13 @@ import { getTranslations } from "next-intl/server";
 import { PAYABLE_STATUS, PAYOUT_ITEM_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ViewTabs } from "@/features/partner/rows";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
+import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Stat } from "@/ui/components/Stat";
-import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -66,16 +67,14 @@ export default async function PayoutsPage({ searchParams }: Props) {
       description={t("body")}
       back={{ href: "/billing", label: t("back") }}
       actions={
-        <span className="flex flex-wrap gap-4">
-          <Link href="/payouts/calendar" className="text-primary inline-flex min-h-12 items-center gap-1 underline">
-            <Icon name="calendar" size={20} />
-            {t("calendarLink")}
-          </Link>
-          <Link href="/payouts/statement" className="text-primary inline-flex min-h-12 items-center gap-1 underline">
-            <Icon name="spreadsheet" size={20} />
-            {t("statementLink")}
-          </Link>
-        </span>
+        <>
+          <Button asChild variant="secondary" size="md" iconStart="calendar">
+            <Link href="/payouts/calendar">{t("calendarLink")}</Link>
+          </Button>
+          <Button asChild variant="secondary" size="md" iconStart="spreadsheet">
+            <Link href="/payouts/statement">{t("statementLink")}</Link>
+          </Button>
+        </>
       }
       wide
     >
@@ -116,24 +115,16 @@ export default async function PayoutsPage({ searchParams }: Props) {
 
       <PartnerSection title={t("scheduleTitle")} description={t("scheduleBody")}>
         {schedule.data ? (
-          <nav aria-label={t("views.label")} className="flex flex-wrap gap-2">
-            {VIEWS.map((item) => (
-              <Link
-                key={item}
-                href={item === "due" ? "/payouts" : `/payouts?view=${item}`}
-                aria-current={item === view ? "page" : undefined}
-                className={cn(
-                  "rounded-control border-border inline-flex min-h-11 items-center gap-2 border px-4 text-sm",
-                  item === view ? "bg-primary text-primary-fg border-primary font-medium" : "hover:bg-surface-subtle",
-                )}
-              >
-                {t(`views.${item}`)}
-                <span className="tabular-nums opacity-80">
-                  {schedule.data!.data.filter((row) => inView(item, row)).length}
-                </span>
-              </Link>
-            ))}
-          </nav>
+          <ViewTabs
+            label={t("views.label")}
+            current={view}
+            items={VIEWS.map((item) => ({
+              key: item,
+              href: item === "due" ? "/payouts" : `/payouts?view=${item}`,
+              label: t(`views.${item}`),
+              count: schedule.data!.data.filter((row) => inView(item, row)).length,
+            }))}
+          />
         ) : null}
         {schedule.data ? (
           schedule.data.data.filter((row) => inView(view, row)).length ? (

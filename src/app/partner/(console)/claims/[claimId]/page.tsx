@@ -65,7 +65,7 @@ export default async function ClaimPage({ params }: Props) {
       ) : null}
       <Card padding="md">
         <DescriptionList
-          columns={1}
+          columns={2}
           items={[
             { term: t("reported"), description: claim.description },
             { term: t("resolution"), description: t(`resolutions.${claim.requestedResolution}`) },
