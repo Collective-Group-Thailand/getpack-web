@@ -5,15 +5,16 @@ import { getTranslations } from "next-intl/server";
 import { SHIPMENT_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { Code, Row, RowList, ViewTabs } from "@/features/partner/rows";
 import { CreateShipment } from "@/features/partner/ship/actions";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
+import { Stat } from "@/ui/components/Stat";
+import { Badge } from "@/ui/components/Badge";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Icon } from "@/ui/icons";
-import { cn } from "@/ui/lib/cn";
 
 /** `partner.shipments.list?view`, and everything. */
 const VIEWS = ["open", "in_transit", "delivered", "exceptions", "all"] as const;
@@ -69,8 +70,9 @@ export default async function ShipPage({ searchParams }: Props) {
   const glance = {
     gate: trips.filter((trip) => trip.status === "ready").length,
     road: trips.filter((trip) => moving.includes(trip.status)).length,
-    pod: trips.filter((trip) => trip.carrier === "factory_fleet" && !trip.proofOfDelivery && moving.includes(trip.status))
-      .length,
+    pod: trips.filter(
+      (trip) => trip.carrier === "factory_fleet" && !trip.proofOfDelivery && moving.includes(trip.status),
+    ).length,
   };
   // A job every destination of which has had all its pieces sent is done here (round 2, B3): the
   // plan still lists it, with nothing left to create.
@@ -88,13 +90,14 @@ export default async function ShipPage({ searchParams }: Props) {
             ] as const
           ).map(([key, target]) => (
             <li key={key}>
-              <Link
+              <Stat
+                as={Link}
                 href={`/ship?view=${target}`}
-                className="border-border bg-surface hover:bg-surface-subtle flex min-h-20 flex-col justify-center rounded-xl border p-3"
-              >
-                <span className="text-2xl font-bold tabular-nums">{format.number(glance[key])}</span>
-                <span className="text-muted text-sm">{t(`glance.${key}`)}</span>
-              </Link>
+                label={t(`glance.${key}`)}
+                value={format.number(glance[key])}
+                icon={key === "gate" ? "warehouse" : key === "road" ? "truck" : "file-check"}
+                tone={key === "pod" && glance[key] > 0 ? "warning" : "neutral"}
+              />
             </li>
           ))}
         </ul>
@@ -168,27 +171,14 @@ export default async function ShipPage({ searchParams }: Props) {
       </PartnerSection>
 
       <PartnerSection title={t("list.title")}>
-        <nav aria-label={t("list.viewsLabel")}>
-          <ul className="flex flex-wrap gap-2">
-            {VIEWS.map((key) => (
-              <li key={key}>
-                <Link
-                  href={`/ship?view=${key}`}
-                  aria-current={key === view ? "page" : undefined}
-                  className={cn(
-                    "border-border inline-flex min-h-12 items-center rounded-control border px-4 font-medium",
-                    key === view ? "bg-primary text-primary-fg border-primary" : "bg-surface hover:bg-surface-subtle",
-                  )}
-                >
-                  {t(`list.views.${key}`)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <ViewTabs
+          label={t("list.viewsLabel")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: `/ship?view=${key}`, label: t(`list.views.${key}`) }))}
+        />
         {list.data ? (
           list.data.data.length ? (
-            <ul className="grid gap-2 md:grid-cols-2">
+            <RowList label={t("list.title")}>
               {list.data.data.map((shipment) => {
                 const pieces = shipment.items.reduce((total, item) => total + item.quantity, 0);
                 const podDue =
@@ -196,32 +186,37 @@ export default async function ShipPage({ searchParams }: Props) {
                   !shipment.proofOfDelivery &&
                   ["picked_up", "in_transit", "out_for_delivery"].includes(shipment.status);
                 return (
-                  <li key={shipment.id}>
-                    <Link
-                      href={`/ship/${shipment.id}`}
-                      className="border-border bg-surface hover:bg-surface-subtle flex min-h-20 flex-col gap-1 rounded-xl border p-3"
-                    >
-                      <span className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono font-semibold">{shipment.shipmentNo}</span>
+                  <Row
+                    key={shipment.id}
+                    href={`/ship/${shipment.id}`}
+                    icon="truck"
+                    tone={podDue ? "warning" : "neutral"}
+                    title={
+                      <>
+                        <Code>{shipment.shipmentNo}</Code>
                         <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
-                        <Icon name="chevron-right" size={24} className="text-muted ms-auto" />
-                      </span>
-                      <span>{shipment.destination.recipientName}</span>
-                      <span className="text-muted text-sm">
+                        {podDue ? (
+                          <Badge tone="warning" size="sm" icon="warning">
+                            {t("list.podMissing")}
+                          </Badge>
+                        ) : null}
+                      </>
+                    }
+                    meta={
+                      <>
+                        <span className="text-fg">{shipment.destination.recipientName}</span>
+                        {" · "}
                         {t("list.meta", {
                           jobNo: [...new Set(shipment.items.map((item) => item.jobNo))].join(", "),
                           quantity: format.number(pieces),
                           cartons: shipment.cartonsCount,
                         })}
-                      </span>
-                      {podDue ? (
-                        <span className="text-warning-subtle-fg text-sm font-medium">{t("list.podMissing")}</span>
-                      ) : null}
-                    </Link>
-                  </li>
+                      </>
+                    }
+                  />
                 );
               })}
-            </ul>
+            </RowList>
           ) : (
             <EmptyState icon="truck" title={t(`list.empty.${view}`)} />
           )
