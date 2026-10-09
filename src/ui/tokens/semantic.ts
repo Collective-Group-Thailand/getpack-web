@@ -47,10 +47,12 @@ interface BaseSlots {
   "kraft-strong": Oklch;
   /**
    * Sage (design language v3): the quiet green of a full-width band and of a template card's
-   * picture well. `sage` carries white text; `sage-subtle` carries ink.
+   * picture well. `sage` carries white text; `sage-subtle` carries ink. `sage-strong` is a quieter
+   * panel inside the band where a photo would sit — decoration, never text.
    */
   sage: Oklch;
   "sage-subtle": Oklch;
+  "sage-strong": Oklch;
 }
 
 /**
@@ -120,6 +122,7 @@ const light = build(
     "kraft-strong": L["kraft-400"],
     sage: L.sage,
     "sage-subtle": L["sage-50"],
+    "sage-strong": { ...L.sage, l: L.sage.l - 0.08 },
   },
   {
     primary: { base: L["primary-600"], fg: WHITE, subtle: L["primary-50"], subtleFg: L["primary-700"] },
@@ -164,6 +167,7 @@ const dark = build(
     "kraft-strong": D["kraft-400"],
     sage: D.sage,
     "sage-subtle": D["sage-50"],
+    "sage-strong": { ...D.sage, l: D.sage.l - 0.08 },
   },
   {
     primary: { base: D["primary-600"], fg: D["paper-50"], subtle: D["primary-50"], subtleFg: P.brand[300] },
@@ -204,6 +208,7 @@ const hc = build(
     "kraft-strong": L["kraft-400"],
     sage: { ...L.sage, l: 0.36 },
     "sage-subtle": WHITE,
+    "sage-strong": { ...L.sage, l: 0.28 },
   },
   {
     primary: { base: P.brand[900], fg: WHITE, subtle: P.brand[50], subtleFg: P.brand[950] },
