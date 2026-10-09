@@ -13,7 +13,8 @@ import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 type Props = { params: Promise<{ statementId: string }> };
 
@@ -63,7 +64,6 @@ export default async function StatementPage({ params }: Props) {
     .map((action) => blockedReason(action, tProblems))
     .filter((reason): reason is string => reason !== null);
   const open = (action: typeof confirm) => Boolean(action && !action.disabledReason);
-  const money = (amount: string, className = "tabular-nums") => <span className={className}>{format.thb(amount)}</span>;
 
   return (
     <PartnerPage
@@ -106,92 +106,35 @@ export default async function StatementPage({ params }: Props) {
       ) : null}
 
       <PartnerSection title={t("totals")}>
+        {/* A statement reads like an invoice: amounts right-aligned, subtotals ruled off. */}
         <Card padding="md">
-          <DescriptionList
-            columns={1}
-            items={[
-              { term: t("production"), description: money(statement.totals.production) },
-              { term: t("shipping"), description: money(statement.totals.shipping) },
-              ...(statement.totals.other !== "0.00"
-                ? [{ term: t("other"), description: money(statement.totals.other) }]
-                : []),
-              { term: t("deductions"), description: money(statement.totals.deductions) },
-              { term: t("net"), description: money(statement.totals.net) },
-              { term: t("vat"), description: money(statement.totals.vat) },
-              { term: t("gross"), description: money(statement.totals.gross, "text-lg font-semibold tabular-nums") },
-              { term: t("alreadyPaid"), description: money(statement.totals.alreadyPaid) },
-              { term: t("remaining"), description: money(statement.totals.remaining, "font-semibold tabular-nums") },
-            ]}
-          />
+          <dl className="flex flex-col text-sm tabular-nums">
+            {[
+              { term: t("production"), amount: statement.totals.production },
+              { term: t("shipping"), amount: statement.totals.shipping },
+              ...(statement.totals.other !== "0.00" ? [{ term: t("other"), amount: statement.totals.other }] : []),
+              { term: t("deductions"), amount: statement.totals.deductions },
+              { term: t("net"), amount: statement.totals.net, rule: true },
+              { term: t("vat"), amount: statement.totals.vat },
+              { term: t("gross"), amount: statement.totals.gross, rule: true, strong: true },
+              { term: t("alreadyPaid"), amount: statement.totals.alreadyPaid },
+              { term: t("remaining"), amount: statement.totals.remaining, rule: true, strong: true },
+            ].map((row) => (
+              <div
+                key={row.term}
+                className={cn(
+                  "flex items-baseline justify-between gap-4 py-1.5",
+                  row.rule && "border-border mt-1 border-t pt-2.5",
+                  row.strong && "text-base font-semibold",
+                )}
+              >
+                <dt className={row.strong ? undefined : "text-muted"}>{row.term}</dt>
+                <dd>{format.thb(row.amount)}</dd>
+              </div>
+            ))}
+          </dl>
         </Card>
       </PartnerSection>
-
-      {open(confirm) || open(dispute) ? (
-        <PartnerSection title={t("checkTitle")} description={t("checkBody")}>
-          <div className="grid gap-3 md:grid-cols-2">
-            {open(confirm) ? (
-              <ConfirmStatement
-                statementId={statement.id}
-                bsNumber={statement.bsNumber}
-                gross={format.thb(statement.totals.gross)}
-              />
-            ) : null}
-            {open(dispute) ? (
-              <DisputeStatement
-                statementId={statement.id}
-                bsNumber={statement.bsNumber}
-                lines={statement.lines.map((line) => ({
-                  lineNo: line.lineNo,
-                  label: t("lineLabel", { no: line.lineNo, description: line.description }),
-                }))}
-              />
-            ) : null}
-          </div>
-        </PartnerSection>
-      ) : null}
-
-      {open(invoice) ? (
-        <PartnerSection title={t("invoiceTitle")} description={t("invoiceBody")}>
-          <Card padding="lg">
-            <TaxInvoiceForm
-              statementId={statement.id}
-              taxId={context.factory?.taxId ?? ""}
-              branchCode={context.factory?.branchCode ?? "00000"}
-            />
-          </Card>
-        </PartnerSection>
-      ) : null}
-
-      {statement.taxInvoices.length ? (
-        <PartnerSection title={t("invoices")}>
-          <ul className="flex flex-col gap-2">
-            {statement.taxInvoices.map((item) => (
-              <li key={item.id}>
-                <Card padding="md" className="flex flex-wrap items-center gap-2">
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-medium">
-                      {t("invoiceLine", { no: item.vendorInvoiceNo, date: format.date(item.invoiceDate) })}
-                    </span>
-                    <span className="text-muted text-sm">
-                      {t(`sources.${item.source}`)} ·{" "}
-                      {t("invoiceAmounts", {
-                        net: format.thb(item.netAmount),
-                        vat: format.thb(item.vatAmount),
-                        gross: format.thb(item.grossAmount),
-                      })}
-                    </span>
-                    {item.rejectionReason ? (
-                      <span className="text-danger block text-sm">{item.rejectionReason}</span>
-                    ) : null}
-                  </span>
-                  <StatusChip map={VENDOR_INVOICE_STATUS} value={item.status} />
-                  {item.fileId ? <PartnerFileButton fileId={item.fileId} label={t("download")} /> : null}
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </PartnerSection>
-      ) : null}
 
       {KINDS.map((kind) => {
         const lines = statement.lines.filter((line) => line.kind === kind);
@@ -228,6 +171,89 @@ export default async function StatementPage({ params }: Props) {
           </PartnerSection>
         );
       })}
+      {open(confirm) || open(dispute) ? (
+        <PartnerSection title={t("checkTitle")} description={t("checkBody")}>
+          <div className="grid gap-3 md:grid-cols-2">
+            {open(confirm) ? (
+              <ConfirmStatement
+                statementId={statement.id}
+                bsNumber={statement.bsNumber}
+                gross={format.thb(statement.totals.gross)}
+              />
+            ) : null}
+            {open(dispute) ? (
+              <DisputeStatement
+                statementId={statement.id}
+                bsNumber={statement.bsNumber}
+                lines={statement.lines.map((line) => ({
+                  lineNo: line.lineNo,
+                  label: t("lineLabel", { no: line.lineNo, description: line.description }),
+                }))}
+              />
+            ) : null}
+          </div>
+        </PartnerSection>
+      ) : null}
+
+      {open(invoice) ? (
+        <PartnerSection title={t("invoiceTitle")} description={t("invoiceBody")}>
+          {open(confirm) ? (
+            // Usually after the amounts are confirmed: folded until then so the page asks one thing.
+            <details className="border-border bg-surface rounded-xl border">
+              <summary className="hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium">
+                <Icon name="receipt" size={18} />
+                {t("invoiceAfterConfirm")}
+              </summary>
+              <div className="border-border border-t p-4">
+                <TaxInvoiceForm
+                  statementId={statement.id}
+                  taxId={context.factory?.taxId ?? ""}
+                  branchCode={context.factory?.branchCode ?? "00000"}
+                />
+              </div>
+            </details>
+          ) : (
+            <Card padding="lg">
+              <TaxInvoiceForm
+                statementId={statement.id}
+                taxId={context.factory?.taxId ?? ""}
+                branchCode={context.factory?.branchCode ?? "00000"}
+              />
+            </Card>
+          )}
+        </PartnerSection>
+      ) : null}
+
+      {statement.taxInvoices.length ? (
+        <PartnerSection title={t("invoices")}>
+          <ul className="flex flex-col gap-2">
+            {statement.taxInvoices.map((item) => (
+              <li key={item.id}>
+                <Card padding="md" className="flex flex-wrap items-center gap-2">
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium">
+                      {t("invoiceLine", { no: item.vendorInvoiceNo, date: format.date(item.invoiceDate) })}
+                    </span>
+                    <span className="text-muted text-sm">
+                      {t(`sources.${item.source}`)} ·{" "}
+                      {t("invoiceAmounts", {
+                        net: format.thb(item.netAmount),
+                        vat: format.thb(item.vatAmount),
+                        gross: format.thb(item.grossAmount),
+                      })}
+                    </span>
+                    {item.rejectionReason ? (
+                      <span className="text-danger block text-sm">{item.rejectionReason}</span>
+                    ) : null}
+                  </span>
+                  <StatusChip map={VENDOR_INVOICE_STATUS} value={item.status} />
+                  {item.fileId ? <PartnerFileButton fileId={item.fileId} label={t("download")} /> : null}
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </PartnerSection>
+      ) : null}
     </PartnerPage>
   );
 }

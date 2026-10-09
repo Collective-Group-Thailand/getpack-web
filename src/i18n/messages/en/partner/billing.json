@@ -72,7 +72,7 @@
     "alreadyPaid": "Already paid (advance)",
     "remaining": "Still to pay",
     "checkTitle": "Check the statement",
-    "checkBody": "Check the lines below: confirm if right, dispute if not.",
+    "checkBody": "Check the totals and lines above: confirm if right, dispute if not.",
     "invoiceTitle": "Your tax invoice",
     "invoiceBody": "Issue a tax invoice for the confirmed amount; Packio claims the input VAT once it is valid.",
     "invoices": "Tax invoices recorded",
@@ -98,7 +98,8 @@
       "pdf_upload": "PDF file",
       "e_tax": "e-Tax Invoice",
       "manual": "Recorded by Finance"
-    }
+    },
+    "invoiceAfterConfirm": "Attach the tax invoice (usually after confirming the amounts)"
   },
   "payouts": {
     "title": "Payouts",
@@ -139,7 +140,14 @@
     "balancePending": "The balance and the retention open with the proof of delivery",
     "payOn": "Transfer planned {date}",
     "noPv": "No payment voucher yet",
-    "calendarLink": "Payout calendar"
+    "calendarLink": "Payout calendar",
+    "views": {
+      "label": "Filter by status",
+      "due": "Still to be paid",
+      "paid": "Paid in full",
+      "all": "All",
+      "dueEmpty": "No purchase order is waiting for payment"
+    }
   },
   "payout": {
     "metaTitle": "Payout",
