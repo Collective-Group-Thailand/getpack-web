@@ -80,7 +80,11 @@
       "already_started": "Another device already started this step; the page shows the latest",
       "already_completed": "Another device already completed this step; the page shows the latest",
       "skipped": "Packio skipped this step"
-    }
+    },
+    "inPlaceholder": "Pieces received from the step before",
+    "goodPlaceholder": "Good pieces passed on",
+    "scrapPlaceholder": "Scrapped pieces, 0 if none",
+    "notePlaceholder": "e.g. press stopped 1 hr to change the roller"
   },
   "qc": {
     "qcOnly": "QC records the result.",
@@ -120,7 +124,11 @@
     "good": "Good",
     "defective": "Defective",
     "pcs": "pcs",
-    "countsInvalid": "Defective cannot exceed the number sampled"
+    "countsInvalid": "Defective cannot exceed the number sampled",
+    "defectCountPlaceholder": "Pieces found",
+    "checkedPlaceholder": "e.g. 50",
+    "defectivePlaceholder": "0 if none",
+    "notesPlaceholder": "e.g. colour slightly darker than the Proof, within tolerance"
   },
   "issue": {
     "tooShort": "Describe the issue in at least 3 characters",
@@ -141,7 +149,8 @@
     "resolve": "Mark resolved",
     "resolveTitle": "Close this issue",
     "resolveNote": "How it was fixed",
-    "resolveNoteHint": "E.g. the press is repaired, the material arrived"
+    "resolveNoteHint": "E.g. the press is repaired, the material arrived",
+    "descriptionPlaceholder": "e.g. KA125 board out of stock, arriving 14 Oct"
   },
   "scan": {
     "open": "Scan",
@@ -236,7 +245,9 @@
       "ship": "Ship by",
       "amount": "You will be paid (excl. VAT)",
       "seeSpec": "Check the spec and artwork before accepting"
-    }
+    },
+    "openIssues": "{count, plural, one {# open issue} other {# open issues}}",
+    "openIssuesLink": "Go to issues"
   },
   "capacity": {
     "title": "Weekly capacity",
@@ -314,7 +325,10 @@
       "accept": "I accept the intake terms",
       "send": "Send the dieline",
       "sent": "Dieline sent",
-      "failed": "The dieline could not be sent"
+      "failed": "The dieline could not be sent",
+      "titlePlaceholder": "e.g. Tuck-end box with dust flaps",
+      "baseCodePlaceholder": "e.g. RSC-01 (leave blank if unsure)",
+      "notePlaceholder": "e.g. largest size you can make, which machine"
     }
   },
   "spec": {

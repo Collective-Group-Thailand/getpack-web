@@ -8,7 +8,7 @@ import { blockedReason, offered } from "@/features/partner/account/offered";
 import { attempt, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -154,7 +154,7 @@ export default async function ClaimPage({ params }: Props) {
       ) : null}
       {respond && !respond.disabledReason ? (
         <PartnerSection title={t("respondTitle")}>
-          <Card padding="lg">
+          <Card padding="md">
             <RespondClaim claimId={claim.id} claimNo={claim.claimNo} />
           </Card>
         </PartnerSection>

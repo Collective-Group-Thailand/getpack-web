@@ -48,11 +48,14 @@ export async function PartnerShell({ context, children }: { context: FactoryCont
         />
       }
       sidebarLabel={t("label")}
+      // White beside the paper page, like the topbar: the menu reads as its own panel, not as page text.
+      sidebarClassName="bg-surface"
       bottomNav={<PartnerBottomNav items={bottom} />}
       reserveBottomNavSpace
       // 18 px base text on the shop floor (design-system.md §5); 15 px at a desk (lg), where the
       // owner, planner and accountant read lists with a mouse — the admin console's density.
-      className="text-[1.125rem] md:text-base lg:text-[0.9375rem]"
+      // The page a shade deeper than paper, so white panels (cards, tables, the menu) stand off it.
+      className="bg-bg-subtle text-[1.125rem] md:text-base lg:text-[0.9375rem]"
     >
       {children}
     </AppShell>

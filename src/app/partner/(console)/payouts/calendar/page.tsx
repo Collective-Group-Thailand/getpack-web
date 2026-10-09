@@ -5,8 +5,10 @@ import { getTranslations } from "next-intl/server";
 import { PAYABLE_STATUS, PAYOUT_RUN_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ViewTabs } from "@/features/partner/rows";
+import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -38,26 +40,18 @@ export default async function PayoutCalendarPage({ searchParams }: { searchParam
         })
       ).data!,
   );
-  const tab = (value: View) => (
-    <Link
-      href={`/payouts/calendar${value === "runs" ? "?view=runs" : ""}`}
-      aria-current={view === value ? "page" : undefined}
-      className={
-        view === value
-          ? "bg-primary-subtle text-primary-subtle-fg inline-flex min-h-12 items-center rounded-lg px-4 font-medium"
-          : "text-muted hover:bg-bg-subtle inline-flex min-h-12 items-center rounded-lg px-4"
-      }
-    >
-      {t(`views.${value}`)}
-    </Link>
-  );
 
   return (
     <PartnerPage title={t("title")} description={t("body")}>
-      <nav aria-label={t("viewsLabel")} className="flex gap-2">
-        {tab("orders")}
-        {tab("runs")}
-      </nav>
+      <ViewTabs
+        label={t("viewsLabel")}
+        current={view}
+        items={(["orders", "runs"] as const).map((value) => ({
+          key: value,
+          href: `/payouts/calendar${value === "runs" ? "?view=runs" : ""}`,
+          label: t(`views.${value}`),
+        }))}
+      />
       {!calendar.data ? (
         <PageError error={calendar.error} />
       ) : (
@@ -72,24 +66,44 @@ export default async function PayoutCalendarPage({ searchParams }: { searchParam
               <EmptyState icon="wallet" title={t("noPayables")} />
             ) : (
               <PartnerSection title={t("payablesTitle")}>
-                <ul className="flex flex-col gap-2">
-                  {calendar.data.payables.map((p) => (
-                    <li key={p.id} className="border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-medium">{p.poNumber ?? t(`sources.${p.source}`)}</span>
-                        <StatusChip map={PAYABLE_STATUS} value={p.status} />
-                      </div>
-                      <span className="tabular-nums">
-                        {t("open", { amount: format.thb(p.openNetAmount), vat: format.thb(p.openVatAmount) })}
-                      </span>
-                      <span className="text-muted">
-                        {p.expectedPayOn ? t("expected", { date: format.date(p.expectedPayOn) }) : t("notYet")}
-                        {" · "}
-                        {t(`bases.${p.expectedBasis}`)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <PartnerTable
+                  caption={t("payablesTitle")}
+                  rows={calendar.data.payables}
+                  rowKey={(p) => p.id}
+                  columns={[
+                    {
+                      key: "po",
+                      header: t("table.po"),
+                      primary: true,
+                      cell: (p) => <span className="font-mono text-sm">{p.poNumber ?? t(`sources.${p.source}`)}</span>,
+                    },
+                    {
+                      key: "net",
+                      header: t("table.net"),
+                      align: "end",
+                      cell: (p) => <span className="font-semibold">{format.thb(p.openNetAmount)}</span>,
+                    },
+                    { key: "vat", header: t("table.vat"), align: "end", cell: (p) => format.thb(p.openVatAmount) },
+                    {
+                      key: "expected",
+                      header: t("table.expected"),
+                      cell: (p) => (
+                        <span className="flex flex-col">
+                          <span className="whitespace-nowrap">
+                            {p.expectedPayOn ? format.date(p.expectedPayOn) : t("notYet")}
+                          </span>
+                          <span className="text-muted text-sm">{t(`bases.${p.expectedBasis}`)}</span>
+                        </span>
+                      ),
+                    },
+                    {
+                      key: "status",
+                      header: t("table.status"),
+                      className: "whitespace-nowrap",
+                      cell: (p) => <StatusChip map={PAYABLE_STATUS} value={p.status} />,
+                    },
+                  ]}
+                />
               </PartnerSection>
             )
           ) : calendar.data.runs.length === 0 ? (

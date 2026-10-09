@@ -123,7 +123,13 @@ export function CreateProposal({ productTypeId, typeName }: { productTypeId: str
         requiredLabel={tCommon("state.required")}
         error={error.reason}
       >
-        <Textarea rows={3} value={reason} maxLength={1000} onChange={(event) => setReason(event.target.value)} />
+        <Textarea
+          placeholder={t("reasonPlaceholder")}
+          rows={3}
+          value={reason}
+          maxLength={1000}
+          onChange={(event) => setReason(event.target.value)}
+        />
       </Field>
       {error.form ? (
         <p role="alert" className="text-danger text-sm">
@@ -338,7 +344,13 @@ export function EvidenceUpload({ proposalId }: { proposalId: string }) {
       />
       {file ? <p className="text-sm">{t("chosen", { name: file.name })}</p> : null}
       <Field label={t("note")}>
-        <Input inputSize="lg" value={note} maxLength={500} onChange={(event) => setNote(event.target.value)} />
+        <Input
+          placeholder={t("notePlaceholder")}
+          inputSize="lg"
+          value={note}
+          maxLength={500}
+          onChange={(event) => setNote(event.target.value)}
+        />
       </Field>
       <Button
         type="submit"

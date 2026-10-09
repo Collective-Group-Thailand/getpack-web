@@ -64,43 +64,74 @@ export function HoursEditor({ current }: { current: Hours | null }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <ul className="flex flex-col gap-3">
-        {DAYS.map((day) => {
-          const open = hours[day];
-          return (
-            <li key={day} className="border-border flex flex-col gap-2 rounded-lg border p-3">
-              <Checkbox
-                label={t(`days.${day}`)}
-                checked={!!open}
-                disabled={!editable}
-                onCheckedChange={(on) => setHours((h) => ({ ...h, [day]: on ? { from: "08:00", to: "17:00" } : null }))}
-              />
-              {open ? (
-                <div className="grid grid-cols-2 gap-2">
-                  <Field label={t("opens", { day: t(`days.${day}`) })}>
-                    <Input
-                      type="time"
-                      value={open.from}
+      {/* A week reads as a timetable: one line a day, open/close side by side (a phone keeps the columns). */}
+      <div className="border-border bg-surface overflow-hidden rounded-xl border">
+        <table className="w-full border-collapse text-start">
+          <thead>
+            <tr className="border-border bg-surface-subtle border-b">
+              <th scope="col" className="text-muted px-3 py-2.5 text-start text-sm font-medium">
+                {t("table.day")}
+              </th>
+              <th scope="col" className="text-muted px-3 py-2.5 text-start text-sm font-medium">
+                {t("table.opens")}
+              </th>
+              <th scope="col" className="text-muted px-3 py-2.5 text-start text-sm font-medium">
+                {t("table.closes")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {DAYS.map((day) => {
+              const open = hours[day];
+              const name = t(`days.${day}`);
+              return (
+                <tr key={day} className="border-border border-b last:border-b-0">
+                  <th scope="row" className="px-3 py-2 text-start font-normal">
+                    <Checkbox
+                      label={name}
+                      checked={!!open}
                       disabled={!editable}
-                      onChange={(event) => setHours((h) => ({ ...h, [day]: { ...open, from: event.target.value } }))}
+                      onCheckedChange={(on) =>
+                        setHours((h) => ({ ...h, [day]: on ? { from: "08:00", to: "17:00" } : null }))
+                      }
                     />
-                  </Field>
-                  <Field label={t("closes", { day: t(`days.${day}`) })}>
-                    <Input
-                      type="time"
-                      value={open.to}
-                      disabled={!editable}
-                      onChange={(event) => setHours((h) => ({ ...h, [day]: { ...open, to: event.target.value } }))}
-                    />
-                  </Field>
-                </div>
-              ) : (
-                <p className="text-muted text-sm">{t("closed")}</p>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                  </th>
+                  {open ? (
+                    <>
+                      <td className="px-2 py-2 md:px-3">
+                        <Input
+                          type="time"
+                          className="max-w-40"
+                          aria-label={t("opens", { day: name })}
+                          value={open.from}
+                          disabled={!editable}
+                          onChange={(event) =>
+                            setHours((h) => ({ ...h, [day]: { ...open, from: event.target.value } }))
+                          }
+                        />
+                      </td>
+                      <td className="px-2 py-2 md:px-3">
+                        <Input
+                          type="time"
+                          className="max-w-40"
+                          aria-label={t("closes", { day: name })}
+                          value={open.to}
+                          disabled={!editable}
+                          onChange={(event) => setHours((h) => ({ ...h, [day]: { ...open, to: event.target.value } }))}
+                        />
+                      </td>
+                    </>
+                  ) : (
+                    <td colSpan={2} className="text-muted px-3 py-2">
+                      {t("closed")}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       {editable ? (
         <>
           <Field label={t("effectiveFrom")} hint={t("effectiveHint")}>

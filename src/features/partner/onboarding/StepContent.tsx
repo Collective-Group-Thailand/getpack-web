@@ -8,7 +8,7 @@ import { PageError, PartnerSection } from "@/features/partner/frame";
 import { productTypeName, toPriceReferences } from "@/features/partner/prices/values";
 import { ChangeRequestForm } from "@/features/partner/requests/ChangeRequestForm";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
@@ -110,7 +110,7 @@ async function Application({ context }: Props) {
   return (
     <>
       <PartnerSection title={t("company.title")} description={canEdit ? t("company.editable") : t("company.locked")}>
-        <Card padding="lg">
+        <Card padding="md">
           {canEdit ? (
             <CompanyForm
               etag={etag}
@@ -157,7 +157,7 @@ async function Application({ context }: Props) {
           <p className="text-muted">{t("addresses.empty")}</p>
         )}
         {canEdit ? (
-          <Card padding="lg">
+          <Card padding="md">
             <AddressForm />
           </Card>
         ) : null}
@@ -188,7 +188,7 @@ async function Application({ context }: Props) {
           <p className="text-muted">{t("contacts.empty")}</p>
         )}
         {canEdit ? (
-          <Card padding="lg">
+          <Card padding="md">
             <ContactForm />
           </Card>
         ) : null}
@@ -242,7 +242,7 @@ async function Kyc({ context }: Props) {
       </PartnerSection>
       {editable(context) ? (
         <PartnerSection title={t("addTitle")}>
-          <Card padding="lg">
+          <Card padding="md">
             <KycUpload />
           </Card>
         </PartnerSection>
@@ -301,7 +301,7 @@ async function BankAccounts({ context }: Props) {
               {t("pendingBody")}
             </Callout>
           ) : (
-            <Card padding="lg">
+            <Card padding="md">
               <BankAccountForm defaultName={context.factory?.legalName ?? ""} />
             </Card>
           )}
@@ -373,7 +373,7 @@ async function Capabilities({ context }: Props) {
         </ul>
       </PartnerSection>
       <PartnerSection title={t("askTitle")} description={t("askBody")}>
-        <Card padding="lg">
+        <Card padding="md">
           <ChangeRequestForm
             topic="capability"
             productTypes={references.productTypes}
@@ -470,7 +470,7 @@ async function Capacity({ context }: Props) {
         </PartnerSection>
       ))}
       <PartnerSection title={t("askTitle")} description={t("askBody")}>
-        <Card padding="lg">
+        <Card padding="md">
           <ChangeRequestForm
             topic="capacity"
             productTypes={references.productTypes}
@@ -521,7 +521,7 @@ async function DeliveryZones({ context }: Props) {
         ) : null}
       </PartnerSection>
       <PartnerSection title={t("askTitle")}>
-        <Card padding="lg">
+        <Card padding="md">
           <ChangeRequestForm topic="delivery_zones" placeholder={t("askPlaceholder")} />
         </Card>
       </PartnerSection>
@@ -550,7 +550,7 @@ async function PricingArrangement({ context }: Props) {
   return (
     <>
       <PartnerSection title={t("modeTitle")}>
-        <Card padding="lg">
+        <Card padding="md">
           <p className="text-lg font-medium">{mode ? t(`modes.${mode}.title`) : t("modeNone")}</p>
           {mode ? <p className="text-muted mt-2">{t(`modes.${mode}.body`)}</p> : null}
           {config.data.pricingArrangement.upcoming.map((version) => (
@@ -594,7 +594,7 @@ async function PricingArrangement({ context }: Props) {
         ) : null}
       </PartnerSection>
       <PartnerSection title={t("askTitle")} description={t("askBody")}>
-        <Card padding="lg">
+        <Card padding="md">
           <ChangeRequestForm
             topic="participation_tier"
             productTypes={references.productTypes}
@@ -645,7 +645,7 @@ async function Tolerance({ context }: Props) {
         <p className="text-muted text-sm">{t("rule")}</p>
       </PartnerSection>
       <PartnerSection title={t("askTitle")} description={t("askBody")}>
-        <Card padding="lg">
+        <Card padding="md">
           <ChangeRequestForm
             topic="tolerance"
             productTypes={references.productTypes}
@@ -665,7 +665,7 @@ async function PayoutPolicy({ context }: Props) {
   const policy = config.data.payoutPolicy.current;
   return (
     <PartnerSection title={t("title")} description={t("body")}>
-      <Card padding="lg">
+      <Card padding="md">
         {policy ? (
           <DescriptionList
             columns={1}
@@ -718,7 +718,7 @@ async function Agreements({ context }: Props) {
         const text = (locale === "en" ? agreement.textEn : agreement.textTh) ?? agreement.textTh ?? agreement.textEn;
         return (
           <PartnerSection key={agreement.key} title={agreement.name}>
-            <Card padding="lg" className="flex flex-col gap-3">
+            <Card padding="md" className="flex flex-col gap-3">
               <p className="text-muted text-sm">
                 {agreement.versionNo === null
                   ? t("notPublished")
@@ -809,7 +809,7 @@ async function SiteVisits({ context }: Props) {
         </PartnerSection>
       ) : null}
       <PartnerSection title={t("askTitle")} description={t("askBody")}>
-        <Card padding="lg">
+        <Card padding="md">
           <ChangeRequestForm topic="site_visit" visit placeholder={t("askPlaceholder")} submitLabel={t("askSubmit")} />
         </Card>
       </PartnerSection>
@@ -821,7 +821,7 @@ async function Trial({ context }: Props) {
   const t = await getTranslations("partnerOnboarding.trial");
   return (
     <PartnerSection title={t("title")} description={t("body")}>
-      <Card padding="lg">
+      <Card padding="md">
         <p className="text-lg">{t("completed", { count: context.factory?.trialJobsCompleted ?? 0 })}</p>
       </Card>
     </PartnerSection>
@@ -834,7 +834,7 @@ async function Activation({ context }: Props) {
   const active = context.factory?.activatedAt;
   return (
     <PartnerSection title={t("title")} description={t("body")}>
-      <Card padding="lg">
+      <Card padding="md">
         <p className="text-lg">{active ? t("activeSince", { date: format.date(active) }) : t("notYet")}</p>
       </Card>
     </PartnerSection>

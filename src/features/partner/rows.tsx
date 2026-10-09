@@ -166,7 +166,7 @@ export function StatStrip({
         const body = (
           <>
             <span className="text-muted text-sm">{item.label}</span>
-            <span className="text-xl font-semibold tabular-nums">{item.value}</span>
+            <span className="text-lg font-semibold tabular-nums">{item.value}</span>
             {item.hint ? <span className={cn("text-xs", ICON[item.tone ?? "neutral"])}>{item.hint}</span> : null}
           </>
         );
