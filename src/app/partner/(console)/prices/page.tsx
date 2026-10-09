@@ -5,15 +5,13 @@ import { getTranslations } from "next-intl/server";
 import { PROPOSAL_STATUS } from "@/domain/status";
 import { canAt, factoryContext } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { Row, RowList } from "@/features/partner/rows";
+import { PartnerTable } from "@/features/partner/table";
 import { VersionSignOff } from "@/features/partner/prices/actions";
 import { loadPrices, OPEN_PROPOSAL } from "@/features/partner/prices/server";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Card } from "@/ui/components/Card";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerPrices"))("title") };
@@ -131,91 +129,133 @@ export default async function PricesPage() {
       ) : null}
 
       <PartnerSection title={t("lists.title")}>
-        <ul className="grid gap-2 md:grid-cols-2">
-          {prices.lists.data.map((list) => {
-            const tier = prices.tierOf(list.productTypeId)?.tier;
-            const open = prices.proposals.find(
-              (item) => item.priceListId === list.id && OPEN_PROPOSAL.includes(item.status),
-            );
-            return (
-              <li key={list.id}>
-                <Link href={`/prices/${list.productTypeCode}`} className="block h-full">
-                  <Card
-                    padding="md"
-                    className="hover:border-border-strong flex h-full flex-col gap-2 transition-colors"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="flex-1 text-[1.0625rem] font-semibold">
-                        {prices.typeName(list.productTypeId)}
-                      </span>
-                      {tier ? (
-                        <Badge tone={tier === "A" ? "success" : tier === "B" ? "primary" : "neutral"}>
-                          {t("tier", { tier })}
-                        </Badge>
-                      ) : null}
-                    </div>
-                    <p className="text-muted text-sm">
-                      {list.current
-                        ? t("lists.current", {
-                            version: list.current.versionNo,
-                            date: format.date(list.current.effectiveFrom),
-                            lines: list.current.lineCount,
-                          })
-                        : t("lists.noCurrent")}
-                    </p>
-                    {list.upcoming.map((version) => (
-                      <p key={version.id} className="text-sm">
-                        {t("lists.upcoming", { version: version.versionNo, date: format.date(version.effectiveFrom) })}
-                      </p>
-                    ))}
-                    {open ? (
-                      <span className="flex items-center gap-2 text-sm">
-                        {t("lists.open")} <StatusChip map={PROPOSAL_STATUS} value={open.status} />
-                      </span>
-                    ) : null}
-                  </Card>
-                </Link>
-              </li>
-            );
-          })}
-          {quoteOnly.map((item) => (
-            <li key={item.productTypeId}>
-              <Link href={`/prices/${item.productTypeCode}`} className="block h-full">
-                <Card padding="md" className="hover:bg-surface-subtle flex h-full flex-col gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="flex-1 font-medium">{prices.typeName(item.productTypeId)}</span>
-                    <Badge>{t("tier", { tier: item.current?.tier ?? "C" })}</Badge>
-                  </div>
-                  <p className="text-muted text-sm">{t("lists.quoteOnly")}</p>
-                </Card>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <PartnerTable
+          caption={t("lists.title")}
+          rows={[
+            ...prices.lists.data.map((list) => ({
+              kind: "list" as const,
+              list,
+              typeId: list.productTypeId,
+              code: list.productTypeCode,
+            })),
+            ...quoteOnly.map((item) => ({
+              kind: "quote" as const,
+              item,
+              typeId: item.productTypeId,
+              code: item.productTypeCode,
+            })),
+          ]}
+          rowKey={(row) => row.typeId}
+          rowHref={(row) => `/prices/${row.code}`}
+          columns={[
+            {
+              key: "type",
+              header: t("table.type"),
+              primary: true,
+              cell: (row) => prices.typeName(row.typeId),
+            },
+            {
+              key: "tier",
+              header: t("table.tier"),
+              cell: (row) => {
+                const tier = row.kind === "list" ? prices.tierOf(row.typeId)?.tier : (row.item.current?.tier ?? "C");
+                return tier ? (
+                  <span className="flex flex-col">
+                    <span className="font-medium">{t("tier", { tier })}</span>
+                    <span className="text-muted text-sm">{t(`tierShort.${tier}`)}</span>
+                  </span>
+                ) : (
+                  "—"
+                );
+              },
+            },
+            {
+              key: "version",
+              header: t("table.version"),
+              cell: (row) =>
+                row.kind === "list" && row.list.current ? (
+                  <span className="flex flex-col">
+                    <span>{t("table.versionNo", { version: row.list.current.versionNo })}</span>
+                    <span className="text-muted text-sm whitespace-nowrap">
+                      {t("table.from", { date: format.date(row.list.current.effectiveFrom) })}
+                    </span>
+                  </span>
+                ) : row.kind === "list" ? (
+                  t("lists.noCurrent")
+                ) : (
+                  <span className="text-muted">{t("lists.quoteOnly")}</span>
+                ),
+            },
+            {
+              key: "lines",
+              header: t("table.lines"),
+              align: "end",
+              cell: (row) =>
+                row.kind === "list" && row.list.current ? format.number(row.list.current.lineCount) : "—",
+            },
+            {
+              key: "open",
+              header: t("table.open"),
+              cell: (row) => {
+                if (row.kind !== "list") return "—";
+                const open = prices.proposals.find(
+                  (item) => item.priceListId === row.list.id && OPEN_PROPOSAL.includes(item.status),
+                );
+                const upcoming = row.list.upcoming[0];
+                return open ? (
+                  <StatusChip map={PROPOSAL_STATUS} value={open.status} />
+                ) : upcoming ? (
+                  <span className="text-sm">
+                    {t("lists.upcoming", { version: upcoming.versionNo, date: format.date(upcoming.effectiveFrom) })}
+                  </span>
+                ) : (
+                  <span className="text-muted">—</span>
+                );
+              },
+            },
+          ]}
+        />
       </PartnerSection>
 
       {prices.proposals.length ? (
         <PartnerSection title={t("history.title")} description={t("history.body")}>
-          <RowList label={t("history.title")}>
-            {prices.proposals.map((item) => (
-              <Row
-                key={item.id}
-                href={`/prices/proposals/${item.id}`}
-                icon={item.direction === "packio_to_factory" ? "handshake" : "send"}
-                title={
-                  <>
-                    {t(`history.${item.direction}`, { type: prices.typeName(item.productTypeId) })}
-                    <StatusChip map={PROPOSAL_STATUS} value={item.status} />
-                  </>
-                }
-                meta={t("history.meta", {
-                  date: format.date(item.createdAt),
-                  from: format.date(item.proposedEffectiveFrom),
-                  lines: item.lineCounts.total,
-                })}
-              />
-            ))}
-          </RowList>
+          <PartnerTable
+            caption={t("history.title")}
+            rows={prices.proposals}
+            rowKey={(item) => item.id}
+            rowHref={(item) => `/prices/proposals/${item.id}`}
+            rowTone={(item) =>
+              item.direction === "packio_to_factory" && ["submitted", "under_review"].includes(item.status)
+                ? "warning"
+                : undefined
+            }
+            columns={[
+              {
+                key: "what",
+                header: t("history.table.what"),
+                primary: true,
+                cell: (item) => t(`history.${item.direction}`, { type: prices.typeName(item.productTypeId) }),
+              },
+              {
+                key: "created",
+                header: t("history.table.created"),
+                cell: (item) => format.date(item.createdAt),
+                className: "whitespace-nowrap",
+              },
+              {
+                key: "from",
+                header: t("history.table.from"),
+                cell: (item) => format.date(item.proposedEffectiveFrom),
+                className: "whitespace-nowrap",
+              },
+              { key: "lines", header: t("history.table.lines"), align: "end", cell: (item) => item.lineCounts.total },
+              {
+                key: "status",
+                header: t("history.table.status"),
+                cell: (item) => <StatusChip map={PROPOSAL_STATUS} value={item.status} />,
+              },
+            ]}
+          />
         </PartnerSection>
       ) : null}
       {!canAt(context, "factory_prices.propose") ? <p className="text-muted text-sm">{t("readOnly")}</p> : null}

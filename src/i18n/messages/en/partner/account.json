@@ -89,6 +89,14 @@
     "offsets": {
       "payable": "From payouts",
       "receivable": "Charged to the factory"
+    },
+    "table": {
+      "no": "Claim",
+      "type": "About",
+      "refs": "Job / shipment",
+      "date": "Reported",
+      "status": "Status",
+      "deduction": "Deducted"
     }
   },
   "performance": {
@@ -157,7 +165,15 @@
     "ownerManaged": "Owners are managed by Packio's partner team",
     "saveRoles": "Save roles",
     "editRoles": "Edit roles",
-    "cancelEdit": "Cancel"
+    "cancelEdit": "Cancel",
+    "table": {
+      "name": "Name",
+      "roles": "Roles",
+      "seen": "Last signed in",
+      "never": "Never",
+      "status": "Status",
+      "manage": "Manage"
+    }
   },
   "notifications": {
     "saved": "Saved",

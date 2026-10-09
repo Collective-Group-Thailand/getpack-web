@@ -13,10 +13,10 @@ import {
 } from "@/features/partner/account/actions";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { LocaleMenu } from "@/features/shared/shell";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { Badge } from "@/ui/components/Badge";
 import { Card } from "@/ui/components/Card";
 import { Icon } from "@/ui/icons";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
@@ -75,44 +75,51 @@ export default async function SettingsPage() {
       {owner ? (
         <PartnerSection title={tUsers("title")} description={tUsers("body")} id="users">
           {users?.data ? (
-            <ul className="border-border bg-surface divide-border divide-y rounded-xl border">
-              {users.data.map((user) => (
-                <li key={user.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start">
-                  <span
-                    aria-hidden
-                    className="bg-sage-subtle text-fg grid size-10 shrink-0 place-items-center rounded-full font-semibold"
-                  >
-                    {/* Thai leading vowels (เ แ โ ใ ไ) are not an initial: the first consonant is. */}
-                    {user.displayName
-                      .trim()
-                      .replace(/^[เแโใไ]/, "")
-                      .charAt(0)}
-                  </span>
-                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold">{user.displayName}</span>
-                      <StatusChip map={FACTORY_USER_STATUS} value={user.status} />
-                    </div>
-                    <span className="text-muted text-sm break-all">{user.email}</span>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {user.roles.map((role) => (
-                        <Badge key={role} size="sm">
-                          {roleName(role)}
-                        </Badge>
-                      ))}
-                      {user.lastSignInAt ? (
-                        <span className="text-muted text-xs">
-                          {tUsers("lastSeen", { date: format.dateTime(user.lastSignInAt) })}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="sm:max-w-sm sm:shrink-0">
-                    <EditUser user={user} />
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <PartnerTable
+              caption={tUsers("title")}
+              rows={users.data}
+              rowKey={(user) => user.id}
+              columns={[
+                {
+                  key: "name",
+                  header: tUsers("table.name"),
+                  primary: true,
+                  cell: (user) => (
+                    <span className="flex flex-col">
+                      <span className="font-medium">{user.displayName}</span>
+                      <span className="text-muted text-sm break-all">{user.email}</span>
+                    </span>
+                  ),
+                },
+                {
+                  key: "roles",
+                  header: tUsers("table.roles"),
+                  cell: (user) => user.roles.map(roleName).join(", "),
+                },
+                {
+                  key: "seen",
+                  header: tUsers("table.seen"),
+                  cell: (user) =>
+                    user.lastSignInAt ? (
+                      format.dateTime(user.lastSignInAt)
+                    ) : (
+                      <span className="text-muted">{tUsers("table.never")}</span>
+                    ),
+                  className: "whitespace-nowrap",
+                },
+                {
+                  key: "status",
+                  header: tUsers("table.status"),
+                  cell: (user) => <StatusChip map={FACTORY_USER_STATUS} value={user.status} />,
+                },
+                {
+                  key: "manage",
+                  header: tUsers("table.manage"),
+                  cell: (user) => <EditUser user={user} />,
+                  className: "w-[1%] min-w-56",
+                },
+              ]}
+            />
           ) : (
             <PageError error={users?.error} />
           )}

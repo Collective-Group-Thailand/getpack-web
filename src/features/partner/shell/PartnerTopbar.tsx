@@ -8,7 +8,6 @@ import { Avatar } from "@/ui/components/Avatar";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Popover } from "@/ui/components/Popover";
-import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { Brand } from "@/ui/brand";
 
 const ROLE_KEYS = [
@@ -34,7 +33,6 @@ const ROLE_KEYS = [
  */
 export async function PartnerTopbar({ context }: { context: FactoryContext }) {
   const t = await getTranslations("partner.shell");
-  const tCommon = await getTranslations("common");
   const { actor } = context;
   const factoryName = context.factories.find((item) => item.factoryId === context.factoryId)?.name ?? null;
   const roleLabel = (role: string) =>
@@ -52,15 +50,7 @@ export async function PartnerTopbar({ context }: { context: FactoryContext }) {
       <div className="ms-auto flex items-center gap-1">
         <NotificationBell zone="partner" />
         <LocaleMenu />
-        <ThemeToggle
-          label={tCommon("theme.label")}
-          choiceLabels={{
-            system: tCommon("theme.system"),
-            light: tCommon("theme.light"),
-            dark: tCommon("theme.dark"),
-            hc: tCommon("theme.hc"),
-          }}
-        />
+        {/* The theme lives in Settings: an unlabelled sun in the bar is one more icon to puzzle over. */}
 
         <Popover
           align="end"
