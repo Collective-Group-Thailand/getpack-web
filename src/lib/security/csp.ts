@@ -120,7 +120,9 @@ export function cspDirectives(zone: Zone, { nonce, isDev, origins }: CspOptions)
     "form-action": ["'self'"],
     // Firebase renders the provider's consent screen in an iframe on its auth domain, and
     // LINE's authorisation page can be framed the same way.
-    "frame-src": ["'self'", ...signInFrame],
+    // Staff and factory screens show a stored PDF (a proof, a tax invoice, a label sheet) in the
+    // in-page viewer, framed from the asset origin.
+    "frame-src": ["'self'", ...signInFrame, ...(!isCustomer && origins.asset ? [origins.asset] : [])],
     // The storefront may be embedded by LINE's in-app browser; a staff or factory screen
     // may never be framed at all.
     "frame-ancestors": isCustomer ? ["'self'"] : ["'none'"],
