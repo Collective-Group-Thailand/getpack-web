@@ -505,8 +505,10 @@ export async function QualityBand({
     "border-fg-inverse/25 text-fg-inverse block border p-4.5 outline-none hover:border-fg-inverse/60 focus-visible:ring-2 focus-visible:ring-fg-inverse";
   return (
     <section aria-labelledby="home-quality" className="bg-sage text-fg-inverse mt-20 min-[1055px]:mt-26">
-      {/* Photo | content on large screens, always: without a photo the left cell is an empty panel. */}
-      <div className="grid lg:grid-cols-2">
+      {/* Photo | content on large screens, always: without a photo the left cell is an empty panel.
+          Content takes 56% so the title keeps to two lines from 1024px up (its second line is ~557px
+          at 36px, ~495px at 32px). */}
+      <div className="grid lg:grid-cols-[44fr_56fr]">
         {photo ? (
           <figure className="relative min-h-72 overflow-hidden lg:min-h-[520px]">
             <Photo photo={photo} className="absolute inset-0" />
@@ -514,11 +516,12 @@ export async function QualityBand({
         ) : (
           <div aria-hidden="true" className="bg-sage-strong hidden lg:block lg:min-h-[520px]" />
         )}
-        {/* The title keeps to two lines at 36px — its one break is the copy's. */}
-        <div className="w-full max-w-[45rem] px-5 py-14 md:px-8 lg:py-20 lg:ps-18 lg:pe-12">
+        {/* The title keeps to two lines — its one break is the copy's: 32px with tighter gutters up to
+            1279px, 36px from 1280px. */}
+        <div className="w-full max-w-[45rem] px-5 py-14 md:px-8 lg:py-20 lg:ps-10 lg:pe-8 xl:ps-18 xl:pe-12">
           <h2
             id="home-quality"
-            className="text-fg-inverse max-w-[18em] text-start text-[1.75rem] leading-[1.15] md:text-[2.25rem]"
+            className="text-fg-inverse max-w-[18em] text-start text-[1.75rem] leading-[1.15] md:text-[2rem] xl:text-[2.25rem]"
           >
             {t.rich("title", br)}
           </h2>
