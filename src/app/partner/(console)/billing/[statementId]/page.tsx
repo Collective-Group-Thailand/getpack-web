@@ -81,7 +81,11 @@ export default async function StatementPage({ params }: Props) {
           ) : null}
         </>
       }
-      description={t("period", { from: format.date(statement.periodFrom), to: format.date(statement.periodTo) })}
+      description={
+        statement.periodFrom === statement.periodTo
+          ? t("periodDay", { date: format.date(statement.periodFrom) })
+          : t("period", { from: format.date(statement.periodFrom), to: format.date(statement.periodTo) })
+      }
       wide
     >
       <p className="text-muted -mt-4 text-sm">{t("generatedAt", { date: format.dateTime(statement.generatedAt) })}</p>
@@ -227,6 +231,7 @@ export default async function StatementPage({ params }: Props) {
                   statementId={statement.id}
                   taxId={context.factory?.taxId ?? ""}
                   branchCode={context.factory?.branchCode ?? "00000"}
+                  expected={{ net: statement.totals.net, vat: statement.totals.vat }}
                 />
               </div>
             </details>
@@ -236,6 +241,7 @@ export default async function StatementPage({ params }: Props) {
                 statementId={statement.id}
                 taxId={context.factory?.taxId ?? ""}
                 branchCode={context.factory?.branchCode ?? "00000"}
+                expected={{ net: statement.totals.net, vat: statement.totals.vat }}
               />
             </Card>
           )}

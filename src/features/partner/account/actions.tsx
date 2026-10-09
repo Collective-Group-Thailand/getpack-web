@@ -103,7 +103,7 @@ export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: s
       <ConfirmAction
         open={open}
         onOpenChange={setOpen}
-        tone={disputing ? "destructive" : "primary"}
+        tone="primary"
         title={t(disputing ? "disputeTitle" : "acceptTitle", { no: claimNo })}
         description={t(disputing ? "disputeBody" : "acceptBody", { no: claimNo })}
         confirmLabel={t("send")}

@@ -484,9 +484,12 @@
   [data-zone="partner"] main :not(input)[data-size="sm"] {
     min-height: 2rem;
   }
-  [data-zone="partner"] main :not(input)[data-size="xl"] {
+  [data-zone="partner"] main :not(input):is([data-size="xl"], [data-size="lg"]) {
     /* As wide as its words at a tablet and up (a column of them lines up), not a full-width bar. */
+    width: auto;
     align-self: flex-start;
+  }
+  [data-zone="partner"] main :not(input)[data-size="xl"] {
     min-width: 12rem;
     padding-inline: 1.25rem;
   }

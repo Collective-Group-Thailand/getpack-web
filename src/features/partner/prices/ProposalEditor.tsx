@@ -119,7 +119,12 @@ export function ProposalEditor({
   const { dimensions, values: valueColumns, all } = columnsOf(definitions, component);
   const label = (key: string) => (tColumns.has(key) ? tColumns(key) : key);
   const labels = { yes: t("yes"), no: t("no"), open: t("open") };
-  const show = (column: Column, value: unknown) => cellText(value, column, referenceName, labels);
+  const valueKeys = useMemo(
+    () => new Set(allDefinitions.flatMap((definition) => definition.values.map((column) => column.key))),
+    [allDefinitions],
+  );
+  const show = (column: Column, value: unknown) =>
+    cellText(value, column, referenceName, labels, valueKeys.has(column.key));
   const dirty = Object.keys(pending).length + added.length;
 
   // Leaving with unsaved cells loses them: let the browser ask first.
@@ -328,7 +333,7 @@ export function ProposalEditor({
         aria-invalid={bad || undefined}
         className={className}
         inputMode={column.type === "text" ? "text" : "decimal"}
-        placeholder={column.nullable ? labels.open : undefined}
+        placeholder={column.nullable ? (valueKeys.has(column.key) ? "—" : labels.open) : undefined}
         value={value === null || value === undefined ? "" : String(value)}
         onChange={(event) => onChange(event.target.value)}
       />

@@ -62,8 +62,10 @@ export function cellText(
   column: { key: string; type: Schemas["PriceColumnType"] } | undefined,
   referenceName: (column: string, id: string) => string | undefined,
   labels: { yes: string; no: string; open: string },
+  /** A price (value) column: empty means "not charged this way" — "—", never "ไม่จำกัด" (an open bound). */
+  asValue = false,
 ): string {
-  if (value === null || value === undefined || value === "") return labels.open;
+  if (value === null || value === undefined || value === "") return asValue ? "—" : labels.open;
   if (column?.type === "ref" && typeof value === "string") return referenceName(column.key, value) ?? value.slice(0, 8);
   if (column?.type === "boolean" || typeof value === "boolean") return value ? labels.yes : labels.no;
   if (typeof value === "string" && column?.type === "decimal") return decimalText(value);

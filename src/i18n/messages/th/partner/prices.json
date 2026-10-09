@@ -426,7 +426,8 @@
     "confirm": "ถอนข้อเสนอ",
     "reason": "เหตุผลที่ถอน",
     "done": "ถอนข้อเสนอแล้ว",
-    "failed": "ถอนข้อเสนอไม่สำเร็จ"
+    "failed": "ถอนข้อเสนอไม่สำเร็จ",
+    "reasonPlaceholder": "เช่น ส่งราคาผิด จะแก้แล้วส่งใหม่"
   },
   "counters": {
     "answerFor": "คำตอบสำหรับ {line}",
@@ -627,7 +628,8 @@
     "evidenceItem": "{name} · แนบโดย {by} · {date}",
     "evidenceEmpty": "ยังไม่มีหลักฐาน",
     "withdrawTitle": "ไม่ต้องการเสนอแล้ว",
-    "evidenceOpen": "เปิดไฟล์"
+    "evidenceOpen": "เปิดไฟล์",
+    "evidenceTitlePlain": "หลักฐานประกอบ"
   },
   "cta": {
     "continueDraft": "แก้ราคาต่อ (ยังไม่ได้ส่ง)",

@@ -57,7 +57,8 @@
       "spec_not_feasible": "Spec cannot be made",
       "price": "Price does not match",
       "other": "Other reason"
-    }
+    },
+    "notePlaceholder": "e.g. Die cutter down; can take jobs again next week"
   },
   "milestone": {
     "start": "Start {name}",
@@ -151,7 +152,8 @@
     "resolveTitle": "Close this issue",
     "resolveNote": "How it was fixed",
     "resolveNoteHint": "E.g. the press is repaired, the material arrived",
-    "descriptionPlaceholder": "e.g. KA125 board out of stock, arriving 14 Oct"
+    "descriptionPlaceholder": "e.g. KA125 board out of stock, arriving 14 Oct",
+    "resolveNotePlaceholder": "e.g. Board arrived; printing resumed"
   },
   "scan": {
     "open": "Scan",
