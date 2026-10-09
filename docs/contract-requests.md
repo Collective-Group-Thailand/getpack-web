@@ -260,3 +260,9 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 - The web no longer uses the Thai transliteration of "proof" anywhere (customer copy: แบบตัวอย่าง / ตรวจแบบก่อนพิมพ์; statuses, back office, factory app: Proof). It survives only in packio-api's own strings that reach `schema.d.ts` and `mocks/generated/` through `pnpm gen:api`: the soft-proof label example (`ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่…สัญญา`) and the `mockups.exists` problem detail.
 - **Ask:** packio-api adopts `docs/ui/glossary.md` for its Thai problem details, notification texts, settings labels and examples, then a contract release.
 - **Web meanwhile:** `src/i18n/terms.ts` maps the old words at display — every API problem `title`/`detail` (audience from the request's surface: store → แบบตัวอย่าง, admin/partner → Proof), notification titles and bodies, the studio's soft-proof label — so no user reads the old term while this is pending.
+
+## `partner.price-components` — which product types read each component (partner UX, 2026-10-09)
+
+- **Today:** `GET /v1/partner/price-components` returns every registered component (≈65) with no product type, so a folding-carton price list offered pouch film, corrugated board and label rolls as empty tabs.
+- **Ask:** on `PriceComponentDto`, `productTypeCodes: string[]` — the product types whose calculator reads the component (the `pl*` models each `*-snapshot.loader.ts` queries). Optionally on `PriceListVersionDto`, `componentLineCounts: Record<PriceComponent, number>` so tabs can show how many lines each holds without one read per component (each read is audited, D-044).
+- **Web meanwhile:** `src/features/partner/prices/components-by-type.ts` copies the pairing (`// CONTRACT-GAP partner.price-components-by-type`).

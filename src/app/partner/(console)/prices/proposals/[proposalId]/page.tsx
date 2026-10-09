@@ -6,7 +6,6 @@ import { PartnerFileButton } from "@/features/partner/account/files";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { CounterAnswers, EvidenceUpload, SubmitProposal, WithdrawProposal } from "@/features/partner/prices/actions";
-import { lineToInput } from "@/features/partner/prices/lines";
 import { LineList, lineLabeller } from "@/features/partner/prices/LineList";
 import { ProposalEditor } from "@/features/partner/prices/ProposalEditor";
 import { RateCardReview } from "@/features/partner/prices/RateCardReview";
@@ -17,7 +16,7 @@ import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 
-type Props = { params: Promise<{ proposalId: string }> };
+type Props = { params: Promise<{ proposalId: string }>; searchParams: Promise<{ component?: string }> };
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerPrices.proposal"))("metaTitle") };
@@ -28,8 +27,8 @@ export async function generateMetadata(): Promise<Metadata> {
  * the factory can do at its stage: build and submit a draft, attach evidence, withdraw, answer
  * Packio's counters, or accept a rate card whole or line by line.
  */
-export default async function ProposalPage({ params }: Props) {
-  const { proposalId } = await params;
+export default async function ProposalPage({ params, searchParams }: Props) {
+  const [{ proposalId }, query] = await Promise.all([params, searchParams]);
   const t = await getTranslations("partnerPrices.proposal");
   const format = await getFormat();
   const context = await factoryContext();
@@ -68,6 +67,7 @@ export default async function ProposalPage({ params }: Props) {
 
   return (
     <PartnerPage
+      full
       title={factoryOwn ? t("titleOwn", { type: name }) : t("titleRateCard", { type: name })}
       back={back}
       meta={<StatusChip map={PROPOSAL_STATUS} value={item.status} size="md" />}
@@ -76,7 +76,6 @@ export default async function ProposalPage({ params }: Props) {
         base: item.baseVersionNo ?? 0,
         lines: item.lineCounts.total,
       })}
-      wide
     >
       {item.comment ? (
         <Callout tone="neutral" title={factoryOwn ? t("reasonOwn") : t("reasonPackio")}>
@@ -95,17 +94,12 @@ export default async function ProposalPage({ params }: Props) {
             <ProposalEditor
               proposalId={item.id}
               versionId={list?.current?.id ?? null}
+              productTypeCode={list?.productTypeCode ?? null}
+              initialComponent={query.component}
               definitions={prices.components}
               references={prices.references}
-              draft={item.lines.map((line) => ({
-                input: lineToInput(line),
-                label: `${t(`actions.${line.action}`)} · ${label.title(line)}`,
-                summary: label.values(line.component, (line.proposedValues ?? line.currentValues) as Values | null),
-              }))}
+              lines={item.lines}
             />
-          </PartnerSection>
-          <PartnerSection title={t("sendTitle")} description={t("sendBody")}>
-            <SubmitProposal proposalId={item.id} typeName={name} lines={item.lines.length} />
           </PartnerSection>
         </>
       ) : (
@@ -180,6 +174,14 @@ export default async function ProposalPage({ params }: Props) {
               <EvidenceUpload proposalId={item.id} />
             </Card>
           ) : null}
+        </PartnerSection>
+      ) : null}
+
+      {factoryOwn && item.status === "draft" ? (
+        <PartnerSection title={t("sendTitle")} description={t("sendBody")}>
+          <Card padding="lg" className="flex flex-col gap-3">
+            <SubmitProposal proposalId={item.id} typeName={name} lines={item.lines.length} />
+          </Card>
         </PartnerSection>
       ) : null}
 
