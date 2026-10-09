@@ -50,8 +50,9 @@ export async function PartnerShell({ context, children }: { context: FactoryCont
       sidebarLabel={t("label")}
       bottomNav={<PartnerBottomNav items={bottom} />}
       reserveBottomNavSpace
-      // 18 px base text on the shop floor (design-system.md §5).
-      className="text-[1.125rem] md:text-base"
+      // 18 px base text on the shop floor (design-system.md §5); 15 px at a desk (lg), where the
+      // owner, planner and accountant read lists with a mouse — the admin console's density.
+      className="text-[1.125rem] md:text-base lg:text-[0.9375rem]"
     >
       {children}
     </AppShell>

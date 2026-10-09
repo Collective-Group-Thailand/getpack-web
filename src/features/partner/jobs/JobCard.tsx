@@ -31,12 +31,12 @@ export async function JobCard({ job }: { job: JobSummary }) {
       href={`/jobs/${job.id}`}
       className="group border-border bg-surface hover:border-border-strong flex h-full flex-col rounded-xl border transition-colors"
     >
-      <span className="flex flex-col gap-2 p-4">
+      <span className="flex flex-col gap-1.5 p-4 lg:p-3.5">
         <span className="flex items-start gap-2">
-          <span className="min-w-0 flex-1 font-mono text-[0.9375rem] font-semibold">{job.jobNo}</span>
+          <span className="min-w-0 flex-1 font-mono text-[0.9375rem] font-semibold lg:text-sm">{job.jobNo}</span>
           <StatusChip map={JOB_STATUS} value={job.status} />
         </span>
-        <span className="text-[1.0625rem] font-semibold">{jobName(job)}</span>
+        <span className="font-semibold">{jobName(job)}</span>
         <span className="text-muted flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <span className="inline-flex items-center gap-1.5">
             <Icon name="package" size={16} aria-hidden />
@@ -71,7 +71,7 @@ export async function JobCard({ job }: { job: JobSummary }) {
         ) : null}
       </span>
       {job.status === "released" ? (
-        <span className="border-border bg-warning-subtle/40 mt-auto flex items-center justify-between gap-2 rounded-b-xl border-t px-4 py-2.5 text-sm">
+        <span className="border-border bg-warning-subtle/40 mt-auto flex items-center justify-between gap-2 rounded-b-xl border-t px-4 py-2.5 text-sm lg:px-3.5 lg:py-2">
           <Countdown dueAt={job.acceptDueAt} />
           <span className="text-primary inline-flex items-center gap-1 font-medium group-hover:underline">
             {t("open")}

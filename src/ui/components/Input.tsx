@@ -37,7 +37,16 @@ export interface InputProps
 
 export function Input({ className, inputSize, type = "text", ...props }: InputProps) {
   const fieldProps = useFieldProps();
-  return <input type={type} className={cn(controlVariants({ inputSize }), className)} {...fieldProps} {...props} />;
+  return (
+    <input
+      type={type}
+      // A hook for a zone's density rules, as on Button.
+      data-size={inputSize ?? "md"}
+      className={cn(controlVariants({ inputSize }), className)}
+      {...fieldProps}
+      {...props}
+    />
+  );
 }
 
 export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;

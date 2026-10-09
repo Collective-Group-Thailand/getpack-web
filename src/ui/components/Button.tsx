@@ -107,6 +107,8 @@ export function Button({
       className={cn(buttonVariants({ variant, size, block }), className)}
       disabled={asChild ? undefined : disabled || loading}
       aria-busy={loading || undefined}
+      // A hook for a zone's density rules (the factory app eases shop-floor sizes at a desk).
+      data-size={size ?? "md"}
       {...props}
     >
       {iconBefore}

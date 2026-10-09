@@ -69,7 +69,7 @@ export default async function BillingPage() {
                   </>
                 }
                 meta={t("period", { from: format.date(statement.periodFrom), to: format.date(statement.periodTo) })}
-                aside={<span className="text-lg font-semibold">{format.thb(statement.totals.gross)}</span>}
+                aside={<span className="font-semibold">{format.thb(statement.totals.gross)}</span>}
               />
             ))}
           </RowList>

@@ -41,7 +41,7 @@ export async function PartnerTopbar({ context }: { context: FactoryContext }) {
     (ROLE_KEYS as readonly string[]).includes(role) ? t(`roles.${role as (typeof ROLE_KEYS)[number]}`) : role;
 
   return (
-    <header className="border-border bg-surface z-sticky sticky top-0 flex h-16 items-center gap-2 border-b px-3">
+    <header className="border-border bg-surface z-sticky sticky top-0 flex h-16 items-center gap-2 border-b px-3 lg:h-14">
       <Brand href="/" />
       {factoryName ? (
         <span className="text-muted hidden truncate text-sm md:inline" data-testid="factory-name">
