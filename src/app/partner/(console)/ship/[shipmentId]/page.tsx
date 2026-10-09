@@ -14,6 +14,7 @@ import {
   RequestCarrier,
   UpdateTransit,
 } from "@/features/partner/ship/actions";
+import { PhotoGrid, ViewFile } from "@/features/partner/viewer";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
@@ -28,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const linkClass =
-  "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-lg border px-5 font-medium md:min-h-10 md:px-4 md:text-sm";
+  "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-11 md:min-h-10 items-center justify-center gap-2 self-start rounded-lg border px-5 font-medium md:min-h-10 md:px-4";
 
 /**
  * One trip (`partner.shipments.get`): the recipient (D-142), its cartons, labels and packing list
@@ -119,24 +120,14 @@ export default async function ShipmentPage({ params }: Props) {
             {labelsUrl || packingUrl ? (
               <div className="flex flex-wrap gap-x-4">
                 {labelsUrl ? (
-                  <a
-                    href={labelsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary inline-flex min-h-12 items-center underline"
-                  >
+                  <ViewFile src={labelsUrl} title={t("labelsPdf")}>
                     {t("labelsPdf")}
-                  </a>
+                  </ViewFile>
                 ) : null}
                 {packingUrl ? (
-                  <a
-                    href={packingUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary inline-flex min-h-12 items-center underline"
-                  >
+                  <ViewFile src={packingUrl} title={t("packingPdf")}>
                     {t("packingPdf")}
-                  </a>
+                  </ViewFile>
                 ) : null}
               </div>
             ) : null}
@@ -201,20 +192,11 @@ export default async function ShipmentPage({ params }: Props) {
               ]}
             />
             {photoUrls.some(Boolean) ? (
-              <ul className="grid grid-cols-3 gap-2">
-                {photoUrls.map((url, index) =>
-                  url ? (
-                    <li key={pod.photoFileIds[index]}>
-                      {/* eslint-disable-next-line @next/next/no-img-element -- a short-lived signed URL */}
-                      <img
-                        src={url}
-                        alt={t("photoAlt", { n: index + 1 })}
-                        className="aspect-square w-full rounded-lg object-cover"
-                      />
-                    </li>
-                  ) : null,
+              <PhotoGrid
+                items={photoUrls.flatMap((url, index) =>
+                  url ? [{ src: url, title: t("photoAlt", { n: index + 1 }) }] : [],
                 )}
-              </ul>
+              />
             ) : null}
           </Card>
           {outcome ? (
@@ -236,7 +218,7 @@ export default async function ShipmentPage({ params }: Props) {
           </p>
           <a
             href={`tel:${shipment.destination.phone}`}
-            className="text-primary inline-flex min-h-12 items-center underline"
+            className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
           >
             {shipment.destination.phone}
           </a>

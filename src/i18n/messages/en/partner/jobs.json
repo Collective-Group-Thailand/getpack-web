@@ -57,7 +57,8 @@
       "spec_not_feasible": "Spec cannot be made",
       "price": "Price does not match",
       "other": "Other reason"
-    }
+    },
+    "notePlaceholder": "e.g. Die cutter down; can take jobs again next week"
   },
   "milestone": {
     "start": "Start {name}",
@@ -84,7 +85,8 @@
     "inPlaceholder": "Pieces received from the step before",
     "goodPlaceholder": "Good pieces passed on",
     "scrapPlaceholder": "Scrapped pieces, 0 if none",
-    "notePlaceholder": "e.g. press stopped 1 hr to change the roller"
+    "notePlaceholder": "e.g. press stopped 1 hr to change the roller",
+    "quickHint": "Nothing to fill in — tap when this step is done"
   },
   "qc": {
     "qcOnly": "QC records the result.",
@@ -150,7 +152,8 @@
     "resolveTitle": "Close this issue",
     "resolveNote": "How it was fixed",
     "resolveNoteHint": "E.g. the press is repaired, the material arrived",
-    "descriptionPlaceholder": "e.g. KA125 board out of stock, arriving 14 Oct"
+    "descriptionPlaceholder": "e.g. KA125 board out of stock, arriving 14 Oct",
+    "resolveNotePlaceholder": "e.g. Board arrived; printing resumed"
   },
   "scan": {
     "open": "Scan",

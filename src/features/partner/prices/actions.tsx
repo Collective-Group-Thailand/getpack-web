@@ -200,7 +200,7 @@ export function WithdrawProposal({ proposalId, typeName }: { proposalId: string;
         description={t("body", { type: typeName })}
         confirmLabel={t("confirm")}
         tone="destructive"
-        reason={{ label: t("reason"), required: true, minLength: 3 }}
+        reason={{ label: t("reason"), required: true, minLength: 3, placeholder: t("reasonPlaceholder") }}
         onConfirm={async ({ reason }) => {
           try {
             await browserApi().POST("/v1/partner/factories/{factoryId}/price-proposals/{proposalId}/actions/withdraw", {

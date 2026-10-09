@@ -138,7 +138,7 @@ export function HoursEditor({ current }: { current: Hours | null }) {
           </Field>
           <p className="text-muted text-sm">{t("effect")}</p>
           <div>
-            <Button className="min-h-12" loading={busy} disabled={!valid} onClick={() => void save()}>
+            <Button className="min-h-11 md:min-h-10" loading={busy} disabled={!valid} onClick={() => void save()}>
               {t("save")}
             </Button>
           </div>

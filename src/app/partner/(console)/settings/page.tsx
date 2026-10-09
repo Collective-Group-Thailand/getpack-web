@@ -124,7 +124,7 @@ export default async function SettingsPage() {
             <PageError error={users?.error} />
           )}
           <details className="border-border bg-surface rounded-xl border">
-            <summary className="hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium">
+            <summary className="hover:bg-surface-subtle flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium md:min-h-10">
               <Icon name="user-plus" size={18} />
               {tUsers("createTitle")}
             </summary>
@@ -137,7 +137,7 @@ export default async function SettingsPage() {
       ) : null}
 
       <PartnerSection title={t("hours")} description={t("hoursBody")}>
-        <Link href="/settings/hours" className="text-primary inline-flex min-h-12 items-center underline">
+        <Link href="/settings/hours" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">
           {t("hoursLink")}
         </Link>
       </PartnerSection>

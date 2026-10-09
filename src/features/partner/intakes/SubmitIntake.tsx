@@ -88,7 +88,7 @@ export function SubmitIntake({ terms }: { terms: Schemas["IntakeTermsDto"] }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={200}
-          className="min-h-12"
+          className="min-h-11 md:min-h-10"
         />
       </Field>
       <Field label={t("baseCode")} hint={t("baseCodeHint")}>
@@ -96,7 +96,7 @@ export function SubmitIntake({ terms }: { terms: Schemas["IntakeTermsDto"] }) {
           placeholder={t("baseCodePlaceholder")}
           value={baseCode}
           onChange={(e) => setBaseCode(e.target.value.toUpperCase())}
-          className="min-h-12"
+          className="min-h-11 md:min-h-10"
         />
       </Field>
       <Field label={t("note")}>
@@ -116,7 +116,7 @@ export function SubmitIntake({ terms }: { terms: Schemas["IntakeTermsDto"] }) {
       </section>
       <Checkbox label={t("accept")} checked={accepted} onCheckedChange={(on) => setAccepted(on === true)} />
       <div>
-        <Button type="submit" className="min-h-12" loading={busy} disabled={!ready}>
+        <Button type="submit" className="min-h-11 md:min-h-10" loading={busy} disabled={!ready}>
           {t("send")}
         </Button>
       </div>

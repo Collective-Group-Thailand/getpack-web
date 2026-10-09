@@ -46,9 +46,15 @@ export default async function KnowledgePage({
         <label htmlFor="kb-q" className="sr-only">
           {t("search")}
         </label>
-        <Input id="kb-q" name="q" defaultValue={q ?? ""} placeholder={t("searchPlaceholder")} className="min-h-12" />
+        <Input
+          id="kb-q"
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder={t("searchPlaceholder")}
+          className="min-h-11 md:min-h-10"
+        />
         {category ? <input type="hidden" name="category" value={category} /> : null}
-        <Button type="submit" className="min-h-12">
+        <Button type="submit" className="min-h-11 md:min-h-10">
           {t("search")}
         </Button>
       </form>
@@ -59,8 +65,8 @@ export default async function KnowledgePage({
             aria-current={!category ? "page" : undefined}
             className={
               !category
-                ? "bg-primary-subtle inline-flex min-h-12 items-center rounded-control px-4"
-                : "border-border inline-flex min-h-12 items-center rounded-control border px-4"
+                ? "bg-primary-subtle rounded-control inline-flex min-h-11 items-center px-4 md:min-h-10"
+                : "border-border rounded-control inline-flex min-h-11 items-center border px-4 md:min-h-10"
             }
           >
             {t("all")}
@@ -72,8 +78,8 @@ export default async function KnowledgePage({
               aria-current={category === c.slug ? "page" : undefined}
               className={
                 category === c.slug
-                  ? "bg-primary-subtle inline-flex min-h-12 items-center rounded-control px-4"
-                  : "border-border inline-flex min-h-12 items-center rounded-control border px-4"
+                  ? "bg-primary-subtle rounded-control inline-flex min-h-11 items-center px-4 md:min-h-10"
+                  : "border-border rounded-control inline-flex min-h-11 items-center border px-4 md:min-h-10"
               }
             >
               {pick(locale, c.nameTh, c.nameEn)}

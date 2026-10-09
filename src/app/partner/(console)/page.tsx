@@ -197,7 +197,7 @@ export default async function PartnerHomePage() {
           />
           <Link
             href="/onboarding"
-            className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex h-14 items-center justify-center gap-2 rounded-md px-8 text-lg font-medium"
+            className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-5 font-semibold md:min-h-10"
           >
             {t("continue")}
             <Icon name="arrow-right" size={20} />

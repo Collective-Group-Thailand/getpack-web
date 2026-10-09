@@ -20,6 +20,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
+import { useViewerLabels } from "@/features/partner/viewer";
 
 /* -------------------------------------------------------------------------------- claims */
 
@@ -32,6 +33,7 @@ import { toast } from "@/ui/components/Toast";
 export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: string }) {
   const t = useTranslations("partnerAccount.claims.respond");
   const tCamera = useTranslations("partnerJobs.camera");
+  const viewer = useViewerLabels();
   const tCommon = useTranslations("common");
   const { factoryId } = useFactory();
   const [refresh] = useRefresh();
@@ -83,6 +85,7 @@ export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: s
               remove: (n) => tCamera("remove", { n }),
               count: (count) => tCamera("count", { count }),
               processing: tCamera("processing"),
+              viewer,
             }}
           />
         </Field>
@@ -100,7 +103,7 @@ export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: s
       <ConfirmAction
         open={open}
         onOpenChange={setOpen}
-        tone={disputing ? "destructive" : "primary"}
+        tone="primary"
         title={t(disputing ? "disputeTitle" : "acceptTitle", { no: claimNo })}
         description={t(disputing ? "disputeBody" : "acceptBody", { no: claimNo })}
         confirmLabel={t("send")}

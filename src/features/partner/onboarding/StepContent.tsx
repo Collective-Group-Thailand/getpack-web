@@ -515,7 +515,10 @@ async function DeliveryZones({ context }: Props) {
           ))}
         </ul>
         {canAt(context, "factory_prices.read") ? (
-          <Link href="/prices/shipping" className="text-primary inline-flex min-h-12 items-center underline">
+          <Link
+            href="/prices/shipping"
+            className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
+          >
             {t("shippingRates")}
           </Link>
         ) : null}
@@ -588,7 +591,7 @@ async function PricingArrangement({ context }: Props) {
           })}
         </ul>
         {canAt(context, "factory_prices.read") ? (
-          <Link href="/prices" className="text-primary inline-flex min-h-12 items-center underline">
+          <Link href="/prices" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">
             {t("openPrices")}
           </Link>
         ) : null}

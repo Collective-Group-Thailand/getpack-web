@@ -61,7 +61,7 @@ export function PartnerTable<R>({
   return (
     <>
       <div className="border-border bg-surface hidden overflow-x-auto rounded-xl border lg:block">
-        <table className="w-full border-collapse text-start text-[0.9375rem] tabular-nums">
+        <table className="w-full border-collapse text-start text-base tabular-nums">
           <caption className="sr-only">{caption}</caption>
           <thead>
             <tr className="border-border bg-surface-subtle border-b">
@@ -113,7 +113,7 @@ export function PartnerTable<R>({
             key={rowKey(row)}
             className={cn("border-border bg-surface relative rounded-xl border border-s-[3px] px-4 py-3", edge(row))}
           >
-            <p className="text-[1.0625rem]">{primaryCell(row)}</p>
+            <p className="font-semibold">{primaryCell(row)}</p>
             <dl className="mt-2 grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-x-3 gap-y-1.5">
               {rest.map((column) => (
                 <div key={column.key} className="contents">
