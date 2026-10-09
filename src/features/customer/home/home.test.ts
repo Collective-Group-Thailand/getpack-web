@@ -4,7 +4,7 @@ import { publishableFaqs } from "@/features/customer/catalog/faq-hygiene";
 
 import { casesOf, MIN_CASES, photosOf } from "./content.server";
 import { isPackagingCategory } from "./HomeSections";
-import { candidates, reconcile, requestOf, selectionOfDefault, shapesOf } from "./studio-hero";
+import { candidates, lowestPresetQty, reconcile, requestOf, selectionOfDefault, shapesOf } from "./studio-hero";
 import enHome from "@/i18n/messages/en/customer/home.json";
 import thHome from "@/i18n/messages/th/customer/home.json";
 import { isoBox, MATERIAL_TINT } from "./iso-box";
@@ -209,6 +209,13 @@ describe("Studio hero presets (Main board review)", () => {
       qty: 300,
     });
     expect(requestOf({ ...first, sizeId: "tuck:s0" }, shapes)).toBeNull();
+  });
+
+  it("states as the minimum order the lowest quantity the presets offer, and nothing without presets", () => {
+    expect(lowestPresetQty(shapes)).toBe(300);
+    expect(lowestPresetQty([{ qtys: [500, 1000] }, { qtys: [2000] }])).toBe(500);
+    expect(lowestPresetQty([])).toBeNull();
+    expect(lowestPresetQty(shapesOf(null))).toBeNull();
   });
 
   it("falls back from the default to the nearest offered presets, never repeating one", () => {
