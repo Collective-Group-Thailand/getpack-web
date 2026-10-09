@@ -1,4 +1,4 @@
-<!-- Synced from packio-api v0.43.1 by `pnpm docs:sync` — do not edit here; change it in packio-api. -->
+<!-- Synced from packio-api v0.43.2 by `pnpm docs:sync` — do not edit here; change it in packio-api. -->
 # Packio API Contract Conventions (v3) (shared by `packio-api` and `packio-web`)
 
 > This file is **identical in both repositories** (`docs/contract/api-conventions.md`). Change it only by a PR to both repos on the same day. The backend owns the contract; the frontend consumes it.

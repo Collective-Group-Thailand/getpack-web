@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.43.1) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.43.2) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -42830,13 +42830,8 @@ export interface components {
             shapeId: components["schemas"]["HeroShape"];
         };
         HeroPresetsDto: {
-            /** @description The selection to open on; null when nothing is offered */
+            /** @description The selection to open on — the product owner’s default (`catalog.hero_presets.default`) when the catalogue offers it; null otherwise (open on the first offered options) */
             default: components["schemas"]["HeroDefaultDto"] | null;
-            /**
-             * @description The owner’s default is not offered by the catalogue (e.g. a board the shape cannot take): `default` is the nearest offered selection instead
-             * @example true
-             */
-            defaultAdjusted: boolean;
             materials: components["schemas"]["HeroMaterialDto"][];
             prints: components["schemas"]["HeroPrintDto"][];
             /**
@@ -209276,7 +209271,6 @@ export interface operations {
                      *         "sizeId": "mailer:s0",
                      *         "widthMm": 120
                      *       },
-                     *       "defaultAdjusted": true,
                      *       "materials": [
                      *         {
                      *           "id": "corrE",

@@ -37,8 +37,9 @@ const isServerFailure = (error: unknown) => !isApiError(error) || error.status >
  * against the catalogue (`store.catalog.getHeroPresets`), and the first selection priced by
  * `store.quotes.preview` — the `store.quotes.calculate` path, so the price is the configurator's.
  *
- * It opens on the API's `default`, already the nearest offered selection when the owner's is not
- * (`defaultAdjusted`). Only a server failure (5xx) falls back to the next preset; a 4xx is the API
+ * It opens on the API's `default` — the product owner's selection, null when the catalogue does not
+ * offer it (v0.43.2), when the first shape's opening choices are tried instead. Only a server
+ * failure (5xx) falls back to the next preset; a 4xx is the API
  * refusing a selection it offered itself, so it is logged and the panel opens without a price
  * rather than on another one.
  */
