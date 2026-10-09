@@ -123,6 +123,7 @@
   --color-kraft-strong: var(--sem-kraft-strong);
   --color-sage: var(--sem-sage);
   --color-sage-subtle: var(--sem-sage-subtle);
+  --color-sage-strong: var(--sem-sage-strong);
   --color-primary: var(--sem-primary);
   --color-primary-fg: var(--sem-primary-fg);
   --color-primary-subtle: var(--sem-primary-subtle);
@@ -239,6 +240,7 @@
   --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
   --sem-sage: oklch(53.22% 0.0313 153.31);
   --sem-sage-subtle: oklch(93.53% 0.0091 134.87);
+  --sem-sage-strong: oklch(45.22% 0.0313 153.31);
   --sem-primary: oklch(43.56% 0.0778 174.02);
   --sem-primary-fg: oklch(100% 0 0);
   --sem-primary-subtle: oklch(93.53% 0.0091 134.87);
@@ -295,6 +297,7 @@
     --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
     --sem-sage: oklch(69.54% 0.0312 153.09);
     --sem-sage-subtle: oklch(25.98% 0.0136 154.28);
+    --sem-sage-strong: oklch(61.54% 0.0312 153.09);
     --sem-primary: oklch(65.85% 0.1134 175.21);
     --sem-primary-fg: oklch(19.3% 0.0108 80.52);
     --sem-primary-subtle: oklch(28.37% 0.0384 176.01);
@@ -348,6 +351,7 @@
   --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
   --sem-sage: oklch(69.54% 0.0312 153.09);
   --sem-sage-subtle: oklch(25.98% 0.0136 154.28);
+  --sem-sage-strong: oklch(61.54% 0.0312 153.09);
   --sem-primary: oklch(65.85% 0.1134 175.21);
   --sem-primary-fg: oklch(19.3% 0.0108 80.52);
   --sem-primary-subtle: oklch(28.37% 0.0384 176.01);
@@ -400,6 +404,7 @@
   --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
   --sem-sage: oklch(36% 0.0313 153.31);
   --sem-sage-subtle: oklch(100% 0 0);
+  --sem-sage-strong: oklch(28% 0.0313 153.31);
   --sem-primary: oklch(35.2% 0.068 176);
   --sem-primary-fg: oklch(100% 0 0);
   --sem-primary-subtle: oklch(98.5% 0.006 176);
