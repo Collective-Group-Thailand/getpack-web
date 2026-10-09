@@ -66,6 +66,8 @@ export default async function SettingsPage() {
       "factory_qc",
       "factory_shipping",
       "factory_accountant",
+      "factory_storekeeper",
+      "factory_purchaser",
     ].includes(role)
       ? tRoles(role as "factory_owner")
       : role;
@@ -141,6 +143,13 @@ export default async function SettingsPage() {
           {t("hoursLink")}
         </Link>
       </PartnerSection>
+      {canAt(context, "factory_inventory.read") ? (
+        <PartnerSection title={t("erp")} description={t("erpBody")}>
+          <Link href="/settings/erp" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">
+            {t("erpLink")}
+          </Link>
+        </PartnerSection>
+      ) : null}
       <PartnerSection title={t("notifications")} description={t("notificationsBody")}>
         <Card padding="md" className="flex flex-col gap-4">
           <PushOnThisDevice />

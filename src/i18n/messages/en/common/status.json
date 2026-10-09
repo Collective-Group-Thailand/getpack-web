@@ -429,7 +429,12 @@
     "resend": "Resend",
     "void": "Void",
     "acceptQuote": "Accept the quote",
-    "postMessage": "Send a message"
+    "postMessage": "Send a message",
+    "editPurchaseOrder": "Edit purchase order",
+    "issuePurchaseOrder": "Approve and number the order",
+    "receiveGoods": "Receive goods",
+    "closePurchaseOrder": "Close (rest will not come)",
+    "cancelPurchaseOrder": "Cancel purchase order"
   },
   "points": {
     "pending": "Pending",
@@ -695,5 +700,13 @@
     "approvedRecipe": "Approved as a new style",
     "approvedTemplate": "Approved as a template",
     "rejected": "Rejected"
+  },
+  "erpPurchaseOrder": {
+    "draft": "Draft, not sent",
+    "issued": "Sent, awaiting goods",
+    "partiallyReceived": "Partly received",
+    "received": "Fully received",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
   }
 }

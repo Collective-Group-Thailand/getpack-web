@@ -145,6 +145,18 @@
     "engine_unavailable": "Drawing engine unavailable",
     "pattern_not_drawable": "Pattern not drawable"
   },
+  "erp": {
+    "archived": "This record is archived and cannot be used on new documents",
+    "code_taken": "This code is already used",
+    "invalid_status": "Not possible in the current status",
+    "lot_required": "A lot or roll number is required",
+    "not_a_supplier": "This partner is not set up as a supplier",
+    "over_receipt": "More than was ordered",
+    "same_warehouse": "Choose two different warehouses",
+    "sku_taken": "This SKU is already used",
+    "stock_insufficient": "Not enough stock",
+    "unit_not_allowed": "This unit cannot be used for this item"
+  },
   "factory_users": {
     "role_not_allowed": "Role not allowed"
   },

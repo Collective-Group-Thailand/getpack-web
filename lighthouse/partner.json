@@ -10,7 +10,9 @@
         "http://partner.localhost:3200/requests",
         "http://partner.localhost:3200/jobs",
         "http://partner.localhost:3200/ship",
-        "http://partner.localhost:3200/settings"
+        "http://partner.localhost:3200/settings",
+        "http://partner.localhost:3200/stock",
+        "http://partner.localhost:3200/purchasing"
       ],
       "numberOfRuns": 3,
       "settings": {

@@ -17,6 +17,8 @@ const ROLE_KEYS = [
   "factory_qc",
   "factory_shipping",
   "factory_accountant",
+  "factory_storekeeper",
+  "factory_purchaser",
 ] as const;
 
 /**
