@@ -266,3 +266,9 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 - **Today:** `GET /v1/partner/price-components` returns every registered component (≈65) with no product type, so a folding-carton price list offered pouch film, corrugated board and label rolls as empty tabs.
 - **Ask:** on `PriceComponentDto`, `productTypeCodes: string[]` — the product types whose calculator reads the component (the `pl*` models each `*-snapshot.loader.ts` queries). Optionally on `PriceListVersionDto`, `componentLineCounts: Record<PriceComponent, number>` so tabs can show how many lines each holds without one read per component (each read is audited, D-044).
 - **Web meanwhile:** `src/features/partner/prices/components-by-type.ts` copies the pairing (`// CONTRACT-GAP partner.price-components-by-type`).
+
+## Partner UX pass — figures the factory screens need from the API (2026-10-09)
+
+- **`partner.priceLists.shippingCard` zone names:** partner shipping rates carry only `zoneCode` (`uat_bkk_metro`); the zone's name is admin-only (`/v1/admin/shipping/zones`). **Ask:** `zoneNameTh`/`zoneNameEn` on each partner shipping rate. **Web meanwhile:** the code is shown.
+- **`partner.payouts.schedule` totals:** the payout calendar lists each PO's advance/balance/retention but no sums; the web never adds money. **Ask:** `totals: { due, overdue, scheduled, paid }` (decimal strings) on the schedule read so the page can open with a summary.
+- **Data check, not a contract change:** UAT job `UATJOB-2610-00009` reads `quantityOrdered: 1` while its destination reads `quantity: 500` — the factory sees two different quantities on one job.

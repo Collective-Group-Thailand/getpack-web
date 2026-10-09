@@ -97,6 +97,9 @@ export default async function JobPage({ params }: Props) {
   const qcOnly = context.roles.length > 0 && context.roles.every((role) => role === "factory_qc");
   const mayRun = (milestone: { evidence: (typeof job.milestones)[number]["evidence"] }) =>
     offered.has("job.update_milestone") && (!qcOnly || needsQcForm(milestone));
+  // Why the step's buttons are not here — said so the reader knows what to do next, not just "no".
+  const blocked =
+    job.status === "released" ? t("acceptFirst") : qcOnly ? t("operatorStep") : t("noMilestonePermission");
   const checks = qc.data ?? [];
   const current = job.milestones.find((milestone) => milestone.key === job.currentMilestoneKey);
   const stateOf = (status: string, isCurrent: boolean): StageState =>
@@ -190,7 +193,7 @@ export default async function JobPage({ params }: Props) {
                     mayRun(milestone) ? (
                       <StartMilestone job={job} milestone={milestone} name={name} />
                     ) : (
-                      <p className="text-muted">{qcOnly ? t("operatorStep") : t("noMilestonePermission")}</p>
+                      <p className="text-muted">{blocked}</p>
                     )
                   ) : (
                     <>
@@ -215,7 +218,7 @@ export default async function JobPage({ params }: Props) {
                       ) : mayRun(milestone) ? (
                         <CompleteMilestone job={job} milestone={milestone} name={name} />
                       ) : (
-                        <p className="text-muted">{qcOnly ? t("operatorStep") : t("noMilestonePermission")}</p>
+                        <p className="text-muted">{blocked}</p>
                       )}
                     </>
                   )
@@ -441,9 +444,16 @@ export default async function JobPage({ params }: Props) {
           </ul>
         ) : null}
         {offered.has("job.raise_issue") ? (
-          <Card padding="lg">
-            <RaiseIssue job={job} />
-          </Card>
+          // Folded until needed: most visits to a job never raise one.
+          <details className="border-border bg-surface group rounded-xl border">
+            <summary className="hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium">
+              <Icon name="flag" size={18} />
+              {t("raiseIssueToggle")}
+            </summary>
+            <div className="border-border border-t p-4">
+              <RaiseIssue job={job} />
+            </div>
+          </details>
         ) : null}
       </PartnerSection>
     </PartnerPage>

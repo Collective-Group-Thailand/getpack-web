@@ -154,7 +154,10 @@ export function ProposalEditor({
   /** The value a cell starts from: the draft's proposal for that line, else the price in force. */
   const baseline = (row: Row): Values => {
     const draft = draftByKey.get(row.lineKey);
-    const values = { ...(row.values as Values), ...((draft?.action === "change" ? draft.proposedValues : null) as Values | null) };
+    const values = {
+      ...(row.values as Values),
+      ...((draft?.action === "change" ? draft.proposedValues : null) as Values | null),
+    };
     // "4.600000" reads "4.60" in the cell; `same` compares numbers, so trimming is no change.
     for (const column of valueColumns)
       if (column.type === "decimal" && typeof values[column.key] === "string")
@@ -166,7 +169,11 @@ export function ProposalEditor({
   const sheet = sortRows(rows.data ?? [], dimensions, show).filter(
     (row) =>
       !needle ||
-      all.some((column) => show(column, (row.values as Values)[column.key]).toLocaleLowerCase().includes(needle)),
+      all.some((column) =>
+        show(column, (row.values as Values)[column.key])
+          .toLocaleLowerCase()
+          .includes(needle),
+      ),
   );
 
   function edit(row: Row, key: string, value: unknown) {
@@ -174,7 +181,8 @@ export function ProposalEditor({
     const next = { ...(pending[row.lineKey]?.values ?? {}), [key]: value };
     if (same(start[key], value)) delete next[key];
     const copy = { ...pending };
-    if (Object.keys(next).length || copy[row.lineKey]?.remove) copy[row.lineKey] = { ...copy[row.lineKey], values: next };
+    if (Object.keys(next).length || copy[row.lineKey]?.remove)
+      copy[row.lineKey] = { ...copy[row.lineKey], values: next };
     else delete copy[row.lineKey];
     setPending(copy);
   }
@@ -284,7 +292,9 @@ export function ProposalEditor({
               { value: "true", label: labels.yes },
               { value: "false", label: labels.no },
             ]
-          : references.filter((item) => item.column === column.key).map((item) => ({ value: item.id, label: item.name }));
+          : references
+              .filter((item) => item.column === column.key)
+              .map((item) => ({ value: item.id, label: item.name }));
       return (
         <select
           aria-label={label(column.key)}
@@ -327,7 +337,7 @@ export function ProposalEditor({
       {/* 1 — what the draft holds now, old → new */}
       <section aria-labelledby="draft-changes" className="flex flex-col gap-2">
         <h3 id="draft-changes" className="font-semibold">
-          {t("draftLines")} <span className="text-muted font-normal">({lines.length})</span>
+          {t("draftLinesCount", { count: lines.length })}
         </h3>
         {lines.length ? (
           <ul className="border-border divide-border bg-surface divide-y rounded-xl border">
@@ -373,7 +383,12 @@ export function ProposalEditor({
                               ) : null}
                               <span className="font-semibold">{show(column, after)}</span>
                               {up ? (
-                                <Icon name="trend-up" size={14} className="text-danger ms-1 inline" aria-label={t("up")} />
+                                <Icon
+                                  name="trend-up"
+                                  size={14}
+                                  className="text-danger ms-1 inline"
+                                  aria-label={t("up")}
+                                />
                               ) : down ? (
                                 <Icon
                                   name="trend-down"
@@ -397,10 +412,7 @@ export function ProposalEditor({
                     label={t("removeFromDraft")}
                     disabled={busy}
                     onClick={() =>
-                      void replace(
-                        lines.filter((item) => item.id !== line.id).map(lineToInput),
-                        t("removed"),
-                      )
+                      void replace(lines.filter((item) => item.id !== line.id).map(lineToInput), t("removed"))
                     }
                   />
                 </li>
@@ -442,7 +454,12 @@ export function ProposalEditor({
           </label>
           <label className="flex min-w-56 flex-col gap-1 text-sm font-medium">
             {t("search")}
-            <SearchInput value={search} onValueChange={setSearch} clearLabel={t("clear")} placeholder={t("searchHint")} />
+            <SearchInput
+              value={search}
+              onValueChange={setSearch}
+              clearLabel={t("clear")}
+              placeholder={t("searchHint")}
+            />
           </label>
         </div>
         {dirty > 0 ? <p className="text-muted text-xs">{t("saveFirst")}</p> : null}
@@ -483,7 +500,10 @@ export function ProposalEditor({
                       {dimensions.map((column) => (
                         <td
                           key={column.key}
-                          className={cn("border-border border-b px-2 py-1.5 whitespace-nowrap", removing && "line-through")}
+                          className={cn(
+                            "border-border border-b px-2 py-1.5 whitespace-nowrap",
+                            removing && "line-through",
+                          )}
                         >
                           {show(column, (row.values as Values)[column.key])}
                         </td>
@@ -550,7 +570,8 @@ export function ProposalEditor({
                         {cellInput(
                           column,
                           values[column.key],
-                          (next) => setAdded(added.map((item, i) => (i === at ? { ...item, [column.key]: next } : item))),
+                          (next) =>
+                            setAdded(added.map((item, i) => (i === at ? { ...item, [column.key]: next } : item))),
                           true,
                         )}
                       </td>
@@ -636,7 +657,10 @@ export function ProposalEditor({
                   <li key={index} className="border-border border-b py-1">
                     {tActions(line.action)} · {tComponents(line.component)} ·{" "}
                     {columnsOf(definitions, line.component)
-                      .all.map((column) => `${label(column.key)} ${show(column, (line.values as Values | undefined)?.[column.key])}`)
+                      .all.map(
+                        (column) =>
+                          `${label(column.key)} ${show(column, (line.values as Values | undefined)?.[column.key])}`,
+                      )
                       .join(" · ")}
                   </li>
                 ))}

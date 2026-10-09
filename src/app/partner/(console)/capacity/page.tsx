@@ -78,18 +78,27 @@ export default async function CapacityPage() {
                 const capacity = Number(week.capacity);
                 const booked = Number(week.booked);
                 const used = capacity ? Math.round((booked / capacity) * 100) : 0;
+                const loadText = t("load", {
+                  booked: format.number(booked),
+                  capacity: format.number(capacity),
+                  unit: type.unit && tUnits.has(type.unit) ? tUnits(type.unit) : (type.unit ?? ""),
+                });
+                // The Meter only draws the bar; the name and figures are written out beside it.
                 return (
-                  <Meter
-                    key={type.productTypeId}
-                    label={type.productTypeNameTh}
-                    value={used}
-                    tone={used >= 90 ? "danger" : used >= 70 ? "warning" : "primary"}
-                    valueText={t("load", {
-                      booked: format.number(booked),
-                      capacity: format.number(capacity),
-                      unit: type.unit && tUnits.has(type.unit) ? tUnits(type.unit) : (type.unit ?? ""),
-                    })}
-                  />
+                  <div key={type.productTypeId} className="flex flex-col gap-1">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
+                      <span className="font-medium">{type.productTypeNameTh}</span>
+                      <span className={capacity ? "tabular-nums" : "text-muted"}>
+                        {capacity ? `${loadText} · ${used}%` : t("noCapacity")}
+                      </span>
+                    </div>
+                    <Meter
+                      label={type.productTypeNameTh}
+                      value={used}
+                      tone={used >= 90 ? "danger" : used >= 70 ? "warning" : "primary"}
+                      valueText={loadText}
+                    />
+                  </div>
                 );
               })}
             </Card>

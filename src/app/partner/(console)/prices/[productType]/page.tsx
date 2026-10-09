@@ -126,7 +126,9 @@ export default async function PriceListPage({ params, searchParams }: Props) {
   const primary =
     prices.mode !== "factory_price_list" ? null : open ? (
       <Button asChild size="lg" iconStart={open.status === "draft" ? "edit" : "eye"}>
-        <Link href={`/prices/proposals/${open.id}${open.status === "draft" && component ? `?component=${component}` : ""}`}>
+        <Link
+          href={`/prices/proposals/${open.id}${open.status === "draft" && component ? `?component=${component}` : ""}`}
+        >
           {open.status === "draft" ? t("cta.continueDraft") : t("cta.viewOpen")}
         </Link>
       </Button>
@@ -161,7 +163,10 @@ export default async function PriceListPage({ params, searchParams }: Props) {
           <span className="flex flex-wrap items-center gap-2">
             <StatusChip map={PROPOSAL_STATUS} value={open.status} />
             {t("openNotice.meta", { date: format.date(open.proposedEffectiveFrom), lines: open.lineCounts.total })}
-            <Link href={`/prices/proposals/${open.id}`} className="text-primary font-medium underline underline-offset-4">
+            <Link
+              href={`/prices/proposals/${open.id}`}
+              className="text-primary font-medium underline underline-offset-4"
+            >
               {t("propose.openLink")}
             </Link>
           </span>
@@ -223,7 +228,9 @@ export default async function PriceListPage({ params, searchParams }: Props) {
             >
               {byGroup.map((entry) => (
                 <div key={entry.group} className="shrink-0">
-                  <p className="text-muted px-1 text-xs font-semibold tracking-wide uppercase">{tGroups(entry.group)}</p>
+                  <p className="text-muted px-1 text-xs font-semibold tracking-wide uppercase">
+                    {tGroups(entry.group)}
+                  </p>
                   <ul className="mt-1 flex gap-1 xl:flex-col">
                     {entry.items.map((item) => (
                       <li key={item.component}>

@@ -18,6 +18,7 @@ import { LocaleMenu } from "@/features/shared/shell";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Badge } from "@/ui/components/Badge";
 import { Card } from "@/ui/components/Card";
+import { Icon } from "@/ui/icons";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -105,11 +106,16 @@ export default async function SettingsPage() {
           ) : (
             <PageError error={users?.error} />
           )}
-          <Card padding="lg">
-            <h3 className="mb-1 text-lg font-semibold">{tUsers("createTitle")}</h3>
-            <p className="text-muted mb-3 text-sm">{tUsers("createBody")}</p>
-            <CreateUser />
-          </Card>
+          <details className="border-border bg-surface rounded-xl border">
+            <summary className="hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium">
+              <Icon name="user-plus" size={18} />
+              {tUsers("createTitle")}
+            </summary>
+            <div className="border-border border-t p-4">
+              <p className="text-muted mb-3 text-sm">{tUsers("createBody")}</p>
+              <CreateUser />
+            </div>
+          </details>
         </PartnerSection>
       ) : null}
 

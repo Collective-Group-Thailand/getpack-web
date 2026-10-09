@@ -154,7 +154,9 @@
     "createTitle": "Add a user",
     "createBody": "A new user can sign in at once with the first password you set; no invitation e-mail is sent.",
     "ownerManaged": "Owners are managed by Packio's partner team",
-    "saveRoles": "Save roles"
+    "saveRoles": "Save roles",
+    "editRoles": "Edit roles",
+    "cancelEdit": "Cancel"
   },
   "notifications": {
     "saved": "Saved",
@@ -216,7 +218,7 @@
     "weekTitle": "Weekly hours",
     "inForce": "In force since {date}",
     "platformDefault": "Packio's standard hours apply for now",
-    "upcoming": "New hours start on {dates}",
+    "upcoming": "The hours you set apply from {dates}; until then the current hours stay",
     "days": {
       "mon": "Monday",
       "tue": "Tuesday",
