@@ -219,17 +219,17 @@
 /* Light is the base: no cookie, no OS preference, no surprises. */
 
 :root {
-  --sem-bg: oklch(96.51% 0.0074 80.72);
-  --sem-bg-subtle: oklch(94.12% 0.0103 81.79);
+  --sem-bg: oklch(98.16% 0.0017 247.84);
+  --sem-bg-subtle: oklch(96.32% 0.0034 247.86);
   --sem-surface: oklch(100% 0 0);
-  --sem-surface-subtle: oklch(96.51% 0.0074 80.72);
+  --sem-surface-subtle: oklch(98.16% 0.0017 247.84);
   --sem-surface-raised: oklch(100% 0 0);
   --sem-overlay: oklch(26.2% 0.011 72 / 0.55);
-  --sem-border: oklch(90.51% 0.0133 82.4);
+  --sem-border: oklch(92.38% 0.0063 255.48);
   --sem-border-strong: oklch(58.8% 0.022 72);
-  --sem-fg: oklch(22.29% 0.0082 84.59);
-  --sem-muted: oklch(46.26% 0.0142 79.72);
-  --sem-subtle: oklch(63.85% 0.0168 77.01);
+  --sem-fg: oklch(22.93% 0.009 255.6);
+  --sem-muted: oklch(45.06% 0.0186 257.25);
+  --sem-subtle: oklch(62.55% 0.0177 253.96);
   --sem-fg-inverse: oklch(100% 0 0);
   --sem-primary-hover: oklch(36.76% 0.0645 174.84);
   --sem-danger-hover: oklch(42.8% 0.1558 29);
@@ -239,14 +239,14 @@
   --sem-kraft: oklch(85.38% 0.0388 81.49);
   --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
   --sem-sage: oklch(53.22% 0.0313 153.31);
-  --sem-sage-subtle: oklch(93.53% 0.0091 134.87);
+  --sem-sage-subtle: oklch(95.05% 0.0103 174.27);
   --sem-sage-strong: oklch(45.22% 0.0313 153.31);
   --sem-primary: oklch(43.56% 0.0778 174.02);
   --sem-primary-fg: oklch(100% 0 0);
-  --sem-primary-subtle: oklch(93.53% 0.0091 134.87);
+  --sem-primary-subtle: oklch(95.11% 0.0138 174.16);
   --sem-primary-subtle-fg: oklch(36.76% 0.0645 174.84);
   --sem-accent: oklch(70.79% 0.1524 65.49);
-  --sem-accent-fg: oklch(22.29% 0.0082 84.59);
+  --sem-accent-fg: oklch(22.93% 0.009 255.6);
   --sem-accent-subtle: oklch(96.2% 0.0224 66);
   --sem-accent-subtle-fg: oklch(35.2% 0.1088 66);
   --sem-success: oklch(52.73% 0.1371 150.07);
@@ -386,7 +386,7 @@
   --sem-bg: oklch(100% 0 0);
   --sem-bg-subtle: oklch(100% 0 0);
   --sem-surface: oklch(100% 0 0);
-  --sem-surface-subtle: oklch(96.51% 0.0074 80.72);
+  --sem-surface-subtle: oklch(98.16% 0.0017 247.84);
   --sem-surface-raised: oklch(100% 0 0);
   --sem-overlay: oklch(0% 0 0 / 0.7);
   --sem-border: oklch(50.5% 0.0207 72);

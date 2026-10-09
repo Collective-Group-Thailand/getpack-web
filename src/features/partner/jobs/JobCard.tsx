@@ -33,7 +33,7 @@ export async function JobCard({ job }: { job: JobSummary }) {
     >
       <span className="flex flex-col gap-1.5 p-4 lg:p-3.5">
         <span className="flex items-start gap-2">
-          <span className="min-w-0 flex-1 font-mono text-[0.9375rem] font-semibold lg:text-sm">{job.jobNo}</span>
+          <span className="min-w-0 flex-1 font-mono text-[0.9375rem] font-semibold md:text-sm">{job.jobNo}</span>
           <StatusChip map={JOB_STATUS} value={job.status} />
         </span>
         <span className="font-semibold">{jobName(job)}</span>
@@ -71,7 +71,7 @@ export async function JobCard({ job }: { job: JobSummary }) {
         ) : null}
       </span>
       {job.status === "released" ? (
-        <span className="border-border bg-warning-subtle/40 mt-auto flex items-center justify-between gap-2 rounded-b-xl border-t px-4 py-2.5 text-sm lg:px-3.5 lg:py-2">
+        <span className="border-border bg-warning-subtle/40 mt-auto flex items-center justify-between gap-2 rounded-b-xl border-t px-4 py-2.5 text-sm md:px-3.5 md:py-2">
           <Countdown dueAt={job.acceptDueAt} />
           <span className="text-primary inline-flex items-center gap-1 font-medium group-hover:underline">
             {t("open")}

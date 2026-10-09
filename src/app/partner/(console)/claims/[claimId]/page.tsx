@@ -7,6 +7,7 @@ import { PartnerFileList } from "@/features/partner/account/files";
 import { blockedReason, offered } from "@/features/partner/account/offered";
 import { attempt, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { termsFrom, TermsHelp } from "@/features/partner/terms";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
@@ -30,6 +31,7 @@ export default async function ClaimPage({ params }: Props) {
   const t = await getTranslations("partnerAccount.claims");
   const tProblems = await getTranslations("problems");
   const format = await getFormat();
+  const tTerms = await getTranslations("partner.terms");
   const { contract } = await partnerServerApis();
   const found = await attempt(
     async () => (await contract.GET("/v1/partner/claims/{claimId}", { params: { path: { claimId } } })).data!,
@@ -83,6 +85,7 @@ export default async function ClaimPage({ params }: Props) {
         />
       </Card>
 
+      <TermsHelp title={tTerms("title")} terms={termsFrom(tTerms.raw, ["liability", "deduction", "claimWindow"])} />
       {claim.photos.product.length || claim.photos.carton.length ? (
         <PartnerSection title={t("evidence")}>
           <PartnerFileList fileIds={claim.photos.product} label={t("roles.product")} />

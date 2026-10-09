@@ -106,27 +106,30 @@ const art = (values: Record<keyof ArtSet, string>): ArtSet =>
 
 /**
  * The D-180 palette, as design language v3 (Phase 4, the "Main" board of the V4 design file)
- * names it: paper `#F6F3EE`, ink `#1D1B17` / `#5D5850` / `#948D83`, hairline `#E4DFD6`, sage
- * `#5F7264` / `#E7EBE5`, green `#0F5F4E` / `#0B4A3D`, kraft `#DCCDB3`. Hex in, so a brand kit is
+ * names it — with the light theme's paper and ink moved from warm beige to white and cool neutral
+ * greys (product owner, 2026-10-09: "white across the whole system"; beige read yellowed and
+ * low-contrast on office screens): page `#F8F9FA`, band `#F1F3F5`, ink `#1A1D21` / `#4F5660` /
+ * `#838B95`, hairline `#E3E6EA`, sage `#5F7264` / `#E8F1EE`, green `#0F5F4E` / `#0B4A3D`, kraft
+ * `#DCCDB3` (kraft stays: it is the packaging, not the page). Dark keeps v3's warm values. Hex in, so a brand kit is
  * pasted rather than translated; `semantic.ts` decides where each one goes and
  * `scripts/check-contrast.ts` decides whether it may.
  */
 export const ART = {
   light: art({
-    "paper-50": "#F6F3EE",
-    "paper-100": "#EFEBE4",
+    "paper-50": "#F8F9FA",
+    "paper-100": "#F1F3F5",
     surface: "#FFFFFF",
     "kraft-200": "#DCCDB3",
     "kraft-400": "#C8A97B",
-    border: "#E4DFD6",
-    "ink-900": "#1D1B17",
-    "ink-600": "#5D5850",
-    "ink-300": "#948D83",
+    border: "#E3E6EA",
+    "ink-900": "#1A1D21",
+    "ink-600": "#4F5660",
+    "ink-300": "#838B95",
     sage: "#5F7264",
-    "sage-50": "#E7EBE5",
+    "sage-50": "#E8F1EE",
     "primary-600": "#0F5F4E",
     "primary-700": "#0B4A3D",
-    "primary-50": "#E7EBE5",
+    "primary-50": "#E6F2EE",
     "accent-500": "#E08A18",
   }),
   dark: art({

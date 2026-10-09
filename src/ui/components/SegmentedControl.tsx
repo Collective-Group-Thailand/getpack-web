@@ -57,6 +57,7 @@ export function SegmentedControl<T extends string = string>({
           value={option.value}
           disabled={option.disabled}
           aria-label={option.ariaLabel}
+          data-segment={size}
           className={cn(
             "inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent font-medium whitespace-nowrap",
             "text-muted duration-fast ease-standard transition-colors",
