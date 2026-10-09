@@ -63,7 +63,14 @@ export default async function JobsPage({ searchParams }: Props) {
         <label htmlFor="jobs-q" className="sr-only">
           {t("search")}
         </label>
-        <Input id="jobs-q" name="q" inputSize="lg" defaultValue={query.q ?? ""} placeholder={t("searchPlaceholder")} />
+        <Input
+          id="jobs-q"
+          name="q"
+          inputSize="lg"
+          className="lg:h-10 lg:text-sm"
+          defaultValue={query.q ?? ""}
+          placeholder={t("searchPlaceholder")}
+        />
         <Button type="submit" size="lg" variant="secondary" iconStart="search" className="h-12 shrink-0">
           {t("searchAction")}
         </Button>

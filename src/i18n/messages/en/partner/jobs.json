@@ -233,7 +233,7 @@
   },
   "capacity": {
     "title": "Weekly capacity",
-    "body": "Capacity against the jobs you took; send the Partner team a request to change it.",
+    "body": "Accepted work against capacity, week by week",
     "closures": "Closures",
     "week": "Week of {date}",
     "load": "{booked} of {capacity} {unit} booked",
@@ -246,7 +246,7 @@
   },
   "samples": {
     "title": "Sample jobs",
-    "body": "Samples to make for customers. Before shipping, measure the size, name the material actually used and take at least one photo",
+    "body": "Measure, name the material and photograph before sending a sample",
     "job": "Job {job}",
     "kind": "Kind",
     "quantity": "Quantity",

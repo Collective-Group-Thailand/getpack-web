@@ -46,13 +46,13 @@ export function PartnerPage({
       <header className="flex flex-wrap items-start gap-3">
         {/* At least 16rem before the actions: on a phone they wrap under the title instead of squeezing it. */}
         <div className="min-w-[min(100%,16rem)] flex-1">
-          <h1 className="text-2xl font-semibold text-balance">{title}</h1>
+          <h1 className="font-semibold text-balance">{title}</h1>
           {meta ? <div className="mt-2 flex flex-wrap items-center gap-2">{meta}</div> : null}
           {description ? <p className="text-muted mt-2 max-w-prose">{description}</p> : null}
         </div>
         {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
       </header>
-      <div className="mt-6 flex flex-col gap-6">{children}</div>
+      <div className="mt-6 flex flex-col gap-6 lg:mt-5 lg:gap-7">{children}</div>
     </div>
   );
 }
@@ -75,7 +75,7 @@ export function PartnerSection({
     <section aria-labelledby={id ? `${id}-title` : undefined} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-2">
         <div className="min-w-0 flex-1">
-          <h2 id={id ? `${id}-title` : undefined} className="text-lg font-semibold">
+          <h2 id={id ? `${id}-title` : undefined} className="text-lg font-semibold lg:text-base">
             {title}
           </h2>
           {description ? <p className="text-muted text-sm">{description}</p> : null}

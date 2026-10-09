@@ -28,7 +28,7 @@ export interface StageStepperProps {
  */
 export function StageStepper({ stages, label, stateLabels, className }: StageStepperProps) {
   return (
-    <ol aria-label={label} className={cn("flex flex-col", className)}>
+    <ol aria-label={label} data-stepper="" className={cn("flex flex-col", className)}>
       {stages.map((stage, index) => {
         const last = index === stages.length - 1;
         const current = stage.state === "current";

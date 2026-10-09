@@ -543,7 +543,7 @@
     },
     "useSheet": "Use these {count} lines",
     "sheetUsed": "{count, plural, one {# line} other {# lines}} taken from the sheet",
-    "changeBody": "Pick a part of the price list and edit the white cells. Grey columns say what a line applies to and cannot be edited — remove the line and add a new one instead.",
+    "changeBody": "Edit the white cells; grey columns say what a line applies to and cannot be edited",
     "inDraft": "{count, plural, one {# line changed} other {# lines changed}}",
     "search": "Search the table",
     "searchHint": "e.g. KA125",
@@ -589,7 +589,7 @@
     "resultingTitle": "Became version {version}",
     "resultingBody": "Applies to new orders from {date}",
     "draftTitle": "1 · Change prices",
-    "draftBody": "Type into the table: changed cells turn yellow and keep the old value below; then press “Save to draft”.",
+    "draftBody": "Changed cells turn yellow with the old value; press “Save to draft” when done",
     "actions": {
       "add": "Add",
       "change": "Change",
