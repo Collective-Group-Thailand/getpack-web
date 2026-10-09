@@ -63,7 +63,7 @@ describe("reading without knowing the scheme", () => {
 
 describe("sessionCookieWrites", () => {
   it("writes the three cookies with the flags ADR-0005 requires", () => {
-    const writes = sessionCookieWrites(session, true);
+    const writes = sessionCookieWrites(session, true).slice(0, 3);
 
     expect(writes.map((write) => write.name)).toEqual(["__Host-pk_at", "__Host-pk_ate", "__Host-pk_rt"]);
     for (const write of writes) {
@@ -74,7 +74,31 @@ describe("sessionCookieWrites", () => {
   });
 
   it("drops the __Host- prefix over plain http so local development works", () => {
-    expect(sessionCookieWrites(session, false).map((write) => write.name)).toEqual(["pk_at", "pk_ate", "pk_rt"]);
+    expect(
+      sessionCookieWrites(session, false)
+        .slice(0, 3)
+        .map((write) => write.name),
+    ).toEqual(["pk_at", "pk_ate", "pk_rt"]);
+  });
+
+  it("clears the other spelling, so a stale __Host- cookie cannot shadow a new http session", () => {
+    // Chrome keeps a Secure `__Host-` cookie on http://*.localhost, and `readAccessToken`
+    // prefers it: left in place, the visitor signs in and lands back on the sign-in page.
+    const clears = sessionCookieWrites(session, false).slice(3);
+
+    expect(clears.map((write) => write.name)).toEqual(["__Host-pk_at", "__Host-pk_ate", "__Host-pk_rt"]);
+    for (const write of clears) {
+      expect(write).toMatchObject({ value: "", maxAge: 0, secure: true, path: "/" });
+    }
+  });
+
+  it("clears the bare names over https", () => {
+    const clears = sessionCookieWrites(session, true).slice(3);
+
+    expect(clears.map((write) => write.name)).toEqual(["pk_at", "pk_ate", "pk_rt"]);
+    for (const write of clears) {
+      expect(write).toMatchObject({ value: "", maxAge: 0, secure: false });
+    }
   });
 
   it("expires each cookie with the token it holds", () => {
