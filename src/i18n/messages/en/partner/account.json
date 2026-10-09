@@ -52,11 +52,11 @@
     "respond": {
       "ownerOnly": "The factory owner answers claims.",
       "response": "Answer",
-      "accept": "Accept",
+      "accept": "Accept the claim",
       "dispute": "Dispute",
       "note": "Details",
       "disputeHint": "Explain what happened, e.g. produced to the approved proof",
-      "acceptHint": "E.g. we will reprint by…",
+      "acceptHint": "How you will put it right (optional)",
       "photos": "Your evidence",
       "noteRequired": "Please explain in at least 3 characters",
       "send": "Send answer",
@@ -65,7 +65,11 @@
       "acceptBody": "You accept {no} is your factory's; Packio may deduct it or ask for a reprint.",
       "disputeBody": "Send your side of {no} for Packio to decide.",
       "done": "Answer to {no} sent",
-      "failed": "Could not send the answer"
+      "failed": "Could not send the answer",
+      "notePlaceholder": "e.g. We will remake 40 boxes and ship by 20 Oct",
+      "acceptMeans": "You agree the factory is responsible — Packio will ask for a remake or deduct from your payout, as the customer asked",
+      "disputeMeans": "Tell Packio the factory is not at fault, with reasons and photos — Packio decides after reading it",
+      "disputePlaceholder": "e.g. All boxes left dry and complete, photos at hand-over; damage likely in transit"
     },
     "answerTitle": "Packio asks for your answer",
     "received": "Received by the customer",
@@ -126,7 +130,12 @@
     "currentNote": "{month} is still running; its numbers settle at month end",
     "trend": "Trend",
     "computedAt": "(computed {date})",
-    "trendSoon": "The trend appears once there are at least two months of figures"
+    "trendSoon": "The trend appears once there are at least two months of figures",
+    "table": {
+      "metric": "Measure",
+      "value": "Result",
+      "meaning": "What it measures"
+    }
   },
   "users": {
     "title": "Users and roles",
@@ -173,7 +182,9 @@
       "never": "Never",
       "status": "Status",
       "manage": "Manage"
-    }
+    },
+    "namePlaceholder": "e.g. Somchai Jaidee",
+    "emailPlaceholder": "e.g. somchai@factory.com"
   },
   "notifications": {
     "saved": "Saved",
@@ -254,7 +265,12 @@
     "save": "Save hours",
     "saved": "Saved — in force from {date}",
     "failed": "Could not save",
-    "readOnly": "Only the factory owner can change the hours"
+    "readOnly": "Only the factory owner can change the hours",
+    "table": {
+      "day": "Day",
+      "opens": "Opens",
+      "closes": "Closes"
+    }
   },
   "closures": {
     "title": "Holidays and closures",
@@ -273,6 +289,7 @@
     "nameHint": "e.g. Machine maintenance",
     "add": "Add a closure",
     "added": "Closure on {date} added",
-    "failed": "Could not do that"
+    "failed": "Could not do that",
+    "namePlaceholder": "e.g. Songkran holiday, machine repair"
   }
 }

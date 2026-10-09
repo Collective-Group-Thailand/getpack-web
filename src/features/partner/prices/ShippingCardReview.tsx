@@ -8,7 +8,7 @@ import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { useRefresh } from "@/features/partner/client";
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { useFormat } from "@/features/shared/format";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
@@ -150,6 +150,7 @@ export function ShippingCardReview({
                     <div className="grid gap-3 md:grid-cols-2">
                       <Field label={t("counterAmount")} hint={t("counterAmountHint")}>
                         <Input
+                          placeholder={t("counterAmountPlaceholder")}
                           inputSize="lg"
                           inputMode="decimal"
                           value={amounts[rate.id] ?? ""}
@@ -158,6 +159,7 @@ export function ShippingCardReview({
                       </Field>
                       <Field label={t("note")}>
                         <Input
+                          placeholder={t("notePlaceholder")}
                           inputSize="lg"
                           value={notes[rate.id] ?? ""}
                           onChange={(event) => setNotes({ ...notes, [rate.id]: event.target.value })}

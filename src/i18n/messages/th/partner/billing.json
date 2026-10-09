@@ -54,7 +54,10 @@
     "eTaxNoHint": "เลขที่ใบกำกับภาษีอิเล็กทรอนิกส์คือเลขอ้างอิงของ e-Tax",
     "eTaxFile": "ไฟล์ e-Tax Invoice",
     "eTaxRules": "PDF หรือ XML ไม่เกิน 20 MB",
-    "amountPlaceholder": "0.00"
+    "amountPlaceholder": "0.00",
+    "noPlaceholder": "เช่น INV-2569-0012",
+    "taxIdPlaceholder": "เลข 13 หลัก เช่น 0105561234567",
+    "branchPlaceholder": "สำนักงานใหญ่ใส่ 00000"
   },
   "detail": {
     "metaTitle": "ใบวางบิล",
@@ -260,7 +263,14 @@
     "run": "รอบ {no} · จ่าย {date}",
     "line": "รายการจ่าย",
     "cash": "โอน {amount}",
-    "statement": "ดูรายการเดินบัญชี"
+    "statement": "ดูรายการเดินบัญชี",
+    "table": {
+      "po": "ใบสั่งซื้อ",
+      "net": "ยอดค้างจ่าย (ก่อน VAT)",
+      "vat": "VAT",
+      "expected": "คาดว่าจะได้รับ",
+      "status": "สถานะ"
+    }
   },
   "table": {
     "no": "เลขที่ใบวางบิล",

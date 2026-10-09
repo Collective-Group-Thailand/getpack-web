@@ -54,6 +54,8 @@ export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: s
           { value: "disputed", label: t("dispute"), icon: "flag" },
         ]}
       />
+      {/* What the choice leads to, said before the owner picks — not only in the confirm dialog. */}
+      <p className="text-muted">{disputing ? t("disputeMeans") : t("acceptMeans")}</p>
       <Field
         label={t("note")}
         hint={disputing ? t("disputeHint") : t("acceptHint")}
@@ -61,7 +63,13 @@ export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: s
         requiredLabel={tCommon("state.required")}
         error={error ?? undefined}
       >
-        <Textarea rows={4} value={note} maxLength={2000} onChange={(event) => setNote(event.target.value)} />
+        <Textarea
+          placeholder={disputing ? t("disputePlaceholder") : t("notePlaceholder")}
+          rows={4}
+          value={note}
+          maxLength={2000}
+          onChange={(event) => setNote(event.target.value)}
+        />
       </Field>
       {disputing ? (
         <Field label={t("photos")}>
@@ -245,6 +253,7 @@ export function CreateUser() {
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("name")} required requiredLabel={tCommon("state.required")} error={errors.displayName}>
           <Input
+            placeholder={t("namePlaceholder")}
             inputSize="lg"
             autoComplete="off"
             maxLength={120}
@@ -254,6 +263,7 @@ export function CreateUser() {
         </Field>
         <Field label={t("email")} required requiredLabel={tCommon("state.required")} error={errors.email}>
           <Input
+            placeholder={t("emailPlaceholder")}
             inputSize="lg"
             type="email"
             autoComplete="off"

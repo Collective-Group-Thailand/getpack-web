@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { JOB_STATUS } from "@/domain/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Badge } from "@/ui/components/Badge";
 
 import { Countdown } from "./Countdown";
@@ -28,7 +28,7 @@ export async function JobsTable({ jobs, caption }: { jobs: JobSummary[]; caption
           key: "no",
           header: t("no"),
           primary: true,
-          cell: (job) => <span className="font-mono text-sm whitespace-nowrap">{job.jobNo}</span>,
+          cell: (job) => <span className="font-mono font-semibold whitespace-nowrap md:text-sm md:font-normal">{job.jobNo}</span>,
         },
         {
           key: "product",

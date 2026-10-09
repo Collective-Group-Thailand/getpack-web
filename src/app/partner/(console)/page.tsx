@@ -188,7 +188,7 @@ export default async function PartnerHomePage() {
       description={format.date(new Date().toISOString(), { style: "long" })}
     >
       {onboarding && factory ? (
-        <Card padding="lg" className="flex flex-col gap-3">
+        <Card padding="md" className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">{t(`stage.${factory.status}`)}</h2>
           <Meter
             label={t("progressLabel")}

@@ -649,7 +649,7 @@ export function ProposalEditor({
           <Icon name="spreadsheet" size={18} />
           {t("sheetTitle")}
         </summary>
-        <Card padding="lg" className="flex flex-col gap-4 border-0">
+        <Card padding="md" className="flex flex-col gap-4 border-0">
           <Callout tone="warning" title={t("sheetWarnTitle")}>
             {t("sheetBody")}
           </Callout>

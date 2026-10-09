@@ -42,11 +42,12 @@ export default async function StatementOfAccountPage({ searchParams }: Props) {
 
   return (
     <PartnerPage title={t("title")} back={back} description={t("body")} wide>
+      {/* The date box follows the browser (ค.ศ.); the พ.ศ. date under it is the one a Thai reader checks. */}
       <form action="/payouts/statement" className="flex flex-wrap items-end gap-3">
-        <Field label={t("from")}>
+        <Field label={t("from")} hint={account.data ? format.date(account.data.from) : undefined}>
           <Input type="date" name="from" inputSize="lg" defaultValue={account.data?.from ?? query.from} />
         </Field>
-        <Field label={t("to")}>
+        <Field label={t("to")} hint={account.data ? format.date(account.data.to) : undefined}>
           <Input type="date" name="to" inputSize="lg" defaultValue={account.data?.to ?? query.to} />
         </Field>
         <Button type="submit" size="xl" variant="secondary" iconStart="filter">

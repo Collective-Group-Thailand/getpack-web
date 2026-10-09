@@ -226,6 +226,7 @@ export function TaxInvoiceForm({
           error={errors.vendorInvoiceNo}
         >
           <Input
+            placeholder={t("noPlaceholder")}
             inputSize="lg"
             maxLength={64}
             value={value.invoiceNo}
@@ -243,6 +244,7 @@ export function TaxInvoiceForm({
         </Field>
         <Field label={t("taxId")} hint={t("taxIdHint")} error={errors.sellerTaxId}>
           <Input
+            placeholder={t("taxIdPlaceholder")}
             inputSize="lg"
             inputMode="numeric"
             maxLength={13}
@@ -252,6 +254,7 @@ export function TaxInvoiceForm({
         </Field>
         <Field label={t("branch")} error={errors.sellerBranchCode}>
           <Input
+            placeholder={t("branchPlaceholder")}
             inputSize="lg"
             inputMode="numeric"
             maxLength={5}

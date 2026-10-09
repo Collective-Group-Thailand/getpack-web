@@ -6,7 +6,7 @@ import { attempt, factoryContext, partnerServerApis } from "@/features/partner/c
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { SubmitIntake } from "@/features/partner/intakes/SubmitIntake";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -135,7 +135,11 @@
     "stale": "Someone changed this first; the latest is loaded — check it again",
     "failed": "Could not save",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "legalNamePlaceholder": "As registered, e.g. Packdee Co., Ltd.",
+    "tradeNamePlaceholder": "e.g. Packdee Box Factory",
+    "taxIdPlaceholder": "13 digits, e.g. 0105561234567",
+    "branchCodePlaceholder": "Head office: 00000"
   },
   "addresses": {
     "title": "Addresses",
@@ -153,7 +157,10 @@
     "postcodeInvalid": "A postcode is 5 digits",
     "add": "Add address",
     "added": "Address added",
-    "failed": "Could not add the address"
+    "failed": "Could not add the address",
+    "line1Placeholder": "e.g. 99/1 Moo 4, Bangna-Trad Rd",
+    "line2Placeholder": "Subdistrict, district, province",
+    "postcodePlaceholder": "e.g. 10540"
   },
   "contacts": {
     "title": "Contacts",
@@ -169,7 +176,11 @@
     "primary": "Primary contact",
     "add": "Add contact",
     "added": "Contact added",
-    "failed": "Could not add the contact"
+    "failed": "Could not add the contact",
+    "namePlaceholder": "e.g. Somchai Jaidee",
+    "roleTitlePlaceholder": "e.g. Production manager",
+    "phonePlaceholder": "e.g. 081 234 5678",
+    "emailPlaceholder": "e.g. somchai@factory.com"
   },
   "submit": {
     "sectionTitle": "Submit the application",
@@ -241,7 +252,11 @@
     "confirmBody": "Ask Packio to pay into the bank {bank} account ending {last4} once approved. Type the last 4 digits to confirm.",
     "confirm": "Send request",
     "proposed": "Change requested — waiting for Finance to approve it",
-    "failed": "Could not send the request"
+    "failed": "Could not send the request",
+    "bankCodePlaceholder": "3 digits, e.g. 004 (Kasikorn)",
+    "accountNoPlaceholder": "e.g. 123-4-56789-0",
+    "accountNamePlaceholder": "As printed in the passbook",
+    "branchNamePlaceholder": "e.g. Bangna branch"
   },
   "capability": {
     "title": "What you make",

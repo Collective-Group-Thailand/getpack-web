@@ -7,7 +7,7 @@ import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame
 import { factoryReferences } from "@/features/partner/onboarding/StepContent";
 import { ChangeRequestForm } from "@/features/partner/requests/ChangeRequestForm";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -40,7 +40,7 @@ export default async function RequestsPage() {
   return (
     <PartnerPage title={t("title")} description={t("body")}>
       <PartnerSection title={t("newTitle")}>
-        <Card padding="lg">
+        <Card padding="md">
           <ChangeRequestForm topic="other" chooseTopic primary productTypes={references.productTypes} />
         </Card>
       </PartnerSection>

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { PROPOSAL_LINE_STATUS } from "@/domain/status";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
 import { Card } from "@/ui/components/Card";
 import { cn } from "@/ui/lib/cn";
