@@ -76,16 +76,6 @@
     font-size: 1.875rem;
   }
 
-  /*
-   * The factory app has two densities (partner UX, 2026-10-09). On a phone it is the shop floor:
-   * 18 px text, 48 px+ targets. At a desk (lg) the same screens are read by the owner, planner and
-   * accountant with a mouse, so titles, shop-floor buttons and big actions ease to the admin
-   * console's scale instead of reading like a poster.
-   */
-  [data-zone="partner"] main h1 {
-    font-size: 1.5rem;
-  }
-
   /* One word in a storefront heading carries the accent: the brand colour (Anuphan has no italic). */
   [data-zone="customer"] :is(h1, h2) em {
     font-style: normal;
@@ -398,131 +388,120 @@
 }
 
 /*
- * The factory app's type and control sizes. Unlayered on purpose: the shop-floor sizes are
- * utilities (h-14, text-lg), and a layered rule never beats a utility.
+ * The factory app's type scale — one scale, fixed sizes, every screen (product owner, 2026-10-09:
+ * "check the font sizes properly"). The zone remaps Tailwind's size tokens, so every `text-*`
+ * utility in every component lands on one of six sizes instead of the shared fluid clamps:
  *
- * Phone: 15 px body, 20 px page title, 44 px buttons — the size of a well-made phone app; inputs
- * keep 16 px so iOS does not zoom the page when one is tapped.
+ *   xs 12  badges, chips, tiny meta        lg 17  section titles, stat values
+ *   sm 13  hints, captions, table headers  xl 20  page title
+ *   base 15  body, table cells, buttons    2xl 24 (not used in the factory app)
+ *
+ * Inputs are 16 px on a phone only (iOS zooms the page into a smaller field), 15 px from a tablet.
+ * Control heights: 44 px on a phone, 40 px from a tablet (iPad portrait) up.
  */
+[data-zone="partner"] {
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.625rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.5rem;
+  --text-3xl--line-height: 2rem;
+}
 [data-zone="partner"] main h1 {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
+  line-height: var(--text-xl--line-height);
 }
-[data-zone="partner"] main h2 {
-  font-size: 1rem;
+/* Every button, big action, segment and stepper title reads at body size; weight, not size, ranks them. */
+[data-zone="partner"] main :is([data-size="xl"], [data-size="lg"], [data-size="md"], [data-segment="xl"]),
+[data-zone="partner"] main [data-big] > span > span:first-child,
+[data-zone="partner"] main [data-stepper] li > div:last-child > p:first-child > .text-lg {
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
 }
-[data-zone="partner"] main .text-lg {
-  font-size: 1rem;
+[data-zone="partner"] main [data-big] > span > span + span,
+[data-zone="partner"] main dl:not([data-terms]) dt,
+[data-zone="partner"] main p:is([id$="-hint"], [id$="-error"]) {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
 }
-[data-zone="partner"] main .text-xl {
-  font-size: 1.125rem;
+/* One control height per screen class: 44 px on a phone, 40 px from a tablet (sm 36 / 32). */
+[data-zone="partner"] main :not(input):is([data-size="xl"], [data-size="lg"], [data-size="md"]),
+[data-zone="partner"] main [data-segment="xl"],
+[data-zone="partner"] main button[aria-haspopup="listbox"]:not(td *),
+[data-zone="partner"] main details > summary {
+  min-height: 2.75rem;
+  height: auto;
 }
-[data-zone="partner"] main :not(input)[data-size="xl"] {
-  height: 2.75rem;
-  font-size: 0.9375rem;
-}
-[data-zone="partner"] main [data-size="lg"] {
-  height: 2.5rem;
-  font-size: 0.875rem;
-}
-[data-zone="partner"] main input[data-size="lg"] {
-  height: 2.75rem;
-  font-size: 1rem;
+[data-zone="partner"] main :not(input)[data-size="sm"] {
+  min-height: 2.25rem;
+  height: auto;
 }
 [data-zone="partner"] main [data-big] {
   min-height: 3.25rem;
 }
 [data-zone="partner"] main [data-big] > svg {
-  width: 1.375rem;
-  height: 1.375rem;
+  width: 1.25rem;
+  height: 1.25rem;
 }
-[data-zone="partner"] main [data-big] > span > span:first-child {
+[data-zone="partner"] main :is(input, textarea, select) {
   font-size: 1rem;
 }
-[data-zone="partner"] main [data-big] > span > span + span {
-  font-size: 0.8125rem;
-}
-[data-zone="partner"] main [data-stepper] li > div:last-child > p:first-child > .text-lg {
-  font-size: 1rem;
-}
-/* Term and value read as one line of a form, not a caption over a heading. */
-[data-zone="partner"] main dl:not([data-terms]) dt {
-  font-size: 0.8125rem;
-}
-
-[data-zone="partner"] main [data-segment="xl"] {
+[data-zone="partner"] main input[data-size="lg"],
+[data-zone="partner"] main button[aria-haspopup="listbox"]:not(td *) {
   height: 2.75rem;
-  font-size: 0.9375rem;
 }
 /* An example in a field is a hint, not the answer: smaller and quieter than what gets typed. */
 [data-zone="partner"] main :is(input, textarea)::placeholder {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+}
+/* One card rhythm: every partner card breathes the same. */
+[data-zone="partner"] main .rounded-card.p-4 {
+  padding: 1rem;
 }
 
-/* Tablet and desk (iPad portrait up): the admin console's density. */
 @media (width >= 48rem) {
-  [data-zone="partner"] main h1 {
-    font-size: 1.375rem;
+  [data-zone="partner"] main :is(input, textarea, select) {
+    font-size: var(--text-base);
+  }
+  [data-zone="partner"] main :not(input):is([data-size="xl"], [data-size="lg"], [data-size="md"]),
+  [data-zone="partner"] main [data-segment="xl"],
+  [data-zone="partner"] main button[aria-haspopup="listbox"]:not(td *),
+  [data-zone="partner"] main details > summary {
+    min-height: 2.5rem;
+  }
+  [data-zone="partner"] main input[data-size="lg"],
+  [data-zone="partner"] main button[aria-haspopup="listbox"]:not(td *) {
+    height: 2.5rem;
+  }
+  [data-zone="partner"] main :not(input)[data-size="sm"] {
+    min-height: 2rem;
+  }
+  [data-zone="partner"] main :not(input):is([data-size="xl"], [data-size="lg"]) {
+    /* As wide as its words at a tablet and up (a column of them lines up), not a full-width bar. */
+    width: auto;
+    align-self: flex-start;
   }
   [data-zone="partner"] main :not(input)[data-size="xl"] {
-    /* Thumb-wide on a phone; at a desk a button is as wide as its words (a column of them lines up). */
-    align-self: flex-start;
     min-width: 12rem;
-    height: 2.75rem;
     padding-inline: 1.25rem;
-    font-size: 0.9375rem;
-  }
-  [data-zone="partner"] main [data-size="lg"] {
-    height: 2.5rem;
-    padding-inline: 1rem;
-    font-size: 0.875rem;
   }
   [data-zone="partner"] main [data-big] {
-    min-height: 3.25rem;
+    min-height: 3rem;
     padding-block: 0.5rem;
-    /* A shop-floor bar stretched across a desk-wide column reads as a banner, not a button. */
     width: auto;
     min-width: 18rem;
     max-width: 28rem;
     align-self: flex-start;
-    font-size: 1rem;
   }
-  [data-zone="partner"] main [data-big] > svg {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-  /* One card rhythm at a desk: every partner card breathes the same (the phone keeps 16 px). */
   [data-zone="partner"] main .rounded-card.p-4 {
     padding: 1.25rem;
-  }
-  [data-zone="partner"] main [data-big] > span > span:first-child {
-    font-size: 1rem;
-  }
-  [data-zone="partner"] main [data-big] > span > span + span {
-    font-size: 0.8125rem;
-  }
-  [data-zone="partner"] main input[data-size="lg"] {
-    height: 2.5rem;
-    font-size: 0.9375rem;
-  }
-  [data-zone="partner"] main textarea {
-    font-size: 0.9375rem;
-  }
-  [data-zone="partner"] main [data-segment="xl"] {
-    height: 2.5rem;
-    font-size: 0.875rem;
-  }
-  [data-zone="partner"] main :is(input, textarea)::placeholder {
-    font-size: 0.8125rem;
-  }
-  [data-zone="partner"] main [data-stepper] li > div:first-child > span:first-child {
-    width: 1.75rem;
-    height: 1.75rem;
-    font-size: 0.8125rem;
-  }
-  [data-zone="partner"] main [data-stepper] li > div:last-child > p:first-child {
-    min-height: 1.75rem;
-  }
-  [data-zone="partner"] main [data-stepper] li > div:last-child > p:first-child > .text-lg {
-    font-size: 1rem;
   }
 }

@@ -16,7 +16,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { Select } from "@/features/partner/select";
 import { toast } from "@/ui/components/Toast";
 
 type Step = Schemas["OnboardingStep"];

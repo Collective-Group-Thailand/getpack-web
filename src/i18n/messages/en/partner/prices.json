@@ -426,7 +426,8 @@
     "confirm": "Withdraw",
     "reason": "Why",
     "done": "Proposal withdrawn",
-    "failed": "Could not withdraw"
+    "failed": "Could not withdraw",
+    "reasonPlaceholder": "e.g. Sent the wrong price; will resend"
   },
   "counters": {
     "answerFor": "Answer for {line}",
@@ -627,7 +628,8 @@
     "evidenceItem": "{name} · by {by} · {date}",
     "evidenceEmpty": "No evidence yet",
     "withdrawTitle": "No longer needed?",
-    "evidenceOpen": "Open"
+    "evidenceOpen": "Open",
+    "evidenceTitlePlain": "Supporting evidence"
   },
   "cta": {
     "continueDraft": "Continue the draft",

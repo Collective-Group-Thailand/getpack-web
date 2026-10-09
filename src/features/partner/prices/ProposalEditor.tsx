@@ -18,11 +18,11 @@ import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { IconButton } from "@/ui/components/IconButton";
-import { NativeSelect } from "@/ui/components/NativeSelect";
 import { SearchInput } from "@/ui/components/SearchInput";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
+import { Select } from "@/features/partner/select";
 import { PartnerTable } from "@/features/partner/table";
 
 import { componentsFor } from "./components-by-type";
@@ -119,7 +119,12 @@ export function ProposalEditor({
   const { dimensions, values: valueColumns, all } = columnsOf(definitions, component);
   const label = (key: string) => (tColumns.has(key) ? tColumns(key) : key);
   const labels = { yes: t("yes"), no: t("no"), open: t("open") };
-  const show = (column: Column, value: unknown) => cellText(value, column, referenceName, labels);
+  const valueKeys = useMemo(
+    () => new Set(allDefinitions.flatMap((definition) => definition.values.map((column) => column.key))),
+    [allDefinitions],
+  );
+  const show = (column: Column, value: unknown) =>
+    cellText(value, column, referenceName, labels, valueKeys.has(column.key));
   const dirty = Object.keys(pending).length + added.length;
 
   // Leaving with unsaved cells loses them: let the browser ask first.
@@ -309,28 +314,17 @@ export function ProposalEditor({
           : references
               .filter((item) => item.column === column.key)
               .map((item) => ({ value: item.id, label: item.name }));
+      // "" stands for an open bound (nullable column); the list can be typed into — a material list runs long.
+      const NONE = "__none";
       return (
-        <select
+        <Select
           aria-label={label(column.key)}
-          className={cn(className, "min-w-32")}
-          value={value === null || value === undefined ? "" : String(value)}
-          onChange={(event) =>
-            onChange(
-              event.target.value === ""
-                ? null
-                : column.type === "boolean"
-                  ? event.target.value === "true"
-                  : event.target.value,
-            )
-          }
-        >
-          <option value="">{column.nullable ? labels.open : t("choose")}</option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          className={cn(className, "min-w-40 justify-between")}
+          placeholder={t("choose")}
+          value={value === null || value === undefined ? (column.nullable ? NONE : null) : String(value)}
+          options={[...(column.nullable ? [{ value: NONE, label: labels.open }] : []), ...options]}
+          onValueChange={(next) => onChange(next === NONE ? null : column.type === "boolean" ? next === "true" : next)}
+        />
       );
     }
     return (
@@ -339,7 +333,7 @@ export function ProposalEditor({
         aria-invalid={bad || undefined}
         className={className}
         inputMode={column.type === "text" ? "text" : "decimal"}
-        placeholder={column.nullable ? labels.open : undefined}
+        placeholder={column.nullable ? (valueKeys.has(column.key) ? "—" : labels.open) : undefined}
         value={value === null || value === undefined ? "" : String(value)}
         onChange={(event) => onChange(event.target.value)}
       />
@@ -461,9 +455,10 @@ export function ProposalEditor({
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <label className="flex min-w-64 flex-1 flex-col gap-1 text-sm font-medium">
+          <div className="flex min-w-64 flex-1 flex-col gap-1 text-sm font-medium">
             {t("component")}
-            <NativeSelect
+            <Select
+              aria-label={t("component")}
               value={component}
               disabled={dirty > 0}
               onValueChange={(value) => {
@@ -477,7 +472,7 @@ export function ProposalEditor({
                   : tComponents(item.component),
               }))}
             />
-          </label>
+          </div>
           <label className="flex min-w-56 flex-col gap-1 text-sm font-medium">
             {t("search")}
             <SearchInput
@@ -645,7 +640,7 @@ export function ProposalEditor({
 
       {/* 3 — a whole sheet at once, for many changes */}
       <details className="border-border rounded-xl border">
-        <summary className="hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium">
+        <summary className="hover:bg-surface-subtle flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium md:min-h-10">
           <Icon name="spreadsheet" size={18} />
           {t("sheetTitle")}
         </summary>

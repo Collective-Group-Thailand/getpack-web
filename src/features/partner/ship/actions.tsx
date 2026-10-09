@@ -18,10 +18,11 @@ import { CameraCapture, type CapturedPhoto } from "@/ui/components/CameraCapture
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
-import { Select } from "@/ui/components/Select";
+import { Select } from "@/features/partner/select";
 import { Sheet } from "@/ui/components/Sheet";
 import { SignaturePad } from "@/ui/components/SignaturePad";
 import { toast } from "@/ui/components/Toast";
+import { useViewerLabels } from "@/features/partner/viewer";
 
 /** One `Idempotency-Key` per intent: minted on the first attempt, kept on a retry, dropped on success. */
 function useIntentKey() {
@@ -300,7 +301,13 @@ export function RequestCarrier({ shipmentId, shipmentNo }: { shipmentId: string;
         title={t("title")}
         description={t("body", { no: shipmentNo })}
         confirmLabel={t("confirm")}
-        reason={{ label: t("reason"), required: true, minLength: 3, hint: t("reasonHint") }}
+        reason={{
+          label: t("reason"),
+          required: true,
+          minLength: 3,
+          hint: t("reasonHint"),
+          placeholder: t("reasonPlaceholder"),
+        }}
         onConfirm={async ({ idempotencyKey, reason }) => {
           const ok = await run(
             () =>
@@ -335,7 +342,7 @@ export function CancelShipment({ shipmentId, shipmentNo }: { shipmentId: string;
         description={t("body", { no: shipmentNo })}
         confirmLabel={t("confirm")}
         confirmationPhrase={shipmentNo}
-        reason={{ label: t("reason"), required: true, minLength: 3 }}
+        reason={{ label: t("reason"), required: true, minLength: 3, placeholder: t("reasonPlaceholder") }}
         onConfirm={async ({ idempotencyKey, reason }) => {
           const ok = await run(
             () =>
@@ -432,6 +439,7 @@ export function PodForm({
   items: { destinationId: string; jobNo: string; quantity: number }[];
 }) {
   const t = useTranslations("partnerShip.pod");
+  const viewer = useViewerLabels();
   const tCamera = useTranslations("partnerJobs.camera");
   const tCommon = useTranslations("common");
   const { factoryId } = useFactory();
@@ -498,6 +506,7 @@ export function PodForm({
             remove: (n) => tCamera("remove", { n }),
             count: (value) => tCamera("count", { count: value }),
             processing: tCamera("processing"),
+            viewer,
           }}
         />
       </Field>

@@ -60,7 +60,7 @@ export function Row({
       <Link
         href={href}
         // A grid, so on a phone the aside (an amount) drops under the title instead of squeezing it.
-        className="hover:bg-surface-subtle focus-visible:bg-surface-subtle grid min-h-14 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-0.5 px-4 py-2.5 transition-colors"
+        className="hover:bg-surface-subtle focus-visible:bg-surface-subtle grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-0.5 px-4 py-2.5 transition-colors md:min-h-10"
       >
         {/* A plain glyph, coloured only when the row needs attention — no tinted tile on every row. */}
         <span className={cn("row-span-2 shrink-0 sm:row-span-1", icon ? ICON[tone] : "hidden")} aria-hidden>

@@ -67,7 +67,7 @@ export default async function CapacityPage() {
       ) : null}
       {/* Product types down, weeks across: how a planner reads a load chart. */}
       <div className="border-border bg-surface overflow-x-auto rounded-xl border">
-        <table className="w-full border-collapse text-[0.9375rem] tabular-nums">
+        <table className="w-full border-collapse text-base tabular-nums">
           <caption className="sr-only">{t("title")}</caption>
           <thead>
             <tr className="border-border bg-surface-subtle border-b">

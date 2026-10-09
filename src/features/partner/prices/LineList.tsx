@@ -26,9 +26,13 @@ export async function lineLabeller(definitions: PriceComponentDef[], references:
   const referenceName = referenceLookup(references);
   const labels = { yes: t("yes"), no: t("no"), open: t("open") };
   const label = (key: string) => (tColumns.has(key) ? tColumns(key) : key);
+  const valueKeys = new Set(definitions.flatMap((definition) => definition.values.map((column) => column.key)));
   const text = (component: Schemas["PriceComponent"], values: Values | null, part: "dimensions" | "values" | "all") =>
     columnsOf(definitions, component)
-      [part].map((column) => `${label(column.key)} ${cellText(values?.[column.key], column, referenceName, labels)}`)
+      [part].map(
+        (column) =>
+          `${label(column.key)} ${cellText(values?.[column.key], column, referenceName, labels, valueKeys.has(column.key))}`,
+      )
       .join(" · ");
   return {
     title: (line: Pick<Line, "component" | "currentValues" | "proposedValues">) => {
@@ -37,7 +41,7 @@ export async function lineLabeller(definitions: PriceComponentDef[], references:
     },
     values: (component: Schemas["PriceComponent"], values: Values | null) => text(component, values, "values"),
     cell: (column: { key: string; type: Schemas["PriceColumnType"] }, value: unknown) =>
-      cellText(value, column, referenceName, labels),
+      cellText(value, column, referenceName, labels, valueKeys.has(column.key)),
     column: label,
   };
 }
@@ -50,10 +54,12 @@ export async function LineList({
   lines,
   definitions,
   references,
+  showDecision = true,
 }: {
   lines: Line[];
   definitions: PriceComponentDef[];
   references: PriceReference[];
+  showDecision?: boolean;
 }) {
   const t = await getTranslations("partnerPrices.lines");
   const label = await lineLabeller(definitions, references);
@@ -68,7 +74,7 @@ export async function LineList({
             <Card padding="md" className="flex flex-col gap-2">
               <div className="flex flex-wrap items-start gap-2">
                 <p className="min-w-0 flex-1 font-medium">{label.title(line)}</p>
-                <StatusChip map={PROPOSAL_LINE_STATUS} value={line.decision} />
+                {showDecision ? <StatusChip map={PROPOSAL_LINE_STATUS} value={line.decision} /> : null}
               </div>
               <p className="text-muted text-sm">{t(`actions.${line.action}`)}</p>
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm tabular-nums">

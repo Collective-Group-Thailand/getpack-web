@@ -37,14 +37,14 @@ export function StageStepper({ stages, label, stateLabels, className }: StageSte
             <div className="flex flex-col items-center">
               <span
                 className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-full border-2 text-base font-semibold",
+                  "flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold",
                   stage.state === "done" && "border-success bg-success text-success-fg",
                   current && "border-primary bg-primary text-primary-fg",
                   stage.state === "upcoming" && "border-border-strong bg-surface text-muted",
                   stage.state === "skipped" && "border-border bg-surface-subtle text-muted",
                 )}
               >
-                {stage.state === "done" ? <Icon name="check" size={20} /> : index + 1}
+                {stage.state === "done" ? <Icon name="check" size={16} /> : index + 1}
               </span>
               {last ? null : (
                 <span
@@ -56,11 +56,11 @@ export function StageStepper({ stages, label, stateLabels, className }: StageSte
             <div className={cn("min-w-0 flex-1", last ? "pb-0" : "pb-5")}>
               <p
                 className={cn(
-                  "flex min-h-10 flex-wrap items-center gap-x-2 font-medium",
+                  "flex min-h-8 flex-wrap items-center gap-x-2 font-medium",
                   stage.state === "upcoming" && "text-muted",
                 )}
               >
-                <span className={current ? "text-lg" : undefined}>{stage.title}</span>
+                <span className={current ? "font-semibold" : undefined}>{stage.title}</span>
                 <span className="sr-only">{stateLabels[stage.state]}</span>
               </p>
               {stage.meta ? <div className="text-muted text-sm">{stage.meta}</div> : null}

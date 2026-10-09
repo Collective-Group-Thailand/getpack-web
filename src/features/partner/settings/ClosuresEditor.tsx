@@ -74,7 +74,12 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
             <span className="flex items-center gap-2">
               <Badge tone={d.kind === "closure" ? "warning" : "neutral"}>{t(`kinds.${d.kind}`)}</Badge>
               {editable && d.kind === "closure" ? (
-                <Button size="sm" variant="ghost" className="text-danger min-h-12" onClick={() => void remove(d.day)}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-danger min-h-11 md:min-h-10"
+                  onClick={() => void remove(d.day)}
+                >
                   {t("remove")}
                   <span className="sr-only"> {dayText(d.day)}</span>
                 </Button>
@@ -97,7 +102,12 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
             />
           </Field>
           <div>
-            <Button className="min-h-12" loading={busy} disabled={!day || !name.trim()} onClick={() => void add()}>
+            <Button
+              className="min-h-11 md:min-h-10"
+              loading={busy}
+              disabled={!day || !name.trim()}
+              onClick={() => void add()}
+            >
               {t("add")}
             </Button>
           </div>

@@ -30,7 +30,7 @@ export default async function KnowledgeArticlePage({ params }: { params: Promise
       title={locale === "en" && a.titleEn ? a.titleEn : a.titleTh}
       description={t("published", { date: format.date(a.publishedAt) })}
     >
-      <Link href="/knowledge" className="text-primary inline-flex min-h-12 items-center underline">
+      <Link href="/knowledge" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">
         {t("back")}
       </Link>
       <RichTextView doc={body} linkAs={Link} />

@@ -33,7 +33,7 @@ export async function JobCard({ job }: { job: JobSummary }) {
     >
       <span className="flex flex-col gap-1.5 p-4 lg:p-3.5">
         <span className="flex items-start gap-2">
-          <span className="min-w-0 flex-1 font-mono text-[0.9375rem] font-semibold md:text-sm">{job.jobNo}</span>
+          <span className="min-w-0 flex-1 font-mono text-sm font-semibold">{job.jobNo}</span>
           <StatusChip map={JOB_STATUS} value={job.status} />
         </span>
         <span className="font-semibold">{jobName(job)}</span>

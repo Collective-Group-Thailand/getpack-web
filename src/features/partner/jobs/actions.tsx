@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 import { QC_CHECKLIST_ITEMS, QC_CHECKLIST_VERSION, qcItemLabelKey, type QcChecklistItem } from "@/domain/qc/checklist";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { newReport, uploadPhotos, useFloorAction } from "@/features/partner/floor";
+import { useViewerLabels } from "@/features/partner/viewer";
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { useFormat } from "@/features/shared/format";
 import { browserApi } from "@/lib/api/browser";
@@ -18,7 +19,7 @@ import { Field } from "@/ui/components/Field";
 import { NumberInput, Textarea } from "@/ui/components/Input";
 import { ScanButton } from "@/ui/components/ScanButton";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { Select } from "@/features/partner/select";
 import { toast } from "@/ui/components/Toast";
 
 import { needsPhoto } from "./evidence";
@@ -51,7 +52,9 @@ function useIntentKey() {
 
 function useCameraLabels() {
   const t = useTranslations("partnerJobs.camera");
+  const viewer = useViewerLabels();
   return {
+    viewer,
     take: t("take"),
     more: t("more"),
     photo: (n: number) => t("photo", { n }),
@@ -137,7 +140,7 @@ export function RejectJob({ job }: { job: PartnerJob }) {
         description={t("body", { jobNo: job.jobNo })}
         confirmLabel={t("confirm")}
         confirmationPhrase={job.jobNo}
-        reason={{ label: t("note"), hint: t("noteHint") }}
+        reason={{ label: t("note"), hint: t("noteHint"), placeholder: t("notePlaceholder") }}
         onConfirm={async ({ idempotencyKey, reason: note }) => {
           const ok = await run(
             () =>
@@ -205,6 +208,46 @@ export function StartMilestone({ job, milestone, name }: { job: PartnerJob; mile
 }
 
 /**
+ * A step with nothing to record — no quantities, no photo, no QC form (e.g. "รับงาน", "พร้อมส่ง") —
+ * is done in one tap: started and completed in one go, two reports with their own keys. Asking the
+ * floor to press "start" and then "done" for a step that has no work in between is the kind of
+ * extra tap an untrained owner reads as "did it not save?".
+ */
+export function QuickCompleteMilestone({
+  job,
+  milestone,
+  name,
+}: {
+  job: PartnerJob;
+  milestone: Milestone;
+  name: string;
+}) {
+  const t = useTranslations("partnerJobs.milestone");
+  const update = useMilestoneUpdate(job, milestone);
+  const { run, busy } = useFloorAction();
+  const reports = useRef<{ start: Report; complete: Report } | null>(null);
+  return (
+    <BigActionButton
+      title={t("complete", { name })}
+      hint={t("quickHint")}
+      icon="check"
+      loading={busy}
+      onClick={async () => {
+        const next = (reports.current ??= { start: newReport(), complete: newReport() });
+        const ok = await run(
+          async () => {
+            if (milestone.status === "pending") await update({ action: "start" }, next.start);
+            return update({ action: "complete" }, next.complete);
+          },
+          t("completed", { name }),
+        );
+        if (ok) reports.current = null;
+      }}
+    />
+  );
+}
+
+/**
  * Completing a step. A step that tracks quantities says what went in, what came out good and
  * what was scrapped (B4.2) — the API checks the arithmetic against what the previous step put
  * out; the form only guides it. Photos where the step's evidence asks for them, taken here and
@@ -229,6 +272,7 @@ export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; m
   const [note, setNote] = useState("");
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [photoMissing, setPhotoMissing] = useState(false);
   const photoRequired = needsPhoto(milestone) && milestone.photoFileIds.length === 0;
   const numbers = [quantityIn, quantityOut, quantityScrap].map(Number);
   const invalid = milestone.tracksQuantity && numbers.some((value) => !Number.isInteger(value) || value < 0);
@@ -237,7 +281,8 @@ export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; m
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (invalid || overflow) return;
-    if (photoRequired && photos.length === 0) return void toast.error(t("photoRequired"));
+    // Said under the photo box, where the eye is — a toast at the top of the screen is missed.
+    if (photoRequired && photos.length === 0) return void setPhotoMissing(true);
     setUploading(true);
     let photoFileIds: string[];
     try {
@@ -313,8 +358,21 @@ export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; m
         </>
       ) : null}
       {needsPhoto(milestone) ? (
-        <Field label={t("photos")} hint={t("photosHint")} error={errors.photoFileIds}>
-          <CameraCapture photos={photos} onChange={setPhotos} labels={cameraLabels} />
+        <Field
+          label={t("photos")}
+          hint={t("photosHint")}
+          required={photoRequired}
+          requiredLabel={tCommon("state.required")}
+          error={errors.photoFileIds ?? (photoMissing ? t("photoRequired") : undefined)}
+        >
+          <CameraCapture
+            photos={photos}
+            onChange={(next) => {
+              setPhotos(next);
+              if (next.length) setPhotoMissing(false);
+            }}
+            labels={cameraLabels}
+          />
         </Field>
       ) : null}
       <Field label={t("note")}>
@@ -505,7 +563,7 @@ export function QcForm({ job }: { job: PartnerJob }) {
           />
         </Field>
         <Field label={t("good")}>
-          <output className="border-border bg-surface-subtle flex h-12 items-center rounded-xl border px-3 tabular-nums">
+          <output className="border-border bg-surface-subtle flex h-11 items-center rounded-xl border px-3 tabular-nums md:h-10">
             {checked !== "" && countsValid ? checkedCount - defectiveCount : "—"}
           </output>
         </Field>
@@ -625,7 +683,12 @@ export function ResolveIssue({ jobId, issueId, description }: { jobId: string; i
         title={t("resolveTitle")}
         description={description}
         confirmLabel={t("resolve")}
-        reason={{ label: t("resolveNote"), required: true, hint: t("resolveNoteHint") }}
+        reason={{
+          label: t("resolveNote"),
+          required: true,
+          hint: t("resolveNoteHint"),
+          placeholder: t("resolveNotePlaceholder"),
+        }}
         onConfirm={async ({ idempotencyKey, reason }) => {
           const ok = await run(
             () =>

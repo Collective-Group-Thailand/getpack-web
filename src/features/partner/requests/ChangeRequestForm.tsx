@@ -12,7 +12,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { Select } from "@/features/partner/select";
 import { toast } from "@/ui/components/Toast";
 
 export type ChangeRequestTopic = Schemas["FactoryChangeRequestTopic"];

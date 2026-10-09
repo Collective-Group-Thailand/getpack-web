@@ -8,6 +8,7 @@ import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { uploadFile } from "@/features/shared/files/upload";
+import { useFormat } from "@/features/shared/format";
 import { browserApi } from "@/lib/api/browser";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
@@ -104,7 +105,13 @@ export function DisputeStatement({
         title={t("title", { no: bsNumber })}
         description={t("body")}
         confirmLabel={t("confirm")}
-        reason={{ label: t("note"), required: true, minLength: 3, hint: t("noteHint") }}
+        reason={{
+          label: t("note"),
+          required: true,
+          minLength: 3,
+          hint: t("noteHint"),
+          placeholder: t("notePlaceholder"),
+        }}
         onConfirm={async ({ idempotencyKey, reason }) => {
           try {
             await browserApi().POST("/v1/partner/billing-statements/{statementId}/actions/dispute", {
@@ -153,13 +160,17 @@ export function TaxInvoiceForm({
   statementId,
   taxId,
   branchCode,
+  expected,
 }: {
   statementId: string;
   taxId: string;
   branchCode: string;
+  /** The statement's own before-VAT and VAT, filled in to start from — the invoice normally matches them. */
+  expected?: { net: string; vat: string };
 }) {
   const t = useTranslations("partnerBilling.invoice");
   const tCommon = useTranslations("common");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const [refresh] = useRefresh();
   const [value, setValue] = useState({
@@ -167,8 +178,8 @@ export function TaxInvoiceForm({
     invoiceDate: bangkokToday(),
     sellerTaxId: taxId,
     sellerBranchCode: branchCode,
-    netAmount: "",
-    vatAmount: "",
+    netAmount: expected?.net ?? "",
+    vatAmount: expected?.vat ?? "",
   });
   const [source, setSource] = useState<Source>("pdf_upload");
   const [file, setFile] = useState<File | null>(null);
@@ -233,7 +244,14 @@ export function TaxInvoiceForm({
             onChange={(event) => setValue({ ...value, invoiceNo: event.target.value })}
           />
         </Field>
-        <Field label={t("date")} required requiredLabel={tCommon("state.required")} error={errors.invoiceDate}>
+        <Field
+          label={t("date")}
+          required
+          requiredLabel={tCommon("state.required")}
+          error={errors.invoiceDate}
+          // The date box follows the browser (ค.ศ.); the พ.ศ. date under it is the one on the invoice.
+          hint={value.invoiceDate ? format.date(value.invoiceDate) : undefined}
+        >
           <Input
             type="date"
             inputSize="lg"

@@ -160,6 +160,14 @@ describe("sign-in origins", () => {
     expect(directives["connect-src"]).not.toContain("https://identitytoolkit.googleapis.com");
   });
 
+  it("lets staff and factory screens frame a stored PDF from the asset origin, not the storefront", () => {
+    const withAsset = { ...options, origins: { asset: "https://cdn.packio.co.th" } };
+    for (const zone of ["admin", "partner"] as const) {
+      expect(cspDirectives(zone, withAsset)["frame-src"]).toEqual(["'self'", "https://cdn.packio.co.th"]);
+    }
+    expect(cspDirectives("customer", withAsset)["frame-src"]).toEqual(["'self'"]);
+  });
+
   it("never widens admin or partner, which have no third-party sign-in", () => {
     for (const zone of ["admin", "partner"] as const) {
       const directives = cspDirectives(zone, withSignIn);

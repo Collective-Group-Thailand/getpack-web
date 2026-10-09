@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { isApiError } from "@/lib/api/problem";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { ErrorState } from "@/ui/components/ErrorState";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -37,7 +38,7 @@ export function PartnerPage({
       {back ? (
         <Link
           href={back.href}
-          className="text-muted hover:text-fg -ms-2 mb-2 inline-flex min-h-12 items-center gap-1 rounded-md px-2"
+          className="text-muted hover:text-fg -ms-2 mb-2 inline-flex min-h-11 items-center gap-1 rounded-md px-2 md:min-h-10"
         >
           <Icon name="arrow-left" size={20} />
           {back.label}
@@ -75,7 +76,7 @@ export function PartnerSection({
     <section aria-labelledby={id ? `${id}-title` : undefined} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-2">
         <div className="min-w-0 flex-1">
-          <h2 id={id ? `${id}-title` : undefined} className="text-[1.0625rem] font-semibold md:text-base">
+          <h2 id={id ? `${id}-title` : undefined} className="text-lg font-semibold">
             {title}
           </h2>
           {description ? <p className="text-muted text-sm">{description}</p> : null}
@@ -94,24 +95,11 @@ export function PartnerSection({
 export async function PageError({ error }: { error: unknown }) {
   const t = await getTranslations("common.errors");
   const api = isApiError(error) ? error : null;
+  // Not an alarm: a record that is not there (or not this factory's) is said calmly, in grey, not red.
   if (api?.status === 403)
-    return (
-      <ErrorState
-        title={t("forbiddenTitle")}
-        description={t("forbiddenBody")}
-        code={api.requestId}
-        codeLabels={{ label: t("reference"), copy: t("copyReference"), copied: t("referenceCopied") }}
-      />
-    );
+    return <EmptyState icon="lock" title={t("forbiddenTitle")} description={t("forbiddenBody")} />;
   if (api?.status === 404)
-    return (
-      <ErrorState
-        title={t("itemNotFoundTitle")}
-        description={t("itemNotFoundBody")}
-        code={api.requestId}
-        codeLabels={{ label: t("reference"), copy: t("copyReference"), copied: t("referenceCopied") }}
-      />
-    );
+    return <EmptyState icon="search" title={t("itemNotFoundTitle")} description={t("itemNotFoundBody")} />;
   return (
     <ErrorState
       title={t("loadFailedTitle")}

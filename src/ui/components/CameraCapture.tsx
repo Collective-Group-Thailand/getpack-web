@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Icon } from "../icons";
 import { exifDateTimeOriginal, exifToIso } from "../lib/exif";
 import { cn } from "../lib/cn";
+import { MediaViewer, type MediaViewerLabels } from "./MediaViewer";
 
 export interface CapturedPhoto {
   id: string;
@@ -16,6 +17,8 @@ export interface CapturedPhoto {
 }
 
 export interface CameraCaptureLabels {
+  /** When given, a tap on a thumbnail shows the photo full screen (MediaViewer). */
+  viewer?: MediaViewerLabels;
   /** The button that opens the camera: "ถ่ายรูป". */
   take: string;
   /** Once there is a photo: "ถ่ายเพิ่ม". */
@@ -86,6 +89,7 @@ export function CameraCapture({
 }: CameraCaptureProps) {
   const input = useRef<HTMLInputElement>(null);
   const id = useId();
+  const [viewing, setViewing] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const latest = useRef(photos);
   useEffect(() => {
@@ -119,15 +123,27 @@ export function CameraCapture({
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       {photos.length ? (
-        <ul className="grid grid-cols-3 gap-2 md:grid-cols-4">
+        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
           {photos.map((photo, index) => (
             <li key={photo.id} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL, not an optimisable asset */}
-              <img
-                src={photo.previewUrl}
-                alt={labels.photo(index + 1)}
-                className="aspect-square w-full rounded-lg object-cover"
-              />
+              {labels.viewer ? (
+                <button
+                  type="button"
+                  aria-label={labels.photo(index + 1)}
+                  onClick={() => setViewing(index)}
+                  className="block w-full cursor-zoom-in"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL */}
+                  <img src={photo.previewUrl} alt="" className="aspect-square w-full rounded-lg object-cover" />
+                </button>
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- a local object URL, not an optimisable asset
+                <img
+                  src={photo.previewUrl}
+                  alt={labels.photo(index + 1)}
+                  className="aspect-square w-full rounded-lg object-cover"
+                />
+              )}
               <button
                 type="button"
                 aria-label={labels.remove(index + 1)}
@@ -135,13 +151,22 @@ export function CameraCapture({
                   URL.revokeObjectURL(photo.previewUrl);
                   onChange(photos.filter((item) => item.id !== photo.id));
                 }}
-                className="bg-surface text-fg absolute end-1 top-1 flex size-12 items-center justify-center rounded-full shadow"
+                className="bg-surface/90 text-fg border-border absolute end-1 top-1 flex size-9 items-center justify-center rounded-full border"
               >
-                <Icon name="close" size={20} />
+                <Icon name="close" size={16} />
               </button>
             </li>
           ))}
         </ul>
+      ) : null}
+      {labels.viewer ? (
+        <MediaViewer
+          items={photos.map((photo, index) => ({ title: labels.photo(index + 1), src: photo.previewUrl }))}
+          index={viewing}
+          onIndexChange={setViewing}
+          onClose={() => setViewing(null)}
+          labels={labels.viewer}
+        />
       ) : null}
       <p className="sr-only" aria-live="polite">
         {busy ? labels.processing : labels.count(photos.length)}
@@ -149,11 +174,11 @@ export function CameraCapture({
       <label
         htmlFor={id}
         className={cn(
-          "border-border-strong bg-surface hover:bg-surface-subtle flex min-h-16 cursor-pointer items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 text-lg font-medium",
+          "border-border-strong bg-surface hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed px-4 text-base font-medium",
           (disabled || photos.length >= max) && "pointer-events-none opacity-50",
         )}
       >
-        <Icon name={busy ? "spinner" : "image"} size={28} className={busy ? "animate-spin" : undefined} />
+        <Icon name={busy ? "spinner" : "image"} size={20} className={busy ? "animate-spin" : undefined} />
         {busy ? labels.processing : photos.length ? labels.more : labels.take}
       </label>
       <input

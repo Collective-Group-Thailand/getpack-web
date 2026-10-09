@@ -4,12 +4,12 @@ import { getTranslations } from "next-intl/server";
 import { PAYOUT_ITEM_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ViewFile } from "@/features/partner/viewer";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
-import { Icon } from "@/ui/icons";
 
 type Props = { params: Promise<{ payoutId: string }> };
 
@@ -136,15 +136,13 @@ export default async function PayoutPage({ params }: Props) {
             <ul className="flex flex-col gap-2">
               {links.map((item) => (
                 <li key={item.key}>
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="border-border bg-surface hover:bg-surface-subtle flex min-h-16 items-center gap-3 rounded-xl border p-3"
+                  <ViewFile
+                    src={item.url}
+                    title={item.label}
+                    className="border-border bg-surface hover:bg-surface-subtle text-fg flex w-full items-center gap-3 rounded-xl border p-3 text-start font-medium no-underline"
                   >
-                    <Icon name="download" size={24} className="text-primary" />
-                    <span className="flex-1 font-medium">{item.label}</span>
-                  </a>
+                    {item.label}
+                  </ViewFile>
                 </li>
               ))}
             </ul>
