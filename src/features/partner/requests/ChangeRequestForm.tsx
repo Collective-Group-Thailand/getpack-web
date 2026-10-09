@@ -146,7 +146,7 @@ export function ChangeRequestForm({
         <Textarea
           rows={4}
           value={message}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t(`placeholders.${topic}`)}
           onChange={(event) => setMessage(event.target.value)}
           maxLength={1900}
         />

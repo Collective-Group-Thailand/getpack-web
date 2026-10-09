@@ -4,19 +4,20 @@ import { getTranslations } from "next-intl/server";
 import { ScoreChart } from "@/features/partner/account/actions";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
-import { Stat } from "@/ui/components/Stat";
+import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerAccount.performance"))("title") };
 }
 
 const METRICS = [
-  ["acceptance", "onTimeAcceptancePct", "check"],
-  ["shipping", "onTimeShippingPct", "truck"],
-  ["firstPass", "qcFirstPassPct", "clipboard-check"],
-  ["claims", "claimRatePct", "shield-alert"],
-  ["updates", "onTimeUpdatesPct", "refresh"],
+  ["acceptance", "onTimeAcceptancePct"],
+  ["shipping", "onTimeShippingPct"],
+  ["firstPass", "qcFirstPassPct"],
+  ["claims", "claimRatePct"],
+  ["updates", "onTimeUpdatesPct"],
 ] as const;
 
 /**
@@ -54,27 +55,39 @@ export default async function PerformancePage() {
           title={t("monthTitle", { month: monthLabel(shown.month) })}
           description={t("jobs", { count: shown.jobsCount })}
         >
-          <ul className="grid grid-cols-2 gap-2 md:grid-cols-5">
-            {METRICS.map(([key, field, icon]) => (
-              <li key={key}>
-                <Stat
-                  label={t(`metrics.${key}`)}
-                  value={shown[field] === null ? "—" : format.percent(shown[field])}
-                  icon={icon}
-                  hint={t(`hints.${key}`)}
-                  tone={
-                    key === "claims"
-                      ? Number(shown[field] ?? 0) > 3
-                        ? "danger"
-                        : "neutral"
-                      : Number(shown[field] ?? 100) < 85
-                        ? "warning"
-                        : "success"
-                  }
-                />
-              </li>
-            ))}
-          </ul>
+          <PartnerTable
+            caption={t("monthTitle", { month: monthLabel(shown.month) })}
+            rows={[...METRICS]}
+            rowKey={([key]) => key}
+            columns={[
+              {
+                key: "metric",
+                header: t("table.metric"),
+                primary: true,
+                cell: ([key]) => <span className="font-medium">{t(`metrics.${key}`)}</span>,
+              },
+              {
+                key: "value",
+                header: t("table.value"),
+                align: "end",
+                cell: ([key, field]) => {
+                  const value = shown[field];
+                  // The same lines the old tiles were coloured by: under 85% (over 3% for claims) needs a look.
+                  const weak = key === "claims" ? Number(value ?? 0) > 3 : Number(value ?? 100) < 85;
+                  return (
+                    <span className={cn("font-semibold", weak ? "text-warning-subtle-fg" : "text-success-subtle-fg")}>
+                      {value === null ? "—" : format.percent(value)}
+                    </span>
+                  );
+                },
+              },
+              {
+                key: "meaning",
+                header: t("table.meaning"),
+                cell: ([key]) => <span className="text-muted">{t(`hints.${key}`)}</span>,
+              },
+            ]}
+          />
         </PartnerSection>
       ) : null}
       {current && last ? (

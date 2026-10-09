@@ -7,8 +7,7 @@ import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/pa
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
-import { Badge } from "@/ui/components/Badge";
+import { StatusChip } from "@/features/partner/status";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -83,13 +82,7 @@ export default async function BillingPage() {
                 key: "status",
                 header: t("table.status"),
                 className: "whitespace-nowrap",
-                // The chip names Packio's state ("รอโรงงานตรวจ"); to the factory reading it that is "your turn".
-                cell: (statement) =>
-                  statement.status === "sent" ? (
-                    <Badge tone="warning">{t("table.checkIt")}</Badge>
-                  ) : (
-                    <StatusChip map={BILLING_STATEMENT_STATUS} value={statement.status} />
-                  ),
+                cell: (statement) => <StatusChip map={BILLING_STATEMENT_STATUS} value={statement.status} />,
               },
               {
                 key: "invoice",

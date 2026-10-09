@@ -7,7 +7,7 @@ import { attempt, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
 import { EmptyState } from "@/ui/components/EmptyState";
 

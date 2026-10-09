@@ -276,6 +276,7 @@ export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; m
           <div className="grid grid-cols-3 gap-2">
             <Field label={t("in")} error={errors.quantityIn} required requiredLabel={tCommon("state.required")}>
               <NumberInput
+                placeholder={t("inPlaceholder")}
                 inputSize="lg"
                 inputMode="numeric"
                 min={0}
@@ -285,6 +286,7 @@ export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; m
             </Field>
             <Field label={t("good")} error={errors.quantityOut ?? (overflow ? t("overflow") : undefined)}>
               <NumberInput
+                placeholder={t("goodPlaceholder")}
                 inputSize="lg"
                 inputMode="numeric"
                 min={0}
@@ -294,6 +296,7 @@ export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; m
             </Field>
             <Field label={t("scrap")} error={errors.quantityScrap}>
               <NumberInput
+                placeholder={t("scrapPlaceholder")}
                 inputSize="lg"
                 inputMode="numeric"
                 min={0}
@@ -315,7 +318,13 @@ export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; m
         </Field>
       ) : null}
       <Field label={t("note")}>
-        <Textarea rows={2} value={note} maxLength={1000} onChange={(event) => setNote(event.target.value)} />
+        <Textarea
+          placeholder={t("notePlaceholder")}
+          rows={2}
+          value={note}
+          maxLength={1000}
+          onChange={(event) => setNote(event.target.value)}
+        />
       </Field>
       <BigActionButton
         type="submit"
@@ -454,6 +463,7 @@ export function QcForm({ job }: { job: PartnerJob }) {
                   </Field>
                   <Field label={t("defectCount")}>
                     <NumberInput
+                      placeholder={t("defectCountPlaceholder")}
                       inputSize="lg"
                       inputMode="numeric"
                       min={1}
@@ -485,6 +495,7 @@ export function QcForm({ job }: { job: PartnerJob }) {
       <div className="grid grid-cols-3 gap-2">
         <Field label={t("checked")} error={!countsValid ? t("countsInvalid") : undefined}>
           <NumberInput
+            placeholder={t("checkedPlaceholder")}
             inputSize="lg"
             inputMode="numeric"
             min={1}
@@ -500,6 +511,7 @@ export function QcForm({ job }: { job: PartnerJob }) {
         </Field>
         <Field label={t("defective")}>
           <NumberInput
+            placeholder={t("defectivePlaceholder")}
             inputSize="lg"
             inputMode="numeric"
             min={0}
@@ -513,7 +525,13 @@ export function QcForm({ job }: { job: PartnerJob }) {
         <CameraCapture photos={photos} onChange={setPhotos} labels={cameraLabels} />
       </Field>
       <Field label={t("notes")}>
-        <Textarea rows={2} value={notes} maxLength={1000} onChange={(event) => setNotes(event.target.value)} />
+        <Textarea
+          placeholder={t("notesPlaceholder")}
+          rows={2}
+          value={notes}
+          maxLength={1000}
+          onChange={(event) => setNotes(event.target.value)}
+        />
       </Field>
       <BigActionButton
         type="submit"
@@ -577,6 +595,7 @@ export function RaiseIssue({ job }: { job: PartnerJob }) {
       </Field>
       <Field label={t("description")} required requiredLabel={tCommon("state.required")} error={errors.description}>
         <Textarea
+          placeholder={t("descriptionPlaceholder")}
           rows={3}
           value={description}
           maxLength={2000}

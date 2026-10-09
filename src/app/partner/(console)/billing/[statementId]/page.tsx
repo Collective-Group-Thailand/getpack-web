@@ -9,7 +9,7 @@ import { attempt, factoryContext, partnerServerApis } from "@/features/partner/c
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
@@ -231,7 +231,7 @@ export default async function StatementPage({ params }: Props) {
               </div>
             </details>
           ) : (
-            <Card padding="lg">
+            <Card padding="md">
               <TaxInvoiceForm
                 statementId={statement.id}
                 taxId={context.factory?.taxId ?? ""}

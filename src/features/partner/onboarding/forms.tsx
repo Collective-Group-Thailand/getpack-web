@@ -123,6 +123,7 @@ export function CompanyForm({ initial, etag }: { initial: Company; etag: string 
     <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
       <Field label={t("legalName")} required requiredLabel={tCommon("state.required")} error={errors.legalName}>
         <Input
+          placeholder={t("legalNamePlaceholder")}
           inputSize="lg"
           value={value.legalName}
           onChange={(event) => setValue({ ...value, legalName: event.target.value })}
@@ -130,6 +131,7 @@ export function CompanyForm({ initial, etag }: { initial: Company; etag: string 
       </Field>
       <Field label={t("tradeName")} hint={t("tradeNameHint")}>
         <Input
+          placeholder={t("tradeNamePlaceholder")}
           inputSize="lg"
           value={value.tradeName ?? ""}
           onChange={(event) => setValue({ ...value, tradeName: event.target.value })}
@@ -154,6 +156,7 @@ export function CompanyForm({ initial, etag }: { initial: Company; etag: string 
           error={errors.taxId}
         >
           <Input
+            placeholder={t("taxIdPlaceholder")}
             inputSize="lg"
             inputMode="numeric"
             autoComplete="off"
@@ -164,6 +167,7 @@ export function CompanyForm({ initial, etag }: { initial: Company; etag: string 
         </Field>
         <Field label={t("branchCode")} hint={t("branchCodeHint")} error={errors.branchCode}>
           <Input
+            placeholder={t("branchCodePlaceholder")}
             inputSize="lg"
             inputMode="numeric"
             maxLength={5}
@@ -249,6 +253,7 @@ export function AddressForm() {
       </Field>
       <Field label={t("line1")} required requiredLabel={tCommon("state.required")} error={errors.line1}>
         <Input
+          placeholder={t("line1Placeholder")}
           inputSize="lg"
           value={value.line1}
           onChange={(event) => setValue({ ...value, line1: event.target.value })}
@@ -256,6 +261,7 @@ export function AddressForm() {
       </Field>
       <Field label={t("line2")}>
         <Input
+          placeholder={t("line2Placeholder")}
           inputSize="lg"
           value={value.line2}
           onChange={(event) => setValue({ ...value, line2: event.target.value })}
@@ -263,6 +269,7 @@ export function AddressForm() {
       </Field>
       <Field label={t("postcode")} error={errors.postcode}>
         <Input
+          placeholder={t("postcodePlaceholder")}
           inputSize="lg"
           inputMode="numeric"
           maxLength={5}
@@ -322,6 +329,7 @@ export function ContactForm() {
     <form onSubmit={(event) => void add(event)} className="flex flex-col gap-4" noValidate>
       <Field label={t("name")} required requiredLabel={tCommon("state.required")} error={errors.name}>
         <Input
+          placeholder={t("namePlaceholder")}
           inputSize="lg"
           autoComplete="name"
           value={value.name}
@@ -330,6 +338,7 @@ export function ContactForm() {
       </Field>
       <Field label={t("roleTitle")}>
         <Input
+          placeholder={t("roleTitlePlaceholder")}
           inputSize="lg"
           value={value.roleTitle}
           onChange={(event) => setValue({ ...value, roleTitle: event.target.value })}
@@ -338,6 +347,7 @@ export function ContactForm() {
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("phone")} error={errors.phone}>
           <Input
+            placeholder={t("phonePlaceholder")}
             inputSize="lg"
             type="tel"
             inputMode="tel"
@@ -348,6 +358,7 @@ export function ContactForm() {
         </Field>
         <Field label={t("email")} error={errors.email}>
           <Input
+            placeholder={t("emailPlaceholder")}
             inputSize="lg"
             type="email"
             autoComplete="email"
@@ -551,6 +562,7 @@ export function BankAccountForm({ defaultName }: { defaultName: string }) {
           error={errors.bankCode}
         >
           <Input
+            placeholder={t("bankCodePlaceholder")}
             inputSize="lg"
             inputMode="numeric"
             maxLength={3}
@@ -560,6 +572,7 @@ export function BankAccountForm({ defaultName }: { defaultName: string }) {
         </Field>
         <Field label={t("accountNo")} required requiredLabel={tCommon("state.required")} error={errors.accountNo}>
           <Input
+            placeholder={t("accountNoPlaceholder")}
             inputSize="lg"
             inputMode="numeric"
             autoComplete="off"
@@ -570,6 +583,7 @@ export function BankAccountForm({ defaultName }: { defaultName: string }) {
       </div>
       <Field label={t("accountName")} hint={t("accountNameHint")} error={errors.accountName}>
         <Input
+          placeholder={t("accountNamePlaceholder")}
           inputSize="lg"
           value={value.accountName}
           onChange={(event) => setValue({ ...value, accountName: event.target.value })}
@@ -577,6 +591,7 @@ export function BankAccountForm({ defaultName }: { defaultName: string }) {
       </Field>
       <Field label={t("branchName")}>
         <Input
+          placeholder={t("branchNamePlaceholder")}
           inputSize="lg"
           value={value.branchName}
           onChange={(event) => setValue({ ...value, branchName: event.target.value })}

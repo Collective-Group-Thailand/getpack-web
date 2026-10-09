@@ -64,7 +64,10 @@
     "cancel": "Cancel",
     "submit": "Create shipment + print {count, plural, one {# label} other {# labels}}",
     "finish": "Finish {no}",
-    "partly": "{no} was created but the next step failed: {reason} — press again to continue"
+    "partly": "{no} was created but the next step failed: {reason} — press again to continue",
+    "quantityPlaceholder": "Pieces in this shipment",
+    "cartonsPlaceholder": "Cartons packed",
+    "weightPlaceholder": "Approximate total weight"
   },
   "dispatch": {
     "action": "Dispatch",
@@ -101,7 +104,9 @@
     "signatureMode": "How to sign",
     "submit": "Record the delivery",
     "submitHint": "Evidence of delivery; the tolerance is judged on it",
-    "deliveredFor": "Delivered ({jobNo})"
+    "deliveredFor": "Delivered ({jobNo})",
+    "receiverPlaceholder": "Name of the person who signed",
+    "deliveredPlaceholder": "e.g. {quantity} (if all delivered)"
   },
   "detail": {
     "metaTitle": "Shipment",
@@ -128,7 +133,13 @@
     "transitTitle": "Report from the road",
     "itemDelivered": "{delivered} of {quantity} delivered",
     "weight": "{kg} kg · {cartons} cartons",
-    "itemPieces": "{quantity} pcs"
+    "itemPieces": "{quantity} pcs",
+    "steps": {
+      "label": "1. Label the cartons",
+      "labelBody": "One label per carton; the packing list travels with the goods",
+      "send": "2. Send",
+      "sendBody": "Send with your own truck, or ask Packio to book a carrier"
+    }
   },
   "tolerance": {
     "exact": "Delivered in full",
@@ -169,7 +180,8 @@
     "status": "Status",
     "note": "Note",
     "submit": "Report the status",
-    "done": "Status reported"
+    "done": "Status reported",
+    "notePlaceholder": "e.g. traffic, about 1 hr late"
   },
   "glance": {
     "label": "Today",

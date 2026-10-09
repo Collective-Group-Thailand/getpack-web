@@ -158,6 +158,7 @@ export function CreateShipment({
             <div className="grid grid-cols-3 gap-2">
               <Field label={t("quantity")} error={error?.quantity}>
                 <NumberInput
+                  placeholder={t("quantityPlaceholder")}
                   inputSize="lg"
                   inputMode="numeric"
                   min={1}
@@ -169,6 +170,7 @@ export function CreateShipment({
               </Field>
               <Field label={t("cartons")} error={error?.cartons}>
                 <NumberInput
+                  placeholder={t("cartonsPlaceholder")}
                   inputSize="lg"
                   inputMode="numeric"
                   min={1}
@@ -179,6 +181,7 @@ export function CreateShipment({
               </Field>
               <Field label={t("weight")} error={error?.weight}>
                 <NumberInput
+                  placeholder={t("weightPlaceholder")}
                   inputSize="lg"
                   inputMode="decimal"
                   min={0}
@@ -398,7 +401,13 @@ export function UpdateTransit({ shipmentId }: { shipmentId: string }) {
         />
       </Field>
       <Field label={t("note")}>
-        <Textarea rows={2} value={note} maxLength={1000} onChange={(event) => setNote(event.target.value)} />
+        <Textarea
+          placeholder={t("notePlaceholder")}
+          rows={2}
+          value={note}
+          maxLength={1000}
+          onChange={(event) => setNote(event.target.value)}
+        />
       </Field>
       <Button type="submit" size="xl" variant="secondary" iconStart="route" loading={busy} className="self-start">
         {t("submit")}
@@ -494,6 +503,7 @@ export function PodForm({
       </Field>
       <Field label={t("receiver")} required requiredLabel={tCommon("state.required")} error={errors.receiverName}>
         <Input
+          placeholder={t("receiverPlaceholder")}
           inputSize="lg"
           autoComplete="off"
           value={receiver}
@@ -510,6 +520,7 @@ export function PodForm({
           error={errors.items}
         >
           <NumberInput
+            placeholder={t("deliveredPlaceholder", { quantity: item.quantity })}
             inputSize="lg"
             inputMode="numeric"
             min={0}

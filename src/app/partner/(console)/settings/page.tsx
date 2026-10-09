@@ -16,7 +16,7 @@ import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { LocaleMenu } from "@/features/shared/shell";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Card } from "@/ui/components/Card";
 import { Icon } from "@/ui/icons";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
@@ -142,7 +142,7 @@ export default async function SettingsPage() {
         </Link>
       </PartnerSection>
       <PartnerSection title={t("notifications")} description={t("notificationsBody")}>
-        <Card padding="lg" className="flex flex-col gap-4">
+        <Card padding="md" className="flex flex-col gap-4">
           <PushOnThisDevice />
           {preferences.data ? (
             <NotificationMatrix initial={preferences.data.preferences} lineLinked={preferences.data.lineLinked} />
@@ -153,7 +153,7 @@ export default async function SettingsPage() {
       </PartnerSection>
 
       <PartnerSection title={t("device")} description={t("deviceBody")}>
-        <Card padding="lg" className="flex flex-col gap-5">
+        <Card padding="md" className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <p className="font-medium">{t("labelSize")}</p>
             <LabelSize initial={labelSize} />

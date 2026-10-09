@@ -20,7 +20,7 @@ import { needsQcForm } from "@/features/partner/jobs/evidence";
 import { jobName, stepName } from "@/features/partner/jobs/JobCard";
 import { specLines } from "@/features/partner/jobs/spec";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -107,6 +107,7 @@ export default async function JobPage({ params }: Props) {
   // The step's QC form is the latest check, and it must not have failed (D-076).
   const latest = [...checks].sort((a, b) => b.performedAt.localeCompare(a.performedAt))[0];
   const passedQc = Boolean(latest && latest.result !== "fail");
+  const openIssues = (issues.data ?? []).filter((issue) => issue.status === "open");
   const spec = specLines(job.spec, (n) => format.number(n));
 
   return (
@@ -126,7 +127,7 @@ export default async function JobPage({ params }: Props) {
       wide
     >
       {job.status === "released" ? (
-        <Card padding="lg" className="flex flex-col gap-3">
+        <Card padding="md" className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">{t("acceptTitle")}</h2>
           <Countdown dueAt={job.acceptDueAt} large />
           {/* What the owner is saying yes to, before he says it — not three sections further down. */}
@@ -171,6 +172,18 @@ export default async function JobPage({ params }: Props) {
           {job.rejectNote ? ` · ${job.rejectNote}` : null}
         </Callout>
       ) : null}
+      {openIssues.length ? (
+        <Callout tone="warning" icon="flag" title={t("openIssues", { count: openIssues.length })}>
+          <ul className="flex flex-col gap-1">
+            {openIssues.map((issue) => (
+              <li key={issue.id}>{issue.description}</li>
+            ))}
+          </ul>
+          <a href="#issues" className="mt-1 inline-block font-medium underline underline-offset-4">
+            {t("openIssuesLink")}
+          </a>
+        </Callout>
+      ) : null}
       {job.atRisk ? (
         <Callout tone="warning" icon="warning" title={t("atRisk")}>
           {job.riskReason ? t(`riskReasons.${job.riskReason}`) : null}
@@ -213,7 +226,9 @@ export default async function JobPage({ params }: Props) {
                     // Before acceptance the step's deadline is the acceptance deadline, not the plan's.
                     t("due", { date: format.dateTime(job.acceptDueAt) })
                   ) : milestone.dueAt ? (
-                    t("due", { date: format.dateTime(milestone.dueAt) })
+                    // The plan splits the lead time evenly, so its clock times (02:24, 04:48) mean nothing on
+                    // the floor; the day is what the factory plans by.
+                    t("due", { date: format.date(milestone.dueAt) })
                   ) : null,
                 children: isCurrent ? (
                   milestone.status === "pending" ? (
@@ -259,9 +274,10 @@ export default async function JobPage({ params }: Props) {
       {offered.has("job.ship") ? (
         <Link
           href={`/ship#job-${job.id}`}
-          className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex min-h-16 items-center justify-center gap-2 rounded-xl px-6 text-xl font-semibold"
+          data-big
+          className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex min-h-14 items-center justify-center gap-2 rounded-xl px-6 text-lg font-semibold"
         >
-          <Icon name="truck" size={28} />
+          <Icon name="truck" size={22} />
           {t("toShip")}
         </Link>
       ) : null}
@@ -441,7 +457,7 @@ export default async function JobPage({ params }: Props) {
         </PartnerSection>
       ) : null}
 
-      <PartnerSection title={t("issues")}>
+      <PartnerSection title={t("issues")} id="issues">
         {issues.data?.length ? (
           <ul className="flex flex-col gap-2">
             {issues.data.map((issue) => (

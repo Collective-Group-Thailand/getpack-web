@@ -15,7 +15,7 @@ import {
   UpdateTransit,
 } from "@/features/partner/ship/actions";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const linkClass =
-  "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border px-6 text-lg font-medium";
+  "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-lg border px-5 font-medium lg:min-h-10 lg:px-4 lg:text-sm";
 
 /**
  * One trip (`partner.shipments.get`): the recipient (D-142), its cartons, labels and packing list
@@ -105,56 +105,65 @@ export default async function ShipmentPage({ params }: Props) {
         </Callout>
       ) : null}
 
-      <div className="flex flex-col gap-3">
-        {action("shipment.mark_ready") ? <MarkReady shipmentId={shipment.id} shipmentNo={shipment.shipmentNo} /> : null}
-        {shipment.cartons.length ? (
-          <Link href={`/ship/${shipment.id}/labels`} className={linkClass}>
-            <Icon name="printer" size={24} />
-            {t("printLabels", { count: shipment.cartons.length })}
-          </Link>
-        ) : null}
-        {labelsUrl || packingUrl ? (
-          <div className="flex flex-wrap gap-3">
-            {labelsUrl ? (
-              <a
-                href={labelsUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary inline-flex min-h-12 items-center underline"
-              >
-                {t("labelsPdf")}
-              </a>
+      {action("shipment.mark_ready") ? <MarkReady shipmentId={shipment.id} shipmentNo={shipment.shipmentNo} /> : null}
+      {/* What to do with a packed trip, in the order it is done on the dock: label the cartons, then send. */}
+      {shipment.cartons.length || labelsUrl || packingUrl ? (
+        <PartnerSection title={t("steps.label")} description={t("steps.labelBody")}>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {shipment.cartons.length ? (
+              <Link href={`/ship/${shipment.id}/labels`} className={linkClass}>
+                <Icon name="printer" size={18} />
+                {t("printLabels", { count: shipment.cartons.length })}
+              </Link>
             ) : null}
-            {packingUrl ? (
-              <a
-                href={packingUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary inline-flex min-h-12 items-center underline"
-              >
-                {t("packingPdf")}
-              </a>
+            {labelsUrl || packingUrl ? (
+              <div className="flex flex-wrap gap-x-4">
+                {labelsUrl ? (
+                  <a
+                    href={labelsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary inline-flex min-h-12 items-center underline"
+                  >
+                    {t("labelsPdf")}
+                  </a>
+                ) : null}
+                {packingUrl ? (
+                  <a
+                    href={packingUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary inline-flex min-h-12 items-center underline"
+                  >
+                    {t("packingPdf")}
+                  </a>
+                ) : null}
+              </div>
             ) : null}
           </div>
-        ) : null}
-        {dispatch ? (
-          <DispatchShipment
-            shipmentId={shipment.id}
-            shipmentNo={shipment.shipmentNo}
-            blockedBy={reason(dispatch.disabledReason)}
-          />
-        ) : null}
-        {action("shipment.request_carrier") ? (
-          <RequestCarrier shipmentId={shipment.id} shipmentNo={shipment.shipmentNo} />
-        ) : null}
-        {action("shipment.cancel") ? (
-          <CancelShipment shipmentId={shipment.id} shipmentNo={shipment.shipmentNo} />
-        ) : null}
-      </div>
+        </PartnerSection>
+      ) : null}
+      {dispatch || action("shipment.request_carrier") ? (
+        <PartnerSection title={t("steps.send")} description={t("steps.sendBody")}>
+          <div className="flex flex-col gap-3">
+            {dispatch ? (
+              <DispatchShipment
+                shipmentId={shipment.id}
+                shipmentNo={shipment.shipmentNo}
+                blockedBy={reason(dispatch.disabledReason)}
+              />
+            ) : null}
+            {action("shipment.request_carrier") ? (
+              <RequestCarrier shipmentId={shipment.id} shipmentNo={shipment.shipmentNo} />
+            ) : null}
+          </div>
+        </PartnerSection>
+      ) : null}
+      {action("shipment.cancel") ? <CancelShipment shipmentId={shipment.id} shipmentNo={shipment.shipmentNo} /> : null}
 
       {action("shipment.update_status") ? (
         <PartnerSection title={t("transitTitle")}>
-          <Card padding="lg">
+          <Card padding="md">
             <UpdateTransit shipmentId={shipment.id} />
           </Card>
         </PartnerSection>
@@ -167,7 +176,7 @@ export default async function ShipmentPage({ params }: Props) {
       shipment.status !== "ready" &&
       shipment.status !== "draft" ? (
         <PartnerSection title={t("podTitle")} description={t("podBody")}>
-          <Card padding="lg">
+          <Card padding="md">
             <PodForm
               shipmentId={shipment.id}
               items={shipment.items.map((item) => ({

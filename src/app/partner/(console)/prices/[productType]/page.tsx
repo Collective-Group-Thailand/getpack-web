@@ -13,7 +13,7 @@ import { loadPrices, loadRows, OPEN_PROPOSAL } from "@/features/partner/prices/s
 import { PRICE_GROUPS } from "@/features/partner/prices/values";
 import { ChangeRequestForm } from "@/features/partner/requests/ChangeRequestForm";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -71,7 +71,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
     return (
       <PartnerPage title={name} back={back} meta={meta}>
         <PartnerSection title={t("tierC.title")}>
-          <Card padding="lg" className="flex flex-col gap-3">
+          <Card padding="md" className="flex flex-col gap-3">
             <p>{t("tierC.body")}</p>
             <ul className="list-disc ps-5">
               <li>{t("tierC.unlockInstant")}</li>
@@ -81,7 +81,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
           </Card>
         </PartnerSection>
         <PartnerSection title={t("tierRequest.title")} description={t("tierRequest.bodyC")}>
-          <Card padding="lg">
+          <Card padding="md">
             <ChangeRequestForm
               topic="participation_tier"
               productTypeId={productTypeId}
@@ -305,7 +305,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
           {open ? (
             <p className="text-muted">{t("propose.oneAtATime")}</p>
           ) : canPropose ? (
-            <Card padding="lg">
+            <Card padding="md">
               <CreateProposal productTypeId={productTypeId} typeName={name} />
             </Card>
           ) : (
@@ -320,7 +320,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
 
       {tier === "B" ? (
         <PartnerSection title={t("tierRequest.title")} description={t("tierRequest.bodyB")}>
-          <Card padding="lg">
+          <Card padding="md">
             <ChangeRequestForm
               topic="participation_tier"
               productTypeId={productTypeId}

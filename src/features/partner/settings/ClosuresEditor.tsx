@@ -89,7 +89,12 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
             <Input type="date" value={day} min={bangkokToday(1)} onChange={(event) => setDay(event.target.value)} />
           </Field>
           <Field label={t("name")} hint={t("nameHint")}>
-            <Input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} />
+            <Input
+              placeholder={t("namePlaceholder")}
+              value={name}
+              maxLength={80}
+              onChange={(event) => setName(event.target.value)}
+            />
           </Field>
           <div>
             <Button className="min-h-12" loading={busy} disabled={!day || !name.trim()} onClick={() => void add()}>
