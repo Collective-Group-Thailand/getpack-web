@@ -142,6 +142,7 @@ export async function StudioHome({
                   style={style}
                   locale={locale}
                   photo={null}
+                  narrow
                   dieline={{ card: styleDieline(style.code, "card"), thumb: styleDieline(style.code, "thumb") }}
                   meta={`${facetLabel(words, "category", style.category)} · ${facetLabel(words, "materialClass", style.materialClass)}`}
                 />
