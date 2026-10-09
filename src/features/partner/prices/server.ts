@@ -65,7 +65,7 @@ export async function loadRows(factoryId: string, versionId: string, components:
         async () =>
           (
             await contract.GET("/v1/partner/factories/{factoryId}/price-list-versions/{versionId}/lines", {
-              params: { path: { factoryId, versionId }, query: { component, perPage: 100 } },
+              params: { path: { factoryId, versionId }, query: { component, perPage: 500 } },
             })
           ).data?.data ?? [],
       ),
