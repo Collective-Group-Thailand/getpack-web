@@ -29,30 +29,56 @@ export async function JobCard({ job }: { job: JobSummary }) {
   return (
     <Link
       href={`/jobs/${job.id}`}
-      className="border-border bg-surface hover:bg-surface-subtle flex min-h-20 flex-col gap-2 rounded-xl border p-3"
+      className="group border-border bg-surface hover:border-border-strong flex h-full flex-col rounded-xl border transition-colors"
     >
-      <span className="flex flex-wrap items-center gap-2">
-        <span className="font-mono text-base font-semibold">{job.jobNo}</span>
-        <StatusChip map={JOB_STATUS} value={job.status} />
-        {job.atRisk ? (
-          <Badge tone="danger" size="sm" icon="warning">
-            {t("late")}
-          </Badge>
+      <span className="flex flex-col gap-2 p-4">
+        <span className="flex items-start gap-2">
+          <span className="min-w-0 flex-1 font-mono text-[0.9375rem] font-semibold">{job.jobNo}</span>
+          <StatusChip map={JOB_STATUS} value={job.status} />
+        </span>
+        <span className="text-[1.0625rem] font-semibold">{jobName(job)}</span>
+        <span className="text-muted flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <span className="inline-flex items-center gap-1.5">
+            <Icon name="package" size={16} aria-hidden />
+            {t("quantity", { quantity: format.number(job.quantityOrdered) })}
+          </span>
+          {job.promisedShipDate ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="truck" size={16} aria-hidden />
+              {t("ship", { date: format.date(job.promisedShipDate) })}
+            </span>
+          ) : null}
+          {current ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="route" size={16} aria-hidden />
+              {t("step", { name: stepName(current, locale) })}
+            </span>
+          ) : null}
+        </span>
+        {job.atRisk || job.inspectionRequired ? (
+          <span className="flex flex-wrap gap-1.5">
+            {job.atRisk ? (
+              <Badge tone="danger" size="sm" icon="warning">
+                {t("late")}
+              </Badge>
+            ) : null}
+            {job.inspectionRequired ? (
+              <Badge size="sm" icon="shield">
+                {t("inspection")}
+              </Badge>
+            ) : null}
+          </span>
         ) : null}
-        {job.inspectionRequired ? (
-          <Badge size="sm" icon="shield">
-            {t("inspection")}
-          </Badge>
-        ) : null}
-        <Icon name="chevron-right" size={24} className="text-muted ms-auto" />
       </span>
-      <span className="font-medium">{jobName(job)}</span>
-      <span className="text-muted flex flex-wrap gap-x-3 text-sm">
-        <span>{t("quantity", { quantity: format.number(job.quantityOrdered) })}</span>
-        {job.promisedShipDate ? <span>{t("ship", { date: format.date(job.promisedShipDate) })}</span> : null}
-        {current ? <span>{t("step", { name: stepName(current, locale) })}</span> : null}
-      </span>
-      {job.status === "released" ? <Countdown dueAt={job.acceptDueAt} /> : null}
+      {job.status === "released" ? (
+        <span className="border-border bg-warning-subtle/40 mt-auto flex items-center justify-between gap-2 rounded-b-xl border-t px-4 py-2.5 text-sm">
+          <Countdown dueAt={job.acceptDueAt} />
+          <span className="text-primary inline-flex items-center gap-1 font-medium group-hover:underline">
+            {t("open")}
+            <Icon name="arrow-right" size={16} aria-hidden />
+          </span>
+        </span>
+      ) : null}
     </Link>
   );
 }

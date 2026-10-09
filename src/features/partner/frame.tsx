@@ -44,10 +44,11 @@ export function PartnerPage({
         </Link>
       ) : null}
       <header className="flex flex-wrap items-start gap-3">
-        <div className="min-w-0 flex-1">
+        {/* At least 16rem before the actions: on a phone they wrap under the title instead of squeezing it. */}
+        <div className="min-w-[min(100%,16rem)] flex-1">
           <h1 className="text-2xl font-semibold text-balance">{title}</h1>
           {meta ? <div className="mt-2 flex flex-wrap items-center gap-2">{meta}</div> : null}
-          {description ? <p className="text-muted mt-2">{description}</p> : null}
+          {description ? <p className="text-muted mt-2 max-w-prose">{description}</p> : null}
         </div>
         {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
       </header>

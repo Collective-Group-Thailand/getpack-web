@@ -4,7 +4,14 @@ import type { Schemas } from "@/lib/api/types";
 import { cn } from "@/ui/lib/cn";
 
 import { lineLabeller } from "./LineList";
-import { columnsOf, sortRows, type PriceComponentDef, type PriceReference, type Values } from "./values";
+import {
+  columnsOf,
+  dimensionPhrase,
+  sortRows,
+  type PriceComponentDef,
+  type PriceReference,
+  type Values,
+} from "./values";
 
 type Row = Schemas["PriceRowDto"];
 type Column = Schemas["PriceColumnDto"];
@@ -56,72 +63,97 @@ export async function PriceTable({
           : t("table.count", { total: rows.length })}
       </p>
       {shown.length ? (
-        <div
-          className="border-border bg-surface max-h-[70vh] overflow-auto rounded-xl border"
-          // Scrolls both ways: focusable, so a keyboard can scroll it too.
-          tabIndex={0}
-          role="region"
-          aria-label={caption}
-        >
-          <table className="w-full border-separate border-spacing-0 text-sm tabular-nums">
-            <caption className="sr-only">{caption}</caption>
-            <thead className="sticky top-0 z-10">
-              {dimensions.length && values.length ? (
-                <tr className="text-xs">
-                  <th
-                    scope="colgroup"
-                    colSpan={dimensions.length}
-                    className="bg-surface-subtle text-muted border-border border-b px-3 pt-2 text-start font-medium"
-                  >
-                    {t("table.dimensions")}
-                  </th>
-                  <th
-                    scope="colgroup"
-                    colSpan={values.length}
-                    className="bg-sage-subtle text-muted border-border border-s border-b px-3 pt-2 text-start font-medium"
-                  >
-                    {t("table.values")}
-                  </th>
-                </tr>
-              ) : null}
-              <tr>
-                {[...dimensions, ...values].map((column, index) => (
-                  <th
-                    key={column.key}
-                    scope="col"
-                    className={cn(
-                      "border-border border-b px-3 py-2 align-bottom font-medium",
-                      index < dimensions.length ? "bg-surface-subtle text-start" : "bg-sage-subtle",
-                      index === dimensions.length && "border-s",
-                      index >= dimensions.length && NUMERIC.includes(column.type) ? "text-end" : "text-start",
-                    )}
-                  >
-                    <span className="block min-w-20">{label.column(column.key)}</span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((row) => (
-                <tr key={row.lineKey} className="hover:bg-surface-subtle">
+        <>
+          {/* A phone gets one card per line — what it applies to, then its prices — not a table wider than the screen. */}
+          <ul
+            className="border-border bg-surface divide-border divide-y rounded-xl border sm:hidden"
+            aria-label={caption}
+          >
+            {shown.map((row) => (
+              <li key={row.lineKey} className="flex flex-col gap-2 px-4 py-3">
+                <p className="text-sm">
+                  {dimensionPhrase(dimensions, row.values as Values, text, (key) =>
+                    label.column(key).replace(/\s*(ตั้งแต่|from)(?=\s*\(|$)/i, ""),
+                  )}
+                </p>
+                <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1 text-sm tabular-nums">
+                  {values.map((column) => (
+                    <div key={column.key} className="contents">
+                      <dt className="text-muted">{label.column(column.key)}</dt>
+                      <dd className="text-end font-semibold">{text(column, (row.values as Values)[column.key])}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </li>
+            ))}
+          </ul>
+          <div
+            className="border-border bg-surface hidden max-h-[70vh] overflow-auto rounded-xl border sm:block"
+            // Scrolls both ways: focusable, so a keyboard can scroll it too.
+            tabIndex={0}
+            role="region"
+            aria-label={caption}
+          >
+            <table className="w-full border-separate border-spacing-0 text-sm tabular-nums">
+              <caption className="sr-only">{caption}</caption>
+              <thead className="sticky top-0 z-10">
+                {dimensions.length && values.length ? (
+                  <tr className="text-xs">
+                    <th
+                      scope="colgroup"
+                      colSpan={dimensions.length}
+                      className="bg-surface-subtle text-muted border-border border-b px-3 pt-2 text-start font-medium"
+                    >
+                      {t("table.dimensions")}
+                    </th>
+                    <th
+                      scope="colgroup"
+                      colSpan={values.length}
+                      className="bg-sage-subtle text-muted border-border border-s border-b px-3 pt-2 text-start font-medium"
+                    >
+                      {t("table.values")}
+                    </th>
+                  </tr>
+                ) : null}
+                <tr>
                   {[...dimensions, ...values].map((column, index) => (
-                    <td
+                    <th
                       key={column.key}
+                      scope="col"
                       className={cn(
-                        "border-border border-b px-3 py-2 whitespace-nowrap",
-                        index < dimensions.length ? "text-fg" : "font-medium",
+                        "border-border border-b px-3 py-2 align-bottom font-medium",
+                        index < dimensions.length ? "bg-surface-subtle text-start" : "bg-sage-subtle",
                         index === dimensions.length && "border-s",
-                        index >= dimensions.length && NUMERIC.includes(column.type) && "text-end",
+                        index >= dimensions.length && NUMERIC.includes(column.type) ? "text-end" : "text-start",
                       )}
                     >
-                      {text(column, (row.values as Values)[column.key])}
-                    </td>
+                      <span className="block min-w-20">{label.column(column.key)}</span>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {shown.map((row) => (
+                  <tr key={row.lineKey} className="hover:bg-surface-subtle">
+                    {[...dimensions, ...values].map((column, index) => (
+                      <td
+                        key={column.key}
+                        className={cn(
+                          "border-border border-b px-3 py-2 whitespace-nowrap",
+                          index < dimensions.length ? "text-fg" : "font-medium",
+                          index === dimensions.length && "border-s",
+                          index >= dimensions.length && NUMERIC.includes(column.type) && "text-end",
+                        )}
+                      >
+                        {text(column, (row.values as Values)[column.key])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       ) : (
         <p className="border-border text-muted rounded-xl border border-dashed p-6 text-center">
           {needle ? t("table.noMatch", { query: query!.trim() }) : t("noRows", { component: tComponents(component) })}

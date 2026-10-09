@@ -256,10 +256,15 @@ export default async function PriceListPage({ params, searchParams }: Props) {
             {component ? (
               <section aria-labelledby="component-title" className="flex min-w-0 flex-col gap-3">
                 <div className="flex flex-wrap items-end gap-3">
-                  <h2 id="component-title" className="min-w-0 flex-1 text-lg font-semibold">
+                  <h2 id="component-title" className="min-w-[min(100%,14rem)] flex-1 text-lg font-semibold">
                     {tComponents(component)}
                   </h2>
-                  <form method="get" action={`/prices/${productType}`} className="flex gap-2" role="search">
+                  <form
+                    method="get"
+                    action={`/prices/${productType}`}
+                    className="flex w-full gap-2 sm:w-auto"
+                    role="search"
+                  >
                     <input type="hidden" name="component" value={component} />
                     {version.id !== list.current?.id ? <input type="hidden" name="version" value={version.id} /> : null}
                     <Input
@@ -269,7 +274,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
                       placeholder={t("table.searchPlaceholder")}
                       aria-label={t("table.search")}
                       inputSize="md"
-                      className="w-56"
+                      className="w-full sm:w-56"
                     />
                     <Button type="submit" variant="secondary" size="md" iconStart="search">
                       {t("table.search")}

@@ -244,7 +244,7 @@ export default async function JobPage({ params }: Props) {
           <PartnerSection title={t("spec")}>
             <Card padding="md">
               <DescriptionList
-                columns={1}
+                columns={2}
                 items={spec.map((line) => ({
                   term: tSpec(`${line.key}.term`),
                   description: tSpec(`${line.key}.value`, line.values ?? {}),
@@ -259,9 +259,10 @@ export default async function JobPage({ params }: Props) {
             <Card padding="md" className="flex flex-col gap-3">
               <div className="bg-surface-subtle relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg">
                 <Icon name="document" size={48} className="text-muted" />
+                {/* The approval reads as a stamp in the corner, in the colour of "approved" — not a red warning across the file. */}
                 <span
                   aria-hidden
-                  className="text-danger/60 border-danger/60 absolute rotate-[-18deg] rounded-md border-4 px-3 py-1 text-3xl font-black tracking-widest"
+                  className="border-success text-success absolute end-3 top-3 rotate-[-6deg] rounded-md border-2 px-2.5 py-0.5 text-sm font-semibold"
                 >
                   {t("watermark", { version: job.artwork.versionNo })}
                 </span>
@@ -306,7 +307,7 @@ export default async function JobPage({ params }: Props) {
           <PartnerSection title={t("po")}>
             <Card padding="md">
               <DescriptionList
-                columns={1}
+                columns={2}
                 items={[
                   ...(po
                     ? [

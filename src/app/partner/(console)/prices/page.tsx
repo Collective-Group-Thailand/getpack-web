@@ -5,14 +5,15 @@ import { getTranslations } from "next-intl/server";
 import { PROPOSAL_STATUS } from "@/domain/status";
 import { canAt, factoryContext } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { Row, RowList } from "@/features/partner/rows";
 import { VersionSignOff } from "@/features/partner/prices/actions";
 import { loadPrices, OPEN_PROPOSAL } from "@/features/partner/prices/server";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
-import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerPrices"))("title") };
@@ -52,13 +53,13 @@ export default async function PricesPage() {
 
   return (
     <PartnerPage
+      wide
       title={t("title")}
       description={prices.mode ? t(`mode.${prices.mode}`) : t("mode.none")}
       actions={
-        <Link href="/prices/shipping" className="text-primary inline-flex min-h-12 items-center gap-1 underline">
-          <Icon name="truck" size={20} />
-          {t("shippingLink")}
-        </Link>
+        <Button asChild variant="secondary" size="md" iconStart="truck">
+          <Link href="/prices/shipping">{t("shippingLink")}</Link>
+        </Button>
       }
     >
       {rateCards.length || countered.length || toSignOff.length ? (
@@ -139,9 +140,14 @@ export default async function PricesPage() {
             return (
               <li key={list.id}>
                 <Link href={`/prices/${list.productTypeCode}`} className="block h-full">
-                  <Card padding="md" className="hover:bg-surface-subtle flex h-full flex-col gap-2">
+                  <Card
+                    padding="md"
+                    className="hover:border-border-strong flex h-full flex-col gap-2 transition-colors"
+                  >
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="flex-1 font-medium">{prices.typeName(list.productTypeId)}</span>
+                      <span className="flex-1 text-[1.0625rem] font-semibold">
+                        {prices.typeName(list.productTypeId)}
+                      </span>
                       {tier ? (
                         <Badge tone={tier === "A" ? "success" : tier === "B" ? "primary" : "neutral"}>
                           {t("tier", { tier })}
@@ -190,30 +196,26 @@ export default async function PricesPage() {
 
       {prices.proposals.length ? (
         <PartnerSection title={t("history.title")} description={t("history.body")}>
-          <ul className="flex flex-col gap-2">
+          <RowList label={t("history.title")}>
             {prices.proposals.map((item) => (
-              <li key={item.id}>
-                <Link
-                  href={`/prices/proposals/${item.id}`}
-                  className="border-border bg-surface hover:bg-surface-subtle flex min-h-16 flex-wrap items-center gap-2 rounded-xl border p-3"
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-medium">
-                      {t(`history.${item.direction}`, { type: prices.typeName(item.productTypeId) })}
-                    </span>
-                    <span className="text-muted text-sm">
-                      {t("history.meta", {
-                        date: format.date(item.createdAt),
-                        from: format.date(item.proposedEffectiveFrom),
-                        lines: item.lineCounts.total,
-                      })}
-                    </span>
-                  </span>
-                  <StatusChip map={PROPOSAL_STATUS} value={item.status} />
-                </Link>
-              </li>
+              <Row
+                key={item.id}
+                href={`/prices/proposals/${item.id}`}
+                icon={item.direction === "packio_to_factory" ? "handshake" : "send"}
+                title={
+                  <>
+                    {t(`history.${item.direction}`, { type: prices.typeName(item.productTypeId) })}
+                    <StatusChip map={PROPOSAL_STATUS} value={item.status} />
+                  </>
+                }
+                meta={t("history.meta", {
+                  date: format.date(item.createdAt),
+                  from: format.date(item.proposedEffectiveFrom),
+                  lines: item.lineCounts.total,
+                })}
+              />
             ))}
-          </ul>
+          </RowList>
         </PartnerSection>
       ) : null}
       {!canAt(context, "factory_prices.propose") ? <p className="text-muted text-sm">{t("readOnly")}</p> : null}

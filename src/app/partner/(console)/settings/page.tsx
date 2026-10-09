@@ -75,31 +75,41 @@ export default async function SettingsPage() {
       {owner ? (
         <PartnerSection title={tUsers("title")} description={tUsers("body")} id="users">
           {users?.data ? (
-            <ul className="flex flex-col gap-2">
+            <ul className="border-border bg-surface divide-border divide-y rounded-xl border">
               {users.data.map((user) => (
-                <li key={user.id}>
-                  <Card padding="md" className="flex flex-col gap-3">
+                <li key={user.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start">
+                  <span
+                    aria-hidden
+                    className="bg-sage-subtle text-fg grid size-10 shrink-0 place-items-center rounded-full font-semibold"
+                  >
+                    {/* Thai leading vowels (เ แ โ ใ ไ) are not an initial: the first consonant is. */}
+                    {user.displayName
+                      .trim()
+                      .replace(/^[เแโใไ]/, "")
+                      .charAt(0)}
+                  </span>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="min-w-0 flex-1">
-                        <span className="block font-medium">{user.displayName}</span>
-                        <span className="text-muted text-sm">{user.email}</span>
-                      </span>
+                      <span className="font-semibold">{user.displayName}</span>
                       <StatusChip map={FACTORY_USER_STATUS} value={user.status} />
                     </div>
-                    <div className="flex flex-wrap gap-1">
+                    <span className="text-muted text-sm break-all">{user.email}</span>
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {user.roles.map((role) => (
                         <Badge key={role} size="sm">
                           {roleName(role)}
                         </Badge>
                       ))}
                       {user.lastSignInAt ? (
-                        <span className="text-muted text-sm">
+                        <span className="text-muted text-xs">
                           {tUsers("lastSeen", { date: format.dateTime(user.lastSignInAt) })}
                         </span>
                       ) : null}
                     </div>
+                  </div>
+                  <div className="sm:max-w-sm sm:shrink-0">
                     <EditUser user={user} />
-                  </Card>
+                  </div>
                 </li>
               ))}
             </ul>
