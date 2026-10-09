@@ -177,8 +177,10 @@ import { PROOF_STATUS } from "./proof";
 import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 import { PROMOTION_OFFER_STATUS } from "./promotion-offer";
+import { ERP_PURCHASE_ORDER_STATUS } from "./erp";
 
 export {
+  ERP_PURCHASE_ORDER_STATUS,
   ASSET_STATUS,
   CLOSE_STATUS,
   CLOSE_TASK_STATUS,
@@ -371,4 +373,5 @@ export const STATUS_MAPS = {
   close: CLOSE_STATUS,
   closeTask: CLOSE_TASK_STATUS,
   promotionOffer: PROMOTION_OFFER_STATUS,
+  erpPurchaseOrder: ERP_PURCHASE_ORDER_STATUS,
 } as const;

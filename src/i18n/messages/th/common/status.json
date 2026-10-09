@@ -429,7 +429,12 @@
     "resend": "ส่งเอกสารอีกครั้ง",
     "void": "ยกเลิกเอกสาร",
     "acceptQuote": "ตอบรับใบเสนอราคา",
-    "postMessage": "ส่งข้อความ"
+    "postMessage": "ส่งข้อความ",
+    "editPurchaseOrder": "แก้ใบสั่งซื้อ",
+    "issuePurchaseOrder": "อนุมัติและออกเลขใบสั่งซื้อ",
+    "receiveGoods": "รับของเข้าคลัง",
+    "closePurchaseOrder": "ปิดใบสั่งซื้อ (ไม่รอของที่เหลือ)",
+    "cancelPurchaseOrder": "ยกเลิกใบสั่งซื้อ"
   },
   "points": {
     "pending": "รอเข้าบัญชี",
@@ -695,5 +700,13 @@
     "approvedRecipe": "อนุมัติเป็นแบบใหม่",
     "approvedTemplate": "อนุมัติเป็นเทมเพลต",
     "rejected": "ไม่รับ"
+  },
+  "erpPurchaseOrder": {
+    "draft": "ร่าง ยังไม่ส่ง",
+    "issued": "ส่งผู้ขายแล้ว รอของ",
+    "partiallyReceived": "ได้ของบางส่วน",
+    "received": "ได้ของครบ",
+    "closed": "ปิดแล้ว",
+    "cancelled": "ยกเลิก"
   }
 }

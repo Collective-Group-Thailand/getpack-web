@@ -152,7 +152,9 @@
       "factory_operator": "Reports production steps",
       "factory_qc": "Records QC",
       "factory_shipping": "Ships and records delivery",
-      "factory_accountant": "Billing, tax invoices and payouts"
+      "factory_accountant": "Billing, tax invoices and payouts",
+      "factory_storekeeper": "Receives, issues and counts stock",
+      "factory_purchaser": "Looks after suppliers and drafts purchase orders"
     },
     "self": "This is you",
     "rolesSaved": "{name}'s role changed",
@@ -236,7 +238,10 @@
     "themeHint": "Use high contrast where the floor is bright",
     "hours": "Working hours and holidays",
     "hoursBody": "The factory's working time and the days it closes",
-    "hoursLink": "Set working hours"
+    "hoursLink": "Set working hours",
+    "erp": "Stock and documents",
+    "erpBody": "Warehouses, document numbers and stock rules",
+    "erpLink": "Stock and document settings"
   },
   "files": {
     "failed": "Could not open the file",

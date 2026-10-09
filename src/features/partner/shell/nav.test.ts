@@ -12,6 +12,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
   it("gives the owner every group", () => {
     expect(partnerSidebar("active", ["factory_owner"], grants("factory_owner")).map((g) => g.key)).toEqual([
       "daily",
+      "supply",
       "plan",
       "finance",
       "factory",
@@ -24,9 +25,22 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
 
   it("gives shipping its trips, the planner its capacity, the accountant the money", () => {
     expect(items("factory_shipping")).toEqual(["ship", "requests", "knowledge", "settings"]);
-    expect(items("factory_planner")).toEqual(["today", "jobs", "capacity", "hours", "requests", "knowledge", "settings"]);
+    expect(items("factory_planner")).toEqual([
+      "today",
+      "jobs",
+      "stock",
+      "purchasing",
+      "capacity",
+      "hours",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
     expect(items("factory_accountant")).toEqual([
       "today",
+      "stock",
+      "purchasing",
+      "tradingPartners",
       "billing",
       "payouts",
       "prices",
@@ -37,8 +51,37 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     ]);
   });
 
+  it("gives the store and the buying desk their stock, orders and suppliers (D-319)", () => {
+    expect(items("factory_storekeeper")).toEqual([
+      "stock",
+      "purchasing",
+      "tradingPartners",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
+    expect(items("factory_purchaser")).toEqual([
+      "stock",
+      "purchasing",
+      "tradingPartners",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
+    expect(
+      partnerBottomItems("active", ["factory_storekeeper"], grants("factory_storekeeper")).map((i) => i.key),
+    ).toEqual(["stock", "purchasing", "tradingPartners"]);
+  });
+
   it("keeps a factory being onboarded to its wizard, prices and guides", () => {
-    expect(items("factory_owner", "applied")).toEqual(["today", "onboarding", "prices", "requests", "knowledge", "settings"]);
+    expect(items("factory_owner", "applied")).toEqual([
+      "today",
+      "onboarding",
+      "prices",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
   });
 
   it("puts at most four of the role's daily destinations on the phone's bar", () => {

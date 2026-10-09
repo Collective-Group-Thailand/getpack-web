@@ -9,6 +9,7 @@ import { stores } from "../admin/partners";
 import { accountHandlers } from "./account";
 import { billingHandlers } from "./billing";
 import { calendarHandlers } from "./calendar";
+import { erpHandlers } from "./erp";
 import { factoryHandlers } from "./factories";
 import { registerFactoryNames } from "./factory-names";
 import { jobHandlers } from "./jobs";
@@ -28,4 +29,5 @@ export const partnerZoneHandlers = [
   ...calendarHandlers,
   ...accountHandlers,
   ...factoryHandlers,
+  ...erpHandlers,
 ];
