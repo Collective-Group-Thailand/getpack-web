@@ -41,7 +41,7 @@ export default async function RequestsPage() {
     <PartnerPage title={t("title")} description={t("body")}>
       <PartnerSection title={t("newTitle")}>
         <Card padding="lg">
-          <ChangeRequestForm topic="other" chooseTopic productTypes={references.productTypes} />
+          <ChangeRequestForm topic="other" chooseTopic primary productTypes={references.productTypes} />
         </Card>
       </PartnerSection>
       <PartnerSection title={t("listTitle")}>

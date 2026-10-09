@@ -26,7 +26,7 @@
     "claimBody": "Packio รอคำชี้แจงจากโรงงาน"
   },
   "floor": {
-    "clear": "ไม่มีงานค้าง: {list}",
+    "clear": "ไม่มีงาน{list}",
     "countersLabel": "ภาพรวมวันนี้",
     "counters": {
       "toAccept": "รอรับงาน",

@@ -249,7 +249,7 @@ export default async function ShipmentPage({ params }: Props) {
                         delivered: format.number(item.deliveredQuantity),
                         quantity: format.number(item.quantity),
                       })
-                    : format.number(item.quantity)}
+                    : t("itemPieces", { quantity: format.number(item.quantity) })}
                 </span>
               </li>
             ))}
