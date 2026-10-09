@@ -129,6 +129,30 @@ export default async function JobPage({ params }: Props) {
         <Card padding="lg" className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">{t("acceptTitle")}</h2>
           <Countdown dueAt={job.acceptDueAt} large />
+          {/* What the owner is saying yes to, before he says it — not three sections further down. */}
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: t("acceptSummary.product"), description: jobName(job) },
+              { term: t("acceptSummary.quantity"), description: format.number(job.quantityOrdered) },
+              ...(job.promisedShipDate
+                ? [{ term: t("acceptSummary.ship"), description: format.date(job.promisedShipDate) }]
+                : []),
+              ...(po
+                ? [
+                    {
+                      term: t("acceptSummary.amount"),
+                      description: <span className="font-semibold tabular-nums">{format.thb(po.netAmount)}</span>,
+                    },
+                  ]
+                : []),
+            ]}
+          />
+          {spec.length ? (
+            <a href="#spec" className="text-primary self-start font-medium underline underline-offset-4">
+              {t("acceptSummary.seeSpec")}
+            </a>
+          ) : null}
           {offered.has("job.accept") ? (
             <AcceptJob job={job} poAmount={po?.netAmount ?? null} />
           ) : (
@@ -185,6 +209,9 @@ export default async function JobPage({ params }: Props) {
                         : ""}
                       {milestone.completedAt ? ` · ${format.dateTime(milestone.completedAt)}` : ""}
                     </span>
+                  ) : isCurrent && job.status === "released" && job.acceptDueAt ? (
+                    // Before acceptance the step's deadline is the acceptance deadline, not the plan's.
+                    t("due", { date: format.dateTime(job.acceptDueAt) })
                   ) : milestone.dueAt ? (
                     t("due", { date: format.dateTime(milestone.dueAt) })
                   ) : null,
@@ -241,7 +268,7 @@ export default async function JobPage({ params }: Props) {
 
       <div className="grid gap-6 md:grid-cols-2">
         {spec.length ? (
-          <PartnerSection title={t("spec")}>
+          <PartnerSection title={t("spec")} id="spec">
             <Card padding="md">
               <DescriptionList
                 columns={2}

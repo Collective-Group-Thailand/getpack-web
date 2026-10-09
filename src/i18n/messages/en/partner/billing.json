@@ -99,7 +99,15 @@
       "e_tax": "e-Tax Invoice",
       "manual": "Recorded by Finance"
     },
-    "invoiceAfterConfirm": "Attach the tax invoice (usually after confirming the amounts)"
+    "invoiceAfterConfirm": "Attach the tax invoice (usually after confirming the amounts)",
+    "linesTitle": "Statement lines",
+    "table": {
+      "item": "Item",
+      "ref": "Reference",
+      "qty": "Quantity",
+      "vat": "VAT",
+      "net": "Net"
+    }
   },
   "payouts": {
     "title": "Payouts",
@@ -157,7 +165,14 @@
       "retained": "Retention held",
       "retainedHint": "Returned after the retention period",
       "period": "{from} – {to}, net of VAT; matches the statement of account"
-    }
+    },
+    "table": {
+      "job": "Job / PO",
+      "afterPod": "Set once delivered",
+      "terms": "Terms",
+      "advanceMerged": "Paid with the balance instead"
+    },
+    "termsAll": "Payment terms on every order: {terms}"
   },
   "payout": {
     "metaTitle": "Payout",
@@ -246,5 +261,14 @@
     "line": "Payout line",
     "cash": "Transfer {amount}",
     "statement": "See the statement of account"
+  },
+  "table": {
+    "no": "Statement",
+    "period": "Billing period",
+    "gross": "Total (incl. VAT)",
+    "status": "Status",
+    "checkIt": "Waiting for you to check",
+    "invoice": "Your tax invoice",
+    "noInvoice": "Not attached"
   }
 }

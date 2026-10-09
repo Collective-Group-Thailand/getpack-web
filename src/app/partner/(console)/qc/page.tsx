@@ -5,11 +5,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { Code, Row, RowList } from "@/features/partner/rows";
+import { PartnerTable } from "@/features/partner/table";
 import { stepName } from "@/features/partner/jobs/JobCard";
 import { qcQueue } from "@/features/partner/jobs/qc-queue";
 import { getFormat } from "@/features/shared/format/server";
 import type { Schemas } from "@/lib/api/types";
-import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 
@@ -58,29 +58,49 @@ export default async function QcPage() {
   );
   const waiting = inspections.length + atQc.length + toRecord.length;
 
-  const jobCard = (job: Schemas["PartnerJobDto"], line: string, action: string) => (
-    <li key={job.id}>
-      <Card padding="md" className="flex flex-wrap items-center gap-3">
-        {/* At least 14rem for the job: on a phone the button drops under it, full width. */}
-        <div className="min-w-[min(100%,14rem)] flex-1">
-          <p className="font-mono font-semibold whitespace-nowrap">{job.jobNo}</p>
-          <p className="text-muted">
-            {[job.productTypeNameTh ?? job.title, t("pieces", { count: format.number(job.quantityOrdered) })].join(
-              " · ",
-            )}
-          </p>
-          <p className="text-sm">{line}</p>
-        </div>
-        <Link
-          href={`/jobs/${job.id}#qc`}
-          className="bg-primary text-primary-fg hover:bg-primary-hover rounded-control inline-flex min-h-12 w-full items-center justify-center gap-2 px-5 font-semibold sm:w-auto"
-        >
-          <Icon name="clipboard-check" size={20} aria-hidden="true" />
-          {action}
-          <span className="sr-only"> {job.jobNo}</span>
-        </Link>
-      </Card>
-    </li>
+  /** Jobs waiting on QC as a table on a desk, a card each on the floor's phone — with the action on every row. */
+  const jobTable = (
+    jobs: Schemas["PartnerJobDto"][],
+    caption: string,
+    when: (job: Schemas["PartnerJobDto"]) => string,
+    action: string,
+  ) => (
+    <PartnerTable
+      caption={caption}
+      rows={jobs}
+      rowKey={(job) => job.id}
+      columns={[
+        {
+          key: "job",
+          header: t("table.job"),
+          primary: true,
+          cell: (job) => <span className="font-mono whitespace-nowrap">{job.jobNo}</span>,
+        },
+        { key: "product", header: t("table.product"), cell: (job) => job.productTypeNameTh ?? job.title },
+        {
+          key: "quantity",
+          header: t("table.quantity"),
+          align: "end",
+          cell: (job) => format.number(job.quantityOrdered),
+        },
+        { key: "when", header: t("table.when"), cell: (job) => when(job) },
+        {
+          key: "action",
+          header: <span className="sr-only">{t("table.action")}</span>,
+          className: "w-[1%] whitespace-nowrap",
+          cell: (job) => (
+            <Link
+              href={`/jobs/${job.id}#qc`}
+              className="bg-primary text-primary-fg hover:bg-primary-hover rounded-control inline-flex min-h-12 w-full items-center justify-center gap-2 px-5 font-semibold lg:min-h-10 lg:w-auto lg:px-4 lg:text-sm"
+            >
+              <Icon name="clipboard-check" size={18} aria-hidden="true" />
+              {action}
+              <span className="sr-only"> {job.jobNo}</span>
+            </Link>
+          ),
+        },
+      ]}
+    />
   );
 
   return (
@@ -93,39 +113,36 @@ export default async function QcPage() {
       {waiting === 0 ? <EmptyState icon="clipboard-check" title={t("empty")} /> : null}
       {inspections.length ? (
         <PartnerSection title={t("inspections")}>
-          <ul className="flex flex-col gap-3">
-            {inspections.map((job) =>
-              jobCard(
-                job,
-                job.inspection!.scheduledAt
-                  ? t("inspectionAt", {
-                      at: format.dateTime(job.inspection!.scheduledAt),
-                      size: format.number(job.inspection!.sampleSize),
-                    })
-                  : t("inspectionUnscheduled"),
-                t("openJob"),
-              ),
-            )}
-          </ul>
+          {jobTable(
+            inspections,
+            t("inspections"),
+            (job) =>
+              job.inspection!.scheduledAt
+                ? t("inspectionAt", {
+                    at: format.dateTime(job.inspection!.scheduledAt),
+                    size: format.number(job.inspection!.sampleSize),
+                  })
+                : t("inspectionUnscheduled"),
+            t("openJob"),
+          )}
         </PartnerSection>
       ) : null}
       {atQc.length ? (
         <PartnerSection title={t("atQc")}>
-          <ul className="flex flex-col gap-3">
-            {atQc.map((job) => {
+          {jobTable(
+            atQc,
+            t("atQc"),
+            (job) => {
               const step = job.milestones.find((m) => m.key === job.currentMilestoneKey)!;
-              return jobCard(
-                job,
-                [
-                  t("atStep", { step: stepName(step, locale) }),
-                  step.dueAt ? t("due", { date: format.dateTime(step.dueAt) }) : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · "),
-                t("startCheck"),
-              );
-            })}
-          </ul>
+              return [
+                t("atStep", { step: stepName(step, locale) }),
+                step.dueAt ? t("due", { date: format.dateTime(step.dueAt) }) : null,
+              ]
+                .filter(Boolean)
+                .join(" · ");
+            },
+            t("startCheck"),
+          )}
         </PartnerSection>
       ) : null}
       {toRecord.length ? (

@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { JobCard } from "@/features/partner/jobs/JobCard";
+import { JobsTable } from "@/features/partner/jobs/JobsTable";
 import { awaitsSignOff } from "@/features/partner/onboarding/steps";
 import { loadPrices } from "@/features/partner/prices/server";
 import { getFormat } from "@/features/shared/format/server";
@@ -287,13 +287,7 @@ export default async function PartnerHomePage() {
             }
           >
             {floor.data.queue.length ? (
-              <ul className="grid gap-2 md:grid-cols-2">
-                {floor.data.queue.map((job) => (
-                  <li key={job.id}>
-                    <JobCard job={job} />
-                  </li>
-                ))}
-              </ul>
+              <JobsTable jobs={floor.data.queue} caption={tFloor("queue")} />
             ) : (
               <p className="text-muted">{tFloor("queueEmpty")}</p>
             )}

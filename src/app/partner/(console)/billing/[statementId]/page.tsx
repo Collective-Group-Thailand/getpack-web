@@ -7,6 +7,7 @@ import { PartnerFileButton } from "@/features/partner/account/files";
 import { ConfirmStatement, DisputeStatement, TaxInvoiceForm } from "@/features/partner/billing/actions";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import type { Schemas } from "@/lib/api/types";
@@ -136,41 +137,58 @@ export default async function StatementPage({ params }: Props) {
         </Card>
       </PartnerSection>
 
-      {KINDS.map((kind) => {
-        const lines = statement.lines.filter((line) => line.kind === kind);
-        if (!lines.length) return null;
-        return (
-          <PartnerSection key={kind} title={t(`kinds.${kind}`)}>
-            <ul className="border-border divide-border divide-y rounded-xl border">
-              {lines.map((line) => (
-                <li key={line.lineNo} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 p-3">
-                  <span className="min-w-0 flex-1">
-                    <span className="block">
-                      <span className="text-muted me-2 font-mono text-sm">#{line.lineNo}</span>
-                      {line.description}
-                      {statement.disputedLineNos.includes(line.lineNo) ? (
-                        <Badge size="sm" tone="warning" className="ms-2">
-                          {t("disputedBadge")}
-                        </Badge>
-                      ) : null}
-                    </span>
-                    <span className="text-muted text-sm">
-                      {[
-                        line.reference,
-                        line.quantity !== null ? t("qty", { quantity: format.number(line.quantity) }) : null,
-                        t("lineVat", { vat: format.thb(line.vatAmount) }),
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
+      <PartnerSection title={t("linesTitle")}>
+        <PartnerTable
+          caption={t("linesTitle")}
+          rows={KINDS.flatMap((kind) => statement.lines.filter((line) => line.kind === kind))}
+          rowKey={(line) => String(line.lineNo)}
+          rowTone={(line) => (statement.disputedLineNos.includes(line.lineNo) ? "warning" : undefined)}
+          columns={[
+            {
+              key: "no",
+              header: "#",
+              cell: (line) => <span className="text-muted font-mono text-sm">{line.lineNo}</span>,
+              className: "w-[1%]",
+            },
+            {
+              key: "item",
+              header: t("table.item"),
+              primary: true,
+              cell: (line) => (
+                <span className="flex flex-col">
+                  <span>
+                    {line.description}
+                    {statement.disputedLineNos.includes(line.lineNo) ? (
+                      <Badge size="sm" tone="warning" className="ms-2">
+                        {t("disputedBadge")}
+                      </Badge>
+                    ) : null}
                   </span>
-                  <span className="font-medium tabular-nums">{format.thb(line.netAmount)}</span>
-                </li>
-              ))}
-            </ul>
-          </PartnerSection>
-        );
-      })}
+                  <span className="text-muted text-sm">{t(`kinds.${line.kind}`)}</span>
+                </span>
+              ),
+            },
+            {
+              key: "ref",
+              header: t("table.ref"),
+              cell: (line) => <span className="font-mono text-sm">{line.reference ?? "—"}</span>,
+            },
+            {
+              key: "qty",
+              header: t("table.qty"),
+              align: "end",
+              cell: (line) => (line.quantity !== null ? format.number(line.quantity) : "—"),
+            },
+            { key: "vat", header: t("table.vat"), align: "end", cell: (line) => format.thb(line.vatAmount) },
+            {
+              key: "net",
+              header: t("table.net"),
+              align: "end",
+              cell: (line) => <span className="font-semibold">{format.thb(line.netAmount)}</span>,
+            },
+          ]}
+        />
+      </PartnerSection>
       {open(confirm) || open(dispute) ? (
         <PartnerSection title={t("checkTitle")} description={t("checkBody")}>
           <div className="grid gap-3 md:grid-cols-2">
