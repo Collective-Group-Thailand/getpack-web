@@ -117,7 +117,8 @@
     },
     "currentNote": "{month} is still running; its numbers settle at month end",
     "trend": "Trend",
-    "computedAt": "(computed {date})"
+    "computedAt": "(computed {date})",
+    "trendSoon": "The trend appears once there are at least two months of figures"
   },
   "users": {
     "title": "Users and roles",

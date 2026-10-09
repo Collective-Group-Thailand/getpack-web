@@ -119,7 +119,8 @@
     "packingPdf": "เปิดใบแพ็ก (PDF)",
     "transitTitle": "แจ้งสถานะระหว่างทาง",
     "itemDelivered": "ส่งมอบ {delivered} จาก {quantity}",
-    "weight": "{kg} กก. · {cartons} กล่อง"
+    "weight": "{kg} กก. · {cartons} กล่อง",
+    "itemPieces": "{quantity} ชิ้น"
   },
   "tolerance": {
     "exact": "ส่งครบตามจำนวน",

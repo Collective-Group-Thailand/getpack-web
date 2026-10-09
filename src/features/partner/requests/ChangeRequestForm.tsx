@@ -45,6 +45,7 @@ export function ChangeRequestForm({
   visit = false,
   placeholder,
   submitLabel,
+  primary = false,
 }: {
   topic: ChangeRequestTopic;
   /** Let the person pick what the request is about (the general requests screen). */
@@ -54,6 +55,8 @@ export function ChangeRequestForm({
   visit?: boolean;
   placeholder?: string;
   submitLabel?: string;
+  /** The page's main action (the requests page), not a side request beside another. */
+  primary?: boolean;
 }) {
   const t = useTranslations("partnerRequests.form");
   const tCommon = useTranslations("common");
@@ -148,7 +151,14 @@ export function ChangeRequestForm({
           maxLength={1900}
         />
       </Field>
-      <Button type="submit" size="xl" variant="secondary" iconStart="send" loading={busy} className="self-start">
+      <Button
+        type="submit"
+        size="xl"
+        variant={primary ? "primary" : "secondary"}
+        iconStart="send"
+        loading={busy}
+        className="self-start"
+      >
         {submitLabel ?? t("send")}
       </Button>
     </form>
