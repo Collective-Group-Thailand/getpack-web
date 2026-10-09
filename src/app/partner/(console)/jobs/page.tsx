@@ -67,7 +67,7 @@ export default async function JobsPage({ searchParams }: Props) {
           id="jobs-q"
           name="q"
           inputSize="lg"
-          className="lg:h-10 lg:text-sm"
+          className="md:h-10 md:text-sm"
           defaultValue={query.q ?? ""}
           placeholder={t("searchPlaceholder")}
         />

@@ -60,7 +60,7 @@ export function PartnerTable<R>({
 
   return (
     <>
-      <div className="border-border bg-surface hidden overflow-x-auto rounded-xl border md:block">
+      <div className="border-border bg-surface hidden overflow-x-auto rounded-xl border lg:block">
         <table className="w-full border-collapse text-start text-[0.9375rem] tabular-nums">
           <caption className="sr-only">{caption}</caption>
           <thead>
@@ -107,14 +107,14 @@ export function PartnerTable<R>({
         </table>
       </div>
 
-      <ul aria-label={caption} className="flex flex-col gap-2 md:hidden">
+      <ul aria-label={caption} className="grid gap-2 md:grid-cols-2 lg:hidden">
         {rows.map((row) => (
           <li
             key={rowKey(row)}
             className={cn("border-border bg-surface relative rounded-xl border border-s-[3px] px-4 py-3", edge(row))}
           >
             <p className="text-[1.0625rem]">{primaryCell(row)}</p>
-            <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5">
+            <dl className="mt-2 grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-x-3 gap-y-1.5">
               {rest.map((column) => (
                 <div key={column.key} className="contents">
                   <dt className="text-muted">{column.header}</dt>

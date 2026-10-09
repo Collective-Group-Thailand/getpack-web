@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const linkClass =
-  "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-lg border px-5 font-medium lg:min-h-10 lg:px-4 lg:text-sm";
+  "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-lg border px-5 font-medium md:min-h-10 md:px-4 md:text-sm";
 
 /**
  * One trip (`partner.shipments.get`): the recipient (D-142), its cartons, labels and packing list
