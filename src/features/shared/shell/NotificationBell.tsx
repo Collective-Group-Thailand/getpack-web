@@ -91,6 +91,8 @@ export function NotificationBell({ zone }: { zone: Zone }) {
         onOpenChange={setOpen}
         align="end"
         aria-label={t("title")}
+        // The list brings its own padding; the popover's p-3 and 20rem cap made rows run past its edge.
+        className="max-w-96 p-0"
         trigger={
           <IconButton
             name="bell"
@@ -102,7 +104,7 @@ export function NotificationBell({ zone }: { zone: Zone }) {
           />
         }
       >
-        <div className="w-80 max-w-[calc(100vw-2rem)]">
+        <div className="w-96 max-w-full overflow-hidden">
           <div className="border-border flex items-center justify-between gap-2 border-b px-3 py-2">
             <h2 className="text-sm font-medium">{t("title")}</h2>
             {unreadCount > 0 ? (
@@ -163,7 +165,7 @@ function ItemContent({ item, locale }: { item: NotificationItem; locale: Locale 
         aria-hidden
         className={item.readAt ? "mt-1.5 size-2 shrink-0" : "bg-primary mt-1.5 size-2 shrink-0 rounded-full"}
       />
-      <span className="min-w-0">
+      <span className="min-w-0 flex-1 break-words">
         <span className={item.readAt ? "block text-sm" : "block text-sm font-medium"}>
           {item.title ?? item.body}
           {item.readAt ? null : <span className="sr-only"> {t("unread")}</span>}

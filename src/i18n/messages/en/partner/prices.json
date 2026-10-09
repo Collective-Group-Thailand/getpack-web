@@ -509,7 +509,14 @@
     "scheduledTitle": "Next version",
     "scheduledBody": "Version {version} applies from {date}",
     "counterAmountPlaceholder": "e.g. 450",
-    "notePlaceholder": "e.g. fuel price increase"
+    "notePlaceholder": "e.g. fuel price increase",
+    "table": {
+      "zone": "Zone",
+      "weight": "Weight per carton",
+      "amount": "You are paid",
+      "extra": "Each extra kg",
+      "status": "Status"
+    }
   },
   "editor": {
     "yes": "Yes",
