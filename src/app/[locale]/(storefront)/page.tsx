@@ -1,12 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 
-import {
-  getCatalogueTree,
-  getSupportChannels,
-  listFaqs,
-  listStyles,
-  publicApi,
-} from "@/features/customer/catalog/api.server";
+import { getCatalogueTree, getSupportChannels, listFaqs, listStyles } from "@/features/customer/catalog/api.server";
 import { getHomeContent } from "@/features/customer/home/content.server";
 import {
   CustomerCases,
@@ -22,6 +16,7 @@ import {
   TemplateGallery,
   TrustRow,
 } from "@/features/customer/home/HomeSections";
+import { lowestPresetQty } from "@/features/customer/home/studio-hero";
 import { getStudioHero } from "@/features/customer/home/studio-hero.server";
 import { getGuarantee, getNetworkStats } from "@/features/customer/trust/api.server";
 
@@ -39,7 +34,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [content, tree, styles, faqs, channels, guarantee, network] = await Promise.all([
+  const [content, tree, styles, faqs, channels, guarantee, network, hero] = await Promise.all([
     getHomeContent(locale),
     getCatalogueTree(),
     listStyles({ sort: "popular", limit: 7 }).catch(() => null),
@@ -47,13 +42,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     getSupportChannels(),
     getGuarantee().catch(() => null),
     getNetworkStats().catch(() => null),
-  ]);
-  // `store.publicConfig.get` (D-309): the minimum order the storefront states.
-  const [config, hero] = await Promise.all([
-    publicApi("catalogue")
-      .then((api) => api.GET("/v1/store/public-config"))
-      .then((response) => response.data ?? null)
-      .catch(() => null),
     getStudioHero(),
   ]);
 
@@ -77,8 +65,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         photo={content.photos.hero}
         facts={{
           templates: templateCount > 0 ? templateCount : null,
-          // The made-to-order minimum from public config — never a catalogue floor worked out here.
-          moq: config?.minOrderQty.custom ?? null,
+          // The lowest quantity the hero presets offer — what the panel beside it starts from.
+          moq: lowestPresetQty(hero.shapes),
         }}
       />
       <TrustRow />

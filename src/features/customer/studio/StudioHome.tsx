@@ -5,6 +5,7 @@ import type { StyleCard } from "@/features/customer/catalog/api.server";
 import type { MyDesign } from "@/features/customer/designer/api.server";
 import { DielineGlyph } from "@/features/customer/home/DielineGlyph";
 import { HOME_WRAP, TemplateCard } from "@/features/customer/home/parts";
+import { styleDieline } from "@/features/customer/home/style-dielines.server";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
@@ -141,6 +142,7 @@ export async function StudioHome({
                   style={style}
                   locale={locale}
                   photo={null}
+                  dieline={{ card: styleDieline(style.code, "card"), thumb: styleDieline(style.code, "thumb") }}
                   meta={`${facetLabel(words, "category", style.category)} · ${facetLabel(words, "materialClass", style.materialClass)}`}
                 />
               ))}

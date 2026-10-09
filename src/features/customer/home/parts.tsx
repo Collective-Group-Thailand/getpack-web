@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/ui/lib/cn";
 
 import type { HomePhoto } from "./content.server";
-import { DielineGlyph } from "./DielineGlyph";
+import type { StyleDieline } from "./style-dielines.server";
 
 /**
  * Pieces the home page shares with the studio's front door, kept apart from `HomeSections` so a
@@ -35,6 +35,7 @@ export function TemplateCard({
   style,
   locale,
   photo,
+  dieline,
   meta,
   action,
   big = false,
@@ -42,6 +43,8 @@ export function TemplateCard({
   style: StyleCard;
   locale: string;
   photo: HomePhoto | null;
+  /** The style's own dieline from its recipe (`style-dielines.server.ts`), for the card and its corner. */
+  dieline: { card: StyleDieline | null; thumb: StyleDieline | null };
   meta: string;
   action?: string;
   big?: boolean;
@@ -53,14 +56,21 @@ export function TemplateCard({
         <figure className={cn("bg-sage-subtle relative overflow-hidden", big ? "aspect-square" : "aspect-[4/3]")}>
           {photo ? (
             <Photo photo={{ ...photo, alt: "" }} />
-          ) : (
-            <span className="grid size-full place-items-center p-8">
-              <DielineGlyph family={style.family} className="w-1/2 max-w-56" />
+          ) : dieline.card ? (
+            // Until the style has a photo, its dieline fills the card on the sage ground.
+            // eslint-disable-next-line @next/next/no-img-element -- an inline SVG data URI, nothing to optimise
+            <img
+              src={dieline.card.src}
+              alt=""
+              className={cn("size-full object-contain", big ? "p-[7%]" : "p-[10%] pt-[18%]")}
+            />
+          ) : null}
+          {dieline.thumb ? (
+            <span className="border-border bg-surface rounded-thumb absolute start-2.5 top-2.5 h-[46px] w-16 border p-1">
+              {/* eslint-disable-next-line @next/next/no-img-element -- an inline SVG data URI */}
+              <img src={dieline.thumb.src} alt="" className="size-full object-contain" />
             </span>
-          )}
-          <span className="border-border bg-surface rounded-thumb absolute start-2.5 top-2.5 h-[46px] w-16 border p-1">
-            <DielineGlyph family={style.family} className="size-full" />
-          </span>
+          ) : null}
         </figure>
         <span className="block pt-2.5">
           <b className={cn("block font-semibold", big ? "text-xl" : "text-[0.9375rem]")}>{name}</b>
