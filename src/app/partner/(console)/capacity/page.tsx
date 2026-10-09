@@ -5,7 +5,6 @@ import { attempt, factoryContext, partnerServerApis } from "@/features/partner/c
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
-import { Card } from "@/ui/components/Card";
 import { Meter } from "@/ui/components/Meter";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -66,45 +65,93 @@ export default async function CapacityPage() {
           </ul>
         </PartnerSection>
       ) : null}
-      <ul className="grid gap-3 md:grid-cols-2">
-        {weeks.map((weekStart) => (
-          <li key={weekStart}>
-            <Card padding="md" className="flex flex-col gap-3">
-              <h2 className="font-semibold">{t("week", { date: format.date(weekStart) })}</h2>
-              {productTypes.map((type) => {
-                const week = type.weeks.find((item) => item.weekStart === weekStart);
-                if (!week) return null;
-                // Capacity is a count of pieces, sheets or jobs (decimal strings), never money.
-                const capacity = Number(week.capacity);
-                const booked = Number(week.booked);
-                const used = capacity ? Math.round((booked / capacity) * 100) : 0;
-                const loadText = t("load", {
-                  booked: format.number(booked),
-                  capacity: format.number(capacity),
-                  unit: type.unit && tUnits.has(type.unit) ? tUnits(type.unit) : (type.unit ?? ""),
-                });
-                // The Meter only draws the bar; the name and figures are written out beside it.
-                return (
-                  <div key={type.productTypeId} className="flex flex-col gap-1">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
-                      <span className="font-medium">{type.productTypeNameTh}</span>
-                      <span className={capacity ? "tabular-nums" : "text-muted"}>
-                        {capacity ? `${loadText} · ${used}%` : t("noCapacity")}
-                      </span>
-                    </div>
-                    <Meter
-                      label={type.productTypeNameTh}
-                      value={used}
-                      tone={used >= 90 ? "danger" : used >= 70 ? "warning" : "primary"}
-                      valueText={loadText}
-                    />
-                  </div>
-                );
-              })}
-            </Card>
-          </li>
-        ))}
-      </ul>
+      {/* Product types down, weeks across: how a planner reads a load chart. */}
+      <div className="border-border bg-surface overflow-x-auto rounded-xl border">
+        <table className="w-full border-collapse text-[0.9375rem] tabular-nums">
+          <caption className="sr-only">{t("title")}</caption>
+          <thead>
+            <tr className="border-border bg-surface-subtle border-b">
+              <th
+                scope="col"
+                className="text-muted bg-surface-subtle sticky start-0 z-10 px-4 py-2.5 text-start text-sm font-medium"
+              >
+                {t("table.type")}
+              </th>
+              {weeks.map((weekStart) => (
+                <th
+                  key={weekStart}
+                  scope="col"
+                  className="text-muted px-3 py-2.5 text-start text-sm font-medium whitespace-nowrap"
+                >
+                  {t("table.week", { date: format.date(weekStart, { style: "dayMonth" }) })}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {productTypes.map((type) => (
+              <tr key={type.productTypeId} className="border-border border-b last:border-b-0">
+                <th
+                  scope="row"
+                  className="bg-surface border-border sticky start-0 z-10 border-e px-4 py-3 text-start font-medium whitespace-nowrap"
+                >
+                  {type.productTypeNameTh}
+                  <span className="text-muted block text-sm font-normal">
+                    {type.unit && tUnits.has(type.unit) ? tUnits(type.unit) : (type.unit ?? "")}
+                  </span>
+                </th>
+                {weeks.map((weekStart) => {
+                  const week = type.weeks.find((item) => item.weekStart === weekStart);
+                  if (!week)
+                    return (
+                      <td key={weekStart} className="text-muted px-3 py-3">
+                        —
+                      </td>
+                    );
+                  // Capacity is a count of pieces, sheets or jobs (decimal strings), never money.
+                  const capacity = Number(week.capacity);
+                  const booked = Number(week.booked);
+                  const used = capacity ? Math.round((booked / capacity) * 100) : 0;
+                  return (
+                    <td key={weekStart} className="min-w-32 px-3 py-3 align-top">
+                      {capacity ? (
+                        <span className="flex flex-col gap-1">
+                          <span
+                            className={
+                              used >= 90
+                                ? "text-danger font-semibold"
+                                : used >= 70
+                                  ? "text-warning-subtle-fg font-semibold"
+                                  : "font-medium"
+                            }
+                          >
+                            {used}%
+                          </span>
+                          <Meter
+                            label={type.productTypeNameTh}
+                            value={used}
+                            tone={used >= 90 ? "danger" : used >= 70 ? "warning" : "primary"}
+                            valueText={t("load", {
+                              booked: format.number(booked),
+                              capacity: format.number(capacity),
+                              unit: "",
+                            })}
+                          />
+                          <span className="text-muted text-xs whitespace-nowrap">
+                            {format.number(booked)} / {format.number(capacity)}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-muted text-sm">{t("noCapacity")}</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </PartnerPage>
   );
 }

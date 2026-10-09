@@ -30,6 +30,14 @@
       "delivered": "Nothing delivered yet",
       "exceptions": "No failed or returned trips",
       "all": "No shipments yet"
+    },
+    "table": {
+      "no": "Shipment",
+      "to": "To",
+      "jobs": "Jobs",
+      "pieces": "Pieces",
+      "cartons": "Cartons",
+      "status": "Status"
     }
   },
   "create": {

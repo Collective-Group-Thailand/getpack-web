@@ -5,7 +5,7 @@ import { attempt, factoryContext, partnerServerApis } from "@/features/partner/c
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { ViewTabs } from "@/features/partner/rows";
 import { JobScan } from "@/features/partner/jobs/actions";
-import { JobCard } from "@/features/partner/jobs/JobCard";
+import { JobsTable } from "@/features/partner/jobs/JobsTable";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -58,7 +58,7 @@ export default async function JobsPage({ searchParams }: Props) {
         current={view}
         items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
       />
-      <form role="search" className="flex gap-2" action="/jobs">
+      <form role="search" className="flex max-w-xl gap-2" action="/jobs">
         <input type="hidden" name="view" value={view} />
         <label htmlFor="jobs-q" className="sr-only">
           {t("search")}
@@ -77,13 +77,7 @@ export default async function JobsPage({ searchParams }: Props) {
       </form>
       {jobs.data ? (
         jobs.data.data.length ? (
-          <ul className="grid gap-2 md:grid-cols-2">
-            {jobs.data.data.map((job) => (
-              <li key={job.id}>
-                <JobCard job={job} />
-              </li>
-            ))}
-          </ul>
+          <JobsTable jobs={jobs.data.data} caption={t(`views.${view}`)} />
         ) : (
           <EmptyState icon="factory" title={t(`empty.${view}`)} />
         )

@@ -229,7 +229,14 @@
     "issueResolved": "แก้แล้ว: {note} · {name}",
     "operatorStep": "ขั้นนี้ฝ่ายผลิตเป็นผู้บันทึก — ฝ่าย QC บันทึกที่ขั้นตรวจคุณภาพ",
     "acceptFirst": "กด “รับงาน” ด้านบนก่อน แล้วขั้นตอนการผลิตจะเริ่ม",
-    "raiseIssueToggle": "แจ้งปัญหาของงานนี้"
+    "raiseIssueToggle": "แจ้งปัญหาของงานนี้",
+    "acceptSummary": {
+      "product": "สินค้า",
+      "quantity": "จำนวน (ชิ้น)",
+      "ship": "ต้องส่งภายใน",
+      "amount": "ยอดที่จะได้รับ (ไม่รวม VAT)",
+      "seeSpec": "ดูสเปกและไฟล์งานก่อนรับ"
+    }
   },
   "capacity": {
     "title": "กำลังผลิตรายสัปดาห์",
@@ -242,7 +249,11 @@
       "closure": "{date} · {name} (โรงงานหยุด)",
       "extra_working_day": "{date} · {name} (วันทำงานเพิ่ม)"
     },
-    "noCapacity": "ยังไม่ได้ตั้งกำลังผลิต"
+    "noCapacity": "ยังไม่ได้ตั้งกำลังผลิต",
+    "table": {
+      "type": "ประเภทสินค้า",
+      "week": "สัปดาห์ {date}"
+    }
   },
   "samples": {
     "title": "งานตัวอย่าง",
@@ -374,6 +385,24 @@
     "recordSample": "บันทึกตัวอย่าง",
     "pieces": "{count} ชิ้น",
     "openJob": "เปิดใบตรวจ",
-    "startCheck": "เริ่มตรวจ"
+    "startCheck": "เริ่มตรวจ",
+    "table": {
+      "job": "เลขงาน",
+      "product": "สินค้า",
+      "quantity": "จำนวน (ชิ้น)",
+      "when": "นัด / ขั้นตอน",
+      "action": "ทำรายการ"
+    }
+  },
+  "table": {
+    "no": "เลขงาน",
+    "product": "สินค้า",
+    "quantity": "จำนวน (ชิ้น)",
+    "ship": "กำหนดส่ง",
+    "step": "ขั้นตอนตอนนี้",
+    "due": "ครบ {date}",
+    "status": "สถานะ",
+    "late": "ล่าช้า",
+    "inspection": "Packio จะมาตรวจ"
   }
 }

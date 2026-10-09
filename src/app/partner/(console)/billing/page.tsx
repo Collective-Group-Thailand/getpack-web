@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { BILLING_STATEMENT_STATUS, INPUT_VAT_STATUS, VENDOR_INVOICE_STATUS } from "@/domain/status";
+import { BILLING_STATEMENT_STATUS, VENDOR_INVOICE_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage } from "@/features/partner/frame";
-import { Code, Row, RowList } from "@/features/partner/rows";
+import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -49,30 +50,59 @@ export default async function BillingPage() {
     >
       {statements.data ? (
         statements.data.data.length ? (
-          <RowList label={t("title")}>
-            {statements.data.data.map((statement) => (
-              <Row
-                key={statement.id}
-                href={`/billing/${statement.id}`}
-                icon="receipt"
-                tone={statement.status === "sent" ? "warning" : "neutral"}
-                title={
-                  <>
-                    <Code>{statement.bsNumber}</Code>
+          <PartnerTable
+            caption={t("title")}
+            rows={statements.data.data}
+            rowKey={(statement) => statement.id}
+            rowHref={(statement) => `/billing/${statement.id}`}
+            rowTone={(statement) => (statement.status === "sent" ? "warning" : undefined)}
+            columns={[
+              {
+                key: "no",
+                header: t("table.no"),
+                primary: true,
+                cell: (statement) => <span className="font-mono whitespace-nowrap">{statement.bsNumber}</span>,
+              },
+              {
+                key: "period",
+                header: t("table.period"),
+                className: "whitespace-nowrap",
+                // A one-day run reads as that day; a longer one as "1 ต.ค. – 9 ต.ค. 2569".
+                cell: (statement) =>
+                  statement.periodFrom === statement.periodTo
+                    ? format.date(statement.periodFrom)
+                    : `${format.date(statement.periodFrom, { style: "dayMonth" })} – ${format.date(statement.periodTo)}`,
+              },
+              {
+                key: "gross",
+                header: t("table.gross"),
+                align: "end",
+                cell: (statement) => <span className="font-semibold">{format.thb(statement.totals.gross)}</span>,
+              },
+              {
+                key: "status",
+                header: t("table.status"),
+                className: "whitespace-nowrap",
+                // The chip names Packio's state ("รอโรงงานตรวจ"); to the factory reading it that is "your turn".
+                cell: (statement) =>
+                  statement.status === "sent" ? (
+                    <Badge tone="warning">{t("table.checkIt")}</Badge>
+                  ) : (
                     <StatusChip map={BILLING_STATEMENT_STATUS} value={statement.status} />
-                    {statement.taxInvoiceStatus !== "none" ? (
-                      <StatusChip map={VENDOR_INVOICE_STATUS} value={statement.taxInvoiceStatus} />
-                    ) : null}
-                    {statement.inputVatStatus ? (
-                      <StatusChip map={INPUT_VAT_STATUS} value={statement.inputVatStatus} />
-                    ) : null}
-                  </>
-                }
-                meta={t("period", { from: format.date(statement.periodFrom), to: format.date(statement.periodTo) })}
-                aside={<span className="font-semibold">{format.thb(statement.totals.gross)}</span>}
-              />
-            ))}
-          </RowList>
+                  ),
+              },
+              {
+                key: "invoice",
+                header: t("table.invoice"),
+                cell: (statement) =>
+                  statement.taxInvoiceStatus !== "none" ? (
+                    <StatusChip map={VENDOR_INVOICE_STATUS} value={statement.taxInvoiceStatus} />
+                  ) : (
+                    <span className="text-muted">{t("table.noInvoice")}</span>
+                  ),
+              },
+            ]}
+          />
         ) : (
           <EmptyState icon="receipt" title={t("empty")} description={t("emptyBody")} />
         )

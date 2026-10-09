@@ -89,6 +89,14 @@
     "offsets": {
       "payable": "หักจากยอดจ่าย",
       "receivable": "เรียกเก็บจากโรงงาน"
+    },
+    "table": {
+      "no": "เลขเคลม",
+      "type": "เรื่อง",
+      "refs": "งาน / การจัดส่ง",
+      "date": "วันที่ลูกค้าแจ้ง",
+      "status": "สถานะ",
+      "deduction": "หักเงิน"
     }
   },
   "performance": {
@@ -157,7 +165,15 @@
     "ownerManaged": "เจ้าของโรงงานจัดการโดยทีมพาร์ตเนอร์ของ Packio",
     "saveRoles": "บันทึกบทบาท",
     "editRoles": "แก้บทบาท",
-    "cancelEdit": "ยกเลิก"
+    "cancelEdit": "ยกเลิก",
+    "table": {
+      "name": "ชื่อ",
+      "roles": "หน้าที่",
+      "seen": "เข้าใช้ล่าสุด",
+      "never": "ยังไม่เคยเข้า",
+      "status": "สถานะ",
+      "manage": "จัดการ"
+    }
   },
   "notifications": {
     "saved": "บันทึกแล้ว",

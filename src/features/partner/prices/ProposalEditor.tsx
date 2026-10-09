@@ -23,6 +23,8 @@ import { SearchInput } from "@/ui/components/SearchInput";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
+import { PartnerTable } from "@/features/partner/table";
+
 import { componentsFor } from "./components-by-type";
 import { lineToInput, type LineInput, type SheetProblem } from "./lines";
 import {
@@ -163,6 +165,18 @@ export function ProposalEditor({
       if (column.type === "decimal" && typeof values[column.key] === "string")
         values[column.key] = decimalText(values[column.key] as string);
     return values;
+  };
+
+  /** The value columns a draft line actually changes (all of them for a new line). */
+  const changedOf = (line: Line) => {
+    const columns = columnsOf(allDefinitions, line.component);
+    const current = (line.currentValues ?? {}) as Values;
+    const proposed = (line.proposedValues ?? {}) as Values;
+    return line.action === "change"
+      ? columns.values.filter((column) => !same(current[column.key], proposed[column.key]))
+      : line.action === "add"
+        ? columns.values
+        : [];
   };
 
   const needle = search.trim().toLocaleLowerCase();
@@ -340,85 +354,97 @@ export function ProposalEditor({
           {t("draftLinesCount", { count: lines.length })}
         </h3>
         {lines.length ? (
-          <ul className="border-border divide-border bg-surface divide-y rounded-xl border">
-            {lines.map((line) => {
-              const columns = columnsOf(allDefinitions, line.component);
-              const current = (line.currentValues ?? {}) as Values;
-              const proposed = (line.proposedValues ?? {}) as Values;
-              const shown =
-                line.action === "change"
-                  ? columns.values.filter((column) => !same(current[column.key], proposed[column.key]))
-                  : line.action === "add"
-                    ? columns.values
-                    : [];
-              const where = columns.dimensions
-                .map((column) => show(column, (line.action === "add" ? proposed : current)[column.key]))
-                .join(" · ");
-              return (
-                <li key={line.id} className="flex flex-wrap items-start gap-3 p-3">
+          <PartnerTable
+            caption={t("draftLines")}
+            rows={lines}
+            rowKey={(line) => line.id}
+            rowTone={(line) => (line.action === "change" && !changedOf(line).length ? "warning" : undefined)}
+            columns={[
+              {
+                key: "action",
+                header: t("table.action"),
+                cell: (line) => (
                   <Badge tone={line.action === "remove" ? "danger" : line.action === "add" ? "success" : "warning"}>
                     {tActions(line.action)}
                   </Badge>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm">
+                ),
+              },
+              {
+                key: "line",
+                header: t("table.line"),
+                primary: true,
+                cell: (line) => {
+                  const columns = columnsOf(allDefinitions, line.component);
+                  const values = ((line.action === "add" ? line.proposedValues : line.currentValues) ?? {}) as Values;
+                  return (
+                    <span className="flex flex-col">
                       <span className="font-medium">{tComponents(line.component)}</span>
-                      {where ? <span className="text-muted"> · {where}</span> : null}
-                    </p>
-                    {shown.length ? (
-                      <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm tabular-nums">
-                        {shown.map((column) => {
-                          const before = current[column.key];
-                          const after = proposed[column.key];
-                          const up =
-                            line.action === "change" && NUMERIC.includes(column.type) && Number(after) > Number(before);
-                          const down =
-                            line.action === "change" && NUMERIC.includes(column.type) && Number(after) < Number(before);
-                          return (
-                            <li key={column.key}>
-                              <span className="text-muted">{label(column.key)}</span>{" "}
-                              {line.action === "change" ? (
-                                <>
-                                  <span className="text-muted line-through">{show(column, before)}</span> →{" "}
-                                </>
-                              ) : null}
-                              <span className="font-semibold">{show(column, after)}</span>
-                              {up ? (
-                                <Icon
-                                  name="trend-up"
-                                  size={14}
-                                  className="text-danger ms-1 inline"
-                                  aria-label={t("up")}
-                                />
-                              ) : down ? (
-                                <Icon
-                                  name="trend-down"
-                                  size={14}
-                                  className="text-success ms-1 inline"
-                                  aria-label={t("down")}
-                                />
-                              ) : null}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    ) : line.action === "change" ? (
-                      <p className="text-warning-subtle-fg mt-1 text-sm">{t("unchanged")}</p>
-                    ) : null}
-                  </div>
-                  <IconButton
-                    name="trash"
+                      <span className="text-muted text-sm">
+                        {columns.dimensions.map((column) => show(column, values[column.key])).join(" · ")}
+                      </span>
+                    </span>
+                  );
+                },
+              },
+              {
+                key: "change",
+                header: t("table.change"),
+                cell: (line) => {
+                  const changed = changedOf(line);
+                  const current = (line.currentValues ?? {}) as Values;
+                  const proposed = (line.proposedValues ?? {}) as Values;
+                  if (line.action === "remove") return <span className="text-muted">{t("table.removed")}</span>;
+                  if (!changed.length) return <span className="text-warning-subtle-fg text-sm">{t("unchanged")}</span>;
+                  return (
+                    <ul className="flex flex-col gap-0.5 text-sm tabular-nums">
+                      {changed.map((column) => {
+                        const before = current[column.key];
+                        const after = proposed[column.key];
+                        const up =
+                          line.action === "change" && NUMERIC.includes(column.type) && Number(after) > Number(before);
+                        const down =
+                          line.action === "change" && NUMERIC.includes(column.type) && Number(after) < Number(before);
+                        return (
+                          <li key={column.key} className="flex flex-wrap items-center gap-x-1.5">
+                            <span className="text-muted">{label(column.key)}</span>
+                            {line.action === "change" ? (
+                              <span className="text-muted line-through">{show(column, before)}</span>
+                            ) : null}
+                            {line.action === "change" ? <Icon name="arrow-right" size={14} aria-hidden /> : null}
+                            <span className="font-semibold">{show(column, after)}</span>
+                            {up ? (
+                              <span className="text-danger text-xs">{t("up")}</span>
+                            ) : down ? (
+                              <span className="text-success text-xs">{t("down")}</span>
+                            ) : null}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                },
+              },
+              {
+                key: "remove",
+                header: <span className="sr-only">{t("removeFromDraft")}</span>,
+                hideOnPhone: false,
+                cell: (line) => (
+                  <Button
+                    size="sm"
                     variant="ghost"
-                    size="md"
-                    label={t("removeFromDraft")}
+                    iconStart="trash"
                     disabled={busy}
                     onClick={() =>
                       void replace(lines.filter((item) => item.id !== line.id).map(lineToInput), t("removed"))
                     }
-                  />
-                </li>
-              );
-            })}
-          </ul>
+                  >
+                    {t("table.drop")}
+                  </Button>
+                ),
+                className: "w-[1%] whitespace-nowrap",
+              },
+            ]}
+          />
         ) : (
           <p className="border-border text-muted rounded-xl border border-dashed p-4 text-sm">{t("noLines")}</p>
         )}
