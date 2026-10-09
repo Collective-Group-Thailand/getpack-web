@@ -71,7 +71,7 @@ export default async function SettingsPage() {
       : role;
 
   return (
-    <PartnerPage title={t("title")}>
+    <PartnerPage title={t("title")} wide>
       {owner ? (
         <PartnerSection title={tUsers("title")} description={tUsers("body")} id="users">
           {users?.data ? (

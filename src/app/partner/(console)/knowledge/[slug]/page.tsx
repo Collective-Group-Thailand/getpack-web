@@ -29,10 +29,8 @@ export default async function KnowledgeArticlePage({ params }: { params: Promise
     <PartnerPage
       title={locale === "en" && a.titleEn ? a.titleEn : a.titleTh}
       description={t("published", { date: format.date(a.publishedAt) })}
+      back={{ href: "/knowledge", label: t("back") }}
     >
-      <Link href="/knowledge" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">
-        {t("back")}
-      </Link>
       <RichTextView doc={body} linkAs={Link} />
     </PartnerPage>
   );

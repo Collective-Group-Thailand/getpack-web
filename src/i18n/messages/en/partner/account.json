@@ -184,7 +184,9 @@
       "manage": "Manage"
     },
     "namePlaceholder": "e.g. Somchai Jaidee",
-    "emailPlaceholder": "e.g. somchai@factory.com"
+    "emailPlaceholder": "e.g. somchai@factory.com",
+    "editRolesTitle": "Roles of {name}",
+    "editRolesBody": "Pick one or more; the menu follows the roles chosen"
   },
   "notifications": {
     "saved": "Saved",
