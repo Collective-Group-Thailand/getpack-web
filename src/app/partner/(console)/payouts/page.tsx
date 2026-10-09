@@ -9,6 +9,7 @@ import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Stat } from "@/ui/components/Stat";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -40,7 +41,7 @@ export default async function PayoutsPage({ searchParams }: Props) {
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
-  const [schedule, history] = await Promise.all([
+  const [schedule, history, summary] = await Promise.all([
     attempt(
       async () =>
         (
@@ -52,6 +53,10 @@ export default async function PayoutsPage({ searchParams }: Props) {
     // The list is a date range, not pages (U-B0.3); the API's own default range applies.
     attempt(
       async () => (await contract.GET("/v1/partner/factories/{factoryId}/payouts", { params: { path } })).data ?? [],
+    ),
+    // This month to today, from the vendor sub-ledger: the figures are the API's, the page adds nothing.
+    attempt(
+      async () => (await contract.GET("/v1/partner/factories/{factoryId}/finance-summary", { params: { path } })).data!,
     ),
   ]);
 
@@ -74,6 +79,41 @@ export default async function PayoutsPage({ searchParams }: Props) {
       }
       wide
     >
+      {summary.data ? (
+        <section aria-label={t("summary.label")} className="flex flex-col gap-2">
+          <ul className="grid grid-cols-2 gap-2 md:grid-cols-4">
+            <li>
+              <Stat
+                label={t("summary.owed")}
+                value={format.thb(summary.data.period.closing)}
+                icon="wallet"
+                hint={t("summary.asOf", { date: format.date(summary.data.period.to) })}
+              />
+            </li>
+            <li>
+              <Stat label={t("summary.earned")} value={format.thb(summary.data.period.earned)} icon="package-check" />
+            </li>
+            <li>
+              <Stat label={t("summary.paid")} value={format.thb(summary.data.period.paid)} icon="coins" />
+            </li>
+            <li>
+              <Stat
+                label={t("summary.retained")}
+                value={format.thb(summary.data.period.retainedHeld)}
+                icon="shield"
+                hint={t("summary.retainedHint")}
+              />
+            </li>
+          </ul>
+          <p className="text-muted text-sm">
+            {t("summary.period", {
+              from: format.date(summary.data.period.from),
+              to: format.date(summary.data.period.to),
+            })}
+          </p>
+        </section>
+      ) : null}
+
       <PartnerSection title={t("scheduleTitle")} description={t("scheduleBody")}>
         {schedule.data ? (
           <nav aria-label={t("views.label")} className="flex flex-wrap gap-2">
