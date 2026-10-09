@@ -39,6 +39,7 @@ export function TemplateCard({
   meta,
   action,
   big = false,
+  narrow = false,
 }: {
   style: StyleCard;
   locale: string;
@@ -48,6 +49,8 @@ export function TemplateCard({
   meta: string;
   action?: string;
   big?: boolean;
+  /** A narrow column (the `/studio` row): 8px more top inset for the drawing. */
+  narrow?: boolean;
 }) {
   const name = pick(locale, style.nameTh, style.nameEn);
   return (
@@ -62,10 +65,14 @@ export function TemplateCard({
             <img
               src={dieline.card.src}
               alt=""
-              className={cn("size-full object-contain", big ? "p-[7%]" : "p-[10%] pt-[18%]")}
+              className={cn(
+                "size-full object-contain",
+                big ? "p-[7%]" : narrow ? "p-[10%] pt-[calc(18%_+_8px)]" : "p-[10%] pt-[18%]",
+              )}
             />
           ) : null}
-          {dieline.thumb ? (
+          {/* The corner thumbnail names the shape over a photo; over the dieline itself it would repeat it. */}
+          {photo && dieline.thumb ? (
             <span className="border-border bg-surface rounded-thumb absolute start-2.5 top-2.5 h-[46px] w-16 border p-1">
               {/* eslint-disable-next-line @next/next/no-img-element -- an inline SVG data URI */}
               <img src={dieline.thumb.src} alt="" className="size-full object-contain" />
