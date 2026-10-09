@@ -6,7 +6,7 @@ import type { IconName } from "@/ui/icons";
  * of those, only what the user's roles at this factory work with. "เพิ่มเติม" stays on a phone,
  * where the bottom bar has five places.
  */
-export type SidebarGroupKey = "daily" | "plan" | "finance" | "factory";
+export type SidebarGroupKey = "daily" | "supply" | "plan" | "finance" | "factory";
 
 export type SidebarItemKey =
   | "today"
@@ -16,6 +16,9 @@ export type SidebarItemKey =
   | "samples"
   | "ship"
   | "claims"
+  | "stock"
+  | "purchasing"
+  | "tradingPartners"
   | "capacity"
   | "hours"
   | "billing"
@@ -53,6 +56,22 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
   },
   ship: { key: "ship", href: "/ship", icon: "truck", group: "daily", permission: "factory_shipments.read" },
   claims: { key: "claims", href: "/claims", icon: "shield-alert", group: "daily", permission: "factory_claims.read" },
+  // Packio Factory ERP (E1, D-316): the factory's own stock, buying and trading partners.
+  stock: { key: "stock", href: "/stock", icon: "warehouse", group: "supply", permission: "factory_inventory.read" },
+  purchasing: {
+    key: "purchasing",
+    href: "/purchasing",
+    icon: "cart",
+    group: "supply",
+    permission: "factory_procurement.read",
+  },
+  tradingPartners: {
+    key: "tradingPartners",
+    href: "/partners",
+    icon: "handshake",
+    group: "supply",
+    permission: "factory_trading_partners.read",
+  },
   capacity: {
     key: "capacity",
     href: "/capacity",
@@ -97,15 +116,31 @@ const EVERYONE: readonly SidebarItemKey[] = ["knowledge", "requests", "settings"
 
 const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   factory_owner: Object.keys(ITEMS) as SidebarItemKey[],
-  factory_planner: ["today", "jobs", "capacity", "hours", ...EVERYONE],
+  factory_planner: ["today", "jobs", "stock", "purchasing", "capacity", "hours", ...EVERYONE],
   factory_operator: ["today", "jobs", ...EVERYONE],
   // QC and shipping open on their own queue (`/qc`, `/ship`): "งานวันนี้" would lead back to it.
   factory_qc: ["qc", "samples", "claims", ...EVERYONE],
   factory_shipping: ["ship", ...EVERYONE],
-  factory_accountant: ["today", "billing", "payouts", "prices", "shippingRates", "performance", ...EVERYONE],
+  factory_accountant: [
+    "today",
+    "purchasing",
+    "tradingPartners",
+    "stock",
+    "billing",
+    "payouts",
+    "prices",
+    "shippingRates",
+    "performance",
+    ...EVERYONE,
+  ],
+  // Packio Factory ERP roles (D-319): the store and the buying desk.
+  factory_storekeeper: ["stock", "purchasing", "tradingPartners", ...EVERYONE],
+  factory_purchaser: ["purchasing", "stock", "tradingPartners", ...EVERYONE],
 };
 
-const GROUP_ORDER: SidebarGroupKey[] = ["daily", "plan", "finance", "factory"];
+const SUPPLY: readonly SidebarItemKey[] = ["stock", "purchasing", "tradingPartners"];
+
+const GROUP_ORDER: SidebarGroupKey[] = ["daily", "supply", "plan", "finance", "factory"];
 
 const itemOf = (key: SidebarItemKey): SidebarItem => ({ key, href: ITEMS[key].href, icon: ITEMS[key].icon });
 
@@ -158,8 +193,8 @@ export function partnerBottomItems(
   const preferred: SidebarItemKey[] = isOnboarding(status)
     ? ["today", "onboarding", "prices"]
     : ["today", "jobs", "qc", "ship", "billing", "samples", "claims", "capacity"];
-  return preferred
-    .filter((key) => keys.includes(key))
-    .slice(0, 4)
-    .map(itemOf);
+  const floor = preferred.filter((key) => keys.includes(key));
+  // The store and the buying desk (D-319) have no floor queue: their bar is the supply group.
+  const supply = floor.length < 2 ? SUPPLY.filter((key) => keys.includes(key)) : [];
+  return [...floor, ...supply].slice(0, 4).map(itemOf);
 }

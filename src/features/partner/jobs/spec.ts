@@ -21,7 +21,10 @@ function lwd(value: unknown, format: (n: number) => string): string | null {
   if (!size) return null;
   const [l, w, d] = [num(size["l"]), num(size["w"]), num(size["d"])];
   if (l === null || w === null) return null;
-  return [l, w, d].filter((n): n is number => n !== null).map(format).join(" × ");
+  return [l, w, d]
+    .filter((n): n is number => n !== null)
+    .map(format)
+    .join(" × ");
 }
 
 export function specLines(spec: unknown, format: (n: number) => string): SpecLine[] {
@@ -55,7 +58,8 @@ export function specLines(spec: unknown, format: (n: number) => string): SpecLin
     const front = rec(part)?.["printFront"];
     return total + (Array.isArray(front) ? front.length : 0);
   }, 0);
-  if (parts.length) lines.push(printAreas ? { key: "print", values: { count: String(printAreas) } } : { key: "noPrint" });
+  if (parts.length)
+    lines.push(printAreas ? { key: "print", values: { count: String(printAreas) } } : { key: "noPrint" });
   const design = str(root["designOption"]);
   if (design) lines.push({ key: `design.${design}` });
   return lines;

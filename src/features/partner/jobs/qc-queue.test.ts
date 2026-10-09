@@ -22,7 +22,12 @@ describe("qcQueue (round 2, Phase 1)", () => {
     const queue = qcQueue([
       job({ id: "late", inspection: { status: "planned", scheduledAt: "2026-10-09T10:00:00+07:00" } as never }),
       job({ id: "soon", inspection: { status: "planned", scheduledAt: "2026-10-07T10:00:00+07:00" } as never }),
-      job({ id: "atqc", milestones: [step] as never, currentMilestoneKey: "qc", nextActions: [{ key: "job.record_qc" }] as never }),
+      job({
+        id: "atqc",
+        milestones: [step] as never,
+        currentMilestoneKey: "qc",
+        nextActions: [{ key: "job.record_qc" }] as never,
+      }),
       job({ id: "done", status: "completed", inspection: { status: "planned", scheduledAt: null } as never }),
       job({ id: "noperm", milestones: [step] as never, currentMilestoneKey: "qc" }),
     ]);
