@@ -147,6 +147,16 @@
       "paid": "Paid in full",
       "all": "All",
       "dueEmpty": "No purchase order is waiting for payment"
+    },
+    "summary": {
+      "label": "This month",
+      "owed": "Packio owes you",
+      "asOf": "As of {date}",
+      "earned": "Delivered this month",
+      "paid": "Received this month",
+      "retained": "Retention held",
+      "retainedHint": "Returned after the retention period",
+      "period": "{from} – {to}, net of VAT; matches the statement of account"
     }
   },
   "payout": {
