@@ -163,7 +163,8 @@
     "inspection": "Packio ตรวจ",
     "quantity": "{quantity} ชิ้น",
     "ship": "ส่ง {date}",
-    "step": "ขั้น: {name}"
+    "step": "{name}",
+    "open": "เปิดงาน"
   },
   "stages": {
     "done": "เสร็จแล้ว",
@@ -194,7 +195,7 @@
     "toShip": "ผลิตเสร็จ — ไปจัดส่ง",
     "spec": "สเปก",
     "artwork": "ไฟล์งานที่อนุมัติ",
-    "watermark": "APPROVED v{version}",
+    "watermark": "อนุมัติแล้ว v{version}",
     "approvedOn": "ฉบับที่ {version} อนุมัติเมื่อ {date} — ผลิตตามฉบับนี้เท่านั้น",
     "openProof": "เปิด Proof",
     "openDieline": "เปิดแบบไดคัท",

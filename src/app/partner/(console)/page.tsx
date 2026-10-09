@@ -15,6 +15,8 @@ import { Card } from "@/ui/components/Card";
 import { Meter } from "@/ui/components/Meter";
 import { Stat } from "@/ui/components/Stat";
 import { Icon, type IconName } from "@/ui/icons";
+import { Button } from "@/ui/components/Button";
+import { Row, RowList } from "@/features/partner/rows";
 
 /**
  * The partner zone's landing screen: what is waiting for this factory today.
@@ -96,7 +98,14 @@ export default async function PartnerHomePage() {
   const claimsToAnswer = claims?.data?.data.length ?? 0;
   const [tFloor, format] = await Promise.all([getTranslations("partnerToday.floor"), getFormat()]);
 
-  const tasks: { key: string; href: string; icon: IconName; title: string; body: string }[] = [];
+  const tasks: {
+    key: string;
+    href: string;
+    icon: IconName;
+    title: string;
+    body: string;
+    tone?: "warning" | "danger";
+  }[] = [];
   const toSignOff = (steps?.data ?? []).filter(awaitsSignOff).length;
   if (toSignOff)
     tasks.push({
@@ -140,6 +149,7 @@ export default async function PartnerHomePage() {
       key: claim.id,
       href: `/claims/${claim.id}`,
       icon: "shield-alert",
+      tone: "danger",
       title: t("tasks.claim", { no: claim.claimNo }),
       body: t("tasks.claimBody"),
     });
@@ -156,8 +166,10 @@ export default async function PartnerHomePage() {
 
   return (
     <PartnerPage
-      title={factory ? (factory.tradeName ?? factory.legalName) : t("title")}
-      description={t("greeting", { name: context.actor.displayName })}
+      wide
+      title={t("title")}
+      // The factory's name is in the sidebar and the bar already; the page says whose day and which day.
+      description={`${t("greeting", { name: context.actor.displayName })} · ${format.date(new Date().toISOString(), { style: "long" })}`}
       meta={factory ? <StatusChip map={FACTORY_STATUS} value={factory.status} size="md" /> : null}
     >
       {onboarding && factory ? (
@@ -242,8 +254,14 @@ export default async function PartnerHomePage() {
                 <li key={`${alert.kind}-${alert.jobId}`}>
                   <Link href={`/jobs/${alert.jobId}`} className="block">
                     <Callout
-                      tone={alert.kind === "acceptance_overdue" || alert.kind === "step_overdue" ? "danger" : "warning"}
-                      icon="warning"
+                      tone={
+                        alert.kind === "acceptance_overdue" || alert.kind === "step_overdue"
+                          ? "danger"
+                          : alert.kind === "inspection_planned"
+                            ? "info"
+                            : "warning"
+                      }
+                      icon={alert.kind === "inspection_planned" ? "shield" : "warning"}
                       title={alert.jobNo}
                     >
                       {alert.dueAt
@@ -255,12 +273,34 @@ export default async function PartnerHomePage() {
               ))}
             </ul>
           ) : null}
+          <PartnerSection title={t("tasks.title")} id="tasks">
+            {tasks.length ? (
+              <RowList label={t("tasks.title")}>
+                {tasks.map((task) => (
+                  <Row
+                    key={task.key}
+                    href={task.href}
+                    icon={task.icon}
+                    tone={task.tone ?? "neutral"}
+                    title={task.title}
+                    meta={task.body}
+                  />
+                ))}
+              </RowList>
+            ) : (
+              <p className="border-border text-muted flex items-center gap-2 rounded-xl border border-dashed p-4">
+                <Icon name="success" size={20} className="text-success shrink-0" aria-hidden />
+                {t("tasks.none")}
+              </p>
+            )}
+          </PartnerSection>
+
           <PartnerSection
             title={tFloor("queue")}
             actions={
-              <Link href="/jobs" className="text-primary inline-flex min-h-12 items-center underline">
-                {tFloor("allJobs")}
-              </Link>
+              <Button asChild variant="secondary" size="md" iconEnd="arrow-right">
+                <Link href="/jobs">{tFloor("allJobs")}</Link>
+              </Button>
             }
           >
             {floor.data.queue.length ? (
@@ -277,33 +317,6 @@ export default async function PartnerHomePage() {
           </PartnerSection>
         </>
       ) : null}
-
-      <PartnerSection title={t("tasks.title")}>
-        {tasks.length ? (
-          <ul className="flex flex-col gap-2">
-            {tasks.map((task) => (
-              <li key={task.key}>
-                <Link
-                  href={task.href}
-                  className="border-border bg-surface hover:bg-surface-subtle flex min-h-16 items-center gap-3 rounded-xl border p-3"
-                >
-                  <Icon name={task.icon} size={28} className="text-primary shrink-0" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-medium">{task.title}</span>
-                    <span className="text-muted text-sm">{task.body}</span>
-                  </span>
-                  <Icon name="chevron-right" size={24} className="text-muted" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Card padding="lg" className="flex items-center gap-3">
-            <Icon name="success" size={28} className="text-success shrink-0" />
-            <p>{t("tasks.none")}</p>
-          </Card>
-        )}
-      </PartnerSection>
     </PartnerPage>
   );
 }

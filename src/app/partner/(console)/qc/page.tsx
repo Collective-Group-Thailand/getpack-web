@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { Code, Row, RowList } from "@/features/partner/rows";
 import { stepName } from "@/features/partner/jobs/JobCard";
 import { qcQueue } from "@/features/partner/jobs/qc-queue";
 import { getFormat } from "@/features/shared/format/server";
@@ -60,8 +61,9 @@ export default async function QcPage() {
   const jobCard = (job: Schemas["PartnerJobDto"], line: string, action: string) => (
     <li key={job.id}>
       <Card padding="md" className="flex flex-wrap items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="font-mono font-semibold">{job.jobNo}</p>
+        {/* At least 14rem for the job: on a phone the button drops under it, full width. */}
+        <div className="min-w-[min(100%,14rem)] flex-1">
+          <p className="font-mono font-semibold whitespace-nowrap">{job.jobNo}</p>
           <p className="text-muted">
             {[job.productTypeNameTh ?? job.title, t("pieces", { count: format.number(job.quantityOrdered) })].join(
               " · ",
@@ -71,7 +73,7 @@ export default async function QcPage() {
         </div>
         <Link
           href={`/jobs/${job.id}#qc`}
-          className="bg-primary text-primary-fg inline-flex min-h-12 items-center gap-2 rounded-xl px-5 font-semibold"
+          className="bg-primary text-primary-fg hover:bg-primary-hover rounded-control inline-flex min-h-12 w-full items-center justify-center gap-2 px-5 font-semibold sm:w-auto"
         >
           <Icon name="clipboard-check" size={20} aria-hidden="true" />
           {action}
@@ -128,20 +130,24 @@ export default async function QcPage() {
       ) : null}
       {toRecord.length ? (
         <PartnerSection title={t("samples")}>
-          <ul className="flex flex-col gap-3">
+          <RowList label={t("samples")}>
             {toRecord.map((sample) => (
-              <li key={sample.id}>
-                <Link
-                  href={`/samples#sample-${sample.id}`}
-                  className="border-border bg-surface hover:bg-surface-subtle flex min-h-16 items-center gap-3 rounded-xl border p-3"
-                >
-                  <Icon name="package-check" size={24} className="text-primary" aria-hidden="true" />
-                  <span className="min-w-0 flex-1 font-medium">{sample.jobNo ?? t("sample")} · {t("pieces", { count: format.number(sample.quantity) })}</span>
-                  <span className="text-primary font-semibold">{t("recordSample")}</span>
-                </Link>
-              </li>
+              <Row
+                key={sample.id}
+                href={`/samples#sample-${sample.id}`}
+                icon="package-check"
+                title={
+                  <>
+                    <Code>{sample.jobNo ?? t("sample")}</Code>
+                    <span className="text-muted font-normal">
+                      {t("pieces", { count: format.number(sample.quantity) })}
+                    </span>
+                  </>
+                }
+                aside={<span className="text-primary font-semibold">{t("recordSample")}</span>}
+              />
             ))}
-          </ul>
+          </RowList>
         </PartnerSection>
       ) : null}
     </PartnerPage>

@@ -5,10 +5,11 @@ import { getTranslations } from "next-intl/server";
 import { BILLING_STATEMENT_STATUS, INPUT_VAT_STATUS, VENDOR_INVOICE_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage } from "@/features/partner/frame";
+import { Code, Row, RowList } from "@/features/partner/rows";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerBilling"))("title") };
@@ -35,47 +36,43 @@ export default async function BillingPage() {
 
   return (
     <PartnerPage
+      wide
       title={t("title")}
       description={t("body")}
       actions={
         canAt(context, "factory_payables.read") ? (
-          <Link href="/payouts" className="text-primary inline-flex min-h-12 items-center gap-1 underline">
-            <Icon name="coins" size={20} />
-            {t("payoutsLink")}
-          </Link>
+          <Button asChild variant="secondary" size="md" iconStart="coins">
+            <Link href="/payouts">{t("payoutsLink")}</Link>
+          </Button>
         ) : null
       }
     >
       {statements.data ? (
         statements.data.data.length ? (
-          <ul className="flex flex-col gap-2">
+          <RowList label={t("title")}>
             {statements.data.data.map((statement) => (
-              <li key={statement.id}>
-                <Link
-                  href={`/billing/${statement.id}`}
-                  className="border-border bg-surface hover:bg-surface-subtle flex min-h-20 flex-col gap-1 rounded-xl border p-3"
-                >
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono font-semibold">{statement.bsNumber}</span>
+              <Row
+                key={statement.id}
+                href={`/billing/${statement.id}`}
+                icon="receipt"
+                tone={statement.status === "sent" ? "warning" : "neutral"}
+                title={
+                  <>
+                    <Code>{statement.bsNumber}</Code>
                     <StatusChip map={BILLING_STATEMENT_STATUS} value={statement.status} />
-                    <Icon name="chevron-right" size={24} className="text-muted ms-auto" />
-                  </span>
-                  <span className="text-muted text-sm">
-                    {t("period", { from: format.date(statement.periodFrom), to: format.date(statement.periodTo) })}
-                  </span>
-                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span className="text-lg font-semibold tabular-nums">{format.thb(statement.totals.gross)}</span>
                     {statement.taxInvoiceStatus !== "none" ? (
                       <StatusChip map={VENDOR_INVOICE_STATUS} value={statement.taxInvoiceStatus} />
                     ) : null}
                     {statement.inputVatStatus ? (
                       <StatusChip map={INPUT_VAT_STATUS} value={statement.inputVatStatus} />
                     ) : null}
-                  </span>
-                </Link>
-              </li>
+                  </>
+                }
+                meta={t("period", { from: format.date(statement.periodFrom), to: format.date(statement.periodTo) })}
+                aside={<span className="text-lg font-semibold">{format.thb(statement.totals.gross)}</span>}
+              />
             ))}
-          </ul>
+          </RowList>
         ) : (
           <EmptyState icon="receipt" title={t("empty")} description={t("emptyBody")} />
         )

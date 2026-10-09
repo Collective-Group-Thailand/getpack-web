@@ -163,7 +163,8 @@
     "inspection": "Packio inspects",
     "quantity": "{quantity} pcs",
     "ship": "Ship {date}",
-    "step": "Step: {name}"
+    "step": "{name}",
+    "open": "Open"
   },
   "stages": {
     "done": "Done",
@@ -194,7 +195,7 @@
     "toShip": "Finished — go to shipping",
     "spec": "Spec",
     "artwork": "Approved artwork",
-    "watermark": "APPROVED v{version}",
+    "watermark": "Approved v{version}",
     "approvedOn": "Version {version}, approved {date} — produce this version only",
     "openProof": "Open the proof",
     "openDieline": "Open the dieline",

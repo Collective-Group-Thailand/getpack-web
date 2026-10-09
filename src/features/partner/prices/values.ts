@@ -67,6 +67,8 @@ export function cellText(
   if (column?.type === "ref" && typeof value === "string") return referenceName(column.key, value) ?? value.slice(0, 8);
   if (column?.type === "boolean" || typeof value === "boolean") return value ? labels.yes : labels.no;
   if (typeof value === "string" && column?.type === "decimal") return decimalText(value);
+  // Counts read with separators ("1,999"), as every other number in the app.
+  if (typeof value === "number" && column?.type === "integer") return value.toLocaleString("en-US");
   return String(value);
 }
 
@@ -132,4 +134,47 @@ export function sortRows<R extends { values: unknown }>(
     }
     return 0;
   });
+}
+
+const BOUND = /(Min|Max|From|To)(?=[A-Z]|$)|^(min|max)(?=[A-Z])/;
+const stemOf = (key: string) => key.replace(BOUND, "").toLowerCase();
+const isLower = (key: string) => /(Min|From)(?=[A-Z]|$)|^min(?=[A-Z])/.test(key);
+
+/**
+ * The identifying columns of a line as one short phrase, with each from/to pair read as a range
+ * ("จำนวนแผ่น 500–1,999", "… ≤ 499", "… ≥ 2,000") — for a phone, where the table's columns do not fit.
+ */
+export function dimensionPhrase(
+  columns: Schemas["PriceColumnDto"][],
+  values: Values,
+  text: (column: Schemas["PriceColumnDto"], value: unknown) => string,
+  rangeLabel: (lowerColumnKey: string) => string,
+): string {
+  const parts: string[] = [];
+  const used = new Set<string>();
+  for (const column of columns) {
+    if (used.has(column.key)) continue;
+    const partner = BOUND.test(column.key)
+      ? columns.find((other) => other.key !== column.key && stemOf(other.key) === stemOf(column.key))
+      : undefined;
+    if (!partner) {
+      parts.push(text(column, values[column.key]));
+      continue;
+    }
+    used.add(partner.key);
+    const [lower, upper] = isLower(column.key) ? [column, partner] : [partner, column];
+    const open = (v: unknown) => v === null || v === undefined || v === "";
+    const from = values[lower.key];
+    const to = values[upper.key];
+    const range =
+      open(from) && open(to)
+        ? null
+        : open(from)
+          ? `≤ ${text(upper, to)}`
+          : open(to)
+            ? `≥ ${text(lower, from)}`
+            : `${text(lower, from)}–${text(upper, to)}`;
+    if (range) parts.push(`${rangeLabel(lower.key)} ${range}`);
+  }
+  return parts.join(" · ");
 }
