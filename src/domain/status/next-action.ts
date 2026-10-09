@@ -131,6 +131,12 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "customer_document.void": { tone: "danger", icon: "ban", labelKey: "action.void" },
   "rfq.accept": { tone: "success", icon: "check", labelKey: "action.acceptQuote" },
   "rfq.post_message": { tone: "neutral", icon: "chat", labelKey: "action.postMessage" },
+  // Packio Factory ERP (packio-api v0.44.0, D-325).
+  "erp_po.edit": { tone: "neutral", icon: "edit", labelKey: "action.editPurchaseOrder" },
+  "erp_po.issue": { tone: "primary", icon: "send", labelKey: "action.issuePurchaseOrder" },
+  "erp_po.receive": { tone: "primary", icon: "package-check", labelKey: "action.receiveGoods" },
+  "erp_po.close": { tone: "neutral", icon: "archive", labelKey: "action.closePurchaseOrder" },
+  "erp_po.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelPurchaseOrder" },
 };
 
 /**
@@ -199,6 +205,11 @@ export const API_ACTION_KEYS = [
   "rfq.compose_quote",
   "rfq.send_quote",
   "rfq.record_acceptance",
+  "erp_po.edit",
+  "erp_po.issue",
+  "erp_po.receive",
+  "erp_po.close",
+  "erp_po.cancel",
 ] as const;
 
 /** Falls back to something visible and pressable rather than dropping the action. */

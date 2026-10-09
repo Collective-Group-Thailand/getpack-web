@@ -1,0 +1,272 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+
+import { useRefresh } from "@/features/partner/client";
+import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { problemMessage } from "@/features/shared/actions";
+import { browserApi } from "@/lib/api/browser";
+import { isApiError } from "@/lib/api/problem";
+import type { Schemas } from "@/lib/api/types";
+import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
+import { Checkbox } from "@/ui/components/Checkbox";
+import { Field } from "@/ui/components/Field";
+import { Input, NumberInput } from "@/ui/components/Input";
+import { toast } from "@/ui/components/Toast";
+
+import { trimZeros } from "./format";
+
+type Settings = Schemas["ErpSettingsDto"];
+type Warehouse = Schemas["ErpWarehouseDto"];
+const MODULES = [
+  "inventory",
+  "procurement",
+  "partners",
+  "planning",
+  "floor",
+  "sales",
+  "accounting",
+  "maintenance",
+  "documents",
+] as const;
+const PREFIXES = ["po", "gr", "adj", "trf", "iss"] as const;
+/** Modules that exist today (E1); the rest are shown as coming and stay as they are. */
+const LIVE = new Set<string>(["inventory", "procurement", "partners"]);
+
+/** The factory's ERP rules (D-318, D-322, D-323, D-325): modules, negative stock, over-receipt, prefixes. */
+export function ErpSettingsForm({
+  settings,
+  etag,
+  canEdit,
+}: {
+  settings: Settings;
+  etag: string | null;
+  canEdit: boolean;
+}) {
+  const t = useTranslations("partnerErp.settings");
+  const tCommon = useTranslations("partnerErp.common");
+  const { factoryId } = useFactory();
+  const [refresh] = useRefresh();
+  const [modules, setModules] = useState<string[]>(settings.modules);
+  const [allowNegative, setAllowNegative] = useState(settings.allowNegativeStock);
+  const [overReceipt, setOverReceipt] = useState(trimZeros(settings.overReceiptPct));
+  const [prefixes, setPrefixes] = useState<Record<string, string>>(settings.prefixes);
+  const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      await browserApi().PATCH("/v1/partner/factories/{factoryId}/erp/settings", {
+        params: { path: { factoryId }, header: { "If-Match": etag ?? "" } },
+        body: {
+          modules: modules as Settings["modules"],
+          allowNegativeStock: allowNegative,
+          overReceiptPct: overReceipt || "0",
+          prefixes: Object.fromEntries(Object.entries(prefixes).map(([k, v]) => [k, v.trim().toUpperCase()])),
+        },
+      });
+      toast.success(tCommon("saved"));
+      refresh();
+    } catch (error) {
+      if (isApiError(error)) setErrors(Object.fromEntries(error.errors.map((e) => [e.path, e.message])));
+      const stale = isApiError(error) && error.status === 412;
+      toast.error(stale ? tCommon("stale") : problemMessage(error, tCommon("failed")));
+      if (stale) refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-6" noValidate>
+      <p className="text-muted">{settings.vatRegistered ? t("vatRegistered") : t("vatNotRegistered")}</p>
+      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
+        <legend className="mb-1 text-lg font-semibold">{t("rules")}</legend>
+        <Checkbox
+          label={t("allowNegative")}
+          description={t("allowNegativeHint")}
+          checked={allowNegative}
+          onCheckedChange={(checked) => setAllowNegative(checked === true)}
+        />
+        <div className="max-w-48">
+          <Field label={t("overReceipt")} hint={t("overReceiptHint")} error={errors.overReceiptPct}>
+            <NumberInput
+              min={0}
+              max={100}
+              step="any"
+              unit="%"
+              value={overReceipt}
+              onChange={(event) => setOverReceipt(event.target.value)}
+            />
+          </Field>
+        </div>
+      </fieldset>
+      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
+        <legend className="mb-1 text-lg font-semibold">{t("prefixes")}</legend>
+        <p className="text-muted text-sm">{t("prefixesHint")}</p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {PREFIXES.map((key) => (
+            <Field key={key} label={t(`prefix.${key}`)} error={errors[`prefixes.${key}`]}>
+              <Input
+                maxLength={6}
+                autoCapitalize="characters"
+                value={prefixes[key] ?? ""}
+                placeholder={key.toUpperCase()}
+                onChange={(event) =>
+                  setPrefixes({ ...prefixes, [key]: event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") })
+                }
+              />
+            </Field>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
+        <legend className="mb-1 text-lg font-semibold">{t("modules")}</legend>
+        <p className="text-muted text-sm">{t("modulesHint")}</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {MODULES.map((key) => (
+            <Checkbox
+              key={key}
+              label={t(`module.${key}`)}
+              disabled={!LIVE.has(key)}
+              checked={modules.includes(key)}
+              onCheckedChange={(checked) =>
+                setModules((current) =>
+                  checked === true ? [...new Set([...current, key])] : current.filter((m) => m !== key),
+                )
+              }
+            />
+          ))}
+        </div>
+      </fieldset>
+      {canEdit ? (
+        <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
+          {t("save")}
+        </Button>
+      ) : (
+        <p className="text-muted text-sm">{t("ownerOnly")}</p>
+      )}
+    </form>
+  );
+}
+
+/** The factory's warehouses (D-320): add one, rename by re-adding, make one main, archive the rest. */
+export function WarehouseManager({ warehouses, canEdit }: { warehouses: Warehouse[]; canEdit: boolean }) {
+  const t = useTranslations("partnerErp.settings");
+  const tCommon = useTranslations("partnerErp.common");
+  const { factoryId } = useFactory();
+  const [refresh] = useRefresh();
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function add(event: React.FormEvent) {
+    event.preventDefault();
+    if (!code.trim() || !name.trim()) return;
+    setBusy("add");
+    try {
+      await browserApi().POST("/v1/partner/factories/{factoryId}/erp/warehouses", {
+        params: { path: { factoryId } },
+        body: { code: code.trim(), name: name.trim() },
+      });
+      toast.success(t("warehouseAdded", { name: name.trim() }));
+      setCode("");
+      setName("");
+      refresh();
+    } catch (error) {
+      toast.error(problemMessage(error, tCommon("failed")));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function patch(warehouse: Warehouse, body: { isDefault?: boolean; status?: "active" | "archived" }) {
+    setBusy(warehouse.id);
+    try {
+      await browserApi().PATCH("/v1/partner/factories/{factoryId}/erp/warehouses/{warehouseId}", {
+        params: {
+          path: { factoryId, warehouseId: warehouse.id },
+          // The API's ETag of a warehouse is its id and version; the list carries the version.
+          header: { "If-Match": "*" },
+        },
+        body,
+      });
+      toast.success(tCommon("saved"));
+      refresh();
+    } catch (error) {
+      toast.error(problemMessage(error, tCommon("failed")));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <ul className="border-border bg-surface divide-border divide-y rounded-xl border">
+        {warehouses.map((warehouse) => (
+          <li key={warehouse.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+            <span className="min-w-0 flex-1">
+              <span className="font-medium">{warehouse.name}</span>{" "}
+              <span className="text-muted font-mono text-sm">{warehouse.code}</span>
+            </span>
+            {warehouse.isDefault ? <Badge tone="primary">{t("default")}</Badge> : null}
+            {warehouse.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}
+            {canEdit && !warehouse.isDefault ? (
+              <span className="flex gap-2">
+                {warehouse.status === "active" ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    loading={busy === warehouse.id}
+                    onClick={() => void patch(warehouse, { isDefault: true })}
+                  >
+                    {t("makeDefault")}
+                  </Button>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  loading={busy === warehouse.id}
+                  onClick={() =>
+                    void patch(warehouse, { status: warehouse.status === "active" ? "archived" : "active" })
+                  }
+                >
+                  {warehouse.status === "active" ? t("archive") : t("restore")}
+                </Button>
+              </span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {canEdit ? (
+        <form
+          onSubmit={(event) => void add(event)}
+          className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] sm:items-end"
+        >
+          <Field label={t("warehouseCode")}>
+            <Input
+              maxLength={20}
+              value={code}
+              placeholder={t("warehouseCodePlaceholder")}
+              onChange={(event) => setCode(event.target.value.toUpperCase())}
+            />
+          </Field>
+          <Field label={t("warehouseName")}>
+            <Input
+              value={name}
+              placeholder={t("warehouseNamePlaceholder")}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </Field>
+          <Button type="submit" size="lg" iconStart="plus" loading={busy === "add"} className="h-11 md:h-10">
+            {t("addWarehouse")}
+          </Button>
+        </form>
+      ) : null}
+    </div>
+  );
+}

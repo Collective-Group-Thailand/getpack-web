@@ -8,7 +8,9 @@
       "factory_operator": "Operator",
       "factory_qc": "QC",
       "factory_shipping": "Shipping",
-      "factory_accountant": "Factory Accountant"
+      "factory_accountant": "Factory Accountant",
+      "factory_storekeeper": "Storekeeper",
+      "factory_purchaser": "Purchaser"
     },
     "switchFactory": "Switch factory"
   },
@@ -72,12 +74,25 @@
       "styleIntakes": {
         "title": "Offer a dieline",
         "body": "Send a structure the factory makes for Packio to consider for its library"
+      },
+      "stock": {
+        "title": "Stock",
+        "body": "Balances, receipts, issues, counts"
+      },
+      "purchasing": {
+        "title": "Purchase orders",
+        "body": "Buy from suppliers and receive into stock"
+      },
+      "tradingPartners": {
+        "title": "Trading partners",
+        "body": "The factory's suppliers and customers"
       }
     }
   },
   "sidebar": {
     "groups": {
       "daily": "Daily work",
+      "supply": "Stock & purchasing",
       "plan": "Planning and capacity",
       "finance": "Finance",
       "factory": "Factory"
@@ -90,6 +105,9 @@
       "samples": "Samples",
       "ship": "Shipping",
       "claims": "Claims",
+      "stock": "Stock",
+      "purchasing": "Purchase orders",
+      "tradingPartners": "Trading partners",
       "capacity": "Weekly capacity",
       "hours": "Hours and holidays",
       "billing": "Billing",

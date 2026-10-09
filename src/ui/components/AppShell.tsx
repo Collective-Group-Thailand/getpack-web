@@ -57,14 +57,15 @@ export function AppShell({
         {skipLabel}
       </a>
 
-      {header}
+      {/* `contents` keeps the header's sticky behaviour; printed pages (a purchase order) leave the chrome out. */}
+      <div className="contents print:hidden">{header}</div>
 
       <div className="flex min-h-0 flex-1">
         {sidebar ? (
           <nav
             aria-label={sidebarLabel}
             className={cn(
-              "border-border hidden shrink-0 border-e md:block",
+              "border-border hidden shrink-0 border-e md:block print:hidden",
               sidebarClassName,
               // A width transition rather than a display swap, so the collapse reads as one
               // movement and nothing below it jumps.
@@ -81,7 +82,11 @@ export function AppShell({
           tabIndex={-1} so the skip link can move focus here; without it the link scrolls but
           keyboard focus stays in the header.
         */}
-        <main id="main" tabIndex={-1} className={cn("min-w-0 flex-1", reserveBottomNavSpace && "pb-16 md:pb-0")}>
+        <main
+          id="main"
+          tabIndex={-1}
+          className={cn("min-w-0 flex-1", reserveBottomNavSpace && "pb-16 md:pb-0 print:pb-0")}
+        >
           {children}
         </main>
       </div>
@@ -89,7 +94,9 @@ export function AppShell({
       {footer}
 
       {bottomNav ? (
-        <div className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t md:hidden">{bottomNav}</div>
+        <div className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t md:hidden print:hidden">
+          {bottomNav}
+        </div>
       ) : null}
     </div>
   );

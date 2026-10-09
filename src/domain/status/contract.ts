@@ -296,3 +296,6 @@ export type CloseStatus = Schemas["CloseStatus"];
 
 /** One step of the close: a blocking check fails, it is done, or a Finance Manager waives it (§7). **Source: contract** (B5.6). */
 export type CloseTaskStatus = Schemas["CloseTaskStatus"];
+
+/** A factory's own purchase order in Packio Factory (D-325). **Source: contract** (packio-api v0.44.0). */
+export type ErpPurchaseOrderStatus = Schemas["ErpPurchaseOrderStatus"];

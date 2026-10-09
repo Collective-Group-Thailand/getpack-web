@@ -8,7 +8,9 @@
       "factory_operator": "ผู้ปฏิบัติงาน",
       "factory_qc": "ฝ่ายควบคุมคุณภาพ",
       "factory_shipping": "ฝ่ายจัดส่ง",
-      "factory_accountant": "ฝ่ายบัญชีโรงงาน"
+      "factory_accountant": "ฝ่ายบัญชีโรงงาน",
+      "factory_storekeeper": "เจ้าหน้าที่คลังสินค้า",
+      "factory_purchaser": "เจ้าหน้าที่จัดซื้อ"
     },
     "switchFactory": "เปลี่ยนโรงงาน"
   },
@@ -72,12 +74,25 @@
       "styleIntakes": {
         "title": "เสนอแบบไดคัท",
         "body": "ส่งแบบกล่องที่โรงงานผลิตได้ให้ Packio พิจารณาเพิ่มในคลังแบบ"
+      },
+      "stock": {
+        "title": "คลังสินค้า",
+        "body": "ของคงเหลือ รับเข้า เบิกออก นับสต็อก"
+      },
+      "purchasing": {
+        "title": "ใบสั่งซื้อ",
+        "body": "สั่งของจากผู้ขาย และรับของเข้าคลัง"
+      },
+      "tradingPartners": {
+        "title": "คู่ค้า",
+        "body": "ผู้ขายและลูกค้าของโรงงาน"
       }
     }
   },
   "sidebar": {
     "groups": {
       "daily": "งานประจำวัน",
+      "supply": "คลังและจัดซื้อ",
       "plan": "แผนและกำลังผลิต",
       "finance": "การเงิน",
       "factory": "โรงงาน"
@@ -90,6 +105,9 @@
       "samples": "งานตัวอย่าง",
       "ship": "จัดส่ง",
       "claims": "เคลม",
+      "stock": "คลังสินค้า",
+      "purchasing": "ใบสั่งซื้อ",
+      "tradingPartners": "คู่ค้า",
       "capacity": "กำลังผลิตรายสัปดาห์",
       "hours": "เวลาทำการและวันหยุด",
       "billing": "วางบิล",
