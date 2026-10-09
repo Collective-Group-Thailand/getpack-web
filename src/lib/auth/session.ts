@@ -74,10 +74,25 @@ export function readRefreshToken(jar: CookieReader): string | undefined {
   );
 }
 
-/** The cookies that store a session, each expiring with the token it holds. */
+/**
+ * The cookies that store a session, each expiring with the token it holds — followed by clears
+ * of the other spelling.
+ *
+ * `readAccessToken` prefers `__Host-pk_at`, and Chrome treats `http://*.localhost` as a secure
+ * context, so a prefixed cookie left over from an earlier https or forwarded-proto session
+ * survives on plain http. Without the clears, every new sign-in writes `pk_at` while the
+ * Server Components keep reading the stale `__Host-pk_at`, get a 401 and send the visitor
+ * straight back to the sign-in page.
+ */
 export function sessionCookieWrites(session: RefreshedSession, isSecure: boolean): SessionCookieWrite[] {
   const options = sessionCookieOptions(isSecure);
   const name = (cookie: SessionCookie) => sessionCookieName(cookie, isSecure);
+  const otherSpelling = SESSION_COOKIES.map((cookie) => ({
+    ...sessionCookieOptions(!isSecure),
+    name: sessionCookieName(cookie, !isSecure),
+    value: "",
+    maxAge: 0,
+  }));
 
   return [
     {
@@ -100,6 +115,7 @@ export function sessionCookieWrites(session: RefreshedSession, isSecure: boolean
       value: session.refreshToken,
       expires: session.refreshTokenExpiresAt,
     },
+    ...otherSpelling,
   ];
 }
 
