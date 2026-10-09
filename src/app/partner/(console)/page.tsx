@@ -2,21 +2,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { FACTORY_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { JobCard } from "@/features/partner/jobs/JobCard";
 import { awaitsSignOff } from "@/features/partner/onboarding/steps";
 import { loadPrices } from "@/features/partner/prices/server";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
-import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { Meter } from "@/ui/components/Meter";
-import { Stat } from "@/ui/components/Stat";
 import { Icon, type IconName } from "@/ui/icons";
 import { Button } from "@/ui/components/Button";
-import { Row, RowList } from "@/features/partner/rows";
+import { Row, RowList, StatStrip } from "@/features/partner/rows";
 
 /**
  * The partner zone's landing screen: what is waiting for this factory today.
@@ -164,13 +160,32 @@ export default async function PartnerHomePage() {
           body: t("tasks.pricesToSignOffBody", { lines: version.lineCount }),
         });
 
+  // The floor's alerts lead the to-do list, as rows like the rest: an overdue one in red, a planned
+  // inspection as information — not a coloured box of its own above everything else.
+  for (const alert of [...(floor?.data?.alerts ?? [])].reverse())
+    tasks.unshift({
+      key: `${alert.kind}-${alert.jobId}`,
+      href: `/jobs/${alert.jobId}`,
+      icon: alert.kind === "inspection_planned" ? "shield" : "warning",
+      tone:
+        alert.kind === "acceptance_overdue" || alert.kind === "step_overdue"
+          ? "danger"
+          : alert.kind === "inspection_planned"
+            ? undefined
+            : "warning",
+      title: alert.jobNo,
+      body: alert.dueAt
+        ? tFloor(`alerts.${alert.kind}`, { at: format.dateTime(alert.dueAt) })
+        : tFloor(`alertsUndated.${alert.kind}`),
+    });
+
   return (
     <PartnerPage
       wide
       title={t("title")}
       // The factory's name is in the sidebar and the bar already; the page says whose day and which day.
-      description={`${t("greeting", { name: context.actor.displayName })} · ${format.date(new Date().toISOString(), { style: "long" })}`}
-      meta={factory ? <StatusChip map={FACTORY_STATUS} value={factory.status} size="md" /> : null}
+      // The date only: the factory's name and status are in the sidebar, the user's name in the bar.
+      description={format.date(new Date().toISOString(), { style: "long" })}
     >
       {onboarding && factory ? (
         <Card padding="lg" className="flex flex-col gap-3">
@@ -207,30 +222,23 @@ export default async function PartnerHomePage() {
             return (
               <section aria-label={tFloor("countersLabel")} className="flex flex-col gap-2">
                 {busy.length ? (
-                  <ul className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                    {busy.map(([key, href, icon, value]) => {
+                  <StatStrip
+                    label={tFloor("countersLabel")}
+                    items={busy.map(([key, href, , value]) => {
                       const overdue = key === "toAccept" ? floor.data!.counters.acceptanceOverdue : 0;
-                      return (
-                        <li key={key}>
-                          <Stat
-                            as={Link}
-                            href={href}
-                            label={tFloor(`counters.${key}`)}
-                            value={value}
-                            icon={icon}
-                            hint={overdue > 0 ? tFloor("acceptanceOverdue", { count: overdue }) : undefined}
-                            tone={
-                              (key === "atRisk" && value > 0) || overdue > 0 || (key === "claims" && value > 0)
-                                ? "danger"
-                                : key === "toAccept" && value > 0
-                                  ? "warning"
-                                  : "neutral"
-                            }
-                          />
-                        </li>
-                      );
+                      return {
+                        key,
+                        href,
+                        label: tFloor(`counters.${key}`),
+                        value,
+                        hint: overdue > 0 ? tFloor("acceptanceOverdue", { count: overdue }) : undefined,
+                        tone:
+                          (key === "atRisk" && value > 0) || overdue > 0 || (key === "claims" && value > 0)
+                            ? "danger"
+                            : "neutral",
+                      };
                     })}
-                  </ul>
+                  />
                 ) : null}
                 {clear.length ? (
                   <p className="text-muted flex items-start gap-2 text-sm">
@@ -248,31 +256,6 @@ export default async function PartnerHomePage() {
               </section>
             );
           })()}
-          {floor.data.alerts.length ? (
-            <ul className="flex flex-col gap-2">
-              {floor.data.alerts.map((alert) => (
-                <li key={`${alert.kind}-${alert.jobId}`}>
-                  <Link href={`/jobs/${alert.jobId}`} className="block">
-                    <Callout
-                      tone={
-                        alert.kind === "acceptance_overdue" || alert.kind === "step_overdue"
-                          ? "danger"
-                          : alert.kind === "inspection_planned"
-                            ? "info"
-                            : "warning"
-                      }
-                      icon={alert.kind === "inspection_planned" ? "shield" : "warning"}
-                      title={alert.jobNo}
-                    >
-                      {alert.dueAt
-                        ? tFloor(`alerts.${alert.kind}`, { at: format.dateTime(alert.dueAt) })
-                        : tFloor(`alertsUndated.${alert.kind}`)}
-                    </Callout>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : null}
           <PartnerSection title={t("tasks.title")} id="tasks">
             {tasks.length ? (
               <RowList label={t("tasks.title")}>
@@ -298,7 +281,7 @@ export default async function PartnerHomePage() {
           <PartnerSection
             title={tFloor("queue")}
             actions={
-              <Button asChild variant="secondary" size="md" iconEnd="arrow-right">
+              <Button asChild variant="link" size="sm" iconEnd="arrow-right">
                 <Link href="/jobs">{tFloor("allJobs")}</Link>
               </Button>
             }

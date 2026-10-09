@@ -27,8 +27,8 @@ export function PartnerSidebar({
   const t = useTranslations("partner.sidebar");
   const pathname = usePathname();
   return (
-    <div className="flex h-full flex-col gap-4 px-2 py-3">
-      <div className="border-border rounded-xl border px-3 py-2.5">
+    <div className="flex h-full flex-col gap-4 px-2 py-3 lg:gap-3 lg:text-sm">
+      <div className="border-border rounded-xl border px-3 py-2.5 lg:py-2">
         <p className="truncate font-semibold">{factory.name}</p>
         {factory.status ? <p className="text-muted text-sm">{factory.status}</p> : null}
       </div>
@@ -44,11 +44,11 @@ export function PartnerSidebar({
                     href={item.href}
                     aria-current={current ? "page" : undefined}
                     className={cn(
-                      "flex min-h-11 items-center gap-3 rounded-lg px-3 text-base font-medium",
+                      "flex min-h-11 items-center gap-3 rounded-lg px-3 text-base font-medium lg:min-h-9 lg:gap-2.5 lg:text-sm",
                       current ? "bg-primary/10 text-primary" : "text-fg hover:bg-surface-subtle",
                     )}
                   >
-                    <Icon name={item.icon} size={20} aria-hidden="true" />
+                    <Icon name={item.icon} size={20} className="lg:size-[18px]" aria-hidden="true" />
                     {t(`items.${item.key}`)}
                   </Link>
                 </li>

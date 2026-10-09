@@ -5,14 +5,13 @@ import { getTranslations } from "next-intl/server";
 import { SHIPMENT_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { Code, Row, RowList, ViewTabs } from "@/features/partner/rows";
+import { Code, Row, RowList, StatStrip, ViewTabs } from "@/features/partner/rows";
 import { CreateShipment } from "@/features/partner/ship/actions";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
-import { Stat } from "@/ui/components/Stat";
 import { Badge } from "@/ui/components/Badge";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -81,26 +80,21 @@ export default async function ShipPage({ searchParams }: Props) {
   return (
     <PartnerPage title={t("title")} wide>
       {every.data ? (
-        <ul className="grid grid-cols-3 gap-3" aria-label={t("glance.label")}>
-          {(
+        <StatStrip
+          label={t("glance.label")}
+          items={(
             [
               ["gate", "open"],
               ["road", "in_transit"],
               ["pod", "in_transit"],
             ] as const
-          ).map(([key, target]) => (
-            <li key={key}>
-              <Stat
-                as={Link}
-                href={`/ship?view=${target}`}
-                label={t(`glance.${key}`)}
-                value={format.number(glance[key])}
-                icon={key === "gate" ? "warehouse" : key === "road" ? "truck" : "file-check"}
-                tone={key === "pod" && glance[key] > 0 ? "warning" : "neutral"}
-              />
-            </li>
-          ))}
-        </ul>
+          ).map(([key, target]) => ({
+            key,
+            href: `/ship?view=${target}`,
+            label: t(`glance.${key}`),
+            value: format.number(glance[key]),
+          }))}
+        />
       ) : null}
       <PartnerSection title={t("plan.title")} description={t("plan.body")}>
         {waiting ? (

@@ -1,7 +1,7 @@
 {
   "claims": {
     "title": "Claims",
-    "body": "Claims on your jobs; answer when Packio asks you to.",
+    "body": "Answer a claim when Packio asks",
     "awaitingYou": "Awaiting your answer",
     "types": {
       "damaged": "Damaged",
