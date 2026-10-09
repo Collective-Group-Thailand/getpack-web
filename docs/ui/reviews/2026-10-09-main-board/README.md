@@ -2,11 +2,20 @@
 
 Boards: `docs/ui/boards/packio-home-board-Main-1440.png`, `docs/ui/boards/packio-board-StudioStart-1440.png`.
 
-Taken on `main` @ `120a7c7` plus `fix/hero-configure-parity`, `next dev` on :3700 against **packio-api v0.43.1** (:3600) on
-`packio_uat_partner` as reseeded from packio-api main `38c385d` (v0.43.2 + a UAT seed fix). Photos: the dev-only local
-manifest fallback (`HOME_PHOTOS_LOCAL_MANIFEST`, D-314 interim photos), since the API's fake storage holds no CMS photos.
-`/` is anonymous; `/studio` is the UAT customer มาลี ทดสอบ (0800000101, OTP). Next's dev overlay is hidden on `/studio`
-and visible bottom-left on `/`.
+Taken on `fix/home-review-main` @ the v0.43.2 adoption, `next dev` on :3700 against **packio-api v0.43.2** (:3000, local
+main `38c385d`) on `packio_uat_partner` as reseeded from that main. Photos: the dev-only local manifest fallback
+(`HOME_PHOTOS_LOCAL_MANIFEST`, D-314 interim photos), since the API's fake storage holds no CMS photos. `/` is anonymous;
+`/studio` is the UAT customer มาลี ทดสอบ (0800000101, OTP). Next's dev overlay is hidden. (A first set on v0.43.1 showed
+the same pages.)
+
+## Confirmed on v0.43.2
+
+- The hero opens on the API's `default`: ไปรษณีย์ · 18 × 12 × 5 ซม. · ลูกฟูก E · 1 สี · 500 ชิ้น, priced by
+  `POST /v1/store/quotes/actions/preview` at **฿20.14** a piece (total ฿10,070.00, 5 working days, `presetId` `mailer:s0`).
+- The lid (`uat-fruit-box-tele`, PK-CT-02) prices **฿28.74** a piece at 500 in the hero and in `/configure`: both send
+  the same two parts (body and lid), each printed outside only. `e2e/integration/home-hero.spec.ts`: mailer and lid
+  pass, tuck skipped (folding is RFQ in UAT).
+- FAQs: 11 in 4 groups, none with a decision id or `[DEV]`, at the API and on the page.
 
 | File | What |
 |---|---|
