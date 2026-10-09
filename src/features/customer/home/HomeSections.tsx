@@ -22,10 +22,12 @@ import type { StudioHero } from "./studio-hero.server";
 /**
  * The home page's sections, to the V4 "Main" board (design language v3): one wrap of 1320 px with
  * 48 px gutters, hairlines and whitespace instead of boxes, no label over any heading. White
- * panels only where the board shows a screen — the Studio panel, the UI samples, the shortcuts.
+ * panels only where the board shows a screen — the Studio panel and the three UI samples.
  * Every figure is the API's; a block with nothing real to show is left out.
  */
-const SECTION = cn(HOME_WRAP, "pt-20 md:pt-26");
+/** 104 px between sections, 80 px up to 1054 px wide (product owner, 2026-10-09). */
+const SECTION_GAP = "pt-20 min-[1055px]:pt-26";
+const SECTION = cn(HOME_WRAP, SECTION_GAP);
 const H2 = "text-[1.875rem] leading-[1.1] md:text-[2.5rem]";
 const br = { br: () => <br /> };
 
@@ -70,14 +72,17 @@ export async function HomeHero({
           <div
             className={cn(
               "border-border mt-10 grid items-end gap-5 border-t pt-6",
-              photo ? "grid-cols-[7rem_1fr] sm:grid-cols-[10.5rem_1fr]" : "grid-cols-1",
+              "grid-cols-[7rem_1fr] sm:grid-cols-[10.5rem_1fr]",
             )}
           >
+            {/* The photo cell holds the grid; without a photo it stays an empty sage well. */}
             {photo ? (
               <figure className="bg-sage-subtle aspect-[4/5] overflow-hidden">
                 <Photo photo={photo} />
               </figure>
-            ) : null}
+            ) : (
+              <div aria-hidden="true" className="bg-sage-subtle aspect-[4/5]" />
+            )}
             <div>
               {photo?.caption ? <p className="text-muted mb-4 max-w-[16em] text-[13px]">{photo.caption}</p> : null}
               <ul aria-label={t("facts.label")} className="grid gap-2.5 text-[0.90625rem]">
@@ -175,7 +180,7 @@ export async function TemplateGallery({
       locale={locale}
       big={big}
       photo={photos.get(style.code) ?? null}
-      dieline={{ card: styleDieline(style.code, "card"), thumb: styleDieline(style.code, "thumb") }}
+      dieline={{ card: styleDieline(style.code, big ? "feature" : "card"), thumb: styleDieline(style.code, "thumb") }}
       meta={`${facetLabel(words, "category", style.category)} · ${facetLabel(words, "materialClass", style.materialClass)}`}
       action={t("start")}
     />
@@ -287,7 +292,7 @@ export async function ScreenToFactory({ sample, packing }: { sample: HomePhoto |
       </div>
       <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {frames.map((frame) => (
-          <li key={frame.key} className="border-border bg-surface rounded-card overflow-hidden border">
+          <li key={frame.key} className="border-border overflow-hidden border">
             <div className="bg-sage-subtle aspect-[4/3] overflow-hidden">{frame.picture}</div>
             <div className="border-border border-t px-4.5 pt-4 pb-4.5">
               <p className="text-primary text-[13px] font-semibold">{t(`${frame.key}.day`)}</p>
@@ -497,24 +502,20 @@ export async function QualityBand({
         ? t("factsClaim", { days: claimDays })
         : t("factsNone");
   const shortcut =
-    "rounded-card bg-surface text-fg block p-4.5 outline-none focus-visible:ring-2 focus-visible:ring-fg-inverse";
+    "border-fg-inverse/25 text-fg-inverse block border p-4.5 outline-none hover:border-fg-inverse/60 focus-visible:ring-2 focus-visible:ring-fg-inverse";
   return (
-    <section aria-labelledby="home-quality" className="bg-sage text-fg-inverse mt-20 md:mt-26">
-      <div className={cn("grid", photo && "lg:grid-cols-2")}>
+    <section aria-labelledby="home-quality" className="bg-sage text-fg-inverse mt-20 min-[1055px]:mt-26">
+      {/* Photo | content on large screens, always: without a photo the left cell is an empty panel. */}
+      <div className="grid lg:grid-cols-2">
         {photo ? (
           <figure className="relative min-h-72 overflow-hidden lg:min-h-[520px]">
             <Photo photo={photo} className="absolute inset-0" />
           </figure>
-        ) : null}
-        {/* Left-aligned on the page's own edge with or without the photo (the board); the title
-            keeps to two lines at 36px — its one break is the copy's. */}
-        <div
-          className={cn(
-            photo
-              ? "w-full max-w-[45rem] px-5 py-14 md:px-8 lg:py-20 lg:ps-18 lg:pe-12"
-              : cn(HOME_WRAP, "py-14 lg:py-20"),
-          )}
-        >
+        ) : (
+          <div aria-hidden="true" className="bg-sage-strong hidden lg:block lg:min-h-[520px]" />
+        )}
+        {/* The title keeps to two lines at 36px — its one break is the copy's. */}
+        <div className="w-full max-w-[45rem] px-5 py-14 md:px-8 lg:py-20 lg:ps-18 lg:pe-12">
           <h2
             id="home-quality"
             className="text-fg-inverse max-w-[18em] text-start text-[1.75rem] leading-[1.15] md:text-[2.25rem]"
@@ -532,7 +533,7 @@ export async function QualityBand({
               <li key={key}>
                 <Link href={href} className={shortcut}>
                   <b className="block text-base font-semibold">{t(`${key}.title`)}</b>
-                  <span className="text-muted mt-1 block text-[0.84375rem]">{t(`${key}.body`)}</span>
+                  <span className="text-fg-inverse mt-1 block text-[0.84375rem]">{t(`${key}.body`)}</span>
                   <span className={cn("mt-3 inline-flex items-center gap-1 text-[0.84375rem]", UNDERLINE)}>
                     {t(`${key}.go`)}
                     <Icon name="arrow-right" size={14} aria-hidden="true" />
@@ -623,7 +624,7 @@ export async function HomeFaq({ groups, locale, hours }: { groups: FaqGroup[]; l
     .slice(0, 4);
   if (faqs.length === 0) return null;
   return (
-    <section aria-labelledby="home-faq" className={cn(HOME_WRAP, "pt-24 md:pt-28")}>
+    <section aria-labelledby="home-faq" className={SECTION}>
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_2fr] lg:gap-16">
         <div>
           <h2 id="home-faq" className="text-[1.75rem] leading-[1.1] md:text-[2.125rem]">
@@ -659,7 +660,7 @@ export async function HomeFaq({ groups, locale, hours }: { groups: FaqGroup[]; l
 export async function HomeContact({ channels }: { channels: SupportChannels | null }) {
   const [t, tNews] = await Promise.all([getTranslations("home.contact"), getTranslations("home.newsletter")]);
   return (
-    <section aria-labelledby="home-contact" className={cn(HOME_WRAP, "pt-20 md:pt-26")}>
+    <section aria-labelledby="home-contact" className={SECTION}>
       <div className="border-fg grid items-start gap-10 border-t pt-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
         <div>
           <h2 id="home-contact" className="text-[1.75rem] leading-[1.1] md:text-[2.125rem]">
