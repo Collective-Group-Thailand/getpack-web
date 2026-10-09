@@ -14,7 +14,7 @@ import { http, HttpResponse, type HttpHandler } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
-import { COMPONENTS, counts, nextId, proposal, proposals, stores, touch, type Store } from "../admin/partners";
+import { COMPONENTS, ZONES, counts, nextId, proposal, proposals, stores, touch, type Store } from "../admin/partners";
 import { catalogueRows } from "../admin/catalogue";
 import { PRODUCT_TYPES } from "../admin/catalog";
 import { openApproval } from "../admin/platform";
@@ -229,6 +229,8 @@ function rates(
         ),
         zoneId: zone.zoneId,
         zoneCode: zone.zoneCode,
+        zoneNameTh: ZONES.find((item) => item.id === zone.zoneId)?.nameTh ?? zone.zoneCode,
+        zoneNameEn: ZONES.find((item) => item.id === zone.zoneId)?.nameEn ?? zone.zoneCode,
         postcode: null,
         weightMinG: weightMinG!,
         weightMaxG,

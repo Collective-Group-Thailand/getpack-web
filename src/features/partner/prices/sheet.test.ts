@@ -7,6 +7,7 @@ import { decimalText, type PriceComponentDef } from "./values";
 const DEFINITIONS: PriceComponentDef[] = [
   {
     component: "material_prices",
+    productTypeCodes: ["folding_carton"],
     group: "materials",
     dimensions: [
       { key: "materialId", type: "ref", nullable: false, scale: null },

@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.43.2) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.43.4) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -41291,6 +41291,13 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d403
              */
             zoneId: string;
+            /** @example Bangkok metropolitan */
+            zoneNameEn: string;
+            /**
+             * @description The zone as the factory reads it (partner UX, 2026-10-09)
+             * @example กรุงเทพฯ และปริมณฑล
+             */
+            zoneNameTh: string;
         };
         FactoryRateInputDto: {
             /**
@@ -48689,6 +48696,15 @@ export interface components {
             dimensions: components["schemas"]["PriceColumnDto"][];
             /** @example materials */
             group: components["schemas"]["PriceGroup"];
+            /**
+             * @description Product types whose calculator reads this component (`product_types.calculator_key`); a price list for one of them offers it, others do not (partner UX, 2026-10-09). Empty: no calculator reads it yet.
+             * @example [
+             *       "folding_carton",
+             *       "label_sticker",
+             *       "tag_sleeve"
+             *     ]
+             */
+            productTypeCodes: string[];
             /** @description Columns a proposal changes */
             values: components["schemas"]["PriceColumnDto"][];
         };
@@ -126061,7 +126077,9 @@ export interface operations {
                      *           "weightMaxG": 5000,
                      *           "weightMinG": 0,
                      *           "zoneCode": "bkk",
-                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403",
+                     *           "zoneNameEn": "Bangkok metropolitan",
+                     *           "zoneNameTh": "กรุงเทพฯ และปริมณฑล"
                      *         }
                      *       ],
                      *       "reason": "Initial payout card (fake)",
@@ -126204,7 +126222,9 @@ export interface operations {
                      *           "weightMaxG": 5000,
                      *           "weightMinG": 0,
                      *           "zoneCode": "bkk",
-                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403",
+                     *           "zoneNameEn": "Bangkok metropolitan",
+                     *           "zoneNameTh": "กรุงเทพฯ และปริมณฑล"
                      *         }
                      *       ],
                      *       "reason": "Initial payout card (fake)",
@@ -126430,7 +126450,9 @@ export interface operations {
                      *           "weightMaxG": 5000,
                      *           "weightMinG": 0,
                      *           "zoneCode": "bkk",
-                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403",
+                     *           "zoneNameEn": "Bangkok metropolitan",
+                     *           "zoneNameTh": "กรุงเทพฯ และปริมณฑล"
                      *         }
                      *       ],
                      *       "reason": "Initial payout card (fake)",
@@ -126573,7 +126595,9 @@ export interface operations {
                      *           "weightMaxG": 5000,
                      *           "weightMinG": 0,
                      *           "zoneCode": "bkk",
-                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403",
+                     *           "zoneNameEn": "Bangkok metropolitan",
+                     *           "zoneNameTh": "กรุงเทพฯ และปริมณฑล"
                      *         }
                      *       ],
                      *       "reason": "Initial payout card (fake)",
@@ -126710,7 +126734,9 @@ export interface operations {
                      *           "weightMaxG": 5000,
                      *           "weightMinG": 0,
                      *           "zoneCode": "bkk",
-                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403",
+                     *           "zoneNameEn": "Bangkok metropolitan",
+                     *           "zoneNameTh": "กรุงเทพฯ และปริมณฑล"
                      *         }
                      *       ],
                      *       "reason": "Initial payout card (fake)",
@@ -126857,7 +126883,9 @@ export interface operations {
                      *           "weightMaxG": 5000,
                      *           "weightMinG": 0,
                      *           "zoneCode": "bkk",
-                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403",
+                     *           "zoneNameEn": "Bangkok metropolitan",
+                     *           "zoneNameTh": "กรุงเทพฯ และปริมณฑล"
                      *         }
                      *       ],
                      *       "reason": "Initial payout card (fake)",
@@ -147930,6 +147958,11 @@ export interface operations {
                      *           }
                      *         ],
                      *         "group": "materials",
+                     *         "productTypeCodes": [
+                     *           "folding_carton",
+                     *           "label_sticker",
+                     *           "tag_sleeve"
+                     *         ],
                      *         "values": [
                      *           {
                      *             "key": "rate",
@@ -195348,7 +195381,9 @@ export interface operations {
                      *           "weightMaxG": 5000,
                      *           "weightMinG": 0,
                      *           "zoneCode": "bkk",
-                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403",
+                     *           "zoneNameEn": "Bangkok metropolitan",
+                     *           "zoneNameTh": "กรุงเทพฯ และปริมณฑล"
                      *         }
                      *       ],
                      *       "reason": "Initial payout card (fake)",
@@ -195478,7 +195513,9 @@ export interface operations {
                      *           "weightMaxG": 5000,
                      *           "weightMinG": 0,
                      *           "zoneCode": "bkk",
-                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403",
+                     *           "zoneNameEn": "Bangkok metropolitan",
+                     *           "zoneNameTh": "กรุงเทพฯ และปริมณฑล"
                      *         }
                      *       ],
                      *       "reason": "Initial payout card (fake)",
@@ -199068,6 +199105,11 @@ export interface operations {
                      *           }
                      *         ],
                      *         "group": "materials",
+                     *         "productTypeCodes": [
+                     *           "folding_carton",
+                     *           "label_sticker",
+                     *           "tag_sleeve"
+                     *         ],
                      *         "values": [
                      *           {
                      *             "key": "rate",
