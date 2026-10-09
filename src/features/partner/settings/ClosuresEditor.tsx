@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { problemMessage } from "@/features/shared/actions";
+import { useFormat } from "@/features/shared/format";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
@@ -27,6 +28,9 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const editable = can("factory_profile.manage");
+  const format = useFormat();
+  // A calendar day ("2026-10-28") read as the rest of the app writes dates (Buddhist era in Thai).
+  const dayText = (value: string) => format.date(`${value}T00:00:00+07:00`);
 
   const add = async () => {
     setBusy(true);
@@ -35,7 +39,7 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
         params: { path: { factoryId, day } },
         body: { nameTh: name.trim() },
       });
-      toast.success(t("added", { date: day }));
+      toast.success(t("added", { date: dayText(day) }));
       setDay("");
       setName("");
       refresh();
@@ -50,7 +54,7 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
       await browserApi().DELETE("/v1/partner/factories/{factoryId}/closures/{day}", {
         params: { path: { factoryId, day: date } },
       });
-      toast.success(t("removed", { date }));
+      toast.success(t("removed", { date: dayText(date) }));
       refresh();
     } catch (error) {
       toast.error(problemMessage(error, t("failed")));
@@ -66,13 +70,13 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
             key={`${d.day}-${d.kind}`}
             className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
           >
-            <span>{t("row", { date: d.day, name: d.nameTh })}</span>
+            <span>{t("row", { date: dayText(d.day), name: d.nameTh })}</span>
             <span className="flex items-center gap-2">
               <Badge tone={d.kind === "closure" ? "warning" : "neutral"}>{t(`kinds.${d.kind}`)}</Badge>
               {editable && d.kind === "closure" ? (
                 <Button size="sm" variant="ghost" className="text-danger min-h-12" onClick={() => void remove(d.day)}>
                   {t("remove")}
-                  <span className="sr-only"> {d.day}</span>
+                  <span className="sr-only"> {dayText(d.day)}</span>
                 </Button>
               ) : null}
             </span>

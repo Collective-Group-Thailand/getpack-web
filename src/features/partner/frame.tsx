@@ -17,6 +17,7 @@ export function PartnerPage({
   meta,
   actions,
   wide = false,
+  full = false,
   children,
 }: {
   title: React.ReactNode;
@@ -25,10 +26,14 @@ export function PartnerPage({
   meta?: React.ReactNode;
   actions?: React.ReactNode;
   wide?: boolean;
+  /** Tables wider than prose (price lists): up to 80rem. */
+  full?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full px-4 py-5 md:px-6 md:py-8", wide ? "max-w-5xl" : "max-w-3xl")}>
+    <div
+      className={cn("mx-auto w-full px-4 py-5 md:px-6 md:py-8", full ? "max-w-7xl" : wide ? "max-w-5xl" : "max-w-3xl")}
+    >
       {back ? (
         <Link
           href={back.href}

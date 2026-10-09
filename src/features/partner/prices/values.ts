@@ -102,3 +102,34 @@ export const PRICE_GROUPS = [
   "shipping",
   "rules",
 ] as const satisfies readonly Schemas["PriceGroup"][];
+
+/** An upper bound (`…Max…`, `…To`) left open sorts last; any other open value sorts first. */
+const isUpper = (key: string) => /max|to$/i.test(key);
+
+/**
+ * Rows in reading order: by each identifying column — names alphabetically, numbers as numbers,
+ * so "500–1,999" follows "ไม่จำกัด–499" and precedes "2,000–ไม่จำกัด".
+ */
+export function sortRows<R extends { values: unknown }>(
+  rows: R[],
+  dimensions: Schemas["PriceColumnDto"][],
+  text: (column: Schemas["PriceColumnDto"], value: unknown) => string,
+): R[] {
+  const collator = new Intl.Collator("th", { numeric: true, sensitivity: "base" });
+  const compare = (column: Schemas["PriceColumnDto"], a: unknown, b: unknown) => {
+    if (column.type === "decimal" || column.type === "integer") {
+      const open = isUpper(column.key) ? Infinity : -Infinity;
+      const left = a === null || a === undefined || a === "" ? open : Number(a);
+      const right = b === null || b === undefined || b === "" ? open : Number(b);
+      return left === right ? 0 : left < right ? -1 : 1;
+    }
+    return collator.compare(text(column, a), text(column, b));
+  };
+  return [...rows].sort((a, b) => {
+    for (const column of dimensions) {
+      const order = compare(column, (a.values as Values)[column.key], (b.values as Values)[column.key]);
+      if (order) return order;
+    }
+    return 0;
+  });
+}
