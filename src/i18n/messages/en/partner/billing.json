@@ -1,6 +1,6 @@
 {
   "title": "Billing",
-  "body": "Statements Packio builds from POs and proofs of delivery: check and confirm, then add your tax invoice.",
+  "body": "Check the amounts, confirm, then attach your tax invoice",
   "payoutsLink": "Payouts",
   "period": "{from} – {to}",
   "empty": "No statements yet",
@@ -103,7 +103,7 @@
   },
   "payouts": {
     "title": "Payouts",
-    "body": "Packio pays an advance on acceptance, the balance after delivery and the claim window, and the retention later.",
+    "body": "Advance, balance and retention for each purchase order",
     "back": "Back to billing",
     "statementLink": "Statement of account",
     "scheduleTitle": "By purchase order",

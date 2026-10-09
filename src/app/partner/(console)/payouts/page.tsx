@@ -5,13 +5,12 @@ import { getTranslations } from "next-intl/server";
 import { PAYABLE_STATUS, PAYOUT_ITEM_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { ViewTabs } from "@/features/partner/rows";
+import { StatStrip, ViewTabs } from "@/features/partner/rows";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Stat } from "@/ui/components/Stat";
 import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -80,30 +79,25 @@ export default async function PayoutsPage({ searchParams }: Props) {
     >
       {summary.data ? (
         <section aria-label={t("summary.label")} className="flex flex-col gap-2">
-          <ul className="grid grid-cols-2 gap-2 md:grid-cols-4">
-            <li>
-              <Stat
-                label={t("summary.owed")}
-                value={format.thb(summary.data.period.closing)}
-                icon="wallet"
-                hint={t("summary.asOf", { date: format.date(summary.data.period.to) })}
-              />
-            </li>
-            <li>
-              <Stat label={t("summary.earned")} value={format.thb(summary.data.period.earned)} icon="package-check" />
-            </li>
-            <li>
-              <Stat label={t("summary.paid")} value={format.thb(summary.data.period.paid)} icon="coins" />
-            </li>
-            <li>
-              <Stat
-                label={t("summary.retained")}
-                value={format.thb(summary.data.period.retainedHeld)}
-                icon="shield"
-                hint={t("summary.retainedHint")}
-              />
-            </li>
-          </ul>
+          <StatStrip
+            label={t("summary.label")}
+            items={[
+              {
+                key: "owed",
+                label: t("summary.owed"),
+                value: format.thb(summary.data.period.closing),
+                hint: t("summary.asOf", { date: format.date(summary.data.period.to) }),
+              },
+              { key: "earned", label: t("summary.earned"), value: format.thb(summary.data.period.earned) },
+              { key: "paid", label: t("summary.paid"), value: format.thb(summary.data.period.paid) },
+              {
+                key: "retained",
+                label: t("summary.retained"),
+                value: format.thb(summary.data.period.retainedHeld),
+                hint: t("summary.retainedHint"),
+              },
+            ]}
+          />
           <p className="text-muted text-sm">
             {t("summary.period", {
               from: format.date(summary.data.period.from),

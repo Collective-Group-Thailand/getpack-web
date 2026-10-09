@@ -5,11 +5,11 @@ import { cn } from "@/ui/lib/cn";
 
 type Tone = "neutral" | "warning" | "danger" | "success";
 
-const TILE: Record<Tone, string> = {
-  neutral: "bg-sage-subtle text-fg",
-  warning: "bg-warning-subtle text-warning-subtle-fg",
-  danger: "bg-danger-subtle text-danger-subtle-fg",
-  success: "bg-success-subtle text-success-subtle-fg",
+const ICON: Record<Tone, string> = {
+  neutral: "text-muted",
+  warning: "text-warning-subtle-fg",
+  danger: "text-danger",
+  success: "text-success",
 };
 
 /**
@@ -36,7 +36,7 @@ export function RowList({
 }
 
 /**
- * One row: an icon tile (tinted by tone — a warning or a danger the reader should see first), the
+ * One row: a small glyph (coloured by tone — a warning or a danger the reader should see first), the
  * title line (a code in monospace, a status beside it), a muted meta line, and an aside on the far
  * edge (an amount, a date) before the chevron. The whole row is the link: one tab stop, 64 px tall.
  */
@@ -60,16 +60,11 @@ export function Row({
       <Link
         href={href}
         // A grid, so on a phone the aside (an amount) drops under the title instead of squeezing it.
-        className="hover:bg-surface-subtle focus-visible:bg-surface-subtle grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-1 px-4 py-3 transition-colors"
+        className="hover:bg-surface-subtle focus-visible:bg-surface-subtle grid min-h-14 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-0.5 px-4 py-2.5 transition-colors"
       >
-        <span
-          className={cn(
-            "rounded-control row-span-2 grid size-10 shrink-0 place-items-center sm:row-span-1",
-            icon ? TILE[tone] : "hidden",
-          )}
-          aria-hidden
-        >
-          {icon ? <Icon name={icon} size={20} /> : null}
+        {/* A plain glyph, coloured only when the row needs attention — no tinted tile on every row. */}
+        <span className={cn("row-span-2 shrink-0 sm:row-span-1", icon ? ICON[tone] : "hidden")} aria-hidden>
+          {icon ? <Icon name={icon} size={18} /> : null}
         </span>
         <span className="col-start-2 flex min-w-0 flex-col gap-0.5">
           <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-medium">{title}</span>
@@ -82,7 +77,7 @@ export function Row({
         ) : null}
         <Icon
           name="chevron-right"
-          size={20}
+          size={18}
           className="text-muted col-start-4 row-span-2 row-start-1 shrink-0 sm:row-span-1"
           aria-hidden
         />
@@ -141,5 +136,55 @@ export function ViewTabs({
         ))}
       </ul>
     </nav>
+  );
+}
+
+/**
+ * Counts or amounts side by side in one ruled strip — how a back office shows a summary — rather than
+ * a row of separate cards with an icon each. A cell with `href` opens the list it counts.
+ */
+export function StatStrip({
+  label,
+  items,
+}: {
+  label: string;
+  items: {
+    key: string;
+    label: React.ReactNode;
+    value: React.ReactNode;
+    hint?: React.ReactNode;
+    href?: string;
+    tone?: Tone;
+  }[];
+}) {
+  return (
+    <ul
+      aria-label={label}
+      className="border-border bg-surface divide-border grid grid-cols-2 divide-x divide-y overflow-hidden rounded-xl border sm:flex sm:divide-y-0"
+    >
+      {items.map((item) => {
+        const body = (
+          <>
+            <span className="text-muted text-sm">{item.label}</span>
+            <span className="text-xl font-semibold tabular-nums">{item.value}</span>
+            {item.hint ? <span className={cn("text-xs", ICON[item.tone ?? "neutral"])}>{item.hint}</span> : null}
+          </>
+        );
+        return (
+          <li key={item.key} className="min-w-0 sm:flex-1">
+            {item.href ? (
+              <Link
+                href={item.href}
+                className="hover:bg-surface-subtle flex h-full flex-col gap-0.5 px-4 py-3 transition-colors"
+              >
+                {body}
+              </Link>
+            ) : (
+              <div className="flex h-full flex-col gap-0.5 px-4 py-3">{body}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }

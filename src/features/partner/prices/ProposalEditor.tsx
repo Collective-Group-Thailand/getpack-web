@@ -496,7 +496,7 @@ export function ProposalEditor({
                   const inDraft = draftByKey.get(row.lineKey);
                   const removing = change?.remove ?? (inDraft?.action === "remove" && !change);
                   return (
-                    <tr key={row.lineKey} className={cn(removing && "bg-danger-subtle/40")}>
+                    <tr key={row.lineKey} className={cn("group", removing && "bg-danger-subtle/40")}>
                       {dimensions.map((column) => (
                         <td
                           key={column.key}
@@ -532,7 +532,15 @@ export function ProposalEditor({
                           </td>
                         );
                       })}
-                      <td className="border-border border-b px-1 py-1.5 text-end whitespace-nowrap">
+                      <td
+                        className={cn(
+                          "border-border border-b px-1 py-1.5 text-end whitespace-nowrap",
+                          // At a desk the row's actions show on hover or focus, not as a column of bins.
+                          !change &&
+                            !removing &&
+                            "lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:opacity-100",
+                        )}
+                      >
                         {change && !change.remove ? (
                           <IconButton
                             name="undo"

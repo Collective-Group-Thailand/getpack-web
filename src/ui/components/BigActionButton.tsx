@@ -33,6 +33,7 @@ export function BigActionButton({
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
+      data-big=""
       className={cn(
         "flex min-h-16 w-full items-center gap-3 rounded-xl px-5 py-3 text-start",
         "duration-fast ease-standard transition-colors disabled:opacity-50",
