@@ -54,7 +54,7 @@ export async function PartnerShell({ context, children }: { context: FactoryCont
       reserveBottomNavSpace
       // 15 px base text everywhere — the admin console's density (sizes of controls: base.css,
       // partner block); inputs stay 16 px on a phone so iOS does not zoom.
-      className="text-[0.9375rem]"
+      className="text-base"
     >
       {children}
     </AppShell>

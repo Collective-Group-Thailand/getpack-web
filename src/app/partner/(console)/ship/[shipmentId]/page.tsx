@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const linkClass =
-  "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-lg border px-5 font-medium md:min-h-10 md:px-4 md:text-sm";
+  "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-11 md:min-h-10 items-center justify-center gap-2 self-start rounded-lg border px-5 font-medium md:min-h-10 md:px-4";
 
 /**
  * One trip (`partner.shipments.get`): the recipient (D-142), its cartons, labels and packing list
@@ -123,7 +123,7 @@ export default async function ShipmentPage({ params }: Props) {
                     href={labelsUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary inline-flex min-h-12 items-center underline"
+                    className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
                   >
                     {t("labelsPdf")}
                   </a>
@@ -133,7 +133,7 @@ export default async function ShipmentPage({ params }: Props) {
                     href={packingUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary inline-flex min-h-12 items-center underline"
+                    className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
                   >
                     {t("packingPdf")}
                   </a>
@@ -236,7 +236,7 @@ export default async function ShipmentPage({ params }: Props) {
           </p>
           <a
             href={`tel:${shipment.destination.phone}`}
-            className="text-primary inline-flex min-h-12 items-center underline"
+            className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
           >
             {shipment.destination.phone}
           </a>

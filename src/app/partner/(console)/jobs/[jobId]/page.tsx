@@ -14,6 +14,7 @@ import {
   RaiseIssue,
   RejectJob,
   ResolveIssue,
+  QuickCompleteMilestone,
   StartMilestone,
 } from "@/features/partner/jobs/actions";
 import { Countdown } from "@/features/partner/jobs/Countdown";
@@ -102,6 +103,9 @@ export default async function JobPage({ params }: Props) {
   // Why the step's buttons are not here — said so the reader knows what to do next, not just "no".
   const blocked =
     job.status === "released" ? t("acceptFirst") : qcOnly ? t("operatorStep") : t("noMilestonePermission");
+  // Nothing to record on the step (no counts, no photo, no QC form): one tap marks it done.
+  const simple = (milestone: (typeof job.milestones)[number]) =>
+    !milestone.tracksQuantity && milestone.evidence === "none";
   const checks = qc.data ?? [];
   const current = job.milestones.find((milestone) => milestone.key === job.currentMilestoneKey);
   const stateOf = (status: string, isCurrent: boolean): StageState =>
@@ -235,7 +239,11 @@ export default async function JobPage({ params }: Props) {
                 children: isCurrent ? (
                   milestone.status === "pending" ? (
                     mayRun(milestone) ? (
-                      <StartMilestone job={job} milestone={milestone} name={name} />
+                      simple(milestone) ? (
+                        <QuickCompleteMilestone job={job} milestone={milestone} name={name} />
+                      ) : (
+                        <StartMilestone job={job} milestone={milestone} name={name} />
+                      )
                     ) : (
                       <p className="text-muted">{blocked}</p>
                     )
@@ -248,7 +256,7 @@ export default async function JobPage({ params }: Props) {
                             {/* The guide that applies here (U2.F7): the knowledge base's QC photo standard. */}
                             <Link
                               href="/knowledge?category=qc-photo-standard"
-                              className="text-primary inline-flex min-h-12 items-center underline"
+                              className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
                             >
                               {tQc("photoStandard")}
                             </Link>
@@ -277,7 +285,7 @@ export default async function JobPage({ params }: Props) {
         <Link
           href={`/ship#job-${job.id}`}
           data-big
-          className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex min-h-14 items-center justify-center gap-2 rounded-xl px-6 text-lg font-semibold"
+          className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-6 text-lg font-semibold md:min-h-10"
         >
           <Icon name="truck" size={22} />
           {t("toShip")}
@@ -326,7 +334,7 @@ export default async function JobPage({ params }: Props) {
                     href={proofUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary inline-flex min-h-12 items-center underline"
+                    className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
                   >
                     {t("openProof")}
                   </a>
@@ -336,7 +344,7 @@ export default async function JobPage({ params }: Props) {
                     href={dielineUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary inline-flex min-h-12 items-center underline"
+                    className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
                   >
                     {t("openDieline")}
                   </a>
@@ -493,7 +501,7 @@ export default async function JobPage({ params }: Props) {
         {offered.has("job.raise_issue") ? (
           // Folded until needed: most visits to a job never raise one.
           <details className="border-border bg-surface group rounded-xl border">
-            <summary className="hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium">
+            <summary className="hover:bg-surface-subtle flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium md:min-h-10">
               <Icon name="flag" size={18} />
               {t("raiseIssueToggle")}
             </summary>

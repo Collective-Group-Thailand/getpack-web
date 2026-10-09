@@ -218,7 +218,7 @@ export default async function StatementPage({ params }: Props) {
           {open(confirm) ? (
             // Usually after the amounts are confirmed: folded until then so the page asks one thing.
             <details className="border-border bg-surface rounded-xl border">
-              <summary className="hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium">
+              <summary className="hover:bg-surface-subtle flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium md:min-h-10">
                 <Icon name="receipt" size={18} />
                 {t("invoiceAfterConfirm")}
               </summary>

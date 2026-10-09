@@ -18,7 +18,7 @@ import { CameraCapture, type CapturedPhoto } from "@/ui/components/CameraCapture
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
-import { Select } from "@/ui/components/Select";
+import { Select } from "@/features/partner/select";
 import { Sheet } from "@/ui/components/Sheet";
 import { SignaturePad } from "@/ui/components/SignaturePad";
 import { toast } from "@/ui/components/Toast";

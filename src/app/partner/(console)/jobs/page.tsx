@@ -67,11 +67,11 @@ export default async function JobsPage({ searchParams }: Props) {
           id="jobs-q"
           name="q"
           inputSize="lg"
-          className="md:h-10 md:text-sm"
+          className="md:h-10"
           defaultValue={query.q ?? ""}
           placeholder={t("searchPlaceholder")}
         />
-        <Button type="submit" size="lg" variant="secondary" iconStart="search" className="h-12 shrink-0">
+        <Button type="submit" size="lg" variant="secondary" iconStart="search" className="h-11 shrink-0 md:h-10">
           {t("searchAction")}
         </Button>
       </form>

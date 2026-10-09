@@ -35,7 +35,7 @@ export function BigActionButton({
       aria-busy={loading || undefined}
       data-big=""
       className={cn(
-        "flex min-h-16 w-full items-center gap-3 rounded-xl px-5 py-3 text-start",
+        "flex min-h-14 w-full items-center gap-3 rounded-xl px-4 py-2.5 text-start",
         "duration-fast ease-standard transition-colors disabled:opacity-50",
         tone === "primary" && "bg-primary text-primary-fg hover:bg-primary-hover",
         tone === "secondary" && "border-border-strong bg-surface text-fg hover:bg-surface-subtle border",
@@ -44,10 +44,10 @@ export function BigActionButton({
       )}
       {...props}
     >
-      {loading ? <Spinner size={28} label={null} /> : icon ? <Icon name={icon} size={28} className="shrink-0" /> : null}
+      {loading ? <Spinner size={22} label={null} /> : icon ? <Icon name={icon} size={22} className="shrink-0" /> : null}
       <span className="min-w-0 flex-1">
-        <span className="block text-xl font-semibold">{title}</span>
-        {hint ? <span className="block text-base opacity-90">{hint}</span> : null}
+        <span className="block text-base font-semibold">{title}</span>
+        {hint ? <span className="block text-sm opacity-90">{hint}</span> : null}
       </span>
     </button>
   );

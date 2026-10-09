@@ -111,7 +111,7 @@ export default async function PricesPage() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link
                       href={`/prices/${list.productTypeCode}?version=${version.id}`}
-                      className="text-primary inline-flex min-h-12 items-center underline"
+                      className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
                     >
                       {t("attention.review")}
                     </Link>

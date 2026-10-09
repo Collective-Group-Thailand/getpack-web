@@ -149,11 +149,11 @@ export function CameraCapture({
       <label
         htmlFor={id}
         className={cn(
-          "border-border-strong bg-surface hover:bg-surface-subtle flex min-h-16 cursor-pointer items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 text-lg font-medium",
+          "border-border-strong bg-surface hover:bg-surface-subtle flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed px-4 text-base font-medium",
           (disabled || photos.length >= max) && "pointer-events-none opacity-50",
         )}
       >
-        <Icon name={busy ? "spinner" : "image"} size={28} className={busy ? "animate-spin" : undefined} />
+        <Icon name={busy ? "spinner" : "image"} size={20} className={busy ? "animate-spin" : undefined} />
         {busy ? labels.processing : photos.length ? labels.more : labels.take}
       </label>
       <input
