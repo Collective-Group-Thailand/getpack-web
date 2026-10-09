@@ -92,6 +92,8 @@ export const DECORATIVE: { fg: SemanticKey; bg: SemanticKey; min: number; max: n
   { fg: "canvas-grid", bg: "canvas", min: 1.15, max: 4, why: "designer grid dots" },
   { fg: "kraft", bg: "bg", min: 1.15, max: 2, why: "kraft illustration fill on the page" },
   { fg: "kraft-strong", bg: "bg", min: 1.8, max: 10, why: "kraft accent line on an illustration" },
+  // The empty photo panel inside the sage band: visibly a panel, still quiet beside the band.
+  { fg: "sage-strong", bg: "sage", min: 1.1, max: 2, why: "empty photo panel in the sage band" },
 ];
 
 export interface Result {

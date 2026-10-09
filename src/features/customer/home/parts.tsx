@@ -67,7 +67,7 @@ export function TemplateCard({
               alt=""
               className={cn(
                 "size-full object-contain",
-                big ? "p-[7%]" : narrow ? "p-[10%] pt-[calc(18%_+_8px)]" : "p-[10%] pt-[18%]",
+                big ? "p-6" : narrow ? "p-[10%] pt-[calc(18%_+_8px)]" : "p-[10%] pt-[18%]",
               )}
             />
           ) : null}

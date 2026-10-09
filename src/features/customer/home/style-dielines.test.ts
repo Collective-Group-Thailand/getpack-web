@@ -27,4 +27,11 @@ describe("a template card's dieline (visual review, item 1)", () => {
     expect(styleDieline("PK-ZZ-99", "card")).toBeNull();
     expect(styleDieline("PK-ZZ-99", "thumb")).toBeNull();
   });
+
+  it("draws the feature card's lines 1px at display scale (board diff 2026-10-09)", () => {
+    const svg = decodeURIComponent(styleDieline("PK-TE-01", "feature")!.src);
+    const groups = svg.match(/<g id="[A-Z]+"[^>]*>/g)!;
+    expect(groups.length).toBeGreaterThan(0);
+    for (const g of groups) expect(g).toContain('stroke-width="1" vector-effect="non-scaling-stroke"');
+  });
 });

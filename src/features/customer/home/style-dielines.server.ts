@@ -21,7 +21,14 @@ export interface StyleDieline {
 /** Line weight relative to the drawing's longer side, so it reads at the size it is shown. */
 const STROKE = { thumb: 1 / 45, card: 1 / 160 } as const;
 
-type Drawn = { width: number; height: number; svg: (strokeRatio: number) => string } | null;
+/**
+ * The sizes a dieline is drawn for: the corner thumbnail, a card, and the home's 2×2 feature card,
+ * whose lines are 1px at whatever size it is shown (`non-scaling-stroke`) and whose inset is the
+ * card's own padding, so the drawing carries only a hairline margin.
+ */
+export type DielineSize = keyof typeof STROKE | "feature";
+
+type Drawn = { width: number; height: number; svg: (size: DielineSize) => string } | null;
 
 const drawn = new Map<string, Drawn>();
 
@@ -52,7 +59,13 @@ function build(code: string): Drawn {
       result = {
         width: dieline.width,
         height: dieline.height,
-        svg: (ratio) => dielineToSvg(dieline, { margin: longer * 0.04, strokeMm: longer * ratio }),
+        svg: (size) =>
+          size === "feature"
+            ? dielineToSvg(dieline, { margin: longer * 0.005, strokeMm: 1 }).replaceAll(
+                ' stroke-width="1"',
+                ' stroke-width="1" vector-effect="non-scaling-stroke"',
+              )
+            : dielineToSvg(dieline, { margin: longer * 0.04, strokeMm: longer * STROKE[size] }),
       };
     } catch (error) {
       console.warn(`home: no dieline for ${code}`, error);
@@ -62,12 +75,12 @@ function build(code: string): Drawn {
   return result;
 }
 
-/** The dieline of `code` for a card (`card`) or its corner thumbnail (`thumb`). */
-export function styleDieline(code: string, size: keyof typeof STROKE): StyleDieline | null {
+/** The dieline of `code` for a card (`card`), the feature card (`feature`) or a corner thumbnail (`thumb`). */
+export function styleDieline(code: string, size: DielineSize): StyleDieline | null {
   const built = build(code);
   if (!built) return null;
   return {
-    src: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(built.svg(STROKE[size]))}`,
+    src: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(built.svg(size))}`,
     aspect: built.width / built.height,
   };
 }
