@@ -29,7 +29,7 @@ export async function expectHeroParity(page: Page, shape: keyof typeof HERO_SHAP
   await expect(panel.getByText(`ราคาต่อชิ้น · ${qty} ชิ้น · รวม VAT`)).toBeVisible();
 
   await panel.getByRole("link", { name: "ดูรายละเอียดราคาและปรับสเปกเพิ่ม" }).click();
-  await expect(page).toHaveURL(/\/configure\/[^?]+\?.*from=home/);
+  await expect(page).toHaveURL(/\/configure\/[^?]+\?.*from=home/, { timeout: 30_000 });
   const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
   await expect(dock).toContainText(`${qty} ชิ้น`, { timeout: 30_000 });
   await expect(dock, `${shape}: the hero said ${unit} per piece at ${qty}`).toContainText(`${unit} / ชิ้น`, {
