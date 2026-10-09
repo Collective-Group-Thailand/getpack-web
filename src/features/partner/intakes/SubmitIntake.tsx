@@ -83,13 +83,30 @@ export function SubmitIntake({ terms }: { terms: Schemas["IntakeTermsDto"] }) {
         }}
       />
       <Field label={t("title")} required>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} className="min-h-12" />
+        <Input
+          placeholder={t("titlePlaceholder")}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          maxLength={200}
+          className="min-h-12"
+        />
       </Field>
       <Field label={t("baseCode")} hint={t("baseCodeHint")}>
-        <Input value={baseCode} onChange={(e) => setBaseCode(e.target.value.toUpperCase())} className="min-h-12" />
+        <Input
+          placeholder={t("baseCodePlaceholder")}
+          value={baseCode}
+          onChange={(e) => setBaseCode(e.target.value.toUpperCase())}
+          className="min-h-12"
+        />
       </Field>
       <Field label={t("note")}>
-        <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={2000} />
+        <Textarea
+          placeholder={t("notePlaceholder")}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          rows={3}
+          maxLength={2000}
+        />
       </Field>
       <section aria-labelledby="intake-terms" className="border-border bg-bg-subtle rounded-lg border p-3">
         <h3 id="intake-terms" className="mb-1 text-sm font-semibold">

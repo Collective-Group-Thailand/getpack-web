@@ -6,7 +6,7 @@ import { FACTORY_STATUS, ONBOARDING_STEP_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { awaitsSignOff, FACTORY_STAGES } from "@/features/partner/onboarding/steps";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { Meter } from "@/ui/components/Meter";

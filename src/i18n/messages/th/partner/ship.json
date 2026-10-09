@@ -64,7 +64,10 @@
     "cancel": "ยกเลิก",
     "submit": "สร้างการจัดส่ง + พิมพ์ฉลาก {count} ใบ",
     "finish": "ทำ {no} ต่อให้เสร็จ",
-    "partly": "สร้าง {no} แล้ว แต่ขั้นถัดไปไม่สำเร็จ: {reason} — กดอีกครั้งเพื่อทำต่อ"
+    "partly": "สร้าง {no} แล้ว แต่ขั้นถัดไปไม่สำเร็จ: {reason} — กดอีกครั้งเพื่อทำต่อ",
+    "quantityPlaceholder": "จำนวนชิ้นที่ส่งรอบนี้",
+    "cartonsPlaceholder": "จำนวนกล่องที่แพ็ก",
+    "weightPlaceholder": "น้ำหนักรวมโดยประมาณ"
   },
   "dispatch": {
     "action": "ออกรถส่งของ",
@@ -101,7 +104,9 @@
     "signatureMode": "วิธีลงชื่อ",
     "submit": "บันทึกการส่งมอบ",
     "submitHint": "ใช้เป็นหลักฐานการส่งและคำนวณค่าเผื่อจำนวน",
-    "deliveredFor": "จำนวนที่ส่งมอบ ({jobNo})"
+    "deliveredFor": "จำนวนที่ส่งมอบ ({jobNo})",
+    "receiverPlaceholder": "ชื่อคนที่เซ็นรับของ",
+    "deliveredPlaceholder": "เช่น {quantity} (ถ้าส่งครบ)"
   },
   "detail": {
     "metaTitle": "การจัดส่ง",
@@ -128,7 +133,13 @@
     "transitTitle": "แจ้งสถานะระหว่างทาง",
     "itemDelivered": "ส่งมอบ {delivered} จาก {quantity}",
     "weight": "{kg} กก. · {cartons} กล่อง",
-    "itemPieces": "{quantity} ชิ้น"
+    "itemPieces": "{quantity} ชิ้น",
+    "steps": {
+      "label": "1. ติดฉลากบนกล่อง",
+      "labelBody": "พิมพ์ฉลาก 1 แผ่นต่อ 1 กล่อง แล้วแนบใบแพ็กไปกับของ",
+      "send": "2. ส่งของ",
+      "sendBody": "ส่งด้วยรถของโรงงานเอง หรือให้ Packio จองรถขนส่งให้"
+    }
   },
   "tolerance": {
     "exact": "ส่งครบตามจำนวน",
@@ -169,7 +180,8 @@
     "status": "สถานะ",
     "note": "หมายเหตุ",
     "submit": "แจ้งสถานะ",
-    "done": "แจ้งสถานะแล้ว"
+    "done": "แจ้งสถานะแล้ว",
+    "notePlaceholder": "เช่น รถติด ถึงช้าประมาณ 1 ชม."
   },
   "glance": {
     "label": "วันนี้",

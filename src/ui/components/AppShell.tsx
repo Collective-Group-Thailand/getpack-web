@@ -26,6 +26,8 @@ export interface AppShellProps {
    */
   reserveBottomNavSpace?: boolean;
   className?: string;
+  /** The sidebar column's own surface (a zone that sets it apart from the page, e.g. white on paper). */
+  sidebarClassName?: string;
 }
 
 /**
@@ -47,6 +49,7 @@ export function AppShell({
   sidebarCollapsed = false,
   reserveBottomNavSpace = false,
   className,
+  sidebarClassName,
 }: AppShellProps) {
   return (
     <div className={cn("bg-bg flex min-h-dvh flex-col", className)}>
@@ -62,6 +65,7 @@ export function AppShell({
             aria-label={sidebarLabel}
             className={cn(
               "border-border hidden shrink-0 border-e md:block",
+              sidebarClassName,
               // A width transition rather than a display swap, so the collapse reads as one
               // movement and nothing below it jumps.
               "motion-safe:duration-slow motion-safe:transition-[width]",

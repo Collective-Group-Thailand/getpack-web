@@ -46,6 +46,7 @@ export function PartnerLoginForm({ returnTo }: { returnTo: string }) {
 
       <Field label={t("partner.email")} required requiredLabel={tCommon("state.required")}>
         <Input
+          placeholder={t("partner.emailPlaceholder")}
           name="email"
           type="email"
           autoComplete="username"

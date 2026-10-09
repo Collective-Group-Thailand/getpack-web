@@ -407,7 +407,8 @@
     "fromHint": "Never back-dated; Packio approves it before then",
     "reason": "Reason",
     "reasonHint": "E.g. paper prices rise next month",
-    "action": "Start a draft"
+    "action": "Start a draft",
+    "reasonPlaceholder": "e.g. corrugated board price rise from our supplier"
   },
   "submit": {
     "action": "Send to Packio",
@@ -445,7 +446,8 @@
     "wrongType": "{name} is not a PDF, JPG or PNG",
     "chosen": "{name} chosen",
     "note": "Note (optional)",
-    "attach": "Attach"
+    "attach": "Attach",
+    "notePlaceholder": "e.g. October board quotation"
   },
   "rateCard": {
     "ownerOnly": "The factory owner answers rate cards.",
@@ -465,7 +467,9 @@
     "counter": "Counter",
     "counterValue": "{column} you ask for",
     "comment": "Reason",
-    "sendLines": "Send answers ({count})"
+    "sendLines": "Send answers ({count})",
+    "counterValuePlaceholder": "The price you ask for",
+    "commentPlaceholder": "e.g. board price up 8% this month"
   },
   "shipping": {
     "title": "What Packio pays for delivery",
@@ -502,7 +506,9 @@
     "currentMeta": "Version {version} · since {date} · accepted {accepted}",
     "noCurrent": "No delivery rates in force yet",
     "scheduledTitle": "Next version",
-    "scheduledBody": "Version {version} applies from {date}"
+    "scheduledBody": "Version {version} applies from {date}",
+    "counterAmountPlaceholder": "e.g. 450",
+    "notePlaceholder": "e.g. fuel price increase"
   },
   "editor": {
     "yes": "Yes",

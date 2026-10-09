@@ -9,7 +9,7 @@ import { PartnerTable } from "@/features/partner/table";
 import { VersionSignOff } from "@/features/partner/prices/actions";
 import { loadPrices, OPEN_PROPOSAL } from "@/features/partner/prices/server";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 

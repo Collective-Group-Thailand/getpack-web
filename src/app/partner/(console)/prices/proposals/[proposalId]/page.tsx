@@ -12,7 +12,7 @@ import { RateCardReview } from "@/features/partner/prices/RateCardReview";
 import { loadPrices, OPEN_PROPOSAL } from "@/features/partner/prices/server";
 import { columnsOf, type Values } from "@/features/partner/prices/values";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 
@@ -110,7 +110,7 @@ export default async function ProposalPage({ params, searchParams }: Props) {
 
       {factoryOwn && item.status === "countered" ? (
         <PartnerSection title={t("countersTitle")} description={t("countersBody")}>
-          <Card padding="lg">
+          <Card padding="md">
             <CounterAnswers
               proposalId={item.id}
               lines={item.lines
@@ -170,7 +170,7 @@ export default async function ProposalPage({ params, searchParams }: Props) {
             <p className="text-muted text-sm">{t("evidenceEmpty")}</p>
           )}
           {OPEN_PROPOSAL.includes(item.status) ? (
-            <Card padding="lg">
+            <Card padding="md">
               <EvidenceUpload proposalId={item.id} />
             </Card>
           ) : null}
@@ -179,7 +179,7 @@ export default async function ProposalPage({ params, searchParams }: Props) {
 
       {factoryOwn && item.status === "draft" ? (
         <PartnerSection title={t("sendTitle")} description={t("sendBody")}>
-          <Card padding="lg" className="flex flex-col gap-3">
+          <Card padding="md" className="flex flex-col gap-3">
             <SubmitProposal proposalId={item.id} typeName={name} lines={item.lines.length} />
           </Card>
         </PartnerSection>

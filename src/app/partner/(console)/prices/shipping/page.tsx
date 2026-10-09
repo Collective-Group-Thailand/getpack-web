@@ -6,7 +6,7 @@ import { attempt, factoryContext, partnerServerApis } from "@/features/partner/c
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { ShippingCardReview } from "@/features/partner/prices/ShippingCardReview";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";

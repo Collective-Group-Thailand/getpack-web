@@ -9,7 +9,7 @@ import { SignOffStep } from "@/features/partner/onboarding/forms";
 import { StepContent } from "@/features/partner/onboarding/StepContent";
 import { awaitsSignOff, isOnboardingStep } from "@/features/partner/onboarding/steps";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { StatusChip } from "@/features/partner/status";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 

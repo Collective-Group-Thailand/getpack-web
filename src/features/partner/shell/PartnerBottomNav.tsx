@@ -46,13 +46,21 @@ export function PartnerBottomNav({
               aria-current={current ? "page" : undefined}
               className={cn(
                 bottom
-                  ? "flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium"
+                  ? "flex h-16 flex-col items-center justify-center gap-0.5 text-sm"
                   : "flex h-12 items-center gap-3 rounded-md px-3 font-medium",
-                bottom && (current ? "text-primary" : "text-muted"),
-                !bottom && (current ? "bg-primary/10 text-primary" : "text-fg hover:bg-surface-subtle"),
+                bottom && (current ? "text-primary-subtle-fg font-semibold" : "text-muted font-medium"),
+                !bottom && (current ? "bg-primary-subtle text-primary-subtle-fg" : "text-fg hover:bg-bg"),
               )}
             >
-              <Icon name={item.icon} size={24} />
+              {/* The tab you are on carries a tint behind its icon, not only a colour change. */}
+              <span
+                className={cn(
+                  bottom ? "flex h-7 w-12 items-center justify-center rounded-lg" : "contents",
+                  bottom && current && "bg-primary-subtle",
+                )}
+              >
+                <Icon name={item.icon} size={22} className={current ? "text-primary" : undefined} />
+              </span>
               {item.key === "more" ? t("more") : tItems(item.key)}
             </Link>
           </li>

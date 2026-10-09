@@ -54,7 +54,10 @@
     "eTaxNoHint": "An e-Tax Invoice's number is its e-Tax reference",
     "eTaxFile": "e-Tax Invoice file",
     "eTaxRules": "PDF or XML, up to 20 MB",
-    "amountPlaceholder": "0.00"
+    "amountPlaceholder": "0.00",
+    "noPlaceholder": "e.g. INV-2569-0012",
+    "taxIdPlaceholder": "13 digits, e.g. 0105561234567",
+    "branchPlaceholder": "Head office: 00000"
   },
   "detail": {
     "metaTitle": "Statement",
@@ -260,7 +263,14 @@
     "run": "Run {no} · pays {date}",
     "line": "Payout line",
     "cash": "Transfer {amount}",
-    "statement": "See the statement of account"
+    "statement": "See the statement of account",
+    "table": {
+      "po": "Purchase order",
+      "net": "Open (excl. VAT)",
+      "vat": "VAT",
+      "expected": "Expected",
+      "status": "Status"
+    }
   },
   "table": {
     "no": "Statement",

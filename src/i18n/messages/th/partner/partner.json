@@ -38,7 +38,7 @@
         "body": "สิ่งที่ Packio จ่ายเมื่อโรงงานส่งเอง"
       },
       "requests": {
-        "title": "คำขอถึงทีมพาร์ตเนอร์",
+        "title": "คำขอถึง Packio",
         "body": "ขอแก้ข้อมูลที่ Packio บันทึก และดูคำตอบ"
       },
       "capacity": {
@@ -101,6 +101,26 @@
       "requests": "คำขอถึง Packio",
       "knowledge": "คู่มือโรงงาน",
       "settings": "ตั้งค่าและผู้ใช้"
+    }
+  },
+  "status": {
+    "job": {
+      "released": "รอคุณรับงาน",
+      "accepted": "รับงานแล้ว",
+      "rejected": "ปฏิเสธงานแล้ว"
+    },
+    "claim": {
+      "factoryReview": "รอคุณตอบ"
+    },
+    "billingStatement": {
+      "sent": "รอคุณตรวจและยืนยัน"
+    },
+    "purchaseOrder": {
+      "issued": "ได้รับใบสั่งซื้อแล้ว",
+      "accepted": "รับงานแล้ว"
+    },
+    "shipment": {
+      "pickedUp": "ออกจากโรงงานแล้ว"
     }
   }
 }

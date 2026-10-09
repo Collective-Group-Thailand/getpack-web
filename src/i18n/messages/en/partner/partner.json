@@ -102,5 +102,25 @@
       "knowledge": "Factory guide",
       "settings": "Settings and users"
     }
+  },
+  "status": {
+    "job": {
+      "released": "Waiting for you to accept",
+      "accepted": "Accepted",
+      "rejected": "Declined"
+    },
+    "claim": {
+      "factoryReview": "Waiting for your answer"
+    },
+    "billingStatement": {
+      "sent": "Waiting for you to check"
+    },
+    "purchaseOrder": {
+      "issued": "Order received",
+      "accepted": "Accepted"
+    },
+    "shipment": {
+      "pickedUp": "Left the factory"
+    }
   }
 }

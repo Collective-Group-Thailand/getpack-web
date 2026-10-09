@@ -31,7 +31,18 @@
     "sent": "Request sent — the Partner team will answer",
     "failed": "Could not send the request",
     "aboutType": "[{type}] {message}",
-    "ownerOnly": "The factory owner sends requests to the Partner team"
+    "ownerOnly": "The factory owner sends requests to the Partner team",
+    "placeholders": {
+      "capability": "e.g. We bought a 4-colour offset press and can now make folding cartons",
+      "capacity": "e.g. Add a second shift for corrugated boxes from 1 Nov",
+      "delivery_zones": "e.g. Add Chonburi and Rayong to our delivery area",
+      "tolerance": "e.g. Change tolerance to 3% under, 5% over",
+      "participation_tier": "e.g. We want more jobs — what do we need to do?",
+      "pricing_arrangement": "e.g. Per-piece pricing for runs over 10,000",
+      "payout_policy": "e.g. 50% advance for large runs",
+      "site_visit": "e.g. New machine installed, please visit the factory",
+      "other": "What would you like to tell Packio?"
+    }
   },
   "answeredBy": "Answered by {by} on {date}"
 }

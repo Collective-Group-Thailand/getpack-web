@@ -163,6 +163,7 @@ export function RateCardReview({
                       {line.columns.map((column) => (
                         <Field key={column.key} label={t("counterValue", { column: column.label })}>
                           <Input
+                            placeholder={t("counterValuePlaceholder")}
                             inputSize="lg"
                             inputMode="decimal"
                             value={counters[line.id]?.[column.key] ?? column.value}
@@ -177,6 +178,7 @@ export function RateCardReview({
                       ))}
                       <Field label={t("comment")} className="md:col-span-2">
                         <Input
+                          placeholder={t("commentPlaceholder")}
                           inputSize="lg"
                           value={comments[line.id] ?? ""}
                           onChange={(event) => setComments({ ...comments, [line.id]: event.target.value })}
