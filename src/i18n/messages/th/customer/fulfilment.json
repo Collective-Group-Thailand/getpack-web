@@ -202,7 +202,7 @@
     "quantityHintNoMin": "ครั้งก่อนสั่ง {original}",
     "product": "สินค้า {quantity} {unit}",
     "designFee": "ค่าออกแบบ",
-    "tooling": "ค่าเพลตและบล็อกไดคัท",
+    "tooling": "ค่าเพลทและบล็อกไดคัท",
     "shipping": "ค่าจัดส่ง",
     "shippingAtCheckout": "คำนวณตอนชำระเงิน",
     "arrives": "คาดว่าจะได้รับเร็วสุด {date}",

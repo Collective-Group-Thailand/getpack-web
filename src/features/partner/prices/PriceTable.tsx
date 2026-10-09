@@ -78,7 +78,7 @@ export async function PriceTable({
                   <th
                     scope="colgroup"
                     colSpan={values.length}
-                    className="bg-primary-subtle text-primary-subtle-fg border-border border-s border-b px-3 pt-2 text-start font-medium"
+                    className="bg-sage-subtle text-muted border-border border-s border-b px-3 pt-2 text-start font-medium"
                   >
                     {t("table.values")}
                   </th>
@@ -91,7 +91,7 @@ export async function PriceTable({
                     scope="col"
                     className={cn(
                       "border-border border-b px-3 py-2 align-bottom font-medium",
-                      index < dimensions.length ? "bg-surface-subtle text-start" : "bg-primary-subtle",
+                      index < dimensions.length ? "bg-surface-subtle text-start" : "bg-sage-subtle",
                       index === dimensions.length && "border-s",
                       index >= dimensions.length && NUMERIC.includes(column.type) ? "text-end" : "text-start",
                     )}
