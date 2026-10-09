@@ -133,3 +133,14 @@ export function reconcile(selection: HeroSelection, shapes: HeroShapeView[]): He
     qty: shape.qtys.includes(selection.qty) ? selection.qty : opening.qty,
   };
 }
+
+/**
+ * The hero's "ขั้นต่ำสั่งผลิต" (visual review 2026-10-09, product owner): the lowest quantity the
+ * hero presets offer on any shape — what a visitor can actually start from in the panel beside it,
+ * not the catalogue's made-to-order floor (`store.publicConfig.get`, D-309). Null without presets,
+ * and the fact is left out.
+ */
+export function lowestPresetQty(shapes: Pick<HeroShapeView, "qtys">[]): number | null {
+  const qtys = shapes.flatMap((shape) => shape.qtys);
+  return qtys.length ? Math.min(...qtys) : null;
+}
