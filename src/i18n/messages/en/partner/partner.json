@@ -166,5 +166,14 @@
   "select": {
     "search": "Type to search",
     "empty": "Nothing matches"
+  },
+  "viewer": {
+    "close": "Close",
+    "previous": "Previous",
+    "next": "Next",
+    "openNew": "Open in a new tab",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Fit to screen",
+    "failed": "This file could not be shown. Try “Open in a new tab”, or try again."
   }
 }

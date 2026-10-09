@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { INSPECTION_STATUS, JOB_ISSUE_STATUS, JOB_STATUS, QC_RESULT } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { addressLine } from "@/features/partner/address";
+import { ViewFile } from "@/features/partner/viewer";
 import { termsFrom, TermsHelp } from "@/features/partner/terms";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import {
@@ -330,24 +331,14 @@ export default async function JobPage({ params }: Props) {
               </p>
               <div className="flex flex-wrap gap-3">
                 {proofUrl ? (
-                  <a
-                    href={proofUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
-                  >
+                  <ViewFile src={proofUrl} title={t("openProof")}>
                     {t("openProof")}
-                  </a>
+                  </ViewFile>
                 ) : null}
                 {dielineUrl ? (
-                  <a
-                    href={dielineUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
-                  >
+                  <ViewFile src={dielineUrl} title={t("openDieline")}>
                     {t("openDieline")}
-                  </a>
+                  </ViewFile>
                 ) : null}
               </div>
             </Card>

@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 import { QC_CHECKLIST_ITEMS, QC_CHECKLIST_VERSION, qcItemLabelKey, type QcChecklistItem } from "@/domain/qc/checklist";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { newReport, uploadPhotos, useFloorAction } from "@/features/partner/floor";
+import { useViewerLabels } from "@/features/partner/viewer";
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { useFormat } from "@/features/shared/format";
 import { browserApi } from "@/lib/api/browser";
@@ -51,7 +52,9 @@ function useIntentKey() {
 
 function useCameraLabels() {
   const t = useTranslations("partnerJobs.camera");
+  const viewer = useViewerLabels();
   return {
+    viewer,
     take: t("take"),
     more: t("more"),
     photo: (n: number) => t("photo", { n }),

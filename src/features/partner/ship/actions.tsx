@@ -22,6 +22,7 @@ import { Select } from "@/features/partner/select";
 import { Sheet } from "@/ui/components/Sheet";
 import { SignaturePad } from "@/ui/components/SignaturePad";
 import { toast } from "@/ui/components/Toast";
+import { useViewerLabels } from "@/features/partner/viewer";
 
 /** One `Idempotency-Key` per intent: minted on the first attempt, kept on a retry, dropped on success. */
 function useIntentKey() {
@@ -432,6 +433,7 @@ export function PodForm({
   items: { destinationId: string; jobNo: string; quantity: number }[];
 }) {
   const t = useTranslations("partnerShip.pod");
+  const viewer = useViewerLabels();
   const tCamera = useTranslations("partnerJobs.camera");
   const tCommon = useTranslations("common");
   const { factoryId } = useFactory();
@@ -498,6 +500,7 @@ export function PodForm({
             remove: (n) => tCamera("remove", { n }),
             count: (value) => tCamera("count", { count: value }),
             processing: tCamera("processing"),
+            viewer,
           }}
         />
       </Field>
