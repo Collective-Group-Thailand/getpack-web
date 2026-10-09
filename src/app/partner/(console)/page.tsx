@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { FACTORY_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
@@ -27,7 +27,7 @@ import { Icon, type IconName } from "@/ui/icons";
  * (`partner.payables.listStatements`, `partner.claims.list`), a claim when it offers `claim.respond`.
  */
 export default async function PartnerHomePage() {
-  const t = await getTranslations("partnerToday");
+  const [t, locale] = await Promise.all([getTranslations("partnerToday"), getLocale()]);
   const context = await factoryContext();
   const factory = context.factory;
   const onboarding = factory && ["applied", "under_review", "trial"].includes(factory.status);
@@ -224,7 +224,12 @@ export default async function PartnerHomePage() {
                   <p className="text-muted flex items-start gap-2 text-sm">
                     <Icon name="check" size={16} className="text-success mt-0.5 shrink-0" aria-hidden="true" />
                     <span>
-                      {tFloor("clear", { list: clear.map(([key]) => tFloor(`counters.${key}`)).join(" · ") })}
+                      {tFloor("clear", {
+                        // "ครบกำหนดวันนี้, เสี่ยงล่าช้า หรือ พักงาน" — a sentence, not a list of labels.
+                        list: new Intl.ListFormat(locale, { type: "disjunction" }).format(
+                          clear.map(([key]) => tFloor(`counters.${key}`)),
+                        ),
+                      })}
                     </span>
                   </p>
                 ) : null}

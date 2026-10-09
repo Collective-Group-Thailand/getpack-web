@@ -119,7 +119,8 @@
     "packingPdf": "Open the packing list (PDF)",
     "transitTitle": "Report from the road",
     "itemDelivered": "{delivered} of {quantity} delivered",
-    "weight": "{kg} kg · {cartons} cartons"
+    "weight": "{kg} kg · {cartons} cartons",
+    "itemPieces": "{quantity} pcs"
   },
   "tolerance": {
     "exact": "Delivered in full",

@@ -84,10 +84,15 @@ export default async function PerformancePage() {
         </p>
       ) : null}
       <PartnerSection title={t("trend")}>
-        <ScoreChart
-          months={cards.data}
-          monthLabels={Object.fromEntries(cards.data.map((item) => [item.month, monthLabel(item.month)]))}
-        />
+        {cards.data.length >= 2 ? (
+          <ScoreChart
+            months={cards.data}
+            monthLabels={Object.fromEntries(cards.data.map((item) => [item.month, monthLabel(item.month)]))}
+          />
+        ) : (
+          // One month is a point, not a trend: say when the line will appear instead of an empty frame.
+          <p className="border-border text-muted rounded-xl border border-dashed p-4 text-sm">{t("trendSoon")}</p>
+        )}
       </PartnerSection>
     </PartnerPage>
   );

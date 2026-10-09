@@ -10,6 +10,7 @@ import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerBilling.payouts"))("title") };
@@ -22,7 +23,18 @@ export async function generateMetadata(): Promise<Metadata> {
  * (`partner.payables.payoutStatement`, a plain list), each with its remittance advice and 50 ทวิ, and
  * the statement of account.
  */
-export default async function PayoutsPage() {
+type Props = { searchParams: Promise<{ view?: string }> };
+
+const VIEWS = ["due", "paid", "all"] as const;
+type View = (typeof VIEWS)[number];
+type ScheduleRow = { items: { status: string }[] };
+/** A PO still owes the factory something while any of its items is neither paid nor cancelled. */
+const owing = (row: ScheduleRow) => row.items.some((item) => item.status !== "paid" && item.status !== "cancelled");
+const inView = (view: View, row: ScheduleRow) => (view === "all" ? true : view === "due" ? owing(row) : !owing(row));
+
+export default async function PayoutsPage({ searchParams }: Props) {
+  const query = await searchParams;
+  const view: View = (VIEWS as readonly string[]).includes(query.view ?? "") ? (query.view as View) : "due";
   const t = await getTranslations("partnerBilling.payouts");
   const format = await getFormat();
   const context = await factoryContext();
@@ -64,56 +76,85 @@ export default async function PayoutsPage() {
     >
       <PartnerSection title={t("scheduleTitle")} description={t("scheduleBody")}>
         {schedule.data ? (
-          schedule.data.data.length ? (
+          <nav aria-label={t("views.label")} className="flex flex-wrap gap-2">
+            {VIEWS.map((item) => (
+              <Link
+                key={item}
+                href={item === "due" ? "/payouts" : `/payouts?view=${item}`}
+                aria-current={item === view ? "page" : undefined}
+                className={cn(
+                  "rounded-control border-border inline-flex min-h-11 items-center gap-2 border px-4 text-sm",
+                  item === view ? "bg-primary text-primary-fg border-primary font-medium" : "hover:bg-surface-subtle",
+                )}
+              >
+                {t(`views.${item}`)}
+                <span className="tabular-nums opacity-80">
+                  {schedule.data!.data.filter((row) => inView(item, row)).length}
+                </span>
+              </Link>
+            ))}
+          </nav>
+        ) : null}
+        {schedule.data ? (
+          schedule.data.data.filter((row) => inView(view, row)).length ? (
             <ul className="grid gap-3 md:grid-cols-2">
-              {schedule.data.data.map((row) => (
-                <li key={row.purchaseOrderId}>
-                  <Card padding="md" className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      {/* CONTRACT-GAP partner.payouts — the schedule names the job by number only, so it does not link to it. */}
-                      <span className="font-mono font-semibold">{row.jobNo}</span>
-                      <span className="text-muted flex-1 text-sm">{row.orderCode}</span>
-                      <span className="text-sm">{t("po", { no: row.poNumber })}</span>
-                    </div>
-                    <p className="text-muted text-sm">
-                      {[
-                        t("terms.advance", { pct: format.percent(row.terms.advancePct) }),
-                        Number(row.terms.retentionPct) > 0
-                          ? t("terms.retention", {
-                              pct: format.percent(row.terms.retentionPct),
-                              days: row.terms.retentionReleaseDays,
-                            })
-                          : null,
-                        t("terms.claimWindow", { days: row.terms.claimWindowDays }),
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                    <ul className="flex flex-col gap-1">
-                      {row.items.map((item) => (
-                        <li key={item.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-                          <span className="w-36 font-medium">{t(`sources.${item.source}`)}</span>
-                          <span className="font-medium tabular-nums">{format.thb(item.netAmount)}</span>
-                          <StatusChip map={PAYABLE_STATUS} value={item.status} />
-                          <span className="text-muted">
-                            {item.paidOn
-                              ? t("paidOn", { date: format.date(item.paidOn) })
-                              : item.eligibleAt
-                                ? t("eligibleOn", { date: format.date(item.eligibleAt) })
-                                : item.waitingFor
-                                  ? t(`waiting.${item.waitingFor}`)
-                                  : null}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    {row.balancePending ? <p className="text-muted text-sm">{t("balancePending")}</p> : null}
-                  </Card>
-                </li>
-              ))}
+              {schedule.data.data
+                .filter((row) => inView(view, row))
+                .map((row) => (
+                  <li key={row.purchaseOrderId}>
+                    <Card padding="md" className="flex flex-col gap-2">
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        {/* CONTRACT-GAP partner.payouts — the schedule names the job by number only, so it does not link to it. */}
+                        <span className="font-mono font-semibold">{row.jobNo}</span>
+                        <span className="text-muted flex-1 text-sm">{row.orderCode}</span>
+                        <span className="text-sm">{t("po", { no: row.poNumber })}</span>
+                      </div>
+                      <p className="text-muted text-sm">
+                        {[
+                          t("terms.advance", { pct: format.percent(row.terms.advancePct) }),
+                          Number(row.terms.retentionPct) > 0
+                            ? t("terms.retention", {
+                                pct: format.percent(row.terms.retentionPct),
+                                days: row.terms.retentionReleaseDays,
+                              })
+                            : null,
+                          t("terms.claimWindow", { days: row.terms.claimWindowDays }),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                      <ul className="flex flex-col gap-1">
+                        {row.items.map((item) => (
+                          <li
+                            key={item.id}
+                            className={cn(
+                              "flex flex-wrap items-center gap-x-2 gap-y-1 text-sm",
+                              // A cancelled advance (paid with the balance instead) is history, not money due.
+                              item.status === "cancelled" && "text-muted opacity-70 [&_.tabular-nums]:line-through",
+                            )}
+                          >
+                            <span className="w-36 font-medium">{t(`sources.${item.source}`)}</span>
+                            <span className="font-medium tabular-nums">{format.thb(item.netAmount)}</span>
+                            <StatusChip map={PAYABLE_STATUS} value={item.status} />
+                            <span className="text-muted">
+                              {item.paidOn
+                                ? t("paidOn", { date: format.date(item.paidOn) })
+                                : item.eligibleAt
+                                  ? t("eligibleOn", { date: format.date(item.eligibleAt) })
+                                  : item.waitingFor
+                                    ? t(`waiting.${item.waitingFor}`)
+                                    : null}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      {row.balancePending ? <p className="text-muted text-sm">{t("balancePending")}</p> : null}
+                    </Card>
+                  </li>
+                ))}
             </ul>
           ) : (
-            <EmptyState icon="wallet" title={t("scheduleEmpty")} />
+            <EmptyState icon="wallet" title={view === "due" ? t("views.dueEmpty") : t("scheduleEmpty")} />
           )
         ) : (
           <PageError error={schedule.error} />
