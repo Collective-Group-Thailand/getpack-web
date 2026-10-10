@@ -11,6 +11,7 @@ import { billingHandlers } from "./billing";
 import { calendarHandlers } from "./calendar";
 import { erpHandlers } from "./erp";
 import { erpE2Handlers } from "./erp-e2";
+import { erpE3Handlers } from "./erp-e3";
 import { factoryHandlers } from "./factories";
 import { registerFactoryNames } from "./factory-names";
 import { jobHandlers } from "./jobs";
@@ -32,4 +33,5 @@ export const partnerZoneHandlers = [
   ...factoryHandlers,
   ...erpHandlers,
   ...erpE2Handlers,
+  ...erpE3Handlers,
 ];

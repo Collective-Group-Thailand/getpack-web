@@ -15,7 +15,12 @@
         "http://partner.localhost:3200/purchasing",
         "http://partner.localhost:3200/planning",
         "http://partner.localhost:3200/payables",
-        "http://partner.localhost:3200/floor"
+        "http://partner.localhost:3200/floor",
+        "http://partner.localhost:3200/floor/kiosk",
+        "http://partner.localhost:3200/planning/schedule",
+        "http://partner.localhost:3200/maintenance",
+        "http://partner.localhost:3200/documents",
+        "http://partner.localhost:3200/alerts"
       ],
       "numberOfRuns": 3,
       "settings": {
