@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { isValidThaiTaxId } from "@/domain/tax-id";
 import { useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
@@ -38,10 +39,27 @@ export function PartnerForm({
 }) {
   const t = useTranslations("partnerErp.partners.form");
   const tCommon = useTranslations("partnerErp.common");
-  const { factoryId } = useFactory();
+  const { factoryId, can } = useFactory();
   const router = useRouter();
   const [refresh] = useRefresh();
   const [kind, setKind] = useState<Kind>(partner?.kind ?? initialKind ?? "supplier");
+  const tSales = useTranslations("partnerSales.partner");
+  const [entityType, setEntityType] = useState<Partner["entityType"]>(partner?.entityType ?? "juristic");
+  const [salespersonId, setSalespersonId] = useState(partner?.salesperson?.id ?? "");
+  const [people, setPeople] = useState<{ id: string; name: string }[]>([]);
+  const sells = can("factory_sales.read");
+  // E4 (D-359): who looks after this customer, from the factory's own people.
+  useEffect(() => {
+    if (!sells) return;
+    let live = true;
+    browserApi()
+      .GET("/v1/partner/factories/{factoryId}/erp/salespeople", { params: { path: { factoryId } } })
+      .then(({ data }) => live && setPeople((data ?? []).map((p) => ({ id: p.id, name: p.name }))))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [factoryId, sells]);
   const [code, setCode] = useState("");
   const [name, setName] = useState(partner?.name ?? "");
   const [taxId, setTaxId] = useState(partner?.taxId ?? "");
@@ -76,6 +94,8 @@ export function PartnerForm({
       paymentTermDays: days ? Number.parseInt(days, 10) : 0,
       creditLimit: creditLimit ? plainNumber(creditLimit) : null,
       note: note.trim() || null,
+      entityType,
+      ...(sells && kind !== "supplier" ? { salespersonId: salespersonId || null } : {}),
     };
     try {
       if (partner) {
@@ -187,6 +207,29 @@ export function PartnerForm({
           onChange={(event) => setAddress(event.target.value)}
         />
       </Field>
+      <div className="grid gap-4 md:grid-cols-2">
+        <SegmentedControl
+          label={tSales("entityType")}
+          size="md"
+          value={entityType}
+          onValueChange={setEntityType}
+          options={[
+            { value: "juristic", label: tSales("entityTypes.juristic") },
+            { value: "individual", label: tSales("entityTypes.individual") },
+          ]}
+        />
+        {sells && kind !== "supplier" && people.length ? (
+          <Field label={tSales("salesperson")}>
+            <Select
+              value={salespersonId || null}
+              placeholder={tSales("salespersonPlaceholder")}
+              onValueChange={setSalespersonId}
+              options={people.map((p) => ({ value: p.id, label: p.name }))}
+            />
+          </Field>
+        ) : null}
+      </div>
+      <p className="text-muted -mt-2 text-sm">{tSales("entityTypeHint")}</p>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("creditLimit")} error={errors.creditLimit}>
           <NumberInput

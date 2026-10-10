@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.46.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.47.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -17415,6 +17415,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/erp/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Activities and follow-ups
+         * @description Calls, visits, tasks and notes; `view=due` = not done and due today or earlier (D-359).
+         *
+         *     Implements: D-359.
+         */
+        get: operations["partner.erpCrm.listActivities"];
+        put?: never;
+        /**
+         * Log an activity or plan a follow-up
+         * @description About exactly one lead, opportunity or customer; assigned to a user of this factory (D-359).
+         *
+         *     Implements: D-359.
+         */
+        post: operations["partner.erpCrm.createActivity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/activities/{activityId}/actions/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a follow-up done
+         * @description With its outcome; a new lead contacted moves to `contacted` (D-359).
+         *
+         *     Implements: D-359.
+         */
+        post: operations["partner.erpCrm.completeActivity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/erp/alerts": {
         parameters: {
             query?: never;
@@ -17495,6 +17545,240 @@ export interface paths {
          *     Implements: D-358.
          */
         get: operations["partner.erpAlerts.count"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/billing-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Billing notes
+         * @description Newest first (D-365).
+         *
+         *     Implements: D-365.
+         */
+        get: operations["partner.erpReceivables.listBillingNotes"];
+        put?: never;
+        /**
+         * Issue a billing note
+         * @description `BN-YYMM-NNNN` listing a customer’s open invoices with a collection date (D-365).
+         *
+         *     Implements: D-365.
+         */
+        post: operations["partner.erpReceivables.createBillingNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/billing-notes/{billingNoteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One billing note
+         * @description Its invoices as billed (D-365).
+         *
+         *     Implements: D-365.
+         */
+        get: operations["partner.erpReceivables.getBillingNote"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/billing-notes/{billingNoteId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a billing note
+         * @description With a reason (D-365).
+         *
+         *     Implements: D-365.
+         */
+        post: operations["partner.erpReceivables.cancelBillingNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/billing-notes/{billingNoteId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The billing note as a PDF
+         * @description A short-lived link (D-368).
+         *
+         *     Implements: D-368.
+         */
+        get: operations["partner.erpReceivables.billingNotePdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/delivery-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Delivery notes
+         * @description Newest first; `status=uninvoiced` = issued or delivered with lines not yet invoiced (D-362).
+         *
+         *     Implements: D-362.
+         */
+        get: operations["partner.erpDeliveryNotes.list"];
+        put?: never;
+        /**
+         * Prepare a delivery
+         * @description A draft `DO-YYMM-NNNN` from one sales order’s remaining quantities (all of them by default), D-362.
+         *
+         *     Implements: D-362.
+         */
+        post: operations["partner.erpDeliveryNotes.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/delivery-notes/{deliveryNoteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One delivery note
+         * @description Its lines with the stock cost they left with (D-362).
+         *
+         *     Implements: D-362.
+         */
+        get: operations["partner.erpDeliveryNotes.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/delivery-notes/{deliveryNoteId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a delivery note
+         * @description A draft, or an issued note not yet invoiced — its goods come back at the cost they left with (D-362).
+         *
+         *     Implements: D-362.
+         */
+        post: operations["partner.erpDeliveryNotes.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/delivery-notes/{deliveryNoteId}/actions/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record the delivery
+         * @description Who received it and when, optionally a photo of the signed copy (an uploaded file of this factory), D-362.
+         *
+         *     Implements: D-362.
+         *
+         *     **Files:** upload first — `partner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["partner.erpDeliveryNotes.deliver"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/delivery-notes/{deliveryNoteId}/actions/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue the goods
+         * @description `sales_issue` movements at the moving average, consuming the order’s reservation; the order’s delivered quantities move (D-362).
+         *
+         *     Implements: D-362, D-321.
+         */
+        post: operations["partner.erpDeliveryNotes.issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/delivery-notes/{deliveryNoteId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The delivery note as a PDF
+         * @description Original and copy for signing; a short-lived link (D-368).
+         *
+         *     Implements: D-368.
+         */
+        get: operations["partner.erpDeliveryNotes.pdf"];
         put?: never;
         post?: never;
         delete?: never;
@@ -17913,6 +18197,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/erp/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Leads
+         * @description Newest activity first; `stage=open` = new, contacted or qualified (D-359).
+         *
+         *     Implements: D-359.
+         */
+        get: operations["partner.erpCrm.listLeads"];
+        put?: never;
+        /**
+         * Add a lead
+         * @description A prospect with its source and salesperson (default: the caller), D-359.
+         *
+         *     Implements: D-359.
+         */
+        post: operations["partner.erpCrm.createLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/leads/{leadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One lead
+         * @description With its ETag for `PUT` (D-359).
+         *
+         *     Implements: D-359.
+         */
+        get: operations["partner.erpCrm.getLead"];
+        /**
+         * Edit a lead
+         * @description Open leads only (D-359).
+         *
+         *     Implements: D-359.
+         */
+        put: operations["partner.erpCrm.updateLead"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/leads/{leadId}/actions/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make a lead a customer
+         * @description Creates a trading partner of kind customer (or links an existing one, made a customer too), optionally with an opportunity; the lead is converted (D-359).
+         *
+         *     Implements: D-359.
+         */
+        post: operations["partner.erpCrm.convertLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/leads/{leadId}/actions/lose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a lead lost
+         * @description With the reason (D-359).
+         *
+         *     Implements: D-359.
+         */
+        post: operations["partner.erpCrm.loseLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/erp/machines": {
         parameters: {
             query?: never;
@@ -18247,6 +18631,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/erp/opportunities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Opportunities
+         * @description By expected close date; `stage=open` = prospecting, proposal or negotiation (D-359).
+         *
+         *     Implements: D-359.
+         */
+        get: operations["partner.erpCrm.listOpportunities"];
+        put?: never;
+        /**
+         * Open an opportunity
+         * @description For a customer or a lead, with value, stage and expected close; probability defaults by stage (D-359).
+         *
+         *     Implements: D-359.
+         */
+        post: operations["partner.erpCrm.createOpportunity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/opportunities/{opportunityId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One opportunity
+         * @description With its ETag for `PUT` (D-359).
+         *
+         *     Implements: D-359.
+         */
+        get: operations["partner.erpCrm.getOpportunity"];
+        /**
+         * Edit an opportunity
+         * @description Open ones; moving the stage resets the probability unless one is given (D-359).
+         *
+         *     Implements: D-359.
+         */
+        put: operations["partner.erpCrm.updateOpportunity"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/opportunities/{opportunityId}/actions/lose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark an opportunity lost
+         * @description With the reason (D-359).
+         *
+         *     Implements: D-359.
+         */
+        post: operations["partner.erpCrm.loseOpportunity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/opportunities/{opportunityId}/actions/win": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark an opportunity won
+         * @description Also happens when a quotation of it is accepted (D-359, D-360).
+         *
+         *     Implements: D-359, D-360.
+         */
+        post: operations["partner.erpCrm.winOpportunity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/erp/partners": {
         parameters: {
             query?: never;
@@ -18339,6 +18823,28 @@ export interface paths {
          *     Implements: D-349, D-351.
          */
         get: operations["partner.erpItemSuppliers.scorecard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The sales pipeline
+         * @description Open opportunities by stage with value and probability-weighted value, this month’s won and lost, by salesperson (D-359).
+         *
+         *     Implements: D-359.
+         */
+        get: operations["partner.erpCrm.pipeline"];
         put?: never;
         post?: never;
         delete?: never;
@@ -19089,6 +19595,334 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/erp/quotations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Quotations
+         * @description Newest first, superseded revisions left out; `status=open` = draft or sent (D-360).
+         *
+         *     Implements: D-360.
+         */
+        get: operations["partner.erpQuotations.list"];
+        put?: never;
+        /**
+         * Draft a quotation
+         * @description `QT-YYMM-NNNN`, for a customer, priced line by line; valid for `settings.quoteValidDays` by default (D-360).
+         *
+         *     Implements: D-360.
+         */
+        post: operations["partner.erpQuotations.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/quotations/{quotationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One quotation
+         * @description Lines, totals, every revision of its number and the actions offered (D-360).
+         *
+         *     Implements: D-360.
+         */
+        get: operations["partner.erpQuotations.get"];
+        /**
+         * Edit a draft quotation
+         * @description Replaces its lines and terms; drafts only (D-360).
+         *
+         *     Implements: D-360.
+         */
+        put: operations["partner.erpQuotations.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/quotations/{quotationId}/actions/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record the customer’s acceptance
+         * @description Received another way (phone, the customer’s PO); wins its opportunity (D-360).
+         *
+         *     Implements: D-360.
+         */
+        post: operations["partner.erpQuotations.accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/quotations/{quotationId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a quotation
+         * @description A draft or a sent one, with a reason; its link stops working (D-360).
+         *
+         *     Implements: D-360.
+         */
+        post: operations["partner.erpQuotations.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/quotations/{quotationId}/actions/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make a sales order from an accepted quotation
+         * @description A draft `SO` with its lines, prices, terms and the customer’s PO; the existing one when already made (D-361).
+         *
+         *     Implements: D-360, D-361.
+         */
+        post: operations["partner.erpQuotations.order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/quotations/{quotationId}/actions/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record that the customer declined
+         * @description With the reason (D-360).
+         *
+         *     Implements: D-360.
+         */
+        post: operations["partner.erpQuotations.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/quotations/{quotationId}/actions/revise": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revise a quotation
+         * @description A new draft under the same number with the next revision, dated today; this one is superseded (D-360).
+         *
+         *     Implements: D-360.
+         */
+        post: operations["partner.erpQuotations.revise"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/quotations/{quotationId}/actions/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a quotation
+         * @description Freezes the buyer and makes a new customer link (valid until the quotation expires; an earlier link stops working) for the factory to share by e-mail or LINE; the opportunity moves to proposal (D-360).
+         *
+         *     Implements: D-360.
+         */
+        post: operations["partner.erpQuotations.send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/quotations/{quotationId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The quotation as a PDF
+         * @description Under the factory’s name and logo; a short-lived link (D-368).
+         *
+         *     Implements: D-368.
+         */
+        get: operations["partner.erpQuotations.pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Receipts and refunds
+         * @description Newest first (D-365).
+         *
+         *     Implements: D-365.
+         */
+        get: operations["partner.erpReceivables.listReceipts"];
+        put?: never;
+        /**
+         * Record money received (or refunded)
+         * @description `RC-YYMM-NNNN`; allocations are gross — cash plus the WHT the customer deducted (with its 50 ทวิ) — never beyond what is open; a refund pays back a credit balance (D-365).
+         *
+         *     Implements: D-365.
+         *
+         *     **Files:** upload first — `partner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["partner.erpReceivables.receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/receipts/{receiptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One receipt
+         * @description With its allocations (D-365).
+         *
+         *     Implements: D-365.
+         */
+        get: operations["partner.erpReceivables.getReceipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/receipts/{receiptId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a receipt
+         * @description The number stays; its invoices are open again (D-365).
+         *
+         *     Implements: D-365.
+         */
+        post: operations["partner.erpReceivables.cancelReceipt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/receipts/{receiptId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The receipt as a PDF
+         * @description A short-lived link (D-368).
+         *
+         *     Implements: D-368.
+         */
+        get: operations["partner.erpReceivables.receiptPdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/receivables/aging": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What customers owe, by age
+         * @description Open invoices per customer: not due, 1–30, 31–60, 61–90, over 90 days past due; refunds due (D-365).
+         *
+         *     Implements: D-365.
+         */
+        get: operations["partner.erpReceivables.aging"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/erp/recipes": {
         parameters: {
             query?: never;
@@ -19333,6 +20167,466 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/erp/sales-invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Invoices and tax invoices
+         * @description Newest first; `status=open` = something left to receive, `overdue` = open past due (D-363).
+         *
+         *     Implements: D-363.
+         */
+        get: operations["partner.erpSalesInvoices.list"];
+        put?: never;
+        /**
+         * Draft an invoice
+         * @description From issued delivery notes (their uninvoiced lines), a sales order (its service lines, or goods when nothing was delivered) and free lines; a tax invoice when the factory is VAT-registered. The quantities are held for it (D-363).
+         *
+         *     Implements: D-363.
+         */
+        post: operations["partner.erpSalesInvoices.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-invoices/{invoiceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One invoice
+         * @description Lines, the seller and buyer as printed, notes and receipts against it, what is open (D-363).
+         *
+         *     Implements: D-363.
+         */
+        get: operations["partner.erpSalesInvoices.get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a draft invoice
+         * @description A draft has no number yet; its held quantities are free again (D-363).
+         *
+         *     Implements: D-363.
+         */
+        delete: operations["partner.erpSalesInvoices.delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Edit a draft invoice
+         * @description Its free lines, date, terms, VAT mode and note; lines from deliveries stay (D-363).
+         *
+         *     Implements: D-363.
+         */
+        patch: operations["partner.erpSalesInvoices.update"];
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-invoices/{invoiceId}/actions/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue an invoice
+         * @description Numbers it `IV-YYMM-NNNN` for its date (the tax point — not in the future, not before the last issued), freezes the seller and buyer, sets the due date; a cash sale is receipted at once (D-363).
+         *
+         *     Implements: D-363.
+         */
+        post: operations["partner.erpSalesInvoices.issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-invoices/{invoiceId}/actions/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void an issued invoice
+         * @description Nothing received or noted against it; the number stays (shown voided in the VAT report), its quantities are free again (D-363).
+         *
+         *     Implements: D-363.
+         */
+        post: operations["partner.erpSalesInvoices.void"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-invoices/{invoiceId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The invoice as a PDF
+         * @description Original and copy, Thai, amount in words; kept once issued; a short-lived link (D-368).
+         *
+         *     Implements: D-368.
+         */
+        get: operations["partner.erpSalesInvoices.pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Credit and debit notes
+         * @description Newest first (D-364).
+         *
+         *     Implements: D-364.
+         */
+        get: operations["partner.erpSalesInvoices.listNotes"];
+        put?: never;
+        /**
+         * Draft a credit or debit note
+         * @description Against one issued invoice, with the Revenue Department reason; a credit note cannot take more than the invoice is worth after earlier notes; returned goods may come back into a warehouse (D-364).
+         *
+         *     Implements: D-364.
+         */
+        post: operations["partner.erpSalesInvoices.createNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-notes/{noteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One credit or debit note
+         * @description Original, correct and difference values with VAT (D-364).
+         *
+         *     Implements: D-364.
+         */
+        get: operations["partner.erpSalesInvoices.getNote"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a draft note
+         * @description Drafts only (D-364).
+         *
+         *     Implements: D-364.
+         */
+        delete: operations["partner.erpSalesInvoices.deleteNote"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-notes/{noteId}/actions/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue a credit or debit note
+         * @description Numbers it `CN`/`DR`, freezes it, changes what the invoice is worth and brings returned goods back (D-364).
+         *
+         *     Implements: D-364.
+         */
+        post: operations["partner.erpSalesInvoices.issueNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-notes/{noteId}/actions/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void a credit or debit note
+         * @description The invoice’s value is restored; returned goods go out again (D-364).
+         *
+         *     Implements: D-364.
+         */
+        post: operations["partner.erpSalesInvoices.voidNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-notes/{noteId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The note as a PDF
+         * @description A short-lived link (D-368).
+         *
+         *     Implements: D-368.
+         */
+        get: operations["partner.erpSalesInvoices.notePdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sales orders
+         * @description Newest first; `status=open` = confirmed or partially delivered (D-361).
+         *
+         *     Implements: D-361.
+         */
+        get: operations["partner.erpSalesOrders.list"];
+        put?: never;
+        /**
+         * Enter a sales order
+         * @description A draft `SO-YYMM-NNNN`; each goods line from stock or made to order, service lines without goods (D-361).
+         *
+         *     Implements: D-361.
+         */
+        post: operations["partner.erpSalesOrders.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-orders/{salesOrderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One sales order
+         * @description Lines with reserved, delivered and invoiced quantities, its deliveries and invoices, the customer’s credit position (D-361).
+         *
+         *     Implements: D-361.
+         */
+        get: operations["partner.erpSalesOrders.get"];
+        /**
+         * Edit a draft sales order
+         * @description Drafts only (D-361).
+         *
+         *     Implements: D-361.
+         */
+        put: operations["partner.erpSalesOrders.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-orders/{salesOrderId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a sales order
+         * @description Nothing delivered yet; reservations are released and its planned production orders cancelled (D-361).
+         *
+         *     Implements: D-361.
+         */
+        post: operations["partner.erpSalesOrders.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-orders/{salesOrderId}/actions/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close a sales order short
+         * @description What is left will not be delivered; its reservations are released (D-361).
+         *
+         *     Implements: D-361.
+         */
+        post: operations["partner.erpSalesOrders.close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-orders/{salesOrderId}/actions/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm a sales order
+         * @description Checks the customer’s credit limit (over it: refused, unless `factory_sales.approve` gives a reason), reserves stock lines and plans a production order per make-to-order line from its item’s active recipe (D-361).
+         *
+         *     Implements: D-361.
+         */
+        post: operations["partner.erpSalesOrders.confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales-orders/{salesOrderId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The order confirmation as a PDF
+         * @description A short-lived link (D-368).
+         *
+         *     Implements: D-368.
+         */
+        get: operations["partner.erpSalesOrders.pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sales by salesperson
+         * @description Net invoiced, collected, target, achievement and commission for the month; gross profit over delivered stock cost (D-369).
+         *
+         *     Implements: D-369.
+         */
+        get: operations["partner.erpTax.salesReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/sales/targets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set a salesperson’s monthly target
+         * @description Net sales target and commission rate; returns the month’s report (D-369).
+         *
+         *     Implements: D-369.
+         */
+        put: operations["partner.erpTax.saveTarget"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/salespeople": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * People who can own customers and deals
+         * @description The users holding a role at this factory, for salesperson and assignee pickers (D-359).
+         *
+         *     Implements: D-359.
+         */
+        get: operations["partner.erpCrm.salespeople"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/erp/schedule": {
         parameters: {
             query?: never;
@@ -19401,6 +20695,8 @@ export interface paths {
          * @description Owner only by default (D-319). Audited.
          *
          *     Implements: D-318, D-322, D-323.
+         *
+         *     **Files:** upload first — `partner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
          */
         patch: operations["partner.erpSettings.update"];
         trace?: never;
@@ -19749,6 +21045,138 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/erp/supplier-payments/{paymentId}/wht": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The 50 ทวิ a supplier payment calls for
+         * @description Its share of each paid invoice’s WHT, one line per rate, the return (ภ.ง.ด.3 / 53) and the certificate in force (D-366).
+         *
+         *     Implements: D-366.
+         */
+        get: operations["partner.erpTax.whtSuggestion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/tax/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export a tax report or the accounting journal
+         * @description CSV (UTF-8 with BOM) or XLSX of the month, stored for the factory, behind a short-lived link (D-367).
+         *
+         *     Implements: D-367.
+         */
+        post: operations["partner.erpTax.export"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/tax/purchase-vat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Purchase tax report (รายงานภาษีซื้อ)
+         * @description Supplier tax invoices dated in the month, not cancelled (D-367).
+         *
+         *     Implements: D-367.
+         */
+        get: operations["partner.erpTax.purchaseVat"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/tax/sales-vat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sales tax report (รายงานภาษีขาย)
+         * @description The month’s tax invoices and credit / debit notes in date and number order; voided ones with no value (D-367).
+         *
+         *     Implements: D-367.
+         */
+        get: operations["partner.erpTax.salesVat"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/tax/vat30": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * ภ.พ.30 summary
+         * @description Output VAT, input VAT and what is payable or carried forward for the month, with the due date (D-367).
+         *
+         *     Implements: D-367.
+         */
+        get: operations["partner.erpTax.vat30"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/tax/wht": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * ภ.ง.ด.3 / ภ.ง.ด.53 lines
+         * @description From the certificates issued for payments in the month, not voided (D-367).
+         *
+         *     Implements: D-366, D-367.
+         */
+        get: operations["partner.erpTax.wht"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/erp/warehouses": {
         parameters: {
             query?: never;
@@ -19797,6 +21225,100 @@ export interface paths {
          *     Implements: D-320.
          */
         patch: operations["partner.erpWarehouses.update"];
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/wht-certificates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 50 ทวิ certificates issued
+         * @description Newest first; by month, return or supplier (D-366).
+         *
+         *     Implements: D-366.
+         */
+        get: operations["partner.erpTax.listCertificates"];
+        put?: never;
+        /**
+         * Issue a 50 ทวิ
+         * @description `WHT-YYMM-NNNN` for a supplier payment that withheld tax; one in force per payment (D-366).
+         *
+         *     Implements: D-366.
+         */
+        post: operations["partner.erpTax.createCertificate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/wht-certificates/{certificateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One 50 ทวิ
+         * @description Payer, payee, the income lines and the tax (D-366).
+         *
+         *     Implements: D-366.
+         */
+        get: operations["partner.erpTax.getCertificate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/wht-certificates/{certificateId}/actions/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void a 50 ทวิ
+         * @description With a reason; a new one may then be issued for the payment (D-366).
+         *
+         *     Implements: D-366.
+         */
+        post: operations["partner.erpTax.voidCertificate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/wht-certificates/{certificateId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The 50 ทวิ as a PDF
+         * @description Copies 1 and 2 in the Revenue Department layout; a short-lived link (D-368).
+         *
+         *     Implements: D-366, D-368.
+         */
+        get: operations["partner.erpTax.certificatePdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/partner/factories/{factoryId}/finance-summary": {
@@ -26327,6 +27849,72 @@ export interface paths {
         get: operations["store.publicConfig.get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/quote-links/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A factory’s quotation, opened by its customer
+         * @description From the link the factory sent. The factory as seller, the buyer, lines and totals — nothing else of the factory. Unknown or replaced links are 404; past its date 410. Rate-limited per client.
+         *
+         *     Implements: D-360.
+         */
+        get: operations["store.quoteLinks.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/quote-links/{token}/actions/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept the quotation
+         * @description The customer’s name, position and PO number are recorded with the acceptance; the factory is told (D-360).
+         *
+         *     Implements: D-360.
+         */
+        post: operations["store.quoteLinks.accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/quote-links/{token}/actions/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline the quotation
+         * @description With a reason for the factory (D-360).
+         *
+         *     Implements: D-360.
+         */
+        post: operations["store.quoteLinks.decline"];
         delete?: never;
         options?: never;
         head?: never;
@@ -42988,6 +44576,64 @@ export interface components {
              */
             wMin: number | null;
         };
+        ErpActivityDto: {
+            about: components["schemas"]["ErpActivitySubjectDto"];
+            assignee: components["schemas"]["PersonRefDto"];
+            /**
+             * Format: date-time
+             * @example 2026-10-12T09:00:00+07:00
+             */
+            createdAt: string;
+            /** @example ฝ่ายขาย ทดสอบ */
+            createdBy: string;
+            /** @example null */
+            detail: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            doneAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-14T10:00:00+07:00
+             */
+            dueAt: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef03
+             */
+            id: string;
+            /** @example call */
+            kind: components["schemas"]["ErpActivityKind"];
+            /** @example null */
+            outcome: string | null;
+            /**
+             * @description Not done and past its due time
+             * @example false
+             */
+            overdue: boolean;
+            /** @example โทรตามใบเสนอราคา */
+            subject: string;
+            /** @example 1 */
+            version: number;
+        };
+        /** @enum {string} */
+        ErpActivityFilter: "open" | "due" | "overdue" | "done" | "all";
+        /** @enum {string} */
+        ErpActivityKind: "call" | "visit" | "meeting" | "email" | "line" | "task" | "note";
+        ErpActivitySubjectDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef01
+             */
+            id: string;
+            /** @example ร้านขนมบ้านสวน */
+            name: string;
+            /** @example lead */
+            type: components["schemas"]["ErpActivitySubjectType"];
+        };
+        /** @enum {string} */
+        ErpActivitySubjectType: "lead" | "opportunity" | "customer";
         ErpAddDocVersionDto: {
             /**
              * Format: date
@@ -43086,7 +44732,7 @@ export interface components {
             subjectType: string;
         };
         /** @enum {string} */
-        ErpAlertKind: "price_rise" | "quote_expiring" | "supplier_review_due" | "maintenance_due" | "machine_breakdown" | "document_expiring";
+        ErpAlertKind: "price_rise" | "quote_expiring" | "supplier_review_due" | "maintenance_due" | "machine_breakdown" | "document_expiring" | "quote_follow_up" | "invoice_overdue" | "activity_overdue";
         /** @enum {string} */
         ErpAlertStatus: "open" | "acknowledged";
         ErpApAgingDto: {
@@ -43114,6 +44760,27 @@ export interface components {
              * @example 2027-10-01
              */
             reviewOn?: string | null;
+        };
+        ErpArAgingDto: {
+            /**
+             * Format: date
+             * @example 2026-10-15
+             */
+            asOf: string;
+            /** @example THB */
+            currency: string;
+            customers: components["schemas"]["ErpCustomerAgingDto"][];
+            /**
+             * @description Due within the next 7 days
+             * @example 26750.00
+             */
+            dueSoon: string;
+            /**
+             * @description Credit balances owed back to customers (refunds due)
+             * @example 0.00
+             */
+            refundsDue: string;
+            totals: components["schemas"]["ErpAgingBucketsDto"];
         };
         ErpAutoPlanResultDto: {
             /**
@@ -43144,6 +44811,61 @@ export interface components {
             /** @description One quote per line to buy; lines left out are not bought */
             awards: components["schemas"]["ErpAwardInput"][];
         };
+        ErpBillingNoteDto: {
+            /**
+             * Format: date
+             * @example 2026-10-25
+             */
+            billingDate: string;
+            /** @example BN-2610-0001 */
+            billingNo: string;
+            /** @example null */
+            cancelReason: string | null;
+            /**
+             * Format: date
+             * @example 2026-11-05
+             */
+            collectOn: string | null;
+            customer: components["schemas"]["CodedRefDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef15
+             */
+            id: string;
+            lines: components["schemas"]["ErpBillingNoteLineDto"][];
+            /** @description Offered: `erp_bn.cancel`, `erp_bn.pdf` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /** @example issued */
+            status: components["schemas"]["ErpReceiptStatus"];
+            /** @example 26750.00 */
+            total: string;
+        };
+        ErpBillingNoteLineDto: {
+            /**
+             * @description Open when billed
+             * @example 26750.00
+             */
+            amount: string;
+            /**
+             * Format: date
+             * @example 2026-11-19
+             */
+            dueDate: string;
+            invoice: components["schemas"]["ErpInvoiceRefDto"];
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            issueDate: string;
+        };
+        ErpCashReceiptInput: {
+            /** @example cash */
+            method: components["schemas"]["ErpPaymentMethod"];
+            /** @example null */
+            reference?: string | null;
+        };
         /** @enum {string} */
         ErpChargeAllocation: "by_value" | "by_quantity";
         ErpChargeInput: {
@@ -43168,6 +44890,10 @@ export interface components {
         };
         /** @enum {string} */
         ErpChargeKind: "freight" | "insurance" | "duty" | "handling" | "other";
+        ErpCompleteActivityDto: {
+            /** @example ลูกค้าขอส่งตัวอย่างก่อน */
+            outcome?: string | null;
+        };
         ErpCompleteProductionDto: {
             /** @example 980 */
             goodQty: string;
@@ -43175,6 +44901,97 @@ export interface components {
             note?: string | null;
             /** @example 20 */
             scrapQty?: string;
+        };
+        ErpConfirmSalesOrderDto: {
+            /**
+             * @description Required to confirm over the credit limit (`factory_sales.approve`)
+             * @example ลูกค้าประจำ จ่ายตรงเวลา
+             */
+            overrideReason?: string | null;
+        };
+        ErpConvertLeadDto: {
+            /** @example 00000 */
+            branchCode?: string | null;
+            /**
+             * @description Code of the new customer (default: the next `C` number)
+             * @example C0012
+             */
+            code?: string;
+            /**
+             * Format: uuid
+             * @description An existing trading partner to link (made a customer if it was a supplier only); none = create one
+             */
+            customerId?: string;
+            /**
+             * @description Also open an opportunity for it
+             * @example true
+             */
+            openOpportunity?: boolean;
+            /** @example 30 */
+            paymentTermDays?: number;
+            /** @example 0000556123451 */
+            taxId?: string | null;
+        };
+        ErpConvertLeadResultDto: {
+            customer: components["schemas"]["CodedRefDto"];
+            lead: components["schemas"]["ErpLeadDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef02
+             */
+            opportunityId: string | null;
+        };
+        ErpCreateBillingNoteDto: {
+            /**
+             * Format: date
+             * @description Default: today
+             * @example 2026-10-25
+             */
+            billingDate?: string;
+            /**
+             * Format: date
+             * @description When to collect
+             * @example 2026-11-05
+             */
+            collectOn?: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef04
+             */
+            customerId: string;
+            /**
+             * @description Open invoices of the customer
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-00000000ef11"
+             *     ]
+             */
+            invoiceIds: string[];
+            note?: string | null;
+        };
+        ErpCreateDeliveryNoteDto: {
+            /**
+             * Format: date
+             * @description Default: today
+             * @example 2026-10-20
+             */
+            deliverOn?: string;
+            /** @description Default: every goods line’s remaining quantity */
+            lines?: components["schemas"]["ErpDeliveryLineInput"][];
+            note?: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef07
+             */
+            salesOrderId: string;
+            /** @description Default: the order’s */
+            shipToAddress?: string | null;
+            /** @example กระบะ 2กข-1234 / คุณสมชาย */
+            vehicle?: string | null;
+            /**
+             * Format: uuid
+             * @description Default: the order’s warehouse
+             */
+            warehouseId?: string;
         };
         ErpCreateDocDto: {
             /** @example certificate */
@@ -43327,6 +45144,130 @@ export interface components {
              */
             warehouseId?: string;
         };
+        ErpCreateReceiptDto: {
+            /** @description Gross amounts per invoice; they add up to amount + whtAmount */
+            allocations: components["schemas"]["ErpReceiptAllocationInput"][];
+            /**
+             * @description Money received (or refunded)
+             * @example 25947.50
+             */
+            amount: string;
+            /** @example null */
+            chequeBank?: string | null;
+            /**
+             * Format: date
+             * @example null
+             */
+            chequeDate?: string | null;
+            /** @example null */
+            chequeNo?: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef04
+             */
+            customerId: string;
+            /**
+             * @description `refund` pays back a credit balance (amounts are entered positive)
+             * @example receipt
+             */
+            kind?: components["schemas"]["ErpReceiptKind"];
+            /** @example transfer */
+            method: components["schemas"]["ErpPaymentMethod"];
+            note?: string | null;
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            receivedOn: string;
+            /** @example KBank 10/11 15:22 */
+            reference?: string | null;
+            /**
+             * @description Withholding tax the customer deducted
+             * @example 802.50
+             */
+            whtAmount?: string;
+            /**
+             * Format: date
+             * @example null
+             */
+            whtCertDate?: string | null;
+            /**
+             * @description The customer’s 50 ทวิ number
+             * @example 0001/2569
+             */
+            whtCertNo?: string | null;
+            /**
+             * Format: uuid
+             * @description An uploaded scan of the 50 ทวิ
+             * @example null
+             */
+            whtFileId?: string | null;
+        };
+        ErpCreateSalesInvoiceDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef04
+             */
+            customerId: string;
+            customerPoNo?: string | null;
+            /**
+             * @description Issued delivery notes of this customer: their uninvoiced lines become the invoice’s lines
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-00000000ef09"
+             *     ]
+             */
+            deliveryNoteIds?: string[];
+            /** @example invoice */
+            form?: components["schemas"]["ErpInvoiceForm"];
+            /**
+             * Format: date
+             * @description The planned issue date (default: today)
+             * @example 2026-10-20
+             */
+            issueDate?: string;
+            /** @description Free lines (with or without an item) */
+            lines?: components["schemas"]["ErpSalesLineInput"][];
+            /** @description Printed on the invoice */
+            note?: string | null;
+            /** @example 30 */
+            paymentTermDays?: number;
+            /**
+             * Format: uuid
+             * @description A confirmed sales order: its uninvoiced **service** lines are added (and goods lines when it has no delivery notes)
+             */
+            salesOrderId?: string;
+            /** @description Default: the order’s, else exclusive (none when not VAT-registered) */
+            vatMode?: components["schemas"]["ErpVatMode"];
+        };
+        ErpCreateSalesNoteDto: {
+            /**
+             * Format: uuid
+             * @description An issued invoice of the factory
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef11
+             */
+            invoiceId: string;
+            /**
+             * Format: date
+             * @description Default: today
+             * @example 2026-10-25
+             */
+            issueDate?: string;
+            /** @example credit */
+            kind: components["schemas"]["CnDirection"];
+            lines: components["schemas"]["ErpSalesNoteLineInput"][];
+            /**
+             * @description Credit: price_reduced, goods_returned, defective, discount_after_sale, overcharged, other; debit: price_increased, undercharged, extra_goods, other
+             * @example price_reduced
+             */
+            reason: components["schemas"]["ErpSalesNoteReason"];
+            /** @example สินค้าพิมพ์สีเพี้ยน 100 ใบ */
+            reasonText?: string | null;
+            /**
+             * Format: uuid
+             * @description Where returned goods go (default: the default warehouse)
+             */
+            warehouseId?: string;
+        };
         ErpCreateSupplierInvoiceDto: {
             /**
              * Format: date
@@ -43410,6 +45351,8 @@ export interface components {
              * @example sales@supplier.example.invalid
              */
             email?: string | null;
+            /** @example juristic */
+            entityType?: components["schemas"]["ErpEntityType"];
             /** @example supplier */
             kind: components["schemas"]["ErpPartnerKind"];
             /** @example บจก. กระดาษไทย (ทดสอบ) */
@@ -43420,6 +45363,11 @@ export interface components {
             paymentTermDays?: number;
             /** @example 020000000 */
             phone?: string | null;
+            /**
+             * Format: uuid
+             * @description A user of this factory
+             */
+            salespersonId?: string | null;
             /** @example 0000500000001 */
             taxId?: string | null;
         };
@@ -43431,6 +45379,271 @@ export interface components {
             /** @example คลังกระดาษ */
             name: string;
         };
+        ErpCreateWhtCertificateDto: {
+            /** @description Default: the suggestion (one line per rate, from the paid invoices’ WHT) */
+            lines?: components["schemas"]["ErpWhtLineInput"][];
+            /**
+             * Format: uuid
+             * @description A supplier payment (E2) that withheld tax
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef19
+             */
+            paymentId: string;
+        };
+        ErpCreditExposureDto: {
+            /**
+             * @description null = no limit
+             * @example 100000.00
+             */
+            limit: string | null;
+            /**
+             * @description Confirmed orders not yet invoiced (this one included)
+             * @example 66875.00
+             */
+            openOrders: string;
+            /** @example true */
+            over: boolean;
+            /**
+             * @description Open receivables of the customer
+             * @example 42800.00
+             */
+            receivables: string;
+        };
+        ErpCustomerAgingDto: {
+            buckets: components["schemas"]["ErpAgingBucketsDto"];
+            /** @example 100000.00 */
+            creditLimit: string | null;
+            customer: components["schemas"]["CodedRefDto"];
+            /** @example 3 */
+            invoices: number;
+        };
+        ErpCustomerReceiptDto: {
+            allocations: components["schemas"]["ErpReceiptAllocationDto"][];
+            /**
+             * @description Negative on a refund
+             * @example 25947.50
+             */
+            amount: string;
+            /** @example สองหมื่นห้าพันเก้าร้อยสี่สิบเจ็ดบาทห้าสิบสตางค์ */
+            amountInWords: string;
+            /** @example null */
+            cancelReason: string | null;
+            /** @example null */
+            chequeBank: string | null;
+            /**
+             * Format: date
+             * @example null
+             */
+            chequeDate: string | null;
+            /** @example null */
+            chequeNo: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-10T15:30:00+07:00
+             */
+            createdAt: string;
+            /** @example บัญชี ทดสอบ */
+            createdBy: string;
+            customer: components["schemas"]["CodedRefDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef14
+             */
+            id: string;
+            /** @example receipt */
+            kind: components["schemas"]["ErpReceiptKind"];
+            /** @example transfer */
+            method: components["schemas"]["ErpPaymentMethod"];
+            /** @description Offered: `erp_rc.cancel`, `erp_rc.pdf` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /** @example RC-2610-0003 */
+            receiptNo: string;
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            receivedOn: string;
+            /** @example KBank 10/11 15:22 */
+            reference: string | null;
+            /** @example issued */
+            status: components["schemas"]["ErpReceiptStatus"];
+            /** @example 802.50 */
+            whtAmount: string;
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            whtCertDate: string | null;
+            /** @example 0001/2569 */
+            whtCertNo: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            whtFileId: string | null;
+        };
+        ErpDeliveredDto: {
+            /**
+             * Format: date-time
+             * @description Default: now
+             */
+            deliveredAt?: string | null;
+            /**
+             * Format: uuid
+             * @description An uploaded photo of the signed copy
+             */
+            podFileId?: string | null;
+            /** @example คุณสมศรี */
+            receivedBy: string;
+        };
+        ErpDeliveryLineInput: {
+            /**
+             * @description In the line’s unit
+             * @example 2000
+             */
+            quantity: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef08
+             */
+            salesOrderLineId: string;
+        };
+        ErpDeliveryNoteDto: {
+            /** @example null */
+            cancelReason: string | null;
+            /**
+             * @description Stock cost of what was delivered
+             * @example 12840.00
+             */
+            costTotal: string;
+            customer: components["schemas"]["CodedRefDto"];
+            /**
+             * Format: date-time
+             * @example 2026-10-20T14:10:00+07:00
+             */
+            deliveredAt: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            deliverOn: string;
+            /** @example DO-2610-0002 */
+            doNo: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef09
+             */
+            id: string;
+            /**
+             * @description Every line invoiced
+             * @example false
+             */
+            invoiced: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-10-20T08:30:00+07:00
+             */
+            issuedAt: string | null;
+            lines: components["schemas"]["ErpDeliveryNoteLineDto"][];
+            /** @description Offered: `erp_do.issue`, `erp_do.deliver`, `erp_do.invoice`, `erp_do.cancel`, `erp_do.pdf` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /**
+             * Format: uuid
+             * @description Photo of the signed copy
+             * @example null
+             */
+            podFileId: string | null;
+            /** @example คุณสมศรี */
+            receivedBy: string | null;
+            /** @description code = SO no. */
+            salesOrder: components["schemas"]["CodedRefDto"];
+            /** @example ส่งที่ร้าน ซ.งามวงศ์วาน 23 */
+            shipToAddress: string | null;
+            /** @example delivered */
+            status: components["schemas"]["ErpDeliveryStatus"];
+            /** @example กระบะ 2กข-1234 / คุณสมชาย */
+            vehicle: string | null;
+            /** @example 1 */
+            version: number;
+            warehouse: components["schemas"]["CodedRefDto"];
+        };
+        ErpDeliveryNoteLineDto: {
+            /** @example 12840.00 */
+            costAmount: string | null;
+            /** @example กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี */
+            description: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef10
+             */
+            id: string;
+            /** @example 0.000 */
+            invoicedQty: string;
+            item: components["schemas"]["ErpItemRefDto"] | null;
+            /** @example 1 */
+            lineNo: number;
+            /** @example 2000.000 */
+            quantity: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef08
+             */
+            salesOrderLineId: string;
+            /** @example pcs */
+            unit: components["schemas"]["ErpUnit"];
+            /**
+             * @description Stock cost per unit once issued
+             * @example 6.420000
+             */
+            unitCost: string | null;
+        };
+        ErpDeliveryNoteRefDto: {
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            deliverOn: string;
+            /** @example DO-2610-0002 */
+            doNo: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef09
+             */
+            id: string;
+            /** @example delivered */
+            status: components["schemas"]["ErpDeliveryStatus"];
+        };
+        ErpDeliveryNoteSummaryDto: {
+            customer: components["schemas"]["CodedRefDto"];
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            deliverOn: string;
+            /** @example DO-2610-0002 */
+            doNo: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef09
+             */
+            id: string;
+            /**
+             * @description Every line invoiced
+             * @example false
+             */
+            invoiced: boolean;
+            /** @description code = SO no. */
+            salesOrder: components["schemas"]["CodedRefDto"];
+            /** @example delivered */
+            status: components["schemas"]["ErpDeliveryStatus"];
+        };
+        /** @enum {string} */
+        ErpDeliveryStatus: "draft" | "issued" | "delivered" | "cancelled";
+        /** @enum {string} */
+        ErpDeliveryStatusFilter: "draft" | "issued" | "delivered" | "cancelled" | "uninvoiced";
         ErpDispatchDto: {
             /** @description Running or paused now */
             current: components["schemas"]["ErpOperationQueueItemDto"] | null;
@@ -43534,6 +45747,21 @@ export interface components {
             /** @example trading_partner */
             type: components["schemas"]["ErpDocLink"];
         };
+        ErpDocPartyDto: {
+            /** @example 99/9 ถ.บางนา-ตราด ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540 */
+            address: string | null;
+            /**
+             * @description `00000` = head office
+             * @example 00000
+             */
+            branchCode: string | null;
+            /** @example บริษัท กล่องดี แพคเกจจิ้ง จำกัด */
+            name: string;
+            /** @example 02-123-4567 */
+            phone: string | null;
+            /** @example 0000556123451 */
+            taxId: string | null;
+        };
         ErpDocSummaryDto: {
             /** @example certificate */
             category: components["schemas"]["ErpDocCategory"];
@@ -43603,6 +45831,13 @@ export interface components {
             /** @description Items with no default supplier or no need right now */
             skipped: components["schemas"]["ErpItemRefDto"][];
         };
+        /**
+         * @description For 50 ทวิ: ภ.ง.ด.53 (juristic) or ภ.ง.ด.3 (individual), D-366
+         * @enum {string}
+         */
+        ErpEntityType: "juristic" | "individual";
+        /** @enum {string} */
+        ErpExportFormat: "csv" | "xlsx";
         ErpFinishMaintenanceDto: {
             /**
              * @description Default: from start (or report, for a breakdown) to now
@@ -43625,6 +45860,8 @@ export interface components {
             /** @example 12 */
             scrapQty?: string;
         };
+        /** @enum {string} */
+        ErpFulfilment: "stock" | "make" | "service";
         ErpGoodsReceiptDto: {
             /** @example คลัง ทดสอบ */
             by: string;
@@ -43742,6 +45979,8 @@ export interface components {
              */
             unitPrice?: string;
         };
+        /** @enum {string} */
+        ErpInvoiceForm: "invoice" | "invoice_receipt";
         ErpInvoicePaymentRefDto: {
             /**
              * @description Allocated to this invoice; negative for a reversal
@@ -43761,11 +46000,39 @@ export interface components {
             /** @example PV-2610-0002 */
             paymentNo: string;
         };
+        ErpInvoiceRefDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef11
+             */
+            id: string;
+            /**
+             * @description null while a draft
+             * @example IV-2610-0005
+             */
+            invoiceNo: string | null;
+            /** @example issued */
+            status: components["schemas"]["ErpSalesInvoiceStatus"];
+            /** @example 26750.00 */
+            total: string;
+        };
+        /** @enum {string} */
+        ErpIssuedStatus: "draft" | "issued" | "voided";
         /**
          * @description `issue` takes stock out to production or use; `return` brings unused stock back
          * @enum {string}
          */
         ErpIssueKind: "issue" | "return";
+        ErpIssueSalesInvoiceDto: {
+            /**
+             * Format: date
+             * @description The tax point; default: the draft’s date
+             * @example 2026-10-20
+             */
+            issueDate?: string;
+            /** @description Form `invoice_receipt`: how the cash sale was paid (default: cash) */
+            receipt?: components["schemas"]["ErpCashReceiptInput"];
+        };
         ErpItemDto: {
             /** @example sheet */
             baseUnit: components["schemas"]["ErpUnit"];
@@ -44007,6 +46274,71 @@ export interface components {
             finishesAt: string;
             order: components["schemas"]["ErpScheduleOrderRefDto"];
         };
+        ErpLeadDto: {
+            /** @example นนทบุรี */
+            address: string | null;
+            /** @example คุณสมศรี */
+            contactName: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            convertedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-12T09:00:00+07:00
+             */
+            createdAt: string;
+            /** @description The customer it became */
+            customer: components["schemas"]["CodedRefDto"] | null;
+            /** @example somsri@example.com */
+            email: string | null;
+            /**
+             * @description Net, without VAT
+             * @example 45000.00
+             */
+            expectedValue: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef01
+             */
+            id: string;
+            /** @example @bansuan */
+            lineId: string | null;
+            /** @example null */
+            lostReason: string | null;
+            /** @example ร้านขนมบ้านสวน */
+            name: string;
+            /** @description Offered: `erp_lead.edit`, `erp_lead.convert`, `erp_lead.lose` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example สนใจกล่องเค้ก 2 ขนาด */
+            note: string | null;
+            /**
+             * @description Open activities
+             * @example 2
+             */
+            openActivities: number;
+            /** @example 080-000-1234 */
+            phone: string | null;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /** @example line */
+            source: components["schemas"]["ErpLeadSource"];
+            /** @example qualified */
+            stage: components["schemas"]["ErpLeadStage"];
+            /** @example 1 */
+            version: number;
+        };
+        /**
+         * @description Converting and losing have their own actions
+         * @enum {string}
+         */
+        ErpLeadOpenStage: "new" | "contacted" | "qualified";
+        /** @enum {string} */
+        ErpLeadSource: "walk_in" | "phone" | "line" | "facebook" | "website" | "referral" | "exhibition" | "packio" | "other";
+        /** @enum {string} */
+        ErpLeadStage: "new" | "contacted" | "qualified" | "converted" | "lost";
+        /** @enum {string} */
+        ErpLeadStageFilter: "new" | "contacted" | "qualified" | "converted" | "lost" | "open";
         /** @enum {string} */
         ErpLineVariance: "price" | "quantity" | "price_quantity" | "unordered";
         ErpLockOperationDto: {
@@ -44298,9 +46630,9 @@ export interface components {
          */
         ErpModule: "inventory" | "procurement" | "partners" | "planning" | "floor" | "sales" | "accounting" | "maintenance" | "documents";
         /** @enum {string} */
-        ErpMovementKind: "opening" | "receipt" | "issue" | "return" | "adjustment" | "count" | "transfer_out" | "transfer_in" | "production_issue" | "production_return" | "production_receipt" | "landed_cost" | "maintenance_issue";
+        ErpMovementKind: "opening" | "receipt" | "issue" | "return" | "adjustment" | "count" | "transfer_out" | "transfer_in" | "production_issue" | "production_return" | "production_receipt" | "landed_cost" | "maintenance_issue" | "sales_issue" | "sales_return";
         /** @enum {string} */
-        ErpMovementSource: "goods_receipt" | "adjustment" | "issue" | "transfer" | "production_order" | "maintenance_order";
+        ErpMovementSource: "goods_receipt" | "adjustment" | "issue" | "transfer" | "production_order" | "maintenance_order" | "delivery_note" | "sales_note";
         ErpMoveOperationDto: {
             /**
              * @description Default true: a hand-placed operation stays put
@@ -44368,6 +46700,21 @@ export interface components {
              */
             unitPrice: string | null;
         };
+        ErpNoteRefDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef13
+             */
+            id: string;
+            /** @example credit */
+            kind: components["schemas"]["CnDirection"];
+            /** @example CN-2610-0001 */
+            noteNo: string | null;
+            /** @example issued */
+            status: components["schemas"]["ErpIssuedStatus"];
+            /** @example 1070.00 */
+            total: string;
+        };
         ErpOperationEventDto: {
             /**
              * Format: date-time
@@ -44400,6 +46747,72 @@ export interface components {
         };
         /** @enum {string} */
         ErpOperationStatus: "pending" | "in_progress" | "paused" | "done" | "skipped";
+        ErpOpportunityDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            closedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-12T09:00:00+07:00
+             */
+            createdAt: string;
+            customer: components["schemas"]["CodedRefDto"] | null;
+            /**
+             * Format: date
+             * @example 2026-11-15
+             */
+            expectedCloseOn: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef02
+             */
+            id: string;
+            /** @description code = lead id prefix */
+            lead: components["schemas"]["CodedRefDto"] | null;
+            /** @example null */
+            lostReason: string | null;
+            /** @description Offered: `erp_opportunity.edit`, `erp_opportunity.quote`, `erp_opportunity.win`, `erp_opportunity.lose` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /** @example 40 */
+            probabilityPct: number;
+            /**
+             * @description Quotations made for it
+             * @example 1
+             */
+            quotations: number;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /** @example proposal */
+            stage: components["schemas"]["ErpOpportunityStage"];
+            /** @example กล่องเค้ก 2 ขนาด — ล็อตแรก */
+            title: string;
+            /**
+             * @description Net, without VAT
+             * @example 45000.00
+             */
+            value: string;
+            /** @example 1 */
+            version: number;
+            /**
+             * @description value × probability
+             * @example 18000.00
+             */
+            weightedValue: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            wonAt: string | null;
+        };
+        /** @enum {string} */
+        ErpOpportunityOpenStage: "prospecting" | "proposal" | "negotiation";
+        /** @enum {string} */
+        ErpOpportunityStage: "prospecting" | "proposal" | "negotiation" | "won" | "lost";
+        /** @enum {string} */
+        ErpOpportunityStageFilter: "prospecting" | "proposal" | "negotiation" | "won" | "lost" | "open";
         /** @enum {string} */
         ErpOwnProductionSource: "stock" | "sales_order";
         /** @enum {string} */
@@ -44431,6 +46844,58 @@ export interface components {
         };
         /** @enum {string} */
         ErpPaymentMethod: "transfer" | "cash" | "cheque" | "other";
+        ErpPdfLinkDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-15T10:05:00+07:00
+             */
+            expiresAt: string;
+            /** @example IV-2610-0001.pdf */
+            fileName: string;
+            /** @example https://files.packio.example/erp/IV-2610-0001.pdf?sig=... */
+            url: string;
+        };
+        ErpPipelineDto: {
+            /**
+             * @description Open opportunities expected to close within 30 days
+             * @example 3
+             */
+            closingSoon: number;
+            /**
+             * @description Activities due today or overdue for the caller
+             * @example 5
+             */
+            myDue: number;
+            /**
+             * @description Open opportunities
+             * @example 240000.00
+             */
+            openValue: string;
+            /** @example 96000.00 */
+            openWeighted: string;
+            salespeople: components["schemas"]["ErpPipelineSalespersonDto"][];
+            /** @description Open stages, then won and lost this month */
+            stages: components["schemas"]["ErpPipelineStageDto"][];
+        };
+        ErpPipelineSalespersonDto: {
+            /** @example 6 */
+            open: number;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /** @example 240000.00 */
+            value: string;
+            /** @example 96000.00 */
+            weighted: string;
+        };
+        ErpPipelineStageDto: {
+            /** @example 4 */
+            count: number;
+            /** @example proposal */
+            stage: components["schemas"]["ErpOpportunityStage"];
+            /** @example 180000.00 */
+            value: string;
+            /** @example 72000.00 */
+            weighted: string;
+        };
         ErpPlanDueDto: {
             /** @example 4 */
             daysLeft: number | null;
@@ -45193,6 +47658,167 @@ export interface components {
             /** @example submitted */
             status: components["schemas"]["ErpPurchaseRequestStatus"];
         };
+        /**
+         * @description `link` = the customer accepted online; `factory` = recorded by the factory
+         * @enum {string}
+         */
+        ErpQuotationAcceptedVia: "link" | "factory";
+        ErpQuotationDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acceptedAt: string | null;
+            /** @example null */
+            acceptedName: string | null;
+            /** @example null */
+            acceptedPosition: string | null;
+            /**
+             * @description `link` = the customer accepted online; `factory` = recorded by the factory
+             * @example null
+             */
+            acceptedVia: components["schemas"]["ErpQuotationAcceptedVia"] | null;
+            /** @example null */
+            cancelReason: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-12T09:00:00+07:00
+             */
+            createdAt: string;
+            customer: components["schemas"]["CodedRefDto"];
+            /** @example null */
+            customerPoNo: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef05
+             */
+            id: string;
+            /** @example 14 */
+            leadTimeDays: number | null;
+            lines: components["schemas"]["ErpSalesLineDto"][];
+            /**
+             * @description The customer link works (sent, not expired)
+             * @example true
+             */
+            linkActive: boolean;
+            /** @description Offered: `erp_quote.edit`, `erp_quote.send`, `erp_quote.revise`, `erp_quote.accept`, `erp_quote.reject`, `erp_quote.order`, `erp_quote.cancel`, `erp_quote.pdf` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /** @description The opportunity (code = its title) */
+            opportunity: components["schemas"]["CodedRefDto"] | null;
+            /** @example 30 */
+            paymentTermDays: number;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            quoteDate: string;
+            /** @example QT-2610-0003 */
+            quoteNo: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            rejectedAt: string | null;
+            /** @example null */
+            rejectReason: string | null;
+            /** @example 1 */
+            revision: number;
+            /** @description Every revision of this number, oldest first */
+            revisions: components["schemas"]["ErpQuotationRevisionDto"][];
+            /** @description The sales order made from it (code = SO no.) */
+            salesOrder: components["schemas"]["CodedRefDto"] | null;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-12T10:00:00+07:00
+             */
+            sentAt: string | null;
+            /** @example sent */
+            status: components["schemas"]["ErpQuotationStatus"];
+            /** @example 62500.00 */
+            subtotal: string;
+            /** @example ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล */
+            terms: string | null;
+            /** @example 66875.00 */
+            total: string;
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            validUntil: string;
+            /** @example 4375.00 */
+            vatAmount: string;
+            /** @example exclusive */
+            vatMode: components["schemas"]["ErpVatMode"];
+            /** @example 7.0000 */
+            vatRatePct: string;
+            /** @example 1 */
+            version: number;
+        };
+        ErpQuotationLinkDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-11T23:59:59+07:00
+             */
+            expiresAt: string;
+            quotation: components["schemas"]["ErpQuotationDto"];
+            /**
+             * @description For the customer; shown once — sending again makes a new one
+             * @example https://www.packio.example/q/q3J9f0T1xYk8Zb2mR4sW6uE7vN0aLcDh
+             */
+            url: string;
+        };
+        ErpQuotationRevisionDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef05
+             */
+            id: string;
+            /** @example 1 */
+            revision: number;
+            /** @example superseded */
+            status: components["schemas"]["ErpQuotationStatus"];
+            /** @example 70000.00 */
+            total: string;
+        };
+        /** @enum {string} */
+        ErpQuotationStatus: "draft" | "sent" | "accepted" | "rejected" | "expired" | "superseded" | "cancelled";
+        /** @enum {string} */
+        ErpQuotationStatusFilter: "draft" | "sent" | "accepted" | "rejected" | "expired" | "superseded" | "cancelled" | "open";
+        ErpQuotationSummaryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-12T09:00:00+07:00
+             */
+            createdAt: string;
+            customer: components["schemas"]["CodedRefDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef05
+             */
+            id: string;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            quoteDate: string;
+            /** @example QT-2610-0003 */
+            quoteNo: string;
+            /** @example 1 */
+            revision: number;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /** @example sent */
+            status: components["schemas"]["ErpQuotationStatus"];
+            /** @example 66875.00 */
+            total: string;
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            validUntil: string;
+        };
         ErpQuoteInput: {
             /**
              * @description Base units per `unit`
@@ -45223,6 +47849,51 @@ export interface components {
              */
             validUntil?: string | null;
         };
+        ErpReceiptAllocationDto: {
+            /**
+             * @description Negative on a refund
+             * @example 26750.00
+             */
+            amount: string;
+            invoice: components["schemas"]["ErpInvoiceRefDto"];
+        };
+        ErpReceiptAllocationInput: {
+            /**
+             * @description Gross amount settled (cash + WHT share)
+             * @example 26750
+             */
+            amount: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef11
+             */
+            invoiceId: string;
+        };
+        /** @enum {string} */
+        ErpReceiptKind: "receipt" | "refund";
+        ErpReceiptRefDto: {
+            /**
+             * @description Gross amount settled on this invoice (cash + WHT)
+             * @example 25000.00
+             */
+            amount: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef14
+             */
+            id: string;
+            /** @example RC-2610-0003 */
+            receiptNo: string;
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            receivedOn: string;
+            /** @example issued */
+            status: components["schemas"]["ErpReceiptStatus"];
+        };
+        /** @enum {string} */
+        ErpReceiptStatus: "issued" | "cancelled";
         ErpRecipeDto: {
             /**
              * @description Product base units one batch makes
@@ -45296,6 +47967,14 @@ export interface components {
             runRatePerHour?: string | null;
             /** @example 30 */
             setupMinutes?: number;
+        };
+        ErpRecordAcceptanceDto: {
+            /** @example PO-6610-015 */
+            customerPoNo?: string | null;
+            /** @example คุณสมศรี ใจดี */
+            name: string;
+            /** @example เจ้าของร้าน */
+            position?: string | null;
         };
         ErpRecordPriceDto: {
             /** @example QT-6610-120 */
@@ -45677,11 +48356,604 @@ export interface components {
         };
         /** @enum {string} */
         ErpRfqSupplierStatus: "invited" | "quoted" | "declined";
+        ErpSalesInvoiceDto: {
+            /** @description As printed once issued; the customer now while a draft */
+            buyer: components["schemas"]["ErpDocPartyDto"];
+            /** @example 0.00 */
+            creditedAmount: string;
+            customer: components["schemas"]["CodedRefDto"];
+            /** @example PO-6610-015 */
+            customerPoNo: string | null;
+            /** @example 0.00 */
+            debitedAmount: string;
+            /** @description Delivery notes it invoices */
+            deliveryNotes: components["schemas"]["ErpDeliveryNoteRefDto"][];
+            /**
+             * Format: date
+             * @example 2026-11-19
+             */
+            dueDate: string;
+            /** @example invoice */
+            form: components["schemas"]["ErpInvoiceForm"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef11
+             */
+            id: string;
+            /**
+             * @description null while a draft
+             * @example IV-2610-0005
+             */
+            invoiceNo: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-20T15:00:00+07:00
+             */
+            issuedAt: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            issueDate: string;
+            /**
+             * @description A tax invoice (the factory is VAT-registered)
+             * @example true
+             */
+            isTaxInvoice: boolean;
+            lines: components["schemas"]["ErpSalesLineDto"][];
+            /** @description Offered: `erp_iv.edit`, `erp_iv.issue`, `erp_iv.receive`, `erp_iv.credit`, `erp_iv.debit`, `erp_iv.void`, `erp_iv.delete`, `erp_iv.pdf` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            notes: components["schemas"]["ErpNoteRefDto"][];
+            /**
+             * @description total + debit notes − credit notes − received
+             * @example 26750.00
+             */
+            openAmount: string;
+            /** @example false */
+            overdue: boolean;
+            /** @example 30 */
+            paymentTermDays: number;
+            receipts: components["schemas"]["ErpReceiptRefDto"][];
+            /** @example 0.00 */
+            receivedAmount: string;
+            /** @description code = SO no. */
+            salesOrder: components["schemas"]["CodedRefDto"] | null;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /** @description As printed (set when issued) */
+            seller: components["schemas"]["ErpDocPartyDto"] | null;
+            /** @example issued */
+            status: components["schemas"]["ErpSalesInvoiceStatus"];
+            /** @example 25000.00 */
+            subtotal: string;
+            /** @example 26750.00 */
+            total: string;
+            /** @example สองหมื่นหกพันเจ็ดร้อยห้าสิบบาทถ้วน */
+            totalInWords: string;
+            /** @example 1750.00 */
+            vatAmount: string;
+            /** @example exclusive */
+            vatMode: components["schemas"]["ErpVatMode"];
+            /** @example 7.0000 */
+            vatRatePct: string;
+            /** @example 1 */
+            version: number;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            voidedAt: string | null;
+            /** @example null */
+            voidReason: string | null;
+        };
+        /** @enum {string} */
+        ErpSalesInvoiceStatus: "draft" | "issued" | "partially_paid" | "paid" | "voided";
+        /** @enum {string} */
+        ErpSalesInvoiceStatusFilter: "draft" | "issued" | "partially_paid" | "paid" | "voided" | "open" | "overdue";
+        ErpSalesInvoiceSummaryDto: {
+            customer: components["schemas"]["CodedRefDto"];
+            /**
+             * Format: date
+             * @example 2026-11-19
+             */
+            dueDate: string;
+            /** @example invoice */
+            form: components["schemas"]["ErpInvoiceForm"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef11
+             */
+            id: string;
+            /**
+             * @description null while a draft
+             * @example IV-2610-0005
+             */
+            invoiceNo: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            issueDate: string;
+            /**
+             * @description A tax invoice (the factory is VAT-registered)
+             * @example true
+             */
+            isTaxInvoice: boolean;
+            /**
+             * @description total + debit notes − credit notes − received
+             * @example 26750.00
+             */
+            openAmount: string;
+            /** @example false */
+            overdue: boolean;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /** @example issued */
+            status: components["schemas"]["ErpSalesInvoiceStatus"];
+            /** @example 26750.00 */
+            total: string;
+        };
+        ErpSalesLineDto: {
+            /**
+             * @description Quantity × price less the discount
+             * @example 62500.00
+             */
+            amount: string;
+            /** @example กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี */
+            description: string;
+            /** @example 0.0000 */
+            discountPct: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef06
+             */
+            id: string;
+            item: components["schemas"]["ErpItemRefDto"] | null;
+            /** @example 1 */
+            lineNo: number;
+            /** @example 5000.000 */
+            quantity: string;
+            /** @example pcs */
+            unit: components["schemas"]["ErpUnit"];
+            /** @example 12.500000 */
+            unitPrice: string;
+        };
+        ErpSalesLineInput: {
+            /**
+             * @description Default: the item’s name; required without an item
+             * @example กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี
+             */
+            description?: string;
+            /** @example 0 */
+            discountPct?: string;
+            /**
+             * Format: uuid
+             * @description An item of the factory (sold in its base unit); none for a free-text line
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef21
+             */
+            itemId?: string;
+            /** @example 5000 */
+            quantity: string;
+            /** @description Free-text lines only (default `pcs`); an item line is in its base unit */
+            unit?: components["schemas"]["ErpUnit"];
+            /**
+             * @description Per unit, before discount
+             * @example 12.5
+             */
+            unitPrice: string;
+        };
+        ErpSalesNoteDto: {
+            buyer: components["schemas"]["ErpDocPartyDto"] | null;
+            /**
+             * @description The value it should be (net)
+             * @example 24000.00
+             */
+            correctValue: string;
+            customer: components["schemas"]["CodedRefDto"];
+            /**
+             * @description The difference (net)
+             * @example 1000.00
+             */
+            difference: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef13
+             */
+            id: string;
+            invoice: components["schemas"]["ErpInvoiceRefDto"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            issuedAt: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-25
+             */
+            issueDate: string;
+            /**
+             * @description A tax document (the invoice was a tax invoice)
+             * @example true
+             */
+            isTaxDocument: boolean;
+            /** @example credit */
+            kind: components["schemas"]["CnDirection"];
+            lines: components["schemas"]["ErpSalesNoteLineDto"][];
+            /** @description Offered: `erp_note.issue`, `erp_note.void`, `erp_note.delete`, `erp_note.pdf` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example CN-2610-0001 */
+            noteNo: string | null;
+            /**
+             * @description The invoice’s value (net) before this note
+             * @example 25000.00
+             */
+            originalValue: string;
+            /** @example price_reduced */
+            reason: components["schemas"]["ErpSalesNoteReason"];
+            /** @example สินค้าพิมพ์สีเพี้ยน 100 ใบ */
+            reasonText: string | null;
+            seller: components["schemas"]["ErpDocPartyDto"] | null;
+            /** @example issued */
+            status: components["schemas"]["ErpIssuedStatus"];
+            /** @example 1070.00 */
+            total: string;
+            /** @example 70.00 */
+            vatAmount: string;
+            /** @example 7.0000 */
+            vatRatePct: string;
+            /** @example 1 */
+            version: number;
+            /** @example null */
+            voidReason: string | null;
+            warehouse: components["schemas"]["CodedRefDto"] | null;
+        };
+        ErpSalesNoteLineDto: {
+            /** @example 1000.00 */
+            amount: string;
+            /** @example ลดราคากล่อง 1,000 ใบ ใบละ 1 บาท */
+            description: string;
+            item: components["schemas"]["ErpItemRefDto"] | null;
+            /** @example 1 */
+            lineNo: number;
+            /** @example null */
+            returnQty: string | null;
+        };
+        ErpSalesNoteLineInput: {
+            /**
+             * @description Net value of the line, without VAT
+             * @example 1000
+             */
+            amount: string;
+            /** @example ลดราคากล่อง 1,000 ใบ ใบละ 1 บาท */
+            description: string;
+            /**
+             * Format: uuid
+             * @description Goods returned: the item…
+             */
+            itemId?: string;
+            /**
+             * @description …and how many come back into stock (base units)
+             * @example 100
+             */
+            returnQty?: string;
+        };
+        /** @enum {string} */
+        ErpSalesNoteReason: "price_reduced" | "goods_returned" | "defective" | "discount_after_sale" | "overcharged" | "price_increased" | "undercharged" | "extra_goods" | "other";
+        ErpSalesOrderDto: {
+            /** @example null */
+            cancelReason: string | null;
+            /** @example null */
+            closeReason: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-13T11:00:00+07:00
+             */
+            confirmedAt: string | null;
+            /** @description The customer’s credit position (D-361) */
+            credit: components["schemas"]["ErpCreditExposureDto"];
+            /** @example null */
+            creditOverrideReason: string | null;
+            customer: components["schemas"]["CodedRefDto"];
+            /** @example PO-6610-015 */
+            customerPoNo: string | null;
+            /**
+             * @description Delivered share of the goods lines
+             * @example 40.0
+             */
+            deliveredPct: string;
+            /**
+             * Format: date
+             * @example 2026-10-28
+             */
+            deliveryDate: string | null;
+            deliveryNotes: components["schemas"]["ErpDeliveryNoteRefDto"][];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef07
+             */
+            id: string;
+            invoices: components["schemas"]["ErpInvoiceRefDto"][];
+            /**
+             * @description Not fully delivered after its delivery date
+             * @example false
+             */
+            late: boolean;
+            lines: components["schemas"]["ErpSalesOrderLineDto"][];
+            /** @description Offered: `erp_so.edit`, `erp_so.confirm`, `erp_so.deliver`, `erp_so.invoice`, `erp_so.close`, `erp_so.cancel`, `erp_so.pdf` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            opportunity: components["schemas"]["CodedRefDto"] | null;
+            /**
+             * Format: date
+             * @example 2026-10-13
+             */
+            orderDate: string;
+            /** @example 30 */
+            paymentTermDays: number;
+            /** @description code = QT no. with revision */
+            quotation: components["schemas"]["CodedRefDto"] | null;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /** @example ส่งที่ร้าน ซ.งามวงศ์วาน 23 */
+            shipToAddress: string | null;
+            /** @example SO-2610-0004 */
+            soNo: string;
+            /** @example confirmed */
+            status: components["schemas"]["ErpSalesOrderStatus"];
+            /** @example 62500.00 */
+            subtotal: string;
+            /** @example 66875.00 */
+            total: string;
+            /** @example 4375.00 */
+            vatAmount: string;
+            /** @example exclusive */
+            vatMode: components["schemas"]["ErpVatMode"];
+            /** @example 7.0000 */
+            vatRatePct: string;
+            /** @example 1 */
+            version: number;
+            warehouse: components["schemas"]["CodedRefDto"];
+        };
+        ErpSalesOrderLineDto: {
+            /**
+             * @description Quantity × price less the discount
+             * @example 62500.00
+             */
+            amount: string;
+            /** @example 2000.000 */
+            deliveredQty: string;
+            /** @example กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี */
+            description: string;
+            /** @example 0.0000 */
+            discountPct: string;
+            /** @example make */
+            fulfilment: components["schemas"]["ErpFulfilment"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef06
+             */
+            id: string;
+            /** @example 2000.000 */
+            invoicedQty: string;
+            item: components["schemas"]["ErpItemRefDto"] | null;
+            /** @example 1 */
+            lineNo: number;
+            /** @description Its production order (code = MO no., name = status) */
+            productionOrder: components["schemas"]["CodedRefDto"] | null;
+            /** @example 5000.000 */
+            quantity: string;
+            /** @example 0.000 */
+            reservedQty: string;
+            /** @example pcs */
+            unit: components["schemas"]["ErpUnit"];
+            /** @example 12.500000 */
+            unitPrice: string;
+        };
+        ErpSalesOrderLineInput: {
+            /**
+             * @description Default: the item’s name; required without an item
+             * @example กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี
+             */
+            description?: string;
+            /** @example 0 */
+            discountPct?: string;
+            /**
+             * @description `stock` (reserved on confirm), `make` (a production order) or `service` (no goods). Default: stock with an item, service without
+             * @example make
+             */
+            fulfilment?: components["schemas"]["ErpFulfilment"];
+            /**
+             * Format: uuid
+             * @description An item of the factory (sold in its base unit); none for a free-text line
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef21
+             */
+            itemId?: string;
+            /** @example 5000 */
+            quantity: string;
+            /** @description Free-text lines only (default `pcs`); an item line is in its base unit */
+            unit?: components["schemas"]["ErpUnit"];
+            /**
+             * @description Per unit, before discount
+             * @example 12.5
+             */
+            unitPrice: string;
+        };
+        /** @enum {string} */
+        ErpSalesOrderStatus: "draft" | "confirmed" | "partially_delivered" | "delivered" | "closed" | "cancelled";
+        /** @enum {string} */
+        ErpSalesOrderStatusFilter: "draft" | "confirmed" | "partially_delivered" | "delivered" | "closed" | "cancelled" | "open";
+        ErpSalesOrderSummaryDto: {
+            customer: components["schemas"]["CodedRefDto"];
+            /** @example PO-6610-015 */
+            customerPoNo: string | null;
+            /**
+             * @description Delivered share of the goods lines
+             * @example 40.0
+             */
+            deliveredPct: string;
+            /**
+             * Format: date
+             * @example 2026-10-28
+             */
+            deliveryDate: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef07
+             */
+            id: string;
+            /**
+             * @description Not fully delivered after its delivery date
+             * @example false
+             */
+            late: boolean;
+            /**
+             * Format: date
+             * @example 2026-10-13
+             */
+            orderDate: string;
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /** @example SO-2610-0004 */
+            soNo: string;
+            /** @example confirmed */
+            status: components["schemas"]["ErpSalesOrderStatus"];
+            /** @example 66875.00 */
+            total: string;
+        };
+        ErpSalesPerformanceDto: {
+            /** @example 81.7 */
+            achievementPct: string | null;
+            /**
+             * @description Received in the month (gross) on its invoices
+             * @example 180000.00
+             */
+            collected: string;
+            /** @example 4900.00 */
+            commission: string;
+            /** @example 2.0000 */
+            commissionPct: string;
+            /**
+             * @description Invoices − credit notes + debit notes, net
+             * @example 245000.00
+             */
+            invoicedNet: string;
+            /** @example 12 */
+            invoices: number;
+            /** @example 2026-10 */
+            month: string;
+            /** @description null = invoices without a salesperson */
+            salesperson: components["schemas"]["PersonRefDto"] | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef17
+             */
+            targetId: string | null;
+            /** @example 300000.00 */
+            targetNet: string | null;
+        };
+        ErpSalespersonOptionDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000000101
+             */
+            id: string;
+            /** @example ฝ่ายการเงิน (fake) */
+            name: string;
+            /**
+             * @example [
+             *       "factory_sales"
+             *     ]
+             */
+            roles: string[];
+        };
+        ErpSalesReportDto: {
+            /** @example 4900.00 */
+            commission: string;
+            /**
+             * @description Invoiced net − stock cost of what was delivered on those invoices
+             * @example 58000.00
+             */
+            grossProfit: string;
+            /** @example 245000.00 */
+            invoicedNet: string;
+            /** @example 2026-10 */
+            month: string;
+            rows: components["schemas"]["ErpSalesPerformanceDto"][];
+            /** @example 300000.00 */
+            targetNet: string;
+        };
+        ErpSaveActivityDto: {
+            /**
+             * Format: uuid
+             * @description A user of this factory; default: the caller
+             */
+            assigneeId?: string;
+            /** Format: uuid */
+            customerId?: string;
+            /** @example null */
+            detail?: string | null;
+            /**
+             * @description Logged as already done (a call made, a note)
+             * @example false
+             */
+            done?: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-10-14T10:00:00+07:00
+             */
+            dueAt?: string | null;
+            /** @example call */
+            kind: components["schemas"]["ErpActivityKind"];
+            /**
+             * Format: uuid
+             * @description One of `leadId`, `opportunityId`, `customerId`
+             */
+            leadId?: string;
+            /** Format: uuid */
+            opportunityId?: string;
+            /** @example null */
+            outcome?: string | null;
+            /** @example โทรตามใบเสนอราคา */
+            subject: string;
+        };
         ErpSaveFolderDto: {
             /** @example ใบรับรอง */
             name: string;
             /** Format: uuid */
             parentId?: string | null;
+        };
+        ErpSaveLeadDto: {
+            /** @example นนทบุรี */
+            address?: string | null;
+            /** @example คุณสมศรี */
+            contactName?: string | null;
+            /**
+             * Format: email
+             * @example somsri@example.com
+             */
+            email?: string | null;
+            /** @example 45000 */
+            expectedValue?: string | null;
+            /** @example @bansuan */
+            lineId?: string | null;
+            /** @example ร้านขนมบ้านสวน */
+            name: string;
+            /** @example สนใจกล่องเค้ก 2 ขนาด */
+            note?: string | null;
+            /** @example 080-000-1234 */
+            phone?: string | null;
+            /**
+             * Format: uuid
+             * @description A user of this factory; default: whoever creates the lead
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef18
+             */
+            salespersonId?: string | null;
+            /** @example line */
+            source?: components["schemas"]["ErpLeadSource"];
+            /**
+             * @description Converting and losing have their own actions
+             * @example contacted
+             */
+            stage?: components["schemas"]["ErpLeadOpenStage"];
         };
         ErpSaveMaintenancePlanDto: {
             /** @example 120 */
@@ -45702,6 +48974,42 @@ export interface components {
             status?: components["schemas"]["BrandKitStatus"];
             /** @example ล้างระบบหมึก + อัดจาระบี */
             title: string;
+        };
+        ErpSaveOpportunityDto: {
+            /**
+             * Format: uuid
+             * @description A customer, or…
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef04
+             */
+            customerId?: string;
+            /**
+             * Format: date
+             * @example 2026-11-15
+             */
+            expectedCloseOn?: string | null;
+            /**
+             * Format: uuid
+             * @description …a lead (one of the two is required)
+             */
+            leadId?: string;
+            /** @example null */
+            note?: string | null;
+            /**
+             * @description Default: by stage (10 / 40 / 70)
+             * @example 40
+             */
+            probabilityPct?: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef18
+             */
+            salespersonId?: string | null;
+            /** @example proposal */
+            stage?: components["schemas"]["ErpOpportunityOpenStage"];
+            /** @example กล่องเค้ก 2 ขนาด — ล็อตแรก */
+            title: string;
+            /** @example 45000 */
+            value?: string;
         };
         ErpSavePriceBreaksDto: {
             /** @description Replaces the set; empty clears it (D-346) */
@@ -45751,6 +49059,49 @@ export interface components {
             /** @example ใช้กับงาน JOB-2610-0012 */
             note?: string | null;
         };
+        ErpSaveQuotationDto: {
+            /**
+             * Format: uuid
+             * @description A customer (or both)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef04
+             */
+            customerId: string;
+            /** @example 14 */
+            leadTimeDays?: number | null;
+            lines: components["schemas"]["ErpSalesLineInput"][];
+            /** @description Internal; not printed */
+            note?: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef02
+             */
+            opportunityId?: string | null;
+            /**
+             * @description Default: the customer’s terms
+             * @example 30
+             */
+            paymentTermDays?: number;
+            /**
+             * Format: date
+             * @description Default: today
+             * @example 2026-10-12
+             */
+            quoteDate?: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef18
+             */
+            salespersonId?: string | null;
+            terms?: string | null;
+            /**
+             * Format: date
+             * @description Default: + settings.quoteValidDays
+             * @example 2026-11-11
+             */
+            validUntil?: string;
+            /** @example exclusive */
+            vatMode?: components["schemas"]["ErpVatMode"];
+        };
         ErpSaveRecipeDto: {
             /** @example 1 */
             batchQty?: string;
@@ -45796,6 +49147,65 @@ export interface components {
             supplierIds: string[];
             /** @example กระดาษคราฟท์ ไตรมาส 4 */
             title: string;
+        };
+        ErpSaveSalesOrderDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef04
+             */
+            customerId: string;
+            /** @example PO-6610-015 */
+            customerPoNo?: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-28
+             */
+            deliveryDate?: string | null;
+            lines: components["schemas"]["ErpSalesOrderLineInput"][];
+            note?: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            opportunityId?: string | null;
+            /**
+             * Format: date
+             * @description Default: today
+             * @example 2026-10-13
+             */
+            orderDate?: string;
+            /** @example 30 */
+            paymentTermDays?: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef18
+             */
+            salespersonId?: string | null;
+            shipToAddress?: string | null;
+            /** @example exclusive */
+            vatMode?: components["schemas"]["ErpVatMode"];
+            /**
+             * Format: uuid
+             * @description Default: the default warehouse
+             */
+            warehouseId?: string;
+        };
+        ErpSaveSalesTargetDto: {
+            /** @example 2 */
+            commissionPct?: string;
+            /** @example 2026-10 */
+            month: string;
+            /**
+             * Format: uuid
+             * @description A user of this factory
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef18
+             */
+            salespersonId: string;
+            /**
+             * @description Net sales, without VAT
+             * @example 300000
+             */
+            targetNet: string;
         };
         ErpScheduleBlockDto: {
             /**
@@ -45929,6 +49339,16 @@ export interface components {
              * @example false
              */
             allowNegativeStock: boolean;
+            /** @example โอนเข้า ธ.กสิกรไทย 123-4-56789-0 บจก. กล่องดี แพคเกจจิ้ง */
+            bankDetails: string | null;
+            /** @example โทร 02-123-4567 · sales@factory.example.invalid */
+            documentFooter: string | null;
+            /**
+             * Format: uuid
+             * @description The logo on the factory’s documents (an uploaded image, D-368)
+             * @example null
+             */
+            documentLogoFileId: string | null;
             /**
              * @description Modules switched on for this factory (D-318); everything is on unless the owner turned it off
              * @example [
@@ -45976,10 +49396,17 @@ export interface components {
              */
             quoteExpiryDays: number;
             /**
+             * @description Days a new quotation holds (D-360)
+             * @example 30
+             */
+            quoteValidDays: number;
+            /**
              * @description Purchase requests wait for an approver (D-336); off → approved when submitted
              * @example true
              */
             requireRequestApproval: boolean;
+            /** @example นายสมชาย ใจดี */
+            signatoryName: string | null;
             /**
              * @description A supplier not approved for an item on a purchase order: ignored, warned or refused (D-351)
              * @example warn
@@ -46530,6 +49957,29 @@ export interface components {
              */
             score: string | null;
         };
+        ErpTaxExportDto: {
+            /** @example csv */
+            format?: components["schemas"]["ErpExportFormat"];
+            /** @example 2026-10 */
+            month: string;
+            /** @example sales_vat */
+            report: components["schemas"]["ErpTaxExportReport"];
+        };
+        /** @enum {string} */
+        ErpTaxExportReport: "sales_vat" | "purchase_vat" | "pnd3" | "pnd53" | "accounting";
+        ErpTaxExportResultDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-15T10:05:00+07:00
+             */
+            expiresAt: string;
+            /** @example IV-2610-0001.pdf */
+            fileName: string;
+            /** @example 12 */
+            rows: number;
+            /** @example https://files.packio.example/erp/IV-2610-0001.pdf?sig=... */
+            url: string;
+        };
         ErpTradingPartnerDto: {
             /** @example 99 ถนนทดสอบ แขวงทดสอบ เขตทดสอบ กรุงเทพฯ 10000 */
             address: string | null;
@@ -46549,6 +49999,11 @@ export interface components {
             /** @example sales@supplier.example.invalid */
             email: string | null;
             /**
+             * @description For 50 ทวิ: ภ.ง.ด.53 (juristic) or ภ.ง.ด.3 (individual), D-366
+             * @example juristic
+             */
+            entityType: components["schemas"]["ErpEntityType"];
+            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
              */
@@ -46563,6 +50018,8 @@ export interface components {
             paymentTermDays: number;
             /** @example 020000000 */
             phone: string | null;
+            /** @description The customer’s salesperson (D-359) */
+            salesperson: components["schemas"]["PersonRefDto"] | null;
             /** @example active */
             status: components["schemas"]["BrandKitStatus"];
             /** @example 0000500000001 */
@@ -46648,6 +50105,20 @@ export interface components {
             /** @example JOB-2610-0012 · กล่องพับ */
             title?: string;
         };
+        ErpUpdateSalesInvoiceDto: {
+            customerPoNo?: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            issueDate?: string;
+            /** @description Replaces the free lines; delivery lines stay */
+            lines?: components["schemas"]["ErpSalesLineInput"][];
+            note?: string | null;
+            /** @example 30 */
+            paymentTermDays?: number;
+            vatMode?: components["schemas"]["ErpVatMode"];
+        };
         ErpUpdateTradingPartnerDto: {
             /** @example 99 ถนนทดสอบ กรุงเทพฯ 10000 */
             address?: string | null;
@@ -46662,6 +50133,8 @@ export interface components {
              * @example sales@supplier.example.invalid
              */
             email?: string | null;
+            /** @example juristic */
+            entityType?: components["schemas"]["ErpEntityType"];
             /** @example both */
             kind?: components["schemas"]["ErpPartnerKind"];
             /** @example บจก. กระดาษไทย (ทดสอบ) */
@@ -46672,6 +50145,11 @@ export interface components {
             paymentTermDays?: number;
             /** @example 020000000 */
             phone?: string | null;
+            /**
+             * Format: uuid
+             * @description A user of this factory
+             */
+            salespersonId?: string | null;
             /** @example archived */
             status?: components["schemas"]["BrandKitStatus"];
             /** @example 0000500000001 */
@@ -46688,8 +50166,88 @@ export interface components {
             /** @example active */
             status?: components["schemas"]["BrandKitStatus"];
         };
+        ErpVat30Dto: {
+            /**
+             * Format: date
+             * @description Due date of ภ.พ.30 (paper; e-filing usually +8 days)
+             * @example 2026-11-15
+             */
+            dueOn: string;
+            /** @example 840.00 */
+            inputVat: string;
+            /** @example 2026-10 */
+            month: string;
+            /** @example 1750.00 */
+            outputVat: string;
+            /**
+             * @description Purchases (net) on supplier tax invoices
+             * @example 12000.00
+             */
+            purchaseNet: string;
+            /**
+             * @description Sales (net) on tax documents
+             * @example 25000.00
+             */
+            salesNet: string;
+            /**
+             * @description output − input; negative = carried forward
+             * @example 910.00
+             */
+            vatPayable: string;
+            /** @example true */
+            vatRegistered: boolean;
+        };
         /** @enum {string} */
         ErpVatMode: "exclusive" | "inclusive" | "none";
+        ErpVatReportDto: {
+            /** @example sales */
+            kind: components["schemas"]["ErpVatReportKind"];
+            /** @example 2026-10 */
+            month: string;
+            /** @example 25000.00 */
+            net: string;
+            rows: components["schemas"]["ErpVatReportRowDto"][];
+            /** @example 1750.00 */
+            vat: string;
+        };
+        /** @enum {string} */
+        ErpVatReportKind: "sales" | "purchase";
+        ErpVatReportRowDto: {
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            date: string;
+            /** @example IV-2610-0005 */
+            docNo: string;
+            /** @example tax_invoice */
+            kind: components["schemas"]["ErpVatRowKind"];
+            /**
+             * @description Net; negative for a credit note
+             * @example 25000.00
+             */
+            net: string;
+            /** @example 00000 */
+            partyBranch: string | null;
+            /** @example ร้านขนมบ้านสวน */
+            partyName: string;
+            /** @example 0000556123451 */
+            partyTaxId: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef11
+             */
+            sourceId: string;
+            /** @example 1750.00 */
+            vat: string;
+            /**
+             * @description Voided: listed with no value
+             * @example false
+             */
+            voided: boolean;
+        };
+        /** @enum {string} */
+        ErpVatRowKind: "tax_invoice" | "credit_note" | "debit_note" | "supplier_tax_invoice";
         ErpWarehouseDto: {
             /** @example MAIN */
             code: string;
@@ -46706,6 +50264,135 @@ export interface components {
             status: components["schemas"]["BrandKitStatus"];
             /** @example 1 */
             version: number;
+        };
+        ErpWhtCertificateDto: {
+            /** @example 20000.00 */
+            baseAmount: string;
+            /** @example WHT-2610-0001 */
+            certNo: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-31T16:00:00+07:00
+             */
+            createdAt: string;
+            /** @example pnd53 */
+            form: components["schemas"]["WhtForm"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ef16
+             */
+            id: string;
+            lines: components["schemas"]["ErpWhtLineDto"][];
+            /** @description Offered: `erp_wht.void`, `erp_wht.pdf` */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            paidOn: string;
+            payee: components["schemas"]["ErpDocPartyDto"];
+            payer: components["schemas"]["ErpDocPartyDto"];
+            /** @description code = PV no. */
+            payment: components["schemas"]["CodedRefDto"];
+            /** @example issued */
+            status: components["schemas"]["ErpWhtCertificateStatus"];
+            supplier: components["schemas"]["CodedRefDto"];
+            /** @example null */
+            voidReason: string | null;
+            /** @example 600.00 */
+            whtAmount: string;
+        };
+        /** @enum {string} */
+        ErpWhtCertificateStatus: "issued" | "voided";
+        /** @enum {string} */
+        ErpWhtIncomeType: "fees_commission" | "rent" | "hire_of_work" | "transport" | "advertising" | "service" | "prize" | "other";
+        ErpWhtLineDto: {
+            /** @example 20000.00 */
+            baseAmount: string;
+            /** @example ค่าจ้างพิมพ์ */
+            description: string | null;
+            /** @example hire_of_work */
+            incomeType: components["schemas"]["ErpWhtIncomeType"];
+            /** @example 1 */
+            lineNo: number;
+            /** @example 3.0000 */
+            ratePct: string;
+            /** @example 600.00 */
+            whtAmount: string;
+        };
+        ErpWhtLineInput: {
+            /**
+             * @description Amount paid before tax
+             * @example 20000
+             */
+            baseAmount: string;
+            /** @example ค่าจ้างพิมพ์ */
+            description?: string | null;
+            /** @example hire_of_work */
+            incomeType: components["schemas"]["ErpWhtIncomeType"];
+            /** @example 3 */
+            ratePct: string;
+            /** @example 600 */
+            whtAmount: string;
+        };
+        ErpWhtReportDto: {
+            /** @example 20000.00 */
+            baseAmount: string;
+            /**
+             * Format: date
+             * @description Due date of the paper return (e-filing usually +8 days)
+             * @example 2026-11-07
+             */
+            dueOn: string;
+            /** @example pnd53 */
+            form: components["schemas"]["WhtForm"];
+            /** @example 2026-10 */
+            month: string;
+            rows: components["schemas"]["ErpWhtReportRowDto"][];
+            /** @example 600.00 */
+            whtAmount: string;
+        };
+        ErpWhtReportRowDto: {
+            /** @example 20000.00 */
+            baseAmount: string;
+            /** @example WHT-2610-0001 */
+            certNo: string;
+            /** @example hire_of_work */
+            incomeType: components["schemas"]["ErpWhtIncomeType"];
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            paidOn: string;
+            /** @example กรุงเทพฯ */
+            payeeAddress: string | null;
+            /** @example 00000 */
+            payeeBranch: string | null;
+            /** @example บจก. กระดาษไทย (ทดสอบ) */
+            payeeName: string;
+            /** @example 0000555123457 */
+            payeeTaxId: string | null;
+            /** @example 3.0000 */
+            ratePct: string;
+            /** @example 600.00 */
+            whtAmount: string;
+        };
+        ErpWhtSuggestionDto: {
+            /** @description The certificate in force for it, if any */
+            certificate: components["schemas"]["CodedRefDto"] | null;
+            /** @example juristic */
+            entityType: components["schemas"]["ErpEntityType"];
+            /** @example pnd53 */
+            form: components["schemas"]["WhtForm"];
+            lines: components["schemas"]["ErpWhtLineDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            paidOn: string;
+            /** @description code = PV no. */
+            payment: components["schemas"]["CodedRefDto"];
+            supplier: components["schemas"]["CodedRefDto"];
         };
         EvalCaseResultDto: {
             /** @example rt-106 */
@@ -47564,7 +51251,7 @@ export interface components {
             versionNo: number;
         };
         /** @enum {string} */
-        FactoryRole: "factory_owner" | "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant" | "factory_storekeeper" | "factory_purchaser" | "factory_maintenance";
+        FactoryRole: "factory_owner" | "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant" | "factory_storekeeper" | "factory_purchaser" | "factory_maintenance" | "factory_sales";
         FactoryScorecardDto: {
             /** @example 0.0000 */
             claimRatePct: string | null;
@@ -47616,7 +51303,7 @@ export interface components {
             sampleOnTimePct: string | null;
         };
         /** @enum {string} */
-        FactoryStaffRole: "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant" | "factory_storekeeper" | "factory_purchaser" | "factory_maintenance";
+        FactoryStaffRole: "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant" | "factory_storekeeper" | "factory_purchaser" | "factory_maintenance" | "factory_sales";
         /** @enum {string} */
         FactoryStatus: "applied" | "under_review" | "trial" | "active" | "suspended" | "offboarded";
         /** @enum {string} */
@@ -56632,6 +60319,19 @@ export interface components {
              */
             targetAmount: string;
         };
+        PublicAcceptQuotationDto: {
+            /**
+             * @description Agrees to the quotation and its terms
+             * @example true
+             */
+            agree: boolean;
+            /** @example PO-6610-015 */
+            customerPoNo?: string | null;
+            /** @example คุณสมศรี ใจดี */
+            name: string;
+            /** @example เจ้าของร้าน */
+            position?: string | null;
+        };
         PublicConfigDto: {
             /**
              * @description Days after receipt a customer may open a claim — `claims.window_days` (D-082)
@@ -56695,6 +60395,62 @@ export interface components {
             /** @example 1 */
             versionNo: number;
         };
+        PublicQuotationDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acceptedAt: string | null;
+            /** @example null */
+            acceptedName: string | null;
+            buyer: components["schemas"]["ErpDocPartyDto"];
+            /** @example 14 */
+            leadTimeDays: number | null;
+            lines: components["schemas"]["ErpSalesLineDto"][];
+            /** @example 30 */
+            paymentTermDays: number;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            quoteDate: string;
+            /** @example QT-2610-0003 */
+            quoteNo: string;
+            /** @example 1 */
+            revision: number;
+            /** @description The factory, as the seller */
+            seller: components["schemas"]["ErpDocPartyDto"];
+            /** @example null */
+            sellerContact: string | null;
+            /**
+             * @description Short-lived link to its logo
+             * @example null
+             */
+            sellerLogoUrl: string | null;
+            /** @example sent */
+            status: components["schemas"]["PublicQuotationStatus"];
+            /** @example 62500.00 */
+            subtotal: string;
+            /** @example null */
+            terms: string | null;
+            /** @example 66875.00 */
+            total: string;
+            /** @example หกหมื่นหกพันแปดร้อยเจ็ดสิบห้าบาทถ้วน */
+            totalInWords: string;
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            validUntil: string;
+            /** @example 4375.00 */
+            vatAmount: string;
+            /** @example exclusive */
+            vatMode: components["schemas"]["ErpVatMode"];
+            /** @example 7.0000 */
+            vatRatePct: string;
+        };
+        /** @enum {string} */
+        PublicQuotationStatus: "sent" | "accepted" | "rejected" | "expired" | "superseded" | "cancelled";
         PublicReviewDto: {
             /** @example กล่องสวย ส่งตรงเวลา */
             comment: string | null;
@@ -68314,6 +72070,13 @@ export interface components {
         UpdateErpSettingsDto: {
             /** @example false */
             allowNegativeStock?: boolean;
+            bankDetails?: string | null;
+            documentFooter?: string | null;
+            /**
+             * Format: uuid
+             * @description An uploaded image of this factory; null removes it
+             */
+            documentLogoFileId?: string | null;
             /**
              * @example [
              *       "inventory",
@@ -68337,8 +72100,11 @@ export interface components {
             priceTolerancePct?: string;
             /** @example 7 */
             quoteExpiryDays?: number;
+            /** @example 30 */
+            quoteValidDays?: number;
             /** @example true */
             requireRequestApproval?: boolean;
+            signatoryName?: string | null;
             /** @example warn */
             supplierApproval?: components["schemas"]["ErpSupplierApprovalPolicy"];
         };
@@ -195820,6 +199586,419 @@ export interface operations {
             };
         };
     };
+    "partner.erpCrm.listActivities": {
+        parameters: {
+            query?: {
+                /** @description Default: everyone’s; `me` is the caller */
+                assigneeId?: string;
+                customerId?: string;
+                leadId?: string;
+                /** @description Only the caller’s */
+                mine?: boolean;
+                opportunityId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `due` = not done, due today or earlier; `open` = not done */
+                view?: components["schemas"]["ErpActivityFilter"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "about": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *             "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *             "type": "opportunity"
+                     *           },
+                     *           "assignee": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "createdAt": "2026-10-12T09:35:00+07:00",
+                     *           "createdBy": "ฝ่ายขาย ทดสอบ",
+                     *           "detail": null,
+                     *           "doneAt": null,
+                     *           "dueAt": "2026-10-14T10:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef03",
+                     *           "kind": "call",
+                     *           "outcome": null,
+                     *           "overdue": false,
+                     *           "subject": "โทรตามใบเสนอราคา",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpActivityDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.createActivity": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveActivityDto"];
+            };
+        };
+        responses: {
+            /** @description Logged */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "about": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "type": "opportunity"
+                     *       },
+                     *       "assignee": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "createdAt": "2026-10-12T09:35:00+07:00",
+                     *       "createdBy": "ฝ่ายขาย ทดสอบ",
+                     *       "detail": null,
+                     *       "doneAt": null,
+                     *       "dueAt": "2026-10-14T10:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef03",
+                     *       "kind": "call",
+                     *       "outcome": null,
+                     *       "overdue": false,
+                     *       "subject": "โทรตามใบเสนอราคา",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpActivityDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.completeActivity": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                activityId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCompleteActivityDto"];
+            };
+        };
+        responses: {
+            /** @description Done */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "about": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "type": "opportunity"
+                     *       },
+                     *       "assignee": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "createdAt": "2026-10-12T09:35:00+07:00",
+                     *       "createdBy": "ฝ่ายขาย ทดสอบ",
+                     *       "detail": null,
+                     *       "doneAt": "2026-10-14T10:20:00+07:00",
+                     *       "dueAt": "2026-10-14T10:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef03",
+                     *       "kind": "call",
+                     *       "outcome": "ลูกค้าขอส่งตัวอย่างก่อน",
+                     *       "overdue": false,
+                     *       "subject": "โทรตามใบเสนอราคา",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpActivityDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpAlerts.list": {
         parameters: {
             query?: {
@@ -196269,6 +200448,1807 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.listBillingNotes": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["ErpReceiptStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "billingDate": "2026-10-25",
+                     *           "billingNo": "BN-2610-0001",
+                     *           "cancelReason": null,
+                     *           "collectOn": "2026-11-05",
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef15",
+                     *           "lines": [
+                     *             {
+                     *               "amount": "25680.00",
+                     *               "dueDate": "2026-11-19",
+                     *               "invoice": {
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *                 "invoiceNo": "IV-2610-0005",
+                     *                 "status": "issued",
+                     *                 "total": "26750.00"
+                     *               },
+                     *               "issueDate": "2026-10-20"
+                     *             }
+                     *           ],
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": true,
+                     *               "key": "erp_bn.cancel"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_bn.pdf"
+                     *             }
+                     *           ],
+                     *           "note": null,
+                     *           "status": "issued",
+                     *           "total": "25680.00"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpBillingNoteDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.createBillingNote": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateBillingNoteDto"];
+            };
+        };
+        responses: {
+            /** @description Issued */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "billingDate": "2026-10-25",
+                     *       "billingNo": "BN-2610-0001",
+                     *       "cancelReason": null,
+                     *       "collectOn": "2026-11-05",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef15",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "25680.00",
+                     *           "dueDate": "2026-11-19",
+                     *           "invoice": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *             "invoiceNo": "IV-2610-0005",
+                     *             "status": "issued",
+                     *             "total": "26750.00"
+                     *           },
+                     *           "issueDate": "2026-10-20"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_bn.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bn.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "status": "issued",
+                     *       "total": "25680.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpBillingNoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.customer_required`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.getBillingNote": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                billingNoteId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The billing note */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "billingDate": "2026-10-25",
+                     *       "billingNo": "BN-2610-0001",
+                     *       "cancelReason": null,
+                     *       "collectOn": "2026-11-05",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef15",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "25680.00",
+                     *           "dueDate": "2026-11-19",
+                     *           "invoice": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *             "invoiceNo": "IV-2610-0005",
+                     *             "status": "issued",
+                     *             "total": "26750.00"
+                     *           },
+                     *           "issueDate": "2026-10-20"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_bn.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bn.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "status": "issued",
+                     *       "total": "25680.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpBillingNoteDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.cancelBillingNote": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                billingNoteId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "billingDate": "2026-10-25",
+                     *       "billingNo": "BN-2610-0001",
+                     *       "cancelReason": null,
+                     *       "collectOn": "2026-11-05",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef15",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "25680.00",
+                     *           "dueDate": "2026-11-19",
+                     *           "invoice": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *             "invoiceNo": "IV-2610-0005",
+                     *             "status": "issued",
+                     *             "total": "26750.00"
+                     *           },
+                     *           "issueDate": "2026-10-20"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_bn.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bn.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "status": "cancelled",
+                     *       "total": "25680.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpBillingNoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.billingNotePdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                billingNoteId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "BN-2610-0001.pdf",
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpDeliveryNotes.list": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                salesOrderId?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `uninvoiced` = issued or delivered with lines not invoiced */
+                status?: components["schemas"]["ErpDeliveryStatusFilter"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "deliverOn": "2026-10-20",
+                     *           "doNo": "DO-2610-0002",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *           "invoiced": false,
+                     *           "salesOrder": {
+                     *             "code": "SO-2610-0004",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *             "name": "SO-2610-0004"
+                     *           },
+                     *           "status": "delivered"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpDeliveryNoteSummaryDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpDeliveryNotes.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateDeliveryNoteDto"];
+            };
+        };
+        responses: {
+            /** @description Prepared */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "costTotal": "12840.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "deliverOn": "2026-10-20",
+                     *       "deliveredAt": null,
+                     *       "doNo": "DO-2610-0002",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *       "invoiced": false,
+                     *       "issuedAt": null,
+                     *       "lines": [
+                     *         {
+                     *           "costAmount": "12840.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef10",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "salesOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "unit": "pcs",
+                     *           "unitCost": "6.420000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_do.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_do.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_do.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "podFileId": null,
+                     *       "receivedBy": null,
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "status": "draft",
+                     *       "vehicle": "กระบะ 2กข-1234 / คุณสมชาย",
+                     *       "version": 3,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpDeliveryNoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.nothing_to_deliver`, `erp.over_delivery`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpDeliveryNotes.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                deliveryNoteId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The delivery note */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "costTotal": "12840.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "deliverOn": "2026-10-20",
+                     *       "deliveredAt": "2026-10-20T14:10:00+07:00",
+                     *       "doNo": "DO-2610-0002",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *       "invoiced": false,
+                     *       "issuedAt": "2026-10-20T08:30:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "costAmount": "12840.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef10",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "salesOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "unit": "pcs",
+                     *           "unitCost": "6.420000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_do.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_do.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_do.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "podFileId": null,
+                     *       "receivedBy": "คุณสมศรี",
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "status": "delivered",
+                     *       "vehicle": "กระบะ 2กข-1234 / คุณสมชาย",
+                     *       "version": 3,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpDeliveryNoteDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpDeliveryNotes.cancel": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                deliveryNoteId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": "ลูกค้าขอเลื่อนรับสินค้า",
+                     *       "costTotal": "12840.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "deliverOn": "2026-10-20",
+                     *       "deliveredAt": "2026-10-20T14:10:00+07:00",
+                     *       "doNo": "DO-2610-0002",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *       "invoiced": false,
+                     *       "issuedAt": "2026-10-20T08:30:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "costAmount": "12840.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef10",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "salesOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "unit": "pcs",
+                     *           "unitCost": "6.420000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "podFileId": null,
+                     *       "receivedBy": "คุณสมศรี",
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "status": "cancelled",
+                     *       "vehicle": "กระบะ 2กข-1234 / คุณสมชาย",
+                     *       "version": 3,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpDeliveryNoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpDeliveryNotes.deliver": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                deliveryNoteId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpDeliveredDto"];
+            };
+        };
+        responses: {
+            /** @description Delivered */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "costTotal": "12840.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "deliverOn": "2026-10-20",
+                     *       "deliveredAt": "2026-10-20T14:10:00+07:00",
+                     *       "doNo": "DO-2610-0002",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *       "invoiced": false,
+                     *       "issuedAt": "2026-10-20T08:30:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "costAmount": "12840.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef10",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "salesOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "unit": "pcs",
+                     *           "unitCost": "6.420000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_do.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_do.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_do.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "podFileId": null,
+                     *       "receivedBy": "คุณสมศรี",
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "status": "delivered",
+                     *       "vehicle": "กระบะ 2กข-1234 / คุณสมชาย",
+                     *       "version": 3,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpDeliveryNoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.file_not_usable`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpDeliveryNotes.issue": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                deliveryNoteId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Issued */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "costTotal": "12840.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "deliverOn": "2026-10-20",
+                     *       "deliveredAt": null,
+                     *       "doNo": "DO-2610-0002",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *       "invoiced": false,
+                     *       "issuedAt": "2026-10-20T08:30:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "costAmount": "12840.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef10",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "salesOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "unit": "pcs",
+                     *           "unitCost": "6.420000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_do.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_do.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_do.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "podFileId": null,
+                     *       "receivedBy": null,
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "status": "issued",
+                     *       "vehicle": "กระบะ 2กข-1234 / คุณสมชาย",
+                     *       "version": 3,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpDeliveryNoteDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `erp.stock_insufficient`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.lot_required`, `erp.over_delivery`, `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpDeliveryNotes.pdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                deliveryNoteId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "DO-2610-0002.pdf",
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -200230,6 +206210,913 @@ export interface operations {
             };
         };
     };
+    "partner.erpCrm.listLeads": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Only this salesperson’s */
+                salespersonId?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `open` = new, contacted or qualified */
+                stage?: components["schemas"]["ErpLeadStageFilter"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "address": "นนทบุรี",
+                     *           "contactName": "คุณสมศรี",
+                     *           "convertedAt": null,
+                     *           "createdAt": "2026-10-12T09:00:00+07:00",
+                     *           "customer": null,
+                     *           "email": null,
+                     *           "expectedValue": "45000.00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *           "lineId": "@bansuan",
+                     *           "lostReason": null,
+                     *           "name": "ร้านขนมบ้านสวน",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_lead.edit"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_lead.convert"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_lead.lose"
+                     *             }
+                     *           ],
+                     *           "note": "สนใจกล่องเค้ก 2 ขนาด",
+                     *           "openActivities": 1,
+                     *           "phone": "080-000-1234",
+                     *           "salesperson": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "source": "line",
+                     *           "stage": "qualified",
+                     *           "version": 2
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpLeadDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.createLead": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveLeadDto"];
+            };
+        };
+        responses: {
+            /** @description Added */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "address": "นนทบุรี",
+                     *       "contactName": "คุณสมศรี",
+                     *       "convertedAt": null,
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "customer": null,
+                     *       "email": null,
+                     *       "expectedValue": "45000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *       "lineId": "@bansuan",
+                     *       "lostReason": null,
+                     *       "name": "ร้านขนมบ้านสวน",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.convert"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.lose"
+                     *         }
+                     *       ],
+                     *       "note": "สนใจกล่องเค้ก 2 ขนาด",
+                     *       "openActivities": 1,
+                     *       "phone": "080-000-1234",
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "source": "line",
+                     *       "stage": "qualified",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.getLead": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The lead */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "address": "นนทบุรี",
+                     *       "contactName": "คุณสมศรี",
+                     *       "convertedAt": null,
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "customer": null,
+                     *       "email": null,
+                     *       "expectedValue": "45000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *       "lineId": "@bansuan",
+                     *       "lostReason": null,
+                     *       "name": "ร้านขนมบ้านสวน",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.convert"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.lose"
+                     *         }
+                     *       ],
+                     *       "note": "สนใจกล่องเค้ก 2 ขนาด",
+                     *       "openActivities": 1,
+                     *       "phone": "080-000-1234",
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "source": "line",
+                     *       "stage": "qualified",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpLeadDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.updateLead": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveLeadDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "address": "นนทบุรี",
+                     *       "contactName": "คุณสมศรี",
+                     *       "convertedAt": null,
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "customer": null,
+                     *       "email": null,
+                     *       "expectedValue": "45000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *       "lineId": "@bansuan",
+                     *       "lostReason": null,
+                     *       "name": "ร้านขนมบ้านสวน",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.convert"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_lead.lose"
+                     *         }
+                     *       ],
+                     *       "note": "สนใจกล่องเค้ก 2 ขนาด",
+                     *       "openActivities": 1,
+                     *       "phone": "080-000-1234",
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "source": "line",
+                     *       "stage": "qualified",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.convertLead": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpConvertLeadDto"];
+            };
+        };
+        responses: {
+            /** @description Converted */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "lead": {
+                     *         "address": "นนทบุรี",
+                     *         "contactName": "คุณสมศรี",
+                     *         "convertedAt": null,
+                     *         "createdAt": "2026-10-12T09:00:00+07:00",
+                     *         "customer": {
+                     *           "code": "C0007",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *           "name": "ร้านขนมบ้านสวน"
+                     *         },
+                     *         "email": null,
+                     *         "expectedValue": "45000.00",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *         "lineId": "@bansuan",
+                     *         "lostReason": null,
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "nextActions": [],
+                     *         "note": "สนใจกล่องเค้ก 2 ขนาด",
+                     *         "openActivities": 1,
+                     *         "phone": "080-000-1234",
+                     *         "salesperson": {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *           "name": "ฝ่ายขาย ทดสอบ"
+                     *         },
+                     *         "source": "line",
+                     *         "stage": "converted",
+                     *         "version": 2
+                     *       },
+                     *       "opportunityId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpConvertLeadResultDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.code_taken`, `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.loseLead": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Lost */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "address": "นนทบุรี",
+                     *       "contactName": "คุณสมศรี",
+                     *       "convertedAt": null,
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "customer": null,
+                     *       "email": null,
+                     *       "expectedValue": "45000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *       "lineId": "@bansuan",
+                     *       "lostReason": "ลูกค้าเลือกเจ้าอื่นที่ถูกกว่า",
+                     *       "name": "ร้านขนมบ้านสวน",
+                     *       "nextActions": [],
+                     *       "note": "สนใจกล่องเค้ก 2 ขนาด",
+                     *       "openActivities": 1,
+                     *       "phone": "080-000-1234",
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "source": "line",
+                     *       "stage": "lost",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpMachines.list": {
         parameters: {
             query?: never;
@@ -203670,6 +210557,959 @@ export interface operations {
             };
         };
     };
+    "partner.erpCrm.listOpportunities": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                salespersonId?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `open` = prospecting, proposal or negotiation */
+                stage?: components["schemas"]["ErpOpportunityStageFilter"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "closedAt": null,
+                     *           "createdAt": "2026-10-12T09:30:00+07:00",
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "expectedCloseOn": "2026-11-15",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *           "lead": {
+                     *             "code": "0192f3a0",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "lostReason": null,
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_opportunity.edit"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_opportunity.quote"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_opportunity.win"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_opportunity.lose"
+                     *             }
+                     *           ],
+                     *           "note": null,
+                     *           "probabilityPct": 40,
+                     *           "quotations": 1,
+                     *           "salesperson": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "stage": "proposal",
+                     *           "title": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *           "value": "62500.00",
+                     *           "version": 1,
+                     *           "weightedValue": "25000.00",
+                     *           "wonAt": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpOpportunityDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.createOpportunity": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveOpportunityDto"];
+            };
+        };
+        responses: {
+            /** @description Opened */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closedAt": null,
+                     *       "createdAt": "2026-10-12T09:30:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "expectedCloseOn": "2026-11-15",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *       "lead": {
+                     *         "code": "0192f3a0",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "lostReason": null,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.quote"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.win"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.lose"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "probabilityPct": 40,
+                     *       "quotations": 1,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "stage": "proposal",
+                     *       "title": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *       "value": "62500.00",
+                     *       "version": 1,
+                     *       "weightedValue": "25000.00",
+                     *       "wonAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpOpportunityDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.customer_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.getOpportunity": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                opportunityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The opportunity */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closedAt": null,
+                     *       "createdAt": "2026-10-12T09:30:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "expectedCloseOn": "2026-11-15",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *       "lead": {
+                     *         "code": "0192f3a0",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "lostReason": null,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.quote"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.win"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.lose"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "probabilityPct": 40,
+                     *       "quotations": 1,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "stage": "proposal",
+                     *       "title": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *       "value": "62500.00",
+                     *       "version": 1,
+                     *       "weightedValue": "25000.00",
+                     *       "wonAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpOpportunityDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.updateOpportunity": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                opportunityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveOpportunityDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closedAt": null,
+                     *       "createdAt": "2026-10-12T09:30:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "expectedCloseOn": "2026-11-15",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *       "lead": {
+                     *         "code": "0192f3a0",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "lostReason": null,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.quote"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.win"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_opportunity.lose"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "probabilityPct": 40,
+                     *       "quotations": 1,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "stage": "proposal",
+                     *       "title": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *       "value": "62500.00",
+                     *       "version": 1,
+                     *       "weightedValue": "25000.00",
+                     *       "wonAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpOpportunityDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.customer_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.loseOpportunity": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                opportunityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Lost */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closedAt": null,
+                     *       "createdAt": "2026-10-12T09:30:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "expectedCloseOn": "2026-11-15",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *       "lead": {
+                     *         "code": "0192f3a0",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "lostReason": null,
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "probabilityPct": 0,
+                     *       "quotations": 1,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "stage": "lost",
+                     *       "title": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *       "value": "62500.00",
+                     *       "version": 1,
+                     *       "weightedValue": "25000.00",
+                     *       "wonAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpOpportunityDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.winOpportunity": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                opportunityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Won */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closedAt": null,
+                     *       "createdAt": "2026-10-12T09:30:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "expectedCloseOn": "2026-11-15",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *       "lead": {
+                     *         "code": "0192f3a0",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef01",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "lostReason": null,
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "probabilityPct": 100,
+                     *       "quotations": 1,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "stage": "won",
+                     *       "title": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *       "value": "62500.00",
+                     *       "version": 1,
+                     *       "weightedValue": "25000.00",
+                     *       "wonAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpOpportunityDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpPartners.list": {
         parameters: {
             query?: {
@@ -203716,12 +211556,14 @@ export interface operations {
                      *           "createdAt": "2026-10-10T09:00:00+07:00",
                      *           "creditLimit": null,
                      *           "email": "sales@supplier.example.invalid",
+                     *           "entityType": "juristic",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
                      *           "kind": "supplier",
                      *           "name": "บจก. กระดาษไทย (ทดสอบ)",
                      *           "note": null,
                      *           "paymentTermDays": 30,
                      *           "phone": "020000000",
+                     *           "salesperson": null,
                      *           "status": "active",
                      *           "taxId": "0000500000001",
                      *           "updatedAt": "2026-10-10T09:00:00+07:00",
@@ -203842,12 +211684,14 @@ export interface operations {
                      *       "createdAt": "2026-10-10T09:00:00+07:00",
                      *       "creditLimit": null,
                      *       "email": "sales@supplier.example.invalid",
+                     *       "entityType": "juristic",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
                      *       "kind": "supplier",
                      *       "name": "บจก. กระดาษไทย (ทดสอบ)",
                      *       "note": null,
                      *       "paymentTermDays": 30,
                      *       "phone": "020000000",
+                     *       "salesperson": null,
                      *       "status": "active",
                      *       "taxId": "0000500000001",
                      *       "updatedAt": "2026-10-10T09:00:00+07:00",
@@ -203975,12 +211819,14 @@ export interface operations {
                      *       "createdAt": "2026-10-10T09:00:00+07:00",
                      *       "creditLimit": null,
                      *       "email": "sales@supplier.example.invalid",
+                     *       "entityType": "juristic",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
                      *       "kind": "supplier",
                      *       "name": "บจก. กระดาษไทย (ทดสอบ)",
                      *       "note": null,
                      *       "paymentTermDays": 30,
                      *       "phone": "020000000",
+                     *       "salesperson": null,
                      *       "status": "active",
                      *       "taxId": "0000500000001",
                      *       "updatedAt": "2026-10-10T09:00:00+07:00",
@@ -204084,12 +211930,14 @@ export interface operations {
                      *       "createdAt": "2026-10-10T09:00:00+07:00",
                      *       "creditLimit": null,
                      *       "email": "sales@supplier.example.invalid",
+                     *       "entityType": "juristic",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
                      *       "kind": "supplier",
                      *       "name": "บจก. กระดาษไทย (ทดสอบ)",
                      *       "note": null,
                      *       "paymentTermDays": 30,
                      *       "phone": "020000000",
+                     *       "salesperson": null,
                      *       "status": "active",
                      *       "taxId": "0000500000001",
                      *       "updatedAt": "2026-10-10T09:00:00+07:00",
@@ -204410,6 +212258,137 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["ErpSupplierScorecardDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.pipeline": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The pipeline */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closingSoon": 2,
+                     *       "myDue": 3,
+                     *       "openValue": "250000.00",
+                     *       "openWeighted": "76000.00",
+                     *       "salespeople": [
+                     *         {
+                     *           "open": 6,
+                     *           "salesperson": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "value": "250000.00",
+                     *           "weighted": "76000.00"
+                     *         }
+                     *       ],
+                     *       "stages": [
+                     *         {
+                     *           "count": 3,
+                     *           "stage": "prospecting",
+                     *           "value": "120000.00",
+                     *           "weighted": "12000.00"
+                     *         },
+                     *         {
+                     *           "count": 2,
+                     *           "stage": "proposal",
+                     *           "value": "90000.00",
+                     *           "weighted": "36000.00"
+                     *         },
+                     *         {
+                     *           "count": 1,
+                     *           "stage": "negotiation",
+                     *           "value": "40000.00",
+                     *           "weighted": "28000.00"
+                     *         },
+                     *         {
+                     *           "count": 1,
+                     *           "stage": "won",
+                     *           "value": "62500.00",
+                     *           "weighted": "62500.00"
+                     *         },
+                     *         {
+                     *           "count": 0,
+                     *           "stage": "lost",
+                     *           "value": "0.00",
+                     *           "weighted": "0.00"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPipelineDto"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -211181,6 +219160,3043 @@ export interface operations {
             };
         };
     };
+    "partner.erpQuotations.list": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                opportunityId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `open` = draft or sent; superseded revisions are left out unless asked for */
+                status?: components["schemas"]["ErpQuotationStatusFilter"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "createdAt": "2026-10-12T09:40:00+07:00",
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *           "quoteDate": "2026-10-12",
+                     *           "quoteNo": "QT-2610-0003",
+                     *           "revision": 1,
+                     *           "salesperson": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "status": "sent",
+                     *           "total": "66875.00",
+                     *           "validUntil": "2026-11-11"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpQuotationSummaryDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveQuotationDto"];
+            };
+        };
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "acceptedPosition": null,
+                     *       "acceptedVia": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T09:40:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "linkActive": false,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.send"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.revise"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.accept"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.reject"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_quote.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": {
+                     *         "code": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก"
+                     *       },
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "rejectReason": null,
+                     *       "rejectedAt": null,
+                     *       "revision": 1,
+                     *       "revisions": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *           "revision": 1,
+                     *           "status": "sent",
+                     *           "total": "66875.00"
+                     *         }
+                     *       ],
+                     *       "salesOrder": null,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "sentAt": null,
+                     *       "status": "draft",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpQuotationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.customer_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The quotation */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "acceptedPosition": null,
+                     *       "acceptedVia": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T09:40:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "linkActive": true,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.send"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.revise"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.accept"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.reject"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_quote.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": {
+                     *         "code": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก"
+                     *       },
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "rejectReason": null,
+                     *       "rejectedAt": null,
+                     *       "revision": 1,
+                     *       "revisions": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *           "revision": 1,
+                     *           "status": "sent",
+                     *           "total": "66875.00"
+                     *         }
+                     *       ],
+                     *       "salesOrder": null,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "sentAt": "2026-10-12T10:00:00+07:00",
+                     *       "status": "sent",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpQuotationDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveQuotationDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "acceptedPosition": null,
+                     *       "acceptedVia": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T09:40:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "linkActive": true,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.send"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.revise"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.accept"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.reject"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_quote.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": {
+                     *         "code": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก"
+                     *       },
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "rejectReason": null,
+                     *       "rejectedAt": null,
+                     *       "revision": 1,
+                     *       "revisions": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *           "revision": 1,
+                     *           "status": "sent",
+                     *           "total": "66875.00"
+                     *         }
+                     *       ],
+                     *       "salesOrder": null,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "sentAt": "2026-10-12T10:00:00+07:00",
+                     *       "status": "draft",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpQuotationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.customer_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.accept": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpRecordAcceptanceDto"];
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "acceptedPosition": null,
+                     *       "acceptedVia": "factory",
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T09:40:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "linkActive": true,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.send"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.revise"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.accept"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.reject"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_quote.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": {
+                     *         "code": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก"
+                     *       },
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "rejectReason": null,
+                     *       "rejectedAt": null,
+                     *       "revision": 1,
+                     *       "revisions": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *           "revision": 1,
+                     *           "status": "sent",
+                     *           "total": "66875.00"
+                     *         }
+                     *       ],
+                     *       "salesOrder": null,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "sentAt": "2026-10-12T10:00:00+07:00",
+                     *       "status": "accepted",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpQuotationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.quotation_expired` */
+            410: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.cancel": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "acceptedPosition": null,
+                     *       "acceptedVia": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T09:40:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "linkActive": true,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.send"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.revise"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.accept"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.reject"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_quote.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": {
+                     *         "code": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก"
+                     *       },
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "rejectReason": null,
+                     *       "rejectedAt": null,
+                     *       "revision": 1,
+                     *       "revisions": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *           "revision": 1,
+                     *           "status": "sent",
+                     *           "total": "66875.00"
+                     *         }
+                     *       ],
+                     *       "salesOrder": null,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "sentAt": "2026-10-12T10:00:00+07:00",
+                     *       "status": "cancelled",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpQuotationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.order": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "closeReason": null,
+                     *       "confirmedAt": "2026-10-13T11:00:00+07:00",
+                     *       "credit": {
+                     *         "limit": "100000.00",
+                     *         "openOrders": "66875.00",
+                     *         "over": false,
+                     *         "receivables": "0.00"
+                     *       },
+                     *       "creditOverrideReason": null,
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "deliveredPct": "0.0",
+                     *       "deliveryDate": "2026-10-28",
+                     *       "deliveryNotes": [],
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *       "invoices": [],
+                     *       "late": false,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "deliveredQty": "0.000",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "fulfilment": "make",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "productionOrder": {
+                     *             "code": "MO-2610-0006",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "name": "planned"
+                     *           },
+                     *           "quantity": "5000.000",
+                     *           "reservedQty": "0.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.confirm"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": null,
+                     *       "orderDate": "2026-10-13",
+                     *       "paymentTermDays": 30,
+                     *       "quotation": {
+                     *         "code": "QT-2610-0003",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *         "name": "QT-2610-0003"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "soNo": "SO-2610-0004",
+                     *       "status": "draft",
+                     *       "subtotal": "62500.00",
+                     *       "total": "66875.00",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesOrderDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.reject": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Declined */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "acceptedPosition": null,
+                     *       "acceptedVia": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T09:40:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "linkActive": true,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.send"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.revise"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.accept"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.reject"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_quote.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": {
+                     *         "code": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก"
+                     *       },
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "rejectReason": null,
+                     *       "rejectedAt": null,
+                     *       "revision": 1,
+                     *       "revisions": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *           "revision": 1,
+                     *           "status": "sent",
+                     *           "total": "66875.00"
+                     *         }
+                     *       ],
+                     *       "salesOrder": null,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "sentAt": "2026-10-12T10:00:00+07:00",
+                     *       "status": "rejected",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpQuotationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.revise": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The new revision */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "acceptedPosition": null,
+                     *       "acceptedVia": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T09:40:00+07:00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "linkActive": true,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.send"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.revise"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.accept"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.reject"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_quote.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_quote.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": {
+                     *         "code": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *         "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก"
+                     *       },
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "rejectReason": null,
+                     *       "rejectedAt": null,
+                     *       "revision": 2,
+                     *       "revisions": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *           "revision": 1,
+                     *           "status": "sent",
+                     *           "total": "66875.00"
+                     *         }
+                     *       ],
+                     *       "salesOrder": null,
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "sentAt": "2026-10-12T10:00:00+07:00",
+                     *       "status": "draft",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpQuotationDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.send": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sent */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-11-11T23:59:59+07:00",
+                     *       "quotation": {
+                     *         "acceptedAt": null,
+                     *         "acceptedName": null,
+                     *         "acceptedPosition": null,
+                     *         "acceptedVia": null,
+                     *         "cancelReason": null,
+                     *         "createdAt": "2026-10-12T09:40:00+07:00",
+                     *         "customer": {
+                     *           "code": "C0007",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *           "name": "ร้านขนมบ้านสวน"
+                     *         },
+                     *         "customerPoNo": null,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *         "leadTimeDays": 14,
+                     *         "lines": [
+                     *           {
+                     *             "amount": "62500.00",
+                     *             "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *             "discountPct": "0.0000",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *             "item": {
+                     *               "baseUnit": "pcs",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *               "kind": "finished_good",
+                     *               "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *               "sku": "BOX-RSC-302015"
+                     *             },
+                     *             "lineNo": 1,
+                     *             "quantity": "5000.000",
+                     *             "unit": "pcs",
+                     *             "unitPrice": "12.500000"
+                     *           }
+                     *         ],
+                     *         "linkActive": true,
+                     *         "nextActions": [
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_quote.send"
+                     *           },
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_quote.revise"
+                     *           },
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_quote.accept"
+                     *           },
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_quote.reject"
+                     *           },
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": true,
+                     *             "key": "erp_quote.cancel"
+                     *           },
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_quote.pdf"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "opportunity": {
+                     *           "code": "กล่องเค้ก 2 ขนาด — ล็อตแรก",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef02",
+                     *           "name": "กล่องเค้ก 2 ขนาด — ล็อตแรก"
+                     *         },
+                     *         "paymentTermDays": 30,
+                     *         "quoteDate": "2026-10-12",
+                     *         "quoteNo": "QT-2610-0003",
+                     *         "rejectReason": null,
+                     *         "rejectedAt": null,
+                     *         "revision": 1,
+                     *         "revisions": [
+                     *           {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *             "revision": 1,
+                     *             "status": "sent",
+                     *             "total": "66875.00"
+                     *           }
+                     *         ],
+                     *         "salesOrder": null,
+                     *         "salesperson": {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *           "name": "ฝ่ายขาย ทดสอบ"
+                     *         },
+                     *         "sentAt": "2026-10-12T10:00:00+07:00",
+                     *         "status": "sent",
+                     *         "subtotal": "62500.00",
+                     *         "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *         "total": "66875.00",
+                     *         "validUntil": "2026-11-11",
+                     *         "vatAmount": "4375.00",
+                     *         "vatMode": "exclusive",
+                     *         "vatRatePct": "7.0000",
+                     *         "version": 2
+                     *       },
+                     *       "url": "https://www.packio.example/q/q3J9f0T1xYk8Zb2mR4sW6uE7vN0aLcDh"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpQuotationLinkDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.quotation_expired` */
+            410: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpQuotations.pdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                quotationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "QT-2610-0003.pdf",
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.listReceipts": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                from?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["ErpReceiptStatus"];
+                to?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "allocations": [
+                     *             {
+                     *               "amount": "25680.00",
+                     *               "invoice": {
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *                 "invoiceNo": "IV-2610-0005",
+                     *                 "status": "paid",
+                     *                 "total": "26750.00"
+                     *               }
+                     *             }
+                     *           ],
+                     *           "amount": "24840.00",
+                     *           "amountInWords": "สองหมื่นสี่พันแปดร้อยสี่สิบบาทถ้วน",
+                     *           "cancelReason": null,
+                     *           "chequeBank": null,
+                     *           "chequeDate": null,
+                     *           "chequeNo": null,
+                     *           "createdAt": "2026-11-10T15:30:00+07:00",
+                     *           "createdBy": "บัญชี ทดสอบ",
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef14",
+                     *           "kind": "receipt",
+                     *           "method": "transfer",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": true,
+                     *               "key": "erp_rc.cancel"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rc.pdf"
+                     *             }
+                     *           ],
+                     *           "note": null,
+                     *           "receiptNo": "RC-2611-0001",
+                     *           "receivedOn": "2026-11-10",
+                     *           "reference": "KBank 10/11 15:22",
+                     *           "status": "issued",
+                     *           "whtAmount": "840.00",
+                     *           "whtCertDate": "2026-11-10",
+                     *           "whtCertNo": "0001/2569",
+                     *           "whtFileId": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpCustomerReceiptDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.receive": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateReceiptDto"];
+            };
+        };
+        responses: {
+            /** @description Recorded */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "allocations": [
+                     *         {
+                     *           "amount": "25680.00",
+                     *           "invoice": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *             "invoiceNo": "IV-2610-0005",
+                     *             "status": "paid",
+                     *             "total": "26750.00"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "amount": "24840.00",
+                     *       "amountInWords": "สองหมื่นสี่พันแปดร้อยสี่สิบบาทถ้วน",
+                     *       "cancelReason": null,
+                     *       "chequeBank": null,
+                     *       "chequeDate": null,
+                     *       "chequeNo": null,
+                     *       "createdAt": "2026-11-10T15:30:00+07:00",
+                     *       "createdBy": "บัญชี ทดสอบ",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef14",
+                     *       "kind": "receipt",
+                     *       "method": "transfer",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_rc.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_rc.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "receiptNo": "RC-2611-0001",
+                     *       "receivedOn": "2026-11-10",
+                     *       "reference": "KBank 10/11 15:22",
+                     *       "status": "issued",
+                     *       "whtAmount": "840.00",
+                     *       "whtCertDate": "2026-11-10",
+                     *       "whtCertNo": "0001/2569",
+                     *       "whtFileId": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpCustomerReceiptDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.allocation_exceeds_open`, `erp.customer_required`, `erp.file_not_usable`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.getReceipt": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The receipt */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "allocations": [
+                     *         {
+                     *           "amount": "25680.00",
+                     *           "invoice": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *             "invoiceNo": "IV-2610-0005",
+                     *             "status": "paid",
+                     *             "total": "26750.00"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "amount": "24840.00",
+                     *       "amountInWords": "สองหมื่นสี่พันแปดร้อยสี่สิบบาทถ้วน",
+                     *       "cancelReason": null,
+                     *       "chequeBank": null,
+                     *       "chequeDate": null,
+                     *       "chequeNo": null,
+                     *       "createdAt": "2026-11-10T15:30:00+07:00",
+                     *       "createdBy": "บัญชี ทดสอบ",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef14",
+                     *       "kind": "receipt",
+                     *       "method": "transfer",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_rc.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_rc.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "receiptNo": "RC-2611-0001",
+                     *       "receivedOn": "2026-11-10",
+                     *       "reference": "KBank 10/11 15:22",
+                     *       "status": "issued",
+                     *       "whtAmount": "840.00",
+                     *       "whtCertDate": "2026-11-10",
+                     *       "whtCertNo": "0001/2569",
+                     *       "whtFileId": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpCustomerReceiptDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.cancelReceipt": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "allocations": [
+                     *         {
+                     *           "amount": "25680.00",
+                     *           "invoice": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *             "invoiceNo": "IV-2610-0005",
+                     *             "status": "paid",
+                     *             "total": "26750.00"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "amount": "24840.00",
+                     *       "amountInWords": "สองหมื่นสี่พันแปดร้อยสี่สิบบาทถ้วน",
+                     *       "cancelReason": "เช็คคืน",
+                     *       "chequeBank": null,
+                     *       "chequeDate": null,
+                     *       "chequeNo": null,
+                     *       "createdAt": "2026-11-10T15:30:00+07:00",
+                     *       "createdBy": "บัญชี ทดสอบ",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef14",
+                     *       "kind": "receipt",
+                     *       "method": "transfer",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_rc.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "receiptNo": "RC-2611-0001",
+                     *       "receivedOn": "2026-11-10",
+                     *       "reference": "KBank 10/11 15:22",
+                     *       "status": "cancelled",
+                     *       "whtAmount": "840.00",
+                     *       "whtCertDate": "2026-11-10",
+                     *       "whtCertNo": "0001/2569",
+                     *       "whtFileId": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpCustomerReceiptDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.receiptPdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "RC-2611-0001.pdf",
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpReceivables.aging": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The aging */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2026-10-25",
+                     *       "currency": "THB",
+                     *       "customers": [
+                     *         {
+                     *           "buckets": {
+                     *             "current": "25680.00",
+                     *             "d1_30": "0.00",
+                     *             "d31_60": "0.00",
+                     *             "d61_90": "0.00",
+                     *             "over90": "0.00",
+                     *             "total": "25680.00"
+                     *           },
+                     *           "creditLimit": "100000.00",
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "invoices": 1
+                     *         }
+                     *       ],
+                     *       "dueSoon": "0.00",
+                     *       "refundsDue": "0.00",
+                     *       "totals": {
+                     *         "current": "25680.00",
+                     *         "d1_30": "0.00",
+                     *         "d31_60": "0.00",
+                     *         "d61_90": "0.00",
+                     *         "over90": "0.00",
+                     *         "total": "25680.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpArAgingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpRecipes.list": {
         parameters: {
             query?: {
@@ -213584,6 +224600,4423 @@ export interface operations {
             };
         };
     };
+    "partner.erpSalesInvoices.list": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                /** @description Issued on or after */
+                from?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `open` = issued or partially paid with something left to receive; `overdue` = open past due */
+                status?: components["schemas"]["ErpSalesInvoiceStatusFilter"];
+                /** @description Issued on or before */
+                to?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "dueDate": "2026-11-19",
+                     *           "form": "invoice",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *           "invoiceNo": "IV-2610-0005",
+                     *           "isTaxInvoice": true,
+                     *           "issueDate": "2026-10-20",
+                     *           "openAmount": "26750.00",
+                     *           "overdue": false,
+                     *           "salesperson": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "status": "issued",
+                     *           "total": "26750.00"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpSalesInvoiceSummaryDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateSalesInvoiceDto"];
+            };
+        };
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "creditedAmount": "0.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "debitedAmount": "0.00",
+                     *       "deliveryNotes": [
+                     *         {
+                     *           "deliverOn": "2026-10-20",
+                     *           "doNo": "DO-2610-0002",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *           "status": "delivered"
+                     *         }
+                     *       ],
+                     *       "dueDate": "2026-11-19",
+                     *       "form": "invoice",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *       "invoiceNo": null,
+                     *       "isTaxInvoice": true,
+                     *       "issueDate": "2026-10-20",
+                     *       "issuedAt": null,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "25000.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef12",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.receive"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.credit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.debit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_iv.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "notes": [],
+                     *       "openAmount": "26750.00",
+                     *       "overdue": false,
+                     *       "paymentTermDays": 30,
+                     *       "receipts": [],
+                     *       "receivedAmount": "0.00",
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "seller": null,
+                     *       "status": "draft",
+                     *       "subtotal": "25000.00",
+                     *       "total": "26750.00",
+                     *       "totalInWords": "สองหมื่นหกพันเจ็ดร้อยห้าสิบบาทถ้วน",
+                     *       "vatAmount": "1750.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": null,
+                     *       "voidedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.customer_required`, `erp.nothing_to_invoice`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The invoice */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "creditedAmount": "0.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "debitedAmount": "0.00",
+                     *       "deliveryNotes": [
+                     *         {
+                     *           "deliverOn": "2026-10-20",
+                     *           "doNo": "DO-2610-0002",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *           "status": "delivered"
+                     *         }
+                     *       ],
+                     *       "dueDate": "2026-11-19",
+                     *       "form": "invoice",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *       "invoiceNo": "IV-2610-0005",
+                     *       "isTaxInvoice": true,
+                     *       "issueDate": "2026-10-20",
+                     *       "issuedAt": "2026-10-20T15:00:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "25000.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef12",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.receive"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.credit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.debit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_iv.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "notes": [],
+                     *       "openAmount": "26750.00",
+                     *       "overdue": false,
+                     *       "paymentTermDays": 30,
+                     *       "receipts": [],
+                     *       "receivedAmount": "0.00",
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "status": "issued",
+                     *       "subtotal": "25000.00",
+                     *       "total": "26750.00",
+                     *       "totalInWords": "สองหมื่นหกพันเจ็ดร้อยห้าสิบบาทถ้วน",
+                     *       "vatAmount": "1750.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": null,
+                     *       "voidedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesInvoiceDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.delete": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpUpdateSalesInvoiceDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "creditedAmount": "0.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "debitedAmount": "0.00",
+                     *       "deliveryNotes": [
+                     *         {
+                     *           "deliverOn": "2026-10-20",
+                     *           "doNo": "DO-2610-0002",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *           "status": "delivered"
+                     *         }
+                     *       ],
+                     *       "dueDate": "2026-11-19",
+                     *       "form": "invoice",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *       "invoiceNo": null,
+                     *       "isTaxInvoice": true,
+                     *       "issueDate": "2026-10-20",
+                     *       "issuedAt": "2026-10-20T15:00:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "25000.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef12",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.receive"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.credit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.debit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_iv.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "notes": [],
+                     *       "openAmount": "26750.00",
+                     *       "overdue": false,
+                     *       "paymentTermDays": 30,
+                     *       "receipts": [],
+                     *       "receivedAmount": "0.00",
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "status": "draft",
+                     *       "subtotal": "25000.00",
+                     *       "total": "26750.00",
+                     *       "totalInWords": "สองหมื่นหกพันเจ็ดร้อยห้าสิบบาทถ้วน",
+                     *       "vatAmount": "1750.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": null,
+                     *       "voidedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.nothing_to_invoice`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.issue": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpIssueSalesInvoiceDto"];
+            };
+        };
+        responses: {
+            /** @description Issued */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "creditedAmount": "0.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "debitedAmount": "0.00",
+                     *       "deliveryNotes": [
+                     *         {
+                     *           "deliverOn": "2026-10-20",
+                     *           "doNo": "DO-2610-0002",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *           "status": "delivered"
+                     *         }
+                     *       ],
+                     *       "dueDate": "2026-11-19",
+                     *       "form": "invoice",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *       "invoiceNo": "IV-2610-0005",
+                     *       "isTaxInvoice": true,
+                     *       "issueDate": "2026-10-20",
+                     *       "issuedAt": "2026-10-20T15:00:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "25000.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef12",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.receive"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.credit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.debit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_iv.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "notes": [],
+                     *       "openAmount": "26750.00",
+                     *       "overdue": false,
+                     *       "paymentTermDays": 30,
+                     *       "receipts": [],
+                     *       "receivedAmount": "0.00",
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "status": "issued",
+                     *       "subtotal": "25000.00",
+                     *       "total": "26750.00",
+                     *       "totalInWords": "สองหมื่นหกพันเจ็ดร้อยห้าสิบบาทถ้วน",
+                     *       "vatAmount": "1750.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": null,
+                     *       "voidedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invoice_date_order`, `erp.seller_incomplete`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.void": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Voided */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "creditedAmount": "0.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "debitedAmount": "0.00",
+                     *       "deliveryNotes": [
+                     *         {
+                     *           "deliverOn": "2026-10-20",
+                     *           "doNo": "DO-2610-0002",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef09",
+                     *           "status": "delivered"
+                     *         }
+                     *       ],
+                     *       "dueDate": "2026-11-19",
+                     *       "form": "invoice",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *       "invoiceNo": "IV-2610-0005",
+                     *       "isTaxInvoice": true,
+                     *       "issueDate": "2026-10-20",
+                     *       "issuedAt": "2026-10-20T15:00:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "25000.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef12",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "2000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_iv.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "notes": [],
+                     *       "openAmount": "26750.00",
+                     *       "overdue": false,
+                     *       "paymentTermDays": 30,
+                     *       "receipts": [],
+                     *       "receivedAmount": "0.00",
+                     *       "salesOrder": {
+                     *         "code": "SO-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *         "name": "SO-2610-0004"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "status": "voided",
+                     *       "subtotal": "25000.00",
+                     *       "total": "26750.00",
+                     *       "totalInWords": "สองหมื่นหกพันเจ็ดร้อยห้าสิบบาทถ้วน",
+                     *       "vatAmount": "1750.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": "ออกผิดชื่อผู้ซื้อ จะออกฉบับใหม่แทน",
+                     *       "voidedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.document_settled`, `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.pdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "IV-2610-0005.pdf",
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.listNotes": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                invoiceId?: string;
+                kind?: components["schemas"]["CnDirection"];
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["ErpIssuedStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "buyer": {
+                     *             "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *             "branchCode": "00000",
+                     *             "name": "ร้านขนมบ้านสวน",
+                     *             "phone": "080-000-1234",
+                     *             "taxId": "0000556123469"
+                     *           },
+                     *           "correctValue": "24000.00",
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "difference": "1000.00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef13",
+                     *           "invoice": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *             "invoiceNo": "IV-2610-0005",
+                     *             "status": "issued",
+                     *             "total": "26750.00"
+                     *           },
+                     *           "isTaxDocument": true,
+                     *           "issueDate": "2026-10-25",
+                     *           "issuedAt": "2026-10-25T10:00:00+07:00",
+                     *           "kind": "credit",
+                     *           "lines": [
+                     *             {
+                     *               "amount": "1000.00",
+                     *               "description": "รับคืนกล่องพิมพ์สีเพี้ยน 80 ใบ",
+                     *               "item": {
+                     *                 "baseUnit": "pcs",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *                 "kind": "finished_good",
+                     *                 "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *                 "sku": "BOX-RSC-302015"
+                     *               },
+                     *               "lineNo": 1,
+                     *               "returnQty": "80.000"
+                     *             }
+                     *           ],
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": true,
+                     *               "key": "erp_note.void"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_note.pdf"
+                     *             }
+                     *           ],
+                     *           "noteNo": "CN-2610-0001",
+                     *           "originalValue": "25000.00",
+                     *           "reason": "defective",
+                     *           "reasonText": "พิมพ์สีเพี้ยน 80 ใบ",
+                     *           "seller": {
+                     *             "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *             "branchCode": "00000",
+                     *             "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *             "phone": null,
+                     *             "taxId": "0000556123451"
+                     *           },
+                     *           "status": "issued",
+                     *           "total": "1070.00",
+                     *           "vatAmount": "70.00",
+                     *           "vatRatePct": "7.0000",
+                     *           "version": 2,
+                     *           "voidReason": null,
+                     *           "warehouse": {
+                     *             "code": "MAIN",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *             "name": "คลังหลัก"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpSalesNoteDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.createNote": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateSalesNoteDto"];
+            };
+        };
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "correctValue": "24000.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "difference": "1000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef13",
+                     *       "invoice": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *         "invoiceNo": "IV-2610-0005",
+                     *         "status": "issued",
+                     *         "total": "26750.00"
+                     *       },
+                     *       "isTaxDocument": true,
+                     *       "issueDate": "2026-10-25",
+                     *       "issuedAt": "2026-10-25T10:00:00+07:00",
+                     *       "kind": "credit",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "1000.00",
+                     *           "description": "รับคืนกล่องพิมพ์สีเพี้ยน 80 ใบ",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "returnQty": "80.000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_note.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_note.pdf"
+                     *         }
+                     *       ],
+                     *       "noteNo": null,
+                     *       "originalValue": "25000.00",
+                     *       "reason": "defective",
+                     *       "reasonText": "พิมพ์สีเพี้ยน 80 ใบ",
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "status": "draft",
+                     *       "total": "1070.00",
+                     *       "vatAmount": "70.00",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": null,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesNoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.note_exceeds_invoice`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.getNote": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                noteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The note */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "correctValue": "24000.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "difference": "1000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef13",
+                     *       "invoice": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *         "invoiceNo": "IV-2610-0005",
+                     *         "status": "issued",
+                     *         "total": "26750.00"
+                     *       },
+                     *       "isTaxDocument": true,
+                     *       "issueDate": "2026-10-25",
+                     *       "issuedAt": "2026-10-25T10:00:00+07:00",
+                     *       "kind": "credit",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "1000.00",
+                     *           "description": "รับคืนกล่องพิมพ์สีเพี้ยน 80 ใบ",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "returnQty": "80.000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_note.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_note.pdf"
+                     *         }
+                     *       ],
+                     *       "noteNo": "CN-2610-0001",
+                     *       "originalValue": "25000.00",
+                     *       "reason": "defective",
+                     *       "reasonText": "พิมพ์สีเพี้ยน 80 ใบ",
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "status": "issued",
+                     *       "total": "1070.00",
+                     *       "vatAmount": "70.00",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": null,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesNoteDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.deleteNote": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                noteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.issueNote": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                noteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Issued */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "correctValue": "24000.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "difference": "1000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef13",
+                     *       "invoice": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *         "invoiceNo": "IV-2610-0005",
+                     *         "status": "issued",
+                     *         "total": "26750.00"
+                     *       },
+                     *       "isTaxDocument": true,
+                     *       "issueDate": "2026-10-25",
+                     *       "issuedAt": "2026-10-25T10:00:00+07:00",
+                     *       "kind": "credit",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "1000.00",
+                     *           "description": "รับคืนกล่องพิมพ์สีเพี้ยน 80 ใบ",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "returnQty": "80.000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_note.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_note.pdf"
+                     *         }
+                     *       ],
+                     *       "noteNo": "CN-2610-0001",
+                     *       "originalValue": "25000.00",
+                     *       "reason": "defective",
+                     *       "reasonText": "พิมพ์สีเพี้ยน 80 ใบ",
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "status": "issued",
+                     *       "total": "1070.00",
+                     *       "vatAmount": "70.00",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": null,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesNoteDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invoice_date_order`, `erp.note_exceeds_invoice`, `erp.seller_incomplete`, `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.voidNote": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                noteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Voided */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "correctValue": "24000.00",
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "difference": "1000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef13",
+                     *       "invoice": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *         "invoiceNo": "IV-2610-0005",
+                     *         "status": "issued",
+                     *         "total": "26750.00"
+                     *       },
+                     *       "isTaxDocument": true,
+                     *       "issueDate": "2026-10-25",
+                     *       "issuedAt": "2026-10-25T10:00:00+07:00",
+                     *       "kind": "credit",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "1000.00",
+                     *           "description": "รับคืนกล่องพิมพ์สีเพี้ยน 80 ใบ",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "returnQty": "80.000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_note.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_note.pdf"
+                     *         }
+                     *       ],
+                     *       "noteNo": "CN-2610-0001",
+                     *       "originalValue": "25000.00",
+                     *       "reason": "defective",
+                     *       "reasonText": "พิมพ์สีเพี้ยน 80 ใบ",
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "status": "voided",
+                     *       "total": "1070.00",
+                     *       "vatAmount": "70.00",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "voidReason": "ออกซ้ำ",
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesNoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.document_settled`, `erp.invalid_status`, `erp.stock_insufficient`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.notePdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                noteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "CN-2610-0001.pdf",
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesOrders.list": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `open` = confirmed or partially delivered */
+                status?: components["schemas"]["ErpSalesOrderStatusFilter"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "customer": {
+                     *             "code": "C0007",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *             "name": "ร้านขนมบ้านสวน"
+                     *           },
+                     *           "customerPoNo": "PO-6610-015",
+                     *           "deliveredPct": "0.0",
+                     *           "deliveryDate": "2026-10-28",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *           "late": false,
+                     *           "orderDate": "2026-10-13",
+                     *           "salesperson": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "soNo": "SO-2610-0004",
+                     *           "status": "confirmed",
+                     *           "total": "66875.00"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpSalesOrderSummaryDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesOrders.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveSalesOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "closeReason": null,
+                     *       "confirmedAt": "2026-10-13T11:00:00+07:00",
+                     *       "credit": {
+                     *         "limit": "100000.00",
+                     *         "openOrders": "66875.00",
+                     *         "over": false,
+                     *         "receivables": "0.00"
+                     *       },
+                     *       "creditOverrideReason": null,
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "deliveredPct": "0.0",
+                     *       "deliveryDate": "2026-10-28",
+                     *       "deliveryNotes": [],
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *       "invoices": [],
+                     *       "late": false,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "deliveredQty": "0.000",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "fulfilment": "make",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "productionOrder": {
+                     *             "code": "MO-2610-0006",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "name": "planned"
+                     *           },
+                     *           "quantity": "5000.000",
+                     *           "reservedQty": "0.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.deliver"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_so.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": null,
+                     *       "orderDate": "2026-10-13",
+                     *       "paymentTermDays": 30,
+                     *       "quotation": {
+                     *         "code": "QT-2610-0003",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *         "name": "QT-2610-0003"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "soNo": "SO-2610-0004",
+                     *       "status": "draft",
+                     *       "subtotal": "62500.00",
+                     *       "total": "66875.00",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.customer_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesOrders.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                salesOrderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The order */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "closeReason": null,
+                     *       "confirmedAt": "2026-10-13T11:00:00+07:00",
+                     *       "credit": {
+                     *         "limit": "100000.00",
+                     *         "openOrders": "66875.00",
+                     *         "over": false,
+                     *         "receivables": "0.00"
+                     *       },
+                     *       "creditOverrideReason": null,
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "deliveredPct": "0.0",
+                     *       "deliveryDate": "2026-10-28",
+                     *       "deliveryNotes": [],
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *       "invoices": [],
+                     *       "late": false,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "deliveredQty": "0.000",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "fulfilment": "make",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "productionOrder": {
+                     *             "code": "MO-2610-0006",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "name": "planned"
+                     *           },
+                     *           "quantity": "5000.000",
+                     *           "reservedQty": "0.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.deliver"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_so.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": null,
+                     *       "orderDate": "2026-10-13",
+                     *       "paymentTermDays": 30,
+                     *       "quotation": {
+                     *         "code": "QT-2610-0003",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *         "name": "QT-2610-0003"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "soNo": "SO-2610-0004",
+                     *       "status": "confirmed",
+                     *       "subtotal": "62500.00",
+                     *       "total": "66875.00",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesOrderDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesOrders.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                salesOrderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveSalesOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "closeReason": null,
+                     *       "confirmedAt": "2026-10-13T11:00:00+07:00",
+                     *       "credit": {
+                     *         "limit": "100000.00",
+                     *         "openOrders": "66875.00",
+                     *         "over": false,
+                     *         "receivables": "0.00"
+                     *       },
+                     *       "creditOverrideReason": null,
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "deliveredPct": "0.0",
+                     *       "deliveryDate": "2026-10-28",
+                     *       "deliveryNotes": [],
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *       "invoices": [],
+                     *       "late": false,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "deliveredQty": "0.000",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "fulfilment": "make",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "productionOrder": {
+                     *             "code": "MO-2610-0006",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "name": "planned"
+                     *           },
+                     *           "quantity": "5000.000",
+                     *           "reservedQty": "0.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.deliver"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_so.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": null,
+                     *       "orderDate": "2026-10-13",
+                     *       "paymentTermDays": 30,
+                     *       "quotation": {
+                     *         "code": "QT-2610-0003",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *         "name": "QT-2610-0003"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "soNo": "SO-2610-0004",
+                     *       "status": "draft",
+                     *       "subtotal": "62500.00",
+                     *       "total": "66875.00",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.customer_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesOrders.cancel": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                salesOrderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "closeReason": null,
+                     *       "confirmedAt": "2026-10-13T11:00:00+07:00",
+                     *       "credit": {
+                     *         "limit": "100000.00",
+                     *         "openOrders": "66875.00",
+                     *         "over": false,
+                     *         "receivables": "0.00"
+                     *       },
+                     *       "creditOverrideReason": null,
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "deliveredPct": "0.0",
+                     *       "deliveryDate": "2026-10-28",
+                     *       "deliveryNotes": [],
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *       "invoices": [],
+                     *       "late": false,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "deliveredQty": "0.000",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "fulfilment": "make",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "productionOrder": {
+                     *             "code": "MO-2610-0006",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "name": "planned"
+                     *           },
+                     *           "quantity": "5000.000",
+                     *           "reservedQty": "0.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.deliver"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_so.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": null,
+                     *       "orderDate": "2026-10-13",
+                     *       "paymentTermDays": 30,
+                     *       "quotation": {
+                     *         "code": "QT-2610-0003",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *         "name": "QT-2610-0003"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "soNo": "SO-2610-0004",
+                     *       "status": "cancelled",
+                     *       "subtotal": "62500.00",
+                     *       "total": "66875.00",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `erp.materials_issued`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesOrders.close": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                salesOrderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Closed */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "closeReason": null,
+                     *       "confirmedAt": "2026-10-13T11:00:00+07:00",
+                     *       "credit": {
+                     *         "limit": "100000.00",
+                     *         "openOrders": "66875.00",
+                     *         "over": false,
+                     *         "receivables": "0.00"
+                     *       },
+                     *       "creditOverrideReason": null,
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "deliveredPct": "0.0",
+                     *       "deliveryDate": "2026-10-28",
+                     *       "deliveryNotes": [],
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *       "invoices": [],
+                     *       "late": false,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "deliveredQty": "0.000",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "fulfilment": "make",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "productionOrder": {
+                     *             "code": "MO-2610-0006",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "name": "planned"
+                     *           },
+                     *           "quantity": "5000.000",
+                     *           "reservedQty": "0.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.deliver"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_so.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": null,
+                     *       "orderDate": "2026-10-13",
+                     *       "paymentTermDays": 30,
+                     *       "quotation": {
+                     *         "code": "QT-2610-0003",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *         "name": "QT-2610-0003"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "soNo": "SO-2610-0004",
+                     *       "status": "closed",
+                     *       "subtotal": "62500.00",
+                     *       "total": "66875.00",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesOrders.confirm": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                salesOrderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpConfirmSalesOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Confirmed */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "closeReason": null,
+                     *       "confirmedAt": "2026-10-13T11:00:00+07:00",
+                     *       "credit": {
+                     *         "limit": "100000.00",
+                     *         "openOrders": "66875.00",
+                     *         "over": false,
+                     *         "receivables": "0.00"
+                     *       },
+                     *       "creditOverrideReason": null,
+                     *       "customer": {
+                     *         "code": "C0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef04",
+                     *         "name": "ร้านขนมบ้านสวน"
+                     *       },
+                     *       "customerPoNo": "PO-6610-015",
+                     *       "deliveredPct": "0.0",
+                     *       "deliveryDate": "2026-10-28",
+                     *       "deliveryNotes": [],
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef07",
+                     *       "invoices": [],
+                     *       "late": false,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "deliveredQty": "0.000",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "fulfilment": "make",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef08",
+                     *           "invoicedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "productionOrder": {
+                     *             "code": "MO-2610-0006",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "name": "planned"
+                     *           },
+                     *           "quantity": "5000.000",
+                     *           "reservedQty": "0.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.deliver"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.invoice"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_so.cancel"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_so.pdf"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "opportunity": null,
+                     *       "orderDate": "2026-10-13",
+                     *       "paymentTermDays": 30,
+                     *       "quotation": {
+                     *         "code": "QT-2610-0003",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef05",
+                     *         "name": "QT-2610-0003"
+                     *       },
+                     *       "salesperson": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ"
+                     *       },
+                     *       "shipToAddress": "12 ซ.งามวงศ์วาน 23 นนทบุรี",
+                     *       "soNo": "SO-2610-0004",
+                     *       "status": "confirmed",
+                     *       "subtotal": "62500.00",
+                     *       "total": "66875.00",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.credit_limit_exceeded`, `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.recipe_required`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesOrders.pdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                salesOrderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "SO-2610-0004.pdf",
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.salesReport": {
+        parameters: {
+            query: {
+                /** @description A Bangkok calendar month */
+                month: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "commission": "4900.00",
+                     *       "grossProfit": "58000.00",
+                     *       "invoicedNet": "245000.00",
+                     *       "month": "2026-10",
+                     *       "rows": [
+                     *         {
+                     *           "achievementPct": "81.7",
+                     *           "collected": "180000.00",
+                     *           "commission": "4900.00",
+                     *           "commissionPct": "2.0000",
+                     *           "invoicedNet": "245000.00",
+                     *           "invoices": 12,
+                     *           "month": "2026-10",
+                     *           "salesperson": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "targetId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef17",
+                     *           "targetNet": "300000.00"
+                     *         }
+                     *       ],
+                     *       "targetNet": "300000.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesReportDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.saveTarget": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveSalesTargetDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "commission": "4900.00",
+                     *       "grossProfit": "58000.00",
+                     *       "invoicedNet": "245000.00",
+                     *       "month": "2026-10",
+                     *       "rows": [
+                     *         {
+                     *           "achievementPct": "81.7",
+                     *           "collected": "180000.00",
+                     *           "commission": "4900.00",
+                     *           "commissionPct": "2.0000",
+                     *           "invoicedNet": "245000.00",
+                     *           "invoices": 12,
+                     *           "month": "2026-10",
+                     *           "salesperson": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *             "name": "ฝ่ายขาย ทดสอบ"
+                     *           },
+                     *           "targetId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef17",
+                     *           "targetNet": "300000.00"
+                     *         }
+                     *       ],
+                     *       "targetNet": "300000.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSalesReportDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpCrm.salespeople": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description People */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef18",
+                     *         "name": "ฝ่ายขาย ทดสอบ",
+                     *         "roles": [
+                     *           "factory_sales"
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpSalespersonOptionDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpSchedule.board": {
         parameters: {
             query?: {
@@ -213884,6 +229317,9 @@ export interface operations {
                     /**
                      * @example {
                      *       "allowNegativeStock": false,
+                     *       "bankDetails": "ธนาคารทดสอบ สาขาทดสอบ บัญชีออมทรัพย์ 000-0-00000-0 ชื่อบัญชี บจก. ทดสอบ",
+                     *       "documentFooter": "ขอบคุณที่ใช้บริการ",
+                     *       "documentLogoFileId": null,
                      *       "modules": [
                      *         "inventory",
                      *         "procurement",
@@ -213893,20 +229329,31 @@ export interface operations {
                      *       "prefixes": {
                      *         "adj": "ADJ",
                      *         "ap": "AP",
+                     *         "bn": "BN",
+                     *         "cn": "CN",
+                     *         "do": "DO",
+                     *         "dr": "DR",
                      *         "gr": "GR",
                      *         "iss": "ISS",
+                     *         "iv": "IV",
                      *         "mo": "MO",
                      *         "mt": "MT",
                      *         "po": "PO",
                      *         "pr": "PR",
                      *         "pv": "PV",
+                     *         "qt": "QT",
+                     *         "rc": "RC",
                      *         "rfq": "RFQ",
-                     *         "trf": "TRF"
+                     *         "so": "SO",
+                     *         "trf": "TRF",
+                     *         "wht": "WHT"
                      *       },
                      *       "priceAlertPct": "5.0000",
                      *       "priceTolerancePct": "2.0000",
                      *       "quoteExpiryDays": 7,
+                     *       "quoteValidDays": 30,
                      *       "requireRequestApproval": true,
+                     *       "signatoryName": "คุณเจ้าของ ทดสอบ",
                      *       "supplierApproval": "warn",
                      *       "vatRegistered": true,
                      *       "version": 1
@@ -214002,6 +229449,9 @@ export interface operations {
                     /**
                      * @example {
                      *       "allowNegativeStock": false,
+                     *       "bankDetails": "ธนาคารทดสอบ สาขาทดสอบ บัญชีออมทรัพย์ 000-0-00000-0 ชื่อบัญชี บจก. ทดสอบ",
+                     *       "documentFooter": "ขอบคุณที่ใช้บริการ",
+                     *       "documentLogoFileId": null,
                      *       "modules": [
                      *         "inventory",
                      *         "procurement",
@@ -214011,20 +229461,31 @@ export interface operations {
                      *       "prefixes": {
                      *         "adj": "ADJ",
                      *         "ap": "AP",
+                     *         "bn": "BN",
+                     *         "cn": "CN",
+                     *         "do": "DO",
+                     *         "dr": "DR",
                      *         "gr": "GR",
                      *         "iss": "ISS",
+                     *         "iv": "IV",
                      *         "mo": "MO",
                      *         "mt": "MT",
                      *         "po": "PO",
                      *         "pr": "PR",
                      *         "pv": "PV",
+                     *         "qt": "QT",
+                     *         "rc": "RC",
                      *         "rfq": "RFQ",
-                     *         "trf": "TRF"
+                     *         "so": "SO",
+                     *         "trf": "TRF",
+                     *         "wht": "WHT"
                      *       },
                      *       "priceAlertPct": "5.0000",
                      *       "priceTolerancePct": "2.0000",
                      *       "quoteExpiryDays": 7,
+                     *       "quoteValidDays": 30,
                      *       "requireRequestApproval": true,
+                     *       "signatoryName": "คุณเจ้าของ ทดสอบ",
                      *       "supplierApproval": "warn",
                      *       "vatRegistered": true,
                      *       "version": 1
@@ -216605,6 +232066,689 @@ export interface operations {
             };
         };
     };
+    "partner.erpTax.whtSuggestion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The suggestion */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "certificate": null,
+                     *       "entityType": "juristic",
+                     *       "form": "pnd53",
+                     *       "lines": [
+                     *         {
+                     *           "baseAmount": "20000.00",
+                     *           "description": "ค่าจ้างพิมพ์",
+                     *           "incomeType": "hire_of_work",
+                     *           "lineNo": 1,
+                     *           "ratePct": "3.0000",
+                     *           "whtAmount": "600.00"
+                     *         }
+                     *       ],
+                     *       "paidOn": "2026-10-31",
+                     *       "payment": {
+                     *         "code": "PV-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef19",
+                     *         "name": "PV-2610-0004"
+                     *       },
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpWhtSuggestionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.no_withholding` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.export": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpTaxExportDto"];
+            };
+        };
+        responses: {
+            /** @description The file */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "sales_vat-2026-10.csv",
+                     *       "rows": 12,
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpTaxExportResultDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.purchaseVat": {
+        parameters: {
+            query: {
+                /** @description A Bangkok calendar month */
+                month: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "kind": "purchase",
+                     *       "month": "2026-10",
+                     *       "net": "25000.00",
+                     *       "rows": [
+                     *         {
+                     *           "date": "2026-10-20",
+                     *           "docNo": "IV-2610-0005",
+                     *           "kind": "tax_invoice",
+                     *           "net": "25000.00",
+                     *           "partyBranch": "00000",
+                     *           "partyName": "ร้านขนมบ้านสวน",
+                     *           "partyTaxId": "0000556123469",
+                     *           "sourceId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *           "vat": "1750.00",
+                     *           "voided": false
+                     *         }
+                     *       ],
+                     *       "vat": "1750.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpVatReportDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.salesVat": {
+        parameters: {
+            query: {
+                /** @description A Bangkok calendar month */
+                month: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "kind": "sales",
+                     *       "month": "2026-10",
+                     *       "net": "25000.00",
+                     *       "rows": [
+                     *         {
+                     *           "date": "2026-10-20",
+                     *           "docNo": "IV-2610-0005",
+                     *           "kind": "tax_invoice",
+                     *           "net": "25000.00",
+                     *           "partyBranch": "00000",
+                     *           "partyName": "ร้านขนมบ้านสวน",
+                     *           "partyTaxId": "0000556123469",
+                     *           "sourceId": "0192f3a0-7c1e-7d2a-9b1f-00000000ef11",
+                     *           "vat": "1750.00",
+                     *           "voided": false
+                     *         }
+                     *       ],
+                     *       "vat": "1750.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpVatReportDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.vat30": {
+        parameters: {
+            query: {
+                /** @description A Bangkok calendar month */
+                month: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The summary */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "dueOn": "2026-11-15",
+                     *       "inputVat": "840.00",
+                     *       "month": "2026-10",
+                     *       "outputVat": "1750.00",
+                     *       "purchaseNet": "12000.00",
+                     *       "salesNet": "25000.00",
+                     *       "vatPayable": "910.00",
+                     *       "vatRegistered": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpVat30Dto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.wht": {
+        parameters: {
+            query: {
+                form?: components["schemas"]["WhtForm"];
+                /** @description A Bangkok calendar month */
+                month: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The lines */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "baseAmount": "20000.00",
+                     *       "dueOn": "2026-11-07",
+                     *       "form": "pnd53",
+                     *       "month": "2026-10",
+                     *       "rows": [
+                     *         {
+                     *           "baseAmount": "20000.00",
+                     *           "certNo": "WHT-2610-0001",
+                     *           "incomeType": "hire_of_work",
+                     *           "paidOn": "2026-10-31",
+                     *           "payeeAddress": "กรุงเทพฯ",
+                     *           "payeeBranch": "00000",
+                     *           "payeeName": "บจก. กระดาษไทย (ทดสอบ)",
+                     *           "payeeTaxId": "0000555123457",
+                     *           "ratePct": "3.0000",
+                     *           "whtAmount": "600.00"
+                     *         }
+                     *       ],
+                     *       "whtAmount": "600.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpWhtReportDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpWarehouses.list": {
         parameters: {
             query?: never;
@@ -216929,6 +233073,754 @@ export interface operations {
             };
             /** @description Problem: `concurrency.precondition_required` */
             428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.listCertificates": {
+        parameters: {
+            query?: {
+                form?: components["schemas"]["WhtForm"];
+                month?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                supplierId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "baseAmount": "20000.00",
+                     *           "certNo": "WHT-2610-0001",
+                     *           "createdAt": "2026-10-31T16:00:00+07:00",
+                     *           "form": "pnd53",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef16",
+                     *           "lines": [
+                     *             {
+                     *               "baseAmount": "20000.00",
+                     *               "description": "ค่าจ้างพิมพ์",
+                     *               "incomeType": "hire_of_work",
+                     *               "lineNo": 1,
+                     *               "ratePct": "3.0000",
+                     *               "whtAmount": "600.00"
+                     *             }
+                     *           ],
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": true,
+                     *               "key": "erp_wht.void"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_wht.pdf"
+                     *             }
+                     *           ],
+                     *           "paidOn": "2026-10-31",
+                     *           "payee": {
+                     *             "address": "กรุงเทพฯ",
+                     *             "branchCode": "00000",
+                     *             "name": "บจก. กระดาษไทย (ทดสอบ)",
+                     *             "phone": null,
+                     *             "taxId": "0000555123457"
+                     *           },
+                     *           "payer": {
+                     *             "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *             "branchCode": "00000",
+                     *             "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *             "phone": null,
+                     *             "taxId": "0000556123451"
+                     *           },
+                     *           "payment": {
+                     *             "code": "PV-2610-0004",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef19",
+                     *             "name": "PV-2610-0004"
+                     *           },
+                     *           "status": "issued",
+                     *           "supplier": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *             "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *           },
+                     *           "voidReason": null,
+                     *           "whtAmount": "600.00"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpWhtCertificateDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.createCertificate": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateWhtCertificateDto"];
+            };
+        };
+        responses: {
+            /** @description Issued */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "baseAmount": "20000.00",
+                     *       "certNo": "WHT-2610-0001",
+                     *       "createdAt": "2026-10-31T16:00:00+07:00",
+                     *       "form": "pnd53",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef16",
+                     *       "lines": [
+                     *         {
+                     *           "baseAmount": "20000.00",
+                     *           "description": "ค่าจ้างพิมพ์",
+                     *           "incomeType": "hire_of_work",
+                     *           "lineNo": 1,
+                     *           "ratePct": "3.0000",
+                     *           "whtAmount": "600.00"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_wht.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_wht.pdf"
+                     *         }
+                     *       ],
+                     *       "paidOn": "2026-10-31",
+                     *       "payee": {
+                     *         "address": "กรุงเทพฯ",
+                     *         "branchCode": "00000",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)",
+                     *         "phone": null,
+                     *         "taxId": "0000555123457"
+                     *       },
+                     *       "payer": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "payment": {
+                     *         "code": "PV-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef19",
+                     *         "name": "PV-2610-0004"
+                     *       },
+                     *       "status": "issued",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "voidReason": null,
+                     *       "whtAmount": "600.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpWhtCertificateDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.no_withholding`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.getCertificate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                certificateId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The certificate */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "baseAmount": "20000.00",
+                     *       "certNo": "WHT-2610-0001",
+                     *       "createdAt": "2026-10-31T16:00:00+07:00",
+                     *       "form": "pnd53",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef16",
+                     *       "lines": [
+                     *         {
+                     *           "baseAmount": "20000.00",
+                     *           "description": "ค่าจ้างพิมพ์",
+                     *           "incomeType": "hire_of_work",
+                     *           "lineNo": 1,
+                     *           "ratePct": "3.0000",
+                     *           "whtAmount": "600.00"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_wht.void"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_wht.pdf"
+                     *         }
+                     *       ],
+                     *       "paidOn": "2026-10-31",
+                     *       "payee": {
+                     *         "address": "กรุงเทพฯ",
+                     *         "branchCode": "00000",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)",
+                     *         "phone": null,
+                     *         "taxId": "0000555123457"
+                     *       },
+                     *       "payer": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "payment": {
+                     *         "code": "PV-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef19",
+                     *         "name": "PV-2610-0004"
+                     *       },
+                     *       "status": "issued",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "voidReason": null,
+                     *       "whtAmount": "600.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpWhtCertificateDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.voidCertificate": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                certificateId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Voided */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "baseAmount": "20000.00",
+                     *       "certNo": "WHT-2610-0001",
+                     *       "createdAt": "2026-10-31T16:00:00+07:00",
+                     *       "form": "pnd53",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef16",
+                     *       "lines": [
+                     *         {
+                     *           "baseAmount": "20000.00",
+                     *           "description": "ค่าจ้างพิมพ์",
+                     *           "incomeType": "hire_of_work",
+                     *           "lineNo": 1,
+                     *           "ratePct": "3.0000",
+                     *           "whtAmount": "600.00"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_wht.pdf"
+                     *         }
+                     *       ],
+                     *       "paidOn": "2026-10-31",
+                     *       "payee": {
+                     *         "address": "กรุงเทพฯ",
+                     *         "branchCode": "00000",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)",
+                     *         "phone": null,
+                     *         "taxId": "0000555123457"
+                     *       },
+                     *       "payer": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "payment": {
+                     *         "code": "PV-2610-0004",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef19",
+                     *         "name": "PV-2610-0004"
+                     *       },
+                     *       "status": "voided",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "voidReason": "ประเภทเงินได้ผิด",
+                     *       "whtAmount": "600.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpWhtCertificateDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpTax.certificatePdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                certificateId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-20T15:05:00+07:00",
+                     *       "fileName": "WHT-2610-0001.pdf",
+                     *       "url": "https://files.packio.example/erp/IV-2610-0005.pdf?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -260103,6 +276995,509 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["PublicConfigDto"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.quoteLinks.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The quotation */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "revision": 1,
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "sellerContact": "โทร 02-123-4567",
+                     *       "sellerLogoUrl": null,
+                     *       "status": "sent",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "totalInWords": "หกหมื่นหกพันแปดร้อยเจ็ดสิบห้าบาทถ้วน",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicQuotationDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.quotation_expired` */
+            410: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.quoteLinks.accept": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicAcceptQuotationDto"];
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": "2026-10-13T09:00:00+07:00",
+                     *       "acceptedName": "คุณสมศรี ใจดี",
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "revision": 1,
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "sellerContact": "โทร 02-123-4567",
+                     *       "sellerLogoUrl": null,
+                     *       "status": "accepted",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "totalInWords": "หกหมื่นหกพันแปดร้อยเจ็ดสิบห้าบาทถ้วน",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicQuotationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.quotation_expired` */
+            410: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.quoteLinks.decline": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Declined */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "acceptedName": null,
+                     *       "buyer": {
+                     *         "address": "12 ซ.งามวงศ์วาน 23 ต.บางกระสอ อ.เมืองนนทบุรี จ.นนทบุรี 11000",
+                     *         "branchCode": "00000",
+                     *         "name": "ร้านขนมบ้านสวน",
+                     *         "phone": "080-000-1234",
+                     *         "taxId": "0000556123469"
+                     *       },
+                     *       "leadTimeDays": 14,
+                     *       "lines": [
+                     *         {
+                     *           "amount": "62500.00",
+                     *           "description": "กล่องลูกฟูก RSC 30×20×15 ซม. พิมพ์ 2 สี",
+                     *           "discountPct": "0.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef06",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ef21",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องลูกฟูก RSC 30×20×15",
+                     *             "sku": "BOX-RSC-302015"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "5000.000",
+                     *           "unit": "pcs",
+                     *           "unitPrice": "12.500000"
+                     *         }
+                     *       ],
+                     *       "paymentTermDays": 30,
+                     *       "quoteDate": "2026-10-12",
+                     *       "quoteNo": "QT-2610-0003",
+                     *       "revision": 1,
+                     *       "seller": {
+                     *         "address": "99/9 หมู่ 5 ต.บางพลีใหญ่ อ.บางพลี จ.สมุทรปราการ 10540",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท กล่องดี แพคเกจจิ้ง จำกัด",
+                     *         "phone": null,
+                     *         "taxId": "0000556123451"
+                     *       },
+                     *       "sellerContact": "โทร 02-123-4567",
+                     *       "sellerLogoUrl": null,
+                     *       "status": "rejected",
+                     *       "subtotal": "62500.00",
+                     *       "terms": "ราคานี้รวมค่าขนส่งในกรุงเทพฯ และปริมณฑล",
+                     *       "total": "66875.00",
+                     *       "totalInWords": "หกหมื่นหกพันแปดร้อยเจ็ดสิบห้าบาทถ้วน",
+                     *       "validUntil": "2026-11-11",
+                     *       "vatAmount": "4375.00",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicQuotationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.quotation_expired` */
+            410: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Problem: `http.too_many_requests` */

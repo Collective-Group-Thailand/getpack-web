@@ -11,7 +11,8 @@
       "factory_accountant": "ฝ่ายบัญชีโรงงาน",
       "factory_storekeeper": "เจ้าหน้าที่คลังสินค้า",
       "factory_purchaser": "เจ้าหน้าที่จัดซื้อ",
-      "factory_maintenance": "ช่างซ่อมบำรุง"
+      "factory_maintenance": "ช่างซ่อมบำรุง",
+      "factory_sales": "ฝ่ายขาย"
     },
     "switchFactory": "เปลี่ยนโรงงาน"
   },
@@ -105,6 +106,7 @@
   "sidebar": {
     "groups": {
       "daily": "งานประจำวัน",
+      "sales": "การขาย",
       "supply": "คลังและจัดซื้อ",
       "plan": "แผนและกำลังผลิต",
       "finance": "การเงิน",
@@ -141,7 +143,14 @@
       "schedule": "ตารางเครื่องจักร",
       "maintenance": "ซ่อมบำรุง",
       "machines": "เครื่องจักร",
-      "documents": "เอกสารโรงงาน"
+      "documents": "เอกสารโรงงาน",
+      "crm": "ลูกค้าและการขาย",
+      "quotations": "ใบเสนอราคา",
+      "salesOrders": "ใบสั่งขาย",
+      "deliveries": "ใบส่งของ",
+      "invoices": "ใบแจ้งหนี้ / ใบกำกับภาษี",
+      "receivables": "ลูกหนี้และรับเงิน",
+      "tax": "ภาษี"
     }
   },
   "status": {

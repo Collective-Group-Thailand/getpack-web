@@ -182,6 +182,7 @@ const STAFF_ROLES = [
   "factory_storekeeper",
   "factory_purchaser",
   "factory_maintenance",
+  "factory_sales",
 ] as const satisfies readonly Schemas["FactoryStaffRole"][];
 type StaffRole = (typeof STAFF_ROLES)[number];
 type User = Schemas["FactoryUserDto"];

@@ -11,7 +11,8 @@
       "factory_accountant": "Factory Accountant",
       "factory_storekeeper": "Storekeeper",
       "factory_purchaser": "Purchaser",
-      "factory_maintenance": "Maintenance"
+      "factory_maintenance": "Maintenance",
+      "factory_sales": "Sales"
     },
     "switchFactory": "Switch factory"
   },
@@ -105,6 +106,7 @@
   "sidebar": {
     "groups": {
       "daily": "Daily work",
+      "sales": "Sales",
       "supply": "Stock & purchasing",
       "plan": "Planning and capacity",
       "finance": "Finance",
@@ -141,7 +143,14 @@
       "schedule": "Machine schedule",
       "maintenance": "Maintenance",
       "machines": "Machines",
-      "documents": "Documents"
+      "documents": "Documents",
+      "crm": "Customers & sales",
+      "quotations": "Quotations",
+      "salesOrders": "Sales orders",
+      "deliveries": "Delivery notes",
+      "invoices": "Invoices",
+      "receivables": "Receivables",
+      "tax": "Tax"
     }
   },
   "status": {

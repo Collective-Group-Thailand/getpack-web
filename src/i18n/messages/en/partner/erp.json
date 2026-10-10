@@ -37,7 +37,9 @@
       "production_return": "Returned from production",
       "production_receipt": "Finished goods in",
       "landed_cost": "Landed cost",
-      "maintenance_issue": "Maintenance issue"
+      "maintenance_issue": "Maintenance issue",
+      "sales_issue": "Shipped to customer",
+      "sales_return": "Customer return"
     },
     "partnerKinds": {
       "supplier": "Supplier (we buy from)",
@@ -528,7 +530,16 @@
       "pv": "Payment voucher (PV)",
       "mo": "Production order (MO)",
       "rfq": "Quotation request (RFQ)",
-      "mt": "Maintenance order (MT)"
+      "mt": "Maintenance order (MT)",
+      "qt": "Quotation",
+      "so": "Sales order",
+      "do": "Delivery note",
+      "iv": "Invoice",
+      "cn": "Credit note",
+      "dr": "Debit note",
+      "rc": "Receipt",
+      "bn": "Billing note",
+      "wht": "50 bis"
     },
     "modules": "Modules in use",
     "modulesHint": "Switch off what you do not use to keep the menu short",

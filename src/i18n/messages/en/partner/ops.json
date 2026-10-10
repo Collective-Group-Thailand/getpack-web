@@ -15,7 +15,10 @@
       "supplier_review_due": "Supplier review",
       "maintenance_due": "Maintenance due",
       "machine_breakdown": "Breakdown",
-      "document_expiring": "Document expiring"
+      "document_expiring": "Document expiring",
+      "quote_follow_up": "Quotation expiring",
+      "invoice_overdue": "Invoice overdue",
+      "activity_overdue": "Follow-up overdue"
     },
     "text": {
       "price_rise": "{item}: {supplier} at {price} THB/{unit}, up {changePct}% from {previous} ({documentNo})",
@@ -23,7 +26,10 @@
       "supplier_review_due": "{item}: {supplier}’s approval is due for review on {reviewOn}",
       "maintenance_due": "{machine}: {title} is due ({mtNo})",
       "machine_breakdown": "{machine}: {title} ({mtNo}), reported by {reportedBy}",
-      "document_expiring": "{title} expires on {expiresOn}"
+      "document_expiring": "{title} expires on {expiresOn}",
+      "quote_follow_up": "{quoteNo} for {customer} is valid until {validUntil} — follow up",
+      "invoice_overdue": "{customer} owes {open} on {invoiceNo} (due {dueDate})",
+      "activity_overdue": "{subject} ({assignee}) is overdue"
     },
     "open": "Open",
     "acknowledge": "Acknowledge",
