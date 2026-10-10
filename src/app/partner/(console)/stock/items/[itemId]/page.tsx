@@ -8,6 +8,7 @@ import { ItemForm, ItemStatusButton } from "@/features/partner/erp/ItemForm";
 import { ItemSuppliers } from "@/features/partner/erp/ItemSuppliers";
 import { erpSuppliers } from "@/features/partner/erp/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
@@ -173,6 +174,7 @@ export default async function ItemPage({ params }: Props) {
             links={links.data}
             suppliers={(suppliers.data ?? []).filter((s) => s.status === "active")}
             canManage={canPrice && it.status === "active"}
+            canApprove={canAt(context, "factory_procurement.approve") && it.status === "active"}
             locale={locale}
           />
         ) : (
@@ -317,6 +319,7 @@ export default async function ItemPage({ params }: Props) {
           </div>
         </details>
       ) : null}
+      <RelatedDocuments type="item" id={it.id} label={it.name} />
     </PartnerPage>
   );
 }

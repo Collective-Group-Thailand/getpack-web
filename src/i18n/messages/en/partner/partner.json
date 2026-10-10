@@ -10,7 +10,8 @@
       "factory_shipping": "Shipping",
       "factory_accountant": "Factory Accountant",
       "factory_storekeeper": "Storekeeper",
-      "factory_purchaser": "Purchaser"
+      "factory_purchaser": "Purchaser",
+      "factory_maintenance": "Maintenance"
     },
     "switchFactory": "Switch factory"
   },
@@ -133,7 +134,14 @@
       "settings": "Settings and users",
       "planning": "Production planning",
       "floor": "Shop floor",
-      "payables": "Payables"
+      "payables": "Payables",
+      "alerts": "Factory alerts",
+      "kiosk": "Machine kiosk",
+      "rfqs": "Quotation requests",
+      "schedule": "Machine schedule",
+      "maintenance": "Maintenance",
+      "machines": "Machines",
+      "documents": "Documents"
     }
   },
   "status": {
@@ -163,14 +171,26 @@
   },
   "terms": {
     "title": "What the words on this page mean",
-    "advance": ["Advance", "The first part Packio pays when you accept a job — a % of the purchase order"],
+    "advance": [
+      "Advance",
+      "The first part Packio pays when you accept a job — a % of the purchase order"
+    ],
     "balance": [
       "Balance",
       "The rest after the advance; payable once the customer has everything and the claim window has passed"
     ],
-    "retention": ["Retention", "A small part Packio holds for a while in case of a late claim, then pays back in full"],
-    "claimWindow": ["Claim window", "Days after delivery during which the customer can still report a problem"],
-    "payoutRun": ["Payout run", "The day Packio's finance team transfers money; what is due is paid in the next run"],
+    "retention": [
+      "Retention",
+      "A small part Packio holds for a while in case of a late claim, then pays back in full"
+    ],
+    "claimWindow": [
+      "Claim window",
+      "Days after delivery during which the customer can still report a problem"
+    ],
+    "payoutRun": [
+      "Payout run",
+      "The day Packio's finance team transfers money; what is due is paid in the next run"
+    ],
     "tolerance": [
       "Tolerance",
       "Shipping this % under or over the order still counts as complete; you are paid for what you ship"
@@ -179,22 +199,34 @@
       "Purchase order (PO)",
       "Packio's order to the factory: quantity, price and ship date — its amount is what you are paid"
     ],
-    "proof": ["Proof", "The artwork the customer approved; colours and positions must match it"],
+    "proof": [
+      "Proof",
+      "The artwork the customer approved; colours and positions must match it"
+    ],
     "priceVersion": [
       "Price version",
       "Your set of prices for a period; each change makes a new version, old ones stay for reference"
     ],
-    "effectiveDate": ["Effective date", "When new prices start for new jobs; jobs already accepted keep the old price"],
+    "effectiveDate": [
+      "Effective date",
+      "When new prices start for new jobs; jobs already accepted keep the old price"
+    ],
     "tier": [
       "Price tier (A / B / C)",
       "A: customers see a price for every spec · B: for some specs · C: Packio asks you per job"
     ],
-    "proposal": ["Price proposal", "The prices you ask to change; Packio checks them before they apply"],
+    "proposal": [
+      "Price proposal",
+      "The prices you ask to change; Packio checks them before they apply"
+    ],
     "liability": [
       "Who is responsible",
       "By the claim type's rules, who the issue most likely falls on — you can still explain"
     ],
-    "deduction": ["Deduction", "If a claim is the factory's, Packio may deduct from what it pays instead of a remake"]
+    "deduction": [
+      "Deduction",
+      "If a claim is the factory's, Packio may deduct from what it pays instead of a remake"
+    ]
   },
   "select": {
     "search": "Type to search",

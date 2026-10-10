@@ -12,6 +12,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
@@ -31,9 +32,19 @@ const MODULES = [
   "maintenance",
   "documents",
 ] as const;
-const PREFIXES = ["po", "gr", "adj", "trf", "iss", "pr", "ap", "pv", "mo"] as const;
-/** Modules that exist today (E1, E2); the rest are shown as coming and stay as they are. */
-const LIVE = new Set<string>(["inventory", "procurement", "partners", "planning", "floor", "accounting"]);
+const PREFIXES = ["po", "gr", "adj", "trf", "iss", "pr", "ap", "pv", "mo", "rfq", "mt"] as const;
+const POLICIES = ["off", "warn", "enforce"] as const;
+/** Modules that exist today (E1 – E3); the rest are shown as coming and stay as they are. */
+const LIVE = new Set<string>([
+  "inventory",
+  "procurement",
+  "partners",
+  "planning",
+  "floor",
+  "accounting",
+  "maintenance",
+  "documents",
+]);
 
 /** The factory's ERP rules (D-318, D-322, D-323, D-325): modules, negative stock, over-receipt, prefixes. */
 export function ErpSettingsForm({
@@ -47,6 +58,7 @@ export function ErpSettingsForm({
 }) {
   const t = useTranslations("partnerErp.settings");
   const tCommon = useTranslations("partnerErp.common");
+  const tOps = useTranslations("partnerOps.settings");
   const { factoryId } = useFactory();
   const [refresh] = useRefresh();
   const [modules, setModules] = useState<string[]>(settings.modules);
@@ -54,6 +66,9 @@ export function ErpSettingsForm({
   const [overReceipt, setOverReceipt] = useState(trimZeros(settings.overReceiptPct));
   const [tolerance, setTolerance] = useState(trimZeros(settings.priceTolerancePct));
   const [approval, setApproval] = useState(settings.requireRequestApproval);
+  const [priceAlert, setPriceAlert] = useState(trimZeros(settings.priceAlertPct));
+  const [quoteDays, setQuoteDays] = useState(String(settings.quoteExpiryDays));
+  const [policy, setPolicy] = useState<Settings["supplierApproval"]>(settings.supplierApproval);
   const [prefixes, setPrefixes] = useState<Record<string, string>>(settings.prefixes);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -70,6 +85,9 @@ export function ErpSettingsForm({
           overReceiptPct: overReceipt || "0",
           priceTolerancePct: tolerance || "0",
           requireRequestApproval: approval,
+          priceAlertPct: priceAlert || "0",
+          quoteExpiryDays: Math.max(0, Math.min(90, Number.parseInt(quoteDays || "0", 10) || 0)),
+          supplierApproval: policy,
           prefixes: Object.fromEntries(Object.entries(prefixes).map(([k, v]) => [k, v.trim().toUpperCase()])),
         },
       });
@@ -126,6 +144,39 @@ export function ErpSettingsForm({
             />
           </Field>
         </div>
+      </fieldset>
+      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
+        <legend className="mb-1 text-lg font-semibold">{tOps("sourcingTitle")}</legend>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={tOps("priceAlertPct")} hint={tOps("priceAlertHint")} error={errors.priceAlertPct}>
+            <NumberInput
+              min={0}
+              max={100}
+              step="any"
+              unit="%"
+              value={priceAlert}
+              onChange={(event) => setPriceAlert(event.target.value)}
+            />
+          </Field>
+          <Field label={tOps("quoteExpiryDays")} hint={tOps("quoteExpiryHint")} error={errors.quoteExpiryDays}>
+            <NumberInput
+              min={0}
+              max={90}
+              step={1}
+              unit={tOps("days")}
+              value={quoteDays}
+              onChange={(event) => setQuoteDays(event.target.value)}
+            />
+          </Field>
+        </div>
+        <SegmentedControl
+          label={tOps("supplierApproval")}
+          size="md"
+          value={policy}
+          onValueChange={setPolicy}
+          options={POLICIES.map((p) => ({ value: p, label: tOps(`policies.${p}`) }))}
+        />
+        <p className="text-muted text-sm">{tOps("supplierApprovalHint")}</p>
       </fieldset>
       <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
         <legend className="mb-1 text-lg font-semibold">{t("prefixes")}</legend>

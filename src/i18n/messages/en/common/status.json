@@ -450,7 +450,18 @@
     "issueMaterials": "Issue materials",
     "returnMaterials": "Return materials",
     "completeProductionOrder": "Complete order",
-    "cancelProductionOrder": "Cancel order"
+    "cancelProductionOrder": "Cancel order",
+    "addLandedCharge": "Add extra cost",
+    "editRfq": "Edit request",
+    "sendRfq": "Send request",
+    "recordQuotes": "Record prices",
+    "awardRfq": "Award",
+    "cancelRfq": "Cancel request",
+    "scheduleMaintenance": "Set window",
+    "startMaintenance": "Start maintenance",
+    "issueSpareParts": "Issue parts",
+    "finishMaintenance": "Finish maintenance",
+    "cancelMaintenance": "Cancel maintenance"
   },
   "points": {
     "pending": "Pending",
@@ -753,6 +764,42 @@
     "pending": "To do",
     "inProgress": "In progress",
     "done": "Done",
-    "skipped": "Skipped"
+    "skipped": "Skipped",
+    "paused": "Paused"
+  },
+  "erpRfq": {
+    "draft": "Draft",
+    "sent": "Sent",
+    "awarded": "Awarded",
+    "cancelled": "Cancelled"
+  },
+  "erpRfqSupplier": {
+    "invited": "Waiting",
+    "quoted": "Quoted",
+    "declined": "Declined"
+  },
+  "erpSupplierApproval": {
+    "pending": "Pending approval",
+    "approved": "Approved",
+    "suspended": "Suspended"
+  },
+  "erpMaintenance": {
+    "open": "Open",
+    "scheduled": "Scheduled",
+    "inProgress": "In progress",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "erpMachine": {
+    "running": "Running",
+    "idle": "Idle",
+    "down": "Down",
+    "maintenance": "Maintenance"
+  },
+  "erpDocExpiry": {
+    "none": "No expiry",
+    "valid": "Valid",
+    "expiring": "Expiring soon",
+    "expired": "Expired"
   }
 }

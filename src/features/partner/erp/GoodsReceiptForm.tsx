@@ -17,6 +17,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
+import { type ChargeRow, chargeBody, ChargesEditor, chargeValid } from "./ChargesEditor";
 import { formatQty, isZero, plainNumber, PRICE_PATTERN, QTY_PATTERN, trimZeros } from "./format";
 import { type Line, type LineErrors, LinesEditor, newLine, type PickItem } from "./LinesEditor";
 
@@ -45,6 +46,7 @@ export function GoodsReceiptForm({
 }) {
   const t = useTranslations("partnerErp.move");
   const tCommon = useTranslations("partnerErp.common");
+  const tRecv = useTranslations("partnerOps.receiving");
   const { factoryId } = useFactory();
   const router = useRouter();
   const main = warehouses.find((w) => w.isDefault) ?? warehouses[0];
@@ -57,6 +59,12 @@ export function GoodsReceiptForm({
     Object.fromEntries((order?.lines ?? []).map((line) => [line.id, trimZeros(line.remainingQty)])),
   );
   const [poLots, setPoLots] = useState<Record<string, string>>({});
+  // D-349: refused at inspection — recorded with a reason, never stocked nor received.
+  const [poRejected, setPoRejected] = useState<Record<string, string>>({});
+  const [poReasons, setPoReasons] = useState<Record<string, string>>({});
+  // D-350: freight, duty, … into the cost of what is accepted.
+  const [charges, setCharges] = useState<ChargeRow[]>([]);
+  const [chargeErrors, setChargeErrors] = useState<Record<number, string>>({});
   const [lines, setLines] = useState<Line[]>(() => [newLine()]);
   const [errors, setErrors] = useState<LineErrors>({});
   const [poErrors, setPoErrors] = useState<Record<string, string>>({});
@@ -73,18 +81,22 @@ export function GoodsReceiptForm({
       const next: Record<string, string> = {};
       let any = false;
       for (const line of order.lines) {
-        const value = plainNumber(poQty[line.id] ?? "");
-        if (!value) continue;
+        const value = plainNumber(poQty[line.id] ?? "") || "0";
+        const rejected = plainNumber(poRejected[line.id] ?? "") || "0";
         if (!QTY_PATTERN.test(value)) next[line.id] = t("qtyInvalid");
-        else if (!isZero(value)) {
+        if (!QTY_PATTERN.test(rejected)) next[`${line.id}:rejected`] = t("qtyInvalid");
+        else if (!isZero(rejected) && !poReasons[line.id]?.trim())
+          next[`${line.id}:reason`] = tRecv("rejectReasonRequired");
+        if (QTY_PATTERN.test(value) && !isZero(value)) {
           any = true;
           if (byId.get(line.item.id)?.trackLots && !poLots[line.id]?.trim())
             next[`${line.id}:lot`] = tCommon("lotHint");
-        }
+        } else if (QTY_PATTERN.test(rejected) && !isZero(rejected)) any = true;
       }
       setPoErrors(next);
+      const badCharges = chargeErrorsOf();
       if (!any && !Object.keys(next).length) toast.error(t("linesRequired"));
-      return any && !Object.keys(next).length;
+      return any && !Object.keys(next).length && !badCharges;
     }
     const next: LineErrors = {};
     lines.forEach((line, index) => {
@@ -98,7 +110,15 @@ export function GoodsReceiptForm({
     });
     setErrors(next);
     setSupplierError(supplierId ? undefined : tCommon("selectSupplier"));
-    return !Object.keys(next).length && Boolean(supplierId);
+    const badCharges = chargeErrorsOf();
+    return !Object.keys(next).length && Boolean(supplierId) && !badCharges;
+  }
+
+  /** Marks charges without a valid amount; true when any is wrong. */
+  function chargeErrorsOf(): boolean {
+    const bad = Object.fromEntries(charges.filter((c) => !chargeValid(c)).map((c) => [c.key, tRecv("chargeInvalid")]));
+    setChargeErrors(bad);
+    return Object.keys(bad).length > 0;
   }
 
   async function submit(event: React.FormEvent) {
@@ -116,13 +136,20 @@ export function GoodsReceiptForm({
             lines: order.lines
               .filter((line) => {
                 const value = plainNumber(poQty[line.id] ?? "");
-                return value && !isZero(value);
+                const rejected = plainNumber(poRejected[line.id] ?? "");
+                return (value && !isZero(value)) || (rejected && !isZero(rejected));
               })
-              .map((line) => ({
-                purchaseOrderLineId: line.id,
-                quantity: plainNumber(poQty[line.id]!),
-                ...(poLots[line.id]?.trim() ? { lotNo: poLots[line.id]!.trim() } : {}),
-              })),
+              .map((line) => {
+                const rejected = plainNumber(poRejected[line.id] ?? "");
+                return {
+                  purchaseOrderLineId: line.id,
+                  quantity: plainNumber(poQty[line.id] ?? "") || "0",
+                  ...(poLots[line.id]?.trim() ? { lotNo: poLots[line.id]!.trim() } : {}),
+                  ...(rejected && !isZero(rejected)
+                    ? { rejectedQuantity: rejected, rejectReason: poReasons[line.id]!.trim() }
+                    : {}),
+                };
+              }),
           }
         : {
             supplierId,
@@ -134,6 +161,7 @@ export function GoodsReceiptForm({
               ...(line.lotNo?.trim() ? { lotNo: line.lotNo.trim() } : {}),
             })),
           }),
+      ...(charges.length ? { charges: charges.map(chargeBody) } : {}),
     };
     try {
       const { data } = await browserApi().POST("/v1/partner/factories/{factoryId}/erp/goods-receipts", {
@@ -243,6 +271,28 @@ export function GoodsReceiptForm({
                     />
                   </Field>
                 ) : null}
+                <Field
+                  label={tRecv("rejected")}
+                  hint={tRecv("rejectedHint")}
+                  error={poErrors[`${line.id}:rejected`]}
+                >
+                  <NumberInput
+                    min={0}
+                    step="any"
+                    unit={unit(line.unit)}
+                    value={poRejected[line.id] ?? ""}
+                    onChange={(event) => setPoRejected({ ...poRejected, [line.id]: event.target.value })}
+                  />
+                </Field>
+                {poRejected[line.id] && !isZero(plainNumber(poRejected[line.id]!)) ? (
+                  <Field label={tRecv("rejectReason")} error={poErrors[`${line.id}:reason`]}>
+                    <Input
+                      value={poReasons[line.id] ?? ""}
+                      placeholder={tRecv("rejectReasonPlaceholder")}
+                      onChange={(event) => setPoReasons({ ...poReasons, [line.id]: event.target.value })}
+                    />
+                  </Field>
+                ) : null}
               </li>
             );
           })}
@@ -259,6 +309,7 @@ export function GoodsReceiptForm({
           showOnHand={false}
         />
       )}
+      <ChargesEditor rows={charges} onChange={setCharges} partners={suppliers} errors={chargeErrors} />
       <Field label={tCommon("notePlaceholder")} labelHidden>
         <Textarea
           rows={2}

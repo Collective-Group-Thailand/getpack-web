@@ -12,6 +12,7 @@ import { ViewTabs } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -49,9 +50,20 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
     ),
   ]);
   const canRecord = canAt(context, "factory_production.record");
+  const tKiosk = await getTranslations("partnerOps.kiosk");
 
   return (
-    <PartnerPage title={t("title")} description={t("body")}>
+    <PartnerPage
+      title={t("title")}
+      description={t("body")}
+      actions={
+        canRecord ? (
+          <Button asChild variant="secondary" iconStart="tablet">
+            <Link href="/floor/kiosk">{tKiosk("title")}</Link>
+          </Button>
+        ) : undefined
+      }
+    >
       {overview.data?.machines.length ? (
         <ViewTabs
           label={t("machines")}
