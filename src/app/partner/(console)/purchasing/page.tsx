@@ -98,7 +98,10 @@ export default async function PurchasingPage({
       <ViewTabs
         label={t("views.label")}
         current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
+        items={[
+          ...VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) })),
+          { key: "requests", href: "/purchasing/requests", label: t("views.requests") },
+        ]}
       />
       <SearchBar
         id="po-q"

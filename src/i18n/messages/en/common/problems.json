@@ -155,7 +155,14 @@
     "same_warehouse": "Choose two different warehouses",
     "sku_taken": "This SKU is already used",
     "stock_insufficient": "Not enough stock",
-    "unit_not_allowed": "This unit cannot be used for this item"
+    "unit_not_allowed": "This unit cannot be used for this item",
+    "supplier_linked": "This supplier is already linked to the item",
+    "invoice_duplicate": "This supplier's invoice number is already recorded",
+    "invoice_not_payable": "This invoice cannot be paid yet; an invoice that did not match needs approval first",
+    "overpayment": "The amount is more than the invoice has open",
+    "nothing_to_issue": "Every material is already issued",
+    "materials_issued": "Materials were issued; return them first, or complete the order instead",
+    "nothing_to_request": "The chosen materials are no longer short"
   },
   "factory_users": {
     "role_not_allowed": "Role not allowed"

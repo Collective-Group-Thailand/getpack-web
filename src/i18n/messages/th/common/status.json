@@ -434,7 +434,23 @@
     "issuePurchaseOrder": "อนุมัติและออกเลขใบสั่งซื้อ",
     "receiveGoods": "รับของเข้าคลัง",
     "closePurchaseOrder": "ปิดใบสั่งซื้อ (ไม่รอของที่เหลือ)",
-    "cancelPurchaseOrder": "ยกเลิกใบสั่งซื้อ"
+    "cancelPurchaseOrder": "ยกเลิกใบสั่งซื้อ",
+    "editPurchaseRequest": "แก้ไขใบขอซื้อ",
+    "submitPurchaseRequest": "ส่งขออนุมัติ",
+    "approvePurchaseRequest": "อนุมัติใบขอซื้อ",
+    "rejectPurchaseRequest": "ไม่อนุมัติ",
+    "convertPurchaseRequest": "สร้างใบสั่งซื้อ",
+    "cancelPurchaseRequest": "ยกเลิกใบขอซื้อ",
+    "approveSupplierInvoice": "อนุมัติใบแจ้งหนี้ (ไม่ตรงใบสั่งซื้อ)",
+    "paySupplier": "จ่ายเงิน",
+    "cancelSupplierInvoice": "ยกเลิกใบแจ้งหนี้",
+    "reversePayment": "กลับรายการจ่ายเงิน",
+    "editProductionOrder": "แก้ไขแผนผลิต",
+    "releaseProductionOrder": "ปล่อยงานเข้าไลน์ (จองวัตถุดิบ)",
+    "issueMaterials": "เบิกวัตถุดิบ",
+    "returnMaterials": "คืนวัตถุดิบ",
+    "completeProductionOrder": "ปิดงานผลิต",
+    "cancelProductionOrder": "ยกเลิกใบสั่งผลิต"
   },
   "points": {
     "pending": "รอเข้าบัญชี",
@@ -708,5 +724,35 @@
     "received": "ได้ของครบ",
     "closed": "ปิดแล้ว",
     "cancelled": "ยกเลิก"
+  },
+  "erpPurchaseRequest": {
+    "draft": "ร่าง",
+    "submitted": "รออนุมัติ",
+    "approved": "อนุมัติแล้ว รอสั่งซื้อ",
+    "rejected": "ไม่อนุมัติ",
+    "ordered": "สั่งซื้อแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpSupplierInvoice": {
+    "matched": "ตรงกับใบสั่งซื้อ รอจ่าย",
+    "variance": "ไม่ตรง รออนุมัติ",
+    "approved": "อนุมัติแล้ว รอจ่าย",
+    "partiallyPaid": "จ่ายบางส่วน",
+    "paid": "จ่ายครบแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpProduction": {
+    "planned": "วางแผน",
+    "released": "ปล่อยเข้าไลน์แล้ว",
+    "inProgress": "กำลังผลิต",
+    "completed": "ผลิตเสร็จ",
+    "closed": "ปิดแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpOperation": {
+    "pending": "รอทำ",
+    "inProgress": "กำลังทำ",
+    "done": "เสร็จ",
+    "skipped": "ข้าม"
   }
 }

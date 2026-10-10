@@ -31,9 +31,9 @@ const MODULES = [
   "maintenance",
   "documents",
 ] as const;
-const PREFIXES = ["po", "gr", "adj", "trf", "iss"] as const;
-/** Modules that exist today (E1); the rest are shown as coming and stay as they are. */
-const LIVE = new Set<string>(["inventory", "procurement", "partners"]);
+const PREFIXES = ["po", "gr", "adj", "trf", "iss", "pr", "ap", "pv", "mo"] as const;
+/** Modules that exist today (E1, E2); the rest are shown as coming and stay as they are. */
+const LIVE = new Set<string>(["inventory", "procurement", "partners", "planning", "floor", "accounting"]);
 
 /** The factory's ERP rules (D-318, D-322, D-323, D-325): modules, negative stock, over-receipt, prefixes. */
 export function ErpSettingsForm({
@@ -52,6 +52,8 @@ export function ErpSettingsForm({
   const [modules, setModules] = useState<string[]>(settings.modules);
   const [allowNegative, setAllowNegative] = useState(settings.allowNegativeStock);
   const [overReceipt, setOverReceipt] = useState(trimZeros(settings.overReceiptPct));
+  const [tolerance, setTolerance] = useState(trimZeros(settings.priceTolerancePct));
+  const [approval, setApproval] = useState(settings.requireRequestApproval);
   const [prefixes, setPrefixes] = useState<Record<string, string>>(settings.prefixes);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,6 +68,8 @@ export function ErpSettingsForm({
           modules: modules as Settings["modules"],
           allowNegativeStock: allowNegative,
           overReceiptPct: overReceipt || "0",
+          priceTolerancePct: tolerance || "0",
+          requireRequestApproval: approval,
           prefixes: Object.fromEntries(Object.entries(prefixes).map(([k, v]) => [k, v.trim().toUpperCase()])),
         },
       });
@@ -101,6 +105,24 @@ export function ErpSettingsForm({
               unit="%"
               value={overReceipt}
               onChange={(event) => setOverReceipt(event.target.value)}
+            />
+          </Field>
+        </div>
+        <Checkbox
+          label={t("requireApproval")}
+          description={t("requireApprovalHint")}
+          checked={approval}
+          onCheckedChange={(checked) => setApproval(checked === true)}
+        />
+        <div className="max-w-48">
+          <Field label={t("priceTolerance")} hint={t("priceToleranceHint")} error={errors.priceTolerancePct}>
+            <NumberInput
+              min={0}
+              max={100}
+              step="any"
+              unit="%"
+              value={tolerance}
+              onChange={(event) => setTolerance(event.target.value)}
             />
           </Field>
         </div>

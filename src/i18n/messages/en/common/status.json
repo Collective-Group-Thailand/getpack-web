@@ -434,7 +434,23 @@
     "issuePurchaseOrder": "Approve and number the order",
     "receiveGoods": "Receive goods",
     "closePurchaseOrder": "Close (rest will not come)",
-    "cancelPurchaseOrder": "Cancel purchase order"
+    "cancelPurchaseOrder": "Cancel purchase order",
+    "editPurchaseRequest": "Edit request",
+    "submitPurchaseRequest": "Send for approval",
+    "approvePurchaseRequest": "Approve request",
+    "rejectPurchaseRequest": "Reject",
+    "convertPurchaseRequest": "Create purchase orders",
+    "cancelPurchaseRequest": "Cancel request",
+    "approveSupplierInvoice": "Approve invoice (did not match)",
+    "paySupplier": "Pay",
+    "cancelSupplierInvoice": "Cancel invoice",
+    "reversePayment": "Reverse payment",
+    "editProductionOrder": "Edit plan",
+    "releaseProductionOrder": "Release to the floor (reserve materials)",
+    "issueMaterials": "Issue materials",
+    "returnMaterials": "Return materials",
+    "completeProductionOrder": "Complete order",
+    "cancelProductionOrder": "Cancel order"
   },
   "points": {
     "pending": "Pending",
@@ -708,5 +724,35 @@
     "received": "Fully received",
     "closed": "Closed",
     "cancelled": "Cancelled"
+  },
+  "erpPurchaseRequest": {
+    "draft": "Draft",
+    "submitted": "Waiting for approval",
+    "approved": "Approved, to order",
+    "rejected": "Rejected",
+    "ordered": "Ordered",
+    "cancelled": "Cancelled"
+  },
+  "erpSupplierInvoice": {
+    "matched": "Matches the order, to pay",
+    "variance": "Does not match, to approve",
+    "approved": "Approved, to pay",
+    "partiallyPaid": "Partly paid",
+    "paid": "Paid",
+    "cancelled": "Cancelled"
+  },
+  "erpProduction": {
+    "planned": "Planned",
+    "released": "Released",
+    "inProgress": "In progress",
+    "completed": "Completed",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "erpOperation": {
+    "pending": "To do",
+    "inProgress": "In progress",
+    "done": "Done",
+    "skipped": "Skipped"
   }
 }

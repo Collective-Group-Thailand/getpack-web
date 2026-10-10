@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.44.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.45.2) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -17521,6 +17521,84 @@ export interface paths {
         patch: operations["partner.erpItems.update"];
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/erp/items/{itemId}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Price history of an item
+         * @description Every price met — received, ordered, quoted, noted — newest first; net, without VAT (D-334).
+         *
+         *     Implements: D-334.
+         */
+        get: operations["partner.erpItemSuppliers.prices"];
+        put?: never;
+        /**
+         * Note a quoted price
+         * @description A quotation (with how long it holds) or a price noted by hand; the supplier’s latest price moves when it is not older than the one it has (D-334).
+         *
+         *     Implements: D-334.
+         */
+        post: operations["partner.erpItemSuppliers.recordPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/items/{itemId}/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who sells this item
+         * @description The item’s suppliers with their own code, unit, minimum order, lead time and latest price, the 12-month price spread, change, on-time rate and the cheapest flag; the preferred one first (D-333 – D-335).
+         *
+         *     Implements: D-333, D-334, D-335.
+         */
+        get: operations["partner.erpItemSuppliers.list"];
+        put?: never;
+        /**
+         * Add a supplier to an item
+         * @description In the unit the supplier sells in; optionally preferred (the item’s default supplier follows) and with a quoted price, recorded as a quotation (D-333, D-334).
+         *
+         *     Implements: D-333, D-334.
+         */
+        post: operations["partner.erpItemSuppliers.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/items/{itemId}/suppliers/{linkId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit an item’s supplier
+         * @description Code, unit (the latest price follows, unchanged per base unit), minimum order, lead time, preferred, archived (D-333).
+         *
+         *     Implements: D-333.
+         */
+        patch: operations["partner.erpItemSuppliers.update"];
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/erp/partners": {
         parameters: {
             query?: never;
@@ -17575,6 +17653,348 @@ export interface paths {
          *     Implements: D-317, D-319.
          */
         patch: operations["partner.erpPartners.update"];
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/partners/{partnerId}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What a supplier sells us
+         * @description The supplier’s items with its latest prices and statistics (D-333, D-334).
+         *
+         *     Implements: D-333, D-334.
+         */
+        get: operations["partner.erpItemSuppliers.ofSupplier"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/planning/mrp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What production is short of
+         * @description Per material: still needed by open orders against reserved, free, on order and already requested; the shortage rounded to the preferred supplier’s unit and minimum order (D-335, D-342).
+         *
+         *     Implements: D-335, D-342.
+         */
+        get: operations["partner.erpPlanning.mrp"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/planning/mrp/actions/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask to buy what production is short of
+         * @description One purchase request (source `mrp`) for the chosen shortages (D-336, D-342).
+         *
+         *     Implements: D-336, D-342.
+         */
+        post: operations["partner.erpPlanning.requestShortages"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/planning/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The planning board header
+         * @description Open orders by status, late and due this week, items short, and the load on each machine (D-342).
+         *
+         *     Implements: D-342.
+         */
+        get: operations["partner.erpPlanning.overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/planning/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The floor queue
+         * @description Operations still to do on released orders, most urgent first; one machine’s with `machineId` (D-341).
+         *
+         *     Implements: D-341.
+         */
+        get: operations["partner.erpPlanning.queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My factory’s production orders
+         * @description By priority then due date; `status=open` = planned, released or in progress (D-340).
+         *
+         *     Implements: D-340.
+         */
+        get: operations["partner.erpProductionOrders.list"];
+        put?: never;
+        /**
+         * Plan a production order
+         * @description For stock or a sales order; numbered `MO-YYMM-NNNN`; materials and operations from the product’s recipe scaled to the quantity, unless given (D-339, D-340). Packio jobs become orders on their own when accepted.
+         *
+         *     Implements: D-339, D-340.
+         */
+        post: operations["partner.erpProductionOrders.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One production order
+         * @description Materials with what is reserved, issued and short, operations, cost and actions (D-340, D-341).
+         *
+         *     Implements: D-340, D-341.
+         */
+        get: operations["partner.erpProductionOrders.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Re-plan a production order
+         * @description Title, dates and priority while open; quantity, materials and operations only while planned (D-340).
+         *
+         *     Implements: D-340.
+         */
+        patch: operations["partner.erpProductionOrders.update"];
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a production order
+         * @description Nothing may be issued (return it first); reservations are released (D-341).
+         *
+         *     Implements: D-341.
+         */
+        post: operations["partner.erpProductionOrders.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete a production order
+         * @description Releases what is still reserved; a stocked product comes in at the materials consumed per good unit (D-341).
+         *
+         *     Implements: D-341.
+         */
+        post: operations["partner.erpProductionOrders.complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue materials to a production order
+         * @description The lines given, or every material’s remaining quantity; the reserved part first, the rest from free stock (D-322, D-341).
+         *
+         *     Implements: D-322, D-341.
+         */
+        post: operations["partner.erpProductionOrders.issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Release a production order to the floor
+         * @description Reserves each material in the order’s warehouse, as much as is free; the rest shows as short (D-341).
+         *
+         *     Implements: D-341.
+         */
+        post: operations["partner.erpProductionOrders.release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/return": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Return unused materials
+         * @description Back into the order’s warehouse at the average cost (D-341).
+         *
+         *     Implements: D-341.
+         */
+        post: operations["partner.erpProductionOrders.returnMaterials"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/operations/{operationId}/actions/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Finish an operation
+         * @description With the good and scrap pieces of the step; default good = the order quantity (D-341).
+         *
+         *     Implements: D-341.
+         */
+        post: operations["partner.erpProductionOrders.finishOperation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/operations/{operationId}/actions/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Skip an operation
+         * @description A step this order does not need (D-341).
+         *
+         *     Implements: D-341.
+         */
+        post: operations["partner.erpProductionOrders.skipOperation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/operations/{operationId}/actions/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start an operation
+         * @description On the floor; the order is in progress from its first operation (D-341).
+         *
+         *     Implements: D-341.
+         */
+        post: operations["partner.erpProductionOrders.startOperation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/partner/factories/{factoryId}/erp/purchase-orders": {
@@ -17715,6 +18135,228 @@ export interface paths {
          *     Implements: D-326.
          */
         post: operations["partner.erpPurchaseOrders.fromReorder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/purchase-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My factory’s purchase requests
+         * @description Newest first; `status=open` = waiting for approval or approved (D-336).
+         *
+         *     Implements: D-336.
+         */
+        get: operations["partner.erpPurchaseRequests.list"];
+        put?: never;
+        /**
+         * Ask to buy
+         * @description A draft request numbered `PR-YYMM-NNNN`, priced at the suppliers’ latest prices (D-336).
+         *
+         *     Implements: D-336.
+         */
+        post: operations["partner.erpPurchaseRequests.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/purchase-requests/{prId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One purchase request
+         * @description Lines with the purchase orders they became and the actions offered (D-336).
+         *
+         *     Implements: D-336.
+         */
+        get: operations["partner.erpPurchaseRequests.get"];
+        /**
+         * Edit a draft purchase request
+         * @description Replaces the lines; drafts only (D-336).
+         *
+         *     Implements: D-336.
+         */
+        put: operations["partner.erpPurchaseRequests.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/purchase-requests/{prId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a purchase request
+         * @description With an optional note; audited (D-336).
+         *
+         *     Implements: D-336.
+         */
+        post: operations["partner.erpPurchaseRequests.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/purchase-requests/{prId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a purchase request
+         * @description A draft, waiting or approved request, with a reason (D-336).
+         *
+         *     Implements: D-336.
+         */
+        post: operations["partner.erpPurchaseRequests.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/purchase-requests/{prId}/actions/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Turn a purchase request into purchase orders
+         * @description Draft purchase orders, one per supplier (the line’s or the item’s preferred), in the supplier’s unit rounded to its minimum order, at its latest price; lines without a supplier are returned as skipped (D-335, D-336).
+         *
+         *     Implements: D-335, D-336.
+         */
+        post: operations["partner.erpPurchaseRequests.convert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/purchase-requests/{prId}/actions/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a purchase request
+         * @description With a reason; audited (D-336).
+         *
+         *     Implements: D-336.
+         */
+        post: operations["partner.erpPurchaseRequests.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/purchase-requests/{prId}/actions/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a purchase request for approval
+         * @description Approved at once when the factory switched approval off or the requester may approve purchases (D-336).
+         *
+         *     Implements: D-336.
+         */
+        post: operations["partner.erpPurchaseRequests.submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/recipes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My factory’s recipes
+         * @description Active first; by product or name (D-339).
+         *
+         *     Implements: D-339.
+         */
+        get: operations["partner.erpRecipes.list"];
+        put?: never;
+        /**
+         * Write a recipe
+         * @description Materials per batch with their scrap %, and the operations on the factory’s machines (D-339).
+         *
+         *     Implements: D-339.
+         */
+        post: operations["partner.erpRecipes.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/recipes/{recipeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One recipe
+         * @description Materials and operations (D-339).
+         *
+         *     Implements: D-339.
+         */
+        get: operations["partner.erpRecipes.get"];
+        /**
+         * Edit a recipe
+         * @description Replaces its materials and operations; orders already planned keep theirs (D-339).
+         *
+         *     Implements: D-339.
+         */
+        put: operations["partner.erpRecipes.update"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -17897,6 +18539,196 @@ export interface paths {
         get: operations["partner.erpStock.reorder"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/supplier-invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My factory’s supplier invoices
+         * @description By due date; `status=open` = not paid, `overdue=true` = open and past due (D-337).
+         *
+         *     Implements: D-337.
+         */
+        get: operations["partner.erpSupplierInvoices.list"];
+        put?: never;
+        /**
+         * Record a supplier invoice
+         * @description Numbered `AP-YYMM-NNNN` and matched 3-way: each line against its purchase-order line — quantity within what was received, net price within the tolerance — `matched` is payable, `variance` waits for approval; withholding tax on the amount before VAT; due date from the supplier’s credit days (D-337).
+         *
+         *     Implements: D-337.
+         *
+         *     **Files:** upload first — `partner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["partner.erpSupplierInvoices.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/supplier-invoices/{invoiceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One supplier invoice
+         * @description Lines with what was received and ordered, the match result, payments and actions (D-337).
+         *
+         *     Implements: D-337.
+         */
+        get: operations["partner.erpSupplierInvoices.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/supplier-invoices/{invoiceId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve an invoice that did not match
+         * @description It can then be paid; audited with the match note (D-337).
+         *
+         *     Implements: D-337.
+         */
+        post: operations["partner.erpSupplierInvoices.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/supplier-invoices/{invoiceId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a supplier invoice
+         * @description Only while nothing is paid on it; with a reason (D-337).
+         *
+         *     Implements: D-337.
+         */
+        post: operations["partner.erpSupplierInvoices.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/supplier-invoices/aging": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What I owe suppliers, by age
+         * @description Open amounts per supplier: not yet due, 1–30, 31–60, 61–90 and over 90 days past due (D-338).
+         *
+         *     Implements: D-338.
+         */
+        get: operations["partner.erpSupplierInvoices.aging"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/supplier-payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My factory’s supplier payments
+         * @description Newest first, with their allocations and reversals (D-338).
+         *
+         *     Implements: D-338.
+         */
+        get: operations["partner.erpSupplierPayments.list"];
+        put?: never;
+        /**
+         * Pay a supplier
+         * @description Numbered `PV-YYMM-NNNN`, allocated to the supplier’s payable invoices — none beyond what is open; audited (D-338).
+         *
+         *     Implements: D-338.
+         */
+        post: operations["partner.erpSupplierPayments.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/supplier-payments/{paymentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One supplier payment
+         * @description With its allocations, reversal and actions (D-338).
+         *
+         *     Implements: D-338.
+         */
+        get: operations["partner.erpSupplierPayments.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/supplier-payments/{paymentId}/actions/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reverse a supplier payment
+         * @description A negative payment names the wrong one and its invoices are open again; nothing is edited or deleted (D-338).
+         *
+         *     Implements: D-338.
+         */
+        post: operations["partner.erpSupplierPayments.reverse"];
         delete?: never;
         options?: never;
         head?: never;
@@ -41144,6 +41976,47 @@ export interface components {
         };
         /** @enum {string} */
         ErpAdjustKind: "opening" | "adjustment" | "count";
+        ErpAgingBucketsDto: {
+            /**
+             * @description Not yet due
+             * @example 14820.00
+             */
+            current: string;
+            /** @example 0.00 */
+            d1_30: string;
+            /** @example 0.00 */
+            d31_60: string;
+            /** @example 0.00 */
+            d61_90: string;
+            /** @example 0.00 */
+            over90: string;
+            /** @example 14820.00 */
+            total: string;
+        };
+        ErpApAgingDto: {
+            /**
+             * Format: date
+             * @example 2026-10-15
+             */
+            asOf: string;
+            /** @example THB */
+            currency: string;
+            /**
+             * @description Due within the next 7 days
+             * @example 14820.00
+             */
+            dueSoon: string;
+            suppliers: components["schemas"]["ErpSupplierAgingDto"][];
+            totals: components["schemas"]["ErpAgingBucketsDto"];
+        };
+        ErpCompleteProductionDto: {
+            /** @example 980 */
+            goodQty: string;
+            /** @example null */
+            note?: string | null;
+            /** @example 20 */
+            scrapQty?: string;
+        };
         ErpCreateGoodsReceiptDto: {
             /** @example DO-55012 */
             deliveryNoteNo?: string | null;
@@ -41171,6 +42044,159 @@ export interface components {
              * @description Default: the default warehouse
              */
             warehouseId?: string;
+        };
+        ErpCreateItemSupplierDto: {
+            /** @example 7 */
+            leadTimeDays?: number | null;
+            /** @example 10 */
+            minOrderQty?: string | null;
+            /** @example null */
+            note?: string | null;
+            /**
+             * @description Make it the usual supplier (the item’s default supplier follows)
+             * @example false
+             */
+            preferred?: boolean;
+            /**
+             * @description A quoted price per purchase unit (net, without VAT): recorded as a quotation
+             * @example 1425
+             */
+            price?: string;
+            /**
+             * @description Required when the unit is not the item’s own
+             * @example 500
+             */
+            purchaseFactor?: string;
+            /**
+             * @description Default: the item’s purchase unit
+             * @example ream
+             */
+            purchaseUnit?: components["schemas"]["ErpUnit"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            supplierId: string;
+            /** @example Kraft 350g 31x43 */
+            supplierName?: string | null;
+            /** @example KA350-3143 */
+            supplierSku?: string | null;
+            /**
+             * Format: date
+             * @example 2026-12-31
+             */
+            validUntil?: string | null;
+        };
+        ErpCreateProductionOrderDto: {
+            /**
+             * Format: date
+             * @example 2026-10-25
+             */
+            dueOn?: string | null;
+            /**
+             * Format: uuid
+             * @description The product to make
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e101
+             */
+            itemId: string;
+            /** @description Default: from the recipe */
+            materials?: components["schemas"]["ErpProductionMaterialInput"][];
+            /** @example null */
+            note?: string | null;
+            /** @description Default: from the recipe */
+            operations?: components["schemas"]["ErpProductionOperationInput"][];
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            plannedStartOn?: string | null;
+            /** @example 0 */
+            priority?: number;
+            /**
+             * @description In the product’s base unit
+             * @example 1000
+             */
+            quantity: string;
+            /**
+             * Format: uuid
+             * @description Default: the product’s active recipe
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e901
+             */
+            recipeId?: string;
+            /** @example stock */
+            source: components["schemas"]["ErpOwnProductionSource"];
+            /** @example null */
+            title?: string | null;
+            /**
+             * Format: uuid
+             * @description Default: the main warehouse
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e201
+             */
+            warehouseId?: string;
+        };
+        ErpCreateSupplierInvoiceDto: {
+            /**
+             * Format: date
+             * @description Default: invoice date + the supplier’s credit days
+             * @example 2026-11-11
+             */
+            dueDate?: string;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            fileId?: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            invoiceDate: string;
+            /** @example IV-55012 */
+            invoiceNo: string;
+            lines: components["schemas"]["ErpSupplierInvoiceLineInput"][];
+            /** @example null */
+            note?: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e401
+             */
+            purchaseOrderId?: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            supplierId: string;
+            /** @example IV-55012 */
+            taxInvoiceNo?: string | null;
+            /** @example exclusive */
+            vatMode?: components["schemas"]["ErpVatMode"];
+            /** @example 7 */
+            vatRatePct?: string;
+            /**
+             * @description Withholding tax on the amount before VAT
+             * @example 3
+             */
+            whtRatePct?: string;
+        };
+        ErpCreateSupplierPaymentDto: {
+            allocations: components["schemas"]["ErpPaymentAllocationInput"][];
+            /** @example transfer */
+            method: components["schemas"]["ErpPaymentMethod"];
+            /** @example null */
+            note?: string | null;
+            /**
+             * Format: date
+             * @description Default: today
+             * @example 2026-11-10
+             */
+            paidOn?: string;
+            /** @example KBANK 1234 */
+            reference?: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            supplierId: string;
         };
         ErpCreateTradingPartnerDto: {
             /** @example 99 ถนนทดสอบ กรุงเทพฯ 10000 */
@@ -41307,6 +42333,25 @@ export interface components {
              */
             unitPrice?: string;
         };
+        ErpInvoicePaymentRefDto: {
+            /**
+             * @description Allocated to this invoice; negative for a reversal
+             * @example 14820.00
+             */
+            amount: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e802
+             */
+            id: string;
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            paidOn: string;
+            /** @example PV-2610-0002 */
+            paymentNo: string;
+        };
         /**
          * @description `issue` takes stock out to production or use; `return` brings unused stock back
          * @enum {string}
@@ -41377,19 +42422,539 @@ export interface components {
             /** @example PAP-KA-350 */
             sku: string;
         };
+        ErpItemSupplierDto: {
+            /**
+             * @description Lowest latest price per base unit among the item’s active suppliers
+             * @example false
+             */
+            cheapest: boolean;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e601
+             */
+            id: string;
+            item: components["schemas"]["ErpItemRefDto"];
+            /**
+             * @description The latest price per base unit
+             * @example 2.850000
+             */
+            lastBaseUnitPrice: string | null;
+            /**
+             * @description Latest price per purchase unit, net, without VAT (D-334)
+             * @example 1425.000000
+             */
+            lastPrice: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            lastPricedOn: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            lastPurchasedOn: string | null;
+            /** @example 7 */
+            leadTimeDays: number | null;
+            /**
+             * @description Minimum order, purchase units
+             * @example 10.000
+             */
+            minOrderQty: string | null;
+            /** @example null */
+            note: string | null;
+            /**
+             * @description The usual supplier of the item (one per item)
+             * @example true
+             */
+            preferred: boolean;
+            /**
+             * @description Base units per purchase unit
+             * @example 500.000000
+             */
+            purchaseFactor: string;
+            /**
+             * @description The unit this supplier sells in
+             * @example ream
+             */
+            purchaseUnit: components["schemas"]["ErpUnit"];
+            /**
+             * Format: date
+             * @description Until when the latest quotation holds
+             * @example null
+             */
+            quoteValidUntil: string | null;
+            stats: components["schemas"]["ErpPriceStatsDto"];
+            /** @example active */
+            status: components["schemas"]["BrandKitStatus"];
+            supplier: components["schemas"]["CodedRefDto"];
+            /** @example Kraft 350g 31x43 */
+            supplierName: string | null;
+            /**
+             * @description The supplier’s own code
+             * @example KA350-3143
+             */
+            supplierSku: string | null;
+            /** @example 1 */
+            version: number;
+        };
+        /** @enum {string} */
+        ErpLineVariance: "price" | "quantity" | "price_quantity" | "unordered";
+        ErpMachineLoadDto: {
+            machine: components["schemas"]["PersonRefDto"];
+            /**
+             * @description Operations still to do on released orders
+             * @example 3
+             */
+            operations: number;
+            /** @example 420 */
+            plannedMinutes: number;
+        };
+        ErpMaterialMoveDto: {
+            /** @description Issue: default every material’s remaining quantity. Return: required. */
+            lines?: components["schemas"]["ErpMaterialMoveLineInput"][];
+            /** @example null */
+            note?: string | null;
+        };
+        ErpMaterialMoveLineInput: {
+            /** @example null */
+            lotNo?: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ea02
+             */
+            materialId: string;
+            /**
+             * @description Base units
+             * @example 1053
+             */
+            quantity: string;
+        };
+        /** @enum {string} */
+        ErpMaterialOrigin: "recipe" | "packio_spec" | "manual";
         /**
          * @description Modules switched on for this factory (D-318); everything is on unless the owner turned it off
          * @enum {string}
          */
         ErpModule: "inventory" | "procurement" | "partners" | "planning" | "floor" | "sales" | "accounting" | "maintenance" | "documents";
         /** @enum {string} */
-        ErpMovementKind: "opening" | "receipt" | "issue" | "return" | "adjustment" | "count" | "transfer_out" | "transfer_in";
+        ErpMovementKind: "opening" | "receipt" | "issue" | "return" | "adjustment" | "count" | "transfer_out" | "transfer_in" | "production_issue" | "production_return" | "production_receipt";
         /** @enum {string} */
-        ErpMovementSource: "goods_receipt" | "adjustment" | "issue" | "transfer";
+        ErpMovementSource: "goods_receipt" | "adjustment" | "issue" | "transfer" | "production_order";
+        ErpMrpRowDto: {
+            /**
+             * @description Free stock (on hand less every reservation)
+             * @example 200.000
+             */
+            available: string;
+            item: components["schemas"]["ErpItemRefDto"];
+            /**
+             * Format: date
+             * @description Earliest due production order
+             * @example 2026-10-20
+             */
+            neededBy: string | null;
+            /** @example 0.000 */
+            onOrder: string;
+            /** @example 2 */
+            orders: number;
+            /** @example ream */
+            purchaseUnit: components["schemas"]["ErpUnit"];
+            /**
+             * @description Still to issue to open production orders
+             * @example 1053.000
+             */
+            required: string;
+            /**
+             * @description Of it, already reserved
+             * @example 500.000
+             */
+            reserved: string;
+            /**
+             * @description required − reserved − available − on order, when positive
+             * @example 353.000
+             */
+            shortage: string;
+            supplier: components["schemas"]["CodedRefDto"] | null;
+            /** @example 1.000 */
+            toOrderPurchaseQty: string;
+            /**
+             * @description Base units to buy, rounded to purchase units (D-335)
+             * @example 500.000
+             */
+            toOrderQty: string;
+            /**
+             * @description Per purchase unit
+             * @example 1425.000000
+             */
+            unitPrice: string | null;
+        };
+        ErpOperationOutputDto: {
+            /** @example 1000 */
+            goodQty?: string;
+            /** @example 12 */
+            scrapQty?: string;
+        };
+        ErpOperationQueueItemDto: {
+            operation: components["schemas"]["ErpProductionOperationDto"];
+            order: components["schemas"]["ErpProductionOrderSummaryDto"];
+        };
+        /** @enum {string} */
+        ErpOperationStatus: "pending" | "in_progress" | "done" | "skipped";
+        /** @enum {string} */
+        ErpOwnProductionSource: "stock" | "sales_order";
         /** @enum {string} */
         ErpPartnerKind: "supplier" | "customer" | "both";
         /** @enum {string} */
         ErpPartnerRole: "supplier" | "customer";
+        ErpPaymentAllocationDto: {
+            /** @example 14820.00 */
+            amount: string;
+            /** @description `code` = the factory’s AP number, `name` = the supplier’s invoice number */
+            invoice: components["schemas"]["CodedRefDto"];
+        };
+        ErpPaymentAllocationInput: {
+            /** @example 14820 */
+            amount: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e801
+             */
+            supplierInvoiceId: string;
+        };
+        /** @enum {string} */
+        ErpPaymentMethod: "transfer" | "cash" | "cheque" | "other";
+        ErpPlanningOverviewDto: {
+            /**
+             * @description Open orders due within 7 days
+             * @example 2
+             */
+            dueThisWeek: number;
+            /** @example 1 */
+            inProgress: number;
+            /** @example 1 */
+            late: number;
+            machines: components["schemas"]["ErpMachineLoadDto"][];
+            /** @example 2 */
+            planned: number;
+            /** @example 3 */
+            released: number;
+            /**
+             * @description Items the open orders still miss (MRP)
+             * @example 1
+             */
+            shortItems: number;
+        };
+        /** @enum {string} */
+        ErpPriceEntrySource: "quotation" | "manual";
+        ErpPriceRecordDto: {
+            /** @example 2.850000 */
+            baseUnitPrice: string;
+            /** @example คลัง ทดสอบ */
+            by: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-12T14:02:00+07:00
+             */
+            createdAt: string;
+            /** @example GR-2610-0003 */
+            documentNo: string | null;
+            /** @example 500.000000 */
+            factor: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e602
+             */
+            id: string;
+            item: components["schemas"]["ErpItemRefDto"];
+            /** @example null */
+            note: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            pricedOn: string;
+            /**
+             * @description In `unit`
+             * @example 10.000
+             */
+            quantity: string | null;
+            /** @example goods_receipt */
+            source: components["schemas"]["ErpPriceSource"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e501
+             */
+            sourceId: string | null;
+            supplier: components["schemas"]["CodedRefDto"];
+            /** @example ream */
+            unit: components["schemas"]["ErpUnit"];
+            /**
+             * @description Per `unit`, net of discount, without VAT
+             * @example 1425.000000
+             */
+            unitPrice: string;
+            /**
+             * Format: date
+             * @example null
+             */
+            validUntil: string | null;
+        };
+        /** @enum {string} */
+        ErpPriceSource: "goods_receipt" | "purchase_order" | "quotation" | "manual";
+        ErpPriceStatsDto: {
+            /**
+             * @description Quantity-weighted average paid, 12 months
+             * @example 2.950000
+             */
+            avgBaseUnitPrice: string | null;
+            /**
+             * @description Average days from order to receipt
+             * @example 6.5
+             */
+            avgLeadDays: string | null;
+            /**
+             * @description Last paid price against the one before, %
+             * @example 4.91
+             */
+            changePct: string | null;
+            /** @example 3.000000 */
+            maxBaseUnitPrice: string | null;
+            /**
+             * @description Lowest price per base unit paid in the last 12 months
+             * @example 2.800000
+             */
+            minBaseUnitPrice: string | null;
+            /**
+             * @description Receipts on or before the order’s expected date, %
+             * @example 75.00
+             */
+            onTimePct: string | null;
+            /**
+             * @description Goods receipts from this supplier for this item in the last 12 months
+             * @example 4
+             */
+            purchases: number;
+        };
+        ErpProductionMaterialDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ea02
+             */
+            id: string;
+            /** @example 0.000 */
+            issuedQty: string;
+            item: components["schemas"]["ErpItemRefDto"];
+            /** @example 1 */
+            lineNo: number;
+            /** @example null */
+            note: string | null;
+            /** @example recipe */
+            origin: components["schemas"]["ErpMaterialOrigin"];
+            /**
+             * @description Required less issued
+             * @example 1053.000
+             */
+            remainingQty: string;
+            /**
+             * @description Base units
+             * @example 1053.000
+             */
+            requiredQty: string;
+            /**
+             * @description Held for this order in its warehouse
+             * @example 1053.000
+             */
+            reservedQty: string;
+            /**
+             * @description What is still missing: remaining less reserved
+             * @example 0.000
+             */
+            shortQty: string;
+        };
+        ErpProductionMaterialInput: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e101
+             */
+            itemId: string;
+            /** @example null */
+            note?: string | null;
+            /**
+             * @description Base units
+             * @example 1053
+             */
+            requiredQty: string;
+        };
+        ErpProductionOperationDto: {
+            /** @example 0.000 */
+            goodQty: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ea03
+             */
+            id: string;
+            machine: components["schemas"]["PersonRefDto"] | null;
+            /** @example พิมพ์ออฟเซ็ท 4 สี */
+            name: string;
+            /** @example 50 */
+            plannedMinutes: number;
+            /** @example 0.000 */
+            scrapQty: string;
+            /** @example 10 */
+            seq: number;
+            /** @example pending */
+            status: components["schemas"]["ErpOperationStatus"];
+        };
+        ErpProductionOperationInput: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000eb01
+             */
+            machineId?: string | null;
+            /** @example ไดคัท */
+            name: string;
+            /** @example 60 */
+            plannedMinutes?: number;
+        };
+        ErpProductionOrderDto: {
+            /** @example null */
+            cancelReason: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            completedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-17T10:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date
+             * @example 2026-10-25
+             */
+            dueOn: string | null;
+            /** @example 0.000 */
+            goodQty: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ea01
+             */
+            id: string;
+            item: components["schemas"]["ErpItemRefDto"] | null;
+            /** @description The Packio job (`code` = job number) */
+            job: components["schemas"]["CodedRefDto"] | null;
+            /** @example false */
+            late: boolean;
+            /**
+             * @description Value of the materials consumed (issued less returned)
+             * @example 0.00
+             */
+            materialCost: string;
+            materials: components["schemas"]["ErpProductionMaterialDto"][];
+            /** @example MO-2610-0005 */
+            moNo: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            operations: components["schemas"]["ErpProductionOperationDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            plannedStartOn: string | null;
+            /**
+             * @description Higher first
+             * @example 0
+             */
+            priority: number;
+            /**
+             * @description Operations done or skipped, %
+             * @example 33.33
+             */
+            progressPct: string;
+            /** @example 1000.000 */
+            quantity: string;
+            /** @description `code` = the product SKU */
+            recipe: components["schemas"]["CodedRefDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-18T08:00:00+07:00
+             */
+            releasedAt: string | null;
+            /** @example 0.000 */
+            scrapQty: string;
+            /**
+             * @description A material is still missing
+             * @example false
+             */
+            short: boolean;
+            /** @example packio_job */
+            source: components["schemas"]["ErpProductionSource"];
+            /** @example released */
+            status: components["schemas"]["ErpProductionStatus"];
+            /** @example JOB-2610-0012 · กล่องพับ */
+            title: string;
+            /** @example pcs */
+            unit: string;
+            /**
+             * @description Per good unit once completed
+             * @example null
+             */
+            unitCost: string | null;
+            /** @example 2 */
+            version: number;
+            warehouse: components["schemas"]["CodedRefDto"];
+        };
+        ErpProductionOrderSummaryDto: {
+            /**
+             * Format: date
+             * @example 2026-10-25
+             */
+            dueOn: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000ea01
+             */
+            id: string;
+            item: components["schemas"]["ErpItemRefDto"] | null;
+            /** @example false */
+            late: boolean;
+            /** @example MO-2610-0005 */
+            moNo: string;
+            /**
+             * @description Higher first
+             * @example 0
+             */
+            priority: number;
+            /**
+             * @description Operations done or skipped, %
+             * @example 33.33
+             */
+            progressPct: string;
+            /** @example 1000.000 */
+            quantity: string;
+            /**
+             * @description A material is still missing
+             * @example false
+             */
+            short: boolean;
+            /** @example packio_job */
+            source: components["schemas"]["ErpProductionSource"];
+            /** @example released */
+            status: components["schemas"]["ErpProductionStatus"];
+            /** @example JOB-2610-0012 · กล่องพับ */
+            title: string;
+            /** @example pcs */
+            unit: string;
+        };
+        /** @enum {string} */
+        ErpProductionSource: "packio_job" | "stock" | "sales_order";
+        /** @enum {string} */
+        ErpProductionStatus: "planned" | "released" | "in_progress" | "completed" | "closed" | "cancelled";
+        /** @enum {string} */
+        ErpProductionStatusFilter: "planned" | "released" | "in_progress" | "completed" | "closed" | "cancelled" | "open";
         ErpPurchaseOrderDto: {
             /** @example null */
             cancelReason: string | null;
@@ -41562,6 +43127,262 @@ export interface components {
             /** @example 30495.00 */
             total: string;
         };
+        ErpPurchaseRequestDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-12T09:00:00+07:00
+             */
+            createdAt: string;
+            /** @example THB */
+            currency: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /** @example null */
+            decidedBy: string | null;
+            /** @example null */
+            decisionNote: string | null;
+            /** @example 28500.00 */
+            estimatedTotal: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e701
+             */
+            id: string;
+            /** @example 1 */
+            lineCount: number;
+            lines: components["schemas"]["ErpPurchaseRequestLineDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            neededBy: string | null;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example ใช้กับงาน JOB-2610-0012 */
+            note: string | null;
+            /** @example PR-2610-0004 */
+            prNo: string;
+            /** @example คลัง ทดสอบ */
+            requestedBy: string;
+            /** @example manual */
+            source: components["schemas"]["ErpRequestSource"];
+            /** @example submitted */
+            status: components["schemas"]["ErpPurchaseRequestStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-10-12T09:05:00+07:00
+             */
+            submittedAt: string | null;
+            /** @example 2 */
+            version: number;
+        };
+        ErpPurchaseRequestLineDto: {
+            /** @example 28500.00 */
+            estimatedAmount: string | null;
+            /**
+             * @description Per base unit, without VAT
+             * @example 2.850000
+             */
+            estimatedUnitCost: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e702
+             */
+            id: string;
+            item: components["schemas"]["ErpItemRefDto"];
+            /** @example 1 */
+            lineNo: number;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            neededBy: string | null;
+            /** @example null */
+            note: string | null;
+            /** @description The purchase order it became (`code` = PO number) */
+            purchaseOrder: components["schemas"]["CodedRefDto"] | null;
+            /**
+             * @description In the item’s base unit
+             * @example 10000.000
+             */
+            quantity: string;
+            /** @description Null → the item’s usual supplier */
+            supplier: components["schemas"]["CodedRefDto"] | null;
+        };
+        ErpPurchaseRequestLineInput: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e101
+             */
+            itemId: string;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            neededBy?: string | null;
+            /** @example null */
+            note?: string | null;
+            /**
+             * @description In the item’s base unit
+             * @example 10000
+             */
+            quantity: string;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            supplierId?: string | null;
+        };
+        /** @enum {string} */
+        ErpPurchaseRequestStatus: "draft" | "submitted" | "approved" | "rejected" | "ordered" | "cancelled";
+        /** @enum {string} */
+        ErpPurchaseRequestStatusFilter: "draft" | "submitted" | "approved" | "rejected" | "ordered" | "cancelled" | "open";
+        ErpPurchaseRequestSummaryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-12T09:00:00+07:00
+             */
+            createdAt: string;
+            /** @example THB */
+            currency: string;
+            /** @example 28500.00 */
+            estimatedTotal: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e701
+             */
+            id: string;
+            /** @example 1 */
+            lineCount: number;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            neededBy: string | null;
+            /** @example PR-2610-0004 */
+            prNo: string;
+            /** @example คลัง ทดสอบ */
+            requestedBy: string;
+            /** @example manual */
+            source: components["schemas"]["ErpRequestSource"];
+            /** @example submitted */
+            status: components["schemas"]["ErpPurchaseRequestStatus"];
+        };
+        ErpRecipeDto: {
+            /**
+             * @description Product base units one batch makes
+             * @example 1.000
+             */
+            batchQty: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e901
+             */
+            id: string;
+            /** @description The product it makes */
+            item: components["schemas"]["ErpItemRefDto"];
+            materials: components["schemas"]["ErpRecipeMaterialDto"][];
+            /** @example กล่องครีม 30 ml — มาตรฐาน */
+            name: string;
+            /** @example null */
+            note: string | null;
+            operations: components["schemas"]["ErpRecipeOperationDto"][];
+            /** @example active */
+            status: components["schemas"]["BrandKitStatus"];
+            /** @example 1 */
+            version: number;
+        };
+        ErpRecipeMaterialDto: {
+            item: components["schemas"]["ErpItemRefDto"];
+            /** @example 1 */
+            lineNo: number;
+            /**
+             * @description Base units per batch
+             * @example 0.125000
+             */
+            quantity: string;
+            /** @example 5.0000 */
+            scrapPct: string;
+        };
+        ErpRecipeMaterialInput: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e101
+             */
+            itemId: string;
+            /** @example 0.125 */
+            quantity: string;
+            /** @example 5 */
+            scrapPct?: string;
+        };
+        ErpRecipeOperationDto: {
+            machine: components["schemas"]["PersonRefDto"] | null;
+            /** @example พิมพ์ออฟเซ็ท 4 สี */
+            name: string;
+            /**
+             * @description Product base units per hour
+             * @example 3000.000
+             */
+            runRatePerHour: string | null;
+            /** @example 10 */
+            seq: number;
+            /** @example 30 */
+            setupMinutes: number;
+        };
+        ErpRecipeOperationInput: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000eb01
+             */
+            machineId?: string | null;
+            /** @example พิมพ์ออฟเซ็ท 4 สี */
+            name: string;
+            /** @example 3000 */
+            runRatePerHour?: string | null;
+            /** @example 30 */
+            setupMinutes?: number;
+        };
+        ErpRecordPriceDto: {
+            /** @example QT-6610-120 */
+            documentNo?: string | null;
+            /** @example null */
+            note?: string | null;
+            /**
+             * Format: date
+             * @description Default: today
+             * @example 2026-10-15
+             */
+            pricedOn?: string;
+            /**
+             * @description The quantity the price is for
+             * @example 20
+             */
+            quantity?: string | null;
+            /** @example quotation */
+            source: components["schemas"]["ErpPriceEntrySource"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            supplierId: string;
+            /**
+             * @description Default: the supplier’s unit for the item
+             * @example ream
+             */
+            unit?: components["schemas"]["ErpUnit"];
+            /**
+             * @description Net of discount, without VAT
+             * @example 1450
+             */
+            unitPrice: string;
+            /**
+             * Format: date
+             * @example 2026-12-31
+             */
+            validUntil?: string | null;
+        };
         ErpReorderSuggestionDto: {
             /** @example 3200.000 */
             available: string;
@@ -41592,6 +43413,8 @@ export interface components {
              */
             toOrderQty: string;
         };
+        /** @enum {string} */
+        ErpRequestSource: "manual" | "reorder" | "mrp";
         ErpSavePurchaseOrderDto: {
             /** @example ส่งที่คลังหลัก ประตู 2 */
             deliverTo?: string | null;
@@ -41621,6 +43444,33 @@ export interface components {
             /** @example 7 */
             vatRatePct?: string;
         };
+        ErpSavePurchaseRequestDto: {
+            lines: components["schemas"]["ErpPurchaseRequestLineInput"][];
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            neededBy?: string | null;
+            /** @example ใช้กับงาน JOB-2610-0012 */
+            note?: string | null;
+        };
+        ErpSaveRecipeDto: {
+            /** @example 1 */
+            batchQty?: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e101
+             */
+            itemId: string;
+            materials: components["schemas"]["ErpRecipeMaterialInput"][];
+            /** @example กล่องครีม 30 ml — มาตรฐาน */
+            name: string;
+            /** @example null */
+            note?: string | null;
+            operations: components["schemas"]["ErpRecipeOperationInput"][];
+            /** @example active */
+            status?: components["schemas"]["BrandKitStatus"];
+        };
         ErpSettingsDto: {
             /**
              * @description Allow issues beyond the stock on hand (D-322)
@@ -41645,15 +43495,29 @@ export interface components {
              * @description Document number prefixes by document type (D-323)
              * @example {
              *       "adj": "ADJ",
+             *       "ap": "AP",
              *       "gr": "GR",
              *       "iss": "ISS",
+             *       "mo": "MO",
              *       "po": "PO",
+             *       "pr": "PR",
+             *       "pv": "PV",
              *       "trf": "TRF"
              *     }
              */
             prefixes: {
                 [key: string]: string;
             };
+            /**
+             * @description A supplier invoice priced within this % of the order matches (3-way match, D-337)
+             * @example 2.0000
+             */
+            priceTolerancePct: string;
+            /**
+             * @description Purchase requests wait for an approver (D-336); off → approved when submitted
+             * @example true
+             */
+            requireRequestApproval: boolean;
             /**
              * @description Whether the factory is VAT-registered (stock cost excludes VAT, D-321)
              * @example true
@@ -41863,6 +43727,251 @@ export interface components {
             /** Format: uuid */
             toWarehouseId: string;
         };
+        ErpSupplierAgingDto: {
+            buckets: components["schemas"]["ErpAgingBucketsDto"];
+            /** @example 1 */
+            invoices: number;
+            supplier: components["schemas"]["CodedRefDto"];
+        };
+        ErpSupplierInvoiceDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-12T15:00:00+07:00
+             */
+            approvedAt: string | null;
+            /** @example เจ้าของ ทดสอบ */
+            approvedBy: string | null;
+            /** @example null */
+            cancelReason: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-12T14:30:00+07:00
+             */
+            createdAt: string;
+            /** @example THB */
+            currency: string;
+            /**
+             * @description The factory’s own number
+             * @example AP-2610-0003
+             */
+            docNo: string;
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            dueDate: string;
+            /**
+             * Format: uuid
+             * @description The scanned invoice
+             * @example null
+             */
+            fileId: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e801
+             */
+            id: string;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            invoiceDate: string;
+            /**
+             * @description The supplier’s invoice number
+             * @example IV-55012
+             */
+            invoiceNo: string;
+            lines: components["schemas"]["ErpSupplierInvoiceLineDto"][];
+            /**
+             * @description Why it did not match (D-337)
+             * @example null
+             */
+            matchNote: string | null;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /** @example 14820.00 */
+            outstanding: string;
+            /** @example false */
+            overdue: boolean;
+            /** @example 0.00 */
+            paidAmount: string;
+            /**
+             * @description Total less withholding tax
+             * @example 14820.00
+             */
+            payableAmount: string;
+            payments: components["schemas"]["ErpInvoicePaymentRefDto"][];
+            /** @description `code` = PO number */
+            purchaseOrder: components["schemas"]["CodedRefDto"] | null;
+            /** @example approved */
+            status: components["schemas"]["ErpSupplierInvoiceStatus"];
+            /** @example 14250.00 */
+            subtotal: string;
+            supplier: components["schemas"]["CodedRefDto"];
+            /** @example IV-55012 */
+            taxInvoiceNo: string | null;
+            /** @example 15247.50 */
+            total: string;
+            /** @example 997.50 */
+            vatAmount: string;
+            /** @example exclusive */
+            vatMode: components["schemas"]["ErpVatMode"];
+            /** @example 7.0000 */
+            vatRatePct: string;
+            /** @example 1 */
+            version: number;
+            /** @example 427.50 */
+            whtAmount: string;
+            /** @example 3.0000 */
+            whtRatePct: string;
+        };
+        ErpSupplierInvoiceLineDto: {
+            /** @example 14250.00 */
+            amount: string;
+            /** @example กระดาษคราฟท์ 350 แกรม */
+            description: string;
+            item: components["schemas"]["ErpItemRefDto"] | null;
+            /** @example 1 */
+            lineNo: number;
+            /**
+             * @description The order’s net price
+             * @example 1425.000000
+             */
+            orderedPrice: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e402
+             */
+            purchaseOrderLineId: string | null;
+            /** @example 10.000 */
+            quantity: string;
+            /**
+             * @description Received on the order line when matched
+             * @example 10.000
+             */
+            receivedQty: string | null;
+            /** @example 1425.000000 */
+            unitPrice: string;
+            /** @example null */
+            variance: components["schemas"]["ErpLineVariance"] | null;
+        };
+        ErpSupplierInvoiceLineInput: {
+            /**
+             * @description Required without an item or order line
+             * @example ค่าขนส่ง
+             */
+            description?: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e101
+             */
+            itemId?: string;
+            /**
+             * Format: uuid
+             * @description Matches the line to the order (3-way)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e402
+             */
+            purchaseOrderLineId?: string;
+            /**
+             * @description In the order line’s unit
+             * @example 10
+             */
+            quantity: string;
+            /**
+             * @description Net per unit, as the VAT mode says
+             * @example 1425
+             */
+            unitPrice: string;
+        };
+        /** @enum {string} */
+        ErpSupplierInvoiceStatus: "matched" | "variance" | "approved" | "partially_paid" | "paid" | "cancelled";
+        /** @enum {string} */
+        ErpSupplierInvoiceStatusFilter: "matched" | "variance" | "approved" | "partially_paid" | "paid" | "cancelled" | "open";
+        ErpSupplierInvoiceSummaryDto: {
+            /** @example THB */
+            currency: string;
+            /**
+             * @description The factory’s own number
+             * @example AP-2610-0003
+             */
+            docNo: string;
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            dueDate: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e801
+             */
+            id: string;
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            invoiceDate: string;
+            /**
+             * @description The supplier’s invoice number
+             * @example IV-55012
+             */
+            invoiceNo: string;
+            /** @example 14820.00 */
+            outstanding: string;
+            /** @example false */
+            overdue: boolean;
+            /**
+             * @description Total less withholding tax
+             * @example 14820.00
+             */
+            payableAmount: string;
+            /** @example approved */
+            status: components["schemas"]["ErpSupplierInvoiceStatus"];
+            supplier: components["schemas"]["CodedRefDto"];
+            /** @example 15247.50 */
+            total: string;
+        };
+        ErpSupplierPaymentDto: {
+            allocations: components["schemas"]["ErpPaymentAllocationDto"][];
+            /**
+             * @description Negative on a reversal
+             * @example 14820.00
+             */
+            amount: string;
+            /** @example บัญชี ทดสอบ */
+            by: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-10T10:00:00+07:00
+             */
+            createdAt: string;
+            /** @example THB */
+            currency: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e802
+             */
+            id: string;
+            /** @example transfer */
+            method: components["schemas"]["ErpPaymentMethod"];
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            paidOn: string;
+            /** @example PV-2610-0002 */
+            paymentNo: string;
+            /** @example KBANK 1234 */
+            reference: string | null;
+            /** @description The reversal of this payment */
+            reversedBy: components["schemas"]["CodedRefDto"] | null;
+            /** @description The payment this one reverses */
+            reverses: components["schemas"]["CodedRefDto"] | null;
+            supplier: components["schemas"]["CodedRefDto"];
+        };
         ErpTradingPartnerDto: {
             /** @example 99 ถนนทดสอบ แขวงทดสอบ เขตทดสอบ กรุงเทพฯ 10000 */
             address: string | null;
@@ -41910,6 +44019,50 @@ export interface components {
         };
         /** @enum {string} */
         ErpUnit: "kg" | "g" | "ton" | "sheet" | "ream" | "roll" | "m" | "m2" | "pcs" | "box" | "pack" | "set" | "l" | "ml";
+        ErpUpdateItemSupplierDto: {
+            /** @example 7 */
+            leadTimeDays?: number | null;
+            /** @example 10 */
+            minOrderQty?: string | null;
+            /** @example null */
+            note?: string | null;
+            /** @example true */
+            preferred?: boolean;
+            /** @example 500 */
+            purchaseFactor?: string;
+            /** @example ream */
+            purchaseUnit?: components["schemas"]["ErpUnit"];
+            /** @example active */
+            status?: components["schemas"]["BrandKitStatus"];
+            /** @example Kraft 350g 31x43 */
+            supplierName?: string | null;
+            /** @example KA350-3143 */
+            supplierSku?: string | null;
+        };
+        ErpUpdateProductionOrderDto: {
+            /**
+             * Format: date
+             * @example 2026-10-25
+             */
+            dueOn?: string | null;
+            /** @description Replaces the materials (planned orders only) */
+            materials?: components["schemas"]["ErpProductionMaterialInput"][];
+            /** @example null */
+            note?: string | null;
+            /** @description Replaces the operations (planned orders only) */
+            operations?: components["schemas"]["ErpProductionOperationInput"][];
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            plannedStartOn?: string | null;
+            /** @example 5 */
+            priority?: number;
+            /** @example 1200 */
+            quantity?: string;
+            /** @example JOB-2610-0012 · กล่องพับ */
+            title?: string;
+        };
         ErpUpdateTradingPartnerDto: {
             /** @example 99 ถนนทดสอบ กรุงเทพฯ 10000 */
             address?: string | null;
@@ -63593,6 +65746,10 @@ export interface components {
             prefixes?: {
                 [key: string]: string;
             };
+            /** @example 2 */
+            priceTolerancePct?: string;
+            /** @example true */
+            requireRequestApproval?: boolean;
         };
         UpdateFactoryAddressDto: {
             /** @example plant */
@@ -192095,6 +194252,738 @@ export interface operations {
             };
         };
     };
+    "partner.erpItemSuppliers.prices": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                source?: components["schemas"]["ErpPriceSource"];
+                supplierId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "baseUnitPrice": "2.850000",
+                     *           "by": "คลัง ทดสอบ",
+                     *           "createdAt": "2026-10-12T14:02:00+07:00",
+                     *           "documentNo": "GR-2610-0003",
+                     *           "factor": "500.000000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "note": null,
+                     *           "pricedOn": "2026-10-12",
+                     *           "quantity": "10.000",
+                     *           "source": "goods_receipt",
+                     *           "sourceId": "0192f3a0-7c1e-7d2a-9b1f-00000000e501",
+                     *           "supplier": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *             "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *           },
+                     *           "unit": "ream",
+                     *           "unitPrice": "1425.000000",
+                     *           "validUntil": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpPriceRecordDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpItemSuppliers.recordPrice": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpRecordPriceDto"];
+            };
+        };
+        responses: {
+            /** @description Recorded */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "baseUnitPrice": "2.850000",
+                     *       "by": "คลัง ทดสอบ",
+                     *       "createdAt": "2026-10-12T14:02:00+07:00",
+                     *       "documentNo": "GR-2610-0003",
+                     *       "factor": "500.000000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *       "item": {
+                     *         "baseUnit": "sheet",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *         "kind": "raw_material",
+                     *         "name": "กระดาษคราฟท์ 350 แกรม",
+                     *         "sku": "PAP-KA-350"
+                     *       },
+                     *       "note": null,
+                     *       "pricedOn": "2026-10-12",
+                     *       "quantity": "10.000",
+                     *       "source": "quotation",
+                     *       "sourceId": "0192f3a0-7c1e-7d2a-9b1f-00000000e501",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "unit": "ream",
+                     *       "unitPrice": "1425.000000",
+                     *       "validUntil": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPriceRecordDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.not_a_supplier`, `erp.unit_not_allowed`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpItemSuppliers.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Suppliers of the item */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "cheapest": true,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *         "item": {
+                     *           "baseUnit": "sheet",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *           "kind": "raw_material",
+                     *           "name": "กระดาษคราฟท์ 350 แกรม",
+                     *           "sku": "PAP-KA-350"
+                     *         },
+                     *         "lastBaseUnitPrice": "2.850000",
+                     *         "lastPrice": "1425.000000",
+                     *         "lastPricedOn": "2026-10-12",
+                     *         "lastPurchasedOn": "2026-10-12",
+                     *         "leadTimeDays": 7,
+                     *         "minOrderQty": "10.000",
+                     *         "note": null,
+                     *         "preferred": true,
+                     *         "purchaseFactor": "500.000000",
+                     *         "purchaseUnit": "ream",
+                     *         "quoteValidUntil": null,
+                     *         "stats": {
+                     *           "avgBaseUnitPrice": "2.830000",
+                     *           "avgLeadDays": "6.5",
+                     *           "changePct": "1.79",
+                     *           "maxBaseUnitPrice": "2.850000",
+                     *           "minBaseUnitPrice": "2.800000",
+                     *           "onTimePct": "75.00",
+                     *           "purchases": 4
+                     *         },
+                     *         "status": "active",
+                     *         "supplier": {
+                     *           "code": "S0001",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *           "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *         },
+                     *         "supplierName": "Kraft 350g 31x43",
+                     *         "supplierSku": "KA350-3143",
+                     *         "version": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpItemSupplierDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpItemSuppliers.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateItemSupplierDto"];
+            };
+        };
+        responses: {
+            /** @description Linked */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cheapest": true,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *       "item": {
+                     *         "baseUnit": "sheet",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *         "kind": "raw_material",
+                     *         "name": "กระดาษคราฟท์ 350 แกรม",
+                     *         "sku": "PAP-KA-350"
+                     *       },
+                     *       "lastBaseUnitPrice": "2.850000",
+                     *       "lastPrice": "1425.000000",
+                     *       "lastPricedOn": "2026-10-12",
+                     *       "lastPurchasedOn": "2026-10-12",
+                     *       "leadTimeDays": 7,
+                     *       "minOrderQty": "10.000",
+                     *       "note": null,
+                     *       "preferred": true,
+                     *       "purchaseFactor": "500.000000",
+                     *       "purchaseUnit": "ream",
+                     *       "quoteValidUntil": null,
+                     *       "stats": {
+                     *         "avgBaseUnitPrice": "2.830000",
+                     *         "avgLeadDays": "6.5",
+                     *         "changePct": "1.79",
+                     *         "maxBaseUnitPrice": "2.850000",
+                     *         "minBaseUnitPrice": "2.800000",
+                     *         "onTimePct": "75.00",
+                     *         "purchases": 4
+                     *       },
+                     *       "status": "active",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "supplierName": "Kraft 350g 31x43",
+                     *       "supplierSku": "KA350-3143",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpItemSupplierDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.supplier_linked` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.not_a_supplier`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpItemSuppliers.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                itemId: string;
+                linkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpUpdateItemSupplierDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cheapest": true,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *       "item": {
+                     *         "baseUnit": "sheet",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *         "kind": "raw_material",
+                     *         "name": "กระดาษคราฟท์ 350 แกรม",
+                     *         "sku": "PAP-KA-350"
+                     *       },
+                     *       "lastBaseUnitPrice": "2.850000",
+                     *       "lastPrice": "1425.000000",
+                     *       "lastPricedOn": "2026-10-12",
+                     *       "lastPurchasedOn": "2026-10-12",
+                     *       "leadTimeDays": 7,
+                     *       "minOrderQty": "10.000",
+                     *       "note": null,
+                     *       "preferred": true,
+                     *       "purchaseFactor": "500.000000",
+                     *       "purchaseUnit": "ream",
+                     *       "quoteValidUntil": null,
+                     *       "stats": {
+                     *         "avgBaseUnitPrice": "2.830000",
+                     *         "avgLeadDays": "6.5",
+                     *         "changePct": "1.79",
+                     *         "maxBaseUnitPrice": "2.850000",
+                     *         "minBaseUnitPrice": "2.800000",
+                     *         "onTimePct": "75.00",
+                     *         "purchases": 4
+                     *       },
+                     *       "status": "active",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "supplierName": "Kraft 350g 31x43",
+                     *       "supplierSku": "KA350-3143",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpItemSupplierDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpPartners.list": {
         parameters: {
             query?: {
@@ -192586,6 +195475,3123 @@ export interface operations {
             };
             /** @description Problem: `concurrency.precondition_required` */
             428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpItemSuppliers.ofSupplier": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                partnerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Items of the supplier */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "cheapest": true,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *         "item": {
+                     *           "baseUnit": "sheet",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *           "kind": "raw_material",
+                     *           "name": "กระดาษคราฟท์ 350 แกรม",
+                     *           "sku": "PAP-KA-350"
+                     *         },
+                     *         "lastBaseUnitPrice": "2.850000",
+                     *         "lastPrice": "1425.000000",
+                     *         "lastPricedOn": "2026-10-12",
+                     *         "lastPurchasedOn": "2026-10-12",
+                     *         "leadTimeDays": 7,
+                     *         "minOrderQty": "10.000",
+                     *         "note": null,
+                     *         "preferred": true,
+                     *         "purchaseFactor": "500.000000",
+                     *         "purchaseUnit": "ream",
+                     *         "quoteValidUntil": null,
+                     *         "stats": {
+                     *           "avgBaseUnitPrice": "2.830000",
+                     *           "avgLeadDays": "6.5",
+                     *           "changePct": "1.79",
+                     *           "maxBaseUnitPrice": "2.850000",
+                     *           "minBaseUnitPrice": "2.800000",
+                     *           "onTimePct": "75.00",
+                     *           "purchases": 4
+                     *         },
+                     *         "status": "active",
+                     *         "supplier": {
+                     *           "code": "S0001",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *           "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *         },
+                     *         "supplierName": "Kraft 350g 31x43",
+                     *         "supplierSku": "KA350-3143",
+                     *         "version": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpItemSupplierDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPlanning.mrp": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shortages */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "available": "200.000",
+                     *         "item": {
+                     *           "baseUnit": "sheet",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *           "kind": "raw_material",
+                     *           "name": "กระดาษคราฟท์ 350 แกรม",
+                     *           "sku": "PAP-KA-350"
+                     *         },
+                     *         "neededBy": "2026-10-20",
+                     *         "onOrder": "0.000",
+                     *         "orders": 2,
+                     *         "purchaseUnit": "ream",
+                     *         "required": "1053.000",
+                     *         "reserved": "500.000",
+                     *         "shortage": "353.000",
+                     *         "supplier": {
+                     *           "code": "S0001",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *           "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *         },
+                     *         "toOrderPurchaseQty": "1.000",
+                     *         "toOrderQty": "500.000",
+                     *         "unitPrice": "1425.000000"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpMrpRowDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPlanning.requestShortages": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpDraftFromReorderDto"];
+            };
+        };
+        responses: {
+            /** @description Requested */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "estimatedTotal": "28500.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *       "lineCount": 1,
+                     *       "lines": [
+                     *         {
+                     *           "estimatedAmount": "28500.00",
+                     *           "estimatedUnitCost": "2.850000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e702",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "note": null,
+                     *           "purchaseOrder": null,
+                     *           "quantity": "10000.000",
+                     *           "supplier": null
+                     *         }
+                     *       ],
+                     *       "neededBy": "2026-10-20",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_pr.approve"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_pr.reject"
+                     *         }
+                     *       ],
+                     *       "note": "ใช้กับงาน JOB-2610-0012",
+                     *       "prNo": "PR-2610-0004",
+                     *       "requestedBy": "คลัง ทดสอบ",
+                     *       "source": "mrp",
+                     *       "status": "draft",
+                     *       "submittedAt": "2026-10-12T09:05:00+07:00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPurchaseRequestDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.nothing_to_request`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPlanning.overview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Overview */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "dueThisWeek": 2,
+                     *       "inProgress": 1,
+                     *       "late": 1,
+                     *       "machines": [
+                     *         {
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "operations": 3,
+                     *           "plannedMinutes": 420
+                     *         }
+                     *       ],
+                     *       "planned": 2,
+                     *       "released": 3,
+                     *       "shortItems": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPlanningOverviewDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPlanning.queue": {
+        parameters: {
+            query?: {
+                /** @description One machine’s queue */
+                machineId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Queue */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "operation": {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         },
+                     *         "order": {
+                     *           "dueOn": "2026-10-25",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องครีม 30 ml",
+                     *             "sku": "FG-CRM-30"
+                     *           },
+                     *           "late": false,
+                     *           "moNo": "MO-2610-0005",
+                     *           "priority": 0,
+                     *           "progressPct": "0.00",
+                     *           "quantity": "1000.000",
+                     *           "short": false,
+                     *           "source": "stock",
+                     *           "status": "released",
+                     *           "title": "กล่องครีม 30 ml",
+                     *           "unit": "pcs"
+                     *         }
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpOperationQueueItemDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                source?: components["schemas"]["ErpProductionSource"];
+                /** @description `open` = planned, released or in progress */
+                status?: components["schemas"]["ErpProductionStatusFilter"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "dueOn": "2026-10-25",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องครีม 30 ml",
+                     *             "sku": "FG-CRM-30"
+                     *           },
+                     *           "late": false,
+                     *           "moNo": "MO-2610-0005",
+                     *           "priority": 0,
+                     *           "progressPct": "0.00",
+                     *           "quantity": "1000.000",
+                     *           "short": false,
+                     *           "source": "stock",
+                     *           "status": "released",
+                     *           "title": "กล่องครีม 30 ml",
+                     *           "unit": "pcs"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpProductionOrderSummaryDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateProductionOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Planned */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "planned",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The order */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "released",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpUpdateProductionOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "released",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.cancel": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "cancelled",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `erp.materials_issued`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.complete": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCompleteProductionDto"];
+            };
+        };
+        responses: {
+            /** @description Completed */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "980.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "20.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "completed",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.issue": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpMaterialMoveDto"];
+            };
+        };
+        responses: {
+            /** @description Issued */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "in_progress",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `erp.stock_insufficient`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.lot_required`, `erp.nothing_to_issue`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.release": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Released */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "released",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.returnMaterials": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpMaterialMoveDto"];
+            };
+        };
+        responses: {
+            /** @description Returned */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "in_progress",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.lot_required`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.finishOperation": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpOperationOutputDto"];
+            };
+        };
+        responses: {
+            /** @description Finished */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "in_progress",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.skipOperation": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Skipped */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "in_progress",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpProductionOrders.startOperation": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                moId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Started */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelReason": null,
+                     *       "completedAt": null,
+                     *       "createdAt": "2026-10-17T10:00:00+07:00",
+                     *       "dueOn": "2026-10-25",
+                     *       "goodQty": "0.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea01",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "job": null,
+                     *       "late": false,
+                     *       "materialCost": "0.00",
+                     *       "materials": [
+                     *         {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea02",
+                     *           "issuedQty": "0.000",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "note": null,
+                     *           "origin": "recipe",
+                     *           "remainingQty": "131.579",
+                     *           "requiredQty": "131.579",
+                     *           "reservedQty": "131.579",
+                     *           "shortQty": "0.000"
+                     *         }
+                     *       ],
+                     *       "moNo": "MO-2610-0005",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_mo.issue"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.complete"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_mo.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "goodQty": "0.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ea03",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "plannedMinutes": 50,
+                     *           "scrapQty": "0.000",
+                     *           "seq": 10,
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "plannedStartOn": "2026-10-20",
+                     *       "priority": 0,
+                     *       "progressPct": "0.00",
+                     *       "quantity": "1000.000",
+                     *       "recipe": {
+                     *         "code": "FG-CRM-30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *         "name": "กล่องครีม 30 ml — มาตรฐาน"
+                     *       },
+                     *       "releasedAt": "2026-10-18T08:00:00+07:00",
+                     *       "scrapQty": "0.000",
+                     *       "short": false,
+                     *       "source": "stock",
+                     *       "status": "in_progress",
+                     *       "title": "กล่องครีม 30 ml",
+                     *       "unit": "pcs",
+                     *       "unitCost": null,
+                     *       "version": 2,
+                     *       "warehouse": {
+                     *         "code": "MAIN",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e201",
+                     *         "name": "คลังหลัก"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpProductionOrderDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -193965,6 +199971,2036 @@ export interface operations {
             };
         };
     };
+    "partner.erpPurchaseRequests.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `open` = submitted or approved */
+                status?: components["schemas"]["ErpPurchaseRequestStatusFilter"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "createdAt": "2026-10-12T09:00:00+07:00",
+                     *           "currency": "THB",
+                     *           "estimatedTotal": "28500.00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *           "lineCount": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "prNo": "PR-2610-0004",
+                     *           "requestedBy": "คลัง ทดสอบ",
+                     *           "source": "manual",
+                     *           "status": "submitted"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpPurchaseRequestSummaryDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPurchaseRequests.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSavePurchaseRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "estimatedTotal": "28500.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *       "lineCount": 1,
+                     *       "lines": [
+                     *         {
+                     *           "estimatedAmount": "28500.00",
+                     *           "estimatedUnitCost": "2.850000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e702",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "note": null,
+                     *           "purchaseOrder": null,
+                     *           "quantity": "10000.000",
+                     *           "supplier": null
+                     *         }
+                     *       ],
+                     *       "neededBy": "2026-10-20",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_pr.approve"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_pr.reject"
+                     *         }
+                     *       ],
+                     *       "note": "ใช้กับงาน JOB-2610-0012",
+                     *       "prNo": "PR-2610-0004",
+                     *       "requestedBy": "คลัง ทดสอบ",
+                     *       "source": "manual",
+                     *       "status": "draft",
+                     *       "submittedAt": "2026-10-12T09:05:00+07:00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPurchaseRequestDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.not_a_supplier`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPurchaseRequests.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                prId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "estimatedTotal": "28500.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *       "lineCount": 1,
+                     *       "lines": [
+                     *         {
+                     *           "estimatedAmount": "28500.00",
+                     *           "estimatedUnitCost": "2.850000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e702",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "note": null,
+                     *           "purchaseOrder": null,
+                     *           "quantity": "10000.000",
+                     *           "supplier": null
+                     *         }
+                     *       ],
+                     *       "neededBy": "2026-10-20",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_pr.approve"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_pr.reject"
+                     *         }
+                     *       ],
+                     *       "note": "ใช้กับงาน JOB-2610-0012",
+                     *       "prNo": "PR-2610-0004",
+                     *       "requestedBy": "คลัง ทดสอบ",
+                     *       "source": "manual",
+                     *       "status": "submitted",
+                     *       "submittedAt": "2026-10-12T09:05:00+07:00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPurchaseRequestDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPurchaseRequests.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                prId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSavePurchaseRequestDto"];
+            };
+        };
+        responses: {
+            /** @description The draft */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "estimatedTotal": "28500.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *       "lineCount": 1,
+                     *       "lines": [
+                     *         {
+                     *           "estimatedAmount": "28500.00",
+                     *           "estimatedUnitCost": "2.850000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e702",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "note": null,
+                     *           "purchaseOrder": null,
+                     *           "quantity": "10000.000",
+                     *           "supplier": null
+                     *         }
+                     *       ],
+                     *       "neededBy": "2026-10-20",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_pr.approve"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_pr.reject"
+                     *         }
+                     *       ],
+                     *       "note": "ใช้กับงาน JOB-2610-0012",
+                     *       "prNo": "PR-2610-0004",
+                     *       "requestedBy": "คลัง ทดสอบ",
+                     *       "source": "manual",
+                     *       "status": "draft",
+                     *       "submittedAt": "2026-10-12T09:05:00+07:00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPurchaseRequestDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.not_a_supplier`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPurchaseRequests.approve": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                prId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptionalNoteDto"];
+            };
+        };
+        responses: {
+            /** @description Approved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "estimatedTotal": "28500.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *       "lineCount": 1,
+                     *       "lines": [
+                     *         {
+                     *           "estimatedAmount": "28500.00",
+                     *           "estimatedUnitCost": "2.850000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e702",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "note": null,
+                     *           "purchaseOrder": null,
+                     *           "quantity": "10000.000",
+                     *           "supplier": null
+                     *         }
+                     *       ],
+                     *       "neededBy": "2026-10-20",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_pr.approve"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_pr.reject"
+                     *         }
+                     *       ],
+                     *       "note": "ใช้กับงาน JOB-2610-0012",
+                     *       "prNo": "PR-2610-0004",
+                     *       "requestedBy": "คลัง ทดสอบ",
+                     *       "source": "manual",
+                     *       "status": "approved",
+                     *       "submittedAt": "2026-10-12T09:05:00+07:00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPurchaseRequestDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPurchaseRequests.cancel": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                prId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "estimatedTotal": "28500.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *       "lineCount": 1,
+                     *       "lines": [
+                     *         {
+                     *           "estimatedAmount": "28500.00",
+                     *           "estimatedUnitCost": "2.850000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e702",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "note": null,
+                     *           "purchaseOrder": null,
+                     *           "quantity": "10000.000",
+                     *           "supplier": null
+                     *         }
+                     *       ],
+                     *       "neededBy": "2026-10-20",
+                     *       "nextActions": [],
+                     *       "note": "ใช้กับงาน JOB-2610-0012",
+                     *       "prNo": "PR-2610-0004",
+                     *       "requestedBy": "คลัง ทดสอบ",
+                     *       "source": "manual",
+                     *       "status": "cancelled",
+                     *       "submittedAt": "2026-10-12T09:05:00+07:00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPurchaseRequestDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPurchaseRequests.convert": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                prId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created": [
+                     *         {
+                     *           "currency": "THB",
+                     *           "expectedOn": "2026-10-19",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e401",
+                     *           "late": false,
+                     *           "lineCount": 1,
+                     *           "orderedOn": "2026-10-12",
+                     *           "poNo": null,
+                     *           "receivedPct": "0.00",
+                     *           "status": "draft",
+                     *           "supplier": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *             "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *           },
+                     *           "total": "30495.00"
+                     *         }
+                     *       ],
+                     *       "skipped": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpDraftFromReorderResultDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.unit_not_allowed`, `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPurchaseRequests.reject": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                prId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Rejected */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "estimatedTotal": "28500.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *       "lineCount": 1,
+                     *       "lines": [
+                     *         {
+                     *           "estimatedAmount": "28500.00",
+                     *           "estimatedUnitCost": "2.850000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e702",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "note": null,
+                     *           "purchaseOrder": null,
+                     *           "quantity": "10000.000",
+                     *           "supplier": null
+                     *         }
+                     *       ],
+                     *       "neededBy": "2026-10-20",
+                     *       "nextActions": [],
+                     *       "note": "ใช้กับงาน JOB-2610-0012",
+                     *       "prNo": "PR-2610-0004",
+                     *       "requestedBy": "คลัง ทดสอบ",
+                     *       "source": "manual",
+                     *       "status": "rejected",
+                     *       "submittedAt": "2026-10-12T09:05:00+07:00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPurchaseRequestDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpPurchaseRequests.submit": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                prId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Submitted (or approved) */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-12T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "estimatedTotal": "28500.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e701",
+                     *       "lineCount": 1,
+                     *       "lines": [
+                     *         {
+                     *           "estimatedAmount": "28500.00",
+                     *           "estimatedUnitCost": "2.850000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e702",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "neededBy": "2026-10-20",
+                     *           "note": null,
+                     *           "purchaseOrder": null,
+                     *           "quantity": "10000.000",
+                     *           "supplier": null
+                     *         }
+                     *       ],
+                     *       "neededBy": "2026-10-20",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_pr.approve"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_pr.reject"
+                     *         }
+                     *       ],
+                     *       "note": "ใช้กับงาน JOB-2610-0012",
+                     *       "prNo": "PR-2610-0004",
+                     *       "requestedBy": "คลัง ทดสอบ",
+                     *       "source": "manual",
+                     *       "status": "submitted",
+                     *       "submittedAt": "2026-10-12T09:05:00+07:00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPurchaseRequestDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpRecipes.list": {
+        parameters: {
+            query?: {
+                itemId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["BrandKitStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "batchQty": "1.000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *           "item": {
+                     *             "baseUnit": "pcs",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *             "kind": "finished_good",
+                     *             "name": "กล่องครีม 30 ml",
+                     *             "sku": "FG-CRM-30"
+                     *           },
+                     *           "materials": [
+                     *             {
+                     *               "item": {
+                     *                 "baseUnit": "sheet",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *                 "kind": "raw_material",
+                     *                 "name": "กระดาษคราฟท์ 350 แกรม",
+                     *                 "sku": "PAP-KA-350"
+                     *               },
+                     *               "lineNo": 1,
+                     *               "quantity": "0.125000",
+                     *               "scrapPct": "5.0000"
+                     *             }
+                     *           ],
+                     *           "name": "กล่องครีม 30 ml — มาตรฐาน",
+                     *           "note": null,
+                     *           "operations": [
+                     *             {
+                     *               "machine": {
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *                 "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *               },
+                     *               "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *               "runRatePerHour": "3000.000",
+                     *               "seq": 10,
+                     *               "setupMinutes": 30
+                     *             },
+                     *             {
+                     *               "machine": null,
+                     *               "name": "ไดคัท",
+                     *               "runRatePerHour": "2500.000",
+                     *               "seq": 20,
+                     *               "setupMinutes": 20
+                     *             }
+                     *           ],
+                     *           "status": "active",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpRecipeDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpRecipes.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveRecipeDto"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batchQty": "1.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "materials": [
+                     *         {
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "0.125000",
+                     *           "scrapPct": "5.0000"
+                     *         }
+                     *       ],
+                     *       "name": "กล่องครีม 30 ml — มาตรฐาน",
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "runRatePerHour": "3000.000",
+                     *           "seq": 10,
+                     *           "setupMinutes": 30
+                     *         },
+                     *         {
+                     *           "machine": null,
+                     *           "name": "ไดคัท",
+                     *           "runRatePerHour": "2500.000",
+                     *           "seq": 20,
+                     *           "setupMinutes": 20
+                     *         }
+                     *       ],
+                     *       "status": "active",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpRecipeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpRecipes.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                recipeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The recipe */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batchQty": "1.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "materials": [
+                     *         {
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "0.125000",
+                     *           "scrapPct": "5.0000"
+                     *         }
+                     *       ],
+                     *       "name": "กล่องครีม 30 ml — มาตรฐาน",
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "runRatePerHour": "3000.000",
+                     *           "seq": 10,
+                     *           "setupMinutes": 30
+                     *         },
+                     *         {
+                     *           "machine": null,
+                     *           "name": "ไดคัท",
+                     *           "runRatePerHour": "2500.000",
+                     *           "seq": 20,
+                     *           "setupMinutes": 20
+                     *         }
+                     *       ],
+                     *       "status": "active",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpRecipeDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpRecipes.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                recipeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpSaveRecipeDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batchQty": "1.000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e901",
+                     *       "item": {
+                     *         "baseUnit": "pcs",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01",
+                     *         "kind": "finished_good",
+                     *         "name": "กล่องครีม 30 ml",
+                     *         "sku": "FG-CRM-30"
+                     *       },
+                     *       "materials": [
+                     *         {
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "quantity": "0.125000",
+                     *           "scrapPct": "5.0000"
+                     *         }
+                     *       ],
+                     *       "name": "กล่องครีม 30 ml — มาตรฐาน",
+                     *       "note": null,
+                     *       "operations": [
+                     *         {
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000eb01",
+                     *             "name": "Heidelberg SM 74 (ทดสอบ)"
+                     *           },
+                     *           "name": "พิมพ์ออฟเซ็ท 4 สี",
+                     *           "runRatePerHour": "3000.000",
+                     *           "seq": 10,
+                     *           "setupMinutes": 30
+                     *         },
+                     *         {
+                     *           "machine": null,
+                     *           "name": "ไดคัท",
+                     *           "runRatePerHour": "2500.000",
+                     *           "seq": 20,
+                     *           "setupMinutes": 20
+                     *         }
+                     *       ],
+                     *       "status": "active",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpRecipeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpSettings.get": {
         parameters: {
             query?: never;
@@ -194001,11 +202037,17 @@ export interface operations {
                      *       "overReceiptPct": "10.0000",
                      *       "prefixes": {
                      *         "adj": "ADJ",
+                     *         "ap": "AP",
                      *         "gr": "GR",
                      *         "iss": "ISS",
+                     *         "mo": "MO",
                      *         "po": "PO",
+                     *         "pr": "PR",
+                     *         "pv": "PV",
                      *         "trf": "TRF"
                      *       },
+                     *       "priceTolerancePct": "2.0000",
+                     *       "requireRequestApproval": true,
                      *       "vatRegistered": true,
                      *       "version": 1
                      *     }
@@ -194108,11 +202150,17 @@ export interface operations {
                      *       "overReceiptPct": "10.0000",
                      *       "prefixes": {
                      *         "adj": "ADJ",
+                     *         "ap": "AP",
                      *         "gr": "GR",
                      *         "iss": "ISS",
+                     *         "mo": "MO",
                      *         "po": "PO",
+                     *         "pr": "PR",
+                     *         "pv": "PV",
                      *         "trf": "TRF"
                      *       },
+                     *       "priceTolerancePct": "2.0000",
+                     *       "requireRequestApproval": true,
                      *       "vatRegistered": true,
                      *       "version": 1
                      *     }
@@ -195116,6 +203164,1551 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierInvoices.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                /** @description Only open invoices past their due date */
+                overdue?: boolean;
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description `open` = not paid and not cancelled */
+                status?: components["schemas"]["ErpSupplierInvoiceStatusFilter"];
+                supplierId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "currency": "THB",
+                     *           "docNo": "AP-2610-0003",
+                     *           "dueDate": "2026-11-11",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *           "invoiceDate": "2026-10-12",
+                     *           "invoiceNo": "IV-55012",
+                     *           "outstanding": "14820.00",
+                     *           "overdue": false,
+                     *           "payableAmount": "14820.00",
+                     *           "status": "matched",
+                     *           "supplier": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *             "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *           },
+                     *           "total": "15247.50"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpSupplierInvoiceSummaryDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierInvoices.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateSupplierInvoiceDto"];
+            };
+        };
+        responses: {
+            /** @description Recorded */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": null,
+                     *       "approvedBy": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T14:30:00+07:00",
+                     *       "currency": "THB",
+                     *       "docNo": "AP-2610-0003",
+                     *       "dueDate": "2026-11-11",
+                     *       "fileId": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *       "invoiceDate": "2026-10-12",
+                     *       "invoiceNo": "IV-55012",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "14250.00",
+                     *           "description": "กระดาษคราฟท์ 350 แกรม",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "orderedPrice": "1425.000000",
+                     *           "purchaseOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000e402",
+                     *           "quantity": "10.000",
+                     *           "receivedQty": "10.000",
+                     *           "unitPrice": "1425.000000",
+                     *           "variance": null
+                     *         }
+                     *       ],
+                     *       "matchNote": null,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_ap.pay"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_ap.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "outstanding": "14820.00",
+                     *       "overdue": false,
+                     *       "paidAmount": "0.00",
+                     *       "payableAmount": "14820.00",
+                     *       "payments": [],
+                     *       "purchaseOrder": {
+                     *         "code": "PO-2610-0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e401",
+                     *         "name": "PO-2610-0007"
+                     *       },
+                     *       "status": "matched",
+                     *       "subtotal": "14250.00",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "taxInvoiceNo": "IV-55012",
+                     *       "total": "15247.50",
+                     *       "vatAmount": "997.50",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 1,
+                     *       "whtAmount": "427.50",
+                     *       "whtRatePct": "3.0000"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSupplierInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `erp.invoice_duplicate` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.not_a_supplier`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierInvoices.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The invoice */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": null,
+                     *       "approvedBy": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T14:30:00+07:00",
+                     *       "currency": "THB",
+                     *       "docNo": "AP-2610-0003",
+                     *       "dueDate": "2026-11-11",
+                     *       "fileId": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *       "invoiceDate": "2026-10-12",
+                     *       "invoiceNo": "IV-55012",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "14250.00",
+                     *           "description": "กระดาษคราฟท์ 350 แกรม",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "orderedPrice": "1425.000000",
+                     *           "purchaseOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000e402",
+                     *           "quantity": "10.000",
+                     *           "receivedQty": "10.000",
+                     *           "unitPrice": "1425.000000",
+                     *           "variance": null
+                     *         }
+                     *       ],
+                     *       "matchNote": null,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_ap.pay"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_ap.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "outstanding": "14820.00",
+                     *       "overdue": false,
+                     *       "paidAmount": "0.00",
+                     *       "payableAmount": "14820.00",
+                     *       "payments": [],
+                     *       "purchaseOrder": {
+                     *         "code": "PO-2610-0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e401",
+                     *         "name": "PO-2610-0007"
+                     *       },
+                     *       "status": "matched",
+                     *       "subtotal": "14250.00",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "taxInvoiceNo": "IV-55012",
+                     *       "total": "15247.50",
+                     *       "vatAmount": "997.50",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 1,
+                     *       "whtAmount": "427.50",
+                     *       "whtRatePct": "3.0000"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSupplierInvoiceDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierInvoices.approve": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptionalNoteDto"];
+            };
+        };
+        responses: {
+            /** @description Approved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": null,
+                     *       "approvedBy": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T14:30:00+07:00",
+                     *       "currency": "THB",
+                     *       "docNo": "AP-2610-0003",
+                     *       "dueDate": "2026-11-11",
+                     *       "fileId": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *       "invoiceDate": "2026-10-12",
+                     *       "invoiceNo": "IV-55012",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "14250.00",
+                     *           "description": "กระดาษคราฟท์ 350 แกรม",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "orderedPrice": "1425.000000",
+                     *           "purchaseOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000e402",
+                     *           "quantity": "10.000",
+                     *           "receivedQty": "10.000",
+                     *           "unitPrice": "1425.000000",
+                     *           "variance": null
+                     *         }
+                     *       ],
+                     *       "matchNote": null,
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_ap.pay"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_ap.cancel"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "outstanding": "14820.00",
+                     *       "overdue": false,
+                     *       "paidAmount": "0.00",
+                     *       "payableAmount": "14820.00",
+                     *       "payments": [],
+                     *       "purchaseOrder": {
+                     *         "code": "PO-2610-0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e401",
+                     *         "name": "PO-2610-0007"
+                     *       },
+                     *       "status": "approved",
+                     *       "subtotal": "14250.00",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "taxInvoiceNo": "IV-55012",
+                     *       "total": "15247.50",
+                     *       "vatAmount": "997.50",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 1,
+                     *       "whtAmount": "427.50",
+                     *       "whtRatePct": "3.0000"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSupplierInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierInvoices.cancel": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedAt": null,
+                     *       "approvedBy": null,
+                     *       "cancelReason": null,
+                     *       "createdAt": "2026-10-12T14:30:00+07:00",
+                     *       "currency": "THB",
+                     *       "docNo": "AP-2610-0003",
+                     *       "dueDate": "2026-11-11",
+                     *       "fileId": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *       "invoiceDate": "2026-10-12",
+                     *       "invoiceNo": "IV-55012",
+                     *       "lines": [
+                     *         {
+                     *           "amount": "14250.00",
+                     *           "description": "กระดาษคราฟท์ 350 แกรม",
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "orderedPrice": "1425.000000",
+                     *           "purchaseOrderLineId": "0192f3a0-7c1e-7d2a-9b1f-00000000e402",
+                     *           "quantity": "10.000",
+                     *           "receivedQty": "10.000",
+                     *           "unitPrice": "1425.000000",
+                     *           "variance": null
+                     *         }
+                     *       ],
+                     *       "matchNote": null,
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "outstanding": "14820.00",
+                     *       "overdue": false,
+                     *       "paidAmount": "0.00",
+                     *       "payableAmount": "14820.00",
+                     *       "payments": [],
+                     *       "purchaseOrder": {
+                     *         "code": "PO-2610-0007",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e401",
+                     *         "name": "PO-2610-0007"
+                     *       },
+                     *       "status": "cancelled",
+                     *       "subtotal": "14250.00",
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       },
+                     *       "taxInvoiceNo": "IV-55012",
+                     *       "total": "15247.50",
+                     *       "vatAmount": "997.50",
+                     *       "vatMode": "exclusive",
+                     *       "vatRatePct": "7.0000",
+                     *       "version": 1,
+                     *       "whtAmount": "427.50",
+                     *       "whtRatePct": "3.0000"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSupplierInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierInvoices.aging": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aging */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2026-10-15",
+                     *       "currency": "THB",
+                     *       "dueSoon": "0.00",
+                     *       "suppliers": [
+                     *         {
+                     *           "buckets": {
+                     *             "current": "14820.00",
+                     *             "d1_30": "0.00",
+                     *             "d31_60": "0.00",
+                     *             "d61_90": "0.00",
+                     *             "over90": "0.00",
+                     *             "total": "14820.00"
+                     *           },
+                     *           "invoices": 1,
+                     *           "supplier": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *             "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "totals": {
+                     *         "current": "14820.00",
+                     *         "d1_30": "0.00",
+                     *         "d31_60": "0.00",
+                     *         "d61_90": "0.00",
+                     *         "over90": "0.00",
+                     *         "total": "14820.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpApAgingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierPayments.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                supplierId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "allocations": [
+                     *             {
+                     *               "amount": "14820.00",
+                     *               "invoice": {
+                     *                 "code": "AP-2610-0003",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *                 "name": "IV-55012"
+                     *               }
+                     *             }
+                     *           ],
+                     *           "amount": "14820.00",
+                     *           "by": "บัญชี ทดสอบ",
+                     *           "createdAt": "2026-11-10T10:00:00+07:00",
+                     *           "currency": "THB",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e802",
+                     *           "method": "transfer",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": true,
+                     *               "key": "erp_pay.reverse"
+                     *             }
+                     *           ],
+                     *           "note": null,
+                     *           "paidOn": "2026-11-10",
+                     *           "paymentNo": "PV-2611-0002",
+                     *           "reference": "KBANK 1234",
+                     *           "reversedBy": null,
+                     *           "reverses": null,
+                     *           "supplier": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *             "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpSupplierPaymentDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierPayments.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpCreateSupplierPaymentDto"];
+            };
+        };
+        responses: {
+            /** @description Paid */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "allocations": [
+                     *         {
+                     *           "amount": "14820.00",
+                     *           "invoice": {
+                     *             "code": "AP-2610-0003",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *             "name": "IV-55012"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "amount": "14820.00",
+                     *       "by": "บัญชี ทดสอบ",
+                     *       "createdAt": "2026-11-10T10:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e802",
+                     *       "method": "transfer",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_pay.reverse"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "paidOn": "2026-11-10",
+                     *       "paymentNo": "PV-2611-0002",
+                     *       "reference": "KBANK 1234",
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSupplierPaymentDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invoice_not_payable`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.overpayment`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierPayments.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The payment */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "allocations": [
+                     *         {
+                     *           "amount": "14820.00",
+                     *           "invoice": {
+                     *             "code": "AP-2610-0003",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *             "name": "IV-55012"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "amount": "14820.00",
+                     *       "by": "บัญชี ทดสอบ",
+                     *       "createdAt": "2026-11-10T10:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e802",
+                     *       "method": "transfer",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_pay.reverse"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "paidOn": "2026-11-10",
+                     *       "paymentNo": "PV-2611-0002",
+                     *       "reference": "KBANK 1234",
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSupplierPaymentDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSupplierPayments.reverse": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description The reversal */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "allocations": [
+                     *         {
+                     *           "amount": "-14820.00",
+                     *           "invoice": {
+                     *             "code": "AP-2610-0003",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e801",
+                     *             "name": "IV-55012"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "amount": "-14820.00",
+                     *       "by": "บัญชี ทดสอบ",
+                     *       "createdAt": "2026-11-10T10:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *       "method": "transfer",
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "paidOn": "2026-11-10",
+                     *       "paymentNo": "PV-2611-0003",
+                     *       "reference": "KBANK 1234",
+                     *       "reversedBy": null,
+                     *       "reverses": {
+                     *         "code": "PV-2611-0002",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e802",
+                     *         "name": "PV-2611-0002"
+                     *       },
+                     *       "supplier": {
+                     *         "code": "S0001",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *         "name": "บจก. กระดาษไทย (ทดสอบ)"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpSupplierPaymentDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
