@@ -461,7 +461,52 @@
     "startMaintenance": "Start maintenance",
     "issueSpareParts": "Issue parts",
     "finishMaintenance": "Finish maintenance",
-    "cancelMaintenance": "Cancel maintenance"
+    "cancelMaintenance": "Cancel maintenance",
+    "editLead": "Edit lead",
+    "convertLead": "Convert to customer",
+    "loseLead": "Mark as lost",
+    "editOpportunity": "Edit opportunity",
+    "quoteOpportunity": "Make a quotation",
+    "winOpportunity": "Mark as won",
+    "loseOpportunity": "Mark as lost",
+    "editQuotation": "Edit quotation",
+    "sendQuotation": "Send quotation",
+    "reviseQuotation": "Revise",
+    "acceptQuotation": "Record acceptance",
+    "rejectQuotation": "Record rejection",
+    "orderQuotation": "Create sales order",
+    "cancelQuotation": "Cancel quotation",
+    "quotationPdf": "Quotation PDF",
+    "editSalesOrder": "Edit sales order",
+    "confirmSalesOrder": "Confirm sales order",
+    "deliverSalesOrder": "Make delivery note",
+    "invoiceSalesOrder": "Invoice",
+    "closeSalesOrder": "Close sales order",
+    "cancelSalesOrder": "Cancel sales order",
+    "salesOrderPdf": "Order confirmation PDF",
+    "issueDelivery": "Issue and take from stock",
+    "deliverDelivery": "Record delivery",
+    "invoiceDelivery": "Invoice",
+    "cancelDelivery": "Cancel delivery note",
+    "deliveryPdf": "Delivery note PDF",
+    "editInvoice": "Edit invoice",
+    "issueInvoice": "Issue invoice",
+    "receiveInvoice": "Receive payment",
+    "creditInvoice": "Credit note",
+    "debitInvoice": "Debit note",
+    "voidInvoice": "Void invoice",
+    "deleteInvoice": "Delete draft",
+    "invoicePdf": "Invoice PDF",
+    "issueNote": "Issue note",
+    "voidNote": "Void note",
+    "deleteNote": "Delete draft",
+    "notePdf": "Note PDF",
+    "cancelReceipt": "Cancel receipt",
+    "receiptPdf": "Receipt PDF",
+    "cancelBillingNote": "Cancel billing note",
+    "billingNotePdf": "Billing note PDF",
+    "voidWht": "Void certificate",
+    "whtPdf": "50 bis PDF"
   },
   "points": {
     "pending": "Pending",
@@ -801,5 +846,62 @@
     "valid": "Valid",
     "expiring": "Expiring soon",
     "expired": "Expired"
+  },
+  "erpLead": {
+    "new": "New",
+    "contacted": "Contacted",
+    "qualified": "Qualified",
+    "converted": "Converted",
+    "lost": "Lost"
+  },
+  "erpOpportunity": {
+    "prospecting": "Prospecting",
+    "proposal": "Proposal",
+    "negotiation": "Negotiation",
+    "won": "Won",
+    "lost": "Lost"
+  },
+  "erpQuotation": {
+    "draft": "Draft",
+    "sent": "Sent",
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "expired": "Expired",
+    "superseded": "Superseded",
+    "cancelled": "Cancelled"
+  },
+  "erpSalesOrder": {
+    "draft": "Draft",
+    "confirmed": "Confirmed",
+    "partiallyDelivered": "Partly delivered",
+    "delivered": "Delivered",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "erpDelivery": {
+    "draft": "Draft",
+    "issued": "Issued",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled"
+  },
+  "erpSalesInvoice": {
+    "draft": "Draft",
+    "issued": "Issued",
+    "partiallyPaid": "Partly paid",
+    "paid": "Paid",
+    "voided": "Voided"
+  },
+  "erpIssued": {
+    "draft": "Draft",
+    "issued": "Issued",
+    "voided": "Voided"
+  },
+  "erpReceipt": {
+    "issued": "Issued",
+    "cancelled": "Cancelled"
+  },
+  "erpWht": {
+    "issued": "Issued",
+    "voided": "Voided"
   }
 }

@@ -26,6 +26,9 @@ const KINDS: Kind[] = [
   "quote_expiring",
   "supplier_review_due",
   "document_expiring",
+  "invoice_overdue",
+  "quote_follow_up",
+  "activity_overdue",
 ];
 const VIEWS = ["open", "all"] as const;
 type View = (typeof VIEWS)[number];
@@ -38,6 +41,9 @@ const ICON: Record<Kind, IconName> = {
   maintenance_due: "wrench",
   machine_breakdown: "warning",
   document_expiring: "document",
+  quote_follow_up: "send",
+  invoice_overdue: "coins",
+  activity_overdue: "phone",
 };
 const TONE: Record<Kind, "danger" | "warning" | "info"> = {
   price_rise: "warning",
@@ -46,6 +52,9 @@ const TONE: Record<Kind, "danger" | "warning" | "info"> = {
   maintenance_due: "warning",
   machine_breakdown: "danger",
   document_expiring: "warning",
+  quote_follow_up: "info",
+  invoice_overdue: "danger",
+  activity_overdue: "warning",
 };
 
 /** Where an alert takes its reader: what it is about. */
@@ -59,6 +68,12 @@ function hrefOf(alert: Alert): string | null {
       return `/maintenance/plans/${alert.subjectId}`;
     case "document":
       return `/documents/${alert.subjectId}`;
+    case "quotation":
+      return `/quotations/${alert.subjectId}`;
+    case "sales_invoice":
+      return `/invoices/${alert.subjectId}`;
+    case "activity":
+      return "/crm?view=activities";
     default:
       return null;
   }
@@ -125,6 +140,13 @@ export default async function AlertsPage({
       mtNo: s("mtNo"),
       reportedBy: s("reportedBy"),
       expiresOn: day("expiresOn"),
+      quoteNo: s("quoteNo"),
+      customer: s("customer"),
+      invoiceNo: s("invoiceNo"),
+      open: s("open") ? format.thb(s("open")) : "",
+      dueDate: day("dueDate"),
+      subject: s("subject"),
+      assignee: s("assignee"),
     });
   };
 

@@ -309,3 +309,14 @@ export type ErpMaintenanceStatus = Schemas["ErpMaintenanceStatus"];
 export type ErpSupplierApproval = Schemas["ErpSupplierApproval"];
 export type ErpMachineState = Schemas["ErpMachineState"];
 export type ErpDocExpiry = Schemas["ErpDocExpiry"];
+
+/** Packio Factory ERP E4 (D-359 – D-371). **Source: contract** (packio-api v0.47.0). */
+export type ErpLeadStage = Schemas["ErpLeadStage"];
+export type ErpOpportunityStage = Schemas["ErpOpportunityStage"];
+export type ErpQuotationStatus = Schemas["ErpQuotationStatus"];
+export type ErpSalesOrderStatus = Schemas["ErpSalesOrderStatus"];
+export type ErpDeliveryStatus = Schemas["ErpDeliveryStatus"];
+export type ErpSalesInvoiceStatus = Schemas["ErpSalesInvoiceStatus"];
+export type ErpIssuedStatus = Schemas["ErpIssuedStatus"];
+export type ErpReceiptStatus = Schemas["ErpReceiptStatus"];
+export type ErpWhtCertificateStatus = Schemas["ErpWhtCertificateStatus"];
