@@ -6,11 +6,13 @@ import { attempt, factoryContext, partnerServerApis } from "@/features/partner/c
 import { formatPlain, formatQty } from "@/features/partner/erp/format";
 import { PoActions } from "@/features/partner/erp/PoActions";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
 import { Row, RowList } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
+import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -24,9 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
 /** One purchase order (D-325): who, when, the lines with what has come, the totals the API worked out, its receipts. */
 export default async function PurchaseOrderPage({ params }: Props) {
   const { poId } = await params;
-  const [t, tCommon, format, locale, context] = await Promise.all([
+  const [t, tCommon, tSourcing, format, locale, context] = await Promise.all([
     getTranslations("partnerErp.purchasing"),
     getTranslations("partnerErp.common"),
+    getTranslations("partnerOps.sourcing"),
     getFormat(),
     getLocale(),
     factoryContext(),
@@ -62,6 +65,24 @@ export default async function PurchaseOrderPage({ params }: Props) {
       }
     >
       <PoActions order={order} etag={etag} />
+      {order.warnings.length ? (
+        <Callout tone="warning" title={tSourcing("warnings.title")}>
+          <ul className="list-disc ps-5">
+            {order.warnings.map((w) => (
+              <li key={`${w.lineNo}-${w.code}`}>
+                {w.code === "price_rise"
+                  ? tSourcing("warnings.price_rise", {
+                      line: w.lineNo,
+                      pct: w.changePct ? formatPlain(w.changePct, locale, 2) : "",
+                    })
+                  : tSourcing(w.code === "supplier_suspended" ? "warnings.supplier_suspended" : "warnings.supplier_not_approved", {
+                      line: w.lineNo,
+                    })}
+              </li>
+            ))}
+          </ul>
+        </Callout>
+      ) : null}
       <Card padding="md">
         <DescriptionList
           columns={2}
@@ -157,6 +178,7 @@ export default async function PurchaseOrderPage({ params }: Props) {
           <EmptyState icon="package" title={t("detail.noReceipts")} />
         )}
       </PartnerSection>
+      <RelatedDocuments type="purchase_order" id={order.id} label={order.poNo ?? t("draftNo")} />
     </PartnerPage>
   );
 }

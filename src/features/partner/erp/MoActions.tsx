@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -10,8 +11,10 @@ import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
+import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
-import { NumberInput } from "@/ui/components/Input";
+import { NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
 import { ActionBar } from "./ActionBar";
@@ -240,35 +243,83 @@ export function ReturnMaterial({ order, locale }: { order: Mo; locale: string })
   );
 }
 
-/** An operator's buttons on one operation (D-341): start, finish with good and scrap, or skip. */
+const PAUSE_REASONS = [
+  "material_shortage",
+  "machine_breakdown",
+  "setup",
+  "quality_issue",
+  "waiting_approval",
+  "break",
+  "other",
+] as const satisfies readonly Schemas["ErpPauseReason"][];
+
+/**
+ * An operator's buttons on one operation (D-341, D-353): start, pause with a reason, resume, finish
+ * with good and scrap, or skip. A step that mirrors a Packio job milestone cannot be skipped — the
+ * customer's job needs it done — and a failed milestone update is shown with a way to the job.
+ * `size="xl"` is the machine kiosk's glove-sized variant.
+ */
 export function OperationButtons({
   orderId,
   operation,
   unit,
   defaultGood,
+  size = "lg",
+  jobHref,
 }: {
   orderId: string;
   operation: Schemas["ErpProductionOperationDto"];
   unit: string;
   defaultGood: string;
+  size?: "lg" | "xl";
+  jobHref?: string;
 }) {
   const t = useTranslations("partnerFactory.floor");
+  const tKiosk = useTranslations("partnerOps.kiosk");
   const tCommon = useTranslations("partnerErp.common");
   const { factoryId } = useFactory();
   const { call, busy } = useErpCall();
   const [finishing, setFinishing] = useState(false);
+  const [pausing, setPausing] = useState(false);
+  const [reason, setReason] = useState<Schemas["ErpPauseReason"]>("material_shortage");
+  const [note, setNote] = useState("");
   const [good, setGood] = useState(trimZeros(defaultGood));
   const [scrap, setScrap] = useState("0");
   const path = { factoryId, moId: orderId, operationId: operation.id };
   const header = { "Idempotency-Key": crypto.randomUUID() };
+  const linked = operation.milestone !== null;
 
-  if (operation.status === "done" || operation.status === "skipped") return null;
+  const failed =
+    operation.milestoneSync === "failed" ? (
+      <Callout tone="warning" icon="warning">
+        <span className="flex flex-wrap items-center gap-2">
+          {tKiosk("milestoneFailed")}
+          {jobHref ? (
+            <Link href={jobHref} className="font-medium underline underline-offset-4">
+              {tKiosk("openJob")}
+            </Link>
+          ) : null}
+        </span>
+      </Callout>
+    ) : null;
+
+  if (operation.status === "done" || operation.status === "skipped") return failed;
   return (
     <div className="flex flex-col gap-2">
+      {failed}
+      {operation.status === "paused" && operation.pauseReason ? (
+        <p className="text-warning-subtle-fg text-sm font-medium">
+          {tKiosk("pausedFor", {
+            reason: (PAUSE_REASONS as readonly string[]).includes(operation.pauseReason)
+              ? tKiosk(`reasons.${operation.pauseReason as Schemas["ErpPauseReason"]}`)
+              : operation.pauseReason,
+          })}
+        </p>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         {operation.status === "pending" ? (
           <Button
-            size="lg"
+            size={size}
             iconStart="play"
             loading={busy}
             onClick={() =>
@@ -285,17 +336,41 @@ export function OperationButtons({
             {t("start")}
           </Button>
         ) : null}
+        {operation.status === "in_progress" ? (
+          <Button size={size} variant="secondary" iconStart="pause" onClick={() => setPausing(true)}>
+            {tKiosk("pause")}
+          </Button>
+        ) : null}
+        {operation.status === "paused" ? (
+          <Button
+            size={size}
+            iconStart="play"
+            loading={busy}
+            onClick={() =>
+              void call(
+                () =>
+                  browserApi().POST(
+                    "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/operations/{operationId}/actions/resume",
+                    { params: { path, header } },
+                  ),
+                tKiosk("resumed"),
+              )
+            }
+          >
+            {tKiosk("resume")}
+          </Button>
+        ) : null}
         <Button
-          size="lg"
+          size={size}
           variant={operation.status === "in_progress" ? "primary" : "secondary"}
           iconStart="check"
           onClick={() => setFinishing(!finishing)}
         >
           {t("finish")}
         </Button>
-        {operation.status === "pending" ? (
+        {operation.status === "pending" && !linked ? (
           <Button
-            size="lg"
+            size={size}
             variant="ghost"
             iconStart="minus"
             loading={busy}
@@ -314,6 +389,52 @@ export function OperationButtons({
           </Button>
         ) : null}
       </div>
+      {pausing ? (
+        <Dialog
+          open
+          onOpenChange={(open) => !open && setPausing(false)}
+          title={tKiosk("pauseTitle")}
+          closeLabel={tCommon("cancel")}
+          footer={
+            <Button
+              size={size}
+              iconStart="pause"
+              loading={busy}
+              onClick={() =>
+                void call(
+                  () =>
+                    browserApi().POST(
+                      "/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/operations/{operationId}/actions/pause",
+                      { params: { path, header }, body: { reason, note: note.trim() || null } },
+                    ),
+                  tKiosk("paused"),
+                ).then((ok) => ok && setPausing(false))
+              }
+            >
+              {tKiosk("pause")}
+            </Button>
+          }
+        >
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-2">
+              {PAUSE_REASONS.map((key) => (
+                <Button
+                  key={key}
+                  size={size}
+                  variant={reason === key ? "primary" : "secondary"}
+                  aria-pressed={reason === key}
+                  onClick={() => setReason(key)}
+                >
+                  {tKiosk(`reasons.${key}`)}
+                </Button>
+              ))}
+            </div>
+            <Field label={tKiosk("pauseNote")}>
+              <Textarea rows={2} maxLength={500} value={note} onChange={(event) => setNote(event.target.value)} />
+            </Field>
+          </div>
+        </Dialog>
+      ) : null}
       {finishing ? (
         <form
           className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
@@ -355,7 +476,7 @@ export function OperationButtons({
               onChange={(event) => setScrap(event.target.value)}
             />
           </Field>
-          <Button type="submit" size="lg" iconStart="save" loading={busy}>
+          <Button type="submit" size={size} iconStart="save" loading={busy}>
             {t("save")}
           </Button>
         </form>

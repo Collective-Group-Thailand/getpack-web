@@ -27,19 +27,26 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     expect(items("factory_shipping")).toEqual(["ship", "requests", "knowledge", "settings"]);
     expect(items("factory_planner")).toEqual([
       "today",
+      "alerts",
       "jobs",
       "floor",
+      "kiosk",
       "stock",
       "purchasing",
       "planning",
+      "schedule",
+      "maintenance",
+      "machines",
       "capacity",
       "hours",
+      "documents",
       "requests",
       "knowledge",
       "settings",
     ]);
     expect(items("factory_accountant")).toEqual([
       "today",
+      "alerts",
       "stock",
       "purchasing",
       "tradingPartners",
@@ -48,6 +55,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "payouts",
       "prices",
       "shippingRates",
+      "documents",
       "requests",
       "knowledge",
       "settings",
@@ -56,26 +64,68 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
 
   it("gives the store and the buying desk their stock, orders and suppliers (D-319)", () => {
     expect(items("factory_storekeeper")).toEqual([
+      "alerts",
       "stock",
       "purchasing",
       "tradingPartners",
       "planning",
+      "documents",
       "requests",
       "knowledge",
       "settings",
     ]);
     expect(items("factory_purchaser")).toEqual([
+      "alerts",
       "stock",
       "purchasing",
+      "rfqs",
       "tradingPartners",
       "payables",
+      "documents",
       "requests",
       "knowledge",
       "settings",
     ]);
     expect(
       partnerBottomItems("active", ["factory_storekeeper"], grants("factory_storekeeper")).map((i) => i.key),
-    ).toEqual(["stock", "purchasing", "tradingPartners"]);
+    ).toEqual(["stock", "purchasing", "tradingPartners", "alerts"]);
+  });
+
+  it("gives the operator the floor and the machine kiosk, the maintenance crew its orders and machines (D-353, D-357)", () => {
+    expect(items("factory_operator")).toEqual([
+      "today",
+      "alerts",
+      "jobs",
+      "floor",
+      "kiosk",
+      "planning",
+      "maintenance",
+      "documents",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
+    expect(partnerBottomItems("active", ["factory_operator"], grants("factory_operator")).map((i) => i.key)).toEqual([
+      "today",
+      "jobs",
+      "floor",
+    ]);
+    expect(items("factory_maintenance")).toEqual([
+      "alerts",
+      "stock",
+      "maintenance",
+      "machines",
+      "documents",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
+    expect(
+      partnerBottomItems("active", ["factory_maintenance"], grants("factory_maintenance")).map((i) => i.key),
+    ).toEqual(["maintenance", "stock", "alerts"]);
+    // Every item a role sees is one its permissions open (no menu that ends in a 403).
+    for (const role of Object.keys(FACTORY_ROLE_GRANTS) as (keyof typeof FACTORY_ROLE_GRANTS)[])
+      for (const key of items(role)) expect(sidebarItems("active", ["unknown_role"], grants(role))).toContain(key);
   });
 
   it("keeps a factory being onboarded to its wizard, prices and guides", () => {

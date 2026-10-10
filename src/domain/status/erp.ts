@@ -1,9 +1,15 @@
 import { defineStatusMap } from "./types";
 import type {
+  ErpDocExpiry,
+  ErpMachineState,
+  ErpMaintenanceStatus,
   ErpOperationStatus,
   ErpProductionStatus,
   ErpPurchaseOrderStatus,
   ErpPurchaseRequestStatus,
+  ErpRfqStatus,
+  ErpRfqSupplierStatus,
+  ErpSupplierApproval,
   ErpSupplierInvoiceStatus,
 } from "./contract";
 
@@ -51,6 +57,54 @@ export const ERP_PRODUCTION_STATUS = defineStatusMap<ErpProductionStatus>({
 export const ERP_OPERATION_STATUS = defineStatusMap<ErpOperationStatus>({
   pending: { tone: "neutral", icon: "clock", labelKey: "erpOperation.pending" },
   in_progress: { tone: "warning", icon: "play", labelKey: "erpOperation.inProgress" },
+  paused: { tone: "danger", icon: "pause", labelKey: "erpOperation.paused" },
   done: { tone: "success", icon: "check", labelKey: "erpOperation.done" },
   skipped: { tone: "neutral", icon: "minus", labelKey: "erpOperation.skipped" },
+});
+
+/** A request for quotation to several suppliers (D-348). */
+export const ERP_RFQ_STATUS = defineStatusMap<ErpRfqStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "erpRfq.draft" },
+  sent: { tone: "info", icon: "send", labelKey: "erpRfq.sent" },
+  awarded: { tone: "success", icon: "check", labelKey: "erpRfq.awarded" },
+  cancelled: { tone: "neutral", icon: "ban", labelKey: "erpRfq.cancelled" },
+});
+
+/** One supplier's answer to a request for quotation (D-348). */
+export const ERP_RFQ_SUPPLIER_STATUS = defineStatusMap<ErpRfqSupplierStatus>({
+  invited: { tone: "neutral", icon: "hourglass", labelKey: "erpRfqSupplier.invited" },
+  quoted: { tone: "success", icon: "receipt", labelKey: "erpRfqSupplier.quoted" },
+  declined: { tone: "danger", icon: "ban", labelKey: "erpRfqSupplier.declined" },
+});
+
+/** A supplier's standing on the approved supplier list for an item (D-351). */
+export const ERP_SUPPLIER_APPROVAL = defineStatusMap<ErpSupplierApproval>({
+  pending: { tone: "warning", icon: "hourglass", labelKey: "erpSupplierApproval.pending" },
+  approved: { tone: "success", icon: "shield-check", labelKey: "erpSupplierApproval.approved" },
+  suspended: { tone: "danger", icon: "ban", labelKey: "erpSupplierApproval.suspended" },
+});
+
+/** A maintenance order (D-355). */
+export const ERP_MAINTENANCE_STATUS = defineStatusMap<ErpMaintenanceStatus>({
+  open: { tone: "warning", icon: "warning", labelKey: "erpMaintenance.open" },
+  scheduled: { tone: "info", icon: "calendar", labelKey: "erpMaintenance.scheduled" },
+  in_progress: { tone: "warning", icon: "wrench", labelKey: "erpMaintenance.inProgress" },
+  done: { tone: "success", icon: "check", labelKey: "erpMaintenance.done" },
+  cancelled: { tone: "neutral", icon: "ban", labelKey: "erpMaintenance.cancelled" },
+});
+
+/** What a machine is doing now (D-353, D-355). */
+export const ERP_MACHINE_STATE = defineStatusMap<ErpMachineState>({
+  running: { tone: "success", icon: "play", labelKey: "erpMachine.running" },
+  idle: { tone: "neutral", icon: "clock", labelKey: "erpMachine.idle" },
+  down: { tone: "danger", icon: "warning", labelKey: "erpMachine.down" },
+  maintenance: { tone: "warning", icon: "wrench", labelKey: "erpMachine.maintenance" },
+});
+
+/** Where a document stands against its expiry date (D-356). */
+export const ERP_DOC_EXPIRY = defineStatusMap<ErpDocExpiry>({
+  none: { tone: "neutral", icon: "document", labelKey: "erpDocExpiry.none" },
+  valid: { tone: "success", icon: "check", labelKey: "erpDocExpiry.valid" },
+  expiring: { tone: "warning", icon: "hourglass", labelKey: "erpDocExpiry.expiring" },
+  expired: { tone: "danger", icon: "warning", labelKey: "erpDocExpiry.expired" },
 });

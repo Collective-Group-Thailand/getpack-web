@@ -3,13 +3,14 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { ERP_PURCHASE_REQUEST_STATUS } from "@/domain/status";
-import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatQty } from "@/features/partner/erp/format";
 import { RequestActions } from "@/features/partner/erp/RequestActions";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
+import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
@@ -19,10 +20,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** One purchase request (D-336): its lines, the orders they became, who asked and who decided. */
 export default async function PurchaseRequestPage({ params }: { params: Promise<{ prId: string }> }) {
-  const [{ prId }, t, tCommon, format, locale, context] = await Promise.all([
+  const [{ prId }, t, tCommon, tRfq, format, locale, context] = await Promise.all([
     params,
     getTranslations("partnerFactory.requests"),
     getTranslations("partnerErp.common"),
+    getTranslations("partnerOps.rfqs"),
     getFormat(),
     getLocale(),
     factoryContext(),
@@ -52,7 +54,16 @@ export default async function PurchaseRequestPage({ params }: { params: Promise<
       title={pr.prNo}
       back={back}
       meta={<StatusChip map={ERP_PURCHASE_REQUEST_STATUS} value={pr.status} />}
-      actions={<RequestActions request={pr} />}
+      actions={
+        <>
+          {pr.status === "approved" && canAt(context, "factory_procurement.manage") ? (
+            <Button asChild size="lg" variant="secondary" iconStart="scale">
+              <Link href={`/purchasing/rfqs/new?request=${pr.id}`}>{tRfq("fromRequest")}</Link>
+            </Button>
+          ) : null}
+          <RequestActions request={pr} />
+        </>
+      }
     >
       <Card padding="md">
         <DescriptionList

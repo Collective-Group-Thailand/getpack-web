@@ -7,6 +7,7 @@ import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/pa
 import { formatPlain, formatQty } from "@/features/partner/erp/format";
 import { MoActions, OperationButtons, ReturnMaterial } from "@/features/partner/erp/MoActions";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -32,6 +33,7 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
     getLocale(),
     factoryContext(),
   ]);
+  const [tOps, tKiosk] = await Promise.all([getTranslations("partnerOps.shared"), getTranslations("partnerOps.kiosk")]);
   const { contract } = await partnerServerApis();
   const read = await attempt(
     async () =>
@@ -201,11 +203,31 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
                         ? ` · ${t("detail.output", { good: formatQty(op.goodQty, locale), scrap: formatQty(op.scrapQty, locale) })}`
                         : ""}
                     </p>
+                    {op.scheduledStart && op.scheduledEnd ? (
+                      <p className="text-muted text-sm">
+                        <Link href="/planning/schedule" className="underline-offset-4 hover:underline">
+                          {tKiosk("planned", {
+                            from: format.dateTime(op.scheduledStart),
+                            to: format.dateTime(op.scheduledEnd),
+                          })}
+                        </Link>
+                        {op.pausedMinutes > 0 ? ` · ${tOps("pausedMinutes", { n: op.pausedMinutes })}` : ""}
+                      </p>
+                    ) : null}
                   </div>
-                  <StatusChip map={ERP_OPERATION_STATUS} value={op.status} />
+                  <span className="flex flex-wrap items-center gap-1">
+                    {op.milestone ? <Badge tone="info">{tOps("packioStep")}</Badge> : null}
+                    <StatusChip map={ERP_OPERATION_STATUS} value={op.status} />
+                  </span>
                 </div>
-                {canRecord ? (
-                  <OperationButtons orderId={mo.id} operation={op} unit={unit(mo.unit)} defaultGood={mo.quantity} />
+                {canRecord || (op.milestoneSync === "failed" && (op.status === "done" || op.status === "skipped")) ? (
+                  <OperationButtons
+                    orderId={mo.id}
+                    operation={op}
+                    unit={unit(mo.unit)}
+                    defaultGood={mo.quantity}
+                    jobHref={mo.job ? `/jobs/${mo.job.id}` : undefined}
+                  />
                 ) : null}
               </li>
             ))}
@@ -214,6 +236,8 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
           <EmptyState icon="checklist" title={t("detail.noOperations")} />
         )}
       </PartnerSection>
+
+      <RelatedDocuments type="production_order" id={mo.id} label={mo.moNo} />
     </PartnerPage>
   );
 }

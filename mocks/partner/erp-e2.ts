@@ -68,6 +68,42 @@ const STATS = {
   avgLeadDays: null,
 };
 
+/** E2.1 sourcing fields of a supplier link (packio-api v0.46.0, D-346 – D-351): pending, no breaks, no score yet. */
+const SOURCING = {
+  approval: "pending" as const,
+  approvalNote: null,
+  approvedAt: null as string | null,
+  approvedBy: null as string | null,
+  reviewOn: null,
+  priceBreaks: [],
+  breaksValidUntil: null,
+  score: {
+    receipts: 0,
+    deliveredValue: "0.00",
+    acceptedValue: "0.00",
+    rejectedLines: 0,
+    qualityPct: null,
+    onTimePct: null,
+    score: null,
+    grade: null,
+  },
+};
+
+/** E3 fields of an operation (D-352 – D-354): not planned, not started. */
+export const OPERATION_E3 = {
+  scheduledStart: null as string | null,
+  scheduledEnd: null as string | null,
+  locked: false,
+  startedAt: null as string | null,
+  finishedAt: null as string | null,
+  pausedMinutes: 0,
+  actualMinutes: null as number | null,
+  pauseReason: null as string | null,
+  milestone: null,
+  milestoneSync: "none" as const,
+  milestoneSyncError: null,
+};
+
 /** An item's links; the default supplier is linked on first read, as the API links it on first use. */
 function linksOf(erp: ErpMockState, e2: E2, item: ErpMockItem): Link[] {
   if (
@@ -95,6 +131,10 @@ function linksOf(erp: ErpMockState, e2: E2, item: ErpMockItem): Link[] {
       note: null,
       status: "active",
       stats: { ...STATS },
+      ...SOURCING,
+      approval: "approved",
+      approvedAt: now(),
+      approvedBy: "เจ้าของ (ทดสอบ)",
       version: 1,
     });
   }
@@ -249,6 +289,7 @@ export const erpE2Handlers = [
       note: b.note ?? null,
       status: "active",
       stats: { ...STATS },
+      ...SOURCING,
       version: 1,
     };
     ok.e2.links.push(link);
@@ -807,6 +848,7 @@ export const erpE2Handlers = [
         name: o.name,
         machine: o.machine,
         plannedMinutes: o.setupMinutes + (o.runRatePerHour ? Math.ceil((qty * 60) / Number(o.runRatePerHour)) : 0),
+        ...OPERATION_E3,
         status: "pending",
         goodQty: "0.000",
         scrapQty: "0.000",
@@ -912,7 +954,7 @@ export const erpE2Handlers = [
       return withEtag(moDto(mo, ok.who));
     }),
   ),
-  ...(["start", "finish", "skip"] as const).map((action) =>
+  ...(["start", "finish", "skip", "pause", "resume"] as const).map((action) =>
     http.post(
       `${BASE}/production-orders/:moId/operations/:operationId/actions/${action}`,
       async ({ request, params }) => {
@@ -922,8 +964,25 @@ export const erpE2Handlers = [
         const op = mo?.operations.find((o) => o.id === params.operationId);
         if (!mo || !op) return notFound();
         if (!RUNNING.includes(mo.status)) return problem(409, "erp.invalid_status", `อยู่ในสถานะ ${mo.status}`);
-        const b = await body<Schemas["ErpOperationOutputDto"]>(request);
-        op.status = action === "start" ? "in_progress" : action === "finish" ? "done" : "skipped";
+        const b = await body<Schemas["ErpFinishOperationDto"] & Partial<Schemas["ErpPauseOperationDto"]>>(request);
+        // E3 (D-353): pause with a reason and resume; a step that mirrors a Packio milestone is never skipped.
+        if (action === "skip" && op.milestone) return problem(409, "erp.invalid_status", "ขั้นตอนนี้ข้ามไม่ได้");
+        if (action === "pause" && op.status !== "in_progress")
+          return problem(409, "erp.invalid_status", "ยังไม่ได้เริ่ม");
+        if (action === "resume" && op.status !== "paused") return problem(409, "erp.invalid_status", "ไม่ได้หยุดอยู่");
+        if (action === "start" && op.status !== "pending") return problem(409, "erp.invalid_status", "เริ่มไปแล้ว");
+        op.status =
+          action === "start" || action === "resume"
+            ? "in_progress"
+            : action === "pause"
+              ? "paused"
+              : action === "finish"
+                ? "done"
+                : "skipped";
+        if (action === "start") op.startedAt = now();
+        if (action === "pause") op.pauseReason = b.reason ?? "other";
+        if (action === "resume") op.pauseReason = null;
+        if (action === "finish" || action === "skip") op.finishedAt = now();
         if (action === "finish") {
           op.goodQty = q3(Number(b.goodQty ?? mo.quantity));
           op.scrapQty = q3(Number(b.scrapQty ?? 0));
@@ -965,7 +1024,9 @@ export const erpE2Handlers = [
       .flatMap((m) =>
         m.operations
           .filter(
-            (o) => (o.status === "pending" || o.status === "in_progress") && (!machine || o.machine?.id === machine),
+            (o) =>
+              (o.status === "pending" || o.status === "in_progress" || o.status === "paused") &&
+              (!machine || o.machine?.id === machine),
           )
           .map((operation) => ({ operation, order: moSummary(m) })),
       );
@@ -1136,6 +1197,14 @@ function mrpRows(ok: Ctx): Schemas["ErpMrpRowDto"][] {
   }
   return out;
 }
+
+/** What the E3 mock (machines, kiosk, schedule) reads of E2's production orders. */
+export const erpE2Mock = {
+  e2Of: (factoryId: string) => e2Of(factoryId),
+  moSummary: (mo: Mo) => moSummary(mo),
+  machines: () => MACHINES,
+  running: (status: string) => RUNNING.includes(status),
+};
 
 export function resetErpE2(): void {
   states.clear();

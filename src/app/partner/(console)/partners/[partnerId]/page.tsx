@@ -6,6 +6,8 @@ import { ERP_PURCHASE_ORDER_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PartnerForm, PartnerStatusButton } from "@/features/partner/erp/PartnerForm";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
+import { StatStrip } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -22,11 +24,12 @@ export async function generateMetadata(): Promise<Metadata> {
 /** One supplier or customer (D-317): its details to edit, and the purchase orders with it. */
 export default async function TradingPartnerPage({ params }: Props) {
   const { partnerId } = await params;
-  const [t, tCommon, tPo, tPrices, format, context] = await Promise.all([
+  const [t, tCommon, tPo, tPrices, tSourcing, format, context] = await Promise.all([
     getTranslations("partnerErp.partners"),
     getTranslations("partnerErp.common"),
     getTranslations("partnerErp.purchasing"),
     getTranslations("partnerFactory.prices"),
+    getTranslations("partnerOps.sourcing"),
     getFormat(),
     factoryContext(),
   ]);
@@ -68,6 +71,19 @@ export default async function TradingPartnerPage({ params }: Props) {
             ).data!,
         )
       : null;
+  // D-349: the supplier's 12-month score and its latest rejections.
+  const card =
+    partner.kind !== "customer" && canAt(context, "factory_trading_partners.read")
+      ? await attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/partners/{partnerId}/scorecard", {
+                params: { path: { ...path, partnerId } },
+              })
+            ).data!,
+        )
+      : null;
+  const pct = (value: string | null) => (value ? `${Number(value).toFixed(1)}%` : "—");
   const unit = (code: string) => tCommon(`units.${code}` as never);
   const canEdit = canAt(context, "factory_trading_partners.manage");
 
@@ -94,6 +110,59 @@ export default async function TradingPartnerPage({ params }: Props) {
         </>
       }
     >
+      {card?.data ? (
+        <PartnerSection title={tSourcing("scoreTitle")} description={tSourcing("scoreBody")}>
+          <StatStrip
+            label={tSourcing("scoreTitle")}
+            items={[
+              {
+                key: "score",
+                label: tSourcing("score.score"),
+                value: card.data.score ? `${Number(card.data.score).toFixed(1)}` : "—",
+                hint: card.data.grade ? tSourcing("grade", { grade: card.data.grade }) : tSourcing("noGrade"),
+                tone: card.data.grade === "A" ? "success" : card.data.grade === "D" ? "danger" : "neutral",
+              },
+              { key: "quality", label: tSourcing("score.quality"), value: pct(card.data.qualityPct) },
+              { key: "onTime", label: tSourcing("score.onTime"), value: pct(card.data.onTimePct) },
+              { key: "receipts", label: tSourcing("score.receipts"), value: card.data.receipts },
+              {
+                key: "rejected",
+                label: tSourcing("score.rejectedLines"),
+                value: card.data.rejectedLines,
+                tone: card.data.rejectedLines ? "warning" : "neutral",
+              },
+              { key: "approved", label: tSourcing("score.approvedItems"), value: card.data.approvedItems },
+              { key: "pending", label: tSourcing("score.pendingItems"), value: card.data.pendingItems },
+            ]}
+          />
+          {card.data.rejections.length ? (
+            <div className="flex flex-col gap-2">
+              <h3 className="font-semibold">{tSourcing("rejectionsTitle")}</h3>
+              <ul className="flex flex-col gap-1 text-sm">
+                {card.data.rejections.map((r) => (
+                  <li key={`${r.goodsReceipt.id}-${r.item.id}`}>
+                    <Link
+                      href={`/purchasing/receipts/${r.goodsReceipt.id}`}
+                      className="font-mono underline-offset-4 hover:underline"
+                    >
+                      {r.goodsReceipt.code}
+                    </Link>
+                    {" · "}
+                    {tSourcing("rejectionLine", {
+                      date: format.date(r.receivedOn),
+                      item: r.item.name,
+                      qty: tCommon("inUnit", { qty: r.rejectedQuantity.replace(/\.?0+$/, ""), unit: unit(r.unit) }),
+                    })}
+                    {r.reason ? (
+                      <span className="text-muted"> {tSourcing("rejectionReason", { reason: r.reason })}</span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </PartnerSection>
+      ) : null}
       {items ? (
         <PartnerSection title={tPrices("supplierItems")}>
           {items.data ? (
@@ -176,6 +245,7 @@ export default async function TradingPartnerPage({ params }: Props) {
           )}
         </PartnerSection>
       ) : null}
+      <RelatedDocuments type="trading_partner" id={partner.id} label={partner.name} />
       <PartnerSection title={t("form.editTitle")}>
         {canEdit ? (
           <PartnerForm partner={partner} etag={etag} />

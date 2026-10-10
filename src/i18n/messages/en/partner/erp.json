@@ -35,7 +35,9 @@
       "transfer_in": "Transfer in",
       "production_issue": "Issued to production",
       "production_return": "Returned from production",
-      "production_receipt": "Finished goods in"
+      "production_receipt": "Finished goods in",
+      "landed_cost": "Landed cost",
+      "maintenance_issue": "Maintenance issue"
     },
     "partnerKinds": {
       "supplier": "Supplier (we buy from)",
@@ -288,7 +290,8 @@
       "draft": "Drafts",
       "all": "All",
       "receipts": "Receipts",
-      "requests": "Purchase requests"
+      "requests": "Purchase requests",
+      "rfqs": "Quotation requests"
     },
     "searchLabel": "Search purchase orders",
     "searchPlaceholder": "Type a PO number, a supplier or an item",
@@ -523,7 +526,9 @@
       "pr": "Purchase request (PR)",
       "ap": "Supplier invoice (AP)",
       "pv": "Payment voucher (PV)",
-      "mo": "Production order (MO)"
+      "mo": "Production order (MO)",
+      "rfq": "Quotation request (RFQ)",
+      "mt": "Maintenance order (MT)"
     },
     "modules": "Modules in use",
     "modulesHint": "Switch off what you do not use to keep the menu short",

@@ -162,7 +162,12 @@
     "overpayment": "The amount is more than the invoice has open",
     "nothing_to_issue": "Every material is already issued",
     "materials_issued": "Materials were issued; return them first, or complete the order instead",
-    "nothing_to_request": "The chosen materials are no longer short"
+    "nothing_to_request": "The chosen materials are no longer short",
+    "supplier_not_approved": "This supplier is not approved for an item on the order — approve it before issuing",
+    "machine_down": "This machine has an open breakdown — finish the repair before starting work",
+    "file_not_usable": "This file cannot be used — upload it again",
+    "folder_exists": "A folder with this name already exists",
+    "folder_not_empty": "The folder still has documents or sub-folders — move them out first"
   },
   "factory_users": {
     "role_not_allowed": "Role not allowed"
