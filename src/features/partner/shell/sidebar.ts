@@ -19,6 +19,9 @@ export type SidebarItemKey =
   | "stock"
   | "purchasing"
   | "tradingPartners"
+  | "planning"
+  | "floor"
+  | "payables"
   | "capacity"
   | "hours"
   | "billing"
@@ -46,6 +49,7 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
   today: { key: "today", href: "/", icon: "home", group: "daily" },
   onboarding: { key: "onboarding", href: "/onboarding", icon: "checklist", group: "daily" },
   jobs: { key: "jobs", href: "/jobs", icon: "factory", group: "daily", permission: "factory_jobs.read" },
+  floor: { key: "floor", href: "/floor", icon: "play", group: "daily", permission: "factory_production.record" },
   qc: { key: "qc", href: "/qc", icon: "clipboard-check", group: "daily", permission: "factory_qc.record" },
   samples: {
     key: "samples",
@@ -71,6 +75,21 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
     icon: "handshake",
     group: "supply",
     permission: "factory_trading_partners.read",
+  },
+  // E2 (D-339 – D-342): planning and the floor; the factory's own payables (D-337, D-338).
+  planning: {
+    key: "planning",
+    href: "/planning",
+    icon: "layers",
+    group: "plan",
+    permission: "factory_planning.read",
+  },
+  payables: {
+    key: "payables",
+    href: "/payables",
+    icon: "credit-card",
+    group: "finance",
+    permission: "factory_ap.read",
   },
   capacity: {
     key: "capacity",
@@ -116,8 +135,8 @@ const EVERYONE: readonly SidebarItemKey[] = ["knowledge", "requests", "settings"
 
 const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   factory_owner: Object.keys(ITEMS) as SidebarItemKey[],
-  factory_planner: ["today", "jobs", "stock", "purchasing", "capacity", "hours", ...EVERYONE],
-  factory_operator: ["today", "jobs", ...EVERYONE],
+  factory_planner: ["today", "jobs", "floor", "planning", "stock", "purchasing", "capacity", "hours", ...EVERYONE],
+  factory_operator: ["today", "floor", "jobs", "planning", ...EVERYONE],
   // QC and shipping open on their own queue (`/qc`, `/ship`): "งานวันนี้" would lead back to it.
   factory_qc: ["qc", "samples", "claims", ...EVERYONE],
   factory_shipping: ["ship", ...EVERYONE],
@@ -126,6 +145,7 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "purchasing",
     "tradingPartners",
     "stock",
+    "payables",
     "billing",
     "payouts",
     "prices",
@@ -134,8 +154,8 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     ...EVERYONE,
   ],
   // Packio Factory ERP roles (D-319): the store and the buying desk.
-  factory_storekeeper: ["stock", "purchasing", "tradingPartners", ...EVERYONE],
-  factory_purchaser: ["purchasing", "stock", "tradingPartners", ...EVERYONE],
+  factory_storekeeper: ["stock", "purchasing", "tradingPartners", "planning", ...EVERYONE],
+  factory_purchaser: ["purchasing", "stock", "tradingPartners", "payables", ...EVERYONE],
 };
 
 const SUPPLY: readonly SidebarItemKey[] = ["stock", "purchasing", "tradingPartners"];

@@ -22,10 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
 /** One supplier or customer (D-317): its details to edit, and the purchase orders with it. */
 export default async function TradingPartnerPage({ params }: Props) {
   const { partnerId } = await params;
-  const [t, tCommon, tPo, format, context] = await Promise.all([
+  const [t, tCommon, tPo, tPrices, format, context] = await Promise.all([
     getTranslations("partnerErp.partners"),
     getTranslations("partnerErp.common"),
     getTranslations("partnerErp.purchasing"),
+    getTranslations("partnerFactory.prices"),
     getFormat(),
     factoryContext(),
   ]);
@@ -56,6 +57,18 @@ export default async function TradingPartnerPage({ params }: Props) {
           ).data!,
       )
     : null;
+  const items =
+    partner.kind !== "customer" && canAt(context, "factory_inventory.read")
+      ? await attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/partners/{partnerId}/items", {
+                params: { path: { ...path, partnerId } },
+              })
+            ).data!,
+        )
+      : null;
+  const unit = (code: string) => tCommon(`units.${code}` as never);
   const canEdit = canAt(context, "factory_trading_partners.manage");
 
   return (
@@ -81,6 +94,63 @@ export default async function TradingPartnerPage({ params }: Props) {
         </>
       }
     >
+      {items ? (
+        <PartnerSection title={tPrices("supplierItems")}>
+          {items.data ? (
+            <PartnerTable
+              caption={tPrices("supplierItems")}
+              rows={items.data}
+              rowKey={(link) => link.id}
+              rowHref={(link) => `/stock/items/${link.item.id}`}
+              empty={<EmptyState icon="tag" title={tPrices("supplierItemsEmpty")} />}
+              columns={[
+                {
+                  key: "item",
+                  header: tPrices("table.item"),
+                  primary: true,
+                  cell: (link) => (
+                    <span className="flex flex-col">
+                      {link.item.name}
+                      <span className="text-muted text-sm">
+                        {link.item.sku}
+                        {link.supplierSku ? ` · ${tPrices("theirCode", { code: link.supplierSku })}` : ""}
+                      </span>
+                    </span>
+                  ),
+                },
+                {
+                  key: "price",
+                  header: tPrices("lastPrice"),
+                  align: "end",
+                  cell: (link) =>
+                    link.lastPrice
+                      ? tPrices("perUnit", { price: format.thb(link.lastPrice), unit: unit(link.purchaseUnit) })
+                      : "—",
+                },
+                {
+                  key: "date",
+                  header: tPrices("table.date"),
+                  hideOnPhone: true,
+                  cell: (link) => format.date(link.lastPricedOn),
+                },
+                {
+                  key: "flags",
+                  header: tPrices("table.flags"),
+                  cell: (link) => (
+                    <span className="flex flex-wrap gap-1">
+                      {link.preferred ? <Badge tone="primary">{tPrices("preferred")}</Badge> : null}
+                      {link.cheapest ? <Badge tone="success">{tPrices("cheapest")}</Badge> : null}
+                      {link.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}
+                    </span>
+                  ),
+                },
+              ]}
+            />
+          ) : (
+            <PageError error={items.error} />
+          )}
+        </PartnerSection>
+      ) : null}
       {orders ? (
         <PartnerSection title={t("detail.orders")}>
           {orders.data ? (

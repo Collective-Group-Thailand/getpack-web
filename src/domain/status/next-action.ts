@@ -137,6 +137,23 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "erp_po.receive": { tone: "primary", icon: "package-check", labelKey: "action.receiveGoods" },
   "erp_po.close": { tone: "neutral", icon: "archive", labelKey: "action.closePurchaseOrder" },
   "erp_po.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelPurchaseOrder" },
+  // packio-api v0.45.0 (D-336 – D-341).
+  "erp_pr.edit": { tone: "neutral", icon: "edit", labelKey: "action.editPurchaseRequest" },
+  "erp_pr.submit": { tone: "primary", icon: "send", labelKey: "action.submitPurchaseRequest" },
+  "erp_pr.approve": { tone: "success", icon: "check", labelKey: "action.approvePurchaseRequest" },
+  "erp_pr.reject": { tone: "danger", icon: "ban", labelKey: "action.rejectPurchaseRequest" },
+  "erp_pr.convert": { tone: "primary", icon: "cart", labelKey: "action.convertPurchaseRequest" },
+  "erp_pr.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelPurchaseRequest" },
+  "erp_ap.approve": { tone: "success", icon: "check", labelKey: "action.approveSupplierInvoice" },
+  "erp_ap.pay": { tone: "primary", icon: "coins", labelKey: "action.paySupplier" },
+  "erp_ap.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelSupplierInvoice" },
+  "erp_pay.reverse": { tone: "danger", icon: "undo", labelKey: "action.reversePayment" },
+  "erp_mo.edit": { tone: "neutral", icon: "edit", labelKey: "action.editProductionOrder" },
+  "erp_mo.release": { tone: "primary", icon: "send", labelKey: "action.releaseProductionOrder" },
+  "erp_mo.issue": { tone: "primary", icon: "package", labelKey: "action.issueMaterials" },
+  "erp_mo.return": { tone: "neutral", icon: "undo", labelKey: "action.returnMaterials" },
+  "erp_mo.complete": { tone: "success", icon: "check", labelKey: "action.completeProductionOrder" },
+  "erp_mo.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelProductionOrder" },
 };
 
 /**
@@ -210,6 +227,22 @@ export const API_ACTION_KEYS = [
   "erp_po.receive",
   "erp_po.close",
   "erp_po.cancel",
+  "erp_pr.edit",
+  "erp_pr.submit",
+  "erp_pr.approve",
+  "erp_pr.reject",
+  "erp_pr.convert",
+  "erp_pr.cancel",
+  "erp_ap.approve",
+  "erp_ap.pay",
+  "erp_ap.cancel",
+  "erp_pay.reverse",
+  "erp_mo.edit",
+  "erp_mo.release",
+  "erp_mo.issue",
+  "erp_mo.return",
+  "erp_mo.complete",
+  "erp_mo.cancel",
 ] as const;
 
 /** Falls back to something visible and pressable rather than dropping the action. */

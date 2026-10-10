@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
@@ -23,6 +23,8 @@ import { type Line, type LineErrors, LinesEditor, newLine, type PickItem } from 
 type Po = Schemas["ErpPurchaseOrderDto"];
 type VatMode = Po["vatMode"];
 const VAT_MODES: VatMode[] = ["exclusive", "inclusive", "none"];
+type Terms = ReadonlyMap<string, { unit: string; price: string | null }>;
+const NO_TERMS: Terms = new Map();
 
 /**
  * A draft purchase order (D-325): the supplier, dates, how prices treat VAT, and the lines. Totals come back
@@ -73,6 +75,33 @@ export function PurchaseOrderForm({
   const [errors, setErrors] = useState<LineErrors>({});
   const [supplierError, setSupplierError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [fetched, setFetched] = useState<{ supplierId: string; terms: Terms }>({ supplierId: "", terms: NO_TERMS });
+  const terms = fetched.supplierId === supplierId ? fetched.terms : NO_TERMS;
+
+  // D-333: what this supplier sells and at what price, so a picked item comes in its unit and latest price.
+  useEffect(() => {
+    if (!supplierId) return;
+    let live = true;
+    browserApi()
+      .GET("/v1/partner/factories/{factoryId}/erp/partners/{partnerId}/items", {
+        params: { path: { factoryId, partnerId: supplierId } },
+      })
+      .then(({ data }) => {
+        if (live)
+          setFetched({
+            supplierId,
+            terms: new Map(
+              (data ?? [])
+                .filter((link) => link.status === "active")
+                .map((link) => [link.item.id, { unit: link.purchaseUnit, price: link.lastPrice }]),
+            ),
+          });
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [factoryId, supplierId]);
 
   function check(): boolean {
     const next: LineErrors = {};
@@ -200,6 +229,7 @@ export function PurchaseOrderForm({
         withDiscount
         withDescription
         showOnHand
+        terms={terms}
       />
       <p className="text-muted text-sm">{tCommon("moneyNote")}</p>
       <div className="grid gap-4 md:grid-cols-2">
