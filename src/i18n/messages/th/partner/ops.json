@@ -15,7 +15,10 @@
       "supplier_review_due": "ทบทวนผู้ขาย",
       "maintenance_due": "ถึงรอบซ่อมบำรุง",
       "machine_breakdown": "เครื่องเสีย",
-      "document_expiring": "เอกสารใกล้หมดอายุ"
+      "document_expiring": "เอกสารใกล้หมดอายุ",
+      "quote_follow_up": "ใบเสนอราคาใกล้หมดอายุ",
+      "invoice_overdue": "ใบแจ้งหนี้เกินกำหนด",
+      "activity_overdue": "งานติดตามเลยกำหนด"
     },
     "text": {
       "price_rise": "{item}: {supplier} ราคา {price} บาท/{unit} ขึ้น {changePct}% จากครั้งก่อน {previous} ({documentNo})",
@@ -23,7 +26,10 @@
       "supplier_review_due": "{item}: ถึงกำหนดทบทวนการอนุมัติ {supplier} วันที่ {reviewOn}",
       "maintenance_due": "{machine}: {title} ถึงรอบแล้ว ({mtNo})",
       "machine_breakdown": "{machine}: {title} ({mtNo}) แจ้งโดย {reportedBy}",
-      "document_expiring": "{title} หมดอายุ {expiresOn}"
+      "document_expiring": "{title} หมดอายุ {expiresOn}",
+      "quote_follow_up": "{quoteNo} ของ {customer} ใช้ได้ถึง {validUntil} — ติดตามลูกค้า",
+      "invoice_overdue": "{customer} ค้าง {open} ตาม {invoiceNo} (ครบกำหนด {dueDate})",
+      "activity_overdue": "{subject} ({assignee}) เลยกำหนดแล้ว"
     },
     "open": "เปิดดู",
     "acknowledge": "รับทราบ",

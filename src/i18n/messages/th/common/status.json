@@ -461,7 +461,52 @@
     "startMaintenance": "เริ่มซ่อม",
     "issueSpareParts": "เบิกอะไหล่",
     "finishMaintenance": "ปิดงานซ่อม",
-    "cancelMaintenance": "ยกเลิกงานซ่อม"
+    "cancelMaintenance": "ยกเลิกงานซ่อม",
+    "editLead": "แก้ไขลูกค้าเป้าหมาย",
+    "convertLead": "เปลี่ยนเป็นลูกค้า",
+    "loseLead": "ปิดว่าไม่สำเร็จ",
+    "editOpportunity": "แก้ไขโอกาสการขาย",
+    "quoteOpportunity": "ทำใบเสนอราคา",
+    "winOpportunity": "ปิดการขายได้",
+    "loseOpportunity": "ไม่ได้งาน",
+    "editQuotation": "แก้ไขใบเสนอราคา",
+    "sendQuotation": "ส่งใบเสนอราคา",
+    "reviseQuotation": "ทำฉบับแก้ไข",
+    "acceptQuotation": "บันทึกว่าลูกค้าตอบรับ",
+    "rejectQuotation": "บันทึกว่าลูกค้าปฏิเสธ",
+    "orderQuotation": "เปิดใบสั่งขาย",
+    "cancelQuotation": "ยกเลิกใบเสนอราคา",
+    "quotationPdf": "PDF ใบเสนอราคา",
+    "editSalesOrder": "แก้ไขใบสั่งขาย",
+    "confirmSalesOrder": "ยืนยันใบสั่งขาย",
+    "deliverSalesOrder": "ทำใบส่งของ",
+    "invoiceSalesOrder": "ออกใบแจ้งหนี้",
+    "closeSalesOrder": "ปิดใบสั่งขาย",
+    "cancelSalesOrder": "ยกเลิกใบสั่งขาย",
+    "salesOrderPdf": "PDF ใบยืนยันคำสั่งซื้อ",
+    "issueDelivery": "ตัดสต็อกและออกใบส่งของ",
+    "deliverDelivery": "บันทึกว่าลูกค้ารับของแล้ว",
+    "invoiceDelivery": "ออกใบแจ้งหนี้",
+    "cancelDelivery": "ยกเลิกใบส่งของ",
+    "deliveryPdf": "PDF ใบส่งของ",
+    "editInvoice": "แก้ไขใบแจ้งหนี้",
+    "issueInvoice": "ออกใบแจ้งหนี้/ใบกำกับภาษี",
+    "receiveInvoice": "รับชำระเงิน",
+    "creditInvoice": "ออกใบลดหนี้",
+    "debitInvoice": "ออกใบเพิ่มหนี้",
+    "voidInvoice": "ยกเลิกใบแจ้งหนี้",
+    "deleteInvoice": "ลบร่าง",
+    "invoicePdf": "PDF ใบแจ้งหนี้",
+    "issueNote": "ออกใบลด/เพิ่มหนี้",
+    "voidNote": "ยกเลิกใบลด/เพิ่มหนี้",
+    "deleteNote": "ลบร่าง",
+    "notePdf": "PDF ใบลด/เพิ่มหนี้",
+    "cancelReceipt": "ยกเลิกใบเสร็จ",
+    "receiptPdf": "PDF ใบเสร็จรับเงิน",
+    "cancelBillingNote": "ยกเลิกใบวางบิล",
+    "billingNotePdf": "PDF ใบวางบิล",
+    "voidWht": "ยกเลิกหนังสือรับรอง",
+    "whtPdf": "PDF 50 ทวิ"
   },
   "points": {
     "pending": "รอเข้าบัญชี",
@@ -801,5 +846,62 @@
     "valid": "ใช้ได้",
     "expiring": "ใกล้หมดอายุ",
     "expired": "หมดอายุแล้ว"
+  },
+  "erpLead": {
+    "new": "ใหม่",
+    "contacted": "ติดต่อแล้ว",
+    "qualified": "มีโอกาสซื้อ",
+    "converted": "เป็นลูกค้าแล้ว",
+    "lost": "ไม่สำเร็จ"
+  },
+  "erpOpportunity": {
+    "prospecting": "สำรวจความต้องการ",
+    "proposal": "เสนอราคา",
+    "negotiation": "ต่อรอง",
+    "won": "ปิดการขายได้",
+    "lost": "ไม่ได้งาน"
+  },
+  "erpQuotation": {
+    "draft": "ร่าง",
+    "sent": "ส่งแล้ว",
+    "accepted": "ลูกค้าตอบรับ",
+    "rejected": "ลูกค้าปฏิเสธ",
+    "expired": "หมดอายุ",
+    "superseded": "มีฉบับแก้ไขแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpSalesOrder": {
+    "draft": "ร่าง",
+    "confirmed": "ยืนยันแล้ว",
+    "partiallyDelivered": "ส่งบางส่วน",
+    "delivered": "ส่งครบแล้ว",
+    "closed": "ปิดแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpDelivery": {
+    "draft": "ร่าง",
+    "issued": "ตัดสต็อกแล้ว",
+    "delivered": "ลูกค้ารับแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpSalesInvoice": {
+    "draft": "ร่าง",
+    "issued": "ออกแล้ว รอชำระ",
+    "partiallyPaid": "ชำระบางส่วน",
+    "paid": "ชำระครบ",
+    "voided": "ยกเลิกแล้ว"
+  },
+  "erpIssued": {
+    "draft": "ร่าง",
+    "issued": "ออกแล้ว",
+    "voided": "ยกเลิกแล้ว"
+  },
+  "erpReceipt": {
+    "issued": "ออกแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpWht": {
+    "issued": "ออกแล้ว",
+    "voided": "ยกเลิกแล้ว"
   }
 }

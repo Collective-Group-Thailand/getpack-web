@@ -87,6 +87,7 @@ export default async function TradingPartnerPage({ params }: Props) {
   const unit = (code: string) => tCommon(`units.${code}` as never);
   const canEdit = canAt(context, "factory_trading_partners.manage");
 
+  const tSales = await getTranslations("partnerSales.partner");
   return (
     <PartnerPage
       wide
@@ -104,6 +105,21 @@ export default async function TradingPartnerPage({ params }: Props) {
           {buysFrom && canAt(context, "factory_procurement.manage") && partner.status === "active" ? (
             <Button asChild size="lg" iconStart="cart">
               <Link href={`/purchasing/new?supplier=${partner.id}`}>{tPo("new")}</Link>
+            </Button>
+          ) : null}
+          {partner.kind !== "supplier" && partner.status === "active" && canAt(context, "factory_sales.manage") ? (
+            <>
+              <Button asChild size="lg" iconStart="document">
+                <Link href={`/quotations/new?customer=${partner.id}`}>{tSales("newQuotation")}</Link>
+              </Button>
+              <Button asChild size="lg" variant="secondary" iconStart="cart">
+                <Link href={`/sales-orders/new?customer=${partner.id}`}>{tSales("newOrder")}</Link>
+              </Button>
+            </>
+          ) : null}
+          {partner.kind !== "supplier" && canAt(context, "factory_receivables.manage") ? (
+            <Button asChild size="lg" variant="secondary" iconStart="coins">
+              <Link href={`/receivables/receipts/new?customer=${partner.id}`}>{tSales("receive")}</Link>
             </Button>
           ) : null}
           {canEdit ? <PartnerStatusButton partner={partner} etag={etag} /> : null}

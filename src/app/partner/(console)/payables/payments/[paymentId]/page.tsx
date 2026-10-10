@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PaymentActions } from "@/features/partner/erp/PayablesActions";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
@@ -40,6 +41,18 @@ export default async function SupplierPaymentPage({ params }: { params: Promise<
       </PartnerPage>
     );
   const p = read.data;
+  // E4 (D-366): the 50 ทวิ the factory issues for what it withheld on this payment.
+  const wht = p.reverses
+    ? null
+    : await attempt(
+        async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/supplier-payments/{paymentId}/wht", {
+              params: { path: { factoryId: context.factoryId, paymentId } },
+            })
+          ).data!,
+      );
+  const tWht = await getTranslations("partnerSales.tax.certificates");
   return (
     <PartnerPage
       wide
@@ -98,6 +111,24 @@ export default async function SupplierPaymentPage({ params }: { params: Promise<
           ]}
         />
       </Card>
+      {wht?.data ? (
+        <PartnerSection title={tWht("onPayment")}>
+          {wht.data.certificate ? (
+            <Link className="text-link underline" href={`/tax/certificates/${wht.data.certificate.id}`}>
+              {tWht("issuedAs", { no: wht.data.certificate.code })}
+            </Link>
+          ) : canAt(context, "factory_ap.manage") ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-muted text-sm">{tWht("notYet")}</p>
+              <Button asChild variant="secondary" iconStart="stamp">
+                <Link href={`/tax/certificates/new?payment=${p.id}`}>{tWht("issue")}</Link>
+              </Button>
+            </div>
+          ) : (
+            <p className="text-muted text-sm">{tWht("notYet")}</p>
+          )}
+        </PartnerSection>
+      ) : null}
       <PartnerSection title={t("detail.allocations")}>
         <PartnerTable
           caption={t("detail.allocations")}

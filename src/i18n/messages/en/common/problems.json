@@ -167,7 +167,20 @@
     "machine_down": "This machine has an open breakdown — finish the repair before starting work",
     "file_not_usable": "This file cannot be used — upload it again",
     "folder_exists": "A folder with this name already exists",
-    "folder_not_empty": "The folder still has documents or sub-folders — move them out first"
+    "folder_not_empty": "The folder still has documents or sub-folders — move them out first",
+    "credit_limit_exceeded": "This customer is over their credit limit — someone who may approve can confirm with a reason",
+    "quotation_expired": "This quotation has expired — ask the seller for a new one",
+    "over_delivery": "More than is still to deliver on the sales order",
+    "invoice_date_order": "The issue date can't be before the last invoice issued",
+    "note_exceeds_invoice": "The credit note is more than what is left on the invoice",
+    "allocation_exceeds_open": "More than the invoice still owes",
+    "document_settled": "This has payments or notes against it — cancel those first",
+    "nothing_to_deliver": "Nothing left to deliver",
+    "nothing_to_invoice": "Nothing left to invoice",
+    "no_withholding": "No tax was withheld on this payment",
+    "recipe_required": "A made-to-order item needs a recipe before the order is confirmed",
+    "customer_required": "Choose a customer first",
+    "seller_incomplete": "The seller's details are incomplete — add the registered address and tax ID in the factory profile"
   },
   "factory_users": {
     "role_not_allowed": "Role not allowed"
