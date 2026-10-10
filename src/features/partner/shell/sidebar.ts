@@ -6,7 +6,7 @@ import type { IconName } from "@/ui/icons";
  * of those, only what the user's roles at this factory work with. "เพิ่มเติม" stays on a phone,
  * where the bottom bar has five places.
  */
-export type SidebarGroupKey = "daily" | "supply" | "plan" | "finance" | "factory";
+export type SidebarGroupKey = "daily" | "sales" | "supply" | "plan" | "finance" | "factory";
 
 export type SidebarItemKey =
   | "today"
@@ -28,6 +28,13 @@ export type SidebarItemKey =
   | "maintenance"
   | "machines"
   | "documents"
+  | "crm"
+  | "quotations"
+  | "salesOrders"
+  | "deliveries"
+  | "invoices"
+  | "receivables"
+  | "tax"
   | "payables"
   | "capacity"
   | "hours"
@@ -77,6 +84,11 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
   },
   ship: { key: "ship", href: "/ship", icon: "truck", group: "daily", permission: "factory_shipments.read" },
   claims: { key: "claims", href: "/claims", icon: "shield-alert", group: "daily", permission: "factory_claims.read" },
+  // E4 (D-359 – D-362): the factory's own customers — leads and deals, quotations, orders, delivery notes.
+  crm: { key: "crm", href: "/crm", icon: "users", group: "sales", permission: "factory_sales.read" },
+  quotations: { key: "quotations", href: "/quotations", icon: "document", group: "sales", permission: "factory_sales.read" },
+  salesOrders: { key: "salesOrders", href: "/sales-orders", icon: "cart", group: "sales", permission: "factory_sales.read" },
+  deliveries: { key: "deliveries", href: "/deliveries", icon: "truck", group: "sales", permission: "factory_sales.read" },
   // Packio Factory ERP (E1, D-316): the factory's own stock, buying and trading partners.
   stock: { key: "stock", href: "/stock", icon: "warehouse", group: "supply", permission: "factory_inventory.read" },
   purchasing: {
@@ -131,6 +143,22 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
     group: "plan",
     permission: "factory_planning.read",
   },
+  // E4 (D-363 – D-367): invoices in the factory's own name, what customers owe, its tax.
+  invoices: {
+    key: "invoices",
+    href: "/invoices",
+    icon: "receipt",
+    group: "finance",
+    permission: "factory_receivables.read",
+  },
+  receivables: {
+    key: "receivables",
+    href: "/receivables",
+    icon: "coins",
+    group: "finance",
+    permission: "factory_receivables.read",
+  },
+  tax: { key: "tax", href: "/tax", icon: "stamp", group: "finance", permission: "factory_tax.read" },
   payables: {
     key: "payables",
     href: "/payables",
@@ -200,6 +228,7 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "schedule",
     "maintenance",
     "machines",
+    "salesOrders",
     "stock",
     "purchasing",
     "capacity",
@@ -214,6 +243,11 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   factory_accountant: [
     "today",
     "alerts",
+    "quotations",
+    "salesOrders",
+    "invoices",
+    "receivables",
+    "tax",
     "purchasing",
     "tradingPartners",
     "stock",
@@ -229,6 +263,8 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   // Packio Factory ERP roles (D-319): the store and the buying desk.
   factory_storekeeper: [
     "alerts",
+    "deliveries",
+    "salesOrders",
     "stock",
     "purchasing",
     "tradingPartners",
@@ -239,11 +275,25 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   factory_purchaser: ["alerts", "purchasing", "rfqs", "stock", "tradingPartners", "payables", "documents", ...EVERYONE],
   // E3 (D-357): the maintenance crew — orders, plans, machines and the spare parts in stock.
   factory_maintenance: ["alerts", "maintenance", "machines", "stock", "documents", ...EVERYONE],
+  // E4 (D-371): the sales desk — its customers and deals through to delivery, and what they owe.
+  factory_sales: [
+    "alerts",
+    "crm",
+    "quotations",
+    "salesOrders",
+    "deliveries",
+    "invoices",
+    "receivables",
+    "tradingPartners",
+    "stock",
+    "documents",
+    ...EVERYONE,
+  ],
 };
 
-const DESKS: readonly SidebarItemKey[] = ["maintenance", "stock", "purchasing", "tradingPartners", "alerts"];
+const DESKS: readonly SidebarItemKey[] = ["crm", "quotations", "maintenance", "stock", "deliveries", "purchasing", "tradingPartners", "alerts"];
 
-const GROUP_ORDER: SidebarGroupKey[] = ["daily", "supply", "plan", "finance", "factory"];
+const GROUP_ORDER: SidebarGroupKey[] = ["daily", "sales", "supply", "plan", "finance", "factory"];
 
 const itemOf = (key: SidebarItemKey): SidebarItem => ({ key, href: ITEMS[key].href, icon: ITEMS[key].icon });
 

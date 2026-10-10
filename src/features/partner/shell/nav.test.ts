@@ -12,6 +12,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
   it("gives the owner every group", () => {
     expect(partnerSidebar("active", ["factory_owner"], grants("factory_owner")).map((g) => g.key)).toEqual([
       "daily",
+      "sales",
       "supply",
       "plan",
       "finance",
@@ -31,6 +32,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "jobs",
       "floor",
       "kiosk",
+      "salesOrders",
       "stock",
       "purchasing",
       "planning",
@@ -47,9 +49,14 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     expect(items("factory_accountant")).toEqual([
       "today",
       "alerts",
+      "quotations",
+      "salesOrders",
       "stock",
       "purchasing",
       "tradingPartners",
+      "invoices",
+      "receivables",
+      "tax",
       "payables",
       "billing",
       "payouts",
@@ -65,6 +72,8 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
   it("gives the store and the buying desk their stock, orders and suppliers (D-319)", () => {
     expect(items("factory_storekeeper")).toEqual([
       "alerts",
+      "salesOrders",
+      "deliveries",
       "stock",
       "purchasing",
       "tradingPartners",
@@ -88,7 +97,31 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     ]);
     expect(
       partnerBottomItems("active", ["factory_storekeeper"], grants("factory_storekeeper")).map((i) => i.key),
-    ).toEqual(["stock", "purchasing", "tradingPartners", "alerts"]);
+    ).toEqual(["stock", "deliveries", "purchasing", "tradingPartners"]);
+  });
+
+  it("gives the sales desk its customers and deals through to delivery and what they owe (D-371)", () => {
+    expect(items("factory_sales")).toEqual([
+      "alerts",
+      "crm",
+      "quotations",
+      "salesOrders",
+      "deliveries",
+      "stock",
+      "tradingPartners",
+      "invoices",
+      "receivables",
+      "documents",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
+    expect(partnerBottomItems("active", ["factory_sales"], grants("factory_sales")).map((i) => i.key)).toEqual([
+      "crm",
+      "quotations",
+      "stock",
+      "deliveries",
+    ]);
   });
 
   it("gives the operator the floor and the machine kiosk, the maintenance crew its orders and machines (D-353, D-357)", () => {

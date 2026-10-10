@@ -14,8 +14,9 @@ import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Field } from "@/ui/components/Field";
-import { Input, NumberInput } from "@/ui/components/Input";
+import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
+import { uploadFile } from "@/features/shared/files/upload";
 
 import { trimZeros } from "./format";
 
@@ -32,15 +33,16 @@ const MODULES = [
   "maintenance",
   "documents",
 ] as const;
-const PREFIXES = ["po", "gr", "adj", "trf", "iss", "pr", "ap", "pv", "mo", "rfq", "mt"] as const;
+const PREFIXES = ["po", "gr", "adj", "trf", "iss", "pr", "ap", "pv", "mo", "rfq", "mt", "qt", "so", "do", "iv", "cn", "dr", "rc", "bn", "wht"] as const;
 const POLICIES = ["off", "warn", "enforce"] as const;
-/** Modules that exist today (E1 – E3); the rest are shown as coming and stay as they are. */
+/** Modules that exist today (E1 – E4); the rest are shown as coming and stay as they are. */
 const LIVE = new Set<string>([
   "inventory",
   "procurement",
   "partners",
   "planning",
   "floor",
+  "sales",
   "accounting",
   "maintenance",
   "documents",
@@ -70,6 +72,13 @@ export function ErpSettingsForm({
   const [quoteDays, setQuoteDays] = useState(String(settings.quoteExpiryDays));
   const [policy, setPolicy] = useState<Settings["supplierApproval"]>(settings.supplierApproval);
   const [prefixes, setPrefixes] = useState<Record<string, string>>(settings.prefixes);
+  const tSales = useTranslations("partnerSales.settings");
+  const [validDays, setValidDays] = useState(String(settings.quoteValidDays));
+  const [signatory, setSignatory] = useState(settings.signatoryName ?? "");
+  const [footer, setFooter] = useState(settings.documentFooter ?? "");
+  const [bank, setBank] = useState(settings.bankDetails ?? "");
+  const [logoId, setLogoId] = useState<string | null>(settings.documentLogoFileId);
+  const [logoBusy, setLogoBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -89,6 +98,11 @@ export function ErpSettingsForm({
           quoteExpiryDays: Math.max(0, Math.min(90, Number.parseInt(quoteDays || "0", 10) || 0)),
           supplierApproval: policy,
           prefixes: Object.fromEntries(Object.entries(prefixes).map(([k, v]) => [k, v.trim().toUpperCase()])),
+          quoteValidDays: Math.max(1, Math.min(365, Number.parseInt(validDays || "30", 10) || 30)),
+          signatoryName: signatory.trim() || null,
+          documentFooter: footer.trim() || null,
+          bankDetails: bank.trim() || null,
+          documentLogoFileId: logoId,
         },
       });
       toast.success(tCommon("saved"));
@@ -177,6 +191,54 @@ export function ErpSettingsForm({
           options={POLICIES.map((p) => ({ value: p, label: tOps(`policies.${p}`) }))}
         />
         <p className="text-muted text-sm">{tOps("supplierApprovalHint")}</p>
+      </fieldset>
+      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
+        <legend className="mb-1 text-lg font-semibold">{tSales("title")}</legend>
+        <p className="text-muted text-sm">{tSales("body")}</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={tSales("quoteValidDays")} hint={tSales("quoteValidDaysHint")} error={errors.quoteValidDays}>
+            <NumberInput min={1} max={365} step={1} unit={tOps("days")} value={validDays} onChange={(event) => setValidDays(event.target.value)} />
+          </Field>
+          <Field label={tSales("signatory")} hint={tSales("signatoryHint")}>
+            <Input value={signatory} onChange={(event) => setSignatory(event.target.value)} />
+          </Field>
+        </div>
+        <Field label={tSales("bank")} hint={tSales("bankHint")}>
+          <Textarea rows={2} value={bank} placeholder={tSales("bankPlaceholder")} onChange={(event) => setBank(event.target.value)} />
+        </Field>
+        <Field label={tSales("footer")} hint={tSales("footerHint")}>
+          <Textarea rows={2} value={footer} placeholder={tSales("footerPlaceholder")} onChange={(event) => setFooter(event.target.value)} />
+        </Field>
+        <Field label={tSales("logo")} hint={logoId ? tSales("logoSet") : tSales("logoHint")} error={errors.documentLogoFileId}>
+          <span className="flex flex-wrap items-center gap-2">
+            <input
+              type="file"
+              accept="image/png,image/jpeg"
+              aria-label={tSales("logo")}
+              disabled={!canEdit || logoBusy}
+              className="text-sm"
+              onChange={async (event) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                setLogoBusy(true);
+                try {
+                  const uploaded = await uploadFile("partner", file, "document", { factoryId });
+                  setLogoId(uploaded.id);
+                  toast.success(tSales("logoUploaded"));
+                } catch (error) {
+                  toast.error(problemMessage(error, tCommon("failed")));
+                } finally {
+                  setLogoBusy(false);
+                }
+              }}
+            />
+            {logoId ? (
+              <Button size="sm" variant="ghost" iconStart="trash" onClick={() => setLogoId(null)}>
+                {tSales("logoRemove")}
+              </Button>
+            ) : null}
+          </span>
+        </Field>
       </fieldset>
       <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
         <legend className="mb-1 text-lg font-semibold">{t("prefixes")}</legend>

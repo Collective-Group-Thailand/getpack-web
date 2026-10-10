@@ -154,7 +154,9 @@
       "factory_shipping": "Ships and records delivery",
       "factory_accountant": "Billing, tax invoices and payouts",
       "factory_storekeeper": "Receives, issues and counts stock",
-      "factory_purchaser": "Looks after suppliers and drafts purchase orders"
+      "factory_purchaser": "Looks after suppliers and drafts purchase orders",
+      "factory_maintenance": "Breakdowns, maintenance plans and spare parts",
+      "factory_sales": "Customers, quotations, sales orders and delivery notes"
     },
     "self": "This is you",
     "rolesSaved": "{name}'s role changed",

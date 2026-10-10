@@ -11,6 +11,15 @@ import type {
   ErpRfqSupplierStatus,
   ErpSupplierApproval,
   ErpSupplierInvoiceStatus,
+  ErpLeadStage,
+  ErpOpportunityStage,
+  ErpQuotationStatus,
+  ErpSalesOrderStatus,
+  ErpDeliveryStatus,
+  ErpSalesInvoiceStatus,
+  ErpIssuedStatus,
+  ErpReceiptStatus,
+  ErpWhtCertificateStatus,
 } from "./contract";
 
 /** A factory's own purchase order, Packio Factory ERP (D-325). */
@@ -107,4 +116,79 @@ export const ERP_DOC_EXPIRY = defineStatusMap<ErpDocExpiry>({
   valid: { tone: "success", icon: "check", labelKey: "erpDocExpiry.valid" },
   expiring: { tone: "warning", icon: "hourglass", labelKey: "erpDocExpiry.expiring" },
   expired: { tone: "danger", icon: "warning", labelKey: "erpDocExpiry.expired" },
+});
+
+/** A lead in the factory's CRM (D-359). */
+export const ERP_LEAD_STAGE = defineStatusMap<ErpLeadStage>({
+  new: { tone: "info", icon: "sparkles", labelKey: "erpLead.new" },
+  contacted: { tone: "neutral", icon: "phone", labelKey: "erpLead.contacted" },
+  qualified: { tone: "warning", icon: "star", labelKey: "erpLead.qualified" },
+  converted: { tone: "success", icon: "check", labelKey: "erpLead.converted" },
+  lost: { tone: "danger", icon: "ban", labelKey: "erpLead.lost" },
+});
+
+/** A sales opportunity's stage (D-359). */
+export const ERP_OPPORTUNITY_STAGE = defineStatusMap<ErpOpportunityStage>({
+  prospecting: { tone: "neutral", icon: "search", labelKey: "erpOpportunity.prospecting" },
+  proposal: { tone: "info", icon: "document", labelKey: "erpOpportunity.proposal" },
+  negotiation: { tone: "warning", icon: "handshake", labelKey: "erpOpportunity.negotiation" },
+  won: { tone: "success", icon: "check", labelKey: "erpOpportunity.won" },
+  lost: { tone: "danger", icon: "ban", labelKey: "erpOpportunity.lost" },
+});
+
+/** A quotation to the factory's own customer (D-360). */
+export const ERP_QUOTATION_STATUS = defineStatusMap<ErpQuotationStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "erpQuotation.draft" },
+  sent: { tone: "info", icon: "send", labelKey: "erpQuotation.sent" },
+  accepted: { tone: "success", icon: "check", labelKey: "erpQuotation.accepted" },
+  rejected: { tone: "danger", icon: "ban", labelKey: "erpQuotation.rejected" },
+  expired: { tone: "warning", icon: "hourglass", labelKey: "erpQuotation.expired" },
+  superseded: { tone: "neutral", icon: "history", labelKey: "erpQuotation.superseded" },
+  cancelled: { tone: "neutral", icon: "close", labelKey: "erpQuotation.cancelled" },
+});
+
+/** A sales order (D-361). */
+export const ERP_SALES_ORDER_STATUS = defineStatusMap<ErpSalesOrderStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "erpSalesOrder.draft" },
+  confirmed: { tone: "info", icon: "check", labelKey: "erpSalesOrder.confirmed" },
+  partially_delivered: { tone: "warning", icon: "truck", labelKey: "erpSalesOrder.partiallyDelivered" },
+  delivered: { tone: "success", icon: "package-check", labelKey: "erpSalesOrder.delivered" },
+  closed: { tone: "neutral", icon: "archive", labelKey: "erpSalesOrder.closed" },
+  cancelled: { tone: "danger", icon: "ban", labelKey: "erpSalesOrder.cancelled" },
+});
+
+/** A delivery note (D-362). */
+export const ERP_DELIVERY_STATUS = defineStatusMap<ErpDeliveryStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "erpDelivery.draft" },
+  issued: { tone: "info", icon: "truck", labelKey: "erpDelivery.issued" },
+  delivered: { tone: "success", icon: "package-check", labelKey: "erpDelivery.delivered" },
+  cancelled: { tone: "danger", icon: "ban", labelKey: "erpDelivery.cancelled" },
+});
+
+/** A sales invoice / tax invoice (D-363). */
+export const ERP_SALES_INVOICE_STATUS = defineStatusMap<ErpSalesInvoiceStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "erpSalesInvoice.draft" },
+  issued: { tone: "info", icon: "receipt", labelKey: "erpSalesInvoice.issued" },
+  partially_paid: { tone: "warning", icon: "coins", labelKey: "erpSalesInvoice.partiallyPaid" },
+  paid: { tone: "success", icon: "check", labelKey: "erpSalesInvoice.paid" },
+  voided: { tone: "danger", icon: "ban", labelKey: "erpSalesInvoice.voided" },
+});
+
+/** A credit or debit note (D-364). */
+export const ERP_ISSUED_STATUS = defineStatusMap<ErpIssuedStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "erpIssued.draft" },
+  issued: { tone: "success", icon: "check", labelKey: "erpIssued.issued" },
+  voided: { tone: "danger", icon: "ban", labelKey: "erpIssued.voided" },
+});
+
+/** A receipt, refund or billing note (D-365). */
+export const ERP_RECEIPT_STATUS = defineStatusMap<ErpReceiptStatus>({
+  issued: { tone: "success", icon: "check", labelKey: "erpReceipt.issued" },
+  cancelled: { tone: "danger", icon: "ban", labelKey: "erpReceipt.cancelled" },
+});
+
+/** A 50 ทวิ certificate (D-366). */
+export const ERP_WHT_STATUS = defineStatusMap<ErpWhtCertificateStatus>({
+  issued: { tone: "success", icon: "check", labelKey: "erpWht.issued" },
+  voided: { tone: "danger", icon: "ban", labelKey: "erpWht.voided" },
 });
