@@ -299,3 +299,7 @@ export type CloseTaskStatus = Schemas["CloseTaskStatus"];
 
 /** A factory's own purchase order in Packio Factory (D-325). **Source: contract** (packio-api v0.44.0). */
 export type ErpPurchaseOrderStatus = Schemas["ErpPurchaseOrderStatus"];
+export type ErpPurchaseRequestStatus = Schemas["ErpPurchaseRequestStatus"];
+export type ErpSupplierInvoiceStatus = Schemas["ErpSupplierInvoiceStatus"];
+export type ErpProductionStatus = Schemas["ErpProductionStatus"];
+export type ErpOperationStatus = Schemas["ErpOperationStatus"];

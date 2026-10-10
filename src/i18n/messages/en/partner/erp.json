@@ -32,7 +32,10 @@
       "adjustment": "Adjustment",
       "count": "Stock count",
       "transfer_out": "Transfer out",
-      "transfer_in": "Transfer in"
+      "transfer_in": "Transfer in",
+      "production_issue": "Issued to production",
+      "production_return": "Returned from production",
+      "production_receipt": "Finished goods in"
     },
     "partnerKinds": {
       "supplier": "Supplier (we buy from)",
@@ -284,7 +287,8 @@
       "open": "Awaiting goods",
       "draft": "Drafts",
       "all": "All",
-      "receipts": "Receipts"
+      "receipts": "Receipts",
+      "requests": "Purchase requests"
     },
     "searchLabel": "Search purchase orders",
     "searchPlaceholder": "Type a PO number, a supplier or an item",
@@ -515,7 +519,11 @@
       "gr": "Goods receipt",
       "adj": "Adjustment / count",
       "trf": "Transfer",
-      "iss": "Issue"
+      "iss": "Issue",
+      "pr": "Purchase request (PR)",
+      "ap": "Supplier invoice (AP)",
+      "pv": "Payment voucher (PV)",
+      "mo": "Production order (MO)"
     },
     "modules": "Modules in use",
     "modulesHint": "Switch off what you do not use to keep the menu short",
@@ -533,6 +541,10 @@
     "vatRegistered": "The factory is VAT-registered — stock cost excludes VAT",
     "vatNotRegistered": "The factory is not VAT-registered — stock cost includes VAT",
     "ownerOnly": "The factory owner changes this",
-    "save": "Save settings"
+    "save": "Save settings",
+    "requireApproval": "Purchase requests wait for approval",
+    "requireApprovalHint": "Off = a submitted request is approved at once (a requester who may approve is approved at once anyway)",
+    "priceTolerance": "Invoice price tolerance",
+    "priceToleranceHint": "An invoice priced further from the order than this needs the owner's approval before it is paid"
   }
 }

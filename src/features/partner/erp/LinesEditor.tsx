@@ -58,6 +58,7 @@ export function LinesEditor({
   withDiscount = false,
   withDescription = false,
   showOnHand = true,
+  terms,
 }: {
   items: PickItem[];
   lines: Line[];
@@ -75,6 +76,8 @@ export function LinesEditor({
   withDiscount?: boolean;
   withDescription?: boolean;
   showOnHand?: boolean;
+  /** The chosen supplier's unit and latest price per item (D-333): picking an item fills them in. */
+  terms?: ReadonlyMap<string, { unit: string; price: string | null }>;
 }) {
   const t = useTranslations("partnerErp.common");
   const tPo = useTranslations("partnerErp.purchasing.form");
@@ -113,11 +116,13 @@ export function LinesEditor({
                     placeholder={t("selectItem")}
                     onValueChange={(itemId) => {
                       const next = byId.get(itemId);
+                      const term = terms?.get(itemId);
+                      const price = term ? term.price : next?.lastPurchasePrice;
                       update(index, {
                         itemId,
-                        ...(withUnit ? { unit: next?.purchaseUnit ?? next?.baseUnit } : {}),
-                        ...(withPrice && next?.lastPurchasePrice && !line.price
-                          ? { price: next.lastPurchasePrice.replace(/0+$/, "").replace(/\.$/, "") }
+                        ...(withUnit ? { unit: term?.unit ?? next?.purchaseUnit ?? next?.baseUnit } : {}),
+                        ...(withPrice && price && !line.price
+                          ? { price: price.replace(/0+$/, "").replace(/\.$/, "") }
                           : {}),
                       });
                     }}
@@ -149,12 +154,14 @@ export function LinesEditor({
                     <Select
                       value={lineUnit ?? item.baseUnit}
                       onValueChange={(next) => update(index, { unit: next })}
-                      options={[...new Set([item.purchaseUnit, item.baseUnit].filter(Boolean) as string[])].map(
-                        (code) => ({
-                          value: code,
-                          label: unit(code),
-                        }),
-                      )}
+                      options={[
+                        ...new Set(
+                          [terms?.get(item.id)?.unit, item.purchaseUnit, item.baseUnit].filter(Boolean) as string[],
+                        ),
+                      ].map((code) => ({
+                        value: code,
+                        label: unit(code),
+                      }))}
                     />
                   </Field>
                 ) : null}

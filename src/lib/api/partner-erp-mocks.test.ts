@@ -28,7 +28,7 @@ describe("Packio Factory ERP mock", () => {
       }),
     ).rejects.toMatchObject({ status: 404 });
     await expect(
-      api("operator").GET("/v1/partner/factories/{factoryId}/erp/items", { params: { path } }),
+      api("operator").GET("/v1/partner/factories/{factoryId}/erp/partners", { params: { path } }),
     ).rejects.toMatchObject({
       status: 403,
     });
