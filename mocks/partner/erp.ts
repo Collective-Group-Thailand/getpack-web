@@ -33,6 +33,8 @@ interface Erp {
     disabledModules: string[];
     allowNegativeStock: boolean;
     overReceiptPct: number;
+    priceTolerancePct: number;
+    requireRequestApproval: boolean;
     prefixes: Record<string, string>;
     version: number;
   };
@@ -58,7 +60,17 @@ const MODULES = [
   "maintenance",
   "documents",
 ] as const;
-const PREFIX: Record<string, string> = { po: "PO", gr: "GR", adj: "ADJ", trf: "TRF", iss: "ISS" };
+const PREFIX: Record<string, string> = {
+  po: "PO",
+  gr: "GR",
+  adj: "ADJ",
+  trf: "TRF",
+  iss: "ISS",
+  pr: "PR",
+  ap: "AP",
+  pv: "PV",
+  mo: "MO",
+};
 const r3 = (n: number) => Math.round(n * 1000) / 1000;
 const r2 = (n: number) => Math.round(n * 100) / 100;
 const r6 = (n: number) => Math.round(n * 1_000_000) / 1_000_000;
@@ -87,7 +99,15 @@ interface StockBody {
 
 function seed(): Erp {
   const erp: Erp = {
-    settings: { disabledModules: [], allowNegativeStock: false, overReceiptPct: 10, prefixes: {}, version: 1 },
+    settings: {
+      disabledModules: [],
+      allowNegativeStock: false,
+      overReceiptPct: 10,
+      priceTolerancePct: 2,
+      requireRequestApproval: true,
+      prefixes: {},
+      version: 1,
+    },
     partners: [],
     warehouses: [],
     items: [],
@@ -357,6 +377,37 @@ async function body<T>(request: Request): Promise<Partial<T>> {
 
 const BASE = "*/v1/partner/factories/:factoryId/erp";
 
+/** A draft purchase order from a save body (`POST /purchase-orders`, purchase requests in erp-e2). */
+function draftPo(erp: Erp, b: Schemas["ErpSavePurchaseOrderDto"]): Po | Response {
+  const supplier = erp.partners.find((p) => p.id === b.supplierId);
+  if (!supplier) return notFound();
+  const lines = linesOf(erp, b.lines ?? []);
+  if (lines instanceof Response) return lines;
+  const mode = (b.vatMode ?? "exclusive") as Po["vatMode"];
+  const rate = Number(b.vatRatePct ?? 7);
+  return {
+    id: mockId("epo", (erp.seq += 1)),
+    poNo: null,
+    status: "draft",
+    supplier: { id: supplier.id, code: supplier.code, name: supplier.name },
+    orderedOn: b.orderedOn ?? today(),
+    expectedOn: b.expectedOn ?? null,
+    vatMode: mode,
+    vatRatePct: rate.toFixed(4),
+    ...totalsOf(lines, mode, rate),
+    currency: "THB",
+    supplierRef: b.supplierRef ?? null,
+    deliverTo: b.deliverTo ?? null,
+    note: b.note ?? null,
+    issuedAt: null,
+    closedAt: null,
+    cancelReason: null,
+    lines,
+    receipts: [],
+    version: 1,
+  };
+}
+
 function scope(request: Request, factoryId: unknown, permission?: string): Response | (Own & { erp: Erp }) {
   const ok = own(request, factoryId, permission);
   if (ok instanceof Response) return ok;
@@ -415,6 +466,8 @@ export const erpHandlers = [
         modules: MODULES.filter((m) => !s.disabledModules.includes(m)),
         allowNegativeStock: s.allowNegativeStock,
         overReceiptPct: s.overReceiptPct.toFixed(4),
+        priceTolerancePct: s.priceTolerancePct.toFixed(4),
+        requireRequestApproval: s.requireRequestApproval,
         prefixes: { ...PREFIX, ...s.prefixes },
         vatRegistered: true,
         version: s.version,
@@ -432,6 +485,8 @@ export const erpHandlers = [
     if (b.modules) s.disabledModules = MODULES.filter((m) => !b.modules!.includes(m));
     if (b.allowNegativeStock !== undefined) s.allowNegativeStock = b.allowNegativeStock;
     if (b.overReceiptPct !== undefined) s.overReceiptPct = Number(b.overReceiptPct);
+    if (b.priceTolerancePct !== undefined) s.priceTolerancePct = Number(b.priceTolerancePct);
+    if (b.requireRequestApproval !== undefined) s.requireRequestApproval = b.requireRequestApproval;
     if (b.prefixes) s.prefixes = { ...s.prefixes, ...b.prefixes };
     s.version += 1;
     return HttpResponse.json(
@@ -439,6 +494,8 @@ export const erpHandlers = [
         modules: MODULES.filter((m) => !s.disabledModules.includes(m)),
         allowNegativeStock: s.allowNegativeStock,
         overReceiptPct: s.overReceiptPct.toFixed(4),
+        priceTolerancePct: s.priceTolerancePct.toFixed(4),
+        requireRequestApproval: s.requireRequestApproval,
         prefixes: { ...PREFIX, ...s.prefixes },
         vatRegistered: true,
         version: s.version,
@@ -881,33 +938,8 @@ export const erpHandlers = [
     const ok = scope(request, params.factoryId, "factory_procurement.manage");
     if (ok instanceof Response) return ok;
     const b = (await body<Schemas["ErpSavePurchaseOrderDto"]>(request)) as Schemas["ErpSavePurchaseOrderDto"];
-    const supplier = ok.erp.partners.find((p) => p.id === b.supplierId);
-    if (!supplier) return notFound();
-    const lines = linesOf(ok.erp, b.lines ?? []);
-    if (lines instanceof Response) return lines;
-    const mode = (b.vatMode ?? "exclusive") as Po["vatMode"];
-    const rate = Number(b.vatRatePct ?? 7);
-    const po: Po = {
-      id: mockId("epo", (ok.erp.seq += 1)),
-      poNo: null,
-      status: "draft",
-      supplier: { id: supplier.id, code: supplier.code, name: supplier.name },
-      orderedOn: b.orderedOn ?? today(),
-      expectedOn: b.expectedOn ?? null,
-      vatMode: mode,
-      vatRatePct: rate.toFixed(4),
-      ...totalsOf(lines, mode, rate),
-      currency: "THB",
-      supplierRef: b.supplierRef ?? null,
-      deliverTo: b.deliverTo ?? null,
-      note: b.note ?? null,
-      issuedAt: null,
-      closedAt: null,
-      cancelReason: null,
-      lines,
-      receipts: [],
-      version: 1,
-    };
+    const po = draftPo(ok.erp, b);
+    if (po instanceof Response) return po;
     ok.erp.pos.unshift(po);
     return withEtag(poDto(po, ok.who), 201);
   }),
@@ -1096,3 +1128,28 @@ export const erpHandlers = [
 export function resetErp(): void {
   states.clear();
 }
+
+export type ErpMockState = Erp;
+export type ErpMockItem = Item;
+
+/** The E1 engine for the E2 mocks (`erp-e2.ts`): its state and helpers, nothing duplicated. */
+export const erpMock = {
+  BASE,
+  scope,
+  number,
+  ifMatch,
+  body,
+  notFound,
+  invalid,
+  post,
+  draftPo,
+  poSummary,
+  totals,
+  now,
+  today,
+  m2,
+  q3,
+  c6,
+  r2,
+  r3,
+};

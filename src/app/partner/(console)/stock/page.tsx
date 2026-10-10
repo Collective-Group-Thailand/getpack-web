@@ -321,7 +321,9 @@ export default async function StockPage({
                 rowHref={(move) =>
                   move.sourceType === "goods_receipt"
                     ? `/purchasing/receipts/${move.sourceId}`
-                    : `/stock/items/${move.item.id}`
+                    : move.sourceType === "production_order"
+                      ? `/planning/orders/${move.sourceId}`
+                      : `/stock/items/${move.item.id}`
                 }
                 empty={<EmptyState icon="history" title={t("emptyMoves")} />}
                 columns={[

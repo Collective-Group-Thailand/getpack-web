@@ -1,12 +1,12 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: packio-api docs/rbac.md at v0.44.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
+ * Source: packio-api docs/rbac.md at v0.45.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
  *
  * The permissions each D-140 staff role and factory role holds in packio-api, verbatim. The mock
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "ff5422b", tag: "v0.44.0" } as const;
+export const RBAC_SOURCE = { commit: "82c0230", tag: "v0.45.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
@@ -942,6 +942,9 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
 /** Factory scope (D-140 factory roles): what a partner user may do at the factory they act for. */
 export const FACTORY_PERMISSIONS = [
   "factory_agreements.accept",
+  "factory_ap.approve",
+  "factory_ap.manage",
+  "factory_ap.read",
   "factory_bank_account.propose",
   "factory_capacity.manage",
   "factory_capacity.read",
@@ -958,12 +961,16 @@ export const FACTORY_PERMISSIONS = [
   "factory_onboarding.sign_off",
   "factory_payables.manage",
   "factory_payables.read",
+  "factory_planning.manage",
+  "factory_planning.read",
   "factory_prices.propose",
   "factory_prices.read",
   "factory_process_capabilities.propose",
   "factory_procurement.approve",
   "factory_procurement.manage",
   "factory_procurement.read",
+  "factory_procurement.request",
+  "factory_production.record",
   "factory_profile.manage",
   "factory_profile.read",
   "factory_qc.record",
@@ -985,6 +992,9 @@ export type FactoryPermission = (typeof FACTORY_PERMISSIONS)[number];
 export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermission[]>> = {
   factory_owner: [
     "factory_agreements.accept",
+    "factory_ap.approve",
+    "factory_ap.manage",
+    "factory_ap.read",
     "factory_bank_account.propose",
     "factory_capacity.manage",
     "factory_capacity.read",
@@ -1001,12 +1011,16 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_onboarding.sign_off",
     "factory_payables.manage",
     "factory_payables.read",
+    "factory_planning.manage",
+    "factory_planning.read",
     "factory_prices.propose",
     "factory_prices.read",
     "factory_process_capabilities.propose",
     "factory_procurement.approve",
     "factory_procurement.manage",
     "factory_procurement.read",
+    "factory_procurement.request",
+    "factory_production.record",
     "factory_profile.manage",
     "factory_profile.read",
     "factory_qc.record",
@@ -1031,8 +1045,12 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_jobs.read",
     "factory_jobs.respond",
     "factory_milestones.update",
+    "factory_planning.manage",
+    "factory_planning.read",
     "factory_process_capabilities.propose",
     "factory_procurement.read",
+    "factory_procurement.request",
+    "factory_production.record",
     "factory_profile.read",
     "factory_rfq.read",
     "factory_rfq.respond",
@@ -1043,9 +1061,12 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_trading_partners.read",
   ],
   factory_operator: [
+    "factory_inventory.read",
     "factory_issues.raise",
     "factory_jobs.read",
     "factory_milestones.update",
+    "factory_planning.read",
+    "factory_production.record",
     "factory_profile.read",
   ],
   factory_qc: [
@@ -1068,6 +1089,8 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_shipments.read",
   ],
   factory_accountant: [
+    "factory_ap.manage",
+    "factory_ap.read",
     "factory_bank_account.propose",
     "factory_inventory.read",
     "factory_jobs.read",
@@ -1083,14 +1106,18 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_inventory.manage",
     "factory_inventory.read",
     "factory_jobs.read",
+    "factory_planning.read",
     "factory_procurement.read",
+    "factory_procurement.request",
     "factory_profile.read",
     "factory_trading_partners.read",
   ],
   factory_purchaser: [
+    "factory_ap.read",
     "factory_inventory.read",
     "factory_procurement.manage",
     "factory_procurement.read",
+    "factory_procurement.request",
     "factory_profile.read",
     "factory_trading_partners.manage",
     "factory_trading_partners.read",

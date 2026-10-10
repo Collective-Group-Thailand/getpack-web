@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatQty } from "@/features/partner/erp/format";
 import { ItemForm, ItemStatusButton } from "@/features/partner/erp/ItemForm";
+import { ItemSuppliers } from "@/features/partner/erp/ItemSuppliers";
 import { erpSuppliers } from "@/features/partner/erp/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
@@ -24,10 +25,11 @@ export async function generateMetadata(): Promise<Metadata> {
 /** One stock item (D-320, D-321): what it is, how much is where, its latest movements, and its details. */
 export default async function ItemPage({ params }: Props) {
   const { itemId } = await params;
-  const [t, tStock, tCommon, format, locale, context] = await Promise.all([
+  const [t, tStock, tCommon, tPrices, format, locale, context] = await Promise.all([
     getTranslations("partnerErp.item"),
     getTranslations("partnerErp.stock"),
     getTranslations("partnerErp.common"),
+    getTranslations("partnerFactory.prices"),
     getFormat(),
     getLocale(),
     factoryContext(),
@@ -49,7 +51,8 @@ export default async function ItemPage({ params }: Props) {
     );
   const { item: it, etag } = item.data;
   const canEdit = canAt(context, "factory_inventory.manage");
-  const [balances, moves, suppliers] = await Promise.all([
+  const canPrice = canAt(context, "factory_procurement.manage");
+  const [balances, moves, suppliers, links, history] = await Promise.all([
     attempt(
       async () =>
         (
@@ -66,9 +69,25 @@ export default async function ItemPage({ params }: Props) {
           })
         ).data!,
     ),
-    canEdit && canAt(context, "factory_trading_partners.read")
+    (canEdit || canPrice) && canAt(context, "factory_trading_partners.read")
       ? attempt(() => erpSuppliers(contract, context.factoryId))
       : Promise.resolve({ data: [] as never[], error: null }),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/items/{itemId}/suppliers", {
+            params: { path: { ...path, itemId } },
+          })
+        ).data!,
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/items/{itemId}/prices", {
+            params: { path: { ...path, itemId }, query: { perPage: 20 } },
+          })
+        ).data!,
+    ),
   ]);
   const unit = (code: string | null) => (code ? tCommon(`units.${code}` as never) : "");
   const qty = (value: string, code = it.baseUnit) =>
@@ -146,6 +165,73 @@ export default async function ItemPage({ params }: Props) {
           ]}
         />
       </Card>
+
+      <PartnerSection title={tPrices("title")} description={tPrices("body")}>
+        {links.data ? (
+          <ItemSuppliers
+            item={it}
+            links={links.data}
+            suppliers={(suppliers.data ?? []).filter((s) => s.status === "active")}
+            canManage={canPrice && it.status === "active"}
+            locale={locale}
+          />
+        ) : (
+          <PageError error={links.error} />
+        )}
+      </PartnerSection>
+
+      <PartnerSection title={tPrices("historyTitle")}>
+        {history.data ? (
+          <PartnerTable
+            caption={tPrices("historyTitle")}
+            rows={history.data.data}
+            rowKey={(row) => row.id}
+            empty={<EmptyState icon="history" title={tPrices("historyEmpty")} />}
+            columns={[
+              {
+                key: "date",
+                header: tPrices("table.date"),
+                primary: true,
+                className: "whitespace-nowrap",
+                cell: (row) => format.date(row.pricedOn),
+              },
+              { key: "supplier", header: tPrices("table.supplier"), cell: (row) => row.supplier.name },
+              {
+                key: "source",
+                header: tPrices("table.source"),
+                cell: (row) => (
+                  <span className="flex flex-col">
+                    {tPrices(`sources.${row.source}` as never)}
+                    {row.documentNo ? <span className="text-muted font-mono text-sm">{row.documentNo}</span> : null}
+                  </span>
+                ),
+              },
+              {
+                key: "qty",
+                header: tPrices("table.quantity"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => (row.quantity ? qty(row.quantity, row.unit) : "—"),
+              },
+              {
+                key: "price",
+                header: tPrices("table.price"),
+                align: "end",
+                cell: (row) => tPrices("perUnit", { price: format.thb(row.unitPrice), unit: unit(row.unit) }),
+              },
+              {
+                key: "base",
+                header: tPrices("table.basePrice", { unit: unit(it.baseUnit) }),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => format.thb(row.baseUnitPrice),
+              },
+            ]}
+          />
+        ) : (
+          <PageError error={history.error} />
+        )}
+      </PartnerSection>
 
       <PartnerSection title={t("stockTitle")}>
         {here.length ? (

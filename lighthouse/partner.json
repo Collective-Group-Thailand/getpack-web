@@ -12,7 +12,10 @@
         "http://partner.localhost:3200/ship",
         "http://partner.localhost:3200/settings",
         "http://partner.localhost:3200/stock",
-        "http://partner.localhost:3200/purchasing"
+        "http://partner.localhost:3200/purchasing",
+        "http://partner.localhost:3200/planning",
+        "http://partner.localhost:3200/payables",
+        "http://partner.localhost:3200/floor"
       ],
       "numberOfRuns": 3,
       "settings": {
