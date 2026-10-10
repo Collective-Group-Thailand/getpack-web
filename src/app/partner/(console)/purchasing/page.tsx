@@ -101,6 +101,7 @@ export default async function PurchasingPage({
         items={[
           ...VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) })),
           { key: "requests", href: "/purchasing/requests", label: t("views.requests") },
+          { key: "rfqs", href: "/purchasing/rfqs", label: t("views.rfqs") },
         ]}
       />
       <SearchBar

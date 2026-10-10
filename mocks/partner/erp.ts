@@ -12,7 +12,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import { matchesQuery, mockId, paginate, problem } from "../support";
 import { pageQuery } from "./billing";
-import { permissionsOf } from "./personas";
+import { canPartner, permissionsOf } from "./personas";
 import { type Own, once, own } from "./support";
 
 type Partner = Schemas["ErpTradingPartnerDto"];
@@ -35,6 +35,9 @@ interface Erp {
     overReceiptPct: number;
     priceTolerancePct: number;
     requireRequestApproval: boolean;
+    priceAlertPct: number;
+    quoteExpiryDays: number;
+    supplierApproval: "off" | "warn" | "enforce";
     prefixes: Record<string, string>;
     version: number;
   };
@@ -105,6 +108,9 @@ function seed(): Erp {
       overReceiptPct: 10,
       priceTolerancePct: 2,
       requireRequestApproval: true,
+      priceAlertPct: 5,
+      quoteExpiryDays: 7,
+      supplierApproval: "warn",
       prefixes: {},
       version: 1,
     },
@@ -404,6 +410,7 @@ function draftPo(erp: Erp, b: Schemas["ErpSavePurchaseOrderDto"]): Po | Response
     cancelReason: null,
     lines,
     receipts: [],
+    warnings: [],
     version: 1,
   };
 }
@@ -468,6 +475,9 @@ export const erpHandlers = [
         overReceiptPct: s.overReceiptPct.toFixed(4),
         priceTolerancePct: s.priceTolerancePct.toFixed(4),
         requireRequestApproval: s.requireRequestApproval,
+        priceAlertPct: s.priceAlertPct.toFixed(4),
+        quoteExpiryDays: s.quoteExpiryDays,
+        supplierApproval: s.supplierApproval,
         prefixes: { ...PREFIX, ...s.prefixes },
         vatRegistered: true,
         version: s.version,
@@ -487,6 +497,9 @@ export const erpHandlers = [
     if (b.overReceiptPct !== undefined) s.overReceiptPct = Number(b.overReceiptPct);
     if (b.priceTolerancePct !== undefined) s.priceTolerancePct = Number(b.priceTolerancePct);
     if (b.requireRequestApproval !== undefined) s.requireRequestApproval = b.requireRequestApproval;
+    if (b.priceAlertPct !== undefined) s.priceAlertPct = Number(b.priceAlertPct);
+    if (b.quoteExpiryDays !== undefined) s.quoteExpiryDays = b.quoteExpiryDays;
+    if (b.supplierApproval !== undefined) s.supplierApproval = b.supplierApproval;
     if (b.prefixes) s.prefixes = { ...s.prefixes, ...b.prefixes };
     s.version += 1;
     return HttpResponse.json(
@@ -496,6 +509,9 @@ export const erpHandlers = [
         overReceiptPct: s.overReceiptPct.toFixed(4),
         priceTolerancePct: s.priceTolerancePct.toFixed(4),
         requireRequestApproval: s.requireRequestApproval,
+        priceAlertPct: s.priceAlertPct.toFixed(4),
+        quoteExpiryDays: s.quoteExpiryDays,
+        supplierApproval: s.supplierApproval,
         prefixes: { ...PREFIX, ...s.prefixes },
         vatRegistered: true,
         version: s.version,
@@ -927,6 +943,7 @@ export const erpHandlers = [
         cancelReason: null,
         lines,
         receipts: [],
+        warnings: [],
         version: 1,
       };
       ok.erp.pos.unshift(po);
@@ -1072,6 +1089,11 @@ export const erpHandlers = [
           unitCost: c6(price / factor),
           amount: m2(quantity * price),
           lotNo: line.lotNo ?? null,
+          // D-349: refused at inspection, recorded but not stocked nor received.
+          rejectedQuantity: q3(Number(line.rejectedQuantity ?? 0)),
+          rejectReason: Number(line.rejectedQuantity ?? 0) > 0 ? (line.rejectReason ?? null) : null,
+          landedAmount: "0.00",
+          landedUnitCost: c6(price / factor),
         });
         if (poLine) {
           poLine.receivedQty = q3(Number(poLine.receivedQty) + quantity);
@@ -1081,7 +1103,39 @@ export const erpHandlers = [
       }
       const id = mockId("egr", (erp.seq += 1));
       const grNo = number(erp, "gr");
+      // D-350: charges spread by value (or quantity) into the cost of what was accepted.
+      const charges: Gr["charges"] = (b.charges ?? []).map((c, ci) => {
+        const weights = lines.map((l) =>
+          Number(l.baseQuantity) > 0 ? (c.allocation === "by_quantity" ? Number(l.baseQuantity) : Number(l.amount)) : 0,
+        );
+        const sum = weights.reduce((a, w) => a + w, 0) || 1;
+        const split = weights.map((w) => Math.round((Number(c.amount) * w * 100) / sum) / 100);
+        lines.forEach((l, i) => {
+          l.landedAmount = m2(Number(l.landedAmount) + split[i]!);
+          l.landedUnitCost =
+            Number(l.baseQuantity) > 0
+              ? c6(Number(l.unitCost) + Number(l.landedAmount) / Number(l.baseQuantity))
+              : l.unitCost;
+        });
+        const partner = c.partnerId ? erp.partners.find((p) => p.id === c.partnerId) : undefined;
+        return {
+          id: mockId("elc", (erp.seq += 1) * 10 + ci),
+          kind: c.kind,
+          description: c.description ?? null,
+          amount: m2(Number(c.amount)),
+          allocation: c.allocation ?? "by_value",
+          partner: partner ? { id: partner.id, code: partner.code, name: partner.name } : null,
+          reference: c.reference ?? null,
+          atReceipt: true,
+          absorbed: m2(Number(c.amount)),
+          notAbsorbed: "0.00",
+          by: ok.who.displayName,
+          createdAt: now(),
+          lines: lines.map((l, i) => ({ lineNo: l.lineNo, amount: m2(split[i]!), absorbed: m2(split[i]!) })),
+        };
+      });
       for (const line of lines) {
+        if (!(Number(line.baseQuantity) > 0)) continue;
         const item = erp.items.find((i) => i.id === line.item.id)!;
         post(
           erp,
@@ -1089,7 +1143,7 @@ export const erpHandlers = [
           warehouse,
           "receipt",
           Number(line.baseQuantity),
-          Number(line.unitCost),
+          Number(line.landedUnitCost),
           { type: "goods_receipt", id, no: grNo },
           b.deliveryNoteNo ? `ใบส่งของ ${b.deliveryNoteNo}` : null,
           line.lotNo,
@@ -1110,6 +1164,11 @@ export const erpHandlers = [
         by: ok.who.displayName,
         createdAt: now(),
         lines,
+        chargesTotal: m2(charges.reduce((a, c) => a + Number(c.amount), 0)),
+        charges,
+        nextActions: canPartner(ok.who, "factory_procurement.manage")
+          ? [{ key: "erp_gr.add_charge", irreversible: false, disabledReason: null }]
+          : [],
       };
       erp.grs.unshift(gr);
       if (po) {

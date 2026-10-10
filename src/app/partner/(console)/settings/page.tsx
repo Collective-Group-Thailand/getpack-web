@@ -68,6 +68,7 @@ export default async function SettingsPage() {
       "factory_accountant",
       "factory_storekeeper",
       "factory_purchaser",
+      "factory_maintenance",
     ].includes(role)
       ? tRoles(role as "factory_owner")
       : role;

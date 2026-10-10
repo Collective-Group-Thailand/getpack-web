@@ -323,7 +323,9 @@ export default async function StockPage({
                     ? `/purchasing/receipts/${move.sourceId}`
                     : move.sourceType === "production_order"
                       ? `/planning/orders/${move.sourceId}`
-                      : `/stock/items/${move.item.id}`
+                      : move.sourceType === "maintenance_order"
+                        ? `/maintenance/${move.sourceId}`
+                        : `/stock/items/${move.item.id}`
                 }
                 empty={<EmptyState icon="history" title={t("emptyMoves")} />}
                 columns={[

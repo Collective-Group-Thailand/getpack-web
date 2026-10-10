@@ -10,6 +10,7 @@ export type SidebarGroupKey = "daily" | "supply" | "plan" | "finance" | "factory
 
 export type SidebarItemKey =
   | "today"
+  | "alerts"
   | "onboarding"
   | "jobs"
   | "qc"
@@ -21,6 +22,12 @@ export type SidebarItemKey =
   | "tradingPartners"
   | "planning"
   | "floor"
+  | "kiosk"
+  | "rfqs"
+  | "schedule"
+  | "maintenance"
+  | "machines"
+  | "documents"
   | "payables"
   | "capacity"
   | "hours"
@@ -47,9 +54,19 @@ export interface SidebarGroup {
 
 const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; permission?: string }> = {
   today: { key: "today", href: "/", icon: "home", group: "daily" },
+  // E2.1 / E3 (D-358): the factory's ERP alerts — price rises, breakdowns, maintenance due, documents expiring.
+  alerts: { key: "alerts", href: "/alerts", icon: "bell", group: "daily", permission: "factory_profile.read" },
   onboarding: { key: "onboarding", href: "/onboarding", icon: "checklist", group: "daily" },
   jobs: { key: "jobs", href: "/jobs", icon: "factory", group: "daily", permission: "factory_jobs.read" },
   floor: { key: "floor", href: "/floor", icon: "play", group: "daily", permission: "factory_production.record" },
+  // E3 (D-353): one machine's screen for its operators — big buttons, pause with a reason.
+  kiosk: {
+    key: "kiosk",
+    href: "/floor/kiosk",
+    icon: "tablet",
+    group: "daily",
+    permission: "factory_production.record",
+  },
   qc: { key: "qc", href: "/qc", icon: "clipboard-check", group: "daily", permission: "factory_qc.record" },
   samples: {
     key: "samples",
@@ -69,6 +86,14 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
     group: "supply",
     permission: "factory_procurement.read",
   },
+  // E2.1 (D-348): quotations from several suppliers, compared side by side.
+  rfqs: {
+    key: "rfqs",
+    href: "/purchasing/rfqs",
+    icon: "scale",
+    group: "supply",
+    permission: "factory_procurement.read",
+  },
   tradingPartners: {
     key: "tradingPartners",
     href: "/partners",
@@ -81,6 +106,28 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
     key: "planning",
     href: "/planning",
     icon: "layers",
+    group: "plan",
+    permission: "factory_planning.read",
+  },
+  // E3 (D-352, D-355): the machine schedule, maintenance and the machines themselves.
+  schedule: {
+    key: "schedule",
+    href: "/planning/schedule",
+    icon: "gantt",
+    group: "plan",
+    permission: "factory_planning.read",
+  },
+  maintenance: {
+    key: "maintenance",
+    href: "/maintenance",
+    icon: "wrench",
+    group: "plan",
+    permission: "factory_maintenance.read",
+  },
+  machines: {
+    key: "machines",
+    href: "/machines",
+    icon: "cog",
     group: "plan",
     permission: "factory_planning.read",
   },
@@ -123,6 +170,14 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
     group: "factory",
     permission: "factory_style_intakes.submit",
   },
+  // E3 (D-356): certificates, permits, drawings — versioned, linked to records, reminded before they expire.
+  documents: {
+    key: "documents",
+    href: "/documents",
+    icon: "folder",
+    group: "factory",
+    permission: "factory_documents.read",
+  },
   requests: { key: "requests", href: "/requests", icon: "send", group: "factory" },
   knowledge: { key: "knowledge", href: "/knowledge", icon: "article", group: "factory" },
   // Everyone's own notifications live there too; users and the factory's profile only for whom may manage them.
@@ -135,13 +190,30 @@ const EVERYONE: readonly SidebarItemKey[] = ["knowledge", "requests", "settings"
 
 const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   factory_owner: Object.keys(ITEMS) as SidebarItemKey[],
-  factory_planner: ["today", "jobs", "floor", "planning", "stock", "purchasing", "capacity", "hours", ...EVERYONE],
-  factory_operator: ["today", "floor", "jobs", "planning", ...EVERYONE],
+  factory_planner: [
+    "today",
+    "alerts",
+    "jobs",
+    "floor",
+    "kiosk",
+    "planning",
+    "schedule",
+    "maintenance",
+    "machines",
+    "stock",
+    "purchasing",
+    "capacity",
+    "hours",
+    "documents",
+    ...EVERYONE,
+  ],
+  factory_operator: ["today", "alerts", "floor", "kiosk", "jobs", "planning", "maintenance", "documents", ...EVERYONE],
   // QC and shipping open on their own queue (`/qc`, `/ship`): "งานวันนี้" would lead back to it.
   factory_qc: ["qc", "samples", "claims", ...EVERYONE],
   factory_shipping: ["ship", ...EVERYONE],
   factory_accountant: [
     "today",
+    "alerts",
     "purchasing",
     "tradingPartners",
     "stock",
@@ -151,14 +223,25 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "prices",
     "shippingRates",
     "performance",
+    "documents",
     ...EVERYONE,
   ],
   // Packio Factory ERP roles (D-319): the store and the buying desk.
-  factory_storekeeper: ["stock", "purchasing", "tradingPartners", "planning", ...EVERYONE],
-  factory_purchaser: ["purchasing", "stock", "tradingPartners", "payables", ...EVERYONE],
+  factory_storekeeper: [
+    "alerts",
+    "stock",
+    "purchasing",
+    "tradingPartners",
+    "planning",
+    "documents",
+    ...EVERYONE,
+  ],
+  factory_purchaser: ["alerts", "purchasing", "rfqs", "stock", "tradingPartners", "payables", "documents", ...EVERYONE],
+  // E3 (D-357): the maintenance crew — orders, plans, machines and the spare parts in stock.
+  factory_maintenance: ["alerts", "maintenance", "machines", "stock", "documents", ...EVERYONE],
 };
 
-const SUPPLY: readonly SidebarItemKey[] = ["stock", "purchasing", "tradingPartners"];
+const DESKS: readonly SidebarItemKey[] = ["maintenance", "stock", "purchasing", "tradingPartners", "alerts"];
 
 const GROUP_ORDER: SidebarGroupKey[] = ["daily", "supply", "plan", "finance", "factory"];
 
@@ -212,9 +295,10 @@ export function partnerBottomItems(
   const keys = sidebarItems(status, roles, can);
   const preferred: SidebarItemKey[] = isOnboarding(status)
     ? ["today", "onboarding", "prices"]
-    : ["today", "jobs", "qc", "ship", "billing", "samples", "claims", "capacity"];
+    : ["today", "jobs", "floor", "qc", "ship", "billing", "samples", "claims", "capacity"];
   const floor = preferred.filter((key) => keys.includes(key));
-  // The store and the buying desk (D-319) have no floor queue: their bar is the supply group.
-  const supply = floor.length < 2 ? SUPPLY.filter((key) => keys.includes(key)) : [];
+  // The store, the buying desk (D-319) and the maintenance crew (D-357) have no floor queue: their bar is
+  // their own desk, then the alerts.
+  const supply = floor.length < 2 ? DESKS.filter((key) => keys.includes(key)) : [];
   return [...floor, ...supply].slice(0, 4).map(itemOf);
 }

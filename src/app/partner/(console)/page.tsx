@@ -36,6 +36,8 @@ export default async function PartnerHomePage() {
   const only = (role: string) => context.roles.length > 0 && context.roles.every((r) => r === role);
   if (producing && only("factory_qc")) redirect("/qc");
   if (producing && only("factory_shipping")) redirect("/ship");
+  // E3 (D-357): the maintenance crew opens on its orders.
+  if (only("factory_maintenance") && canAt(context, "factory_maintenance.read")) redirect("/maintenance");
   const [steps, prices, floor] = await Promise.all([
     onboarding
       ? attempt(

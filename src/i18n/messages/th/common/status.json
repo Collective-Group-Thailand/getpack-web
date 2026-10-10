@@ -450,7 +450,18 @@
     "issueMaterials": "เบิกวัตถุดิบ",
     "returnMaterials": "คืนวัตถุดิบ",
     "completeProductionOrder": "ปิดงานผลิต",
-    "cancelProductionOrder": "ยกเลิกใบสั่งผลิต"
+    "cancelProductionOrder": "ยกเลิกใบสั่งผลิต",
+    "addLandedCharge": "บันทึกต้นทุนเพิ่ม",
+    "editRfq": "แก้ไขใบขอราคา",
+    "sendRfq": "ส่งใบขอราคา",
+    "recordQuotes": "บันทึกราคา",
+    "awardRfq": "เลือกผู้ขาย",
+    "cancelRfq": "ยกเลิกใบขอราคา",
+    "scheduleMaintenance": "นัดเวลาซ่อม",
+    "startMaintenance": "เริ่มซ่อม",
+    "issueSpareParts": "เบิกอะไหล่",
+    "finishMaintenance": "ปิดงานซ่อม",
+    "cancelMaintenance": "ยกเลิกงานซ่อม"
   },
   "points": {
     "pending": "รอเข้าบัญชี",
@@ -753,6 +764,42 @@
     "pending": "รอทำ",
     "inProgress": "กำลังทำ",
     "done": "เสร็จ",
-    "skipped": "ข้าม"
+    "skipped": "ข้าม",
+    "paused": "หยุดชั่วคราว"
+  },
+  "erpRfq": {
+    "draft": "ร่าง",
+    "sent": "ส่งแล้ว",
+    "awarded": "เลือกผู้ขายแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpRfqSupplier": {
+    "invited": "รอคำตอบ",
+    "quoted": "เสนอราคาแล้ว",
+    "declined": "ไม่เสนอราคา"
+  },
+  "erpSupplierApproval": {
+    "pending": "รออนุมัติ",
+    "approved": "อนุมัติแล้ว",
+    "suspended": "ระงับ"
+  },
+  "erpMaintenance": {
+    "open": "รอดำเนินการ",
+    "scheduled": "นัดเวลาแล้ว",
+    "inProgress": "กำลังซ่อม",
+    "done": "เสร็จ",
+    "cancelled": "ยกเลิก"
+  },
+  "erpMachine": {
+    "running": "กำลังเดินเครื่อง",
+    "idle": "ว่าง",
+    "down": "เครื่องเสีย",
+    "maintenance": "ซ่อมบำรุง"
+  },
+  "erpDocExpiry": {
+    "none": "ไม่มีวันหมดอายุ",
+    "valid": "ใช้ได้",
+    "expiring": "ใกล้หมดอายุ",
+    "expired": "หมดอายุแล้ว"
   }
 }

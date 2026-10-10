@@ -154,6 +154,18 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "erp_mo.return": { tone: "neutral", icon: "undo", labelKey: "action.returnMaterials" },
   "erp_mo.complete": { tone: "success", icon: "check", labelKey: "action.completeProductionOrder" },
   "erp_mo.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelProductionOrder" },
+  // packio-api v0.46.0 (D-348, D-350, D-355).
+  "erp_gr.add_charge": { tone: "neutral", icon: "plus", labelKey: "action.addLandedCharge" },
+  "erp_rfq.edit": { tone: "neutral", icon: "edit", labelKey: "action.editRfq" },
+  "erp_rfq.send": { tone: "primary", icon: "send", labelKey: "action.sendRfq" },
+  "erp_rfq.record": { tone: "primary", icon: "receipt", labelKey: "action.recordQuotes" },
+  "erp_rfq.award": { tone: "success", icon: "check", labelKey: "action.awardRfq" },
+  "erp_rfq.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelRfq" },
+  "erp_mt.schedule": { tone: "neutral", icon: "calendar", labelKey: "action.scheduleMaintenance" },
+  "erp_mt.start": { tone: "primary", icon: "wrench", labelKey: "action.startMaintenance" },
+  "erp_mt.parts": { tone: "neutral", icon: "package", labelKey: "action.issueSpareParts" },
+  "erp_mt.finish": { tone: "success", icon: "check", labelKey: "action.finishMaintenance" },
+  "erp_mt.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelMaintenance" },
 };
 
 /**
@@ -243,6 +255,17 @@ export const API_ACTION_KEYS = [
   "erp_mo.return",
   "erp_mo.complete",
   "erp_mo.cancel",
+  "erp_gr.add_charge",
+  "erp_rfq.edit",
+  "erp_rfq.send",
+  "erp_rfq.record",
+  "erp_rfq.award",
+  "erp_rfq.cancel",
+  "erp_mt.schedule",
+  "erp_mt.start",
+  "erp_mt.parts",
+  "erp_mt.finish",
+  "erp_mt.cancel",
 ] as const;
 
 /** Falls back to something visible and pressable rather than dropping the action. */
