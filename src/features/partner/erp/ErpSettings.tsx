@@ -32,10 +32,13 @@ const MODULES = [
   "accounting",
   "maintenance",
   "documents",
+  "quality",
+  "insight",
+  "people",
 ] as const;
-const PREFIXES = ["po", "gr", "adj", "trf", "iss", "pr", "ap", "pv", "mo", "rfq", "mt", "qt", "so", "do", "iv", "cn", "dr", "rc", "bn", "wht"] as const;
+const PREFIXES = ["po", "gr", "adj", "trf", "iss", "pr", "ap", "pv", "mo", "rfq", "mt", "qt", "so", "do", "iv", "cn", "dr", "rc", "bn", "wht", "qc", "ncr"] as const;
 const POLICIES = ["off", "warn", "enforce"] as const;
-/** Modules that exist today (E1 – E4); the rest are shown as coming and stay as they are. */
+/** Modules that exist today (E1 – E5); the rest are shown as coming and stay as they are. */
 const LIVE = new Set<string>([
   "inventory",
   "procurement",
@@ -46,6 +49,9 @@ const LIVE = new Set<string>([
   "accounting",
   "maintenance",
   "documents",
+  "quality",
+  "insight",
+  "people",
 ]);
 
 /** The factory's ERP rules (D-318, D-322, D-323, D-325): modules, negative stock, over-receipt, prefixes. */
@@ -79,6 +85,10 @@ export function ErpSettingsForm({
   const [bank, setBank] = useState(settings.bankDetails ?? "");
   const [logoId, setLogoId] = useState<string | null>(settings.documentLogoFileId);
   const [logoBusy, setLogoBusy] = useState(false);
+  const [labour, setLabour] = useState(trimZeros(settings.labourRatePerHour));
+  const [overhead, setOverhead] = useState(trimZeros(settings.overheadPct));
+  const [oeeAlert, setOeeAlert] = useState(trimZeros(settings.oeeAlertPct));
+  const [daily, setDaily] = useState(settings.dailySummary);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -103,6 +113,10 @@ export function ErpSettingsForm({
           documentFooter: footer.trim() || null,
           bankDetails: bank.trim() || null,
           documentLogoFileId: logoId,
+          labourRatePerHour: labour || "0",
+          overheadPct: overhead || "0",
+          oeeAlertPct: oeeAlert || "0",
+          dailySummary: daily,
         },
       });
       toast.success(tCommon("saved"));
@@ -239,6 +253,28 @@ export function ErpSettingsForm({
             ) : null}
           </span>
         </Field>
+      </fieldset>
+      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
+        <legend className="mb-1 text-lg font-semibold">{t("insight.title")}</legend>
+        <p className="text-muted text-sm">{t("insight.body")}</p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label={t("insight.labour")} hint={t("insight.labourHint")} error={errors.labourRatePerHour}>
+            <NumberInput min={0} step="any" unit="฿" value={labour} onChange={(event) => setLabour(event.target.value)} />
+          </Field>
+          <Field label={t("insight.overhead")} hint={t("insight.overheadHint")} error={errors.overheadPct}>
+            <NumberInput min={0} max={500} step="any" unit="%" value={overhead} onChange={(event) => setOverhead(event.target.value)} />
+          </Field>
+          <Field label={t("insight.oeeAlert")} hint={t("insight.oeeAlertHint")} error={errors.oeeAlertPct}>
+            <NumberInput min={0} max={100} step="any" unit="%" value={oeeAlert} onChange={(event) => setOeeAlert(event.target.value)} />
+          </Field>
+        </div>
+        <Checkbox
+          label={t("insight.dailySummary")}
+          description={t("insight.dailySummaryHint")}
+          checked={daily}
+          onCheckedChange={(checked) => setDaily(checked === true)}
+        />
+        <p className="text-muted text-sm">{t("insight.rates")}</p>
       </fieldset>
       <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
         <legend className="mb-1 text-lg font-semibold">{t("prefixes")}</legend>

@@ -18,7 +18,9 @@
       "document_expiring": "Document expiring",
       "quote_follow_up": "Quotation expiring",
       "invoice_overdue": "Invoice overdue",
-      "activity_overdue": "Follow-up overdue"
+      "activity_overdue": "Follow-up overdue",
+      "ncr_overdue": "NCR overdue",
+      "oee_low": "Low OEE"
     },
     "text": {
       "price_rise": "{item}: {supplier} at {price} THB/{unit}, up {changePct}% from {previous} ({documentNo})",
@@ -29,7 +31,9 @@
       "document_expiring": "{title} expires on {expiresOn}",
       "quote_follow_up": "{quoteNo} for {customer} is valid until {validUntil} — follow up",
       "invoice_overdue": "{customer} owes {open} on {invoiceNo} (due {dueDate})",
-      "activity_overdue": "{subject} ({assignee}) is overdue"
+      "activity_overdue": "{subject} ({assignee}) is overdue",
+      "ncr_overdue": "{ncrNo} {title} ({owner}) was due {dueOn}",
+      "oee_low": "{machine} ran at {oeePct}% OEE on {day}, under the {thresholdPct}% threshold"
     },
     "open": "Open",
     "acknowledge": "Acknowledge",

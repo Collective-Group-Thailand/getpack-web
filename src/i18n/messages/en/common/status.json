@@ -506,7 +506,18 @@
     "cancelBillingNote": "Cancel billing note",
     "billingNotePdf": "Billing note PDF",
     "voidWht": "Void certificate",
-    "whtPdf": "50 bis PDF"
+    "whtPdf": "50 bis PDF",
+    "editTemplate": "Edit template",
+    "useTemplate": "Check with this template",
+    "recordCheck": "Record results",
+    "overrideCheck": "Set the result",
+    "coaPdf": "Certificate of analysis",
+    "workNcr": "Record cause and action",
+    "disposeNcr": "Decide disposition",
+    "verifyNcr": "Verify correction",
+    "closeNcr": "Close NCR",
+    "cancelNcr": "Cancel NCR",
+    "revokeSupport": "Revoke support access"
   },
   "points": {
     "pending": "Pending",
@@ -903,5 +914,23 @@
   "erpWht": {
     "issued": "Issued",
     "voided": "Voided"
+  },
+  "erpCheck": {
+    "pending": "Pending",
+    "pass": "Pass",
+    "conditional": "Conditional",
+    "fail": "Fail"
+  },
+  "erpNcr": {
+    "open": "Open",
+    "in_progress": "In progress",
+    "verified": "Verified",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "erpNcrSeverity": {
+    "minor": "Minor",
+    "major": "Major",
+    "critical": "Critical"
   }
 }
