@@ -17,12 +17,13 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
+import { ERP_UNIT_VALUES } from "@/features/partner/erp/units";
 
 type Rfq = Schemas["ErpRfqDto"];
 type RfqSupplier = Rfq["suppliers"][number];
 type Unit = Schemas["ErpUnit"];
 
-const UNITS: Unit[] = ["kg", "g", "ton", "sheet", "ream", "roll", "m", "m2", "pcs", "box", "pack", "set", "l", "ml"];
+const UNITS: Unit[] = [...ERP_UNIT_VALUES];
 const USUAL = "usual";
 
 interface Row {

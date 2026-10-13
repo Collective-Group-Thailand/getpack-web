@@ -18,9 +18,10 @@ import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
 import { PRICE_PATTERN, plainNumber, QTY_PATTERN, trimZeros } from "./format";
+import { ERP_UNIT_VALUES } from "./units";
 
 const KINDS = ["raw_material", "consumable", "spare_part", "semi_finished", "finished_good", "packing"] as const;
-const UNITS = ["kg", "g", "ton", "sheet", "ream", "roll", "m", "m2", "pcs", "box", "pack", "set", "l", "ml"] as const;
+const UNITS = ERP_UNIT_VALUES;
 const SAME = "same";
 
 type Item = Schemas["ErpItemDto"];

@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.48.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.48.1) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -51635,7 +51635,7 @@ export interface components {
             version: number;
         };
         /** @enum {string} */
-        ErpUnit: "kg" | "g" | "ton" | "sheet" | "ream" | "roll" | "m" | "m2" | "pcs" | "box" | "pack" | "set" | "l" | "ml";
+        ErpUnit: "kg" | "g" | "ton" | "sheet" | "ream" | "roll" | "m" | "m2" | "pcs" | "box" | "pack" | "set" | "l" | "ml" | "pouch" | "tube" | "job" | "round" | "trip";
         ErpUpdateDocDto: {
             category?: components["schemas"]["ErpDocCategory"];
             /**
