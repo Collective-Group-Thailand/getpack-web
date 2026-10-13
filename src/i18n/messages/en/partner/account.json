@@ -156,7 +156,8 @@
       "factory_storekeeper": "Receives, issues and counts stock",
       "factory_purchaser": "Looks after suppliers and drafts purchase orders",
       "factory_maintenance": "Breakdowns, maintenance plans and spare parts",
-      "factory_sales": "Customers, quotations, sales orders and delivery notes"
+      "factory_sales": "Customers, quotations, sales orders and delivery notes",
+      "factory_auditor": "Read the books, statements, tax and the documents behind them (read-only)"
     },
     "self": "This is you",
     "rolesSaved": "{name}'s role changed",

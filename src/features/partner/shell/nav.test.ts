@@ -18,6 +18,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "plan",
       "quality",
       "finance",
+      "ledger",
       "factory",
     ]);
   });
@@ -75,6 +76,12 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "invoices",
       "receivables",
       "tax",
+      "ledger",
+      "ledgerJournals",
+      "ledgerReports",
+      "ledgerAccounts",
+      "ledgerAssets",
+      "ledgerBank",
       "insight",
       "insightCosts",
       "insightProfit",
@@ -225,5 +232,26 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     expect(isCurrent("/prices", "/pricesx")).toBe(false);
     expect(currentHref(["/insight", "/insight/costs", "/"], "/insight/costs/abc")).toBe("/insight/costs");
     expect(currentHref(["/quality", "/quality/ncrs"], "/quality/0192")).toBe("/quality");
+  });
+
+  it("gives the external auditor the books and their documents, read-only (D-396)", () => {
+    expect(items("factory_auditor")).toEqual([
+      "stock",
+      "invoices",
+      "receivables",
+      "tax",
+      "ledger",
+      "ledgerJournals",
+      "ledgerReports",
+      "ledgerAccounts",
+      "ledgerAssets",
+      "ledgerBank",
+      "payables",
+      "documents",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
+    expect(items("factory_planner")).not.toContain("ledger");
   });
 });

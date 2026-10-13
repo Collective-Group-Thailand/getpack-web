@@ -2,6 +2,8 @@ import { defineStatusMap } from "./types";
 import type {
   DefectSeverity,
   ErpCheckResult,
+  ErpGlAssetStatus,
+  ErpGlBankLineStatus,
   ErpNcrStatus,
   ErpDocExpiry,
   ErpMachineState,
@@ -218,4 +220,18 @@ export const ERP_NCR_SEVERITY = defineStatusMap<DefectSeverity>({
   minor: { tone: "neutral", icon: "info", labelKey: "erpNcrSeverity.minor" },
   major: { tone: "warning", icon: "warning", labelKey: "erpNcrSeverity.major" },
   critical: { tone: "danger", icon: "danger", labelKey: "erpNcrSeverity.critical" },
+});
+
+/** A bank statement line (D-394). */
+export const ERP_GL_BANK_LINE_STATUS = defineStatusMap<ErpGlBankLineStatus>({
+  open: { tone: "warning", icon: "hourglass", labelKey: "erpGlBankLine.open" },
+  matched: { tone: "success", icon: "check", labelKey: "erpGlBankLine.matched" },
+  ignored: { tone: "neutral", icon: "ban", labelKey: "erpGlBankLine.ignored" },
+});
+
+/** A fixed asset (D-393). */
+export const ERP_GL_ASSET_STATUS = defineStatusMap<ErpGlAssetStatus>({
+  active: { tone: "success", icon: "check", labelKey: "erpGlAsset.active" },
+  disposed: { tone: "neutral", icon: "archive", labelKey: "erpGlAsset.disposed" },
+  written_off: { tone: "danger", icon: "ban", labelKey: "erpGlAsset.written_off" },
 });
