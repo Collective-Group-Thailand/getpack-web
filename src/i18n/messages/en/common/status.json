@@ -517,7 +517,32 @@
     "verifyNcr": "Verify correction",
     "closeNcr": "Close NCR",
     "cancelNcr": "Cancel NCR",
-    "revokeSupport": "Revoke support access"
+    "revokeSupport": "Revoke support access",
+    "configureLedger": "Ledger settings",
+    "catchUpLedger": "Post pending documents",
+    "proposeAccount": "Propose a change",
+    "approveAccountChange": "Approve chart change",
+    "rejectAccountChange": "Reject chart change",
+    "softClosePeriod": "Soft-close period",
+    "closePeriod": "Close period",
+    "lockPeriod": "Lock period",
+    "reopenPeriod": "Reopen period",
+    "editJournal": "Edit journal",
+    "submitJournal": "Submit for approval",
+    "approveJournal": "Approve and post",
+    "rejectJournal": "Reject",
+    "deleteJournal": "Delete draft",
+    "reverseJournal": "Reverse entry",
+    "editRecurring": "Edit recurring",
+    "runRecurring": "Post this month now",
+    "disposeAsset": "Dispose",
+    "editBank": "Edit bank account",
+    "importStatement": "Import statement",
+    "matchBankLine": "Match",
+    "ignoreBankLine": "Ignore",
+    "unmatchBankLine": "Undo match",
+    "markTaxFiled": "Mark filed",
+    "closeYear": "Close the year"
   },
   "points": {
     "pending": "Pending",
@@ -932,5 +957,15 @@
     "minor": "Minor",
     "major": "Major",
     "critical": "Critical"
+  },
+  "erpGlBankLine": {
+    "open": "Open",
+    "matched": "Matched",
+    "ignored": "Ignored"
+  },
+  "erpGlAsset": {
+    "active": "Active",
+    "disposed": "Disposed",
+    "written_off": "Written off"
   }
 }

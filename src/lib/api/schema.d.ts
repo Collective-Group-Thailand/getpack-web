@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.48.1) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.49.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -18457,6 +18457,996 @@ export interface paths {
          *     Implements: D-359.
          */
         post: operations["partner.erpCrm.loseLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/account-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Chart changes
+         * @description Proposed, approved and rejected changes to the chart, newest first (D-386).
+         *
+         *     Implements: D-386.
+         */
+        get: operations["partner.erpLedger.listAccountChanges"];
+        put?: never;
+        /**
+         * Propose a chart change
+         * @description Create, update, deactivate or reactivate an account; another person with `factory_ledger.approve` decides (maker-checker, D-386).
+         *
+         *     Implements: D-386.
+         */
+        post: operations["partner.erpLedger.proposeAccountChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/account-changes/{changeId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a chart change
+         * @description Applies it; never your own proposal (D-386).
+         *
+         *     Implements: D-386.
+         */
+        post: operations["partner.erpLedger.approveAccountChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/account-changes/{changeId}/actions/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a chart change
+         * @description The chart stays as it is (D-386).
+         *
+         *     Implements: D-386.
+         */
+        post: operations["partner.erpLedger.rejectAccountChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Chart of accounts
+         * @description By code, with today’s balance on each account’s normal side (D-386).
+         *
+         *     Implements: D-386.
+         */
+        get: operations["partner.erpLedger.listAccounts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/actions/catch-up": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post documents not yet in the books
+         * @description Replays the ERP’s events since the ledger start that have no entry yet (a ledger started after the ERP); each event is posted on its own (D-388).
+         *
+         *     Implements: D-388.
+         */
+        post: operations["partner.erpLedger.catchUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/asset-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Asset categories
+         * @description Useful life and the four accounts of each category (D-393).
+         *
+         *     Implements: D-393.
+         */
+        get: operations["partner.erpFixedAssets.listCategories"];
+        put?: never;
+        /**
+         * Add an asset category
+         * @description Postable active accounts only (D-393).
+         *
+         *     Implements: D-393.
+         */
+        post: operations["partner.erpFixedAssets.createCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/asset-categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edit an asset category
+         * @description Assets already registered keep their own useful life (D-393).
+         *
+         *     Implements: D-393.
+         */
+        put: operations["partner.erpFixedAssets.updateCategory"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/bank-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bank accounts
+         * @description Each with its ledger balance and open statement lines (D-394).
+         *
+         *     Implements: D-394.
+         */
+        get: operations["partner.erpBank.listAccounts"];
+        put?: never;
+        /**
+         * Add a bank account
+         * @description Gets its own sub-account under bank deposits; the last four digits only (D-394).
+         *
+         *     Implements: D-394.
+         */
+        post: operations["partner.erpBank.createAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/bank-accounts/{bankAccountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edit a bank account
+         * @description Name, default, status (D-394).
+         *
+         *     Implements: D-394.
+         */
+        put: operations["partner.erpBank.updateAccount"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/bank-accounts/{bankAccountId}/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import a bank statement
+         * @description Rows, or a CSV file in a known bank format; lines already imported are skipped; a single same-amount payment or receipt within 3 days is matched automatically (D-394).
+         *
+         *     Implements: D-394.
+         */
+        post: operations["partner.erpBank.importStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/bank-lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bank statement lines
+         * @description Newest first, with matches and, for open lines, possible matches (D-394).
+         *
+         *     Implements: D-394.
+         */
+        get: operations["partner.erpBank.listLines"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/bank-lines/{lineId}/actions/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ignore a statement line
+         * @description With a reason (an internal transfer already recorded, say), D-394.
+         *
+         *     Implements: D-394.
+         */
+        post: operations["partner.erpBank.ignoreLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/bank-lines/{lineId}/actions/match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Match a statement line
+         * @description To a supplier payment, a customer receipt or a posted entry; a bank fee or interest posts F18 (D-394).
+         *
+         *     Implements: D-394.
+         */
+        post: operations["partner.erpBank.matchLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/bank-lines/{lineId}/actions/unmatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undo a match or an ignore
+         * @description A fee or interest entry is reversed (D-394).
+         *
+         *     Implements: D-394.
+         */
+        post: operations["partner.erpBank.unmatchLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/cash-position": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cash position
+         * @description Cash and bank balances today, what is not yet reconciled, and what falls due within a week (D-394).
+         *
+         *     Implements: D-394.
+         */
+        get: operations["partner.erpBank.cashPosition"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/depreciation-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Depreciation runs
+         * @description The last 24 months (D-393).
+         *
+         *     Implements: D-393.
+         */
+        get: operations["partner.erpFixedAssets.listRuns"];
+        put?: never;
+        /**
+         * Run a month’s depreciation
+         * @description Once per month; catches up months not yet charged and posts F16 (D-393).
+         *
+         *     Implements: D-393.
+         */
+        post: operations["partner.erpFixedAssets.run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/exports/journals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export a month’s journal lines (CSV)
+         * @description For an accountant’s own software (Express / PEAK / FlowAccount style); a short-lived link (D-396).
+         *
+         *     Implements: D-396.
+         */
+        post: operations["partner.erpJournals.export"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/fiscal-years/{yearId}/actions/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close a fiscal year
+         * @description When months 1 – 11 are closed and the last month is soft-closed: the year’s profit or loss moves to retained earnings in one closing entry in the last month, which then closes as usual (D-390).
+         *
+         *     Implements: D-390.
+         */
+        post: operations["partner.erpLedger.closeYear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/fixed-assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fixed-asset register
+         * @description Cost, accumulated depreciation and net book value (D-393).
+         *
+         *     Implements: D-393.
+         */
+        get: operations["partner.erpFixedAssets.list"];
+        put?: never;
+        /**
+         * Register an asset
+         * @description `FA-YYMM-NNNN`; straight line from the month after acquisition; depreciation taken before the ledger started is its opening accumulated (D-393).
+         *
+         *     Implements: D-393.
+         */
+        post: operations["partner.erpFixedAssets.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/fixed-assets/{assetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One asset
+         * @description With its ETag for disposal (D-393).
+         *
+         *     Implements: D-393.
+         */
+        get: operations["partner.erpFixedAssets.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/fixed-assets/{assetId}/actions/dispose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sell or write off an asset
+         * @description Posts F16D: the asset and its accumulated depreciation out, the proceeds in, the difference to gain or loss (D-393).
+         *
+         *     Implements: D-393.
+         */
+        post: operations["partner.erpFixedAssets.dispose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/journals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Journal entries
+         * @description Newest first; by kind, status, month, account, source document or text (D-389).
+         *
+         *     Implements: D-389.
+         */
+        get: operations["partner.erpJournals.list"];
+        put?: never;
+        /**
+         * Draft a manual journal
+         * @description Balanced lines on postable accounts (control accounts take documents only); `submit` sends it for approval. An accrual sets `autoReverseOn` (D-389).
+         *
+         *     Implements: D-389.
+         */
+        post: operations["partner.erpJournals.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One journal entry
+         * @description Its lines with dimensions and the document it came from (D-389).
+         *
+         *     Implements: D-389.
+         */
+        get: operations["partner.erpJournals.get"];
+        /**
+         * Edit a draft manual journal
+         * @description Replaces its lines (D-389).
+         *
+         *     Implements: D-389.
+         */
+        put: operations["partner.erpJournals.update"];
+        post?: never;
+        /**
+         * Delete a draft manual journal
+         * @description Only a draft; anything submitted stays as history (D-389).
+         *
+         *     Implements: D-389.
+         */
+        delete: operations["partner.erpJournals.delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve and post a manual journal
+         * @description Numbered `JV-YYMM-NNNN` and posted into its month, or the next open one; never your own (D-389).
+         *
+         *     Implements: D-389.
+         */
+        post: operations["partner.erpJournals.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}/actions/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a manual journal
+         * @description It stays as history with the reason (D-389).
+         *
+         *     Implements: D-389.
+         */
+        post: operations["partner.erpJournals.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}/actions/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reverse a posted entry
+         * @description A mirror entry dated `documentDate`; posted entries never change (D-389).
+         *
+         *     Implements: D-389.
+         */
+        post: operations["partner.erpJournals.reverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}/actions/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit a manual journal for approval
+         * @description Maker-checker: someone else with `factory_ledger.approve` posts it (D-389).
+         *
+         *     Implements: D-389.
+         */
+        post: operations["partner.erpJournals.submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/periods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fiscal periods
+         * @description The months of the current and the previous fiscal year from the ledger start, with their status (D-390).
+         *
+         *     Implements: D-390.
+         */
+        get: operations["partner.erpLedger.listPeriods"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/periods/{periodId}/actions/transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Soft-close, close, lock or reopen a period
+         * @description In order: a period closes after the one before it and only when every blocking check passes; a locked period never reopens; reopening needs a reason. Documents dated in a closed period post into the next open one (D-390).
+         *
+         *     Implements: D-390.
+         */
+        post: operations["partner.erpLedger.transitionPeriod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/periods/{periodId}/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Close checklist of a period
+         * @description Stock, payables, receivables, VAT and WHT against their accounts; bank reconciled; depreciation run; open WIP (D-390).
+         *
+         *     Implements: D-390.
+         */
+        get: operations["partner.erpLedger.closeChecklist"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/recurring-journals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recurring journals
+         * @description Posted on their day each month by the 00:30 job (D-389).
+         *
+         *     Implements: D-389.
+         */
+        get: operations["partner.erpJournals.listRecurring"];
+        put?: never;
+        /**
+         * Add a recurring journal
+         * @description Balanced lines on non-control accounts; an accrual reverses on the 1st of the next month (D-389).
+         *
+         *     Implements: D-389.
+         */
+        post: operations["partner.erpJournals.createRecurring"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/recurring-journals/{recurringId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edit a recurring journal
+         * @description `status: inactive` stops it (D-389).
+         *
+         *     Implements: D-389.
+         */
+        put: operations["partner.erpJournals.updateRecurring"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/recurring-journals/{recurringId}/actions/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post this month’s recurring journal now
+         * @description Once per month (D-389).
+         *
+         *     Implements: D-389.
+         */
+        post: operations["partner.erpJournals.runRecurring"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/reports/balance-sheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Balance sheet
+         * @description As of a day against the last fiscal year end, in the DBD NPAEs layout, with the current-year profit in equity (D-391).
+         *
+         *     Implements: D-391.
+         */
+        get: operations["partner.erpLedgerReports.balanceSheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/reports/cash-flow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cash flow
+         * @description Indirect method by the accounts’ cash-flow class (D-391).
+         *
+         *     Implements: D-391.
+         */
+        get: operations["partner.erpLedgerReports.cashFlow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/reports/general-ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * General ledger of an account
+         * @description Its lines with a running balance and the document each came from (D-391).
+         *
+         *     Implements: D-391.
+         */
+        get: operations["partner.erpLedgerReports.generalLedger"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/reports/profit-and-loss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Profit and loss
+         * @description A month and the fiscal year to date, by DBD statement line (D-391).
+         *
+         *     Implements: D-391.
+         */
+        get: operations["partner.erpLedgerReports.profitAndLoss"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/reports/stock-valuation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stock valuation against the books
+         * @description Stock value by item kind (moving average, D-321) against its inventory account (D-390, D-391).
+         *
+         *     Implements: D-390, D-391.
+         */
+        get: operations["partner.erpLedgerReports.stockValuation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/reports/trial-balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Trial balance
+         * @description Opening, movements and closing per account for a date range (D-391).
+         *
+         *     Implements: D-391.
+         */
+        get: operations["partner.erpLedgerReports.trialBalance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Posting rules
+         * @description The rules F01 – F18 with the approved version in force and the accounts they post to (D-388).
+         *
+         *     Implements: D-388.
+         */
+        get: operations["partner.erpLedger.listRules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ledger settings
+         * @description The first read starts the book: the chart of accounts and the posting rules are created from the templates (D-385, D-387).
+         *
+         *     Implements: D-385, D-387.
+         */
+        get: operations["partner.erpLedger.getSettings"];
+        /**
+         * Change the ledger settings
+         * @description Fiscal year start (only before the first posting), ledger start date, item-kind and purpose accounts (postable accounts only), the CPA (D-387).
+         *
+         *     Implements: D-387.
+         */
+        put: operations["partner.erpLedger.updateSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/tax-filings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * VAT and WHT returns
+         * @description ภ.พ.30, ภ.ง.ด.3 and ภ.ง.ด.53 per month: the ledger against the documents, the due date and whether it was filed (D-392).
+         *
+         *     Implements: D-392.
+         */
+        get: operations["partner.erpLedger.listTaxFilings"];
+        put?: never;
+        /**
+         * Mark a return filed
+         * @description The filing date, the Revenue Department reference and the amount filed (default: the ledger’s), D-392.
+         *
+         *     Implements: D-392.
+         */
+        post: operations["partner.erpLedger.markTaxFiled"];
         delete?: never;
         options?: never;
         head?: never;
@@ -46841,6 +47831,1249 @@ export interface components {
         };
         /** @enum {string} */
         ErpFulfilment: "stock" | "make" | "service";
+        ErpGlAccountChangeDto: {
+            account: components["schemas"]["CodedRefDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-13T09:00:00+07:00
+             */
+            createdAt: string;
+            /** @example ฝ่ายบัญชีโรงงาน ทดสอบ */
+            createdBy: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /** @example null */
+            decidedBy: string | null;
+            /** @example null */
+            decisionNote: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f604
+             */
+            id: string;
+            /** @example create */
+            kind: components["schemas"]["AccountChangeKind"];
+            nextActions: components["schemas"]["NextActionDto"][];
+            proposed: components["schemas"]["ErpGlAccountProposalDto"];
+            /** @example แยกหมึกพิมพ์ออกจากวัสดุสิ้นเปลือง */
+            reason: string;
+            /** @example proposed */
+            status: components["schemas"]["ConfigVersionStatus"];
+        };
+        ErpGlAccountDto: {
+            /** @example asset */
+            accountType: components["schemas"]["AccountType"];
+            /**
+             * @description Balance on the normal side as of today (posted entries)
+             * @example 125000.00
+             */
+            balance: string;
+            /** @example operating */
+            cashFlowClass: components["schemas"]["CashFlowClass"];
+            /**
+             * @description A change is waiting for approval
+             * @example false
+             */
+            changePending: boolean;
+            /** @example 1141 */
+            code: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f602
+             */
+            id: string;
+            /**
+             * @description Takes postings from documents only
+             * @example false
+             */
+            isControl: boolean;
+            /**
+             * @description false = a heading
+             * @example true
+             */
+            isPostable: boolean;
+            /** @example Raw materials */
+            nameEn: string;
+            /** @example วัตถุดิบ */
+            nameTh: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example debit */
+            normalSide: components["schemas"]["LedgerSide"];
+            parent: components["schemas"]["CodedRefDto"] | null;
+            /** @example inventory */
+            statementLine: components["schemas"]["ErpGlStatementLine"];
+            /** @example active */
+            status: components["schemas"]["CapabilityStatus"];
+            /** @example 1 */
+            version: number;
+        };
+        ErpGlAccountProposalDto: {
+            accountType?: components["schemas"]["AccountType"];
+            cashFlowClass?: components["schemas"]["CashFlowClass"];
+            /**
+             * @description Required for `create`
+             * @example 1147
+             */
+            code?: string;
+            /** @example false */
+            isControl?: boolean;
+            /** @example true */
+            isPostable?: boolean;
+            /** @example Printing ink */
+            nameEn?: string;
+            /** @example หมึกพิมพ์ */
+            nameTh?: string;
+            normalSide?: components["schemas"]["LedgerSide"];
+            /**
+             * @description Parent account code
+             * @example 1100
+             */
+            parentCode?: string | null;
+            statementLine?: components["schemas"]["ErpGlStatementLine"];
+        };
+        ErpGlAssetCategoryDto: {
+            accumulatedAccount: components["schemas"]["CodedRefDto"];
+            assetAccount: components["schemas"]["CodedRefDto"];
+            /**
+             * @description Active assets
+             * @example 3
+             */
+            assets: number;
+            expenseAccount: components["schemas"]["CodedRefDto"];
+            gainLossAccount: components["schemas"]["CodedRefDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f610
+             */
+            id: string;
+            /** @example เครื่องจักร */
+            name: string;
+            /** @example active */
+            status: components["schemas"]["CapabilityStatus"];
+            /** @example 60 */
+            usefulLifeMonths: number;
+        };
+        ErpGlAssetDto: {
+            /** @example 320000.00 */
+            accumulated: string;
+            /**
+             * Format: date
+             * @example 2026-01-15
+             */
+            acquiredOn: string;
+            /** @example FA-2610-0001 */
+            assetNo: string;
+            /** @description Category */
+            category: components["schemas"]["PersonRefDto"];
+            /** @example 2400000.00 */
+            cost: string;
+            /**
+             * Format: date
+             * @example 2026-02-01
+             */
+            depreciationStart: string;
+            /**
+             * Format: date
+             * @example null
+             */
+            disposedOn: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f611
+             */
+            id: string;
+            /** @description Machine */
+            machine: components["schemas"]["PersonRefDto"] | null;
+            /**
+             * @description Per month, straight line
+             * @example 40000.00
+             */
+            monthlyDepreciation: string;
+            /** @example 8 */
+            monthsDepreciated: number;
+            /** @example เครื่องพิมพ์ออฟเซ็ท 4 สี */
+            name: string;
+            /** @example 2080000.00 */
+            netBookValue: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /** @example null */
+            proceeds: string | null;
+            /** @example 0.00 */
+            salvageValue: string;
+            /** @example active */
+            status: components["schemas"]["ErpGlAssetStatus"];
+            /** @example 60 */
+            usefulLifeMonths: number;
+            /** @example 1 */
+            version: number;
+        };
+        /** @enum {string} */
+        ErpGlAssetStatus: "active" | "disposed" | "written_off";
+        ErpGlBalanceSheetDto: {
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            asOf: string;
+            /** @example true */
+            balanced: boolean;
+            /**
+             * Format: date
+             * @description Comparative date (last fiscal year end)
+             * @example 2025-12-31
+             */
+            comparativeAsOf: string;
+            /** @example 96000.00 */
+            currentYearProfit: string;
+            /** @description assets, liabilities, equity */
+            sections: components["schemas"]["ErpGlStatementSectionDto"][];
+            /** @example 1250000.00 */
+            totalAssets: string;
+            /**
+             * @description Including the current-year profit
+             * @example 830000.00
+             */
+            totalEquity: string;
+            /** @example 420000.00 */
+            totalLiabilities: string;
+        };
+        ErpGlBankAccountDto: {
+            /** @example 4321 */
+            accountNoLast4: string;
+            /** @example KBANK */
+            bankName: string;
+            /** @description Its sub-account under bank deposits */
+            glAccount: components["schemas"]["CodedRefDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f613
+             */
+            id: string;
+            /** @example true */
+            isDefault: boolean;
+            /**
+             * Format: date
+             * @description Last statement line imported
+             * @example 2026-10-12
+             */
+            lastStatementDate: string | null;
+            /**
+             * @description Ledger balance today
+             * @example 185000.00
+             */
+            ledgerBalance: string;
+            /** @example กสิกรไทย ออมทรัพย์ */
+            name: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /**
+             * @description Statement lines not yet matched or ignored
+             * @example 3
+             */
+            openLines: number;
+            /** @example active */
+            status: components["schemas"]["CapabilityStatus"];
+            /** @example 1 */
+            version: number;
+        };
+        ErpGlBankLineDto: {
+            /** @example -12500.00 */
+            amount: string;
+            /** @description Bank account */
+            bankAccount: components["schemas"]["PersonRefDto"];
+            /** @description Possible matches (open lines): same amount within 3 days */
+            candidates: components["schemas"]["ErpGlBankMatchDto"][];
+            /** @example โอนเงิน บจก.กระดาษไทย */
+            description: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f614
+             */
+            id: string;
+            /** @example null */
+            ignoreReason: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-13T09:30:00+07:00
+             */
+            importedAt: string;
+            matches: components["schemas"]["ErpGlBankMatchDto"][];
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example TRF2026101200123 */
+            reference: string | null;
+            /** @example matched */
+            status: components["schemas"]["ErpGlBankLineStatus"];
+            /**
+             * Format: date
+             * @example 2026-10-12
+             */
+            txnDate: string;
+        };
+        /** @enum {string} */
+        ErpGlBankLineStatus: "open" | "matched" | "ignored";
+        ErpGlBankMatchDto: {
+            /** @example 12500.00 */
+            amount: string;
+            /** @example true */
+            auto: boolean;
+            /** @description The journal entry (bank fee / interest) */
+            entry: components["schemas"]["JournalSourceDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-13T10:00:00+07:00
+             */
+            matchedAt: string;
+            /** @example null */
+            matchedBy: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f622
+             */
+            targetId: string | null;
+            /** @example PV-2610-0004 */
+            targetNo: string | null;
+            /** @example supplier_payment */
+            targetType: components["schemas"]["ErpGlBankMatchTarget"];
+        };
+        /** @enum {string} */
+        ErpGlBankMatchTarget: "supplier_payment" | "customer_receipt" | "journal_entry" | "bank_fee" | "interest";
+        ErpGlCashFlowDto: {
+            /** @example 185000.00 */
+            closingCash: string;
+            /**
+             * Format: date
+             * @example 2026-10-01
+             */
+            from: string;
+            /** @example 35000.00 */
+            netChange: string;
+            /** @example 43000.00 */
+            netProfit: string;
+            /**
+             * @description Depreciation and other non-cash items
+             * @example 12000.00
+             */
+            nonCash: string;
+            /** @example 150000.00 */
+            openingCash: string;
+            sections: components["schemas"]["ErpGlCashFlowSectionDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            to: string;
+        };
+        /** @enum {string} */
+        ErpGlCashFlowSection: "operating" | "investing" | "financing";
+        ErpGlCashFlowSectionDto: {
+            /** @description Changes by account (cash inflow positive) */
+            accounts: components["schemas"]["ErpGlStatementAccountDto"][];
+            /** @example 52000.00 */
+            amount: string;
+            /** @example operating */
+            key: components["schemas"]["ErpGlCashFlowSection"];
+        };
+        ErpGlCashPositionDto: {
+            /**
+             * Format: date
+             * @example 2026-10-13
+             */
+            asOf: string;
+            banks: components["schemas"]["ErpGlCashPositionRowDto"][];
+            /**
+             * @description Cash on hand (ledger)
+             * @example 12000.00
+             */
+            cashOnHand: string;
+            /**
+             * @description Supplier invoices due within 7 days
+             * @example 56000.00
+             */
+            payablesDue7d: string;
+            /**
+             * @description Customer invoices due within 7 days
+             * @example 82000.00
+             */
+            receivablesDue7d: string;
+            /** @example 197000.00 */
+            total: string;
+        };
+        ErpGlCashPositionRowDto: {
+            account: components["schemas"]["ErpGlBankAccountDto"];
+            /**
+             * @description Sum of open (unreconciled) statement lines
+             * @example -12500.00
+             */
+            unreconciled: string;
+        };
+        ErpGlCatchUpDto: {
+            /**
+             * @description Events that failed, as `type aggregateId: reason`
+             * @example []
+             */
+            failed: string[];
+            /**
+             * @description Events posted
+             * @example 14
+             */
+            posted: number;
+            /**
+             * @description Events skipped (already posted or nothing to post)
+             * @example 2
+             */
+            skipped: number;
+        };
+        /** @enum {string} */
+        ErpGlCloseCheck: "stock_valuation" | "payables" | "receivables" | "vat" | "wht" | "bank" | "depreciation" | "open_wip";
+        ErpGlCloseCheckDto: {
+            /**
+             * @description General-ledger side
+             * @example 845000.00
+             */
+            actual: string | null;
+            /**
+             * @description false = the period cannot close until it passes
+             * @example true
+             */
+            blocking: boolean;
+            /** @example สต็อก 6 รายการ */
+            detail: string | null;
+            /** @example 0.00 */
+            difference: string | null;
+            /**
+             * @description Sub-ledger side
+             * @example 845000.00
+             */
+            expected: string | null;
+            /** @example stock_valuation */
+            key: components["schemas"]["ErpGlCloseCheck"];
+            /** @example true */
+            ok: boolean;
+        };
+        ErpGlCloseChecklistDto: {
+            /**
+             * @description Every blocking check passes
+             * @example true
+             */
+            canClose: boolean;
+            checks: components["schemas"]["ErpGlCloseCheckDto"][];
+            /** @example 2026-10 */
+            month: string;
+            /**
+             * @description Production orders still open at month end
+             * @example 3
+             */
+            openProductionOrders: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f606
+             */
+            periodId: string;
+            /** @example open */
+            status: components["schemas"]["PeriodStatus"];
+        };
+        ErpGlCreateAssetDto: {
+            /** @example 2026-01-15 */
+            acquiredOn: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f610
+             */
+            categoryId: string;
+            /** @example 2400000.00 */
+            cost: string;
+            /**
+             * @description First month depreciated; default: the month after acquisition
+             * @example 2026-02-01
+             */
+            depreciationStart?: string;
+            /**
+             * Format: uuid
+             * @description The factory machine this asset is
+             */
+            machineId?: string | null;
+            /** @example เครื่องพิมพ์ออฟเซ็ท 4 สี */
+            name: string;
+            note?: string | null;
+            /**
+             * @description Depreciation already taken before the ledger started (opening balance)
+             * @example 0.00
+             */
+            openingAccumulated?: string;
+            /**
+             * @default 0.00
+             * @example 0.00
+             */
+            salvageValue: string;
+            /**
+             * @description Default: the category’s
+             * @example 60
+             */
+            usefulLifeMonths?: number;
+        };
+        ErpGlDecisionDto: {
+            /** @example เห็นชอบ */
+            note?: string | null;
+        };
+        ErpGlDepreciationLineDto: {
+            /** @example 360000.00 */
+            accumulatedAfter: string;
+            /** @example 40000.00 */
+            amount: string;
+            /** @description Asset `{ id, name: "FA-… · name" }` */
+            asset: components["schemas"]["PersonRefDto"];
+            /** @example 1 */
+            months: number;
+        };
+        ErpGlDepreciationRunDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-31T17:00:00+07:00
+             */
+            createdAt: string;
+            /** @example ฝ่ายบัญชีโรงงาน ทดสอบ */
+            createdBy: string;
+            /** @description The journal entry posted */
+            entry: components["schemas"]["JournalSourceDto"] | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f612
+             */
+            id: string;
+            lines: components["schemas"]["ErpGlDepreciationLineDto"][];
+            /** @example 2026-10 */
+            month: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f606
+             */
+            periodId: string;
+            /** @example 52000.00 */
+            total: string;
+        };
+        ErpGlDetailDto: {
+            account: components["schemas"]["CodedRefDto"];
+            /** @example 125000.00 */
+            closing: string;
+            /**
+             * Format: date
+             * @example 2026-10-01
+             */
+            from: string;
+            /** @example 100000.00 */
+            opening: string;
+            rows: components["schemas"]["ErpGlDetailRowDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            to: string;
+        };
+        ErpGlDetailRowDto: {
+            /**
+             * @description Running balance, debit positive
+             * @example 112500.00
+             */
+            balance: string;
+            /** @example 0.00 */
+            credit: string;
+            /** @example 12500.00 */
+            debit: string;
+            /** @example รับสินค้า GR-2610-0003 — บริษัท กระดาษไทย จำกัด */
+            description: string;
+            /**
+             * Format: date
+             * @example 2026-10-13
+             */
+            entryDate: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f607
+             */
+            entryId: string;
+            /** @example JV-2610-0012 */
+            entryNo: string;
+            source: components["schemas"]["JournalSourceDto"] | null;
+        };
+        ErpGlDisposeAssetDto: {
+            /**
+             * Format: uuid
+             * @description The bank account the proceeds went to (default: the default bank account; cash if none)
+             */
+            bankAccountId?: string | null;
+            /** @example 2026-10-31 */
+            disposedOn: string;
+            note?: string | null;
+            /**
+             * @description Sale proceeds; omit or 0 for a write-off
+             * @example 150000.00
+             */
+            proceeds?: string;
+        };
+        ErpGlImportResultDto: {
+            /**
+             * @description Lines matched automatically
+             * @example 18
+             */
+            autoMatched: number;
+            /**
+             * @description Lines already imported (same date, amount, description and reference)
+             * @example 3
+             */
+            duplicates: number;
+            /** @example 25 */
+            imported: number;
+        };
+        ErpGlImportStatementDto: {
+            /** @description The statement file (CSV), base64 */
+            file?: string;
+            /**
+             * @description A bank file format key, with `file`
+             * @example generic_csv
+             */
+            format?: string;
+            /** @description Rows keyed in or parsed by the browser */
+            rows?: components["schemas"]["ErpGlStatementRowInputDto"][];
+        };
+        ErpGlJournalDto: {
+            /** @example null */
+            approvedBy: string | null;
+            /**
+             * Format: date
+             * @description An accrual reverses itself on this day
+             * @example null
+             */
+            autoReverseOn: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-13T10:00:00+07:00
+             */
+            createdAt: string;
+            /** @example ระบบ (กฎ F01) */
+            createdBy: string | null;
+            /** @example รับสินค้า GR-2610-0003 — บริษัท กระดาษไทย จำกัด */
+            description: string;
+            /**
+             * Format: date
+             * @example 2026-10-13
+             */
+            documentDate: string;
+            /**
+             * Format: date
+             * @example 2026-10-13
+             */
+            entryDate: string;
+            /**
+             * @description Assigned at posting
+             * @example JV-2610-0012
+             */
+            entryNo: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f607
+             */
+            id: string;
+            /** @example auto */
+            kind: components["schemas"]["JournalKind"];
+            lines: components["schemas"]["ErpGlJournalLineDto"][];
+            /** @example 2026-10 */
+            month: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /**
+             * Format: date-time
+             * @example 2026-10-13T10:00:00+07:00
+             */
+            postedAt: string | null;
+            /** @example null */
+            rejectionReason: string | null;
+            /**
+             * @description The reversal of this entry, if any
+             * @example null
+             */
+            reversedBy: components["schemas"]["JournalSourceDto"] | null;
+            /**
+             * @description The entry this one reverses
+             * @example null
+             */
+            reverses: components["schemas"]["JournalSourceDto"] | null;
+            /**
+             * @description The posting rule (automatic entries)
+             * @example F01
+             */
+            ruleKey: string | null;
+            source: components["schemas"]["JournalSourceDto"] | null;
+            /** @example posted */
+            status: components["schemas"]["JournalStatus"];
+            /** @example 12500.00 */
+            totalCredit: string;
+            /** @example 12500.00 */
+            totalDebit: string;
+            /** @example 1 */
+            version: number;
+        };
+        ErpGlJournalLineDto: {
+            account: components["schemas"]["CodedRefDto"];
+            /** @description Bank account */
+            bankAccount: components["schemas"]["PersonRefDto"] | null;
+            /** @example 0.00 */
+            credit: string;
+            /** @example 12500.00 */
+            debit: string;
+            /** @example กระดาษคราฟท์ 350 แกรม */
+            description: string | null;
+            item: components["schemas"]["ErpItemRefDto"] | null;
+            /** @example 1 */
+            lineNo: number;
+            /** @description Machine */
+            machine: components["schemas"]["PersonRefDto"] | null;
+            partner: components["schemas"]["CodedRefDto"] | null;
+            /** @description Production order `{ id, code: moNo, name: title }` */
+            productionOrder: components["schemas"]["CodedRefDto"] | null;
+            /** @example null */
+            taxBaseAmount: string | null;
+            /** @example null */
+            taxCode: components["schemas"]["TaxCode"] | null;
+            warehouse: components["schemas"]["CodedRefDto"] | null;
+        };
+        ErpGlJournalLineInputDto: {
+            /** @example 6150 */
+            accountCode: string;
+            /** @example 15000.00 */
+            amount: string;
+            /** Format: uuid */
+            bankAccountId?: string | null;
+            /** @example ค่าเช่าโรงงาน ต.ค. */
+            description?: string | null;
+            /** Format: uuid */
+            itemId?: string | null;
+            /** Format: uuid */
+            machineId?: string | null;
+            /** Format: uuid */
+            partnerId?: string | null;
+            /** Format: uuid */
+            productionOrderId?: string | null;
+            /** @example debit */
+            side: components["schemas"]["LedgerSide"];
+            taxBaseAmount?: string | null;
+            taxCode?: components["schemas"]["TaxCode"] | null;
+            /** Format: uuid */
+            warehouseId?: string | null;
+        };
+        ErpGlMarkFiledDto: {
+            /**
+             * @description Default: the ledger amount
+             * @example 12250.00
+             */
+            amount?: string;
+            /** @example 2026-11-14 */
+            filedOn: string;
+            /** @example pp30 */
+            form: components["schemas"]["TaxFilingKind"];
+            /** @example 2026-10 */
+            month: string;
+            note?: string | null;
+            /** @example RD-EF-2611-000123 */
+            reference?: string | null;
+        };
+        ErpGlMatchBankLineDto: {
+            /**
+             * Format: uuid
+             * @description The payment, receipt or journal entry (not for a fee / interest)
+             */
+            targetId?: string;
+            /** @example supplier_payment */
+            targetType: components["schemas"]["ErpGlBankMatchTarget"];
+        };
+        ErpGlMonthQuery: {
+            /** @example 2026-10 */
+            month: string;
+        };
+        ErpGlPeriodDto: {
+            /** @description The checklist as stored at the last close (empty while open) */
+            closeChecklist: components["schemas"]["ErpGlCloseCheckDto"][];
+            /** @example null */
+            closeNote: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            endDate: string;
+            /**
+             * @description Posted journal entries
+             * @example 42
+             */
+            entries: number;
+            /** @example FY2026 */
+            fiscalYear: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f605
+             */
+            fiscalYearId: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f606
+             */
+            id: string;
+            /** @example 2026-10 */
+            month: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example 10 */
+            periodNo: number;
+            /**
+             * Format: date
+             * @example 2026-10-01
+             */
+            startDate: string;
+            /** @example open */
+            status: components["schemas"]["PeriodStatus"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            statusChangedAt: string | null;
+            /** @example null */
+            statusChangedBy: string | null;
+        };
+        /** @enum {string} */
+        ErpGlPeriodTransition: "soft_close" | "close" | "lock" | "reopen";
+        ErpGlPeriodTransitionDto: {
+            /** @example soft_close */
+            action: components["schemas"]["ErpGlPeriodTransition"];
+            /**
+             * @description Required to reopen
+             * @example ปิดงวดตุลาคม
+             */
+            note?: string | null;
+        };
+        ErpGlProfitAndLossDto: {
+            /** @example 180000.00 */
+            costOfSales: string;
+            /** @example 22000.00 */
+            expenses: string;
+            /** @example 65000.00 */
+            grossProfit: string;
+            /** @example 2026-10 */
+            month: string;
+            /** @example 43000.00 */
+            netProfit: string;
+            /** @example 96000.00 */
+            netProfitYtd: string;
+            /** @example 245000.00 */
+            revenue: string;
+            sections: components["schemas"]["ErpGlStatementSectionDto"][];
+            /**
+             * Format: date
+             * @description Fiscal year start (YTD comparative)
+             * @example 2026-10-01
+             */
+            yearStart: string;
+        };
+        ErpGlProposeAccountChangeDto: {
+            /**
+             * Format: uuid
+             * @description The account to change (not for `create`)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f602
+             */
+            accountId?: string;
+            /** @example create */
+            kind: components["schemas"]["AccountChangeKind"];
+            /** @description The new values (`create` / `update`) */
+            proposed?: components["schemas"]["ErpGlAccountProposalDto"];
+            /** @example แยกหมึกพิมพ์ออกจากวัสดุสิ้นเปลือง */
+            reason: string;
+        };
+        ErpGlRecurringDto: {
+            /** @example false */
+            autoReverse: boolean;
+            /** @example 28 */
+            dayOfMonth: number;
+            /** @example ค่าเช่าโรงงาน {month} */
+            description: string;
+            /**
+             * Format: date
+             * @example null
+             */
+            endOn: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f609
+             */
+            id: string;
+            /**
+             * @description The last month it ran
+             * @example 2026-10
+             */
+            lastRunMonth: string | null;
+            lines: components["schemas"]["ErpGlRecurringLineDto"][];
+            /** @example ค่าเช่าโรงงานรายเดือน */
+            name: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-01
+             */
+            startOn: string;
+            /** @example active */
+            status: components["schemas"]["CapabilityStatus"];
+            /** @example 15000.00 */
+            total: string;
+            /** @example 1 */
+            version: number;
+        };
+        ErpGlRecurringLineDto: {
+            /** @example 6150 */
+            accountCode: string;
+            /** @example 15000.00 */
+            amount: string;
+            description?: string | null;
+            /** @example debit */
+            side: components["schemas"]["LedgerSide"];
+        };
+        /** @enum {string} */
+        ErpGlReportSection: "assets" | "liabilities" | "equity" | "revenue" | "other_income" | "cost_of_sales" | "manufacturing_overhead" | "selling_admin" | "finance_cost" | "income_tax";
+        ErpGlReverseJournalDto: {
+            /** @example 2026-11-01 */
+            documentDate: string;
+            /** @example กลับรายการค่าเช่าที่บันทึกซ้ำ */
+            reason: string;
+        };
+        ErpGlRuleDto: {
+            /**
+             * @description Literal account codes the template posts to
+             * @example [
+             *       "1141",
+             *       "2115"
+             *     ]
+             */
+            accountCodes: string[];
+            /** @example Goods receipt: inventory at cost excl. VAT against GR/IR clearing */
+            description: string;
+            /**
+             * @description Entries posted by this rule
+             * @example 12
+             */
+            entries: number;
+            /** @example erp_goods_receipt.posted */
+            eventType: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f608
+             */
+            id: string;
+            /** @example F01 */
+            key: string;
+            /** @example รับสินค้าเข้าคลัง */
+            name: string;
+            /** @description The template of the version in force */
+            template: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description The approved version in force
+             * @example 1
+             */
+            versionNo: number | null;
+        };
+        ErpGlSaveAssetCategoryDto: {
+            /** @example 1239 */
+            accumulatedAccountCode: string;
+            /** @example 1230 */
+            assetAccountCode: string;
+            /** @example 5240 */
+            expenseAccountCode: string;
+            /** @example 4920 */
+            gainLossAccountCode: string;
+            /** @example เครื่องจักร */
+            name: string;
+            /** @default active */
+            status: components["schemas"]["CapabilityStatus"];
+            /** @example 60 */
+            usefulLifeMonths: number;
+        };
+        ErpGlSaveBankAccountDto: {
+            /**
+             * @description Last four digits only
+             * @example 4321
+             */
+            accountNoLast4: string;
+            /** @example KBANK */
+            bankName: string;
+            /** @example true */
+            isDefault?: boolean;
+            /** @example กสิกรไทย ออมทรัพย์ */
+            name: string;
+            /** @default active */
+            status: components["schemas"]["CapabilityStatus"];
+        };
+        ErpGlSaveJournalDto: {
+            /**
+             * @description An accrual: reverse itself on this day
+             * @example null
+             */
+            autoReverseOn?: string | null;
+            /** @example ค่าเช่าโรงงานเดือนตุลาคม */
+            description: string;
+            /** @example 2026-10-31 */
+            documentDate: string;
+            lines: components["schemas"]["ErpGlJournalLineInputDto"][];
+            /**
+             * @description Submit for approval right away
+             * @example false
+             */
+            submit?: boolean;
+        };
+        ErpGlSaveRecurringDto: {
+            /**
+             * @description An accrual: each run reverses on the 1st of the next month
+             * @example false
+             */
+            autoReverse?: boolean;
+            /** @example 28 */
+            dayOfMonth: number;
+            /**
+             * @description `{month}` is replaced by the run month
+             * @example ค่าเช่าโรงงาน {month}
+             */
+            description: string;
+            /** @example null */
+            endOn?: string | null;
+            lines: components["schemas"]["ErpGlRecurringLineDto"][];
+            /** @example ค่าเช่าโรงงานรายเดือน */
+            name: string;
+            /** @example 2026-10-01 */
+            startOn: string;
+            /** @default active */
+            status: components["schemas"]["CapabilityStatus"];
+        };
+        ErpGlSettingsDto: {
+            /**
+             * @description Accounts in the chart
+             * @example 84
+             */
+            accounts: number;
+            /** @example 1 */
+            chartTemplateVersion: number;
+            /** @example cpa@example.invalid · 02-000-0000 */
+            cpaContact: string | null;
+            /** @example สำนักงานบัญชี ก.ไก่ */
+            cpaName: string | null;
+            /**
+             * @description First month of the fiscal year
+             * @example 1
+             */
+            fiscalYearStartMonth: number;
+            /**
+             * Format: uuid
+             * @description The factory id (one settings row per factory)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f601
+             */
+            id: string;
+            /**
+             * @description Item kind → inventory account code
+             * @example {
+             *       "finished_good": "1143",
+             *       "raw_material": "1141"
+             *     }
+             */
+            itemKindAccounts: {
+                [key: string]: string;
+            };
+            /**
+             * Format: date
+             * @description Documents dated before this day are not posted (opening balances cover them)
+             * @example 2026-10-01
+             */
+            ledgerStartOn: string;
+            /**
+             * @description Purpose → account code the posting rules use
+             * @example {
+             *       "payables": "2111",
+             *       "receivables": "1131"
+             *     }
+             */
+            methodAccounts: {
+                [key: string]: string;
+            };
+            nextActions: components["schemas"]["NextActionDto"][];
+            /**
+             * @description Posting rules with an approved version
+             * @example 18
+             */
+            rules: number;
+            /** @example 1 */
+            rulesTemplateVersion: number;
+            /** @example 1 */
+            version: number;
+        };
+        ErpGlStatementAccountDto: {
+            account: components["schemas"]["CodedRefDto"];
+            /**
+             * @description This period (P&L) or as of (BS), on the natural side of the section
+             * @example 245000.00
+             */
+            amount: string;
+            /**
+             * @description Year to date (P&L) or the comparative (BS)
+             * @example 610000.00
+             */
+            comparative: string | null;
+        };
+        /** @enum {string} */
+        ErpGlStatementLine: "cash" | "trade_receivables" | "other_receivables" | "inventory" | "tax_assets" | "other_current_assets" | "ppe" | "accumulated_depreciation" | "trade_payables" | "tax_liabilities" | "accrued_expenses" | "customer_advances" | "other_current_liabilities" | "long_term_loans" | "capital" | "retained_earnings" | "current_year_profit" | "revenue" | "other_income" | "cost_of_sales" | "manufacturing_overhead" | "selling_admin" | "finance_cost" | "income_tax";
+        ErpGlStatementLineDto: {
+            accounts: components["schemas"]["ErpGlStatementAccountDto"][];
+            /** @example 845000.00 */
+            amount: string;
+            /** @example 610000.00 */
+            comparative: string | null;
+            /** @example inventory */
+            key: components["schemas"]["ErpGlStatementLine"];
+        };
+        ErpGlStatementRowInputDto: {
+            /**
+             * @description Signed: deposits positive, withdrawals negative
+             * @example -12500.00
+             */
+            amount: string;
+            /** @example โอนเงิน บจก.กระดาษไทย */
+            description: string;
+            /** @example TRF2026101200123 */
+            reference?: string | null;
+            /** @example 2026-10-12 */
+            txnDate: string;
+        };
+        ErpGlStatementSectionDto: {
+            /** @example 245000.00 */
+            amount: string;
+            /** @example 610000.00 */
+            comparative: string | null;
+            /** @example revenue */
+            key: components["schemas"]["ErpGlReportSection"];
+            lines: components["schemas"]["ErpGlStatementLineDto"][];
+        };
+        ErpGlStockValuationDto: {
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            asOf: string;
+            /** @example 0.00 */
+            difference: string;
+            /** @example 845000.00 */
+            ledgerBalance: string;
+            rows: components["schemas"]["ErpGlStockValuationRowDto"][];
+            /** @example 845000.00 */
+            stockValue: string;
+        };
+        ErpGlStockValuationRowDto: {
+            account: components["schemas"]["CodedRefDto"];
+            /** @example 0.00 */
+            difference: string;
+            /**
+             * @description Items with stock
+             * @example 12
+             */
+            items: number;
+            /** @example raw_material */
+            kind: components["schemas"]["ErpItemKind"];
+            /**
+             * @description Ledger balance as of the date
+             * @example 520000.00
+             */
+            ledgerBalance: string;
+            /**
+             * @description Stock value (balances × average cost) as of the date
+             * @example 520000.00
+             */
+            stockValue: string;
+        };
+        ErpGlTaxFilingDto: {
+            /**
+             * @description From the E4 tax reports (documents)
+             * @example 12250.00
+             */
+            documentsAmount: string;
+            /**
+             * Format: date
+             * @description E-filing due date
+             * @example 2026-11-15
+             */
+            dueOn: string;
+            /** @example false */
+            filed: boolean;
+            /**
+             * @description Amount filed
+             * @example null
+             */
+            filedAmount: string | null;
+            /**
+             * Format: date
+             * @example null
+             */
+            filedOn: string | null;
+            /** @example pp30 */
+            form: components["schemas"]["TaxFilingKind"];
+            /**
+             * @description From the ledger: output − input VAT (ภ.พ.30) or WHT payable movement
+             * @example 12250.00
+             */
+            ledgerAmount: string;
+            /** @example 2026-10 */
+            month: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example null */
+            note: string | null;
+            /** @example true */
+            reconciled: boolean;
+            /** @example null */
+            reference: string | null;
+        };
+        ErpGlTrialBalanceDto: {
+            /**
+             * @description Debits equal credits
+             * @example true
+             */
+            balanced: boolean;
+            /**
+             * Format: date
+             * @example 2026-10-01
+             */
+            from: string;
+            rows: components["schemas"]["ErpGlTrialBalanceRowDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            to: string;
+            /** @example 845000.00 */
+            totalCredit: string;
+            /** @example 845000.00 */
+            totalDebit: string;
+        };
+        ErpGlTrialBalanceRowDto: {
+            account: components["schemas"]["CodedRefDto"];
+            /** @example asset */
+            accountType: components["schemas"]["AccountType"];
+            /**
+             * @description Closing balance, debit positive
+             * @example 125000.00
+             */
+            closing: string;
+            /** @example 20000.00 */
+            credit: string;
+            /** @example 45000.00 */
+            debit: string;
+            /**
+             * @description Opening balance, debit positive
+             * @example 100000.00
+             */
+            opening: string;
+        };
         ErpGoodsReceiptDto: {
             /** @example คลัง ทดสอบ */
             by: string;
@@ -51663,6 +53896,32 @@ export interface components {
             /** @example ใบรับรอง FSC — กระดาษไทย */
             title?: string;
         };
+        ErpUpdateGlSettingsDto: {
+            /** @example cpa@example.invalid */
+            cpaContact?: string | null;
+            /** @example สำนักงานบัญชี ก.ไก่ */
+            cpaName?: string | null;
+            /** @example 1 */
+            fiscalYearStartMonth?: number;
+            /**
+             * @example {
+             *       "consumable": "1144"
+             *     }
+             */
+            itemKindAccounts?: {
+                [key: string]: string;
+            };
+            /** @example 2026-10-01 */
+            ledgerStartOn?: string;
+            /**
+             * @example {
+             *       "otherExpenses": "6900"
+             *     }
+             */
+            methodAccounts?: {
+                [key: string]: string;
+            };
+        };
         ErpUpdateItemSupplierDto: {
             /** @example 7 */
             leadTimeDays?: number | null;
@@ -52925,7 +55184,7 @@ export interface components {
             versionNo: number;
         };
         /** @enum {string} */
-        FactoryRole: "factory_owner" | "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant" | "factory_storekeeper" | "factory_purchaser" | "factory_maintenance" | "factory_sales";
+        FactoryRole: "factory_owner" | "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant" | "factory_storekeeper" | "factory_purchaser" | "factory_maintenance" | "factory_sales" | "factory_auditor";
         FactoryScorecardDto: {
             /** @example 0.0000 */
             claimRatePct: string | null;
@@ -52977,7 +55236,7 @@ export interface components {
             sampleOnTimePct: string | null;
         };
         /** @enum {string} */
-        FactoryStaffRole: "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant" | "factory_storekeeper" | "factory_purchaser" | "factory_maintenance" | "factory_sales";
+        FactoryStaffRole: "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant" | "factory_storekeeper" | "factory_purchaser" | "factory_maintenance" | "factory_sales" | "factory_auditor";
         /** @enum {string} */
         FactoryStatus: "applied" | "under_review" | "trial" | "active" | "suspended" | "offboarded";
         /** @enum {string} */
@@ -210149,6 +212408,7824 @@ export interface operations {
                 };
             };
             /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.listAccountChanges": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["ConfigVersionStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "account": null,
+                     *           "createdAt": "2026-10-13T09:00:00+07:00",
+                     *           "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *           "decidedAt": null,
+                     *           "decidedBy": null,
+                     *           "decisionNote": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f604",
+                     *           "kind": "create",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_account_change.approve"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_account_change.reject"
+                     *             }
+                     *           ],
+                     *           "proposed": {
+                     *             "accountType": "asset",
+                     *             "cashFlowClass": "operating",
+                     *             "code": "1147",
+                     *             "nameEn": "Printing ink",
+                     *             "nameTh": "หมึกพิมพ์",
+                     *             "parentCode": "1100",
+                     *             "statementLine": "inventory"
+                     *           },
+                     *           "reason": "แยกหมึกพิมพ์ออกจากวัสดุสิ้นเปลือง",
+                     *           "status": "proposed"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpGlAccountChangeDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.proposeAccountChange": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlProposeAccountChangeDto"];
+            };
+        };
+        responses: {
+            /** @description Proposed */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "account": null,
+                     *       "createdAt": "2026-10-13T09:00:00+07:00",
+                     *       "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f604",
+                     *       "kind": "create",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_account_change.approve"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_account_change.reject"
+                     *         }
+                     *       ],
+                     *       "proposed": {
+                     *         "accountType": "asset",
+                     *         "cashFlowClass": "operating",
+                     *         "code": "1147",
+                     *         "nameEn": "Printing ink",
+                     *         "nameTh": "หมึกพิมพ์",
+                     *         "parentCode": "1100",
+                     *         "statementLine": "inventory"
+                     *       },
+                     *       "reason": "แยกหมึกพิมพ์ออกจากวัสดุสิ้นเปลือง",
+                     *       "status": "proposed"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlAccountChangeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_change_pending`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.approveAccountChange": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                changeId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Approved */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "account": null,
+                     *       "createdAt": "2026-10-13T09:00:00+07:00",
+                     *       "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f604",
+                     *       "kind": "create",
+                     *       "nextActions": [],
+                     *       "proposed": {
+                     *         "accountType": "asset",
+                     *         "cashFlowClass": "operating",
+                     *         "code": "1147",
+                     *         "nameEn": "Printing ink",
+                     *         "nameTh": "หมึกพิมพ์",
+                     *         "parentCode": "1100",
+                     *         "statementLine": "inventory"
+                     *       },
+                     *       "reason": "แยกหมึกพิมพ์ออกจากวัสดุสิ้นเปลือง",
+                     *       "status": "approved"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlAccountChangeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `erp.ledger_self_approval` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.rejectAccountChange": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                changeId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Rejected */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "account": null,
+                     *       "createdAt": "2026-10-13T09:00:00+07:00",
+                     *       "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f604",
+                     *       "kind": "create",
+                     *       "nextActions": [],
+                     *       "proposed": {
+                     *         "accountType": "asset",
+                     *         "cashFlowClass": "operating",
+                     *         "code": "1147",
+                     *         "nameEn": "Printing ink",
+                     *         "nameTh": "หมึกพิมพ์",
+                     *         "parentCode": "1100",
+                     *         "statementLine": "inventory"
+                     *       },
+                     *       "reason": "แยกหมึกพิมพ์ออกจากวัสดุสิ้นเปลือง",
+                     *       "status": "rejected"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlAccountChangeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `erp.ledger_self_approval` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.listAccounts": {
+        parameters: {
+            query?: {
+                accountType?: components["schemas"]["AccountType"];
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Postable accounts only (for pickers) */
+                postable?: boolean;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["CapabilityStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "accountType": "asset",
+                     *           "balance": "125000.00",
+                     *           "cashFlowClass": "operating",
+                     *           "changePending": false,
+                     *           "code": "1141",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "isControl": false,
+                     *           "isPostable": true,
+                     *           "nameEn": "Raw materials",
+                     *           "nameTh": "วัตถุดิบ",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_account.propose"
+                     *             }
+                     *           ],
+                     *           "normalSide": "debit",
+                     *           "parent": {
+                     *             "code": "1100",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f603",
+                     *             "name": "สินทรัพย์หมุนเวียน"
+                     *           },
+                     *           "statementLine": "inventory",
+                     *           "status": "active",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpGlAccountDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.catchUp": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What was posted */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "failed": [],
+                     *       "posted": 14,
+                     *       "skipped": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlCatchUpDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.listCategories": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Categories */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "accumulatedAccount": {
+                     *           "code": "1239",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "ค่าเสื่อมราคาสะสม - เครื่องจักร"
+                     *         },
+                     *         "assetAccount": {
+                     *           "code": "1230",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "เครื่องจักร"
+                     *         },
+                     *         "assets": 3,
+                     *         "expenseAccount": {
+                     *           "code": "5240",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "ค่าเสื่อมราคาเครื่องจักร"
+                     *         },
+                     *         "gainLossAccount": {
+                     *           "code": "4920",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "กำไร (ขาดทุน) จากการขายทรัพย์สิน"
+                     *         },
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f610",
+                     *         "name": "เครื่องจักร",
+                     *         "status": "active",
+                     *         "usefulLifeMonths": 60
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlAssetCategoryDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.createCategory": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlSaveAssetCategoryDto"];
+            };
+        };
+        responses: {
+            /** @description All categories */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "accumulatedAccount": {
+                     *           "code": "1239",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "ค่าเสื่อมราคาสะสม - เครื่องจักร"
+                     *         },
+                     *         "assetAccount": {
+                     *           "code": "1230",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "เครื่องจักร"
+                     *         },
+                     *         "assets": 3,
+                     *         "expenseAccount": {
+                     *           "code": "5240",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "ค่าเสื่อมราคาเครื่องจักร"
+                     *         },
+                     *         "gainLossAccount": {
+                     *           "code": "4920",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "กำไร (ขาดทุน) จากการขายทรัพย์สิน"
+                     *         },
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f610",
+                     *         "name": "เครื่องจักร",
+                     *         "status": "active",
+                     *         "usefulLifeMonths": 60
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlAssetCategoryDto"][];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.updateCategory": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                categoryId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlSaveAssetCategoryDto"];
+            };
+        };
+        responses: {
+            /** @description All categories */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "accumulatedAccount": {
+                     *           "code": "1239",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "ค่าเสื่อมราคาสะสม - เครื่องจักร"
+                     *         },
+                     *         "assetAccount": {
+                     *           "code": "1230",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "เครื่องจักร"
+                     *         },
+                     *         "assets": 3,
+                     *         "expenseAccount": {
+                     *           "code": "5240",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "ค่าเสื่อมราคาเครื่องจักร"
+                     *         },
+                     *         "gainLossAccount": {
+                     *           "code": "4920",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "กำไร (ขาดทุน) จากการขายทรัพย์สิน"
+                     *         },
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f610",
+                     *         "name": "เครื่องจักร",
+                     *         "status": "active",
+                     *         "usefulLifeMonths": 60
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlAssetCategoryDto"][];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.listAccounts": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bank accounts */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "accountNoLast4": "4321",
+                     *         "bankName": "KBANK",
+                     *         "glAccount": {
+                     *           "code": "1121",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *           "name": "KBANK ออมทรัพย์ xx4321"
+                     *         },
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f613",
+                     *         "isDefault": true,
+                     *         "lastStatementDate": "2026-10-12",
+                     *         "ledgerBalance": "185000.00",
+                     *         "name": "ออมทรัพย์",
+                     *         "nextActions": [
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_bank.edit"
+                     *           },
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_bank.import"
+                     *           }
+                     *         ],
+                     *         "openLines": 2,
+                     *         "status": "active",
+                     *         "version": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlBankAccountDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.createAccount": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlSaveBankAccountDto"];
+            };
+        };
+        responses: {
+            /** @description Added */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accountNoLast4": "4321",
+                     *       "bankName": "KBANK",
+                     *       "glAccount": {
+                     *         "code": "1121",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *         "name": "KBANK ออมทรัพย์ xx4321"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f613",
+                     *       "isDefault": true,
+                     *       "lastStatementDate": "2026-10-12",
+                     *       "ledgerBalance": "185000.00",
+                     *       "name": "ออมทรัพย์",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bank.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bank.import"
+                     *         }
+                     *       ],
+                     *       "openLines": 2,
+                     *       "status": "active",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlBankAccountDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_account_invalid`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.updateAccount": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                bankAccountId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlSaveBankAccountDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accountNoLast4": "4321",
+                     *       "bankName": "KBANK",
+                     *       "glAccount": {
+                     *         "code": "1121",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *         "name": "KBANK ออมทรัพย์ xx4321"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f613",
+                     *       "isDefault": true,
+                     *       "lastStatementDate": "2026-10-12",
+                     *       "ledgerBalance": "185000.00",
+                     *       "name": "ออมทรัพย์",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bank.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bank.import"
+                     *         }
+                     *       ],
+                     *       "openLines": 2,
+                     *       "status": "active",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlBankAccountDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.importStatement": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                bankAccountId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlImportStatementDto"];
+            };
+        };
+        responses: {
+            /** @description Imported */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "autoMatched": 18,
+                     *       "duplicates": 3,
+                     *       "imported": 25
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlImportResultDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `erp.ledger_bank_file_invalid`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.listLines": {
+        parameters: {
+            query?: {
+                bankAccountId?: string;
+                month?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["ErpGlBankLineStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "amount": "-12500.00",
+                     *           "bankAccount": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f613",
+                     *             "name": "ออมทรัพย์"
+                     *           },
+                     *           "candidates": [],
+                     *           "description": "โอนเงิน บจก.กระดาษ ทดสอบ",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f614",
+                     *           "ignoreReason": null,
+                     *           "importedAt": "2026-10-13T09:30:00+07:00",
+                     *           "matches": [
+                     *             {
+                     *               "amount": "12500.00",
+                     *               "auto": true,
+                     *               "entry": null,
+                     *               "matchedAt": "2026-10-13T10:00:00+07:00",
+                     *               "matchedBy": null,
+                     *               "targetId": "0192f3a0-7c1e-7d2a-9b1f-00000000f622",
+                     *               "targetNo": "PV-2610-0004",
+                     *               "targetType": "supplier_payment"
+                     *             }
+                     *           ],
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_bank_line.unmatch"
+                     *             }
+                     *           ],
+                     *           "reference": "TRF2026101200123",
+                     *           "status": "matched",
+                     *           "txnDate": "2026-10-12"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpGlBankLineDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.ignoreLine": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                lineId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Ignored */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "amount": "-12500.00",
+                     *       "bankAccount": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f613",
+                     *         "name": "ออมทรัพย์"
+                     *       },
+                     *       "candidates": [],
+                     *       "description": "โอนเงิน บจก.กระดาษ ทดสอบ",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f614",
+                     *       "ignoreReason": "โอนระหว่างบัญชีของบริษัทเอง",
+                     *       "importedAt": "2026-10-13T09:30:00+07:00",
+                     *       "matches": [],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bank_line.unmatch"
+                     *         }
+                     *       ],
+                     *       "reference": "TRF2026101200123",
+                     *       "status": "ignored",
+                     *       "txnDate": "2026-10-12"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlBankLineDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_bank_line_settled`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.matchLine": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                lineId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlMatchBankLineDto"];
+            };
+        };
+        responses: {
+            /** @description Matched */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "amount": "-12500.00",
+                     *       "bankAccount": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f613",
+                     *         "name": "ออมทรัพย์"
+                     *       },
+                     *       "candidates": [],
+                     *       "description": "โอนเงิน บจก.กระดาษ ทดสอบ",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f614",
+                     *       "ignoreReason": null,
+                     *       "importedAt": "2026-10-13T09:30:00+07:00",
+                     *       "matches": [
+                     *         {
+                     *           "amount": "12500.00",
+                     *           "auto": false,
+                     *           "entry": null,
+                     *           "matchedAt": "2026-10-13T10:00:00+07:00",
+                     *           "matchedBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *           "targetId": "0192f3a0-7c1e-7d2a-9b1f-00000000f622",
+                     *           "targetNo": "PV-2610-0004",
+                     *           "targetType": "supplier_payment"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bank_line.unmatch"
+                     *         }
+                     *       ],
+                     *       "reference": "TRF2026101200123",
+                     *       "status": "matched",
+                     *       "txnDate": "2026-10-12"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlBankLineDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_bank_line_settled`, `erp.ledger_period_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.unmatchLine": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                lineId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Open again */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "amount": "-12500.00",
+                     *       "bankAccount": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f613",
+                     *         "name": "ออมทรัพย์"
+                     *       },
+                     *       "candidates": [],
+                     *       "description": "โอนเงิน บจก.กระดาษ ทดสอบ",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f614",
+                     *       "ignoreReason": null,
+                     *       "importedAt": "2026-10-13T09:30:00+07:00",
+                     *       "matches": [],
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bank_line.match"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_bank_line.ignore"
+                     *         }
+                     *       ],
+                     *       "reference": "TRF2026101200123",
+                     *       "status": "open",
+                     *       "txnDate": "2026-10-12"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlBankLineDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_bank_line_settled`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpBank.cashPosition": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The position */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2026-10-14",
+                     *       "banks": [
+                     *         {
+                     *           "account": {
+                     *             "accountNoLast4": "4321",
+                     *             "bankName": "KBANK",
+                     *             "glAccount": {
+                     *               "code": "1121",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *               "name": "KBANK ออมทรัพย์ xx4321"
+                     *             },
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f613",
+                     *             "isDefault": true,
+                     *             "lastStatementDate": "2026-10-12",
+                     *             "ledgerBalance": "185000.00",
+                     *             "name": "ออมทรัพย์",
+                     *             "nextActions": [
+                     *               {
+                     *                 "disabledReason": null,
+                     *                 "irreversible": false,
+                     *                 "key": "erp_bank.edit"
+                     *               },
+                     *               {
+                     *                 "disabledReason": null,
+                     *                 "irreversible": false,
+                     *                 "key": "erp_bank.import"
+                     *               }
+                     *             ],
+                     *             "openLines": 2,
+                     *             "status": "active",
+                     *             "version": 1
+                     *           },
+                     *           "unreconciled": "-12500.00"
+                     *         }
+                     *       ],
+                     *       "cashOnHand": "12000.00",
+                     *       "payablesDue7d": "56000.00",
+                     *       "receivablesDue7d": "82000.00",
+                     *       "total": "197000.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlCashPositionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.listRuns": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Runs */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "createdAt": "2026-10-31T17:00:00+07:00",
+                     *         "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *         "entry": {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *           "number": "JV-2610-0040",
+                     *           "type": "erp_gl_journal_entry"
+                     *         },
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f612",
+                     *         "lines": [
+                     *           {
+                     *             "accumulatedAfter": "360000.00",
+                     *             "amount": "40000.00",
+                     *             "asset": {
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f611",
+                     *               "name": "FA-2601-0001 · เครื่องพิมพ์ออฟเซ็ท 4 สี"
+                     *             },
+                     *             "months": 1
+                     *           }
+                     *         ],
+                     *         "month": "2026-10",
+                     *         "periodId": "0192f3a0-7c1e-7d2a-9b1f-00000000f606",
+                     *         "total": "40000.00"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlDepreciationRunDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.run": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlMonthQuery"];
+            };
+        };
+        responses: {
+            /** @description The run */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-10-31T17:00:00+07:00",
+                     *       "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *       "entry": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *         "number": "JV-2610-0040",
+                     *         "type": "erp_gl_journal_entry"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f612",
+                     *       "lines": [
+                     *         {
+                     *           "accumulatedAfter": "360000.00",
+                     *           "amount": "40000.00",
+                     *           "asset": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f611",
+                     *             "name": "FA-2601-0001 · เครื่องพิมพ์ออฟเซ็ท 4 สี"
+                     *           },
+                     *           "months": 1
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "periodId": "0192f3a0-7c1e-7d2a-9b1f-00000000f606",
+                     *       "total": "40000.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlDepreciationRunDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_depreciation_done`, `erp.ledger_period_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.export": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlMonthQuery"];
+            };
+        };
+        responses: {
+            /** @description The file */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-14T10:05:00+07:00",
+                     *       "fileName": "journals-2026-10.csv",
+                     *       "rows": 184,
+                     *       "url": "https://files.packio.example/erp/journals-2026-10.csv?sig=example"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpTaxExportResultDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.closeYear": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                yearId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The closing entry (none when the year had no profit or loss) */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "approvedBy": null,
+                     *         "autoReverseOn": null,
+                     *         "createdAt": "2026-10-13T10:00:00+07:00",
+                     *         "createdBy": "ระบบ (กฎ F01)",
+                     *         "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *         "documentDate": "2026-10-13",
+                     *         "entryDate": "2026-10-13",
+                     *         "entryNo": "JV-2610-0012",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *         "kind": "closing",
+                     *         "lines": [
+                     *           {
+                     *             "account": {
+                     *               "code": "1141",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *               "name": "วัตถุดิบ"
+                     *             },
+                     *             "bankAccount": null,
+                     *             "credit": "0.00",
+                     *             "debit": "12500.00",
+                     *             "description": null,
+                     *             "item": {
+                     *               "baseUnit": "sheet",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *               "kind": "raw_material",
+                     *               "name": "กระดาษคราฟท์ 350 แกรม",
+                     *               "sku": "PAP-KA-350"
+                     *             },
+                     *             "lineNo": 1,
+                     *             "machine": null,
+                     *             "partner": {
+                     *               "code": "S0001",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *               "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *             },
+                     *             "productionOrder": null,
+                     *             "taxBaseAmount": null,
+                     *             "taxCode": null,
+                     *             "warehouse": null
+                     *           },
+                     *           {
+                     *             "account": {
+                     *               "code": "2115",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *               "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *             },
+                     *             "bankAccount": null,
+                     *             "credit": "12500.00",
+                     *             "debit": "0.00",
+                     *             "description": null,
+                     *             "item": null,
+                     *             "lineNo": 2,
+                     *             "machine": null,
+                     *             "partner": {
+                     *               "code": "S0001",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *               "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *             },
+                     *             "productionOrder": null,
+                     *             "taxBaseAmount": null,
+                     *             "taxCode": null,
+                     *             "warehouse": null
+                     *           }
+                     *         ],
+                     *         "month": "2026-10",
+                     *         "nextActions": [],
+                     *         "postedAt": "2026-10-13T10:00:00+07:00",
+                     *         "rejectionReason": null,
+                     *         "reversedBy": null,
+                     *         "reverses": null,
+                     *         "ruleKey": null,
+                     *         "source": null,
+                     *         "status": "posted",
+                     *         "totalCredit": "12500.00",
+                     *         "totalDebit": "12500.00",
+                     *         "version": 2
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"][];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_already_posted`, `erp.ledger_close_blocked`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.list": {
+        parameters: {
+            query?: {
+                categoryId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["ErpGlAssetStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "accumulated": "320000.00",
+                     *           "acquiredOn": "2026-01-15",
+                     *           "assetNo": "FA-2601-0001",
+                     *           "category": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f610",
+                     *             "name": "เครื่องจักร"
+                     *           },
+                     *           "cost": "2400000.00",
+                     *           "depreciationStart": "2026-02-01",
+                     *           "disposedOn": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f611",
+                     *           "machine": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f619",
+                     *             "name": "เครื่องพิมพ์ออฟเซ็ท 4 สี (ทดสอบ)"
+                     *           },
+                     *           "monthlyDepreciation": "40000.00",
+                     *           "monthsDepreciated": 8,
+                     *           "name": "เครื่องพิมพ์ออฟเซ็ท 4 สี",
+                     *           "netBookValue": "2080000.00",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": true,
+                     *               "key": "erp_asset.dispose"
+                     *             }
+                     *           ],
+                     *           "note": null,
+                     *           "proceeds": null,
+                     *           "salvageValue": "0.00",
+                     *           "status": "active",
+                     *           "usefulLifeMonths": 60,
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpGlAssetDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlCreateAssetDto"];
+            };
+        };
+        responses: {
+            /** @description Registered */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accumulated": "320000.00",
+                     *       "acquiredOn": "2026-01-15",
+                     *       "assetNo": "FA-2601-0001",
+                     *       "category": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f610",
+                     *         "name": "เครื่องจักร"
+                     *       },
+                     *       "cost": "2400000.00",
+                     *       "depreciationStart": "2026-02-01",
+                     *       "disposedOn": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f611",
+                     *       "machine": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f619",
+                     *         "name": "เครื่องพิมพ์ออฟเซ็ท 4 สี (ทดสอบ)"
+                     *       },
+                     *       "monthlyDepreciation": "40000.00",
+                     *       "monthsDepreciated": 8,
+                     *       "name": "เครื่องพิมพ์ออฟเซ็ท 4 สี",
+                     *       "netBookValue": "2080000.00",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_asset.dispose"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "proceeds": null,
+                     *       "salvageValue": "0.00",
+                     *       "status": "active",
+                     *       "usefulLifeMonths": 60,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlAssetDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                assetId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The asset */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accumulated": "320000.00",
+                     *       "acquiredOn": "2026-01-15",
+                     *       "assetNo": "FA-2601-0001",
+                     *       "category": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f610",
+                     *         "name": "เครื่องจักร"
+                     *       },
+                     *       "cost": "2400000.00",
+                     *       "depreciationStart": "2026-02-01",
+                     *       "disposedOn": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f611",
+                     *       "machine": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f619",
+                     *         "name": "เครื่องพิมพ์ออฟเซ็ท 4 สี (ทดสอบ)"
+                     *       },
+                     *       "monthlyDepreciation": "40000.00",
+                     *       "monthsDepreciated": 8,
+                     *       "name": "เครื่องพิมพ์ออฟเซ็ท 4 สี",
+                     *       "netBookValue": "2080000.00",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_asset.dispose"
+                     *         }
+                     *       ],
+                     *       "note": null,
+                     *       "proceeds": null,
+                     *       "salvageValue": "0.00",
+                     *       "status": "active",
+                     *       "usefulLifeMonths": 60,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlAssetDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpFixedAssets.dispose": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                assetId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlDisposeAssetDto"];
+            };
+        };
+        responses: {
+            /** @description Disposed */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accumulated": "320000.00",
+                     *       "acquiredOn": "2026-01-15",
+                     *       "assetNo": "FA-2601-0001",
+                     *       "category": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f610",
+                     *         "name": "เครื่องจักร"
+                     *       },
+                     *       "cost": "2400000.00",
+                     *       "depreciationStart": "2026-02-01",
+                     *       "disposedOn": "2026-10-31",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f611",
+                     *       "machine": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f619",
+                     *         "name": "เครื่องพิมพ์ออฟเซ็ท 4 สี (ทดสอบ)"
+                     *       },
+                     *       "monthlyDepreciation": "40000.00",
+                     *       "monthsDepreciated": 8,
+                     *       "name": "เครื่องพิมพ์ออฟเซ็ท 4 สี",
+                     *       "netBookValue": "0.00",
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "proceeds": "150000.00",
+                     *       "salvageValue": "0.00",
+                     *       "status": "disposed",
+                     *       "usefulLifeMonths": 60,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlAssetDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_asset_not_active`, `erp.ledger_period_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.list": {
+        parameters: {
+            query?: {
+                /** @description Entries with a line on this account code */
+                accountCode?: string;
+                kind?: components["schemas"]["JournalKind"];
+                month?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                /** @description Entries posted from this document */
+                sourceId?: string;
+                status?: components["schemas"]["JournalStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "approvedBy": null,
+                     *           "autoReverseOn": null,
+                     *           "createdAt": "2026-10-13T10:00:00+07:00",
+                     *           "createdBy": "ระบบ (กฎ F01)",
+                     *           "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *           "documentDate": "2026-10-13",
+                     *           "entryDate": "2026-10-13",
+                     *           "entryNo": "JV-2610-0012",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *           "kind": "auto",
+                     *           "lines": [
+                     *             {
+                     *               "account": {
+                     *                 "code": "1141",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *                 "name": "วัตถุดิบ"
+                     *               },
+                     *               "bankAccount": null,
+                     *               "credit": "0.00",
+                     *               "debit": "12500.00",
+                     *               "description": null,
+                     *               "item": {
+                     *                 "baseUnit": "sheet",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *                 "kind": "raw_material",
+                     *                 "name": "กระดาษคราฟท์ 350 แกรม",
+                     *                 "sku": "PAP-KA-350"
+                     *               },
+                     *               "lineNo": 1,
+                     *               "machine": null,
+                     *               "partner": {
+                     *                 "code": "S0001",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *                 "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *               },
+                     *               "productionOrder": null,
+                     *               "taxBaseAmount": null,
+                     *               "taxCode": null,
+                     *               "warehouse": null
+                     *             },
+                     *             {
+                     *               "account": {
+                     *                 "code": "2115",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *                 "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *               },
+                     *               "bankAccount": null,
+                     *               "credit": "12500.00",
+                     *               "debit": "0.00",
+                     *               "description": null,
+                     *               "item": null,
+                     *               "lineNo": 2,
+                     *               "machine": null,
+                     *               "partner": {
+                     *                 "code": "S0001",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *                 "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *               },
+                     *               "productionOrder": null,
+                     *               "taxBaseAmount": null,
+                     *               "taxCode": null,
+                     *               "warehouse": null
+                     *             }
+                     *           ],
+                     *           "month": "2026-10",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": true,
+                     *               "key": "erp_journal.reverse"
+                     *             }
+                     *           ],
+                     *           "postedAt": "2026-10-13T10:00:00+07:00",
+                     *           "rejectionReason": null,
+                     *           "reversedBy": null,
+                     *           "reverses": null,
+                     *           "ruleKey": "F01",
+                     *           "source": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f621",
+                     *             "number": "GR-2610-0003",
+                     *             "type": "erp_goods_receipt"
+                     *           },
+                     *           "status": "posted",
+                     *           "totalCredit": "12500.00",
+                     *           "totalDebit": "12500.00",
+                     *           "version": 2
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ErpGlJournalDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlSaveJournalDto"];
+            };
+        };
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedBy": null,
+                     *       "autoReverseOn": null,
+                     *       "createdAt": "2026-10-13T10:00:00+07:00",
+                     *       "createdBy": "ระบบ (กฎ F01)",
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "documentDate": "2026-10-13",
+                     *       "entryDate": "2026-10-13",
+                     *       "entryNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *       "kind": "manual",
+                     *       "lines": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": null,
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "2115",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "12500.00",
+                     *           "debit": "0.00",
+                     *           "description": null,
+                     *           "item": null,
+                     *           "lineNo": 2,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_journal.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_journal.submit"
+                     *         }
+                     *       ],
+                     *       "postedAt": null,
+                     *       "rejectionReason": null,
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "ruleKey": null,
+                     *       "source": null,
+                     *       "status": "draft",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_period_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_account_invalid`, `erp.ledger_unbalanced`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                entryId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The entry */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedBy": null,
+                     *       "autoReverseOn": null,
+                     *       "createdAt": "2026-10-13T10:00:00+07:00",
+                     *       "createdBy": "ระบบ (กฎ F01)",
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "documentDate": "2026-10-13",
+                     *       "entryDate": "2026-10-13",
+                     *       "entryNo": "JV-2610-0012",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *       "kind": "auto",
+                     *       "lines": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": null,
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "2115",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "12500.00",
+                     *           "debit": "0.00",
+                     *           "description": null,
+                     *           "item": null,
+                     *           "lineNo": 2,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_journal.reverse"
+                     *         }
+                     *       ],
+                     *       "postedAt": "2026-10-13T10:00:00+07:00",
+                     *       "rejectionReason": null,
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "ruleKey": "F01",
+                     *       "source": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f621",
+                     *         "number": "GR-2610-0003",
+                     *         "type": "erp_goods_receipt"
+                     *       },
+                     *       "status": "posted",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                entryId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlSaveJournalDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedBy": null,
+                     *       "autoReverseOn": null,
+                     *       "createdAt": "2026-10-13T10:00:00+07:00",
+                     *       "createdBy": "ระบบ (กฎ F01)",
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "documentDate": "2026-10-13",
+                     *       "entryDate": "2026-10-13",
+                     *       "entryNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *       "kind": "manual",
+                     *       "lines": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": null,
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "2115",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "12500.00",
+                     *           "debit": "0.00",
+                     *           "description": null,
+                     *           "item": null,
+                     *           "lineNo": 2,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_journal.reverse"
+                     *         }
+                     *       ],
+                     *       "postedAt": "2026-10-13T10:00:00+07:00",
+                     *       "rejectionReason": null,
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "ruleKey": "F01",
+                     *       "source": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f621",
+                     *         "number": "GR-2610-0003",
+                     *         "type": "erp_goods_receipt"
+                     *       },
+                     *       "status": "pending_approval",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_journal_not_editable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_account_invalid`, `erp.ledger_unbalanced`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.delete": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                entryId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_journal_not_editable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.approve": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                entryId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Posted */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedBy": null,
+                     *       "autoReverseOn": null,
+                     *       "createdAt": "2026-10-13T10:00:00+07:00",
+                     *       "createdBy": "ระบบ (กฎ F01)",
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "documentDate": "2026-10-13",
+                     *       "entryDate": "2026-10-13",
+                     *       "entryNo": "JV-2610-0012",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *       "kind": "manual",
+                     *       "lines": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": null,
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "2115",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "12500.00",
+                     *           "debit": "0.00",
+                     *           "description": null,
+                     *           "item": null,
+                     *           "lineNo": 2,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_journal.reverse"
+                     *         }
+                     *       ],
+                     *       "postedAt": "2026-10-13T10:00:00+07:00",
+                     *       "rejectionReason": null,
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "ruleKey": "F01",
+                     *       "source": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f621",
+                     *         "number": "GR-2610-0003",
+                     *         "type": "erp_goods_receipt"
+                     *       },
+                     *       "status": "posted",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `erp.ledger_self_approval` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_journal_not_editable`, `erp.ledger_period_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.reject": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                entryId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Rejected */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedBy": null,
+                     *       "autoReverseOn": null,
+                     *       "createdAt": "2026-10-13T10:00:00+07:00",
+                     *       "createdBy": "ระบบ (กฎ F01)",
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "documentDate": "2026-10-13",
+                     *       "entryDate": "2026-10-13",
+                     *       "entryNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *       "kind": "manual",
+                     *       "lines": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": null,
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "2115",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "12500.00",
+                     *           "debit": "0.00",
+                     *           "description": null,
+                     *           "item": null,
+                     *           "lineNo": 2,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "nextActions": [],
+                     *       "postedAt": "2026-10-13T10:00:00+07:00",
+                     *       "rejectionReason": "บัญชีค่าใช้จ่ายไม่ถูกต้อง",
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "ruleKey": "F01",
+                     *       "source": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f621",
+                     *         "number": "GR-2610-0003",
+                     *         "type": "erp_goods_receipt"
+                     *       },
+                     *       "status": "rejected",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_journal_not_editable`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.reverse": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                entryId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlReverseJournalDto"];
+            };
+        };
+        responses: {
+            /** @description The reversal */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedBy": null,
+                     *       "autoReverseOn": null,
+                     *       "createdAt": "2026-10-13T10:00:00+07:00",
+                     *       "createdBy": "ระบบ (กฎ F01)",
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "documentDate": "2026-10-13",
+                     *       "entryDate": "2026-10-13",
+                     *       "entryNo": "JV-2610-0012",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *       "kind": "reversal",
+                     *       "lines": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": null,
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "2115",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "12500.00",
+                     *           "debit": "0.00",
+                     *           "description": null,
+                     *           "item": null,
+                     *           "lineNo": 2,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "nextActions": [],
+                     *       "postedAt": "2026-10-13T10:00:00+07:00",
+                     *       "rejectionReason": null,
+                     *       "reversedBy": null,
+                     *       "reverses": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *         "number": "JV-2610-0012",
+                     *         "type": "erp_gl_journal_entry"
+                     *       },
+                     *       "ruleKey": "F01",
+                     *       "source": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f621",
+                     *         "number": "GR-2610-0003",
+                     *         "type": "erp_goods_receipt"
+                     *       },
+                     *       "status": "posted",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_already_posted`, `erp.ledger_journal_not_editable`, `erp.ledger_period_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.submit": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                entryId: string;
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Submitted */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedBy": null,
+                     *       "autoReverseOn": null,
+                     *       "createdAt": "2026-10-13T10:00:00+07:00",
+                     *       "createdBy": "ระบบ (กฎ F01)",
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "documentDate": "2026-10-13",
+                     *       "entryDate": "2026-10-13",
+                     *       "entryNo": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *       "kind": "manual",
+                     *       "lines": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": null,
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "2115",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "12500.00",
+                     *           "debit": "0.00",
+                     *           "description": null,
+                     *           "item": null,
+                     *           "lineNo": 2,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_journal.reverse"
+                     *         }
+                     *       ],
+                     *       "postedAt": "2026-10-13T10:00:00+07:00",
+                     *       "rejectionReason": null,
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "ruleKey": "F01",
+                     *       "source": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f621",
+                     *         "number": "GR-2610-0003",
+                     *         "type": "erp_goods_receipt"
+                     *       },
+                     *       "status": "pending_approval",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_journal_not_editable`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.listPeriods": {
+        parameters: {
+            query?: {
+                /** @description A fiscal year label; default: the current and the previous year */
+                fiscalYear?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Periods */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "closeChecklist": [],
+                     *         "closeNote": null,
+                     *         "endDate": "2026-10-31",
+                     *         "entries": 42,
+                     *         "fiscalYear": "FY2026",
+                     *         "fiscalYearId": "0192f3a0-7c1e-7d2a-9b1f-00000000f605",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f606",
+                     *         "month": "2026-10",
+                     *         "nextActions": [
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_period.soft_close"
+                     *           },
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_period.close"
+                     *           }
+                     *         ],
+                     *         "periodNo": 10,
+                     *         "startDate": "2026-10-01",
+                     *         "status": "open",
+                     *         "statusChangedAt": null,
+                     *         "statusChangedBy": null
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlPeriodDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.transitionPeriod": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                periodId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlPeriodTransitionDto"];
+            };
+        };
+        responses: {
+            /** @description Changed */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closeChecklist": [
+                     *         {
+                     *           "actual": "845000.00",
+                     *           "blocking": true,
+                     *           "detail": "สินค้า 6 รายการ · บัญชี 1141, 1143",
+                     *           "difference": "0.00",
+                     *           "expected": "845000.00",
+                     *           "key": "stock_valuation",
+                     *           "ok": true
+                     *         },
+                     *         {
+                     *           "actual": null,
+                     *           "blocking": true,
+                     *           "detail": "รอกระทบ 2 รายการ ใน 1 บัญชี",
+                     *           "difference": null,
+                     *           "expected": null,
+                     *           "key": "bank",
+                     *           "ok": false
+                     *         }
+                     *       ],
+                     *       "closeNote": null,
+                     *       "endDate": "2026-10-31",
+                     *       "entries": 42,
+                     *       "fiscalYear": "FY2026",
+                     *       "fiscalYearId": "0192f3a0-7c1e-7d2a-9b1f-00000000f605",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f606",
+                     *       "month": "2026-10",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_period.lock"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_period.reopen"
+                     *         }
+                     *       ],
+                     *       "periodNo": 10,
+                     *       "startDate": "2026-10-01",
+                     *       "status": "closed",
+                     *       "statusChangedAt": null,
+                     *       "statusChangedBy": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlPeriodDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_close_blocked`, `erp.ledger_period_transition`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.closeChecklist": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                periodId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The checklist */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "canClose": false,
+                     *       "checks": [
+                     *         {
+                     *           "actual": "845000.00",
+                     *           "blocking": true,
+                     *           "detail": "สินค้า 6 รายการ · บัญชี 1141, 1143",
+                     *           "difference": "0.00",
+                     *           "expected": "845000.00",
+                     *           "key": "stock_valuation",
+                     *           "ok": true
+                     *         },
+                     *         {
+                     *           "actual": null,
+                     *           "blocking": true,
+                     *           "detail": "รอกระทบ 2 รายการ ใน 1 บัญชี",
+                     *           "difference": null,
+                     *           "expected": null,
+                     *           "key": "bank",
+                     *           "ok": false
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "openProductionOrders": 3,
+                     *       "periodId": "0192f3a0-7c1e-7d2a-9b1f-00000000f606",
+                     *       "status": "open"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlCloseChecklistDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.listRecurring": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recurring journals */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "autoReverse": false,
+                     *         "dayOfMonth": 28,
+                     *         "description": "ค่าเช่าโรงงาน {month}",
+                     *         "endOn": null,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f609",
+                     *         "lastRunMonth": null,
+                     *         "lines": [
+                     *           {
+                     *             "accountCode": "6150",
+                     *             "amount": "15000.00",
+                     *             "description": null,
+                     *             "side": "debit"
+                     *           },
+                     *           {
+                     *             "accountCode": "2140",
+                     *             "amount": "15000.00",
+                     *             "description": null,
+                     *             "side": "credit"
+                     *           }
+                     *         ],
+                     *         "name": "ค่าเช่าโรงงานรายเดือน",
+                     *         "nextActions": [
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_recurring.edit"
+                     *           },
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_recurring.run"
+                     *           }
+                     *         ],
+                     *         "startOn": "2026-10-01",
+                     *         "status": "active",
+                     *         "total": "15000.00",
+                     *         "version": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlRecurringDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.createRecurring": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlSaveRecurringDto"];
+            };
+        };
+        responses: {
+            /** @description Added */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "autoReverse": false,
+                     *       "dayOfMonth": 28,
+                     *       "description": "ค่าเช่าโรงงาน {month}",
+                     *       "endOn": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f609",
+                     *       "lastRunMonth": null,
+                     *       "lines": [
+                     *         {
+                     *           "accountCode": "6150",
+                     *           "amount": "15000.00",
+                     *           "description": null,
+                     *           "side": "debit"
+                     *         },
+                     *         {
+                     *           "accountCode": "2140",
+                     *           "amount": "15000.00",
+                     *           "description": null,
+                     *           "side": "credit"
+                     *         }
+                     *       ],
+                     *       "name": "ค่าเช่าโรงงานรายเดือน",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_recurring.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_recurring.run"
+                     *         }
+                     *       ],
+                     *       "startOn": "2026-10-01",
+                     *       "status": "active",
+                     *       "total": "15000.00",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlRecurringDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_account_invalid`, `erp.ledger_unbalanced`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.updateRecurring": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+                recurringId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlSaveRecurringDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "autoReverse": false,
+                     *       "dayOfMonth": 28,
+                     *       "description": "ค่าเช่าโรงงาน {month}",
+                     *       "endOn": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f609",
+                     *       "lastRunMonth": null,
+                     *       "lines": [
+                     *         {
+                     *           "accountCode": "6150",
+                     *           "amount": "15000.00",
+                     *           "description": null,
+                     *           "side": "debit"
+                     *         },
+                     *         {
+                     *           "accountCode": "2140",
+                     *           "amount": "15000.00",
+                     *           "description": null,
+                     *           "side": "credit"
+                     *         }
+                     *       ],
+                     *       "name": "ค่าเช่าโรงงานรายเดือน",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_recurring.edit"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_recurring.run"
+                     *         }
+                     *       ],
+                     *       "startOn": "2026-10-01",
+                     *       "status": "active",
+                     *       "total": "15000.00",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlRecurringDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_account_invalid`, `erp.ledger_unbalanced`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpJournals.runRecurring": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                recurringId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The entry */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvedBy": null,
+                     *       "autoReverseOn": null,
+                     *       "createdAt": "2026-10-13T10:00:00+07:00",
+                     *       "createdBy": "ระบบ (กฎ F01)",
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "documentDate": "2026-10-13",
+                     *       "entryDate": "2026-10-13",
+                     *       "entryNo": "JV-2610-0012",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *       "kind": "recurring",
+                     *       "lines": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": null,
+                     *           "item": {
+                     *             "baseUnit": "sheet",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f618",
+                     *             "kind": "raw_material",
+                     *             "name": "กระดาษคราฟท์ 350 แกรม",
+                     *             "sku": "PAP-KA-350"
+                     *           },
+                     *           "lineNo": 1,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "2115",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "สินค้ารับแล้วยังไม่ได้รับใบแจ้งหนี้"
+                     *           },
+                     *           "bankAccount": null,
+                     *           "credit": "12500.00",
+                     *           "debit": "0.00",
+                     *           "description": null,
+                     *           "item": null,
+                     *           "lineNo": 2,
+                     *           "machine": null,
+                     *           "partner": {
+                     *             "code": "S0001",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f616",
+                     *             "name": "บริษัท กระดาษ ทดสอบ จำกัด"
+                     *           },
+                     *           "productionOrder": null,
+                     *           "taxBaseAmount": null,
+                     *           "taxCode": null,
+                     *           "warehouse": null
+                     *         }
+                     *       ],
+                     *       "month": "2026-10",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": true,
+                     *           "key": "erp_journal.reverse"
+                     *         }
+                     *       ],
+                     *       "postedAt": "2026-10-13T10:00:00+07:00",
+                     *       "rejectionReason": null,
+                     *       "reversedBy": null,
+                     *       "reverses": null,
+                     *       "ruleKey": null,
+                     *       "source": null,
+                     *       "status": "posted",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlJournalDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_already_posted`, `erp.ledger_period_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.archived`, `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedgerReports.balanceSheet": {
+        parameters: {
+            query: {
+                asOf: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The statement */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2026-10-31",
+                     *       "balanced": true,
+                     *       "comparativeAsOf": "2025-12-31",
+                     *       "currentYearProfit": "96000.00",
+                     *       "sections": [
+                     *         {
+                     *           "amount": "1250000.00",
+                     *           "comparative": "1250000.00",
+                     *           "key": "assets",
+                     *           "lines": [
+                     *             {
+                     *               "accounts": [
+                     *                 {
+                     *                   "account": {
+                     *                     "code": "4110",
+                     *                     "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *                     "name": "รายได้ขาย"
+                     *                   },
+                     *                   "amount": "1250000.00",
+                     *                   "comparative": "1250000.00"
+                     *                 }
+                     *               ],
+                     *               "amount": "1250000.00",
+                     *               "comparative": "1250000.00",
+                     *               "key": "inventory"
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "totalAssets": "1250000.00",
+                     *       "totalEquity": "830000.00",
+                     *       "totalLiabilities": "420000.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlBalanceSheetDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedgerReports.cashFlow": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The statement */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closingCash": "185000.00",
+                     *       "from": "2026-10-01",
+                     *       "netChange": "35000.00",
+                     *       "netProfit": "43000.00",
+                     *       "nonCash": "12000.00",
+                     *       "openingCash": "150000.00",
+                     *       "sections": [
+                     *         {
+                     *           "accounts": [
+                     *             {
+                     *               "account": {
+                     *                 "code": "1131",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *                 "name": "ลูกหนี้การค้า"
+                     *               },
+                     *               "amount": "-8000.00",
+                     *               "comparative": null
+                     *             }
+                     *           ],
+                     *           "amount": "35000.00",
+                     *           "key": "operating"
+                     *         }
+                     *       ],
+                     *       "to": "2026-10-31"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlCashFlowDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedgerReports.generalLedger": {
+        parameters: {
+            query: {
+                accountCode: string;
+                from: string;
+                to: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The account’s ledger */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "account": {
+                     *         "code": "1141",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *         "name": "วัตถุดิบ"
+                     *       },
+                     *       "closing": "112500.00",
+                     *       "from": "2026-10-01",
+                     *       "opening": "100000.00",
+                     *       "rows": [
+                     *         {
+                     *           "balance": "112500.00",
+                     *           "credit": "0.00",
+                     *           "debit": "12500.00",
+                     *           "description": "รับสินค้า GR-2610-0003",
+                     *           "entryDate": "2026-10-13",
+                     *           "entryId": "0192f3a0-7c1e-7d2a-9b1f-00000000f607",
+                     *           "entryNo": "JV-2610-0012",
+                     *           "source": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f621",
+                     *             "number": "GR-2610-0003",
+                     *             "type": "erp_goods_receipt"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "to": "2026-10-31"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlDetailDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedgerReports.profitAndLoss": {
+        parameters: {
+            query: {
+                month: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The statement */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "costOfSales": "180000.00",
+                     *       "expenses": "22000.00",
+                     *       "grossProfit": "65000.00",
+                     *       "month": "2026-10",
+                     *       "netProfit": "43000.00",
+                     *       "netProfitYtd": "96000.00",
+                     *       "revenue": "245000.00",
+                     *       "sections": [
+                     *         {
+                     *           "amount": "245000.00",
+                     *           "comparative": "245000.00",
+                     *           "key": "revenue",
+                     *           "lines": [
+                     *             {
+                     *               "accounts": [
+                     *                 {
+                     *                   "account": {
+                     *                     "code": "4110",
+                     *                     "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *                     "name": "รายได้ขาย"
+                     *                   },
+                     *                   "amount": "245000.00",
+                     *                   "comparative": "245000.00"
+                     *                 }
+                     *               ],
+                     *               "amount": "245000.00",
+                     *               "comparative": "245000.00",
+                     *               "key": "revenue"
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "yearStart": "2026-01-01"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlProfitAndLossDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedgerReports.stockValuation": {
+        parameters: {
+            query: {
+                asOf: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The valuation */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2026-10-31",
+                     *       "difference": "0.00",
+                     *       "ledgerBalance": "520000.00",
+                     *       "rows": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "difference": "0.00",
+                     *           "items": 12,
+                     *           "kind": "raw_material",
+                     *           "ledgerBalance": "520000.00",
+                     *           "stockValue": "520000.00"
+                     *         }
+                     *       ],
+                     *       "stockValue": "520000.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlStockValuationDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedgerReports.trialBalance": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The trial balance */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "balanced": true,
+                     *       "from": "2026-10-01",
+                     *       "rows": [
+                     *         {
+                     *           "account": {
+                     *             "code": "1141",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "วัตถุดิบ"
+                     *           },
+                     *           "accountType": "asset",
+                     *           "closing": "125000.00",
+                     *           "credit": "20000.00",
+                     *           "debit": "45000.00",
+                     *           "opening": "100000.00"
+                     *         },
+                     *         {
+                     *           "account": {
+                     *             "code": "3100",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f602",
+                     *             "name": "ทุนที่ชำระแล้ว"
+                     *           },
+                     *           "accountType": "equity",
+                     *           "closing": "-100000.00",
+                     *           "credit": "0.00",
+                     *           "debit": "0.00",
+                     *           "opening": "-100000.00"
+                     *         }
+                     *       ],
+                     *       "to": "2026-10-31",
+                     *       "totalCredit": "125000.00",
+                     *       "totalDebit": "125000.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlTrialBalanceDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.listRules": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rules */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "accountCodes": [],
+                     *         "description": "Goods receipt: inventory at cost excl. VAT against GR/IR clearing",
+                     *         "entries": 12,
+                     *         "eventType": "erp_goods_receipt.posted",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *         "key": "F01",
+                     *         "name": "รับสินค้าเข้าคลัง",
+                     *         "template": {
+                     *           "description": "รับสินค้า {documentNo}",
+                     *           "lines": []
+                     *         },
+                     *         "versionNo": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlRuleDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.getSettings": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The settings */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accounts": 84,
+                     *       "chartTemplateVersion": 1,
+                     *       "cpaContact": "cpa@example.invalid",
+                     *       "cpaName": "สำนักงานบัญชี ทดสอบ",
+                     *       "fiscalYearStartMonth": 1,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f601",
+                     *       "itemKindAccounts": {
+                     *         "consumable": "1144",
+                     *         "finished_good": "1143",
+                     *         "packing": "1146",
+                     *         "raw_material": "1141",
+                     *         "semi_finished": "1142",
+                     *         "spare_part": "1145"
+                     *       },
+                     *       "ledgerStartOn": "2026-10-01",
+                     *       "methodAccounts": {
+                     *         "bank": "1120",
+                     *         "cash": "1110",
+                     *         "grir": "2115",
+                     *         "payables": "2111",
+                     *         "receivables": "1131"
+                     *       },
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_ledger.configure"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_ledger.catch_up"
+                     *         }
+                     *       ],
+                     *       "rules": 20,
+                     *       "rulesTemplateVersion": 1,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlSettingsDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.updateSettings": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpUpdateGlSettingsDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accounts": 84,
+                     *       "chartTemplateVersion": 1,
+                     *       "cpaContact": "cpa@example.invalid",
+                     *       "cpaName": "สำนักงานบัญชี ทดสอบ",
+                     *       "fiscalYearStartMonth": 1,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f601",
+                     *       "itemKindAccounts": {
+                     *         "consumable": "1144",
+                     *         "finished_good": "1143",
+                     *         "packing": "1146",
+                     *         "raw_material": "1141",
+                     *         "semi_finished": "1142",
+                     *         "spare_part": "1145"
+                     *       },
+                     *       "ledgerStartOn": "2026-10-01",
+                     *       "methodAccounts": {
+                     *         "bank": "1120",
+                     *         "cash": "1110",
+                     *         "grir": "2115",
+                     *         "payables": "2111",
+                     *         "receivables": "1131"
+                     *       },
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_ledger.configure"
+                     *         },
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "erp_ledger.catch_up"
+                     *         }
+                     *       ],
+                     *       "rules": 20,
+                     *       "rulesTemplateVersion": 1,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlSettingsDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.listTaxFilings": {
+        parameters: {
+            query?: {
+                /** @description Calendar year; default: the current one */
+                year?: number;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Returns */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "documentsAmount": "12250.00",
+                     *         "dueOn": "2026-10-15",
+                     *         "filed": false,
+                     *         "filedAmount": null,
+                     *         "filedOn": null,
+                     *         "form": "pp30",
+                     *         "ledgerAmount": "12250.00",
+                     *         "month": "2026-09",
+                     *         "nextActions": [
+                     *           {
+                     *             "disabledReason": null,
+                     *             "irreversible": false,
+                     *             "key": "erp_tax.mark_filed"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciled": true,
+                     *         "reference": null
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlTaxFilingDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.markTaxFiled": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlMarkFiledDto"];
+            };
+        };
+        responses: {
+            /** @description The returns of that year */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "documentsAmount": "12250.00",
+                     *         "dueOn": "2026-10-15",
+                     *         "filed": true,
+                     *         "filedAmount": "12250.00",
+                     *         "filedOn": "2026-10-14",
+                     *         "form": "pp30",
+                     *         "ledgerAmount": "12250.00",
+                     *         "month": "2026-09",
+                     *         "nextActions": [],
+                     *         "note": null,
+                     *         "reconciled": true,
+                     *         "reference": "RD-EF-2610-000123"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ErpGlTaxFilingDto"][];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_tax_filed`, `idempotency.in_progress` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

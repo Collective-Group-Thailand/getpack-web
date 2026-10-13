@@ -12,7 +12,8 @@
       "factory_storekeeper": "Storekeeper",
       "factory_purchaser": "Purchaser",
       "factory_maintenance": "Maintenance",
-      "factory_sales": "Sales"
+      "factory_sales": "Sales",
+      "factory_auditor": "External auditor / CPA"
     },
     "switchFactory": "Switch factory"
   },
@@ -112,7 +113,8 @@
       "finance": "Finance",
       "factory": "Factory",
       "insight": "Insight",
-      "quality": "Quality"
+      "quality": "Quality",
+      "ledger": "General ledger"
     },
     "items": {
       "today": "Today",
@@ -161,7 +163,13 @@
       "ncrs": "NCRs",
       "qualityTemplates": "Inspection templates",
       "people": "Shifts and skills",
-      "supportAccess": "Packio support access"
+      "supportAccess": "Packio support access",
+      "ledger": "Periods & close",
+      "ledgerJournals": "Journals",
+      "ledgerReports": "Financial statements",
+      "ledgerAccounts": "Chart & settings",
+      "ledgerAssets": "Fixed assets",
+      "ledgerBank": "Bank & reconciliation"
     }
   },
   "status": {

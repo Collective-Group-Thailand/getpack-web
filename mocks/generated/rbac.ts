@@ -1,12 +1,12 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: packio-api docs/rbac.md at v0.48.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
+ * Source: packio-api docs/rbac.md at v0.49.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
  *
  * The permissions each D-140 staff role and factory role holds in packio-api, verbatim. The mock
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "c2d7e2b", tag: "v0.48.0" } as const;
+export const RBAC_SOURCE = { commit: "b3cbb4a", tag: "v0.49.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
@@ -961,6 +961,11 @@ export const FACTORY_PERMISSIONS = [
   "factory_issues.raise",
   "factory_jobs.read",
   "factory_jobs.respond",
+  "factory_ledger.approve",
+  "factory_ledger.close",
+  "factory_ledger.configure",
+  "factory_ledger.post",
+  "factory_ledger.read",
   "factory_maintenance.manage",
   "factory_maintenance.read",
   "factory_maintenance.report",
@@ -1000,6 +1005,7 @@ export const FACTORY_PERMISSIONS = [
   "factory_shipments.read",
   "factory_style_intakes.submit",
   "factory_support.grant",
+  "factory_tax.file",
   "factory_tax.read",
   "factory_trading_partners.manage",
   "factory_trading_partners.read",
@@ -1030,6 +1036,11 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_issues.raise",
     "factory_jobs.read",
     "factory_jobs.respond",
+    "factory_ledger.approve",
+    "factory_ledger.close",
+    "factory_ledger.configure",
+    "factory_ledger.post",
+    "factory_ledger.read",
     "factory_maintenance.manage",
     "factory_maintenance.read",
     "factory_maintenance.report",
@@ -1069,6 +1080,7 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_shipments.read",
     "factory_style_intakes.submit",
     "factory_support.grant",
+    "factory_tax.file",
     "factory_tax.read",
     "factory_trading_partners.manage",
     "factory_trading_partners.read",
@@ -1157,6 +1169,9 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_insight.read",
     "factory_inventory.read",
     "factory_jobs.read",
+    "factory_ledger.close",
+    "factory_ledger.post",
+    "factory_ledger.read",
     "factory_payables.manage",
     "factory_payables.read",
     "factory_prices.read",
@@ -1166,6 +1181,7 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_receivables.manage",
     "factory_receivables.read",
     "factory_sales.read",
+    "factory_tax.file",
     "factory_tax.read",
     "factory_trading_partners.manage",
     "factory_trading_partners.read",
@@ -1224,5 +1240,14 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_sales.read",
     "factory_trading_partners.manage",
     "factory_trading_partners.read",
+  ],
+  factory_auditor: [
+    "factory_ap.read",
+    "factory_documents.read",
+    "factory_inventory.read",
+    "factory_ledger.read",
+    "factory_profile.read",
+    "factory_receivables.read",
+    "factory_tax.read",
   ],
 };

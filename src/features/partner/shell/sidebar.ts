@@ -6,7 +6,7 @@ import type { IconName } from "@/ui/icons";
  * of those, only what the user's roles at this factory work with. "เพิ่มเติม" stays on a phone,
  * where the bottom bar has five places.
  */
-export type SidebarGroupKey = "daily" | "insight" | "sales" | "supply" | "plan" | "quality" | "finance" | "factory";
+export type SidebarGroupKey = "daily" | "insight" | "sales" | "supply" | "plan" | "quality" | "finance" | "ledger" | "factory";
 
 export type SidebarItemKey =
   | "today"
@@ -35,6 +35,12 @@ export type SidebarItemKey =
   | "invoices"
   | "receivables"
   | "tax"
+  | "ledger"
+  | "ledgerJournals"
+  | "ledgerReports"
+  | "ledgerAccounts"
+  | "ledgerAssets"
+  | "ledgerBank"
   | "insight"
   | "insightCosts"
   | "insightProfit"
@@ -168,6 +174,13 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
     permission: "factory_receivables.read",
   },
   tax: { key: "tax", href: "/tax", icon: "stamp", group: "finance", permission: "factory_tax.read" },
+  // E6 (D-385 – D-396): the factory's own books — periods and the close, journals, statements, assets, bank.
+  ledger: { key: "ledger", href: "/ledger", icon: "checklist", group: "ledger", permission: "factory_ledger.read" },
+  ledgerJournals: { key: "ledgerJournals", href: "/ledger/journals", icon: "list-ordered", group: "ledger", permission: "factory_ledger.read" },
+  ledgerReports: { key: "ledgerReports", href: "/ledger/reports", icon: "chart", group: "ledger", permission: "factory_ledger.read" },
+  ledgerAccounts: { key: "ledgerAccounts", href: "/ledger/accounts", icon: "layers", group: "ledger", permission: "factory_ledger.read" },
+  ledgerAssets: { key: "ledgerAssets", href: "/ledger/assets", icon: "building", group: "ledger", permission: "factory_ledger.read" },
+  ledgerBank: { key: "ledgerBank", href: "/ledger/bank", icon: "credit-card", group: "ledger", permission: "factory_ledger.read" },
   // E5 (D-376 – D-378): the owner's dashboard, job costs, gross profit and OEE.
   insight: { key: "insight", href: "/insight", icon: "dashboard", group: "insight", permission: "factory_insight.read" },
   insightCosts: { key: "insightCosts", href: "/insight/costs", icon: "calculator", group: "insight", permission: "factory_insight.read" },
@@ -291,6 +304,12 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "invoices",
     "receivables",
     "tax",
+    "ledger",
+    "ledgerJournals",
+    "ledgerReports",
+    "ledgerAccounts",
+    "ledgerAssets",
+    "ledgerBank",
     "qualityChecks",
     "purchasing",
     "tradingPartners",
@@ -335,10 +354,27 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "documents",
     ...EVERYONE,
   ],
+  // E6 (D-396): the factory's external auditor / CPA — the books and the documents behind them, read-only.
+  factory_auditor: [
+    "ledger",
+    "ledgerJournals",
+    "ledgerReports",
+    "ledgerAccounts",
+    "ledgerAssets",
+    "ledgerBank",
+    "invoices",
+    "receivables",
+    "tax",
+    "payables",
+    "stock",
+    "documents",
+    ...EVERYONE,
+  ],
 };
 
 const DESKS: readonly SidebarItemKey[] = [
   "insight",
+  "ledger",
   "crm",
   "quotations",
   "maintenance",
@@ -350,7 +386,7 @@ const DESKS: readonly SidebarItemKey[] = [
   "alerts",
 ];
 
-const GROUP_ORDER: SidebarGroupKey[] = ["daily", "insight", "sales", "supply", "plan", "quality", "finance", "factory"];
+const GROUP_ORDER: SidebarGroupKey[] = ["daily", "insight", "sales", "supply", "plan", "quality", "finance", "ledger", "factory"];
 
 const itemOf = (key: SidebarItemKey): SidebarItem => ({ key, href: ITEMS[key].href, icon: ITEMS[key].icon });
 
