@@ -179,6 +179,8 @@ import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 import { PROMOTION_OFFER_STATUS } from "./promotion-offer";
 import {
   ERP_CHECK_RESULT,
+  ERP_GL_ASSET_STATUS,
+  ERP_GL_BANK_LINE_STATUS,
   ERP_NCR_STATUS,
   ERP_NCR_SEVERITY,
   ERP_LEAD_STAGE,
@@ -205,6 +207,8 @@ import {
 
 export {
   ERP_CHECK_RESULT,
+  ERP_GL_ASSET_STATUS,
+  ERP_GL_BANK_LINE_STATUS,
   ERP_NCR_STATUS,
   ERP_NCR_SEVERITY,
   ERP_LEAD_STAGE,
@@ -442,4 +446,6 @@ export const STATUS_MAPS = {
   erpCheck: ERP_CHECK_RESULT,
   erpNcr: ERP_NCR_STATUS,
   erpNcrSeverity: ERP_NCR_SEVERITY,
+  erpGlBankLine: ERP_GL_BANK_LINE_STATUS,
+  erpGlAsset: ERP_GL_ASSET_STATUS,
 } as const;

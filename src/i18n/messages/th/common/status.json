@@ -517,7 +517,32 @@
     "verifyNcr": "ยืนยันผลการแก้ไข",
     "closeNcr": "ปิด NCR",
     "cancelNcr": "ยกเลิก NCR",
-    "revokeSupport": "ยกเลิกสิทธิ์ทีมซัพพอร์ต"
+    "revokeSupport": "ยกเลิกสิทธิ์ทีมซัพพอร์ต",
+    "configureLedger": "ตั้งค่าสมุดบัญชี",
+    "catchUpLedger": "บันทึกเอกสารที่ค้าง",
+    "proposeAccount": "เสนอแก้ไขบัญชี",
+    "approveAccountChange": "อนุมัติการแก้ไขผังบัญชี",
+    "rejectAccountChange": "ไม่อนุมัติการแก้ไข",
+    "softClosePeriod": "ปิดงวดชั่วคราว",
+    "closePeriod": "ปิดงวด",
+    "lockPeriod": "ล็อกงวด (ผู้สอบบัญชีรับรอง)",
+    "reopenPeriod": "เปิดงวดใหม่",
+    "editJournal": "แก้ไขรายการ",
+    "submitJournal": "ส่งขออนุมัติ",
+    "approveJournal": "อนุมัติและบันทึกบัญชี",
+    "rejectJournal": "ไม่อนุมัติ",
+    "deleteJournal": "ลบร่าง",
+    "reverseJournal": "กลับรายการ",
+    "editRecurring": "แก้ไขรายการประจำ",
+    "runRecurring": "บันทึกเดือนนี้เลย",
+    "disposeAsset": "จำหน่าย / ตัดจำหน่าย",
+    "editBank": "แก้ไขบัญชีธนาคาร",
+    "importStatement": "นำเข้าสเตทเมนต์",
+    "matchBankLine": "จับคู่รายการ",
+    "ignoreBankLine": "ไม่ต้องจับคู่",
+    "unmatchBankLine": "ยกเลิกการจับคู่",
+    "markTaxFiled": "บันทึกว่ายื่นแบบแล้ว",
+    "closeYear": "ปิดบัญชีสิ้นปี"
   },
   "points": {
     "pending": "รอเข้าบัญชี",
@@ -932,5 +957,15 @@
     "minor": "เล็กน้อย",
     "major": "สำคัญ",
     "critical": "ร้ายแรง"
+  },
+  "erpGlBankLine": {
+    "open": "ยังไม่จับคู่",
+    "matched": "จับคู่แล้ว",
+    "ignored": "ไม่ต้องจับคู่"
+  },
+  "erpGlAsset": {
+    "active": "ใช้งาน",
+    "disposed": "จำหน่ายแล้ว",
+    "written_off": "ตัดจำหน่ายแล้ว"
   }
 }

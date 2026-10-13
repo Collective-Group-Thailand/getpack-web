@@ -21,7 +21,8 @@ export type PartnerRole =
   | "factory_storekeeper"
   | "factory_purchaser"
   | "factory_maintenance"
-  | "factory_sales";
+  | "factory_sales"
+  | "factory_auditor";
 
 /**
  * packio-api's factory-scope grants, role by role (`pnpm gen:rbac`, triage `partner.permissions`):
@@ -42,6 +43,8 @@ export const ROLE_PERMISSIONS: Record<PartnerRole, readonly FactoryPermission[]>
   factory_maintenance: FACTORY_ROLE_GRANTS.factory_maintenance!,
   // E4 (packio-api v0.47.0, D-371).
   factory_sales: FACTORY_ROLE_GRANTS.factory_sales!,
+  // E6 (packio-api v0.49.0, D-396).
+  factory_auditor: FACTORY_ROLE_GRANTS.factory_auditor!,
 };
 
 export interface PartnerPersona {
@@ -136,6 +139,14 @@ export const PARTNER_PERSONAS: PartnerPersona[] = [
     displayName: "ฝ่ายขาย ตัวอย่าง (ข้อมูลจำลอง)",
     factoryId: F001,
     roles: ["factory_sales"],
+  },
+  {
+    key: "auditor",
+    id: mockId("pus", 12),
+    email: "auditor@factory.invalid",
+    displayName: "ผู้สอบบัญชี ตัวอย่าง (ข้อมูลจำลอง)",
+    factoryId: F001,
+    roles: ["factory_auditor"],
   },
   {
     key: "applicant",
