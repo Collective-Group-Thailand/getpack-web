@@ -12,10 +12,13 @@ import { Input, NumberInput } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 
 import type { SalesPickers } from "./types";
+import { ERP_UNIT_VALUES } from "@/features/partner/erp/units";
 
 export type Unit = Schemas["ErpUnit"];
 export type Fulfilment = Schemas["ErpFulfilment"];
-export const UNITS: Unit[] = ["pcs", "box", "pack", "set", "sheet", "ream", "roll", "kg", "g", "ton", "m", "m2", "l", "ml"];
+/** Sales lines list counts, packaging and service units first. */
+const FIRST: Unit[] = ["pcs", "box", "pack", "set", "pouch", "tube", "job", "round", "trip"];
+export const UNITS: Unit[] = [...FIRST, ...ERP_UNIT_VALUES.filter((unit) => !FIRST.includes(unit))];
 const FULFILMENTS: Fulfilment[] = ["stock", "make", "service"];
 
 export interface SalesLine {

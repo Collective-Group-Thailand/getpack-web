@@ -264,7 +264,12 @@
       "pack": "packs",
       "set": "sets",
       "l": "L",
-      "ml": "mL"
+      "ml": "mL",
+      "pouch": "pouch",
+      "tube": "tube",
+      "job": "job",
+      "round": "round",
+      "trip": "trip"
     },
     "inWords": "({words})"
   }
