@@ -14,7 +14,13 @@
       "pack": "pack",
       "set": "set",
       "l": "litre",
-      "ml": "ml"
+      "ml": "ml",
+      "piece": "pcs",
+      "pouch": "pouch",
+      "tube": "tube",
+      "job": "job",
+      "round": "round",
+      "trip": "trip"
     },
     "itemKinds": {
       "raw_material": "Raw material",
