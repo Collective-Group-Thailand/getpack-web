@@ -31,6 +31,7 @@ import { Onboarding } from "./tabs/Onboarding";
 import { Operations } from "./tabs/Operations";
 import { Pricing } from "./tabs/Pricing";
 import { Profile } from "./tabs/Profile";
+import { ErpSupport } from "./tabs/ErpSupport";
 import { SiteVisits } from "./tabs/SiteVisits";
 import { Terms } from "./tabs/Terms";
 
@@ -103,6 +104,7 @@ export function FactoryWorkspace({
     { value: "terms", label: t("tabs.terms"), content: <Terms factory={factory} /> },
     { value: "visits", label: t("tabs.visits"), content: <SiteVisits factory={factory} /> },
     { value: "pricing", label: t("tabs.pricing"), content: <Pricing factory={factory} /> },
+    { value: "erp", label: t("tabs.erp"), content: <ErpSupport factory={factory} /> },
   ];
   const offered = canManage ? OFFERED[factory.status] : [];
 

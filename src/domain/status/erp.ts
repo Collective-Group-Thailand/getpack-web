@@ -1,5 +1,8 @@
 import { defineStatusMap } from "./types";
 import type {
+  DefectSeverity,
+  ErpCheckResult,
+  ErpNcrStatus,
   ErpDocExpiry,
   ErpMachineState,
   ErpMaintenanceStatus,
@@ -191,4 +194,28 @@ export const ERP_RECEIPT_STATUS = defineStatusMap<ErpReceiptStatus>({
 export const ERP_WHT_STATUS = defineStatusMap<ErpWhtCertificateStatus>({
   issued: { tone: "success", icon: "check", labelKey: "erpWht.issued" },
   voided: { tone: "danger", icon: "ban", labelKey: "erpWht.voided" },
+});
+
+/** A quality check's result (D-372). */
+export const ERP_CHECK_RESULT = defineStatusMap<ErpCheckResult>({
+  pending: { tone: "info", icon: "hourglass", labelKey: "erpCheck.pending" },
+  pass: { tone: "success", icon: "check", labelKey: "erpCheck.pass" },
+  conditional: { tone: "warning", icon: "flag", labelKey: "erpCheck.conditional" },
+  fail: { tone: "danger", icon: "ban", labelKey: "erpCheck.fail" },
+});
+
+/** A nonconformance report (D-374). */
+export const ERP_NCR_STATUS = defineStatusMap<ErpNcrStatus>({
+  open: { tone: "danger", icon: "flag", labelKey: "erpNcr.open" },
+  in_progress: { tone: "warning", icon: "wrench", labelKey: "erpNcr.in_progress" },
+  verified: { tone: "info", icon: "shield-check", labelKey: "erpNcr.verified" },
+  closed: { tone: "success", icon: "check", labelKey: "erpNcr.closed" },
+  cancelled: { tone: "neutral", icon: "ban", labelKey: "erpNcr.cancelled" },
+});
+
+/** How serious a nonconformance is (D-374). */
+export const ERP_NCR_SEVERITY = defineStatusMap<DefectSeverity>({
+  minor: { tone: "neutral", icon: "info", labelKey: "erpNcrSeverity.minor" },
+  major: { tone: "warning", icon: "warning", labelKey: "erpNcrSeverity.major" },
+  critical: { tone: "danger", icon: "danger", labelKey: "erpNcrSeverity.critical" },
 });

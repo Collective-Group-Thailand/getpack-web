@@ -152,6 +152,13 @@ export default async function SettingsPage() {
           </Link>
         </PartnerSection>
       ) : null}
+      {canAt(context, "factory_support.grant") ? (
+        <PartnerSection title={t("support")} description={t("supportBody")}>
+          <Link href="/settings/support" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">
+            {t("supportLink")}
+          </Link>
+        </PartnerSection>
+      ) : null}
       <PartnerSection title={t("notifications")} description={t("notificationsBody")}>
         <Card padding="md" className="flex flex-col gap-4">
           <PushOnThisDevice />

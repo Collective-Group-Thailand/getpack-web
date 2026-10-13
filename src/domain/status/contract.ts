@@ -320,3 +320,8 @@ export type ErpSalesInvoiceStatus = Schemas["ErpSalesInvoiceStatus"];
 export type ErpIssuedStatus = Schemas["ErpIssuedStatus"];
 export type ErpReceiptStatus = Schemas["ErpReceiptStatus"];
 export type ErpWhtCertificateStatus = Schemas["ErpWhtCertificateStatus"];
+
+/** Packio Factory ERP E5 (D-372 – D-383). **Source: contract** (packio-api v0.48.0). */
+export type ErpCheckResult = Schemas["ErpCheckResult"];
+export type ErpNcrStatus = Schemas["ErpNcrStatus"];
+export type DefectSeverity = Schemas["DefectSeverity"];

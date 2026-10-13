@@ -243,7 +243,10 @@
     "hoursLink": "Set working hours",
     "erp": "Stock and documents",
     "erpBody": "Warehouses, document numbers and stock rules",
-    "erpLink": "Stock and document settings"
+    "erpLink": "Stock and document settings",
+    "support": "Packio support access",
+    "supportBody": "Let the Packio team read your ERP dashboard and settings for up to 7 days, and see who looked when",
+    "supportLink": "Manage support access"
   },
   "files": {
     "failed": "Could not open the file",

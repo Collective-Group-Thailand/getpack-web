@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { isCurrent } from "./nav";
+import { currentHref } from "./nav";
 import type { SidebarGroup } from "./sidebar";
 
 /**
@@ -26,6 +26,10 @@ export function PartnerSidebar({
 }) {
   const t = useTranslations("partner.sidebar");
   const pathname = usePathname();
+  const active = currentHref(
+    groups.flatMap((group) => group.items.map((item) => item.href)),
+    pathname,
+  );
   return (
     <div className="flex h-full flex-col gap-4 px-2 py-3 md:gap-3">
       <div className="bg-bg rounded-lg px-3 py-2.5 md:py-2">
@@ -37,7 +41,7 @@ export function PartnerSidebar({
           <p className="text-muted px-3 pt-1 text-sm font-semibold">{t(`groups.${group.key}`)}</p>
           <ul className="flex flex-col gap-0.5">
             {group.items.map((item) => {
-              const current = isCurrent(item.href, pathname);
+              const current = item.href === active;
               return (
                 <li key={item.key}>
                   <Link

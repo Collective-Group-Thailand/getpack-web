@@ -29,6 +29,8 @@ const KINDS: Kind[] = [
   "invoice_overdue",
   "quote_follow_up",
   "activity_overdue",
+  "ncr_overdue",
+  "oee_low",
 ];
 const VIEWS = ["open", "all"] as const;
 type View = (typeof VIEWS)[number];
@@ -44,6 +46,8 @@ const ICON: Record<Kind, IconName> = {
   quote_follow_up: "send",
   invoice_overdue: "coins",
   activity_overdue: "phone",
+  ncr_overdue: "shield-alert",
+  oee_low: "activity",
 };
 const TONE: Record<Kind, "danger" | "warning" | "info"> = {
   price_rise: "warning",
@@ -55,6 +59,8 @@ const TONE: Record<Kind, "danger" | "warning" | "info"> = {
   quote_follow_up: "info",
   invoice_overdue: "danger",
   activity_overdue: "warning",
+  ncr_overdue: "danger",
+  oee_low: "warning",
 };
 
 /** Where an alert takes its reader: what it is about. */
@@ -74,6 +80,10 @@ function hrefOf(alert: Alert): string | null {
       return `/invoices/${alert.subjectId}`;
     case "activity":
       return "/crm?view=activities";
+    case "erp_ncr":
+      return `/quality/ncrs/${alert.subjectId}`;
+    case "machine":
+      return "/insight/oee";
     default:
       return null;
   }
@@ -147,6 +157,12 @@ export default async function AlertsPage({
       dueDate: day("dueDate"),
       subject: s("subject"),
       assignee: s("assignee"),
+      ncrNo: s("ncrNo"),
+      owner: s("owner"),
+      dueOn: day("dueOn"),
+      oeePct: s("oeePct"),
+      thresholdPct: s("thresholdPct"),
+      day: day("day"),
     });
   };
 
