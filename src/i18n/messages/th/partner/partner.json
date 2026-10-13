@@ -110,7 +110,9 @@
       "supply": "คลังและจัดซื้อ",
       "plan": "แผนและกำลังผลิต",
       "finance": "การเงิน",
-      "factory": "โรงงาน"
+      "factory": "โรงงาน",
+      "insight": "ภาพรวมและรายงาน",
+      "quality": "คุณภาพ"
     },
     "items": {
       "today": "งานวันนี้",
@@ -150,7 +152,16 @@
       "deliveries": "ใบส่งของ",
       "invoices": "ใบแจ้งหนี้ / ใบกำกับภาษี",
       "receivables": "ลูกหนี้และรับเงิน",
-      "tax": "ภาษี"
+      "tax": "ภาษี",
+      "insight": "ภาพรวมโรงงาน",
+      "insightCosts": "ต้นทุนงานผลิต",
+      "insightProfit": "กำไรขั้นต้น",
+      "insightOee": "ประสิทธิภาพเครื่อง (OEE)",
+      "qualityChecks": "ผลตรวจคุณภาพ",
+      "ncrs": "NCR (งานไม่ได้มาตรฐาน)",
+      "qualityTemplates": "แบบฟอร์มตรวจ",
+      "people": "กะงานและทักษะ",
+      "supportAccess": "สิทธิ์ทีมซัพพอร์ต Packio"
     }
   },
   "status": {

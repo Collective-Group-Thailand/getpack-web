@@ -86,6 +86,7 @@ const SOURCING = {
     onTimePct: null,
     score: null,
     grade: null,
+    ncrs: 0,
   },
 };
 

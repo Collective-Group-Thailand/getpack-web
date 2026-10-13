@@ -506,7 +506,18 @@
     "cancelBillingNote": "ยกเลิกใบวางบิล",
     "billingNotePdf": "PDF ใบวางบิล",
     "voidWht": "ยกเลิกหนังสือรับรอง",
-    "whtPdf": "PDF 50 ทวิ"
+    "whtPdf": "PDF 50 ทวิ",
+    "editTemplate": "แก้ไขแบบฟอร์มตรวจ",
+    "useTemplate": "เริ่มตรวจด้วยแบบฟอร์มนี้",
+    "recordCheck": "บันทึกผลตรวจ",
+    "overrideCheck": "กำหนดผลเอง",
+    "coaPdf": "ใบรับรองคุณภาพ (COA)",
+    "workNcr": "บันทึกสาเหตุ/การแก้ไข",
+    "disposeNcr": "ตัดสินการจัดการของเสีย",
+    "verifyNcr": "ยืนยันผลการแก้ไข",
+    "closeNcr": "ปิด NCR",
+    "cancelNcr": "ยกเลิก NCR",
+    "revokeSupport": "ยกเลิกสิทธิ์ทีมซัพพอร์ต"
   },
   "points": {
     "pending": "รอเข้าบัญชี",
@@ -903,5 +914,23 @@
   "erpWht": {
     "issued": "ออกแล้ว",
     "voided": "ยกเลิกแล้ว"
+  },
+  "erpCheck": {
+    "pending": "รอผล",
+    "pass": "ผ่าน",
+    "conditional": "ผ่านแบบมีเงื่อนไข",
+    "fail": "ไม่ผ่าน"
+  },
+  "erpNcr": {
+    "open": "เปิดอยู่",
+    "in_progress": "กำลังแก้ไข",
+    "verified": "ยืนยันแล้ว",
+    "closed": "ปิดแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "erpNcrSeverity": {
+    "minor": "เล็กน้อย",
+    "major": "สำคัญ",
+    "critical": "ร้ายแรง"
   }
 }

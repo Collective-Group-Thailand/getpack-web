@@ -139,7 +139,8 @@
       "operations": "Operations",
       "terms": "Commercial terms",
       "visits": "Site visits",
-      "pricing": "Prices"
+      "pricing": "Prices",
+      "erp": "Factory ERP (support)"
     },
     "statusActions": "Change status",
     "actions": {
@@ -724,5 +725,33 @@
     "record": "Record",
     "recorded": "Value recorded",
     "recordFailed": "Could not record the value"
+  },
+  "erpSupport": {
+    "title": "The factory's ERP",
+    "body": "Only while the owner has granted access (up to 7 days) — read only; every read is logged and shown to the owner",
+    "read": "Read (logged)",
+    "again": "Read again",
+    "notGranted": "The owner has not granted access, or it has expired",
+    "failed": "Could not load",
+    "granted": "Granted until {until} — {reason}",
+    "sales": "Sales this month / target",
+    "receivables": "Receivables open",
+    "overdue": "{amount} overdue",
+    "payables": "Due in 7 days",
+    "stock": "Stock value",
+    "low": "{n} items low",
+    "production": "Production",
+    "productionValue": "{wip} in production · {late} late",
+    "machines": "Machines",
+    "machinesValue": "{down} of {total} down · yesterday OEE {oee}%",
+    "quality": "Quality",
+    "qualityValue": "{open} open NCRs · {overdue} overdue",
+    "modules": "Modules on",
+    "costing": "Costing",
+    "costingValue": "Labour ฿{labour}/h · overhead {overhead}%",
+    "rules": "Stock rules",
+    "rulesValue": "Negative stock: {negative} · price tolerance {tolerance}%",
+    "yes": "yes",
+    "no": "no"
   }
 }

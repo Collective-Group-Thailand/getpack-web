@@ -110,7 +110,9 @@
       "supply": "Stock & purchasing",
       "plan": "Planning and capacity",
       "finance": "Finance",
-      "factory": "Factory"
+      "factory": "Factory",
+      "insight": "Insight",
+      "quality": "Quality"
     },
     "items": {
       "today": "Today",
@@ -150,7 +152,16 @@
       "deliveries": "Delivery notes",
       "invoices": "Invoices",
       "receivables": "Receivables",
-      "tax": "Tax"
+      "tax": "Tax",
+      "insight": "Factory dashboard",
+      "insightCosts": "Job costs",
+      "insightProfit": "Gross profit",
+      "insightOee": "Machine OEE",
+      "qualityChecks": "Quality checks",
+      "ncrs": "NCRs",
+      "qualityTemplates": "Inspection templates",
+      "people": "Shifts and skills",
+      "supportAccess": "Packio support access"
     }
   },
   "status": {

@@ -539,7 +539,9 @@
       "dr": "Debit note",
       "rc": "Receipt",
       "bn": "Billing note",
-      "wht": "50 bis"
+      "wht": "50 bis",
+      "qc": "Quality check (QC)",
+      "ncr": "Nonconformance (NCR)"
     },
     "modules": "Modules in use",
     "modulesHint": "Switch off what you do not use to keep the menu short",
@@ -552,7 +554,10 @@
       "sales": "Sales (coming)",
       "accounting": "Accounting documents (coming)",
       "maintenance": "Maintenance (coming)",
-      "documents": "Documents (coming)"
+      "documents": "Documents (coming)",
+      "quality": "Quality",
+      "insight": "Insight and costing",
+      "people": "Shifts and skills"
     },
     "vatRegistered": "The factory is VAT-registered — stock cost excludes VAT",
     "vatNotRegistered": "The factory is not VAT-registered — stock cost includes VAT",
@@ -561,6 +566,19 @@
     "requireApproval": "Purchase requests wait for approval",
     "requireApprovalHint": "Off = a submitted request is approved at once (a requester who may approve is approved at once anyway)",
     "priceTolerance": "Invoice price tolerance",
-    "priceToleranceHint": "An invoice priced further from the order than this needs the owner's approval before it is paid"
+    "priceToleranceHint": "An invoice priced further from the order than this needs the owner's approval before it is paid",
+    "insight": {
+      "title": "Costing and performance",
+      "body": "Used to cost a production order when it completes (materials + machine run minutes + labour + overhead) and for OEE alerts",
+      "labour": "Labour per run hour",
+      "labourHint": "Per hour a machine actually runs (pauses excluded)",
+      "overhead": "Overhead",
+      "overheadHint": "% on top of materials + machine + labour",
+      "oeeAlert": "Alert when OEE is under",
+      "oeeAlertHint": "Checked every morning at 07:35 for yesterday",
+      "dailySummary": "Send the factory summary on LINE at 07:40",
+      "dailySummaryHint": "To whoever reads insight (owner, accountant, planner)",
+      "rates": "Set machine hourly rates on the Job costs page"
+    }
   }
 }
