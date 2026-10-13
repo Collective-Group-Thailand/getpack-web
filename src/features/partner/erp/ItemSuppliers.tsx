@@ -22,6 +22,7 @@ import { IconButton } from "@/ui/components/IconButton";
 
 import { useErpCall } from "./call";
 import { formatPlain, formatQty, plainNumber, PRICE_PATTERN, QTY_PATTERN } from "./format";
+import { ERP_UNIT_VALUES } from "./units";
 
 type Link = Schemas["ErpItemSupplierDto"];
 type Item = Pick<Schemas["ErpItemDto"], "id" | "baseUnit" | "purchaseUnit" | "purchaseFactor">;
@@ -35,7 +36,7 @@ const GRADE_TONE: Record<string, "success" | "info" | "warning" | "danger"> = {
   D: "danger",
 };
 
-const UNITS = ["kg", "g", "ton", "sheet", "ream", "roll", "m", "m2", "pcs", "box", "pack", "set", "l", "ml"] as const;
+const UNITS = ERP_UNIT_VALUES;
 
 /**
  * Who sells this item and for how much (D-333 – D-335): one card per supplier with its unit, latest price
