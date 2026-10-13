@@ -6,7 +6,7 @@ import type { IconName } from "@/ui/icons";
  * of those, only what the user's roles at this factory work with. "เพิ่มเติม" stays on a phone,
  * where the bottom bar has five places.
  */
-export type SidebarGroupKey = "daily" | "sales" | "supply" | "plan" | "finance" | "factory";
+export type SidebarGroupKey = "daily" | "insight" | "sales" | "supply" | "plan" | "quality" | "finance" | "factory";
 
 export type SidebarItemKey =
   | "today"
@@ -35,6 +35,15 @@ export type SidebarItemKey =
   | "invoices"
   | "receivables"
   | "tax"
+  | "insight"
+  | "insightCosts"
+  | "insightProfit"
+  | "insightOee"
+  | "qualityChecks"
+  | "ncrs"
+  | "qualityTemplates"
+  | "people"
+  | "supportAccess"
   | "payables"
   | "capacity"
   | "hours"
@@ -159,6 +168,23 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
     permission: "factory_receivables.read",
   },
   tax: { key: "tax", href: "/tax", icon: "stamp", group: "finance", permission: "factory_tax.read" },
+  // E5 (D-376 – D-378): the owner's dashboard, job costs, gross profit and OEE.
+  insight: { key: "insight", href: "/insight", icon: "dashboard", group: "insight", permission: "factory_insight.read" },
+  insightCosts: { key: "insightCosts", href: "/insight/costs", icon: "calculator", group: "insight", permission: "factory_insight.read" },
+  insightProfit: { key: "insightProfit", href: "/insight/profit", icon: "trend-up", group: "insight", permission: "factory_insight.read" },
+  insightOee: { key: "insightOee", href: "/insight/oee", icon: "activity", group: "insight", permission: "factory_insight.read" },
+  // E5 (D-372 – D-374): the factory's own checks, NCRs and the checklists they use.
+  qualityChecks: { key: "qualityChecks", href: "/quality", icon: "clipboard-check", group: "quality", permission: "factory_quality.read" },
+  ncrs: { key: "ncrs", href: "/quality/ncrs", icon: "shield-alert", group: "quality", permission: "factory_quality.read" },
+  qualityTemplates: {
+    key: "qualityTemplates",
+    href: "/quality/templates",
+    icon: "checklist",
+    group: "quality",
+    permission: "factory_quality.read",
+  },
+  // E5 (D-380): shifts, who can run which machine, and the work log.
+  people: { key: "people", href: "/people", icon: "users", group: "plan", permission: "factory_people.read" },
   payables: {
     key: "payables",
     href: "/payables",
@@ -209,6 +235,14 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
   requests: { key: "requests", href: "/requests", icon: "send", group: "factory" },
   knowledge: { key: "knowledge", href: "/knowledge", icon: "article", group: "factory" },
   // Everyone's own notifications live there too; users and the factory's profile only for whom may manage them.
+  // E5 (D-381): the owner lets Packio support read the ERP for a few days.
+  supportAccess: {
+    key: "supportAccess",
+    href: "/settings/support",
+    icon: "shield",
+    group: "factory",
+    permission: "factory_support.grant",
+  },
   settings: { key: "settings", href: "/settings", icon: "settings", group: "factory" },
 };
 
@@ -220,6 +254,9 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   factory_owner: Object.keys(ITEMS) as SidebarItemKey[],
   factory_planner: [
     "today",
+    "insight",
+    "insightCosts",
+    "insightOee",
     "alerts",
     "jobs",
     "floor",
@@ -228,6 +265,9 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "schedule",
     "maintenance",
     "machines",
+    "qualityChecks",
+    "ncrs",
+    "people",
     "salesOrders",
     "stock",
     "purchasing",
@@ -236,18 +276,22 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "documents",
     ...EVERYONE,
   ],
-  factory_operator: ["today", "alerts", "floor", "kiosk", "jobs", "planning", "maintenance", "documents", ...EVERYONE],
+  factory_operator: ["today", "alerts", "floor", "kiosk", "jobs", "planning", "maintenance", "qualityChecks", "ncrs", "people", "documents", ...EVERYONE],
   // QC and shipping open on their own queue (`/qc`, `/ship`): "งานวันนี้" would lead back to it.
-  factory_qc: ["qc", "samples", "claims", ...EVERYONE],
+  factory_qc: ["qc", "qualityChecks", "ncrs", "qualityTemplates", "samples", "claims", ...EVERYONE],
   factory_shipping: ["ship", ...EVERYONE],
   factory_accountant: [
     "today",
+    "insight",
+    "insightCosts",
+    "insightProfit",
     "alerts",
     "quotations",
     "salesOrders",
     "invoices",
     "receivables",
     "tax",
+    "qualityChecks",
     "purchasing",
     "tradingPartners",
     "stock",
@@ -263,6 +307,8 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   // Packio Factory ERP roles (D-319): the store and the buying desk.
   factory_storekeeper: [
     "alerts",
+    "qualityChecks",
+    "ncrs",
     "deliveries",
     "salesOrders",
     "stock",
@@ -274,7 +320,7 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   ],
   factory_purchaser: ["alerts", "purchasing", "rfqs", "stock", "tradingPartners", "payables", "documents", ...EVERYONE],
   // E3 (D-357): the maintenance crew — orders, plans, machines and the spare parts in stock.
-  factory_maintenance: ["alerts", "maintenance", "machines", "stock", "documents", ...EVERYONE],
+  factory_maintenance: ["alerts", "maintenance", "machines", "ncrs", "people", "stock", "documents", ...EVERYONE],
   // E4 (D-371): the sales desk — its customers and deals through to delivery, and what they owe.
   factory_sales: [
     "alerts",
@@ -291,9 +337,20 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   ],
 };
 
-const DESKS: readonly SidebarItemKey[] = ["crm", "quotations", "maintenance", "stock", "deliveries", "purchasing", "tradingPartners", "alerts"];
+const DESKS: readonly SidebarItemKey[] = [
+  "insight",
+  "crm",
+  "quotations",
+  "maintenance",
+  "stock",
+  "deliveries",
+  "purchasing",
+  "tradingPartners",
+  "qualityChecks",
+  "alerts",
+];
 
-const GROUP_ORDER: SidebarGroupKey[] = ["daily", "sales", "supply", "plan", "finance", "factory"];
+const GROUP_ORDER: SidebarGroupKey[] = ["daily", "insight", "sales", "supply", "plan", "quality", "finance", "factory"];
 
 const itemOf = (key: SidebarItemKey): SidebarItem => ({ key, href: ITEMS[key].href, icon: ITEMS[key].icon });
 

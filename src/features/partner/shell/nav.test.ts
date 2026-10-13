@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { FACTORY_ROLE_GRANTS } from "../../../../mocks/generated/rbac";
-import { isCurrent } from "./nav";
+import { currentHref, isCurrent } from "./nav";
 import { partnerBottomItems, partnerSidebar, sidebarItems } from "./sidebar";
 
 const grants = (role: keyof typeof FACTORY_ROLE_GRANTS) => (permission: string) =>
@@ -12,16 +12,28 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
   it("gives the owner every group", () => {
     expect(partnerSidebar("active", ["factory_owner"], grants("factory_owner")).map((g) => g.key)).toEqual([
       "daily",
+      "insight",
       "sales",
       "supply",
       "plan",
+      "quality",
       "finance",
       "factory",
     ]);
   });
 
   it("gives QC its queue, samples and claims — not the operator's floor or the money", () => {
-    expect(items("factory_qc")).toEqual(["qc", "samples", "claims", "requests", "knowledge", "settings"]);
+    expect(items("factory_qc")).toEqual([
+      "qc",
+      "samples",
+      "claims",
+      "qualityChecks",
+      "ncrs",
+      "qualityTemplates",
+      "requests",
+      "knowledge",
+      "settings",
+    ]);
   });
 
   it("gives shipping its trips, the planner its capacity, the accountant the money", () => {
@@ -39,6 +51,12 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "schedule",
       "maintenance",
       "machines",
+      "insight",
+      "insightCosts",
+      "insightOee",
+      "qualityChecks",
+      "ncrs",
+      "people",
       "capacity",
       "hours",
       "documents",
@@ -57,6 +75,10 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "invoices",
       "receivables",
       "tax",
+      "insight",
+      "insightCosts",
+      "insightProfit",
+      "qualityChecks",
       "payables",
       "billing",
       "payouts",
@@ -78,6 +100,8 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "purchasing",
       "tradingPartners",
       "planning",
+      "qualityChecks",
+      "ncrs",
       "documents",
       "requests",
       "knowledge",
@@ -133,6 +157,9 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "kiosk",
       "planning",
       "maintenance",
+      "qualityChecks",
+      "ncrs",
+      "people",
       "documents",
       "requests",
       "knowledge",
@@ -148,6 +175,8 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "stock",
       "maintenance",
       "machines",
+      "ncrs",
+      "people",
       "documents",
       "requests",
       "knowledge",
@@ -159,6 +188,14 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     // Every item a role sees is one its permissions open (no menu that ends in a 403).
     for (const role of Object.keys(FACTORY_ROLE_GRANTS) as (keyof typeof FACTORY_ROLE_GRANTS)[])
       for (const key of items(role)) expect(sidebarItems("active", ["unknown_role"], grants(role))).toContain(key);
+  });
+
+  it("gives quality, insight and people to the roles D-382 grants them (E5)", () => {
+    expect(items("factory_owner")).toEqual(expect.arrayContaining(["insight", "qualityTemplates", "people", "supportAccess"]));
+    expect(items("factory_planner")).not.toContain("supportAccess");
+    expect(items("factory_sales")).not.toContain("qualityChecks");
+    expect(items("factory_shipping")).not.toContain("insight");
+    expect(items("factory_qc")).not.toContain("insight");
   });
 
   it("keeps a factory being onboarded to its wizard, prices and guides", () => {
@@ -186,5 +223,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     expect(isCurrent("/", "/jobs")).toBe(false);
     expect(isCurrent("/prices", "/prices/shipping")).toBe(true);
     expect(isCurrent("/prices", "/pricesx")).toBe(false);
+    expect(currentHref(["/insight", "/insight/costs", "/"], "/insight/costs/abc")).toBe("/insight/costs");
+    expect(currentHref(["/quality", "/quality/ncrs"], "/quality/0192")).toBe("/quality");
   });
 });

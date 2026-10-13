@@ -178,6 +178,9 @@ import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 import { PROMOTION_OFFER_STATUS } from "./promotion-offer";
 import {
+  ERP_CHECK_RESULT,
+  ERP_NCR_STATUS,
+  ERP_NCR_SEVERITY,
   ERP_LEAD_STAGE,
   ERP_OPPORTUNITY_STAGE,
   ERP_QUOTATION_STATUS,
@@ -201,6 +204,9 @@ import {
 } from "./erp";
 
 export {
+  ERP_CHECK_RESULT,
+  ERP_NCR_STATUS,
+  ERP_NCR_SEVERITY,
   ERP_LEAD_STAGE,
   ERP_OPPORTUNITY_STAGE,
   ERP_QUOTATION_STATUS,
@@ -433,4 +439,7 @@ export const STATUS_MAPS = {
   erpWht: ERP_WHT_STATUS,
   erpMachine: ERP_MACHINE_STATE,
   erpDocExpiry: ERP_DOC_EXPIRY,
+  erpCheck: ERP_CHECK_RESULT,
+  erpNcr: ERP_NCR_STATUS,
+  erpNcrSeverity: ERP_NCR_SEVERITY,
 } as const;

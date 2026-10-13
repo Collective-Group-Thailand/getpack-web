@@ -18,7 +18,9 @@
       "document_expiring": "เอกสารใกล้หมดอายุ",
       "quote_follow_up": "ใบเสนอราคาใกล้หมดอายุ",
       "invoice_overdue": "ใบแจ้งหนี้เกินกำหนด",
-      "activity_overdue": "งานติดตามเลยกำหนด"
+      "activity_overdue": "งานติดตามเลยกำหนด",
+      "ncr_overdue": "NCR เลยกำหนด",
+      "oee_low": "OEE ต่ำ"
     },
     "text": {
       "price_rise": "{item}: {supplier} ราคา {price} บาท/{unit} ขึ้น {changePct}% จากครั้งก่อน {previous} ({documentNo})",
@@ -29,7 +31,9 @@
       "document_expiring": "{title} หมดอายุ {expiresOn}",
       "quote_follow_up": "{quoteNo} ของ {customer} ใช้ได้ถึง {validUntil} — ติดตามลูกค้า",
       "invoice_overdue": "{customer} ค้าง {open} ตาม {invoiceNo} (ครบกำหนด {dueDate})",
-      "activity_overdue": "{subject} ({assignee}) เลยกำหนดแล้ว"
+      "activity_overdue": "{subject} ({assignee}) เลยกำหนดแล้ว",
+      "ncr_overdue": "{ncrNo} {title} ({owner}) เลยกำหนดแก้ไข {dueOn}",
+      "oee_low": "{machine} ได้ OEE {oeePct}% เมื่อ {day} ต่ำกว่าเกณฑ์ {thresholdPct}%"
     },
     "open": "เปิดดู",
     "acknowledge": "รับทราบ",

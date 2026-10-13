@@ -212,6 +212,17 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "erp_bn.pdf": { tone: "neutral", icon: "printer", labelKey: "action.billingNotePdf" },
   "erp_wht.void": { tone: "danger", icon: "ban", labelKey: "action.voidWht" },
   "erp_wht.pdf": { tone: "neutral", icon: "printer", labelKey: "action.whtPdf" },
+  "erp_template.edit": { tone: "neutral", icon: "edit", labelKey: "action.editTemplate" },
+  "erp_template.use": { tone: "primary", icon: "clipboard-check", labelKey: "action.useTemplate" },
+  "erp_qc.record": { tone: "primary", icon: "clipboard-check", labelKey: "action.recordCheck" },
+  "erp_qc.override": { tone: "warning", icon: "flag", labelKey: "action.overrideCheck" },
+  "erp_qc.coa": { tone: "neutral", icon: "printer", labelKey: "action.coaPdf" },
+  "erp_ncr.edit": { tone: "neutral", icon: "edit", labelKey: "action.workNcr" },
+  "erp_ncr.dispose": { tone: "primary", icon: "split", labelKey: "action.disposeNcr" },
+  "erp_ncr.verify": { tone: "success", icon: "shield-check", labelKey: "action.verifyNcr" },
+  "erp_ncr.close": { tone: "success", icon: "check", labelKey: "action.closeNcr" },
+  "erp_ncr.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelNcr" },
+  "erp_support.revoke": { tone: "danger", icon: "lock", labelKey: "action.revokeSupport" },
 };
 
 /**
@@ -357,6 +368,17 @@ export const API_ACTION_KEYS = [
   "erp_bn.pdf",
   "erp_wht.void",
   "erp_wht.pdf",
+  "erp_template.edit",
+  "erp_template.use",
+  "erp_qc.record",
+  "erp_qc.override",
+  "erp_qc.coa",
+  "erp_ncr.edit",
+  "erp_ncr.dispose",
+  "erp_ncr.verify",
+  "erp_ncr.close",
+  "erp_ncr.cancel",
+  "erp_support.revoke",
 ] as const;
 
 /** Falls back to something visible and pressable rather than dropping the action. */

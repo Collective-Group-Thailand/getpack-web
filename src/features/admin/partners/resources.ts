@@ -21,6 +21,7 @@ export const FACTORY_TABS = [
   "terms",
   "visits",
   "pricing",
+  "erp",
 ] as const;
 export type FactoryTab = (typeof FACTORY_TABS)[number];
 

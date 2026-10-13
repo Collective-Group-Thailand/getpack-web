@@ -180,7 +180,11 @@
     "no_withholding": "No tax was withheld on this payment",
     "recipe_required": "A made-to-order item needs a recipe before the order is confirmed",
     "customer_required": "Choose a customer first",
-    "seller_incomplete": "The seller's details are incomplete — add the registered address and tax ID in the factory profile"
+    "seller_incomplete": "The seller's details are incomplete — add the registered address and tax ID in the factory profile",
+    "check_not_passed": "A certificate of analysis needs a final check that passed",
+    "ncr_action_required": "Record the disposition and corrective action before verifying the NCR",
+    "support_grant_active": "Support already has access — revoke it first",
+    "support_not_granted": "The owner has not granted access, or it has expired"
   },
   "factory_users": {
     "role_not_allowed": "Role not allowed"
