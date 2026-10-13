@@ -12,7 +12,8 @@
       "factory_storekeeper": "เจ้าหน้าที่คลังสินค้า",
       "factory_purchaser": "เจ้าหน้าที่จัดซื้อ",
       "factory_maintenance": "ช่างซ่อมบำรุง",
-      "factory_sales": "ฝ่ายขาย"
+      "factory_sales": "ฝ่ายขาย",
+      "factory_auditor": "ผู้สอบบัญชี / CPA"
     },
     "switchFactory": "เปลี่ยนโรงงาน"
   },
@@ -112,7 +113,8 @@
       "finance": "การเงิน",
       "factory": "โรงงาน",
       "insight": "ภาพรวมและรายงาน",
-      "quality": "คุณภาพ"
+      "quality": "คุณภาพ",
+      "ledger": "บัญชีแยกประเภท"
     },
     "items": {
       "today": "งานวันนี้",
@@ -161,7 +163,13 @@
       "ncrs": "NCR (งานไม่ได้มาตรฐาน)",
       "qualityTemplates": "แบบฟอร์มตรวจ",
       "people": "กะงานและทักษะ",
-      "supportAccess": "สิทธิ์ทีมซัพพอร์ต Packio"
+      "supportAccess": "สิทธิ์ทีมซัพพอร์ต Packio",
+      "ledger": "งวดบัญชีและปิดงวด",
+      "ledgerJournals": "สมุดรายวัน",
+      "ledgerReports": "งบการเงิน",
+      "ledgerAccounts": "ผังบัญชีและตั้งค่า",
+      "ledgerAssets": "สินทรัพย์ถาวร",
+      "ledgerBank": "ธนาคารและกระทบยอด"
     }
   },
   "status": {
