@@ -88,6 +88,8 @@ checked by script; `ConsentStep.test.tsx` was rewritten for the new step and `pr
 - **Edit flows**: address and tax-profile add/edit in a titled side sheet; area (postcode, sub-district) editable
   on both (the API always took it); saved E.164 phones pass the form's national-format check.
 - **Selects**: every customer-zone `Select` is `SearchableSelect` (search box from six options; copy in `common.select`).
+- **Guest-cart merge** tries a refused browser line once (`pk_guest_cart_tried_v1`), so the cart no longer
+  announces "could not move 1 line" on every visit.
 - **Consent at sign-in**: two ticks (terms + privacy, linked; news and offers covering every channel, with the
   channels under "choose channels"); cookie analytics carried from the banner. Profile step no longer hands back
   the masked-number placeholder as a name.
@@ -115,8 +117,6 @@ checked by script; `ConsentStep.test.tsx` was rewritten for the new step and `pr
   set in `.env.local` for UAT — restart `pnpm dev`) **and** a CORS policy on the bucket. With
   `INTEGRATIONS_MODE=fake` no browser upload can succeed at all (`fake-s3.invalid`).
 - UAT has no published API styles, so `/styles/[slug]` and the free-dieline form cannot be exercised yet.
-- The cart shows the guest-merge toast ("ย้ายไม่ได้ 1 รายการ") on every visit while one browser-kept line
-  cannot be merged; the merge should mark the line as tried.
 - Open owner asks in the task list: customer-uploaded fonts in the studio (with print embedding and a licence
   acknowledgement), full account-nav regrouping on wide screens.
 
