@@ -1,0 +1,285 @@
+{
+  "common": {
+    "updated": "Last updated {date}",
+    "contents": "On this page",
+    "draftNote": "This text is in use during Collective Group (Thailand)'s system trial and may be revised before public launch",
+    "askTeam": "Have a question? Message the team",
+    "tip": "Tip:"
+  },
+  "howItWorks": {
+    "title": "How ordering works",
+    "metaTitle": "How to order packaging from Packio — 6 steps from design to delivery",
+    "metaDescription": "Ordering boxes and packaging from Packio: pick a style, enter your size, see the price at once, design or upload artwork, prepress checks and proofs it, pay a deposit, then follow production to your door.",
+    "answer": "Ordering from Packio takes six steps: choose a box style and enter your size → see the price and delivery date at once → design in the studio or upload a file → prepress checks it and sends a proof to approve → pay the deposit to start production → follow production and delivery from your order page. Every step shows its status in your account.",
+    "intro": "No waiting for quotes, no files going back and forth by email — everything is on one page, and you always see where the job is.",
+    "stepsTitle": "Six steps",
+    "steps": [
+      {
+        "title": "Choose a style and enter your size",
+        "body": "Pick from a library of boxes, bags, pouches and labels that the factories in our network really make. Enter your product's size and the sheet unfolds with cut lines, creases and safe zones. The dieline is free to download.",
+        "tip": "Not sure which style fits? Enter the product size and let the system suggest one, or message the team on LINE."
+      },
+      {
+        "title": "See the price and delivery date at once",
+        "body": "Change the board, quantity or print and the unit price and total (VAT included) follow immediately, with production days and the earliest delivery date. Products that cannot be priced instantly can be quoted from the same page; the team answers in business hours.",
+        "tip": "Compare several quantities on the order step — the larger the run, the lower the unit price."
+      },
+      {
+        "title": "Design in the studio, or upload a file",
+        "body": "Place your logo, text and images on a 3D box. The studio checks resolution, safe zones and unprintable colours while you design. Or upload an existing PDF/AI and we check it the same way. If you would rather not design yourself, Packio's design team works from what you placed.",
+        "tip": "Share a link so your team can comment on the 3D box. Every version is kept and can be restored."
+      },
+      {
+        "title": "Prepress checks the file and sends a proof",
+        "body": "A person checks every job before it prints; if something will not look right, we say so first. You approve the proof on your order page or ask for changes, and can order a single sample box before the whole run.",
+        "tip": "Production starts only once the proof is approved."
+      },
+      {
+        "title": "Pay the deposit to start production",
+        "body": "Pay by PromptPay QR, bank transfer, credit/debit card or instalments, split into the stages shown before you confirm. The tax invoice is issued by Collective Group (Thailand) as soon as you pay. Business customers can apply for credit terms.",
+        "tip": "Enter your tax-invoice details once in your account and use them on every order."
+      },
+      {
+        "title": "Follow production and receive your order",
+        "body": "See every stage on the order page: job received, printing, quality check, shipped — with QC photos before the cartons are sealed. When it arrives, confirm receipt or report a problem within the window shown on the order.",
+        "tip": "Reorder a past job in one click; approved artwork is not re-checked."
+      }
+    ],
+    "faqTitle": "Common questions about ordering",
+    "faq": [
+      {
+        "q": "What is the minimum order?",
+        "a": "It depends on the product. The minimum is shown on the product page and on the order step before you confirm; most products start in the hundreds of pieces."
+      },
+      {
+        "q": "How long does production take?",
+        "a": "Production days are shown with the price on the order step, counted in business days after the proof is approved and the deposit paid. The earliest delivery date is shown too."
+      },
+      {
+        "q": "I have no artwork — what now?",
+        "a": "Design it free in the studio, placing your logo, text and images on a 3D box, or let Packio's design team work from what you placed."
+      },
+      {
+        "q": "Can I get a sample first?",
+        "a": "Yes. Ask for a sample box from the order step or your order page, choose photos or delivery, then confirm the full run."
+      },
+      {
+        "q": "How can I pay?",
+        "a": "PromptPay QR, bank transfer, credit/debit card and instalments. Approved business customers can order on credit terms."
+      },
+      {
+        "q": "Something is wrong with the delivery — what do I do?",
+        "a": "Report it from the order page within the window shown, with photos of the product and the shipping carton. The team reviews it and offers a remedy such as a reprint, refund or store credit under our guarantee."
+      }
+    ],
+    "ctaTitle": "Start with your first box",
+    "ctaBody": "Enter a size, see the price and start designing — no sign-up needed first.",
+    "ctaStart": "Start designing free",
+    "ctaProducts": "Products and prices"
+  },
+  "about": {
+    "title": "About Packio",
+    "metaTitle": "About Packio — online packaging production platform by Collective Group (Thailand)",
+    "metaDescription": "Packio is an online platform for ordering boxes, bags, pouches and labels in Thailand, operated by Collective Group (Thailand). Design it yourself, see the price at once, prepress checks every job, and a vetted factory network produces it.",
+    "answer": "Packio is an online packaging production platform in Thailand, operated by Collective Group (Thailand). It lets small and mid-size brands design boxes, bags, pouches and labels themselves, see prices and delivery dates instantly, have every job checked by a prepress team, and have it produced by a network of partner factories that Packio vets and quality-controls.",
+    "lead": "We believe a small brand deserves a box that looks like a big one — without knowing a printer, waiting for quotes, or guessing how the job will turn out.",
+    "sections": [
+      {
+        "title": "What we do",
+        "body": "Packio is one place from design to delivery: a library of box styles that can really be made, a design studio on a 3D box, prices that follow your spec at once, a prepress team that checks every file before print, and production and delivery tracking at every stage. Every tax invoice and document is issued by Collective Group (Thailand)."
+      },
+      {
+        "title": "Where it is made",
+        "body": "We do not have one factory, but we control quality as if we did. Each kind of job goes to the partner factory best at it within a network we have vetted. Our people inspect and photograph every batch before the cartons are sealed, and Packio is the seller responsible to you for the job."
+      },
+      {
+        "title": "Why instant prices",
+        "body": "The price in the studio is the price you can order at, calculated from the board, size, quantity and print you chose, with nothing added later. Where a product cannot be priced instantly we say so and answer the quote within business hours."
+      },
+      {
+        "title": "For businesses",
+        "body": "A business account reorders in one click, has several approvers, separate branches and delivery addresses, credit terms on request, and brand assets shared across the team."
+      }
+    ],
+    "factsTitle": "Company facts",
+    "facts": {
+      "brand": "Service",
+      "company": "Operated by",
+      "where": "Service area",
+      "whereValue": "Nationwide, Thailand",
+      "contact": "Contact"
+    },
+    "ctaNetwork": "Our factory network",
+    "ctaGuarantee": "Our guarantee",
+    "ctaContact": "Contact us"
+  },
+  "partner": {
+    "title": "Become a partner factory",
+    "metaTitle": "Become a Packio partner factory — print and packaging jobs ready to produce",
+    "metaDescription": "For printers and packaging factories that want steady work: Packio sends jobs with checked files and approved proofs, with a system for job intake, production planning, QC, shipping and on-time payment. Apply here.",
+    "answer": "Packio partner factories receive jobs whose artwork the customer has approved and whose deposit is paid, through Packio's system: print-ready files, clear specs, an agreed ship date, and payment on a set schedule. Packio is the seller to the customer; the factory focuses on production and quality.",
+    "lead": "You produce; we find the customers, check the files and handle the paperwork — the job that reaches you is ready for the press.",
+    "benefitsTitle": "What partners get",
+    "benefits": [
+      {
+        "title": "Jobs ready to produce",
+        "body": "Every job has been file-checked by prepress and proof-approved by the customer, with the dieline, board spec, quantity and ship date."
+      },
+      {
+        "title": "A factory system in one place",
+        "body": "Job intake, production planning, stage logging, QC with photos and shipping, in an app that works on a phone on the shop floor, with roles for owner, planner, operators, QC, shipping and accounts."
+      },
+      {
+        "title": "Paid on time",
+        "body": "A first payment on job acceptance and the rest after delivery and the guarantee window, on terms agreed per factory, with statements and full tax documents."
+      },
+      {
+        "title": "Choose your level",
+        "body": "Publish full prices to take instant-quote jobs, publish some, or take quote-only jobs — set it to your capacity."
+      }
+    ],
+    "howTitle": "How to apply",
+    "how": [
+      {
+        "title": "Send your factory details",
+        "body": "What you produce, machines, capacity and delivery area."
+      },
+      {
+        "title": "Assessment and trial jobs",
+        "body": "Our team visits or assesses from samples, then runs one or two real jobs with you."
+      },
+      {
+        "title": "Set prices and start",
+        "body": "Set your rate table or use Packio's, open accounts for your team, and start taking jobs through the system."
+      }
+    ],
+    "ctaTitle": "Interested?",
+    "ctaBody": "Send your factory details to the partner team; we reply within business hours.",
+    "ctaContact": "Contact the partner team",
+    "ctaLogin": "Partner factory sign-in"
+  },
+  "legal": {
+    "terms": {
+      "title": "Terms of Service",
+      "metaDescription": "Terms and conditions for using Packio, operated by Collective Group (Thailand): ordering, prices, payment, proof approval, production, delivery, guarantee and claims.",
+      "sections": [
+        {
+          "title": "1. The provider",
+          "body": "Packio is provided by Collective Group (Thailand) (\"the Company\", \"we\"). The Company is the seller and issues tax invoices to customers directly. Using the site or placing an order means you accept these terms."
+        },
+        {
+          "title": "2. Accounts",
+          "body": "You identify yourself with a mobile number or a third-party account. You are responsible for what happens under your account and must tell us at once if you suspect unauthorised use. A business account may grant access to several members; its administrator is responsible for their actions."
+        },
+        {
+          "title": "3. Prices and quotes",
+          "body": "Prices are in Thai baht, include VAT and exclude delivery unless stated. An instantly calculated price is the price you can order at for that spec and quantity at that moment. Quotes and saved prices are valid to the date shown. If a price changes before you confirm, the new price is shown for you to confirm again."
+        },
+        {
+          "title": "4. Orders and proof approval",
+          "body": "An order takes effect when you confirm it on the checkout page. Printing starts only once you approve the proof and pay the stage due. You are responsible for the correctness of your artwork and text and for the rights to images, logos and fonts used. The Company checks technical print readiness but is not responsible for spelling or content you have approved."
+        },
+        {
+          "title": "5. Payment",
+          "body": "Pay through the methods shown at checkout: PromptPay QR, bank transfer, credit/debit card and instalments. An order may be split into stages shown before you confirm. Unpaid orders are cancelled automatically after the deadline. Business customers approved for credit terms pay as agreed."
+        },
+        {
+          "title": "6. Production and tolerances",
+          "body": "Print and packaging work carries industry-standard tolerances: the delivered quantity may be above or below the ordered quantity within the range shown on the order (charged at the actual quantity), dimensions may vary within the range shown, and printed colours may differ from a screen. Production days are business days after proof approval and payment."
+        },
+        {
+          "title": "7. Delivery and receipt",
+          "body": "We deliver to the address you give; delivery charges are shown before you confirm. On receipt, please inspect the goods and confirm receipt on the order page. If you neither confirm nor report a problem within the window shown, the order is treated as complete."
+        },
+        {
+          "title": "8. Guarantee and claims",
+          "body": "If goods are defective in manufacture or damaged in transit, report it from the order page within the window shown, with photos of the goods and the shipping carton. The Company reviews it and offers a remedy such as a reprint, refund or store credit as set out on the guarantee page. Defects arising from artwork or content you approved are not covered."
+        },
+        {
+          "title": "9. Cancellation",
+          "body": "An order can be cancelled free of charge before production starts. Once production has started, cancellation depends on the stage reached and the costs incurred, which the team tells you first."
+        },
+        {
+          "title": "10. Intellectual property",
+          "body": "You keep ownership of designs, logos and content you create or upload, and grant the Company and its partner factories the right to use them to produce your order. Packio's box styles, design tools and software belong to the Company."
+        },
+        {
+          "title": "11. Personal data",
+          "body": "We collect and use personal data under our Privacy Notice and the Personal Data Protection Act B.E. 2562."
+        },
+        {
+          "title": "12. Limitation of liability",
+          "body": "The Company's liability for any order is limited to the value of that order. The Company is not liable for indirect loss, lost profit, or delay caused by events beyond its control."
+        },
+        {
+          "title": "13. Governing law",
+          "body": "These terms are governed by Thai law and disputes fall under the Thai courts. The Company may update these terms; the current version is shown on this page with its date."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy Notice (PDPA)",
+      "metaDescription": "Packio's privacy notice under Thailand's Personal Data Protection Act B.E. 2562, by Collective Group (Thailand): what we collect, why, the legal basis, who we share it with, how long we keep it, and your rights.",
+      "sections": [
+        {
+          "title": "1. Data controller",
+          "body": "Collective Group (Thailand), operator of Packio, is the controller of your personal data. Contact us about personal data through the contact page."
+        },
+        {
+          "title": "2. What we collect",
+          "body": "Account data (name, mobile number, email, customer type), tax-invoice details and delivery addresses, order data, payment data (we never store full card numbers; the payment provider processes them), artwork and designs you create, messages you exchange with the team, and site usage data according to your cookie choice."
+        },
+        {
+          "title": "3. Purposes and legal basis",
+          "body": "To perform the contract: taking orders, production, delivery, tax documents and after-sales service. To comply with the law: accounting, tax and record keeping. Legitimate interest: system security, fraud prevention and service improvement. With your consent: news and offers by email, LINE or SMS, and analytics cookies — withdrawable at any time under Account › Privacy."
+        },
+        {
+          "title": "4. Who we share it with",
+          "body": "Only as needed: the partner factory producing your order (recipient name, delivery address, artwork), carriers, payment providers, cloud and messaging providers, and public authorities where the law requires. We do not sell your personal data."
+        },
+        {
+          "title": "5. Transfers abroad",
+          "body": "Some service providers may store data outside Thailand. We select providers with adequate safeguards and data-processing agreements as the law requires."
+        },
+        {
+          "title": "6. Retention",
+          "body": "Account data is kept for the life of the account and for a period after closure for claims and disputes. Accounting and tax records are kept for the statutory period. Artwork and designs are kept so you can reorder, until you delete them."
+        },
+        {
+          "title": "7. Your rights",
+          "body": "You may access, copy, correct, delete, restrict, object, port and withdraw consent. Exercise them under Account › Privacy or by contacting us, and you may complain to the Personal Data Protection Committee office."
+        },
+        {
+          "title": "8. Security",
+          "body": "We use encryption in transit, role-based access control and access logging. Staff and partners see only the data their work needs."
+        },
+        {
+          "title": "9. Changes",
+          "body": "We may update this notice. For significant changes we tell you in the system and ask for consent again where the law requires."
+        }
+      ]
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "metaDescription": "Cookies used by the Packio website: essential cookies for sign-in and the cart, and analytics cookies enabled only with your consent, plus how to change your choice.",
+      "sections": [
+        {
+          "title": "What cookies are",
+          "body": "Cookies are small files a website stores in your browser to remember your sign-in and settings and to measure use."
+        },
+        {
+          "title": "Essential cookies",
+          "body": "Needed for the site to work: secure sign-in, the cart, your language and theme, and protection against attacks. These need no consent and cannot be turned off."
+        },
+        {
+          "title": "Analytics cookies",
+          "body": "Used to understand which pages are hard to use and improve the service. Enabled only when you accept in the cookie bar. The data is not identifying and is not used for advertising."
+        },
+        {
+          "title": "Changing your choice",
+          "body": "Change your consent at any time under Account › Privacy, or delete cookies in your browser settings."
+        }
+      ]
+    }
+  }
+}
