@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.49.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.50.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -19391,6 +19391,138 @@ export interface paths {
         get: operations["partner.erpLedger.listRules"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/rules/{ruleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A posting rule with its versions
+         * @description Every version newest first (the one in force flagged), what the document carries for the template and the purpose accounts (D-398).
+         *
+         *     Implements: D-388, D-398.
+         */
+        get: operations["partner.erpLedger.getRule"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/rules/{ruleId}/actions/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Try a template on the latest document
+         * @description Renders the template against the factory’s latest document of the rule’s kind without posting; lists what is wrong with it (D-398).
+         *
+         *     Implements: D-398.
+         */
+        post: operations["partner.erpLedger.previewRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/rules/{ruleId}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Propose a new rule version
+         * @description Waits for another person’s approval and is in force from its day; refused while another version waits, or when the template has problems or does not balance on the latest document (D-398).
+         *
+         *     Implements: D-398.
+         */
+        post: operations["partner.erpLedger.proposeRuleVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/rules/{ruleId}/versions/{versionId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a rule version
+         * @description Documents dated from its day post with it; never your own proposal (D-398).
+         *
+         *     Implements: D-398.
+         */
+        post: operations["partner.erpLedger.approveRuleVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/rules/{ruleId}/versions/{versionId}/actions/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a rule version
+         * @description The rule keeps the version in force (D-398).
+         *
+         *     Implements: D-398.
+         */
+        post: operations["partner.erpLedger.rejectRuleVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/ledger/rules/{ruleId}/versions/{versionId}/actions/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw your rule version
+         * @description Only the proposer, while it waits (D-398).
+         *
+         *     Implements: D-398.
+         */
+        post: operations["partner.erpLedger.withdrawRuleVersion"];
         delete?: never;
         options?: never;
         head?: never;
@@ -48276,6 +48408,22 @@ export interface components {
             /** @example open */
             status: components["schemas"]["PeriodStatus"];
         };
+        ErpGlConditionDto: {
+            /**
+             * @description A payload path (inside `forEach`, `item.<path>`)
+             * @example taxInvoice
+             */
+            field: string;
+            /** @example eq */
+            op: components["schemas"]["ErpGlConditionOp"];
+            /**
+             * @description `true` / `false` for a flag, a number, or text
+             * @example true
+             */
+            value: string;
+        };
+        /** @enum {string} */
+        ErpGlConditionOp: "eq" | "ne" | "gt" | "gte" | "lt" | "lte";
         ErpGlCreateAssetDto: {
             /** @example 2026-01-15 */
             acquiredOn: string;
@@ -48650,6 +48798,52 @@ export interface components {
              */
             note?: string | null;
         };
+        ErpGlPreviewDto: {
+            /** @example true */
+            balanced: boolean;
+            /** @example รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด */
+            description: string;
+            lines: components["schemas"]["ErpGlPreviewLineDto"][];
+            /**
+             * @description What is wrong with the template (empty = fine)
+             * @example []
+             */
+            problems: string[];
+            /**
+             * Format: date-time
+             * @example 2026-10-13T10:00:00+07:00
+             */
+            sampleAt: string | null;
+            /**
+             * @description The document the preview used (the latest of its kind); null when there is none yet
+             * @example GR-2610-0003
+             */
+            sampleNo: string | null;
+            /** @example 12500.00 */
+            totalCredit: string;
+            /** @example 12500.00 */
+            totalDebit: string;
+        };
+        ErpGlPreviewLineDto: {
+            /** @example 1141 */
+            accountCode: string;
+            /**
+             * @description null when the code is not in the chart
+             * @example วัตถุดิบ
+             */
+            accountName: string | null;
+            /** @example 12500.00 */
+            amount: string;
+            /** @example null */
+            description: string | null;
+            /** @example debit */
+            side: components["schemas"]["LedgerSide"];
+            /** @example null */
+            taxCode: components["schemas"]["TaxCode"] | null;
+        };
+        ErpGlPreviewRuleDto: {
+            template: components["schemas"]["ErpGlTemplateDto"];
+        };
         ErpGlProfitAndLossDto: {
             /** @example 180000.00 */
             costOfSales: string;
@@ -48686,6 +48880,17 @@ export interface components {
             proposed?: components["schemas"]["ErpGlAccountProposalDto"];
             /** @example แยกหมึกพิมพ์ออกจากวัสดุสิ้นเปลือง */
             reason: string;
+        };
+        ErpGlProposeRuleVersionDto: {
+            /**
+             * Format: date
+             * @description In force from this day (Bangkok); today or later
+             * @example 2026-11-01
+             */
+            effectiveFrom: string;
+            /** @example แยกค่าขนส่งขาเข้าไปบัญชีค่าขนส่ง */
+            reason: string;
+            template: components["schemas"]["ErpGlTemplateDto"];
         };
         ErpGlRecurringDto: {
             /** @example false */
@@ -48742,6 +48947,35 @@ export interface components {
             /** @example กลับรายการค่าเช่าที่บันทึกซ้ำ */
             reason: string;
         };
+        ErpGlRuleDetailDto: {
+            /** @example Goods receipt: inventory at cost excl. VAT against GR/IR clearing */
+            description: string;
+            /** @example erp_goods_receipt.posted */
+            eventType: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f608
+             */
+            id: string;
+            /** @example F01 */
+            key: string;
+            /** @example รับสินค้าเข้าคลัง */
+            name: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /**
+             * @description Purpose accounts readable as `accounts.<key>`
+             * @example [
+             *       "grir",
+             *       "payables",
+             *       "inputVat"
+             *     ]
+             */
+            purposes: string[];
+            /** @description What the payload carries for this rule */
+            variables: components["schemas"]["ErpGlRuleVariableDto"][];
+            /** @description Newest first */
+            versions: components["schemas"]["ErpGlRuleVersionDto"][];
+        };
         ErpGlRuleDto: {
             /**
              * @description Literal account codes the template posts to
@@ -48769,6 +49003,11 @@ export interface components {
             key: string;
             /** @example รับสินค้าเข้าคลัง */
             name: string;
+            /**
+             * @description A new version waits for approval
+             * @example false
+             */
+            pending: boolean;
             /** @description The template of the version in force */
             template: {
                 [key: string]: unknown;
@@ -48778,6 +49017,53 @@ export interface components {
              * @example 1
              */
             versionNo: number | null;
+        };
+        ErpGlRuleVariableDto: {
+            /** @example amount */
+            kind: components["schemas"]["ErpGlVariableKind"];
+            /** @example มูลค่าสินค้าไม่รวมค่าใช้จ่ายนำเข้า */
+            label: string;
+            /** @example goodsValue */
+            path: string;
+        };
+        ErpGlRuleVersionDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-14T09:00:00+07:00
+             */
+            createdAt: string;
+            /** @example ฝ่ายบัญชีโรงงาน ทดสอบ */
+            createdBy: string | null;
+            /**
+             * @description The approved version in force now
+             * @example true
+             */
+            current: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-10-14T10:00:00+07:00
+             */
+            decidedAt: string | null;
+            /** @example เจ้าของโรงงาน ทดสอบ */
+            decidedBy: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-14T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f608
+             */
+            id: string;
+            nextActions: components["schemas"]["NextActionDto"][];
+            /** @example แยกค่าขนส่งขาเข้าไปบัญชีค่าขนส่ง */
+            reason: string;
+            /** @example approved */
+            status: components["schemas"]["ConfigVersionStatus"];
+            template: components["schemas"]["ErpGlTemplateDto"];
+            /** @example 2 */
+            versionNo: number;
         };
         ErpGlSaveAssetCategoryDto: {
             /** @example 1239 */
@@ -49033,6 +49319,60 @@ export interface components {
             /** @example null */
             reference: string | null;
         };
+        ErpGlTemplateDto: {
+            /**
+             * @description Entry text; `{path}` reads the payload
+             * @example รับสินค้า {documentNo} — {partnerName}
+             */
+            description: string;
+            lines: components["schemas"]["ErpGlTemplateLineDto"][];
+        };
+        ErpGlTemplateLineDto: {
+            /**
+             * @description A fixed account — or `accountPath`
+             * @example 1141
+             */
+            accountCode?: string | null;
+            /**
+             * @description An account the document gives (`accounts.<purpose>`, `cashAccount`, `item.inventoryAccount`, …)
+             * @example accounts.grir
+             */
+            accountPath?: string | null;
+            /**
+             * @description Amount expression: payload paths, numbers, + - * / ( ), round/min/max/abs; a negative result posts on the other side
+             * @example goodsValue
+             */
+            amount: string;
+            /**
+             * @description Line text; `{path}` reads the payload
+             * @example null
+             */
+            description?: string | null;
+            /**
+             * @description Dimension → payload path (kept as the rule had them)
+             * @example {
+             *       "item": "item.itemId"
+             *     }
+             */
+            dimensions?: {
+                [key: string]: string;
+            };
+            /**
+             * @description Repeat the line for every element of this list (`movements`, `lines`); the element is `item`
+             * @example null
+             */
+            forEach?: string | null;
+            /** @example debit */
+            side: components["schemas"]["LedgerSide"];
+            /**
+             * @description Tax base expression (with a tax code)
+             * @example null
+             */
+            taxBase?: string | null;
+            taxCode?: components["schemas"]["TaxCode"] | null;
+            /** @description Post the line only when this holds */
+            when?: components["schemas"]["ErpGlConditionDto"] | null;
+        };
         ErpGlTrialBalanceDto: {
             /**
              * @description Debits equal credits
@@ -49074,6 +49414,8 @@ export interface components {
              */
             opening: string;
         };
+        /** @enum {string} */
+        ErpGlVariableKind: "amount" | "account" | "text" | "flag" | "list";
         ErpGoodsReceiptDto: {
             /** @example คลัง ทดสอบ */
             by: string;
@@ -219662,6 +220004,7 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
                      *         "key": "F01",
                      *         "name": "รับสินค้าเข้าคลัง",
+                     *         "pending": false,
                      *         "template": {
                      *           "description": "รับสินค้า {documentNo}",
                      *           "lines": []
@@ -219695,6 +220038,1292 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.getRule": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rule */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "description": "Goods receipt: inventory at cost excl. VAT against GR/IR clearing",
+                     *       "eventType": "erp_goods_receipt.posted",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *       "key": "F01",
+                     *       "name": "รับสินค้าเข้าคลัง",
+                     *       "nextActions": [],
+                     *       "purposes": [
+                     *         "grir",
+                     *         "payables",
+                     *         "inputVat"
+                     *       ],
+                     *       "variables": [
+                     *         {
+                     *           "kind": "amount",
+                     *           "label": "มูลค่าสินค้าไม่รวมค่าใช้จ่ายนำเข้า",
+                     *           "path": "goodsValue"
+                     *         },
+                     *         {
+                     *           "kind": "list",
+                     *           "label": "รายการเคลื่อนไหวสต็อก (ทีละบรรทัด)",
+                     *           "path": "movements"
+                     *         }
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *           "current": false,
+                     *           "decidedAt": null,
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "2026-11-01T00:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f623",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.approve"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.reject"
+                     *             }
+                     *           ],
+                     *           "reason": "แยกค่าขนส่งขาเข้าไปบัญชีค่าขนส่ง",
+                     *           "status": "proposed",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 2
+                     *         },
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": null,
+                     *           "current": true,
+                     *           "decidedAt": "2026-10-01T09:00:00+07:00",
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "1970-01-01T07:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *           "nextActions": [],
+                     *           "reason": "Template v2",
+                     *           "status": "approved",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlRuleDetailDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.previewRule": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlPreviewRuleDto"];
+            };
+        };
+        responses: {
+            /** @description The entry it would post */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "balanced": true,
+                     *       "description": "รับสินค้า GR-2610-0003 — บริษัท กระดาษ ทดสอบ จำกัด",
+                     *       "lines": [
+                     *         {
+                     *           "accountCode": "1141",
+                     *           "accountName": "วัตถุดิบ",
+                     *           "amount": "12500.00",
+                     *           "description": null,
+                     *           "side": "debit",
+                     *           "taxCode": null
+                     *         },
+                     *         {
+                     *           "accountCode": "2115",
+                     *           "accountName": "สินค้ารับแล้วรอใบแจ้งหนี้",
+                     *           "amount": "12500.00",
+                     *           "description": null,
+                     *           "side": "credit",
+                     *           "taxCode": null
+                     *         }
+                     *       ],
+                     *       "problems": [],
+                     *       "sampleAt": "2026-10-13T10:00:00+07:00",
+                     *       "sampleNo": "GR-2610-0003",
+                     *       "totalCredit": "12500.00",
+                     *       "totalDebit": "12500.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlPreviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.proposeRuleVersion": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlProposeRuleVersionDto"];
+            };
+        };
+        responses: {
+            /** @description Proposed */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "description": "Goods receipt: inventory at cost excl. VAT against GR/IR clearing",
+                     *       "eventType": "erp_goods_receipt.posted",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *       "key": "F01",
+                     *       "name": "รับสินค้าเข้าคลัง",
+                     *       "nextActions": [],
+                     *       "purposes": [
+                     *         "grir",
+                     *         "payables",
+                     *         "inputVat"
+                     *       ],
+                     *       "variables": [
+                     *         {
+                     *           "kind": "amount",
+                     *           "label": "มูลค่าสินค้าไม่รวมค่าใช้จ่ายนำเข้า",
+                     *           "path": "goodsValue"
+                     *         },
+                     *         {
+                     *           "kind": "list",
+                     *           "label": "รายการเคลื่อนไหวสต็อก (ทีละบรรทัด)",
+                     *           "path": "movements"
+                     *         }
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *           "current": false,
+                     *           "decidedAt": null,
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "2026-11-01T00:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f623",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.approve"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.reject"
+                     *             }
+                     *           ],
+                     *           "reason": "แยกค่าขนส่งขาเข้าไปบัญชีค่าขนส่ง",
+                     *           "status": "proposed",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 2
+                     *         },
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": null,
+                     *           "current": true,
+                     *           "decidedAt": "2026-10-01T09:00:00+07:00",
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "1970-01-01T07:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *           "nextActions": [],
+                     *           "reason": "Template v2",
+                     *           "status": "approved",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlRuleDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.ledger_version_pending`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.approveRuleVersion": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                ruleId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Approved */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "description": "Goods receipt: inventory at cost excl. VAT against GR/IR clearing",
+                     *       "eventType": "erp_goods_receipt.posted",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *       "key": "F01",
+                     *       "name": "รับสินค้าเข้าคลัง",
+                     *       "nextActions": [],
+                     *       "purposes": [
+                     *         "grir",
+                     *         "payables",
+                     *         "inputVat"
+                     *       ],
+                     *       "variables": [
+                     *         {
+                     *           "kind": "amount",
+                     *           "label": "มูลค่าสินค้าไม่รวมค่าใช้จ่ายนำเข้า",
+                     *           "path": "goodsValue"
+                     *         },
+                     *         {
+                     *           "kind": "list",
+                     *           "label": "รายการเคลื่อนไหวสต็อก (ทีละบรรทัด)",
+                     *           "path": "movements"
+                     *         }
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *           "current": false,
+                     *           "decidedAt": null,
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "2026-11-01T00:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f623",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.approve"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.reject"
+                     *             }
+                     *           ],
+                     *           "reason": "แยกค่าขนส่งขาเข้าไปบัญชีค่าขนส่ง",
+                     *           "status": "proposed",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 2
+                     *         },
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": null,
+                     *           "current": true,
+                     *           "decidedAt": "2026-10-01T09:00:00+07:00",
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "1970-01-01T07:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *           "nextActions": [],
+                     *           "reason": "Template v2",
+                     *           "status": "approved",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlRuleDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `erp.ledger_self_approval` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.rejectRuleVersion": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                ruleId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpGlDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Rejected */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "description": "Goods receipt: inventory at cost excl. VAT against GR/IR clearing",
+                     *       "eventType": "erp_goods_receipt.posted",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *       "key": "F01",
+                     *       "name": "รับสินค้าเข้าคลัง",
+                     *       "nextActions": [],
+                     *       "purposes": [
+                     *         "grir",
+                     *         "payables",
+                     *         "inputVat"
+                     *       ],
+                     *       "variables": [
+                     *         {
+                     *           "kind": "amount",
+                     *           "label": "มูลค่าสินค้าไม่รวมค่าใช้จ่ายนำเข้า",
+                     *           "path": "goodsValue"
+                     *         },
+                     *         {
+                     *           "kind": "list",
+                     *           "label": "รายการเคลื่อนไหวสต็อก (ทีละบรรทัด)",
+                     *           "path": "movements"
+                     *         }
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *           "current": false,
+                     *           "decidedAt": null,
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "2026-11-01T00:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f623",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.approve"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.reject"
+                     *             }
+                     *           ],
+                     *           "reason": "แยกค่าขนส่งขาเข้าไปบัญชีค่าขนส่ง",
+                     *           "status": "proposed",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 2
+                     *         },
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": null,
+                     *           "current": true,
+                     *           "decidedAt": "2026-10-01T09:00:00+07:00",
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "1970-01-01T07:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *           "nextActions": [],
+                     *           "reason": "Template v2",
+                     *           "status": "approved",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlRuleDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `erp.ledger_self_approval` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpLedger.withdrawRuleVersion": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                ruleId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Withdrawn */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "description": "Goods receipt: inventory at cost excl. VAT against GR/IR clearing",
+                     *       "eventType": "erp_goods_receipt.posted",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *       "key": "F01",
+                     *       "name": "รับสินค้าเข้าคลัง",
+                     *       "nextActions": [],
+                     *       "purposes": [
+                     *         "grir",
+                     *         "payables",
+                     *         "inputVat"
+                     *       ],
+                     *       "variables": [
+                     *         {
+                     *           "kind": "amount",
+                     *           "label": "มูลค่าสินค้าไม่รวมค่าใช้จ่ายนำเข้า",
+                     *           "path": "goodsValue"
+                     *         },
+                     *         {
+                     *           "kind": "list",
+                     *           "label": "รายการเคลื่อนไหวสต็อก (ทีละบรรทัด)",
+                     *           "path": "movements"
+                     *         }
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": "ฝ่ายบัญชีโรงงาน ทดสอบ",
+                     *           "current": false,
+                     *           "decidedAt": null,
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "2026-11-01T00:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f623",
+                     *           "nextActions": [
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.approve"
+                     *             },
+                     *             {
+                     *               "disabledReason": null,
+                     *               "irreversible": false,
+                     *               "key": "erp_rule_version.reject"
+                     *             }
+                     *           ],
+                     *           "reason": "แยกค่าขนส่งขาเข้าไปบัญชีค่าขนส่ง",
+                     *           "status": "proposed",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 2
+                     *         },
+                     *         {
+                     *           "createdAt": "2026-10-14T09:00:00+07:00",
+                     *           "createdBy": null,
+                     *           "current": true,
+                     *           "decidedAt": "2026-10-01T09:00:00+07:00",
+                     *           "decidedBy": null,
+                     *           "effectiveFrom": "1970-01-01T07:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f608",
+                     *           "nextActions": [],
+                     *           "reason": "Template v2",
+                     *           "status": "approved",
+                     *           "template": {
+                     *             "description": "รับสินค้า {documentNo} — {partnerName}",
+                     *             "lines": [
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "item.inventoryAccount",
+                     *                 "amount": "item.value",
+                     *                 "description": null,
+                     *                 "forEach": "movements",
+                     *                 "side": "debit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               },
+                     *               {
+                     *                 "accountCode": null,
+                     *                 "accountPath": "accounts.grir",
+                     *                 "amount": "goodsValue",
+                     *                 "description": null,
+                     *                 "forEach": null,
+                     *                 "side": "credit",
+                     *                 "taxBase": null,
+                     *                 "taxCode": null,
+                     *                 "when": null
+                     *               }
+                     *             ]
+                     *           },
+                     *           "versionNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpGlRuleDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.invalid_status`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
