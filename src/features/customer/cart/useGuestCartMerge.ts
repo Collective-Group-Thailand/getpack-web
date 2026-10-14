@@ -6,7 +6,7 @@ import { browserApi } from "@/lib/api/browser";
 
 import { saveQuote } from "../configurator/pricing";
 import { editCart, type Cart } from "./cart-client";
-import { readGuestCart, removeGuestLine, type GuestCartLine } from "./guest-cart";
+import { markTriedLines, readGuestCart, readTriedLines, removeGuestLine, type GuestCartLine } from "./guest-cart";
 
 export interface GuestCartMerge {
   /** Lines being moved into the account's cart right now. */
@@ -31,7 +31,8 @@ export function useGuestCartMerge(enabled: boolean): GuestCartMerge {
 
   useEffect(() => {
     if (!enabled || started.current) return;
-    const lines = readGuestCart();
+    const tried = readTriedLines();
+    const lines = readGuestCart().filter((line) => !tried.has(line.id));
     if (lines.length === 0) return;
     started.current = true;
     // Reading this browser's storage is only possible after hydration, so the effect starts it.
@@ -59,6 +60,7 @@ export function useGuestCartMerge(enabled: boolean): GuestCartMerge {
           failed.push(line);
         }
       }
+      markTriedLines(failed.map((line) => line.id));
       setState({ merging: false, merged: cart ? { count, cart } : null, failed });
     })();
   }, [enabled]);
