@@ -20,12 +20,12 @@ export const needsLibrary = (styleId: unknown) => typeof styleId === "string" &&
 
 /**
  * The recipe of a base whose variant has exactly these options (as `StylePreview3D` finds it), and
- * the parameter values that make the variant — or `null` when the engine draws none.
+ * the parameter values and engine variant key that make it — or `null` when the engine draws none.
  */
 export async function recipeOfVariant(
   base: string,
   options: Record<string, unknown>,
-): Promise<{ recipe: StyleRecipe; values: ParamValues } | null> {
+): Promise<{ recipe: StyleRecipe; values: ParamValues; key: string } | null> {
   const { ALL_RECIPES } = await loadLibrary();
   const wanted = Object.entries(options).map(([axis, value]) => [axis, keyOf(value)] as const);
   for (const recipe of ALL_RECIPES.filter((r) => r.base === base)) {
@@ -35,7 +35,11 @@ export async function recipeOfVariant(
         Object.keys(v.axes).every((a) => options[a] !== undefined || a in (recipe.variant ?? {})),
     );
     if (variant)
-      return { recipe, values: { ...defaultsOf(recipe), ...presetsOf(recipe)[0]?.values, ...variant.values } };
+      return {
+        recipe,
+        values: { ...defaultsOf(recipe), ...presetsOf(recipe)[0]?.values, ...variant.values },
+        key: variant.key,
+      };
   }
   return null;
 }

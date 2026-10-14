@@ -17,6 +17,7 @@ import {
   mirrorDieline,
   PX_PER_MM,
   SPEC_VERSION,
+  type ParamValues,
 } from "@packio/dieline";
 import { setActiveStage } from "@/features/designer/active-stage";
 import { boardColour, fallbackMaterial, materialsFor, withMaterial } from "@/features/designer/catalog";
@@ -182,6 +183,10 @@ function useSize<T extends HTMLElement>() {
 export interface EditorSeed {
   style: BoxStyleId;
   dims: BoxDims;
+  /** The engine values that make a library variant (D-407): its closures, inserts, windows — the size still `dims`. */
+  values?: ParamValues;
+  /** The published variant the box is (D-407), priced and quoted as that variant. */
+  variant?: { baseCode: string; styleVariantCode: string } | null;
   materialId?: string | null;
   patternId?: string | null;
   productSlug?: string | null;
@@ -428,9 +433,10 @@ export default function Editor({
     return {
       specVersion: SPEC_VERSION,
       styleId: seed.style,
-      values: { ...seed.dims },
+      values: { ...seed.values, ...seed.dims },
       ...(chosen ? withMaterial(chosen, locale) : fallbackMaterial(seed.style)),
       patternId: seed.patternId ?? null,
+      ...(seed.variant ? { studio: { ...seed.variant } } : {}),
     };
   };
 

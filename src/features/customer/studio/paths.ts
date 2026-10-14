@@ -12,6 +12,11 @@ export interface StudioEntry {
   /** The engine style and inside size (mm), when the box is already known. */
   style?: string | null;
   dims?: { l: number; w: number; h: number } | null;
+  /**
+   * A published variant of the style library (D-407): its base and variant codes, and the engine
+   * variant (`variantKey`) of the recipe in `style` that draws it — the studio opens on that shape.
+   */
+  variant?: { base: string; code: string; key: string } | null;
   pattern?: string | null;
   material?: string | null;
   template?: string | null;
@@ -27,6 +32,11 @@ export function studioHref(entry: StudioEntry = {}): string {
     query.set("l", String(entry.dims.l));
     query.set("w", String(entry.dims.w));
     query.set("h", String(entry.dims.h));
+    if (entry.variant) {
+      query.set("base", entry.variant.base);
+      query.set("sv", entry.variant.code);
+      query.set("rv", entry.variant.key);
+    }
   }
   if (entry.pattern) query.set("pattern", entry.pattern);
   if (entry.material) query.set("material", entry.material);

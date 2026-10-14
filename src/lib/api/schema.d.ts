@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.54.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.56.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -74099,6 +74099,11 @@ export interface components {
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
             /**
+             * @description The product type the style is priced and quoted as (its RFQ form, `store.rfqs.getForm`); null while unmapped (D-407).
+             * @example folding_carton
+             */
+            productTypeCode: string | null;
+            /**
              * @description Only once Prepress verified it (D-211)
              * @example null
              */
@@ -74328,7 +74333,7 @@ export interface components {
             unitPrice: string;
         };
         /** @enum {string} */
-        StylePriceReason: "no_calculator" | "calculator_not_signed" | "option_not_priced";
+        StylePriceReason: "no_calculator" | "calculator_not_signed" | "option_not_priced" | "not_makeable";
         StylePriceRuleDto: {
             /** @example window */
             axis: string;
@@ -74395,7 +74400,7 @@ export interface components {
         /** @enum {string} */
         StyleProcessScope: "source_product_type" | "category" | "family" | "option";
         /** @enum {string} */
-        StylePublishReason: "retired" | "hidden" | "wave_not_open" | "no_product_type" | "no_recipe" | "recipe_not_approved" | "names_not_approved" | "not_makeable";
+        StylePublishReason: "retired" | "hidden" | "wave_not_open" | "no_product_type" | "no_recipe" | "recipe_not_approved" | "names_not_approved" | "not_makeable" | "not_drawable";
         StyleReasonCountDto: {
             /**
              * @description Active variants with this reason
@@ -309443,6 +309448,7 @@ export interface operations {
                      *       "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *       "partnersCount": null,
                      *       "pricePath": "instant",
+                     *       "productTypeCode": "folding_carton",
                      *       "referenceCode": null,
                      *       "sizeRanges": [
                      *         {
@@ -309592,6 +309598,7 @@ export interface operations {
                      *         "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *         "partnersCount": null,
                      *         "pricePath": "instant",
+                     *         "productTypeCode": "folding_carton",
                      *         "referenceCode": null,
                      *         "sizeRanges": [
                      *           {
