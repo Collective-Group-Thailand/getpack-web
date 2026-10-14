@@ -279,6 +279,19 @@
     "table": {
       "type": "Product type",
       "week": "Week of {date}"
+    },
+    "override": {
+      "change": "Change this week",
+      "title": "{type} capacity, week of {week}",
+      "body": "E.g. an overhaul, a long holiday or an extra shift — Packio books new jobs against this figure",
+      "capacity": "Capacity this week",
+      "reason": "Reason",
+      "reasonPlaceholder": "E.g. 2-day press overhaul",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saved": "Capacity changed",
+      "failed": "That didn't work — try again",
+      "invalid": "Enter a whole number and a reason of at least 3 characters"
     }
   },
   "samples": {
