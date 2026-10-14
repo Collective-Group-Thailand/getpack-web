@@ -37,10 +37,10 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+        <h1 className="text-title leading-tight">{t("title")}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
-      <section aria-labelledby="referral-code" className="border-border flex flex-col gap-3 rounded-2xl border p-5">
+      <section aria-labelledby="referral-code" className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-5">
         <h2 id="referral-code" className="text-muted text-sm font-medium">
           {t("yourCode")}
         </h2>
@@ -87,7 +87,7 @@ export default async function Page() {
             {counted.map(([key, status]) => (
               <li
                 key={key}
-                className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3"
+                className="bg-surface border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3"
               >
                 <StatusChip map={REFERRAL_STATUS} value={status} />
                 <span className="tabular-nums">{t("count", { count: referral.referrals[key] })}</span>
@@ -96,7 +96,7 @@ export default async function Page() {
           </ul>
         )}
         {referral.recent.length > 0 ? (
-          <div className="border-border mt-4 overflow-x-auto rounded-xl border">
+          <div className="bg-surface border-border mt-4 overflow-x-auto rounded-xl border">
             <table className="w-full text-sm">
               <caption className="sr-only">{t("recent")}</caption>
               <thead className="bg-bg-subtle text-muted text-xs">

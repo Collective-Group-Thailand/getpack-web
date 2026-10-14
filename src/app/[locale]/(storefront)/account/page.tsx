@@ -62,7 +62,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-[2rem] leading-tight">{t("greeting", { name: me.displayName })}</h1>
+        <h1 className="text-title leading-tight">{t("greeting", { name: me.displayName })}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
 

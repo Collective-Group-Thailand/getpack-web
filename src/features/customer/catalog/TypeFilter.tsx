@@ -23,7 +23,7 @@ export async function TypeFilter({
 }) {
   const [locale, t] = await Promise.all([getLocale(), getTranslations("catalog")]);
   return (
-    <details className="border-border rounded-xl border p-3 md:border-0 md:p-0" open>
+    <details className="border-border bg-surface rounded-xl border p-3 md:border-0 md:bg-transparent md:p-0" open>
       <summary className="cursor-pointer text-sm font-semibold md:cursor-default">{t("filters.type")}</summary>
       <nav aria-label={t("filters.type")} className="mt-2 flex flex-col gap-3">
         {tree.map((category) => (

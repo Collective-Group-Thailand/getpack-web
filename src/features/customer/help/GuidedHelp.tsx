@@ -102,7 +102,7 @@ export function GuidedHelp({
           </Heading>
           <ul className="flex flex-col gap-2">
             {result.styles.map((style) => (
-              <li key={style.slug} className="border-border flex gap-3 rounded-lg border p-3">
+              <li key={style.slug} className="bg-surface border-border flex gap-3 rounded-lg border p-3">
                 {style.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- catalogue image from the API
                   <img src={style.imageUrl} alt="" className="size-16 shrink-0 rounded object-cover" />

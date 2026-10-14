@@ -126,7 +126,7 @@ export function BasketDraft({ initial }: { initial: Basket }) {
             return (
               <li
                 key={item.id}
-                className="border-border flex flex-wrap items-start justify-between gap-3 rounded-xl border p-4"
+                className="bg-surface border-border flex flex-wrap items-start justify-between gap-3 rounded-xl border p-4"
               >
                 <div className="min-w-0">
                   <p className="font-medium">

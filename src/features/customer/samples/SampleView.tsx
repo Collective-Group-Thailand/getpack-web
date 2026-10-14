@@ -138,7 +138,7 @@ export function SampleView({ sample }: { sample: Sample }) {
       </section>
 
       {sample.status === "quoted" && sample.quotation ? (
-        <section aria-labelledby="sample-quote" className="border-border flex flex-col gap-2 rounded-xl border p-4">
+        <section aria-labelledby="sample-quote" className="bg-surface border-border flex flex-col gap-2 rounded-xl border p-4">
           <h2 id="sample-quote" className="text-lg font-semibold">
             {t("quoteTitle")}
           </h2>
@@ -219,7 +219,7 @@ export function SampleView({ sample }: { sample: Sample }) {
       ) : null}
 
       {sample.status === "approved" ? (
-        <section aria-labelledby="sample-bulk" className="border-border flex flex-col gap-3 rounded-xl border p-4">
+        <section aria-labelledby="sample-bulk" className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
           <h2 id="sample-bulk" className="text-lg font-semibold">
             {t("bulkTitle")}
           </h2>

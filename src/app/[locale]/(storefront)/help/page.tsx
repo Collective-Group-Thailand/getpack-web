@@ -65,7 +65,7 @@ export default async function Page() {
             <li key={topic.key}>
               <Link
                 href={topic.href}
-                className="border-border hover:border-primary flex h-full items-start gap-3 rounded-xl border p-4"
+                className="bg-surface border-border hover:border-primary flex h-full items-start gap-3 rounded-xl border p-4"
               >
                 <Icon name={topic.icon} size={20} className="text-primary mt-0.5 shrink-0" aria-hidden="true" />
                 <span>

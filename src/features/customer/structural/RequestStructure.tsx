@@ -13,7 +13,7 @@ import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 const SIZE = /^\d{1,4}(\.\d)?$/;
@@ -70,7 +70,7 @@ export function RequestStructure({ productTypes }: { productTypes: { value: stri
       }}
     >
       <Field label={t("productType")} required>
-        <Select value={type} onValueChange={setType} options={productTypes} />
+        <SearchableSelect value={type} onValueChange={setType} options={productTypes} />
       </Field>
       <Field label={t("description")} hint={t("descriptionHint")} required>
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} maxLength={4000} />

@@ -46,7 +46,7 @@ export async function BusinessDashboard({
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[2rem] leading-tight">{company.legalName}</h1>
+          <h1 className="text-title leading-tight">{company.legalName}</h1>
           <Badge tone={STATUS_TONE[company.status]}>{t(`status.${company.status}`)}</Badge>
         </div>
         <p className="text-muted text-sm">
@@ -87,7 +87,7 @@ export async function BusinessDashboard({
       ))}
 
       <div className="grid gap-4 md:grid-cols-3">
-        <section aria-labelledby="dash-credit" className="border-border rounded-xl border p-5">
+        <section aria-labelledby="dash-credit" className="bg-surface border-border rounded-xl border p-5">
           <h2 id="dash-credit" className="text-muted text-sm font-medium">
             {t("credit")}
           </h2>
@@ -109,7 +109,7 @@ export async function BusinessDashboard({
           )}
         </section>
         {company.receivables ? (
-          <section aria-labelledby="dash-owed" className="border-border rounded-xl border p-5">
+          <section aria-labelledby="dash-owed" className="bg-surface border-border rounded-xl border p-5">
             <h2 id="dash-owed" className="text-muted text-sm font-medium">
               {t("owed")}
             </h2>
@@ -126,7 +126,7 @@ export async function BusinessDashboard({
             </p>
           </section>
         ) : null}
-        <section aria-labelledby="dash-approvals" className="border-border rounded-xl border p-5">
+        <section aria-labelledby="dash-approvals" className="bg-surface border-border rounded-xl border p-5">
           <h2 id="dash-approvals" className="text-muted text-sm font-medium">
             {t("approvals")}
           </h2>

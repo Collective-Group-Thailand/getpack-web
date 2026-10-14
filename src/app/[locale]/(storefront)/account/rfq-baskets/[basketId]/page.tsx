@@ -42,7 +42,7 @@ export default async function Page({
       </Link>
       <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[2rem] leading-tight">{t("sentTitle", { code: basket.basketCode ?? "" })}</h1>
+          <h1 className="text-title leading-tight">{t("sentTitle", { code: basket.basketCode ?? "" })}</h1>
           <StatusChip map={RFQ_BASKET_STATUS} value={basket.status} size="md" />
         </div>
         <p className="text-muted text-sm">

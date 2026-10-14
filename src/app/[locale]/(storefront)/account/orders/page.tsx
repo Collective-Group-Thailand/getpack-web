@@ -76,7 +76,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
 
   return (
     <div>
-      <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+      <h1 className="text-title leading-tight">{t("title")}</h1>
       {placed ? (
         <Callout tone="success" live className="mt-4">
           {t("placed", { code: placed })}

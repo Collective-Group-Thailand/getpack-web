@@ -31,7 +31,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       <Link href="/cart" className="text-primary text-sm underline-offset-4 hover:underline">
         {t("backToCart")}
       </Link>
-      <h1 className="mt-2 text-2xl font-bold md:text-3xl">{t("title")}</h1>
+      <h1 className="text-title mt-2 leading-tight">{t("title")}</h1>
       {cart.items.some((item) => lineBlockers(item).length > 0) ? (
         <Callout tone="warning" className="mt-4">
           {t("cartNotReady")}

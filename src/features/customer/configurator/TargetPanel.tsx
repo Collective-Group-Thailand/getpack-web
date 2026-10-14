@@ -74,7 +74,7 @@ export function TargetPanel({
   const absolute = (value: string) => (value.startsWith("-") ? value.slice(1) : value);
 
   return (
-    <section aria-labelledby="target-title" className="border-border flex flex-col gap-3 rounded-2xl border p-4">
+    <section aria-labelledby="target-title" className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-4">
       <h3 id="target-title" className="font-semibold">
         {t("title", { target: format.thb(target), unit })}
       </h3>
@@ -105,7 +105,7 @@ export function TargetPanel({
         levers.data.levers.length > 0 ? (
           <ul className="grid gap-3 sm:grid-cols-2" aria-label={t("leversLabel")}>
             {levers.data.levers.map((lever) => (
-              <li key={lever.id} className="border-border flex flex-col gap-2 rounded-xl border p-3">
+              <li key={lever.id} className="bg-surface border-border flex flex-col gap-2 rounded-xl border p-3">
                 <p className="font-medium">{titleOf(lever)}</p>
                 <ul className="flex flex-col gap-1 text-sm tabular-nums">
                   {lever.steps.map((step) => (

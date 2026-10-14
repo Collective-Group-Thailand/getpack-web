@@ -153,7 +153,7 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
             </p>
             <ul className="hidden flex-col gap-0.5 lg:flex">{group.items.map(link)}</ul>
             {/* A phone: the same group, folded unless it holds this page. */}
-            <details open={holdsCurrent} className="border-border rounded-xl border lg:hidden">
+            <details open={holdsCurrent} className="bg-surface border-border rounded-xl border lg:hidden">
               <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
                 <span className="min-w-0 flex-1 truncate">{title}</span>
                 {group.items.some((item) => item.badge) ? (

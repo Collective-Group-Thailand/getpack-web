@@ -31,7 +31,7 @@ export function SampleDecision({
   const decide = (kind: SampleDecisionKind) => onDecide(kind, { checked, note: note.trim() });
 
   return (
-    <section aria-labelledby="sample-decide" className="border-border flex flex-col gap-4 rounded-xl border p-4">
+    <section aria-labelledby="sample-decide" className="bg-surface border-border flex flex-col gap-4 rounded-xl border p-4">
       <h2 id="sample-decide" className="text-lg font-semibold">
         {t("decideTitle")}
       </h2>

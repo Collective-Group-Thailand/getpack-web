@@ -397,7 +397,7 @@ export function CheckoutView({
           ) : (
             <ul className="flex flex-col gap-2 text-sm">
               {cart.items.map((item) => (
-                <li key={item.id} className="border-border rounded-lg border p-3">
+                <li key={item.id} className="bg-surface border-border rounded-lg border p-3">
                   <p className="font-medium">{productNameOf(locale, item.summary)}</p>
                   {item.destinations.map((destination) => (
                     <p key={destination.id} className="text-muted">
@@ -526,7 +526,7 @@ export function CheckoutView({
         <FormSection card step={step("schedule")} title={t("schedule.title")} description={t("schedule.hint")}>
           {data ? (
             data.paymentSchedule ? (
-              <ul className="border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
+              <ul className="bg-surface border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
                 {data.paymentSchedule.instalments.map((instalment) => (
                   <li key={instalment.seq} className="flex justify-between gap-3 tabular-nums">
                     <span>{pick(locale, instalment.labelTh, instalment.labelEn)}</span>

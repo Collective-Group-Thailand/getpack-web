@@ -153,7 +153,7 @@ export default async function SearchPage({
           <h2 id={`search-${group.key}`} className="text-muted text-sm font-medium">
             {group.title}
           </h2>
-          <ul className="divide-border border-border mt-3 divide-y rounded-xl border">
+          <ul className="bg-surface divide-border border-border mt-3 divide-y rounded-xl border">
             {group.hits.map((hit) => (
               <li key={hit.key}>
                 <Link

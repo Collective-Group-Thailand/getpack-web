@@ -18,7 +18,7 @@ export default async function Page() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10">
       <header>
-        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+        <h1 className="text-title leading-tight">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       {kits.length === 0 ? (
@@ -27,7 +27,7 @@ export default async function Page() {
         <>
           <ul className="grid gap-4 md:grid-cols-2">
             {kits.map((kit) => (
-              <li key={kit.code} className="border-border rounded-xl border p-5">
+              <li key={kit.code} className="bg-surface border-border rounded-xl border p-5">
                 <h2 className="text-lg font-semibold">{kit.name}</h2>
                 <p className="text-primary mt-1 font-medium">
                   {kit.price === "0.00" ? t("free") : format.thb(kit.price)}
