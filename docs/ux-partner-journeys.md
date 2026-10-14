@@ -16,7 +16,7 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | 4 | Quality: checks, NCRs, templates | **done** (web `feat/ux-round4-quality`) |
 | 5 | Sales: CRM, quotations, sales orders, deliveries | **done** (web `feat/ux-round5-sales`) |
 | 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | **done** (web `feat/ux-round6-finance`, API v0.52.0) |
-| 7 | The books: ledger, journals, reports, accounts, assets, bank | |
+| 7 | The books: ledger, journals, reports, accounts, assets, bank | **done** (web `feat/ux-round7-books`) |
 | 8 | Insight: dashboard, costs, profit, OEE | |
 | 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | |
 
@@ -118,3 +118,22 @@ Already good and kept: invoices from deliveries or orders with the tax-invoice s
 with allocation, payables with the 3-way match and WHT at payment, 50 ทวิ, the payout schedule per order (advance,
 balance, retention) and the statement of account, factory prices with proposals, the shipping rate card with its
 pending version.
+
+## Round 7 — the books
+
+**Walked as** the accountant closing October (periods, journals, a manual entry, reports, chart, assets, bank).
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 7.1 | The periods list started with November and December (opened ahead, empty) and named months "2026-10"; nothing said which month to close next. | Months up to this one only, named "ต.ค. 2569", with "เดือนนี้" and "ถึงเวลาปิดงวด" on the oldest open month before it. |
+| 7.2 | The monthly returns table was a dead end. | Each return opens its tax report for the month (PP30 summary, PND.3 / 53). |
+| 7.3 | The close checklist said "ยังไม่ผ่าน" without saying how to put it right, in a narrow column. | A full-width checklist; each failing check says what usually causes it (e.g. stock held before the ledger start needs an opening journal) and links to where it is fixed (stock value, payables aging, receivables, tax, bank, assets, production orders). |
+| 7.4 | Journals could be filtered by month and account only by editing the address. | A month and account-code filter with "clear"; entry numbers, dates and kinds no longer break over two lines. |
+| 7.5 | An entry's rule and accounts were plain text. | The rule opens its versions; each account opens its general ledger for the entry's month. |
+| 7.6 | An unbalanced manual journal meant working out the difference by hand. | "ใส่ยอดที่ขาดให้สมดุล" puts the difference on the lighter side (a blank line there, else a new line). |
+| 7.7 | Cash in hand below zero showed as an ordinary figure. | Shown in red with "ติดลบ — มีรายการขาดหรือผิด", opening the cash account's ledger. |
+| 7.8 | Fixed-asset numbers broke over lines; depreciation runs showed "2026-10" and a column of counts headed "asset name". | Month names, "รายการบัญชี" and "จำนวนสินทรัพย์" columns. |
+
+Already good and kept: the overview strip, maker-checker journals with reversal and auto-reversal, recurring journals,
+the trial balance → general ledger → entry → document drill-down, P&L / balance sheet / cash flow in the DBD layout,
+stock value vs. ledger, the chart with rule editor, bank import with auto-match and fees.
