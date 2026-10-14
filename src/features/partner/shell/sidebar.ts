@@ -340,9 +340,10 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
   ],
   factory_purchaser: ["today", "alerts", "purchasing", "rfqs", "stock", "tradingPartners", "payables", "documents", ...EVERYONE],
   // E3 (D-357): the maintenance crew — orders, plans, machines and the spare parts in stock.
-  factory_maintenance: ["alerts", "maintenance", "machines", "ncrs", "people", "stock", "documents", ...EVERYONE],
+  factory_maintenance: ["today", "alerts", "maintenance", "machines", "ncrs", "people", "stock", "documents", ...EVERYONE],
   // E4 (D-371): the sales desk — its customers and deals through to delivery, and what they owe.
   factory_sales: [
+    "today",
     "alerts",
     "crm",
     "quotations",
