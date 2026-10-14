@@ -18,6 +18,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
+import { FilePickButton } from "@/ui/components/FilePickButton";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -507,17 +508,13 @@ export function CheckRecordForm({ check, etag, canEdit }: { check: Check; etag: 
         <Textarea rows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
       </Field>
       <Field label={t("photos")} hint={photos.length ? photos.map((p) => p.name).join(", ") : t("photosHint")}>
-        <input
-          type="file"
+        <FilePickButton
+          label={t("addPhotos")}
           accept="image/*"
           multiple
           capture="environment"
-          aria-label={t("photos")}
-          disabled={uploading}
-          className="text-sm"
-          onChange={async (event) => {
-            const files = [...(event.target.files ?? [])];
-            if (!files.length) return;
+          loading={uploading}
+          onFiles={async (files) => {
             setUploading(true);
             try {
               const up = await Promise.all(files.map((file) => uploadFile("partner", file, "evidence", { factoryId })));

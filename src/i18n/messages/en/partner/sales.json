@@ -936,7 +936,9 @@
     "logoHint": "A PNG or JPG — save below after uploading",
     "logoSet": "A logo is set — upload another to change it",
     "logoUploaded": "Uploaded — save to use it",
-    "logoRemove": "Remove logo"
+    "logoRemove": "Remove logo",
+    "logoChoose": "Choose a logo",
+    "logoReplace": "Replace the logo"
   },
   "partner": {
     "entityType": "Taxpayer type",

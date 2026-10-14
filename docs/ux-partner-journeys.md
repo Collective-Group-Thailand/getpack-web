@@ -13,8 +13,8 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | 1 | The day's work: Today, alerts, jobs, floor, kiosk, QC, samples, shipping, claims, the shell | **done** (web `feat/ux-round1-daily`, API v0.51.0) |
 | 2 | Stock and buying: stock, purchasing, RFQs, trading partners | **done** (web `feat/ux-round2-supply`) |
 | 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | **done** (web `feat/ux-round3-plan`) |
-| 4 | Quality: checks, NCRs, templates | next |
-| 5 | Sales: CRM, quotations, sales orders, deliveries | |
+| 4 | Quality: checks, NCRs, templates | **done** (web `feat/ux-round4-quality`) |
+| 5 | Sales: CRM, quotations, sales orders, deliveries | next |
 | 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | |
 | 7 | The books: ledger, journals, reports, accounts, assets, bank | |
 | 8 | Insight: dashboard, costs, profit, OEE | |
@@ -72,3 +72,16 @@ tiles and low-stock view, purchase requests → orders, RFQ comparison, the supp
 Already good and kept: the planning overview and MRP shortages, the machine schedule with auto-plan, drag and lock, the
 maintenance orders and plans, machine pages with their kiosk and breakdown buttons, shifts / skills / work log, hours
 and closures.
+
+## Round 4 — quality
+
+**Walked as** QC (record a check on a tablet, a failed final check, its NCR to closure, templates).
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 4.1 | Adding photos to a check showed the browser's own English "Choose Files / No file chosen". Same on the document logo and the bank-statement import. | A picker button in the app's words ("ถ่ายรูป / เลือกรูป" opens the camera on a tablet), in every one of the three places (`FilePickButton`). |
+| 4.2 | In a check's results, a failed point looked like a passed one. | Failed points in red, passed in green. |
+
+Already good and kept: the check form from its template (limits, pass / fail / n.a., counts, conditional result), the
+automatic NCR from a failed check with its link both ways, the NCR's cause → correction → prevention → disposition →
+verification, the COA, templates with checkpoints.

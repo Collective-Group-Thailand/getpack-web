@@ -14,6 +14,7 @@ import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
+import { FilePickButton } from "@/ui/components/FilePickButton";
 import { Input, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
@@ -427,7 +428,10 @@ export function ImportStatement({ bank }: { bank: Bank }) {
         >
           <div className="grid gap-3">
             <Field label={t("file")}>
-              <Input type="file" accept=".csv,text/csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              <span className="flex flex-wrap items-center gap-2">
+                <FilePickButton label={t("chooseCsv")} accept=".csv,text/csv" icon="document" onFiles={([chosen]) => setFile(chosen ?? null)} />
+                {file ? <span className="text-muted text-sm">{file.name}</span> : null}
+              </span>
             </Field>
             <Field label={t("paste")}>
               <Textarea rows={6} value={text} placeholder={t("pastePlaceholder")} onChange={(e) => setText(e.target.value)} className="font-mono text-sm" />

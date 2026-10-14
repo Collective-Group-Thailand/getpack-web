@@ -122,7 +122,12 @@ export default async function CheckPage({ params }: { params: Promise<{ checkId:
                       : t("noteOnly"),
               },
               { key: "m", header: t("reading"), align: "end", cell: (row) => (row.measured ? `${trimZeros(row.measured)} ${row.unit ?? ""}` : "—") },
-              { key: "o", header: t("outcome"), cell: (row) => (row.outcome ? tOutcome(row.outcome) : "—") },
+              {
+                key: "o",
+                header: t("outcome"),
+                cell: (row) =>
+                  row.outcome ? <span className={row.outcome === "fail" ? "text-danger font-semibold" : row.outcome === "pass" ? "text-success" : undefined}>{tOutcome(row.outcome)}</span> : "—",
+              },
               { key: "note", header: t("note"), hideOnPhone: true, cell: (row) => row.note ?? "" },
             ]}
           />

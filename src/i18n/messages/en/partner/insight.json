@@ -191,7 +191,8 @@
       "photos": "Photos",
       "photosHint": "Up to 10 photos of defects or readings",
       "uploadFailed": "Could not upload the photo",
-      "save": "Save results"
+      "save": "Save results",
+      "addPhotos": "Take / choose photos"
     },
     "actions": {
       "overridden": "Result set",
