@@ -44,10 +44,7 @@
     "th": "ถาดลิ้นชักเลื่อนเข้าออกในปลอก ให้ความรู้สึกพรีเมียม เหมาะกับเครื่องประดับ ของขวัญ",
     "en": "A drawer sliding in a sleeve — a premium reveal for jewellery and gifts"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",
@@ -161,13 +158,6 @@
     "height": "height + 3 * t + 2 * C.DRAWER_CLEARANCE_MM"
   },
   "legacy": {
-    "patternKeys": [
-      "pid:31",
-      "mapping:10",
-      "folding-slide-box",
-      "pid:30",
-      "mapping:56",
-      "corrugate-slide"
-    ]
+    "patternKeys": ["pid:31", "mapping:10", "folding-slide-box", "pid:30", "mapping:56", "corrugate-slide"]
   }
 }

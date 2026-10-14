@@ -226,6 +226,13 @@
     },
     "options": [
       {
+        "value": "1x2",
+        "label": {
+          "th": "1 × 2",
+          "en": "1 × 2"
+        }
+      },
+      {
         "value": "2x2",
         "label": {
           "th": "2 × 2",
@@ -661,6 +668,54 @@
         "label": {
           "th": "มีป้ายหัว",
           "en": "Header card"
+        }
+      }
+    ]
+  },
+  "taper": {
+    "key": "taper",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ความสอบต่อด้าน",
+      "en": "Taper per side"
+    },
+    "help": {
+      "th": "ขอบบนกว้างกว่าก้นด้านละเท่านี้",
+      "en": "How much wider the rim is than the base on each side"
+    },
+    "min": 0,
+    "max": 80,
+    "step": 0.5
+  },
+  "pailHandle": {
+    "key": "pailHandle",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "หูหิ้ว",
+      "en": "Handle"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "die_cut",
+        "label": {
+          "th": "ช่องหิ้วไดคัทบนฝา",
+          "en": "Die-cut slot in the top flaps"
+        }
+      },
+      {
+        "value": "insert",
+        "label": {
+          "th": "รูสำหรับหูหิ้วลวด",
+          "en": "Holes for a wire handle"
         }
       }
     ]

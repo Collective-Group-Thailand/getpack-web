@@ -50,9 +50,7 @@
     "th": "กล่องแข็งสองชิ้นหุ้มกระดาษ ฝาครอบเต็มหรือบางส่วน เลือกหน้าต่าง รูดึง และตัวรองได้",
     "en": "A two-piece wrapped greyboard box with a full or partial lid; window, finger pull and insert are options"
   },
-  "materials": [
-    "rigid"
-  ],
+  "materials": ["rigid"],
   "params": [
     {
       "ref": "length",

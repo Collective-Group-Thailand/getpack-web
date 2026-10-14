@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "popcorn-box",
+  "base": "PK-SP-11",
+  "variant": {},
+  "category": "specialty",
+  "name": {
+    "th": "กล่องป๊อปคอร์นทรงสอบ",
+    "en": "Tapered popcorn box"
+  },
+  "description": {
+    "th": "กล่องทรงสอบปากบานก้นเรียบ ผนังติดกาวที่มุม สำหรับป๊อปคอร์นและขนม",
+    "en": "A tapered, open-top carton with a flat base and glued corners — for popcorn and snacks"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 50,
+      "max": 250
+    },
+    {
+      "ref": "width",
+      "min": 40,
+      "max": 200
+    },
+    {
+      "ref": "height",
+      "min": 60,
+      "max": 300
+    },
+    "taper",
+    "grain"
+  ],
+  "defaults": {
+    "length": 90,
+    "width": 70,
+    "height": 150,
+    "taper": 15,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "เล็ก 70 × 55 × 120",
+        "en": "Small 70 × 55 × 120"
+      },
+      "values": {
+        "length": 70,
+        "width": 55,
+        "height": 120
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "กลาง 90 × 70 × 150",
+        "en": "Medium 90 × 70 × 150"
+      },
+      "values": {
+        "length": 90,
+        "width": 70,
+        "height": 150
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ใหญ่ 110 × 85 × 180",
+        "en": "Large 110 × 85 × 180"
+      },
+      "values": {
+        "length": 110,
+        "width": 85,
+        "height": 180
+      }
+    }
+  ],
+  "body": {
+    "module": "taperedTray",
+    "with": {
+      "top": "open"
+    }
+  },
+  "closedSize": {
+    "length": "length + 2 * taper",
+    "width": "width + 2 * taper",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length + 2 * taper",
+    "width": "width + 2 * taper",
+    "height": "height"
+  }
+}

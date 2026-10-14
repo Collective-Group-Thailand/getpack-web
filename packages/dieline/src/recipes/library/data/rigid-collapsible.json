@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "id": "rigid-collapsible",
+  "base": "PK-RG-04",
+  "variants": {
+    "closure_rigid": {
+      "none": {
+        "closureRigid": "none"
+      },
+      "magnetic": {
+        "closureRigid": "magnetic"
+      },
+      "ribbon": {
+        "closureRigid": "ribbon"
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "tray_lid",
+  "name": {
+    "th": "กล่องแข็งพับได้ (แม่เหล็ก)",
+    "en": "Collapsible rigid box"
+  },
+  "description": {
+    "th": "กล่องแข็งฝาพับติดหลัง ส่งแบบแบน ผนังตัวกล่องพับขึ้นรูปได้เอง ปิดด้วยแม่เหล็กหรือริบบิ้น",
+    "en": "A rigid box with a back-hinged lid that ships flat; the tray walls fold up on site; closes by magnet or ribbon"
+  },
+  "materials": ["rigid"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 450
+    },
+    {
+      "ref": "width",
+      "min": 50,
+      "max": 350
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 150
+    },
+    "closureRigid",
+    "insert",
+    "grain"
+  ],
+  "defaults": {
+    "length": 200,
+    "width": 150,
+    "height": 60,
+    "closureRigid": "none",
+    "insert": "none",
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 150 × 100 × 50",
+        "en": "S 150 × 100 × 50"
+      },
+      "values": {
+        "length": 150,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 200 × 150 × 60",
+        "en": "M 200 × 150 × 60"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 60
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 300 × 220 × 80",
+        "en": "L 300 × 220 × 80"
+      },
+      "values": {
+        "length": 300,
+        "width": 220,
+        "height": 80
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "rigidCase",
+    "with": {
+      "spine": "back"
+    }
+  },
+  "features": [
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "target": "base",
+        "floor": "t"
+      }
+    }
+  ],
+  "outerSize": {
+    "length": "length + 2 * t + 6",
+    "width": "width + 2.5 * t + 6.15",
+    "height": "height + 3.5 * t + 1.3"
+  },
+  "closedSize": {
+    "length": "length + 2 * t + 6",
+    "width": "width + 2 * t + 6",
+    "height": "height + 3 * t + 1"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "te-sealhang-crash",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "seal",
+    "tuck_bottom": "crash_lock"
+  },
+  "variants": {
+    "hang": {
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    },
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาปิดกาวมีหูแขวน ก้นล็อกอัตโนมัติ",
+    "en": "Seal top with hang tab, crash-lock bottom"
+  },
+  "description": {
+    "th": "หูแขวนตั้งบนขอบแผงหลัง ฝาบนปิดด้วยปีกหน้าเต็มความลึกทากาวกับปีกกันฝุ่น",
+    "en": "A hang tab stands on the back panel; the top closes with a full-depth front flap glued to the dust flaps"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius",
+    "hangerHeight",
+    "hangHole"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "hangHole": "euro"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "sealHang"
+    },
+    "bottom": {
+      "module": "crashLock"
+    }
+  },
+  "features": [
+    {
+      "module": "hangTab",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "window"
+    }
+  ]
+}

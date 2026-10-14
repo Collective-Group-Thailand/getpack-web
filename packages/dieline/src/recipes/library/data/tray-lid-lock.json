@@ -34,10 +34,7 @@
     "th": "ถาดมุมล็อกไม่ใช้กาว ฝาพับติดผนังหลังเสียบลิ้นด้านหน้า เลือกหน้าต่างบนฝาและตัวรองได้",
     "en": "A tray whose corners lock without glue, with a lid hinged on the back that tucks in at the front; lid window and insert are options"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",

@@ -1,5 +1,5 @@
 {
-  "definition": "12dbb72cc01d8e",
+  "definition": "008a408ad7f8be",
   "s · board-350": {
     "build": "137f6f82fc19f7",
     "hinges": "0e8195d16ec1e7",
@@ -177,6 +177,12 @@
   "s · board-350 · grain=along": {
     "build": "08f473c8fc5de1",
     "hinges": "0e8195d16ec1e7",
+    "validate": "15202279b28c9e",
+    "closed": "069d36fb7fb7a9"
+  },
+  "s · board-350 · partition=1x2": {
+    "build": "133fe567cf82d8",
+    "hinges": "1ae0e2bf71acb4",
     "validate": "15202279b28c9e",
     "closed": "069d36fb7fb7a9"
   },

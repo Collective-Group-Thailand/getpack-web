@@ -1,5 +1,5 @@
 {
-  "definition": "05fc52e2deda21",
+  "definition": "0a87dda556d597",
   "1lb · board-350": {
     "build": "0a9b2fa82d69da",
     "hinges": "1e07ab69c64715",
@@ -272,6 +272,30 @@
   },
   "1lb · board-350 · windowRadius>max": {
     "build": "0a9b2fa82d69da",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "1lb · board-350 · handles=none": {
+    "build": "0a9b2fa82d69da",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "1lb · board-350 · handles=side": {
+    "build": "0dd999831a96be",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "1lb · board-350 · handles=long": {
+    "build": "19172539daf38b",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "1lb · board-350 · handles=insert": {
+    "build": "198cc93b404a94",
     "hinges": "1e07ab69c64715",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"

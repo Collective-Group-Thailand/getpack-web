@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "id": "octagonal-bin",
+  "base": "PK-CB-02",
+  "category": "corrugated",
+  "name": {
+    "th": "ถังลูกฟูกแปดเหลี่ยม",
+    "en": "Octagonal bulk bin"
+  },
+  "description": {
+    "th": "ถังลูกฟูกแปดเหลี่ยมงานหนัก ก้นพับปิดด้วยลิ้นเสียบ พร้อมฝาครอบสี่เหลี่ยมแบบลึกเต็มหรือบางส่วน",
+    "en": "A heavy-duty eight-sided corrugated bin with a tucked flap bottom and a square telescope cap, full or partial depth"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "side",
+      "min": 150,
+      "max": 500
+    },
+    {
+      "ref": "height",
+      "min": 300,
+      "max": 1200
+    },
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "tuckCorners",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "lid",
+    "lidDepth"
+  ],
+  "defaults": {
+    "side": 300,
+    "height": 700,
+    "tuckCorners": "rounded",
+    "glueSide": "left",
+    "grain": "across",
+    "lid": "partial"
+  },
+  "presets": [
+    {
+      "id": "m",
+      "label": {
+        "th": "ด้าน 250 สูง 600",
+        "en": "Side 250, 600 high"
+      },
+      "values": {
+        "side": 250,
+        "height": 600
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ด้าน 350 สูง 800",
+        "en": "Side 350, 800 high"
+      },
+      "values": {
+        "side": 350,
+        "height": 800
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "with": {
+      "dims": {
+        "panel": "side + t * tan(pi / 8)",
+        "depth": "height + 2 * t",
+        "glue": "glueWidth ?? glueWidthFor(panel)"
+      },
+      "panels": [
+        {
+          "id": "side-1",
+          "label": "front",
+          "width": "panel"
+        },
+        {
+          "id": "side-2",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-3",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-4",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-5",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-6",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-7",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-8",
+          "label": "side",
+          "width": "panel"
+        }
+      ],
+      "depth": "depth",
+      "glue": "glue",
+      "glueRight": "glueSide == 'right'",
+      "grain": "side-1",
+      "root": "side-1",
+      "turn": 45
+    }
+  },
+  "closures": {
+    "bottom": {
+      "module": "polygonTuckLid",
+      "with": {
+        "sides": 8
+      }
+    }
+  },
+  "constraints": [
+    {
+      "id": "octagonal.tuck_depth",
+      "code": "tuck.too_deep",
+      "severity": "error",
+      "param": "tuckDepth",
+      "require": "(tuckDepth ?? tuckDepthFor(2 * side)) < height - 5",
+      "message": {
+        "th": "ลิ้นเสียบลึกเกินความสูงกล่อง",
+        "en": "The tuck is deeper than the box is tall"
+      }
+    }
+  ],
+  "closedSize": {
+    "length": "(1 + sqrt(2)) * side + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "width": "(1 + sqrt(2)) * side + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "height": "height + t"
+  },
+  "variant": {},
+  "features": [
+    {
+      "module": "telescopeLid",
+      "with": {
+        "length": "(1 + sqrt(2)) * side",
+        "width": "(1 + sqrt(2)) * side"
+      }
+    }
+  ],
+  "variants": {
+    "lid_depth": {
+      "full": {
+        "lid": "full"
+      },
+      "partial": {
+        "lid": "partial"
+      }
+    }
+  },
+  "outerSize": {
+    "length": "(1 + sqrt(2)) * side + 4 * t + 2 * C.LID_CLEARANCE_MM",
+    "width": "(1 + sqrt(2)) * side + 4 * t + 2 * C.LID_CLEARANCE_MM",
+    "height": "height + 3 * t"
+  }
+}

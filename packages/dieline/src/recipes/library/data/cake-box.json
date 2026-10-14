@@ -2,10 +2,19 @@
   "schemaVersion": 1,
   "id": "cake-box",
   "base": "PK-SP-07",
-  "variant": {
-    "handle": "none"
-  },
+  "variant": {},
   "variants": {
+    "handle": {
+      "none": {
+        "handles": "none"
+      },
+      "die_cut_handle": {
+        "handles": "side"
+      },
+      "insert_handle": {
+        "handles": "insert"
+      }
+    },
     "window": {
       "none": {
         "window": "none"
@@ -33,9 +42,7 @@
     "th": "ถาดติดกาวสำเร็จ ฝาพับติดผนังหลัง ขอบฝาติดกาวกางพร้อมใช้ เลือกหน้าต่างบนฝาได้",
     "en": "A ready-glued tray whose hinged lid pops up with it, lips glued; with an optional lid window"
   },
-  "materials": [
-    "paperboard"
-  ],
+  "materials": ["paperboard"],
   "params": [
     {
       "ref": "length",
@@ -77,7 +84,8 @@
     "windowHeight",
     "windowOffsetX",
     "windowOffsetY",
-    "windowRadius"
+    "windowRadius",
+    "handles"
   ],
   "defaults": {
     "length": 220,
@@ -90,7 +98,8 @@
     "windowHeight": 120,
     "windowOffsetX": 0,
     "windowOffsetY": 0,
-    "windowRadius": 6
+    "windowRadius": 6,
+    "handles": "none"
   },
   "presets": [
     {
@@ -145,6 +154,9 @@
   "features": [
     {
       "module": "trayWindow"
+    },
+    {
+      "module": "handHoles"
     }
   ],
   "outerSize": {

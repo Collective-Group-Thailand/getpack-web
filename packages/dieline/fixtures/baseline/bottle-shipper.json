@@ -1,5 +1,5 @@
 {
-  "definition": "0b1fa79241d3fe",
+  "definition": "009e448e4398de",
   "s · flute-e": {
     "build": "1a6789180b4c7e",
     "hinges": "1abe9fa0a3d5cc",
@@ -171,6 +171,12 @@
   "s · flute-e · grain=along": {
     "build": "1dd03963ec34af",
     "hinges": "1abe9fa0a3d5cc",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · flute-e · partition=1x2": {
+    "build": "0be2430b2411e7",
+    "hinges": "0ef762e67fab19",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },

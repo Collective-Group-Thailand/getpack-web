@@ -12,6 +12,12 @@
       },
       "round_hole": {
         "hangHole": "round"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
       }
     }
   },

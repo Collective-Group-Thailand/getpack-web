@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "food-pail",
+  "base": "PK-SP-08",
+  "variants": {
+    "handle": {
+      "none": {
+        "pailHandle": "none"
+      },
+      "die_cut_handle": {
+        "pailHandle": "die_cut"
+      },
+      "insert_handle": {
+        "pailHandle": "insert"
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "กล่องอาหารทรงถังพับ",
+    "en": "Food pail / noodle box"
+  },
+  "description": {
+    "th": "ถังกระดาษทรงสอบ ฝาบนพับปิดสี่ด้าน ผนังติดกาวที่มุม ใช้กระดาษสัมผัสอาหาร",
+    "en": "A tapered paper pail closed by four top flaps, glued at the corners; food-contact board"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 200
+    },
+    {
+      "ref": "width",
+      "min": 50,
+      "max": 160
+    },
+    {
+      "ref": "height",
+      "min": 60,
+      "max": 200
+    },
+    "taper",
+    "pailHandle",
+    "grain"
+  ],
+  "defaults": {
+    "length": 100,
+    "width": 80,
+    "height": 90,
+    "taper": 12,
+    "pailHandle": "none",
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "16oz",
+      "label": {
+        "th": "16 ออนซ์ 90 × 70 × 85",
+        "en": "16 oz 90 × 70 × 85"
+      },
+      "values": {
+        "length": 90,
+        "width": 70,
+        "height": 85
+      }
+    },
+    {
+      "id": "26oz",
+      "label": {
+        "th": "26 ออนซ์ 100 × 80 × 95",
+        "en": "26 oz 100 × 80 × 95"
+      },
+      "values": {
+        "length": 100,
+        "width": 80,
+        "height": 95
+      }
+    },
+    {
+      "id": "32oz",
+      "label": {
+        "th": "32 ออนซ์ 110 × 90 × 100",
+        "en": "32 oz 110 × 90 × 100"
+      },
+      "values": {
+        "length": 110,
+        "width": 90,
+        "height": 100
+      }
+    }
+  ],
+  "body": {
+    "module": "taperedTray",
+    "with": {
+      "top": "flaps"
+    }
+  },
+  "closedSize": {
+    "length": "length + 2 * taper",
+    "width": "width + 2 * taper",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length + 2 * taper",
+    "width": "width + 2 * taper",
+    "height": "height"
+  }
+}

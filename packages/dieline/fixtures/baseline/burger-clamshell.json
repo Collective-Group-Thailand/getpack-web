@@ -1,0 +1,147 @@
+{
+  "definition": "079c1ea20dba68",
+  "burger · board-350": {
+    "build": "0f898383a5dccc",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-450": {
+    "build": "1ed481a935eebf",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "meal · board-350": {
+    "build": "1d6000dd015c50",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "meal · board-450": {
+    "build": "0675df2c85e173",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · length=min": {
+    "build": "1f12392f6998f5",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · length=max": {
+    "build": "04cb97787531d7",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · length<min": {
+    "build": "04a196f59af221",
+    "hinges": "1e07ab69c64715",
+    "validate": "13b32fac8499ec",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · length>max": {
+    "build": "116b42b2df57ab",
+    "hinges": "1e07ab69c64715",
+    "validate": "0bd0022a26585d",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · width=min": {
+    "build": "0168e5acd8327f",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · width=max": {
+    "build": "1a063cf94f564c",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · width<min": {
+    "build": "0dbae735772188",
+    "hinges": "1e07ab69c64715",
+    "validate": "04fb7caf63d77e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · width>max": {
+    "build": "000ed7fabb6526",
+    "hinges": "1e07ab69c64715",
+    "validate": "12d95301466f9d",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · height=min": {
+    "build": "1ef016ae29eeeb",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · height=max": {
+    "build": "0ab29189a9e756",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · height<min": {
+    "build": "08e43d9739cf09",
+    "hinges": "1e07ab69c64715",
+    "validate": "0dfacfab4d4fc6",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · height>max": {
+    "build": "0362194f1e9b92",
+    "hinges": "1e07ab69c64715",
+    "validate": "0f6fb43bda6ebd",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · cornerLock=glued": {
+    "build": "0393ef6efa733b",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · cornerLock=lock": {
+    "build": "0f898383a5dccc",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · tuckDepth=min": {
+    "build": "14644f53e278ae",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · tuckDepth=max": {
+    "build": "022211dbf554e0",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · tuckDepth<min": {
+    "build": "1564dad5f96821",
+    "hinges": "1e07ab69c64715",
+    "validate": "1f64e335b5377c",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · tuckDepth>max": {
+    "build": "1fb02bd085918d",
+    "hinges": "1e07ab69c64715",
+    "validate": "0e378a7e3f8c74",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · grain=across": {
+    "build": "0f898383a5dccc",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "burger · board-350 · grain=along": {
+    "build": "0f392d595ec64c",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  }
+}
