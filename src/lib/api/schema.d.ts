@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.53.1) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.54.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -23341,6 +23341,28 @@ export interface paths {
          *     Implements: D-040, D-042, D-043, D-044, D-100.
          */
         post: operations["partner.priceLists.signOff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/price-list-versions/{versionId}/component-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Count the lines of each component in one of my price-list versions
+         * @description Every registered component with its line count (0 included), for the price screens (D-406). Own factory only (D-044).
+         *
+         *     Implements: D-040, D-042, D-043, D-044, D-406.
+         */
+        get: operations["partner.priceLists.componentCounts"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -62912,6 +62934,15 @@ export interface components {
         PriceColumnType: "decimal" | "integer" | "ref" | "text" | "boolean";
         /** @enum {string} */
         PriceComponent: "material_prices" | "paper_sheets" | "paper_sizes" | "paper_roll_widths" | "film_prices" | "foil_prices" | "print_prices" | "print_plates" | "print_blocks" | "ink_colours" | "finish_prices" | "finish_plates" | "diecut_prices" | "diecut_block_prices" | "assembly_prices" | "assembly_sheets" | "sortings" | "packing_prices" | "difficulty_levels" | "print_wastes" | "finish_wastes" | "diecut_wastes" | "assembly_wastes" | "semi_plate_wastes" | "paper_trims" | "print_type_terms" | "factory_margins" | "step_prices" | "code_margins" | "difficulty_margins" | "fix_cost_pcts" | "percent_reduces" | "standard_size_prices" | "stock_product_prices" | "service_prices" | "conditions" | "calculate_conditions" | "production_conditions" | "pattern_conditions" | "process_exclusions" | "spec_details" | "board_prices" | "corrugate_print_type_terms" | "corrugate_process_terms" | "corrugate_die_blocks" | "corrugate_print_prices" | "corrugate_diecut_prices" | "corrugate_assembly_prices" | "corrugate_pattern_conditions" | "fixed_options" | "label_print_type_terms" | "label_paper_sheets" | "label_roll_print_prices" | "label_diecut_prices" | "pouch_print_type_terms" | "pouch_material_prices" | "pouch_print_prices" | "pouch_option_prices" | "pouch_process_prices" | "pouch_min_quantities" | "pouch_factory_margins" | "pouch_option_rules" | "b_print_wastes" | "b_print_prices" | "b_assembly_prices";
+        PriceComponentCountDto: {
+            /** @example material_prices */
+            component: components["schemas"]["PriceComponent"];
+            /**
+             * @description Lines of this component in the version
+             * @example 12
+             */
+            lines: number;
+        };
         PriceComponentDto: {
             /** @example material_prices */
             component: components["schemas"]["PriceComponent"];
@@ -254323,6 +254354,109 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.priceLists.componentCounts": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Line counts per component */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "component": "material_prices",
+                     *         "lines": 12
+                     *       },
+                     *       {
+                     *         "component": "print_prices",
+                     *         "lines": 0
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["PriceComponentCountDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

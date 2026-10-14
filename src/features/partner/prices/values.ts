@@ -180,3 +180,50 @@ export function dimensionPhrase(
   }
   return parts.join(" · ");
 }
+
+/** An identifying column as the table shows it: a single column, or a from/to pair read as one range. */
+export type DimensionColumn =
+  | { key: string; kind: "single"; column: Schemas["PriceColumnDto"] }
+  | { key: string; kind: "range"; lower: Schemas["PriceColumnDto"]; upper: Schemas["PriceColumnDto"] };
+
+/** Pairs each from/to (min/max) column with its partner, where the first of the two stands. */
+export function pairDimensions(columns: Schemas["PriceColumnDto"][]): DimensionColumn[] {
+  const out: DimensionColumn[] = [];
+  const used = new Set<string>();
+  for (const column of columns) {
+    if (used.has(column.key)) continue;
+    const partner = BOUND.test(column.key)
+      ? columns.find((other) => other.key !== column.key && stemOf(other.key) === stemOf(column.key))
+      : undefined;
+    if (!partner) {
+      out.push({ key: column.key, kind: "single", column });
+      continue;
+    }
+    used.add(partner.key);
+    const [lower, upper] = isLower(column.key) ? [column, partner] : [partner, column];
+    out.push({ key: lower.key, kind: "range", lower, upper });
+  }
+  return out;
+}
+
+/** A from/to pair as one cell: "0–20", "≤ 499", "≥ 2,000", or `any` when both ends are open. */
+export function rangeText(
+  pair: Extract<DimensionColumn, { kind: "range" }>,
+  values: Values,
+  text: (column: Schemas["PriceColumnDto"], value: unknown) => string,
+  any: string,
+): string {
+  const open = (v: unknown) => v === null || v === undefined || v === "";
+  const from = values[pair.lower.key];
+  const to = values[pair.upper.key];
+  if (open(from) && open(to)) return any;
+  if (open(from)) return `≤ ${text(pair.upper, to)}`;
+  if (open(to)) return `≥ ${text(pair.lower, from)}`;
+  return `${text(pair.lower, from)}–${text(pair.upper, to)}`;
+}
+
+/** A from/to column's label without its "from" word: "กว้างบล็อกตั้งแต่ (นิ้ว)" → "กว้างบล็อก (นิ้ว)". */
+export const rangeLabel = (label: string) => label.replace(/\s*(ตั้งแต่|from)(?=\s*\(|$)/i, "").trim();
+
+/** A value column left empty: not charged this way (shown "—"). */
+export const isEmptyValue = (value: unknown) => value === null || value === undefined || value === "";

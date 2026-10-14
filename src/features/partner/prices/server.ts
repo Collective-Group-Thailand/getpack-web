@@ -77,3 +77,17 @@ export async function loadRows(factoryId: string, versionId: string, components:
     error: results[index]?.error,
   }));
 }
+
+/** Lines per component of one version (D-406); an empty map when the read fails — the screen still works. */
+export async function loadCounts(factoryId: string, versionId: string): Promise<Map<string, number>> {
+  const { contract } = await partnerServerApis();
+  const read = await attempt(
+    async () =>
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/price-list-versions/{versionId}/component-counts", {
+          params: { path: { factoryId, versionId } },
+        })
+      ).data ?? [],
+  );
+  return new Map((read.data ?? []).map((item) => [item.component, item.lines]));
+}
