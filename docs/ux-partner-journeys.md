@@ -14,8 +14,8 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | 2 | Stock and buying: stock, purchasing, RFQs, trading partners | **done** (web `feat/ux-round2-supply`) |
 | 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | **done** (web `feat/ux-round3-plan`) |
 | 4 | Quality: checks, NCRs, templates | **done** (web `feat/ux-round4-quality`) |
-| 5 | Sales: CRM, quotations, sales orders, deliveries | next |
-| 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | |
+| 5 | Sales: CRM, quotations, sales orders, deliveries | **done** (web `feat/ux-round5-sales`) |
+| 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | next |
 | 7 | The books: ledger, journals, reports, accounts, assets, bank | |
 | 8 | Insight: dashboard, costs, profit, OEE | |
 | 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | |
@@ -85,3 +85,16 @@ and closures.
 Already good and kept: the check form from its template (limits, pass / fail / n.a., counts, conditional result), the
 automatic NCR from a failed check with its link both ways, the NCR's cause → correction → prevention → disposition →
 verification, the COA, templates with checkpoints.
+
+## Round 5 — sales
+
+**Walked as** the sales desk (pipeline, a quotation to an order to a delivery) and the maintenance crew (its morning).
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 5.1 | The sales desk and the maintenance crew were sent past Today (to the pipeline, to the orders), so their inbox — quotations expiring, follow-ups due and late, drafts not confirmed; machines down — never showed. | Both open on Today like everyone else; the pipeline and the orders stay one tap away. |
+| 5.2 | Quotations and sales orders showed no total until saved. | The live estimate (before VAT, VAT, total) — the same component as purchase orders. |
+| 5.3 | "ใบส่งของ" opened on an empty list; the orders waiting to be delivered were on another screen. | Orders confirmed but not fully delivered are listed on top (delivered %, due day, late in red), each starting its delivery note. |
+
+Already good and kept: the CRM overview by stage and salesperson, leads → opportunities → quotations, the quotation and
+sales-order pages (credit limit, reservations, delivered / invoiced per line, PDFs), delivery notes.

@@ -135,6 +135,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
 
   it("gives the sales desk its customers and deals through to delivery and what they owe (D-371)", () => {
     expect(items("factory_sales")).toEqual([
+      "today",
       "alerts",
       "crm",
       "quotations",
@@ -150,10 +151,10 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "settings",
     ]);
     expect(partnerBottomItems("active", ["factory_sales"], grants("factory_sales")).map((i) => i.key)).toEqual([
+      "today",
       "crm",
       "quotations",
       "stock",
-      "deliveries",
     ]);
   });
 
@@ -180,6 +181,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "floor",
     ]);
     expect(items("factory_maintenance")).toEqual([
+      "today",
       "alerts",
       "stock",
       "maintenance",
@@ -193,7 +195,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     ]);
     expect(
       partnerBottomItems("active", ["factory_maintenance"], grants("factory_maintenance")).map((i) => i.key),
-    ).toEqual(["maintenance", "stock", "alerts"]);
+    ).toEqual(["today", "maintenance", "stock", "alerts"]);
     // Every item a role sees is one its permissions open (no menu that ends in a 403).
     for (const role of Object.keys(FACTORY_ROLE_GRANTS) as (keyof typeof FACTORY_ROLE_GRANTS)[])
       for (const key of items(role)) expect(sidebarItems("active", ["unknown_role"], grants(role))).toContain(key);
