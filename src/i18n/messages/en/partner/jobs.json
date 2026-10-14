@@ -250,7 +250,19 @@
       "seeSpec": "Check the spec and artwork before accepting"
     },
     "openIssues": "{count, plural, one {# open issue} other {# open issues}}",
-    "openIssuesLink": "Go to issues"
+    "openIssuesLink": "Go to issues",
+    "erpTitle": "In the factory system",
+    "erpBody": "The production order made from this job — plan, issue materials and record production there",
+    "erpOpen": "Open production order {no}",
+    "erpProgress": "{pct}% done",
+    "erpShort": "Materials still missing",
+    "erpReady": "Materials ready",
+    "erpNone": "No production order yet — one is made when the job is accepted",
+    "erpDue": "Due {date}",
+    "kindNote": {
+      "mockup": "A mock-up / sample of {quantity} before production — not the order's full quantity",
+      "reproduction": "A re-production of {quantity} for a claim — only the accepted quantity"
+    }
   },
   "capacity": {
     "title": "Weekly capacity",
@@ -420,6 +432,11 @@
     "due": "Due {date}",
     "status": "Status",
     "late": "Late",
-    "inspection": "Packio will inspect"
+    "inspection": "Packio will inspect",
+    "kinds": {
+      "production": "Production",
+      "mockup": "Mock-up / sample",
+      "reproduction": "Re-production (claim)"
+    }
   }
 }

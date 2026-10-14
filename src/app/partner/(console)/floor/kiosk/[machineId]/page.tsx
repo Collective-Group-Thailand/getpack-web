@@ -8,6 +8,7 @@ import { formatQty } from "@/features/partner/erp/format";
 import { OperationButtons } from "@/features/partner/erp/MoActions";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { KioskRefresh } from "@/features/partner/ops/KioskRefresh";
+import { KioskFullScreenButton, KioskScreen } from "@/features/partner/ops/KioskScreen";
 import { StatusChip } from "@/features/partner/status";
 import { getFormat } from "@/features/shared/format/server";
 import type { Schemas } from "@/lib/api/types";
@@ -110,6 +111,7 @@ export default async function KioskPage({ params }: { params: Promise<{ machineI
   );
 
   return (
+    <KioskScreen>
     <PartnerPage
       title={machine.name}
       description={t("queued", { n: machine.queued })}
@@ -118,6 +120,7 @@ export default async function KioskPage({ params }: { params: Promise<{ machineI
         <div className="flex flex-wrap items-center gap-2">
           <StatusChip map={ERP_MACHINE_STATE} value={machine.state} />
           <KioskRefresh />
+          <KioskFullScreenButton />
           {canReport && !blocked ? (
             <Button asChild size="xl" variant="destructive-solid" iconStart="wrench">
               <Link href={`/maintenance/new?machine=${machine.id}`}>{t("reportBreakdown")}</Link>
@@ -156,5 +159,6 @@ export default async function KioskPage({ params }: { params: Promise<{ machineI
         )}
       </PartnerSection>
     </PartnerPage>
+    </KioskScreen>
   );
 }

@@ -380,7 +380,9 @@
     "openJob": "เปิดงาน",
     "refresh": "รีเฟรช",
     "elapsed": "เริ่ม {at}",
-    "fullscreen": "เต็มจอ"
+    "fullscreen": "เต็มจอ",
+    "fullScreen": "เต็มจอ",
+    "exitFullScreen": "ออกจากเต็มจอ"
   },
   "machines": {
     "title": "เครื่องจักร",
