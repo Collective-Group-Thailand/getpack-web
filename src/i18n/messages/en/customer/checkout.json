@@ -35,8 +35,8 @@
     "new": "Add tax-invoice details"
   },
   "promotions": {
-    "title": "Promo codes",
-    "hint": "Up to 3 codes. Automatic promotions appear by themselves when they apply.",
+    "title": "Promo codes & promotions",
+    "hint": "Enter a code from Packio or a campaign — the discount shows in the summary right away",
     "code": "Promo code",
     "apply": "Apply",
     "remove": "Remove code {code}",
@@ -144,6 +144,7 @@
     "company_approval_required": "Over the company’s {threshold} threshold: the order waits for your company’s approver and goes to production once approved",
     "company_credit_order": "On a {termDays}-day credit term; {available} of credit left",
     "company_credit_unavailable": "The credit term cannot be used for this order; you can pay in advance as usual",
-    "other": "A note from the system ({code})"
+    "other": "A note from the system ({code})",
+    "discount_name": "Special discount"
   }
 }

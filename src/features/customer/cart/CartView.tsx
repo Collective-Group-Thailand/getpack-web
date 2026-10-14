@@ -27,6 +27,7 @@ import { geoName, type Address } from "../account/address";
 import { rfqHref } from "../catalog/paths";
 import { productNameOf, specLinesOf } from "../orders/summary";
 import { editCart, lineBlockers, readCart, type Cart, type CartItem } from "./cart-client";
+import { PromoCodeBox } from "./PromoCodeBox";
 import { useGuestCartMerge } from "./useGuestCartMerge";
 
 const AddressSheet = dynamic(() => import("./AddressSheet").then((module) => module.AddressSheet), { ssr: false });
@@ -184,6 +185,7 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
   const format = useFormat();
   const queryClient = useQueryClient();
   const [addressFor, setAddressFor] = useState<string | null>(null);
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   const cart = useQuery({ queryKey: cartKey, queryFn: readCart, initialData: initialCart }).data;
   const addresses = useQuery({
@@ -437,6 +439,35 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
             },
           ]}
           total={{ label: t("subtotal"), value: format.thb(cart.productGrossAmount), hint: t("atCheckout") }}
+        />
+        <PromoCodeBox
+          className="mt-4"
+          codes={cart.codes}
+          pending={mutate.isPending}
+          error={codeError}
+          onApply={async (code) => {
+            setCodeError(null);
+            try {
+              queryClient.setQueryData(
+                cartKey,
+                await editCart((ifMatch) =>
+                  api.POST("/v1/store/cart/codes", { params: { header: { "If-Match": ifMatch } }, body: { code } }),
+                ),
+              );
+            } catch (error) {
+              setCodeError(isApiError(error) ? error.detail : t("failed"));
+            }
+          }}
+          onRemove={(code) => {
+            setCodeError(null);
+            mutate.mutate(() =>
+              editCart((ifMatch) =>
+                api.DELETE("/v1/store/cart/codes/{code}", {
+                  params: { path: { code }, header: { "If-Match": ifMatch } },
+                }),
+              ),
+            );
+          }}
         />
         {blocked.length > 0 ? (
           <Callout tone="warning" className="mt-4" title={t("blockedTitle")}>
