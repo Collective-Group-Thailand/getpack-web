@@ -65,9 +65,20 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
             caption={t("views.rules")}
             rows={read.data}
             rowKey={(row) => row.id}
+            rowHref={(row) => `/ledger/accounts/rules/${row.id}`}
+            rowTone={(row) => (row.pending ? "warning" : undefined)}
             columns={[
               { key: "k", header: t("ruleKey"), primary: true, cell: (row) => <span className="font-mono">{row.key}</span> },
-              { key: "n", header: t("name"), cell: (row) => row.name },
+              {
+                key: "n",
+                header: t("name"),
+                cell: (row) => (
+                  <span className="flex flex-wrap items-center gap-1">
+                    <span>{row.name}</span>
+                    {row.pending ? <Badge tone="warning">{t("rulePending")}</Badge> : null}
+                  </span>
+                ),
+              },
               { key: "e", header: t("event"), hideOnPhone: true, cell: (row) => <span className="font-mono text-xs">{row.eventType}</span> },
               { key: "a", header: t("postsTo"), hideOnPhone: true, cell: (row) => <span className="font-mono text-xs">{row.accountCodes.join(" ") || "—"}</span> },
               { key: "v", header: t("version"), align: "end", hideOnPhone: true, cell: (row) => row.versionNo ?? "—" },
