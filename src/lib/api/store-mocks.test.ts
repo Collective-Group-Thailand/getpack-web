@@ -114,9 +114,9 @@ describe("the style library mock", () => {
     expect(found!.data.map((s) => s.code)).toContain("PK-CF-01");
   });
 
-  it("publishes a wave-1 style's variants as the engine draws them", async () => {
+  it("publishes a wave-1 style's variants as the engine draws them — all 183 buildable (D-408)", async () => {
     const { data } = await anonymous().GET("/v1/store/styles/{code}", { params: { path: { code: "PK-TE-01" } } });
-    expect(data!.variants).toHaveLength(147);
+    expect(data!.variants).toHaveLength(183);
     expect(data!.axes.map((a) => a.axis)).toEqual(["tuck_top", "tuck_bottom", "hang", "window"]);
   });
 

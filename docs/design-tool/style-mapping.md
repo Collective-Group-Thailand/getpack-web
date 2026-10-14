@@ -493,3 +493,28 @@ shows no 3D preview and the designer is not offered.
   strips 8 mm on the flap; paper bag turn-over 50 mm, bottom flaps half the gusset + 15 mm.
 - A pillow box is at most half as thick as it is wide (`pillow.too_thick`): beyond that its end
   lenses pass a half circle and the neighbouring flaps overlap (found by the property test, U3.4).
+
+### Library completion (D-408, 2026-10-15)
+
+**105 of 105 bases, 894 of 894 variants drawn.** The master file's `excluded_combinations` leave out 66 of the 960
+combinations no factory can build (straight tuck + hang tab 45; top windows where the top is open or not a face 13;
+seal / airplane tops on polygon cartons 8). Every remaining variant passes the variant and fold gates, and packio-api's
+strict `drawableBy` with the real engine (`v0.57.0`).
+
+| Base | Added | Recipes / modules |
+| --- | --- | --- |
+| PK-TE-01 | seal top under a hang tab (36) | `te-sealhang-{tuck,snap,crash,seal}`, closure `sealHang` (front flap covers the end; slotted flaps skip a zero-depth panel) |
+| PK-TE-02 | seal top, the lock on the bottom tuck (4) | `te2-seal`; `slitLock` places a bottom lid's slits on its tuck crease |
+| PK-TE-03 | new base (6) | `te3-double-wall`, `te3-double-wall-window` (front window on a single front wall) |
+| PK-TE-04 | new base (4) | `te4-partition` (reverse tuck, partition 1 × 2 / 2 × 2) |
+| PK-LB-01, PK-RG-01 | front window (16) | `lidAndBase`: below a partial lid's rim, or through the base and the turned-over full lid (aligned in 3D) |
+| PK-SL-02 | side window (4) | `sleeveAndDrawer`: through the sleeve side and the drawer's long wall |
+| PK-TR-05, PK-SP-07 | front window (3) | `trayWindow` `wall-front` |
+| PK-SP-07, PK-SP-16 | handles (8) | `handHoles` side / insert |
+| PK-SP-08, PK-SP-11 | new bases (4) | `food-pail`, `popcorn-box` on body `taperedTray` (trapezoid walls, corner glue flaps folded by the walls' dihedral, dust + meeting top flaps, die-cut or wire handle) |
+| PK-SP-09, PK-SP-17, PK-TG-03 | new bases (3) | `burger-clamshell`, `snack-tray`, `cup-carrier` |
+| PK-CB-02 | new base (2) | `octagonal-bin` (square telescope cap: `telescopeLid` takes the inside across as an expression) |
+| PK-RG-04 | new base (6) | `rigid-collapsible` (`rigidCase`, magnet / ribbon) |
+| PK-TG-01 | custom tag euro / sombrero (2) | `tag-custom` |
+
+⚠ As before, every new construction's clearances, flap depths and hole positions are "to be confirmed by Prepress".
