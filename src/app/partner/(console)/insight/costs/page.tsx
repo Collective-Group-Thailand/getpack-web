@@ -61,7 +61,7 @@ export default async function CostsPage({ searchParams }: { searchParams: Promis
             rowHref={(row) => `/insight/costs/${row.productionOrder.id}`}
             empty={<EmptyState icon="calculator" title={t("empty")} description={t("emptyBody")} />}
             columns={[
-              { key: "no", header: t("order"), primary: true, cell: (row) => <span className="font-mono">{row.productionOrder.number}</span> },
+              { key: "no", header: t("order"), primary: true, cell: (row) => <span className="font-mono whitespace-nowrap">{row.productionOrder.number}</span> },
               { key: "ti", header: t("product"), cell: (row) => row.item?.name ?? row.title },
               { key: "g", header: t("good"), align: "end", cell: (row) => formatQty(row.goodQty, format.locale) },
               { key: "m", header: t("material"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.material) },

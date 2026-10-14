@@ -45,17 +45,46 @@ export default async function DashboardPage() {
         ) : null
       }
     >
+      <PartnerSection title={t("packio")}>
+        <StatStrip
+          label={t("packio")}
+          items={[
+            {
+              key: "rev",
+              label: t("packioRevenue"),
+              value: format.thb(d.packio.confirmedNet),
+              hint: t("packioRevenueHint", { n: d.packio.confirmedStatements }),
+              href: "/insight/profit",
+            },
+            {
+              key: "confirm",
+              label: t("packioToConfirm"),
+              value: format.number(d.packio.toConfirm),
+              hint: t("packioToConfirmHint", { amount: format.thb(d.packio.toConfirmGross) }),
+              tone: d.packio.toConfirm ? "warning" : "success",
+              href: "/billing",
+            },
+            {
+              key: "invoice",
+              label: t("packioToInvoice"),
+              value: format.number(d.packio.toInvoice),
+              tone: d.packio.toInvoice ? "warning" : "success",
+              href: "/billing",
+            },
+          ]}
+        />
+      </PartnerSection>
       <PartnerSection title={t("money")}>
         <StatStrip
           label={t("money")}
           items={[
             {
               key: "sales",
-              label: t("sales"),
+              label: t("salesOwn"),
               value: format.thb(d.sales.invoicedNet),
               hint: d.sales.achievementPct ? t("ofTarget", { pct: pct(d.sales.achievementPct), target: format.thb(d.sales.target) }) : t("noTarget"),
               tone: d.sales.achievementPct && Number(d.sales.achievementPct) >= 100 ? "success" : "neutral",
-              href: "/insight/profit",
+              href: "/insight/profit?by=customer",
             },
             {
               key: "ar",

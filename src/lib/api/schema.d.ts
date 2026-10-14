@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.52.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.53.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -17678,9 +17678,9 @@ export interface paths {
         };
         /**
          * The owner’s dashboard
-         * @description Sales against target, receivables, payables due this week, stock value and low stock, production in progress and late, machines down and yesterday’s OEE, quality, follow-ups and alerts (D-378).
+         * @description Sales against target, receivables, payables due this week, stock value and low stock, production in progress and late, machines down and yesterday’s OEE, quality, follow-ups and alerts (D-378); work for Packio — statements confirmed this month, to confirm and without a tax invoice (D-402).
          *
-         *     Implements: D-378.
+         *     Implements: D-378, D-402.
          */
         get: operations["partner.erpInsight.dashboard"];
         put?: never;
@@ -18116,9 +18116,9 @@ export interface paths {
         };
         /**
          * Gross profit of the month
-         * @description Net invoiced less the cost of what was delivered, by sales order, customer or item (D-376).
+         * @description Net invoiced less the cost of what was delivered, by sales order, customer or item (D-376); or, `by=packio_job`, Packio jobs finished in the month: the purchase order’s net less the production order’s cost (D-402).
          *
-         *     Implements: D-376.
+         *     Implements: D-376, D-402.
          */
         get: operations["partner.erpInsight.profitability"];
         put?: never;
@@ -47475,6 +47475,8 @@ export interface components {
             machines: components["schemas"]["ErpDashMachinesDto"];
             /** @example 2026-10 */
             month: string;
+            /** @description Work for Packio (D-402) */
+            packio: components["schemas"]["ErpDashPackioDto"];
             payables: components["schemas"]["ErpDashPayablesDto"];
             production: components["schemas"]["ErpDashProductionDto"];
             quality: components["schemas"]["ErpDashQualityDto"];
@@ -47521,6 +47523,27 @@ export interface components {
             oeeYesterdayPct: string | null;
             /** @example 6 */
             total: number;
+        };
+        ErpDashPackioDto: {
+            /**
+             * @description Net of the Packio billing statements confirmed this month — the factory’s revenue from Packio (F14, D-397)
+             * @example 239951.41
+             */
+            confirmedNet: string;
+            /** @example 2 */
+            confirmedStatements: number;
+            /**
+             * @description Statements sent by Packio, waiting for the factory to check and confirm
+             * @example 2
+             */
+            toConfirm: number;
+            /** @example 44999.33 */
+            toConfirmGross: string;
+            /**
+             * @description Confirmed statements without the factory’s tax invoice (Packio pays once it is attached)
+             * @example 1
+             */
+            toInvoice: number;
         };
         ErpDashPayablesDto: {
             /**
@@ -51304,7 +51327,7 @@ export interface components {
         /** @enum {string} */
         ErpProductionStatusFilter: "planned" | "released" | "in_progress" | "completed" | "closed" | "cancelled" | "open";
         /** @enum {string} */
-        ErpProfitBy: "sales_order" | "customer" | "item";
+        ErpProfitBy: "sales_order" | "customer" | "item" | "packio_job";
         ErpProfitReportDto: {
             /** @example customer */
             by: components["schemas"]["ErpProfitBy"];
@@ -51330,7 +51353,7 @@ export interface components {
             grossProfit: string;
             /** @example 33.6 */
             grossProfitPct: string | null;
-            /** @description The sales order (code = number), customer or item (code = SKU) */
+            /** @description The sales order (code = number), customer, item (code = SKU) or, for `packio_job`, the production order (code = the Packio job number) */
             key: components["schemas"]["CodedRefDto"];
             /**
              * @description Net invoiced (issued, not voided) in the month
@@ -137622,6 +137645,13 @@ export interface operations {
                      *           "total": 6
                      *         },
                      *         "month": "2026-10",
+                     *         "packio": {
+                     *           "confirmedNet": "239951.41",
+                     *           "confirmedStatements": 2,
+                     *           "toConfirm": 2,
+                     *           "toConfirmGross": "44999.33",
+                     *           "toInvoice": 1
+                     *         },
                      *         "payables": {
                      *           "dueThisWeek": "56000.00",
                      *           "dueThisWeekCount": 4,
@@ -205791,6 +205821,13 @@ export interface operations {
                      *         "total": 6
                      *       },
                      *       "month": "2026-10",
+                     *       "packio": {
+                     *         "confirmedNet": "239951.41",
+                     *         "confirmedStatements": 2,
+                     *         "toConfirm": 2,
+                     *         "toConfirmGross": "44999.33",
+                     *         "toInvoice": 1
+                     *       },
                      *       "payables": {
                      *         "dueThisWeek": "56000.00",
                      *         "dueThisWeekCount": 4,
