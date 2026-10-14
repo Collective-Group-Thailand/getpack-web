@@ -241,6 +241,25 @@ export const seal = flapSet(
 );
 
 /**
+ * Seal end under a hang tab (PK-TE-01 `seal` + `hang`): the hang tab stands on the back panel's
+ * edge, so the front panel's flap is the outer one, covering the whole end, glued to the dust flaps.
+ */
+export const sealHang = flapSet(
+  "sealHang",
+  t("ปิดทากาว ใต้หูแขวน", "Seal end under a hang tab"),
+  {
+    depths: ["side", DUST, "0", DUST],
+    slot: "0",
+    labels: ["outer_flap", "dust_flap", "outer_flap", "dust_flap"],
+    kinds: ["lid", "dust_flap", "lid", "dust_flap"],
+    glue: [0],
+    stages: { front: 3 },
+    windowFlap: 0,
+  },
+  ["die_cut", "folder_gluer_straight"],
+);
+
+/**
  * A snap-lock ("1-2-3") bottom: the front and back flaps meet at the centre, the front one's
  * tongue passing into a notch in the back one; the side flaps fold in underneath. `tongue` and
  * `clearance` are expressions (legacy PatternArea pid 16 `b`: 3 / 5 / 10 mm by width).

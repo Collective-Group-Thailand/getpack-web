@@ -139,16 +139,18 @@ export function slottedFlaps(spec: SlottedFlapsSpec): Closure {
   return ({ panels, end }) => {
     const half = spec.slot / 2;
     const last = panels.length - 1;
-    const attachments: Attachment[] = panels.map((s, i) => {
+    // A panel with no flap (depth 0: a seal end's back under a hang tab) gets none.
+    const attachments: Attachment[] = panels.flatMap((s, i): Attachment[] => {
+      if (spec.depths[i] <= 0) return [];
       const a = i === 0 ? s.x0 : s.x0 + half;
       const b = i === last ? s.x1 : s.x1 - half;
       const d = spec.depths[i];
       const left = spec.slot === 0 && i > 0 ? spec.depths[i - 1] : Infinity;
       const right = spec.slot === 0 && i < last ? spec.depths[i + 1] : Infinity;
       const pts: Pt[] = [[a, 0]];
-      if (left < d - 1e-9) pts.push([a, -left]);
+      if (left < d - 1e-9 && left > 0) pts.push([a, -left]);
       pts.push([a, -d], [b, -d]);
-      if (right < d - 1e-9) pts.push([b, -right]);
+      if (right < d - 1e-9 && right > 0) pts.push([b, -right]);
       pts.push([b, 0]);
       const roles: EdgeRole[] = pts.map((_, k) => (k === pts.length - 1 ? "crease" : "cut"));
       const label = Array.isArray(spec.labels)
@@ -166,13 +168,15 @@ export function slottedFlaps(spec: SlottedFlapsSpec): Closure {
             "glue_area",
           )
         : [];
-      return {
-        face: face(idOf(end, `flap-${s.id}`), label, spec.kinds?.[i] ?? "flap", polygon(pts, roles), {
-          marks,
-          holes: spec.holes?.(i, a, b, d) ?? [],
-        }),
-        span: [a, b],
-      };
+      return [
+        {
+          face: face(idOf(end, `flap-${s.id}`), label, spec.kinds?.[i] ?? "flap", polygon(pts, roles), {
+            marks,
+            holes: spec.holes?.(i, a, b, d) ?? [],
+          }),
+          span: [a, b],
+        },
+      ];
     });
     return { attachments };
   };

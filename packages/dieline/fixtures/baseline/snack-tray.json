@@ -1,0 +1,147 @@
+{
+  "definition": "040efb447ef1f4",
+  "hotdog · board-350": {
+    "build": "03d9c3bdfa7fc8",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-450": {
+    "build": "0b0eaa4192fdc8",
+    "hinges": "1b4d003fdb4a62",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · flute-e": {
+    "build": "020b362b5aa90b",
+    "hinges": "1a505dfcc054e6",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · board-350": {
+    "build": "08e0057e5ce877",
+    "hinges": "0afc50d656d3f3",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · board-450": {
+    "build": "1261a9958ae194",
+    "hinges": "1aede1339045fd",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · flute-e": {
+    "build": "12b3449e8b5557",
+    "hinges": "06012d2ee9466c",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · length=min": {
+    "build": "0af0d4b5db4d26",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · length=max": {
+    "build": "135374e3298246",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · length<min": {
+    "build": "07510fa91ec983",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "13b32fac8499ec",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · length>max": {
+    "build": "1669469c434e14",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "0746f84b875b12",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · width=min": {
+    "build": "0b5c39f0d7c63c",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · width=max": {
+    "build": "1bdd682c60652b",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · width<min": {
+    "build": "037b12852641f9",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "05d92891346b3d",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · width>max": {
+    "build": "1be6d771adae59",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "17ecbcd743d993",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · height=min": {
+    "build": "137979ef9ba456",
+    "hinges": "08d4743847a6b4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · height=max": {
+    "build": "0430fccbd693da",
+    "hinges": "0d8ef6ba9bbed0",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · height<min": {
+    "build": "0215ba0884375d",
+    "hinges": "05a8be05c2e2bf",
+    "validate": "1c1d1b95b51779",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · height>max": {
+    "build": "0b7078ed738cbd",
+    "hinges": "03da819181d889",
+    "validate": "123d9a08b56959",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · cornerLock=glued": {
+    "build": "0f8ceb03f4bf65",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · cornerLock=lock": {
+    "build": "03d9c3bdfa7fc8",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · grain=across": {
+    "build": "03d9c3bdfa7fc8",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · grain=along": {
+    "build": "1ee1cd405e3e13",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · insert=none": {
+    "build": "052d1edc863db3",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "hotdog · board-350 · insert=die_cut": {
+    "build": "03d9c3bdfa7fc8",
+    "hinges": "0ce16336ec3dc4",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  }
+}

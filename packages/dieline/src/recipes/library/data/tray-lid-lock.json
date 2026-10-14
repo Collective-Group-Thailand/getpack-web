@@ -10,6 +10,10 @@
       "top_window": {
         "window": "rect",
         "windowPanel": "lid"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "wall-front"
       }
     },
     "insert": {
@@ -60,6 +64,13 @@
           "label": {
             "th": "บนฝา",
             "en": "Lid top"
+          }
+        },
+        {
+          "value": "wall-front",
+          "label": {
+            "th": "ผนังด้านหน้า",
+            "en": "Front wall"
           }
         }
       ]

@@ -168,9 +168,11 @@ export const slitLock: FeatureModule = {
     if (!lid) return out;
     const xs = lid.outline.flatMap((e) => [e.from[0], e.to[0]]);
     const ys = lid.outline.flatMap((e) => [e.from[1], e.to[1]]);
-    const [x0, x1, y] = [Math.min(...xs), Math.max(...xs), Math.min(...ys)];
+    const [x0, x1] = [Math.min(...xs), Math.max(...xs)];
+    // 2 mm from the lid's tuck crease: the top lid's is its upper edge, a bottom lid's (mirrored) its lower.
+    const y = end === "bottom" ? Math.max(...ys) - 3 : Math.min(...ys) + 2;
     const len = Math.min(10, (x1 - x0) / 6);
-    const slits = [0.2, 0.8].map((k) => rectangle(x0 + (x1 - x0) * k - len / 2, y + 2, len, 1));
+    const slits = [0.2, 0.8].map((k) => rectangle(x0 + (x1 - x0) * k - len / 2, y, len, 1));
     lid.holes = [...lid.holes, ...slits];
     return out;
   },

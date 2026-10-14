@@ -1,5 +1,5 @@
 {
-  "definition": "16e2410be82cbd",
+  "definition": "1f6b5313b36bc3",
   "jewellery · board-350": {
     "build": "009f4038c1d042",
     "hinges": "10ca9cf151ee45",
@@ -180,6 +180,12 @@
     "validate": "15202279b28c9e",
     "closed": "05d4749e240135"
   },
+  "jewellery · board-350 · windowPanel=sleeve-left": {
+    "build": "009f4038c1d042",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "05d4749e240135"
+  },
   "jewellery · board-350 · windowWidth=min": {
     "build": "009f4038c1d042",
     "hinges": "10ca9cf151ee45",
@@ -318,6 +324,12 @@
     "validate": "15202279b28c9e",
     "closed": "05d4749e240135"
   },
+  "jewellery · board-350 · window=rect@sleeve-left": {
+    "build": "0f03116426eb14",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "05d4749e240135"
+  },
   "jewellery · board-350 · window=rect:oversized": {
     "build": "07a4765d091afc",
     "hinges": "10ca9cf151ee45",
@@ -330,6 +342,12 @@
     "validate": "15202279b28c9e",
     "closed": "05d4749e240135"
   },
+  "jewellery · board-350 · window=rounded@sleeve-left": {
+    "build": "082a5213884505",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "05d4749e240135"
+  },
   "jewellery · board-350 · window=rounded:oversized": {
     "build": "1777ef0078cd36",
     "hinges": "10ca9cf151ee45",
@@ -340,6 +358,12 @@
     "build": "088e01e9c9113f",
     "hinges": "10ca9cf151ee45",
     "validate": "15202279b28c9e",
+    "closed": "05d4749e240135"
+  },
+  "jewellery · board-350 · window=ellipse@sleeve-left": {
+    "build": "0e891cfb541c8e",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15d5ae4dea7f7e",
     "closed": "05d4749e240135"
   },
   "jewellery · board-350 · window=ellipse:oversized": {
