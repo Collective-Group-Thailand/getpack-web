@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { TotalsEstimate } from "@/features/partner/erp/TotalsEstimate";
+
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { isZero, plainNumber, PRICE_PATTERN, QTY_PATTERN, trimZeros } from "@/features/partner/erp/format";
@@ -323,7 +325,7 @@ export function SalesDocForm({
           withFulfilment={kind === "salesOrder"}
         />
       )}
-      <p className="text-muted text-sm">{t("moneyNote")}</p>
+      <TotalsEstimate lines={lines} vatMode={vatMode} fallback={t("moneyNote")} />
       {kind === "salesOrder" ? (
         <Field label={t("shipTo")}>
           <Textarea rows={2} value={shipTo} onChange={(event) => setShipTo(event.target.value)} />
