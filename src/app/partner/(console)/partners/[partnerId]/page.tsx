@@ -7,6 +7,7 @@ import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/pa
 import { PartnerForm, PartnerStatusButton } from "@/features/partner/erp/PartnerForm";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
+import { queryOf } from "@/features/partner/erp/ui";
 import { StatStrip } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -16,6 +17,13 @@ import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 type Props = { params: Promise<{ partnerId: string }> };
+
+const dec = (v: string) => Number(v);
+/** Sums money strings in satang, so 0.1 + 0.2 stays 0.30. */
+const sum = (values: string[]) => {
+  const satang = values.reduce((total, v) => total + Math.round(Number(v) * 100), 0);
+  return (satang / 100).toFixed(2);
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerErp.partners"))("title") };
@@ -83,11 +91,34 @@ export default async function TradingPartnerPage({ params }: Props) {
             ).data!,
         )
       : null;
+  // What is open with this partner: what we owe them (supplier invoices) and what they owe us (sales invoices).
+  const [payables, receivables] = await Promise.all([
+    partner.kind !== "customer" && canAt(context, "factory_ap.read")
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/supplier-invoices", {
+                params: { path, query: { supplierId: partner.id, perPage: 100 } },
+              })
+            ).data!.data.filter((inv) => dec(inv.outstanding) > 0),
+        ).then((r) => r.data)
+      : null,
+    partner.kind !== "supplier" && canAt(context, "factory_receivables.read")
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-invoices", {
+                params: { path, query: { customerId: partner.id, perPage: 100 } },
+              })
+            ).data!.data.filter((inv) => dec(inv.openAmount) > 0),
+        ).then((r) => r.data)
+      : null,
+  ]);
   const pct = (value: string | null) => (value ? `${Number(value).toFixed(1)}%` : "—");
   const unit = (code: string) => tCommon(`units.${code}` as never);
   const canEdit = canAt(context, "factory_trading_partners.manage");
 
-  const tSales = await getTranslations("partnerSales.partner");
+  const [tSales, tOpen] = await Promise.all([getTranslations("partnerSales.partner"), getTranslations("partnerErp.partners.open")]);
   return (
     <PartnerPage
       wide
@@ -126,6 +157,31 @@ export default async function TradingPartnerPage({ params }: Props) {
         </>
       }
     >
+      {payables?.length || receivables?.length ? (
+        <PartnerSection title={tOpen("title")} description={tOpen("body")}>
+          <StatStrip
+            label={tOpen("title")}
+            items={[
+              ...(payables?.length
+                ? [
+                    { key: "ap", label: tOpen("weOwe"), value: format.thb(sum(payables.map((i) => i.outstanding))), hint: tOpen("invoices", { count: payables.length }), href: `/payables${queryOf({ q: partner.name })}` },
+                    ...(payables.some((i) => i.overdue)
+                      ? [{ key: "apLate", label: tOpen("overdue"), value: format.thb(sum(payables.filter((i) => i.overdue).map((i) => i.outstanding))), tone: "danger" as const }]
+                      : []),
+                  ]
+                : []),
+              ...(receivables?.length
+                ? [
+                    { key: "ar", label: tOpen("theyOwe"), value: format.thb(sum(receivables.map((i) => i.openAmount))), hint: tOpen("invoices", { count: receivables.length }), href: `/receivables${queryOf({ q: partner.name })}` },
+                    ...(receivables.some((i) => i.overdue)
+                      ? [{ key: "arLate", label: tOpen("overdue"), value: format.thb(sum(receivables.filter((i) => i.overdue).map((i) => i.openAmount))), tone: "danger" as const }]
+                      : []),
+                  ]
+                : []),
+            ]}
+          />
+        </PartnerSection>
+      ) : null}
       {card?.data ? (
         <PartnerSection title={tSourcing("scoreTitle")} description={tSourcing("scoreBody")}>
           <StatStrip
