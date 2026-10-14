@@ -39,6 +39,8 @@ export interface PriceDockProps {
   /** ⑤ — the dock's primary action. */
   onOrder: () => void;
   orderDisabled: boolean;
+  /** Why the order button is off, said under it — a disabled button with no reason is a dead end. */
+  orderDisabledReason?: string;
 }
 
 /**
@@ -59,6 +61,7 @@ export function PriceDock({
   onQuantity,
   onOrder,
   orderDisabled,
+  orderDisabledReason,
 }: PriceDockProps) {
   const t = useTranslations("studio.dock");
   const locale = useLocale() as "th" | "en";
@@ -136,9 +139,16 @@ export function PriceDock({
   );
 
   const orderButton = (
-    <Button onClick={onOrder} disabled={orderDisabled} className={layout === "rail" ? "w-full" : undefined}>
-      {rfq ? t("requestQuote") : t("order")}
-    </Button>
+    <div className={cn("flex flex-col gap-1.5", layout === "rail" && "w-full")}>
+      <Button onClick={onOrder} disabled={orderDisabled} className={layout === "rail" ? "w-full" : undefined}>
+        {rfq ? t("requestQuote") : t("order")}
+      </Button>
+      {orderDisabled && orderDisabledReason && layout === "rail" ? (
+        <p className="text-muted text-xs" role="status">
+          {orderDisabledReason}
+        </p>
+      ) : null}
+    </div>
   );
 
   const priceText = rfq ? (

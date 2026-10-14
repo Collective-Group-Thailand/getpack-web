@@ -148,7 +148,8 @@
     "updating": "Updating the price",
     "failed": "Could not price this. Try another quantity or wait a moment.",
     "needsQuantity": "Enter a quantity to see the price",
-    "needsBox": "Pick a box to see the price"
+    "needsBox": "Pick a box to see the price",
+    "needsContent": "Add a logo, text or image to the box before ordering — for an unprinted box, order from the product page"
   },
   "describe": {
     "title": "Describe your product",

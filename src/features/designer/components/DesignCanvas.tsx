@@ -247,7 +247,9 @@ export default function DesignCanvas({
    */
   useEffect(() => {
     if (!width || !height) return;
-    const pad = 60;
+    // A 60 px margin on each side is a quarter of a canvas that a tool panel has narrowed to 370 px;
+    // the margin scales down with the view so the sheet stays readable.
+    const pad = Math.min(60, Math.round(Math.min(width, height) * 0.08));
     const box = focusBox ?? { x: 0, y: 0, width: dieline.width, height: dieline.height };
     const turned = angle % 180 !== 0;
     const w = turned ? box.height : box.width;
