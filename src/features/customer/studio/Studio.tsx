@@ -474,6 +474,7 @@ export function Studio({
                 onOrder={() => goTo("order")}
                 orderDisabled={!hasContent}
                 orderDisabledReason={hasContent ? undefined : t("dock.needsContent")}
+                hideOrder={shown === "order"}
               />
             ),
         }}
