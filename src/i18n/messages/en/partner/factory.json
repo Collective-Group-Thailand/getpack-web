@@ -374,7 +374,8 @@
       "anyMachine": "Any machine",
       "minutes": "{n} min",
       "output": "good {good}, scrap {scrap}",
-      "noOperations": "No steps (add them to the recipe)"
+      "noOperations": "No steps (add them to the recipe)",
+      "outOfOrder": "Record this step out of order"
     },
     "mrp": {
       "none": "Enough material for the open orders",
@@ -448,7 +449,39 @@
       "scrap": "Scrap",
       "returnWhat": "Material",
       "returnSubmit": "Return to stock",
-      "returned": "Material returned"
+      "returned": "Material returned",
+      "edit": "Edit order"
+    },
+    "edit": {
+      "pageTitle": "Edit production order",
+      "title": "Title",
+      "releasedNote": "This order is on the floor — only its title, dates, priority and note can change",
+      "quantity": "Quantity to make",
+      "startOn": "Start",
+      "dueOn": "Due",
+      "priority": "Priority (0–9)",
+      "priorityHint": "9 = most urgent; the floor sorts by it",
+      "materials": "Materials",
+      "materialsHint": "What the whole order needs; stock is reserved when it is released",
+      "requiredQty": "Quantity needed",
+      "lineNote": "Note",
+      "removeMaterial": "Remove material",
+      "addMaterial": "Add a material",
+      "operations": "Steps",
+      "operationName": "Step",
+      "machine": "Machine",
+      "anyMachine": "Any machine",
+      "minutes": "Planned minutes",
+      "removeOperation": "Remove step",
+      "addOperation": "Add a step",
+      "packioSteps": "A Packio job's steps follow the job — not changed here",
+      "note": "Note",
+      "save": "Save changes",
+      "saved": "Changes saved",
+      "titleRequired": "Enter a title",
+      "materialInvalid": "Every material line needs an item and a valid quantity",
+      "operationInvalid": "Every step needs a name and whole minutes",
+      "heading": "Edit {no}"
     }
   },
   "recipes": {

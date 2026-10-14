@@ -12,8 +12,8 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 |---|---|---|
 | 1 | The day's work: Today, alerts, jobs, floor, kiosk, QC, samples, shipping, claims, the shell | **done** (web `feat/ux-round1-daily`, API v0.51.0) |
 | 2 | Stock and buying: stock, purchasing, RFQs, trading partners | **done** (web `feat/ux-round2-supply`) |
-| 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | next |
-| 4 | Quality: checks, NCRs, templates | |
+| 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | **done** (web `feat/ux-round3-plan`) |
+| 4 | Quality: checks, NCRs, templates | next |
 | 5 | Sales: CRM, quotations, sales orders, deliveries | |
 | 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | |
 | 7 | The books: ledger, journals, reports, accounts, assets, bank | |
@@ -58,3 +58,17 @@ queue.
 
 Already good and kept: receiving from the open purchase orders (lines prefilled, partial receipts), the stock overview's
 tiles and low-stock view, purchase requests → orders, RFQ comparison, the supplier scorecard and prices per item.
+
+## Round 3 — planning and the floor
+
+**Walked as** the planner (orders, recipes, the machine schedule, maintenance, machines, shifts and skills, weekly capacity, hours).
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 3.1 | A production order could not be changed at all from the screens — the API allowed it (`erp_mo.edit`) but there was no page: a wrong due date, priority or material meant cancelling and starting again. | **Edit production order**: title, start, due, priority (0–9, the floor sorts by it) and note while open; quantity, materials and steps while still planned (a Packio job's steps follow the job). Opened from the order's actions. |
+| 3.2 | The order page offered start / finish on every step at once. | Buttons on the step to do now (and running, paused, done ones); later steps fold "บันทึกขั้นนี้ก่อนลำดับ"; zero planned minutes are not shown. |
+| 3.3 | Weekly capacity was read-only for the factory, though its planner may change a week (API `factory_capacity.manage`) — an overhaul or a holiday could not be entered. | "ปรับสัปดาห์นี้" in each week's cell: capacity and reason; Packio books new jobs against it. |
+
+Already good and kept: the planning overview and MRP shortages, the machine schedule with auto-plan, drag and lock, the
+maintenance orders and plans, machine pages with their kiosk and breakdown buttons, shifts / skills / work log, hours
+and closures.
