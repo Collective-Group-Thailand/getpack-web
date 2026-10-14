@@ -103,6 +103,15 @@ export function JournalForm({ accounts, journal, etag }: { accounts: AccountOpti
   const debit = total("debit");
   const credit = total("credit");
   const set = (i: number, patch: Partial<Line>) => setLines(lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  /** Puts the difference on the lighter side: the first blank line there, else a new line. */
+  function balance() {
+    const side = debit > credit ? "credit" : "debit";
+    const amount = fromSatang(debit > credit ? debit - credit : credit - debit);
+    const blank = lines.findIndex((l) => !l.amount.trim() && l.side === side);
+    const anyBlank = blank >= 0 ? blank : lines.findIndex((l) => !l.amount.trim());
+    if (anyBlank >= 0) set(anyBlank, { side, amount });
+    else setLines([...lines, { ...emptyLine(side), amount }]);
+  }
 
   async function save(submit: boolean) {
     if (!description.trim()) return toast.error(t("needDescription"));
@@ -170,9 +179,16 @@ export function JournalForm({ accounts, journal, etag }: { accounts: AccountOpti
           </div>
         ))}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <Button variant="secondary" iconStart="plus" onClick={() => setLines([...lines, emptyLine(debit > credit ? "credit" : "debit")])}>
-            {t("addLine")}
-          </Button>
+          <span className="flex flex-wrap gap-2">
+            <Button variant="secondary" iconStart="plus" onClick={() => setLines([...lines, emptyLine(debit > credit ? "credit" : "debit")])}>
+              {t("addLine")}
+            </Button>
+            {debit !== credit ? (
+              <Button variant="ghost" iconStart="scale" onClick={balance}>
+                {t("balanceIt")}
+              </Button>
+            ) : null}
+          </span>
           <p className={debit === credit && debit > 0n ? "text-success text-sm font-medium" : "text-warning text-sm font-medium"} aria-live="polite">
             {t("totals", { debit: format.thb(fromSatang(debit)), credit: format.thb(fromSatang(credit)) })} ·{" "}
             {debit === credit && debit > 0n ? t("balanced") : t("unbalanced", { diff: format.thb(fromSatang(debit > credit ? debit - credit : credit - debit)) })}

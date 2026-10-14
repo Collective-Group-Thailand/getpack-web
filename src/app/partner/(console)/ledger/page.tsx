@@ -33,6 +33,13 @@ export default async function LedgerPage() {
     attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/journals", { params: { path, query: { status: "pending_approval", perPage: 1 } } })).data!),
     attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/tax-filings", { params: { path } })).data!),
   ]);
+  // Months to come are opened ahead but have nothing to do yet: the list stops at this month.
+  const shown = (periods.data ?? []).filter((p) => p.month <= month).reverse();
+  // The month to close next: the oldest open month before this one.
+  const toClose = [...shown].reverse().find((p) => p.month < month && p.status !== "closed");
+  const monthLabel = (m: string) => format.date(`${m}-01`, { style: "month" });
+  const taxHref = (form: string, m: string) =>
+    form === "pp30" ? `/tax?view=vat30&month=${m}` : `/tax?view=wht&month=${m}&form=${form}`;
   const unreconciled = cash.data?.banks.reduce((n, b) => n + b.account.openLines, 0) ?? 0;
   return (
     <PartnerPage
@@ -60,12 +67,24 @@ export default async function LedgerPage() {
         {periods.data ? (
           <PartnerTable
             caption={t("periods")}
-            rows={[...periods.data].reverse()}
+            rows={shown}
             rowKey={(row) => row.id}
             rowHref={(row) => `/ledger/periods/${row.id}`}
+            rowTone={(row) => (row.id === toClose?.id ? "warning" : undefined)}
             empty={<EmptyState icon="calendar" title={t("empty")} description={t("emptyBody")} />}
             columns={[
-              { key: "m", header: tc("month"), primary: true, cell: (row) => <span className="font-mono">{row.month}</span> },
+              {
+                key: "m",
+                header: tc("month"),
+                primary: true,
+                cell: (row) => (
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="whitespace-nowrap">{monthLabel(row.month)}</span>
+                    {row.month === month ? <Badge tone="neutral">{t("thisMonth")}</Badge> : null}
+                    {row.id === toClose?.id ? <Badge tone="warning">{t("closeNext")}</Badge> : null}
+                  </span>
+                ),
+              },
               { key: "fy", header: t("fiscalYear"), hideOnPhone: true, cell: (row) => row.fiscalYear },
               { key: "n", header: t("entries"), align: "end", cell: (row) => format.number(row.entries) },
               { key: "s", header: tc("status"), cell: (row) => <StatusChip map={PERIOD_STATUS} value={row.status} /> },
@@ -85,8 +104,17 @@ export default async function LedgerPage() {
             rowTone={(row) => (!row.filed && row.dueOn < new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10) ? "danger" : undefined)}
             empty={<EmptyState icon="stamp" title={t("noFilings")} />}
             columns={[
-              { key: "f", header: t("form"), primary: true, cell: (row) => t(`forms.${row.form}` as never) },
-              { key: "m", header: tc("month"), cell: (row) => <span className="font-mono">{row.month}</span> },
+              {
+                key: "f",
+                header: t("form"),
+                primary: true,
+                cell: (row) => (
+                  <Link className="text-link underline-offset-4 hover:underline" href={taxHref(row.form, row.month)}>
+                    {t(`forms.${row.form}` as never)}
+                  </Link>
+                ),
+              },
+              { key: "m", header: tc("month"), cell: (row) => <span className="whitespace-nowrap">{monthLabel(row.month)}</span> },
               { key: "d", header: t("dueOn"), hideOnPhone: true, cell: (row) => format.date(row.dueOn) },
               { key: "l", header: t("ledgerAmount"), align: "end", cell: (row) => format.thb(row.ledgerAmount) },
               { key: "doc", header: t("documentsAmount"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.documentsAmount) },

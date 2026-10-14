@@ -61,7 +61,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
             rowKey={(row) => row.id}
             empty={<EmptyState icon="building" title={t("empty")} description={t("emptyBody")} />}
             columns={[
-              { key: "no", header: t("assetNo"), primary: true, cell: (row) => <span className="font-mono">{row.assetNo}</span> },
+              { key: "no", header: t("assetNo"), primary: true, cell: (row) => <span className="font-mono whitespace-nowrap">{row.assetNo}</span> },
               { key: "n", header: t("name"), cell: (row) => (row.machine ? `${row.name} · ${row.machine.name}` : row.name) },
               { key: "c", header: t("category"), hideOnPhone: true, cell: (row) => row.category.name },
               { key: "cost", header: t("cost"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.cost) },
@@ -90,9 +90,9 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
             rowHref={(row) => (row.entry ? `/ledger/journals/${row.entry.id}` : "/ledger/assets")}
             empty={<p className="text-muted text-sm">{t("noRuns")}</p>}
             columns={[
-              { key: "m", header: tc("month"), primary: true, cell: (row) => <span className="font-mono">{row.month}</span> },
-              { key: "e", header: tc("description"), hideOnPhone: true, cell: (row) => row.entry?.number ?? "—" },
-              { key: "n", header: t("name"), hideOnPhone: true, cell: (row) => format.number(row.lines.length) },
+              { key: "m", header: tc("month"), primary: true, cell: (row) => <span className="whitespace-nowrap">{format.date(`${row.month.slice(0, 7)}-01`, { style: "month" })}</span> },
+              { key: "e", header: t("entry"), hideOnPhone: true, cell: (row) => <span className="font-mono">{row.entry?.number ?? "—"}</span> },
+              { key: "n", header: t("assetCount"), align: "end", hideOnPhone: true, cell: (row) => format.number(row.lines.length) },
               { key: "t", header: tc("total"), align: "end", cell: (row) => format.thb(row.total) },
             ]}
           />
