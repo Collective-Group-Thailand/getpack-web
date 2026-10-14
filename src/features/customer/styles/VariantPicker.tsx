@@ -13,6 +13,7 @@ import { cn } from "@/ui/lib/cn";
 
 import type { DielineDownloadProps } from "./DielineDownload";
 import { DielineDownloadEntry } from "./DielineDownloadEntry";
+import { VariantActions, type VariantActionsProps } from "./VariantActions";
 import { axisLabel, valueLabel, type StylesT } from "./labels";
 import { change, optionsOf, selectionOf, variantOf, type Selection } from "./variants";
 
@@ -39,17 +40,15 @@ function Loading3D() {
 export function VariantPicker({
   style,
   name,
-  instantActions,
-  rfqActions,
+  actions,
   dieline,
 }: {
   style: StyleDetail;
   name: string;
   /** The free dieline of the chosen variant (U2.F2), when offered. */
   dieline?: Omit<DielineDownloadProps, "variantCode">;
-  /** What to offer for a variant with an instant price (configure) and for one quoted on request. */
-  instantActions: React.ReactNode;
-  rfqActions: React.ReactNode;
+  /** Where the chosen variant goes: the configurator or a quotation, and the studio (D-407). */
+  actions: Omit<VariantActionsProps, "base" | "variant">;
 }) {
   const t = useTranslations("styles") as unknown as StylesT & ReturnType<typeof useTranslations>;
   const id = useId();
@@ -185,9 +184,11 @@ export function VariantPicker({
               </p>
             </>
           ) : null}
-          <div className="flex flex-wrap gap-2 pt-1">
-            {variant?.pricePath === "instant" ? instantActions : rfqActions}
-          </div>
+          {variant ? (
+            <div className="pt-1">
+              <VariantActions base={style.code} variant={variant} {...actions} />
+            </div>
+          ) : null}
         </div>
         {dieline && variant ? <DielineDownloadEntry variantCode={variant.code} {...dieline} /> : null}
       </section>

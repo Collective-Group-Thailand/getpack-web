@@ -140,8 +140,12 @@ export function Studio({
   }, [maxSpot]);
 
   // A design on a style only the library draws (a published variant, U3.4) opens once it is loaded.
+  // A new design seeded with one (a style page's variant, D-407) waits for it the same way.
   const [libraryReady, setLibraryReady] = useState(
-    () => !needsLibrary((design?.document.spec as { styleId?: unknown } | null)?.styleId),
+    () =>
+      !needsLibrary((design?.document.spec as { styleId?: unknown } | null)?.styleId) &&
+      !needsLibrary(seed?.style) &&
+      !seed?.variant,
   );
   useEffect(() => {
     if (libraryReady) return;

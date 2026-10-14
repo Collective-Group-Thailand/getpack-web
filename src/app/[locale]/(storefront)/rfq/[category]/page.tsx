@@ -3,9 +3,10 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getCatalogueTree, getProduct, getRfqForm } from "@/features/customer/catalog/api.server";
+import { getCatalogueTree, getProduct, getRfqForm, getStyle } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { categorySegment, productHref, rfqHref } from "@/features/customer/catalog/paths";
+import { styleHref } from "@/features/customer/styles/paths";
 import { RfqForm } from "@/features/customer/rfq/RfqForm";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -18,7 +19,9 @@ type Params = { category: string };
 /** A calculation id from the configurator, checked for its shape only — the API decides the rest. */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type Search = { type?: string; from?: string; calc?: string };
+type Search = { type?: string; from?: string; calc?: string; base?: string; style?: string };
+/** A style code as the API writes it (`PK-TE-01`, `PK-TE-01-K7QD`). */
+const STYLE_CODE = /^[A-Z0-9][A-Z0-9-]{2,39}$/;
 
 async function resolve(segment: string) {
   const tree = await getCatalogueTree();
@@ -36,7 +39,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 /**
  * A request for quotation for one category (F3 3.2, D-100): every type that has no instant
  * price, and any spec the configurator could not price (D-043) — `?from=<product>` says which.
- * A category with several product types asks which one first.
+ * From a style page, `?base=&style=` names the published variant to quote (D-407), sent with the
+ * request. A category with several product types asks which one first.
  */
 export default async function Page({
   params,
@@ -55,9 +59,13 @@ export default async function Page({
   ]);
   if (!category) notFound();
   const product = query.from ? await getProduct(query.from) : null;
+  // The variant a style page asked about: kept only when the base lists it among its shown variants.
+  const styleBase = STYLE_CODE.test(query.base ?? "") && STYLE_CODE.test(query.style ?? "") ? await getStyle(query.base!) : null;
+  const chosenVariant = styleBase?.variants.find((variant) => variant.code === query.style) ?? null;
   const type =
     category.types.find((candidate) => candidate.code === query.type) ??
     category.types.find((candidate) => candidate.code === product?.productTypeCode) ??
+    category.types.find((candidate) => chosenVariant && candidate.code === styleBase?.productTypeCode) ??
     (category.types.length === 1 ? category.types[0] : undefined);
   const form = type ? await getRfqForm(type.code) : null;
   if (type && !form) notFound();
@@ -99,7 +107,10 @@ export default async function Page({
               <li key={candidate.code}>
                 <Card className="p-0">
                   <Link
-                    href={`${rfqHref(category.code)}?type=${candidate.code}`}
+                    href={`${rfqHref(category.code)}?${new URLSearchParams({
+                      type: candidate.code,
+                      ...(chosenVariant ? { base: styleBase!.code, style: chosenVariant.code } : {}),
+                    }).toString()}`}
                     className="hover:bg-bg-subtle flex items-center justify-between gap-3 rounded-xl p-4 font-medium"
                   >
                     {pick(locale, candidate.nameTh, candidate.nameEn)}
@@ -121,6 +132,15 @@ export default async function Page({
               signedIn={Boolean(readAccessToken(jar))}
               fromProduct={product ? { slug: product.slug, name: pick(locale, product.nameTh, product.nameEn) } : null}
               calculationId={product && UUID.test(query.calc ?? "") ? query.calc! : null}
+              style={
+                chosenVariant && styleBase
+                  ? {
+                      code: chosenVariant.code,
+                      name: pick(locale, styleBase.nameTh, styleBase.nameEn),
+                      href: styleHref(styleBase.code, pick(locale, styleBase.nameTh, styleBase.nameEn)),
+                    }
+                  : null
+              }
             />
           </div>
         </section>

@@ -63,6 +63,8 @@
     "fixErrors": "{count, plural, one {# thing needs} other {# things need}} fixing",
     "failed": "We could not send the request. Your answers are still here — please try again.",
     "fromProduct": "Sent here from {name}: this spec needs our team to price it. Fill in the details below.",
+    "chosenStyle": "Box style chosen: {name} · variant {code}",
+    "chosenStyleChange": "Change style",
     "addToBasket": "Add to quote basket",
     "basketHint": "Need prices for several items? Add them to the basket and send once — the team quotes each item in one conversation."
   },
