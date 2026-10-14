@@ -18,7 +18,6 @@ import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field, FormSection } from "@/ui/components/Field";
-import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { PriceSummary, type PriceRow } from "@/ui/components/PriceSummary";
 import { ProductThumb, productFamilyOf } from "@/ui/components/ProductIllustration";
@@ -28,6 +27,7 @@ import { Skeleton } from "@/ui/components/Skeleton";
 import { addressLine, type Address, type TaxProfile } from "../account/address";
 import { formatTaxId } from "../account/tax-id";
 import { editCart, type Cart } from "../cart/cart-client";
+import { PromoCodeBox, type AppliedPromotion } from "../cart/PromoCodeBox";
 import { pick } from "../catalog/localize";
 import { useDebounced } from "../configurator/pricing";
 import { productNameOf } from "../orders/summary";
@@ -124,7 +124,7 @@ export function CheckoutView({
   const [taxProfileId, setTaxProfileId] = useState<string>(
     initialProfiles.find((profile) => profile.isDefault)?.id ?? NO_TAX,
   );
-  const [codeDraft, setCodeDraft] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
   const [points, setPoints] = useState(0);
   const [method, setMethod] = useState<PaymentMethod>("scb_qr");
   const [poNumber, setPoNumber] = useState("");
@@ -206,21 +206,41 @@ export function CheckoutView({
   const dueNow = data?.paymentSchedule?.instalments.find((instalment) => instalment.dueTrigger === "at_checkout");
   const canPlace = Boolean(data) && !pending && (company?.poNumberPolicy !== "required" || poNumber.trim() !== "");
 
+  // A code the API refuses outright (unknown, attempts exhausted — D-053) is the box's own error,
+  // not a checkout failure: the rest of the page is still fine.
   async function applyCode(code: string) {
-    edit.mutate(() =>
-      editCart((ifMatch) =>
+    setCodeError(null);
+    try {
+      const next = await editCart((ifMatch) =>
         api.POST("/v1/store/cart/codes", { params: { header: { "If-Match": ifMatch } }, body: { code } }),
-      ),
-    );
+      );
+      setCart(next);
+      queryClient.setQueryData(queryKeys.resource("customer", "cart"), next);
+    } catch (error) {
+      setCodeError(isApiError(error) ? error.detail : t("failed"));
+    }
   }
 
   function removeCode(code: string) {
+    setCodeError(null);
     edit.mutate(() =>
       editCart((ifMatch) =>
         api.DELETE("/v1/store/cart/codes/{code}", { params: { path: { code }, header: { "If-Match": ifMatch } } }),
       ),
     );
   }
+
+  // What the promotions are worth, from the preview's notices — shown in the code box, where the
+  // customer is looking for them, and left out of the generic notice list below the totals.
+  const PROMOTION_NOTICES = new Set(["promotion.applied", "discount.applied"]);
+  const appliedPromotions: AppliedPromotion[] = (data?.notices ?? []).flatMap((notice) => {
+    if (!PROMOTION_NOTICES.has(notice.code)) return [];
+    const params = notice.params ?? {};
+    const amount = typeof params["amount"] === "string" ? params["amount"] : null;
+    if (!amount) return [];
+    const name = typeof params["name"] === "string" && params["name"] ? params["name"] : tNotices("discount_name");
+    return [{ name, amount }];
+  });
 
   async function place() {
     if (!data) return;
@@ -421,60 +441,15 @@ export function CheckoutView({
         </FormSection>
 
         <FormSection card step={step("promotions")} title={t("promotions.title")} description={t("promotions.hint")}>
-          <form
-            className="flex items-start gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const code = codeDraft.trim().toUpperCase();
-              if (code && !cart.codes.some((entry) => entry.code === code)) void applyCode(code);
-              setCodeDraft("");
-            }}
-          >
-            <Field label={t("promotions.code")} className="flex-1">
-              <Input
-                value={codeDraft}
-                autoComplete="off"
-                className="uppercase"
-                onChange={(event) => setCodeDraft(event.target.value)}
-              />
-            </Field>
-            <Button
-              type="submit"
-              variant="secondary"
-              className="mt-[1.625rem]"
-              disabled={!codeDraft.trim()}
-              loading={edit.isPending}
-            >
-              {t("promotions.apply")}
-            </Button>
-          </form>
-          {cart.codes.length > 0 ? (
-            <ul className="flex flex-col gap-2">
-              {cart.codes.map((entry) => (
-                <li
-                  key={entry.code}
-                  className={`${
-                    entry.status === "validated"
-                      ? "bg-success-subtle text-success-subtle-fg"
-                      : "bg-warning-subtle text-warning-subtle-fg"
-                  } flex items-start justify-between gap-3 rounded-lg px-3 py-2 text-sm`}
-                >
-                  <span>
-                    {entry.status === "validated"
-                      ? t("promotions.accepted", { code: entry.code })
-                      : t("promotions.rejected", { code: entry.code, message: entry.rejectReason ?? "" })}
-                  </span>
-                  <IconButton
-                    name="close"
-                    size="sm"
-                    variant="ghost"
-                    label={t("promotions.remove", { code: entry.code })}
-                    onClick={() => removeCode(entry.code)}
-                  />
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          <PromoCodeBox
+            codes={cart.codes}
+            pending={edit.isPending}
+            applied={appliedPromotions}
+            savings={data?.totals.discountAmount ?? null}
+            error={codeError}
+            onApply={applyCode}
+            onRemove={removeCode}
+          />
         </FormSection>
 
         {(pointsBounds?.balance ?? pointsBalance) > 0 ? (
@@ -652,9 +627,9 @@ export function CheckoutView({
                 })}
               </p>
             ) : null}
-            {data.notices.length > 0 ? (
+            {data.notices.some((notice) => !PROMOTION_NOTICES.has(notice.code)) ? (
               <ul className="mt-4 flex flex-col gap-2 text-sm">
-                {data.notices.map((notice, index) => (
+                {data.notices.filter((notice) => !PROMOTION_NOTICES.has(notice.code)).map((notice, index) => (
                   <li key={`${notice.code}-${index}`} className="bg-bg-subtle rounded-lg px-3 py-2">
                     {noticeText(notice)}
                   </li>
