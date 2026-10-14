@@ -63,6 +63,12 @@
       "payout_item": "Packio payout"
     }
   },
+  "posted": {
+    "title": "In the books",
+    "body": "The factory ledger entries this document made",
+    "draft": "Draft",
+    "rule": "Rule {key}"
+  },
   "overview": {
     "title": "Periods and the close",
     "body": "The factory’s own books: ERP documents post themselves; close a month once its checks pass",

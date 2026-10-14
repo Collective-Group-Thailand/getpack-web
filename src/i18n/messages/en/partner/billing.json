@@ -5,6 +5,12 @@
   "period": "{from} – {to}",
   "empty": "No statements yet",
   "emptyBody": "A statement comes once deliveries are proved.",
+  "summary": {
+    "label": "Statements summary",
+    "toCheck": "To check and confirm",
+    "toInvoice": "Confirmed, tax invoice to attach",
+    "disputed": "Disputed"
+  },
   "confirm": {
     "action": "Confirm the statement",
     "title": "Confirm {no}",
@@ -281,6 +287,7 @@
     "status": "Status",
     "checkIt": "Waiting for you to check",
     "invoice": "Your tax invoice",
-    "noInvoice": "Not attached"
+    "noInvoice": "Not attached",
+    "attachNow": "Attach your tax invoice"
   }
 }

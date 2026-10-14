@@ -6,6 +6,7 @@ import { ERP_SUPPLIER_INVOICE_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain, formatQty } from "@/features/partner/erp/format";
 import { InvoiceActions } from "@/features/partner/erp/PayablesActions";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -170,6 +171,7 @@ export default async function SupplierInvoicePage({ params }: { params: Promise<
           ]}
         />
       </PartnerSection>
+      <PostedEntries sourceId={inv.id} />
     </PartnerPage>
   );
 }

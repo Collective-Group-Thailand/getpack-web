@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { PAYOUT_ITEM_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { ViewFile } from "@/features/partner/viewer";
 import { getFormat } from "@/features/shared/format/server";
@@ -151,6 +152,7 @@ export default async function PayoutPage({ params }: Props) {
           )}
         </PartnerSection>
       ) : null}
+      <PostedEntries sourceId={payout.id} />
     </PartnerPage>
   );
 }

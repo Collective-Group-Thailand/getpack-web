@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PaymentActions } from "@/features/partner/erp/PayablesActions";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -147,6 +148,7 @@ export default async function SupplierPaymentPage({ params }: { params: Promise<
           ]}
         />
       </PartnerSection>
+      <PostedEntries sourceId={p.id} />
     </PartnerPage>
   );
 }
