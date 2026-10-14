@@ -53,5 +53,63 @@
       "step_overdue": "ขั้นตอนปัจจุบันเลยกำหนดแล้ว",
       "inspection_planned": "Packio นัดตรวจคุณภาพงานนี้"
     }
+  },
+  "inbox": {
+    "sections": {
+      "approve": "รอคุณอนุมัติ",
+      "overdue": "เลยกำหนด",
+      "today": "วันนี้",
+      "soon": "เร็ว ๆ นี้"
+    },
+    "sectionHints": {
+      "approve": "รายการที่คนอื่นเสนอและรอให้คุณพิจารณา",
+      "overdue": "ควรจัดการก่อนอย่างอื่น",
+      "today": "งานที่ถึงกำหนดวันนี้",
+      "soon": "เตรียมไว้ก่อนถึงกำหนด"
+    },
+    "summary": "ภาพรวมงานของคุณ",
+    "allClear": "เรียบร้อยดี ไม่มีงานค้างสำหรับคุณ",
+    "more": "และอีก {count} รายการ",
+    "kinds": {
+      "purchase_request": "อนุมัติใบขอซื้อ {number}",
+      "purchase_request_more": "ใบขอซื้อรออนุมัติอีก {count} ใบ",
+      "invoice_variance": "ใบแจ้งหนี้ {number} ราคาไม่ตรงใบสั่งซื้อ",
+      "invoice_variance_more": "ใบแจ้งหนี้ราคาไม่ตรงอีก {count} ใบ",
+      "journal": "อนุมัติรายการบัญชี: {number}",
+      "journal_more": "รายการบัญชีรออนุมัติอีก {count} รายการ",
+      "account_change": "อนุมัติการแก้ไขผังบัญชี {number}",
+      "rule_version": "อนุมัติกฎบันทึกบัญชีฉบับใหม่ {number}",
+      "receipt_late": "ของยังไม่เข้า {number}",
+      "receipt_late_more": "ใบสั่งซื้อเลยกำหนดรับอีก {count} ใบ",
+      "receipt_today": "ของเข้าวันนี้ {number}",
+      "po_draft": "ร่างใบสั่งซื้อที่ยังไม่ได้ส่ง {count} ใบ",
+      "stock_low": "สินค้าต่ำกว่าจุดสั่งซื้อ {count} รายการ",
+      "payable_overdue": "เจ้าหนี้เลยกำหนดชำระ {count} ใบ",
+      "payable_week": "ต้องจ่ายเจ้าหนี้ใน 7 วัน {count} ใบ",
+      "mo_late": "ใบสั่งผลิต {number} เลยกำหนด",
+      "mo_late_more": "ใบสั่งผลิตเลยกำหนดอีก {count} ใบ",
+      "mo_to_release": "ใบสั่งผลิตที่ควรปล่อยเข้าไลน์ใน 7 วัน {count} ใบ",
+      "machine_down": "เครื่องเสีย: {party}",
+      "ncr_due": "NCR {number} ถึงกำหนดแก้ไข",
+      "ncr_due_more": "NCR ถึงกำหนดอีก {count} ใบ",
+      "quotation_expiring": "ใบเสนอราคา {number} ใกล้หมดอายุ",
+      "so_draft": "ร่างใบสั่งขายที่ยังไม่ยืนยัน {count} ใบ",
+      "followup_today": "งานติดตามลูกค้าวันนี้ {count} รายการ",
+      "followup_late": "งานติดตามลูกค้าที่เลยกำหนด {count} รายการ",
+      "delivery_late": "ใบส่งของ {number} เลยวันส่ง",
+      "delivery_late_more": "ใบส่งของเลยวันส่งอีก {count} ใบ",
+      "delivery_today": "ส่งของวันนี้ {number}",
+      "receivable_overdue": "ลูกหนี้เลยกำหนด {count} ใบ",
+      "period_to_close": "ปิดงวดบัญชี {number}",
+      "bank_lines": "รายการธนาคารรอกระทบ {count} รายการ",
+      "tax_due": "ยื่น ภ.พ.30 เดือน {number}",
+      "alerts": "การแจ้งเตือนที่ยังไม่ได้ดู {count} รายการ"
+    },
+    "due": "กำหนด {date}",
+    "on": "{date}",
+    "by": "โดย {name}",
+    "acceptJob": "รับงาน Packio {no} ({quantity} ชิ้น)",
+    "acceptBy": "ตอบรับหรือปฏิเสธภายใน {at}",
+    "packioWork": "งานจาก Packio"
   }
 }

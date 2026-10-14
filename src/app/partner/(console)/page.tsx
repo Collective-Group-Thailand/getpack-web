@@ -13,6 +13,7 @@ import { Meter } from "@/ui/components/Meter";
 import { Icon, type IconName } from "@/ui/icons";
 import { Button } from "@/ui/components/Button";
 import { Row, RowList, StatStrip } from "@/features/partner/rows";
+import { inboxHref, inboxIcon } from "@/features/partner/today/inbox";
 
 /**
  * The partner zone's landing screen: what is waiting for this factory today.
@@ -63,7 +64,7 @@ export default async function PartnerHomePage() {
         )
       : null,
   ]);
-  const [statements, claims, samples] = await Promise.all([
+  const [statements, claims, samples, inbox] = await Promise.all([
     canAt(context, "factory_payables.manage")
       ? attempt(
           async () =>
@@ -91,6 +92,17 @@ export default async function PartnerHomePage() {
             ).data!,
         )
       : null,
+    // D-399: what the ERP has waiting for this person (approvals, overdue, today, soon).
+    canAt(context, "factory_profile.read")
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/inbox", {
+                params: { path: { factoryId: context.factoryId } },
+              })
+            ).data!,
+        )
+      : null,
   ]);
   const samplesToRecord = (samples?.data?.data ?? []).filter(
     (sample) => !sample.evidence.recordedAt && ["paid", "in_production"].includes(sample.status),
@@ -98,18 +110,22 @@ export default async function PartnerHomePage() {
   const claimsToAnswer = claims?.data?.data.length ?? 0;
   const [tFloor, format] = await Promise.all([getTranslations("partnerToday.floor"), getFormat()]);
 
+  type Section = "approve" | "overdue" | "today" | "soon";
   const tasks: {
     key: string;
+    section: Section;
     href: string;
     icon: IconName;
     title: string;
     body: string;
     tone?: "warning" | "danger";
+    aside?: string;
   }[] = [];
   const toSignOff = (steps?.data ?? []).filter(awaitsSignOff).length;
   if (toSignOff)
     tasks.push({
       key: "steps",
+      section: "approve",
       href: "/onboarding",
       icon: "stamp",
       title: t("tasks.signOff", { count: toSignOff }),
@@ -119,6 +135,7 @@ export default async function PartnerHomePage() {
     if (item.direction === "packio_to_factory" && ["submitted", "under_review"].includes(item.status))
       tasks.push({
         key: item.id,
+        section: "approve",
         href: `/prices/proposals/${item.id}`,
         icon: "handshake",
         title: t("tasks.rateCard", { type: prices!.typeName(item.productTypeId) }),
@@ -127,6 +144,7 @@ export default async function PartnerHomePage() {
     if (item.direction === "factory_to_packio" && item.status === "countered")
       tasks.push({
         key: item.id,
+        section: "approve",
         href: `/prices/proposals/${item.id}`,
         icon: "scale",
         title: t("tasks.countered", { type: prices!.typeName(item.productTypeId) }),
@@ -136,6 +154,7 @@ export default async function PartnerHomePage() {
   for (const statement of statements?.data?.data ?? [])
     tasks.push({
       key: statement.id,
+      section: "approve",
       href: `/billing/${statement.id}`,
       icon: "receipt",
       title: t("tasks.statement", { no: statement.bsNumber }),
@@ -147,6 +166,7 @@ export default async function PartnerHomePage() {
   ))
     tasks.push({
       key: claim.id,
+      section: "overdue",
       href: `/claims/${claim.id}`,
       icon: "shield-alert",
       tone: "danger",
@@ -158,6 +178,7 @@ export default async function PartnerHomePage() {
       if (version.origin === "assisted_entry" && !version.factorySignedOffAt)
         tasks.push({
           key: version.id,
+          section: "approve",
           href: `/prices/${list.productTypeCode}?version=${version.id}`,
           icon: "stamp",
           title: t("tasks.pricesToSignOff", { type: prices!.typeName(list.productTypeId) }),
@@ -169,6 +190,7 @@ export default async function PartnerHomePage() {
   for (const alert of [...(floor?.data?.alerts ?? [])].reverse())
     tasks.unshift({
       key: `${alert.kind}-${alert.jobId}`,
+      section: alert.kind === "acceptance_overdue" || alert.kind === "step_overdue" ? "overdue" : "today",
       href: `/jobs/${alert.jobId}`,
       icon: alert.kind === "inspection_planned" ? "shield" : "warning",
       tone:
@@ -182,6 +204,46 @@ export default async function PartnerHomePage() {
         ? tFloor(`alerts.${alert.kind}`, { at: format.dateTime(alert.dueAt) })
         : tFloor(`alertsUndated.${alert.kind}`),
     });
+
+  const ti = await getTranslations("partnerToday.inbox");
+  // A Packio job waiting for the factory's yes is a decision with a clock (D-074): first in the list.
+  if (canAt(context, "factory_jobs.respond"))
+    for (const job of (floor?.data?.queue ?? []).filter((item) => item.status === "released"))
+      if (!tasks.some((task) => task.key === `acceptance_overdue-${job.id}`))
+        tasks.push({
+          key: `accept-${job.id}`,
+          section: "approve",
+          href: `/jobs/${job.id}`,
+          icon: "inbox",
+          tone: "warning",
+          title: ti("acceptJob", { no: job.jobNo, quantity: format.number(job.quantityOrdered) }),
+          body: ti("acceptBy", { at: format.dateTime(job.acceptDueAt) }),
+        });
+  for (const item of inbox?.data?.items ?? []) {
+    const details = [
+      item.document && item.party ? item.party : null,
+      item.date ? ti(item.section === "today" ? "on" : "due", { date: format.date(item.date) }) : null,
+    ].filter(Boolean);
+    tasks.push({
+      key: item.key,
+      section: item.section,
+      href: inboxHref(item),
+      icon: inboxIcon(item.kind),
+      tone: item.tone === "danger" ? "danger" : item.tone === "warning" && item.section !== "soon" ? "warning" : undefined,
+      title: ti(`kinds.${item.kind}` as "kinds.alerts", {
+        number:
+          (item.kind === "tax_due" || item.kind === "period_to_close") && item.document?.number
+            ? format.date(`${item.document.number}-01`, { style: "month" })
+            : (item.document?.number ?? ""),
+        party: item.party ?? "",
+        count: item.count,
+      }),
+      body: details.join(" · "),
+      ...(item.amount ? { aside: format.thb(item.amount) } : {}),
+    });
+  }
+  const SECTIONS: Section[] = ["approve", "overdue", "today", "soon"];
+  const bySection = (section: Section) => tasks.filter((task) => task.section === section);
 
   return (
     <PartnerPage
@@ -209,8 +271,44 @@ export default async function PartnerHomePage() {
         </Card>
       ) : null}
 
+      {tasks.length ? (
+        <StatStrip
+          label={ti("summary")}
+          items={SECTIONS.filter((section) => bySection(section).length).map((section) => ({
+            key: section,
+            href: `#${section}`,
+            label: ti(`sections.${section}`),
+            value: bySection(section).length,
+            tone: section === "overdue" ? "danger" : section === "approve" ? "warning" : "neutral",
+          }))}
+        />
+      ) : (
+        <p className="border-border text-muted flex items-center gap-2 rounded-xl border border-dashed p-4">
+          <Icon name="success" size={20} className="text-success shrink-0" aria-hidden />
+          {ti("allClear")}
+        </p>
+      )}
+      {SECTIONS.filter((section) => bySection(section).length).map((section) => (
+        <PartnerSection key={section} id={section} title={ti(`sections.${section}`)} description={ti(`sectionHints.${section}`)}>
+          <RowList label={ti(`sections.${section}`)}>
+            {bySection(section).map((task) => (
+              <Row
+                key={task.key}
+                href={task.href}
+                icon={task.icon}
+                tone={task.tone ?? "neutral"}
+                title={task.title}
+                meta={task.body || undefined}
+                aside={task.aside}
+              />
+            ))}
+          </RowList>
+        </PartnerSection>
+      ))}
+
       {floor?.data ? (
         <>
+          <h2 className="mt-2 text-lg font-semibold">{ti("packioWork")}</h2>
           {(() => {
             const counters = [
               ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.awaitingAcceptance],
@@ -260,27 +358,6 @@ export default async function PartnerHomePage() {
               </section>
             );
           })()}
-          <PartnerSection title={t("tasks.title")} id="tasks">
-            {tasks.length ? (
-              <RowList label={t("tasks.title")}>
-                {tasks.map((task) => (
-                  <Row
-                    key={task.key}
-                    href={task.href}
-                    icon={task.icon}
-                    tone={task.tone ?? "neutral"}
-                    title={task.title}
-                    meta={task.body}
-                  />
-                ))}
-              </RowList>
-            ) : (
-              <p className="border-border text-muted flex items-center gap-2 rounded-xl border border-dashed p-4">
-                <Icon name="success" size={20} className="text-success shrink-0" aria-hidden />
-                {t("tasks.none")}
-              </p>
-            )}
-          </PartnerSection>
 
           <PartnerSection
             title={tFloor("queue")}

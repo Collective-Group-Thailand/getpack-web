@@ -170,7 +170,10 @@
       "ledgerAccounts": "Chart & settings",
       "ledgerAssets": "Fixed assets",
       "ledgerBank": "Bank & reconciliation"
-    }
+    },
+    "search": "Find a menu",
+    "searchPlaceholder": "Find a menu (press /)",
+    "noMatch": "No menu matches"
   },
   "status": {
     "job": {

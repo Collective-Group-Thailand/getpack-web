@@ -380,7 +380,9 @@
     "openJob": "Open job",
     "refresh": "Refresh",
     "elapsed": "Started {at}",
-    "fullscreen": "Full screen"
+    "fullscreen": "Full screen",
+    "fullScreen": "Full screen",
+    "exitFullScreen": "Exit full screen"
   },
   "machines": {
     "title": "Machines",
