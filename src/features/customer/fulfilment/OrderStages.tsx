@@ -5,7 +5,10 @@ import { getFormat } from "@/features/shared/format/server";
 import type { Schemas } from "@/lib/api/types";
 import { ProgressTracker } from "@/ui/components/ProgressTracker";
 
-type Step = Schemas["ProgressStepDto"];
+type Step = Pick<
+  Schemas["ProgressStepDto"],
+  "key" | "labelTh" | "labelEn" | "completedAt" | "promisedAt" | "status"
+>;
 
 const STATE = { completed: "done", in_progress: "current", pending: "upcoming", skipped: "skipped" } as const;
 

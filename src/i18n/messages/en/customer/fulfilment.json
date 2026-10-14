@@ -266,5 +266,14 @@
       "closed": "Claim closed"
     },
     "guarantee": "Under guarantee version {version}"
+  },
+  "journey": {
+    "placed": "Order placed",
+    "paid": "Paid to start",
+    "artwork": "Artwork approved",
+    "production": "In production",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "completed": "Completed"
   }
 }

@@ -15,12 +15,14 @@ import { SpecSheet } from "@/features/customer/orders/SpecSheet";
 import { listMySamples } from "@/features/customer/samples/api.server";
 import { ToleranceOutcome } from "@/features/customer/orders/ToleranceOutcome";
 import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
+import { journeySteps } from "@/features/customer/fulfilment/journey";
 import { timelineTitle } from "@/features/customer/orders/timeline";
 import { TrackingLinkButton } from "@/features/customer/orders/TrackingLinkButton";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { CLAIM_STATUS, DOCUMENT_STATUS, SAMPLE_STATUS, INSTALMENT_STATUS, ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { PriceSummary } from "@/ui/components/PriceSummary";
@@ -70,9 +72,10 @@ export default async function Page({
 }) {
   await requireCustomer();
   const [{ orderId }, query] = await Promise.all([params, searchParams]);
-  const [t, tCatalog, format, locale, detail, design, samples] = await Promise.all([
+  const [t, tCatalog, tJourney, format, locale, detail, design, samples] = await Promise.all([
     getTranslations("myOrders"),
     getTranslations("catalog"),
+    getTranslations("fulfilment.journey"),
     getFormat(),
     getLocale(),
     getMyOrder(orderId),
@@ -140,25 +143,20 @@ export default async function Page({
             <OrderActions orderId={order.id} orderCode={order.orderCode} actions={detail.actions} payable={payable} />
           </div>
         ) : null}
-        <p className="text-sm">
-          <Link
-            href={`/account/orders/${order.id}/artwork`}
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            {t("detail.artworkLink")}
-          </Link>
+        {/* The artwork workspace is a destination, not a footnote: a button, beside the design link. */}
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <Button asChild variant="secondary" size="sm" iconStart="images">
+            <Link href={`/account/orders/${order.id}/artwork`}>{t("detail.artworkLink")}</Link>
+          </Button>
           {design ? (
-            <>
-              {" · "}
-              <Link
-                href={`/studio/${design.designId}?step=design`}
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                {t("detail.designLink", { title: design.title, versionNo: design.versionNo })}
-              </Link>
-            </>
+            <Link
+              href={`/studio/${design.designId}?step=design`}
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              {t("detail.designLink", { title: design.title, versionNo: design.versionNo })}
+            </Link>
           ) : null}
-        </p>
+        </div>
         {query.payment === "not_started" && payable ? (
           // Checkout placed the order but could not start its payment (round 2, B1): the order is
           // safe and the pay button above starts it again.
@@ -192,12 +190,14 @@ export default async function Page({
         {order.toleranceOutcome ? <ToleranceOutcome outcome={order.toleranceOutcome} unit={unit} /> : null}
       </header>
 
-      {detail.progress && detail.progress.steps.length > 0 ? (
+      {detail.progress ? (
         <section aria-labelledby="order-stages" className="border-border bg-surface rounded-card border px-6 py-6">
           <h2 id="order-stages" className="sr-only">
             {t("detail.stages")}
           </h2>
-          <OrderStages steps={detail.progress.steps} />
+          <OrderStages
+            steps={journeySteps(detail.progress, group?.placedAt ?? order.createdAt, (key) => tJourney(key))}
+          />
         </section>
       ) : null}
 
