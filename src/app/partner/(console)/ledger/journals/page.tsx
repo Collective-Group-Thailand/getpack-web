@@ -16,6 +16,7 @@ import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Input } from "@/ui/components/Input";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerLedger.journals"))("title") };
@@ -130,7 +131,27 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
         </PartnerSection>
       ) : (
         <>
-          <SearchBar id="journal-search" action="/ledger/journals" hidden={{ view: view === "all" ? undefined : view, month }} q={query.q} label={t("search")} placeholder={t("searchPlaceholder")} button={t("searchButton")} />
+          <SearchBar id="journal-search" action="/ledger/journals" hidden={{ view: view === "all" ? undefined : view, month, account: query.account }} q={query.q} label={t("search")} placeholder={t("searchPlaceholder")} button={t("searchButton")} />
+          <form action="/ledger/journals" className="flex flex-wrap items-end gap-2">
+            {view !== "all" ? <input type="hidden" name="view" value={view} /> : null}
+            {query.q ? <input type="hidden" name="q" value={query.q} /> : null}
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">{tc("month")}</span>
+              <Input type="month" name="month" defaultValue={month} className="w-48" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">{t("accountFilter")}</span>
+              <Input name="account" defaultValue={query.account} inputMode="numeric" placeholder={t("accountPlaceholder")} className="w-32 font-mono" />
+            </label>
+            <Button type="submit" variant="secondary">
+              {t("filter")}
+            </Button>
+            {month || query.account ? (
+              <Link className="text-link text-sm underline" href={`/ledger/journals${queryOf({ view: view === "all" ? undefined : view, q: query.q })}`}>
+                {t("clearFilter")}
+              </Link>
+            ) : null}
+          </form>
           {list?.data ? (
             <>
               <PartnerTable
@@ -141,10 +162,10 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
                 rowTone={(row) => (row.status === "pending_approval" ? "warning" : undefined)}
                 empty={<EmptyState icon="list-ordered" title={t("empty")} description={t("emptyBody")} />}
                 columns={[
-                  { key: "no", header: t("entryNo"), primary: true, cell: (row) => <span className="font-mono">{row.entryNo ?? "—"}</span> },
-                  { key: "d", header: tc("date"), cell: (row) => format.date(row.entryDate) },
+                  { key: "no", header: t("entryNo"), primary: true, cell: (row) => <span className="font-mono whitespace-nowrap">{row.entryNo ?? "—"}</span> },
+                  { key: "d", header: tc("date"), className: "whitespace-nowrap", cell: (row) => format.date(row.entryDate) },
                   { key: "ds", header: tc("description"), cell: (row) => row.description },
-                  { key: "k", header: t("kind"), hideOnPhone: true, cell: (row) => tc(`kinds.${row.kind}` as never) },
+                  { key: "k", header: t("kind"), hideOnPhone: true, className: "whitespace-nowrap", cell: (row) => tc(`kinds.${row.kind}` as never) },
                   { key: "src", header: t("source"), hideOnPhone: true, cell: (row) => (row.source ? <span className="font-mono text-sm">{row.source.number}</span> : "—") },
                   { key: "a", header: tc("amount"), align: "end", cell: (row) => format.thb(row.totalDebit) },
                   { key: "s", header: tc("status"), cell: (row) => <StatusChip map={JOURNAL_STATUS} value={row.status} /> },

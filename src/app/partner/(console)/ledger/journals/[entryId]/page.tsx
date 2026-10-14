@@ -59,6 +59,16 @@ export default async function JournalPage({ params }: { params: Promise<{ entryI
       </PartnerPage>
     );
   const { journal: j, etag } = read.data;
+  // An account opens its general ledger for the entry's month.
+  const [y, m] = j.entryDate.split("-").map(Number) as [number, number];
+  const monthEnd = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+  const glHref = (code: string) => `/ledger/reports?tab=gl&account=${code}&from=${j.entryDate.slice(0, 7)}-01&to=${monthEnd}`;
+  // The rule that posted it opens its versions (D-398).
+  const ruleId = j.ruleKey
+    ? (
+        await attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/rules", { params: { path: { factoryId: context.factoryId } } })).data!)
+      ).data?.find((r) => r.key === j.ruleKey)?.id
+    : undefined;
   const doc = (d: { type: string; id: string; number: string | null } | null) => {
     if (!d) return null;
     const label = `${tc.has(`sources.${d.type}` as never) ? tc(`sources.${d.type}` as never) : d.type} ${d.number ?? ""}`;
@@ -81,7 +91,9 @@ export default async function JournalPage({ params }: { params: Promise<{ entryI
     [t("entryDate"), format.date(j.entryDate)],
     [tf("kind"), tc(`kinds.${j.kind}` as never)],
     ...(j.source ? ([[tf("source"), doc(j.source)]] as [string, React.ReactNode][]) : []),
-    ...(j.ruleKey ? ([[tf("rule"), j.ruleKey]] as [string, React.ReactNode][]) : []),
+    ...(j.ruleKey
+      ? ([[tf("rule"), ruleId ? <Link key="rule" href={`/ledger/accounts/rules/${ruleId}`} className="text-link">{j.ruleKey}</Link> : j.ruleKey]] as [string, React.ReactNode][])
+      : []),
     ...(j.reverses ? ([[t("reverses"), doc(j.reverses)]] as [string, React.ReactNode][]) : []),
     ...(j.reversedBy ? ([[t("reversedBy"), doc(j.reversedBy)]] as [string, React.ReactNode][]) : []),
     ...(j.autoReverseOn ? ([[t("autoReverseOn"), format.date(j.autoReverseOn)]] as [string, React.ReactNode][]) : []),
@@ -113,7 +125,11 @@ export default async function JournalPage({ params }: { params: Promise<{ entryI
           rows={j.lines}
           rowKey={(row) => String(row.lineNo)}
           columns={[
-            { key: "a", header: tc("account"), primary: true, cell: (row) => <span><span className="font-mono">{row.account.code}</span> {row.account.name}</span> },
+            { key: "a", header: tc("account"), primary: true, cell: (row) => (
+                <Link href={glHref(row.account.code)} className="text-link underline-offset-4 hover:underline" title={t("accountMonth")}>
+                  <span className="font-mono">{row.account.code}</span> {row.account.name}
+                </Link>
+              ) },
             { key: "d", header: tc("description"), hideOnPhone: true, cell: (row) => <span className="text-sm">{[row.description, dims(row)].filter(Boolean).join(" — ") || "—"}</span> },
             { key: "dr", header: tc("debit"), align: "end", cell: (row) => (row.debit === "0.00" ? "" : format.thb(row.debit)) },
             { key: "cr", header: tc("credit"), align: "end", cell: (row) => (row.credit === "0.00" ? "" : format.thb(row.credit)) },

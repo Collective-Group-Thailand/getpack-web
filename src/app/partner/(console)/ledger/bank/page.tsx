@@ -51,7 +51,15 @@ export default async function BankPage({ searchParams }: { searchParams: Promise
             label={t("position")}
             items={[
               { key: "t", label: t("total"), value: format.thb(position.data.total), tone: "success" },
-              { key: "c", label: t("cashOnHand"), value: format.thb(position.data.cashOnHand) },
+              {
+                key: "c",
+                label: t("cashOnHand"),
+                value: format.thb(position.data.cashOnHand),
+                // Cash in hand below zero is always a missing or wrong entry.
+                ...(position.data.cashOnHand.startsWith("-")
+                  ? { tone: "danger" as const, hint: t("cashNegative"), href: "/ledger/reports?tab=gl&account=1110" }
+                  : {}),
+              },
               { key: "p", label: t("payables7d"), value: format.thb(position.data.payablesDue7d), href: "/payables" },
               { key: "r", label: t("receivables7d"), value: format.thb(position.data.receivablesDue7d), href: "/receivables" },
             ]}
