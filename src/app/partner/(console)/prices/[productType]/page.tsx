@@ -9,7 +9,7 @@ import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame
 import { CreateProposal, VersionSignOff } from "@/features/partner/prices/actions";
 import { componentsFor } from "@/features/partner/prices/components-by-type";
 import { PriceTable } from "@/features/partner/prices/PriceTable";
-import { loadPrices, loadRows, OPEN_PROPOSAL } from "@/features/partner/prices/server";
+import { loadCounts, loadPrices, loadRows, OPEN_PROPOSAL } from "@/features/partner/prices/server";
 import { PRICE_GROUPS } from "@/features/partner/prices/values";
 import { ChangeRequestForm } from "@/features/partner/requests/ChangeRequestForm";
 import { getFormat } from "@/features/shared/format/server";
@@ -46,6 +46,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
   const t = await getTranslations("partnerPrices");
   const tComponents = await getTranslations("partnerPrices.components");
   const tGroups = await getTranslations("partnerPrices.groups");
+  const tHelp = await getTranslations("partnerPrices.componentHelp");
   const format = await getFormat();
   const context = await factoryContext();
   const prices = await loadPrices(context.factoryId);
@@ -106,8 +107,13 @@ export default async function PriceListPage({ params, searchParams }: Props) {
     group,
     items: definitions.filter((item) => item.group === group),
   })).filter((entry) => entry.items.length);
+  const counts = version ? await loadCounts(context.factoryId, version.id) : new Map<string, number>();
+  const countOf = (component: string) => counts.get(component);
+  // Open on the part asked for, else the first that holds prices — never an empty one when another has lines.
   const component = (definitions.find((item) => item.component === query.component)?.component ??
+    definitions.find((item) => (countOf(item.component) ?? 0) > 0)?.component ??
     definitions[0]?.component) as Schemas["PriceComponent"] | undefined;
+  const filled = definitions.filter((item) => (countOf(item.component) ?? 0) > 0).length;
   const [rows] = version && component ? await loadRows(context.factoryId, version.id, [component]) : [];
   const open = prices.proposals.find((item) => item.priceListId === list.id && OPEN_PROPOSAL.includes(item.status));
   const history = prices.proposals.filter((item) => item.priceListId === list.id);
@@ -123,20 +129,16 @@ export default async function PriceListPage({ params, searchParams }: Props) {
   const versions = [list.current, ...list.upcoming].filter((item): item is NonNullable<typeof item> => !!item);
 
   // The one thing to do next, in the header: carry on with the draft, read what was sent, or start one.
+  // The one thing to do next, in the header — only when no proposal is open (an open one has its own box below).
   const primary =
-    prices.mode !== "factory_price_list" ? null : open ? (
-      <Button asChild size="lg" iconStart={open.status === "draft" ? "edit" : "eye"}>
-        <Link
-          href={`/prices/proposals/${open.id}${open.status === "draft" && component ? `?component=${component}` : ""}`}
-        >
-          {open.status === "draft" ? t("cta.continueDraft") : t("cta.viewOpen")}
-        </Link>
-      </Button>
-    ) : canPropose ? (
+    prices.mode === "factory_price_list" && !open && canPropose ? (
       <Button asChild size="lg" iconStart="edit">
         <a href="#propose">{t("cta.propose")}</a>
       </Button>
     ) : null;
+  const openHref = open
+    ? `/prices/proposals/${open.id}${open.status === "draft" && component ? `?component=${component}` : ""}`
+    : "";
 
   return (
     <PartnerPage
@@ -159,16 +161,18 @@ export default async function PriceListPage({ params, searchParams }: Props) {
       ) : null}
 
       {open ? (
-        <Callout tone="info" title={t(`openNotice.${open.status === "draft" ? "draft" : "sent"}`)}>
-          <span className="flex flex-wrap items-center gap-2">
-            <StatusChip map={PROPOSAL_STATUS} value={open.status} />
-            {t("openNotice.meta", { date: format.date(open.proposedEffectiveFrom), lines: open.lineCounts.total })}
-            <Link
-              href={`/prices/proposals/${open.id}`}
-              className="text-primary font-medium underline underline-offset-4"
-            >
-              {t("propose.openLink")}
-            </Link>
+        <Callout tone={open.status === "draft" ? "warning" : "info"} title={t(`openNotice.${open.status === "draft" ? "draft" : "sent"}`)}>
+          <span className="flex flex-col gap-2">
+            <span className="flex flex-wrap items-center gap-2">
+              <StatusChip map={PROPOSAL_STATUS} value={open.status} />
+              {t("openNotice.meta", { date: format.date(open.proposedEffectiveFrom), lines: open.lineCounts.total })}
+            </span>
+            <span>{t(`openNotice.${open.status === "draft" ? "draftNext" : "sentNext"}`)}</span>
+            <span>
+              <Button asChild size="md" variant={open.status === "draft" ? "primary" : "secondary"} iconStart={open.status === "draft" ? "edit" : "eye"}>
+                <Link href={openHref}>{open.status === "draft" ? t("cta.continueDraft") : t("cta.viewOpen")}</Link>
+              </Button>
+            </span>
           </span>
         </Callout>
       ) : null}
@@ -177,7 +181,11 @@ export default async function PriceListPage({ params, searchParams }: Props) {
         <>
           <Card padding="md" className="flex flex-col gap-2 text-sm">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <p className="font-semibold">{t("version.title", { version: version.versionNo })}</p>
+              <p className="font-semibold">
+                {version.id === list.current?.id
+                  ? t("version.inForce", { version: version.versionNo })
+                  : t("version.coming", { version: version.versionNo })}
+              </p>
               <p className="text-muted">
                 {t("version.meta", { date: format.date(version.effectiveFrom), lines: version.lineCount })}
               </p>
@@ -207,6 +215,9 @@ export default async function PriceListPage({ params, searchParams }: Props) {
                 </nav>
               ) : null}
             </div>
+            <p className="text-muted">
+              {t("version.parts", { filled, total: definitions.length })}
+            </p>
             {version.factoryAcceptedAt ? (
               <p>{t("version.accepted", { date: format.dateTime(version.factoryAcceptedAt) })}</p>
             ) : null}
@@ -223,42 +234,57 @@ export default async function PriceListPage({ params, searchParams }: Props) {
             ) : null}
           </Card>
 
-          <div className="grid gap-4 xl:grid-cols-[14rem_minmax(0,1fr)] xl:items-start">
+          <div className="grid gap-4 xl:grid-cols-[16rem_minmax(0,1fr)] xl:items-start">
             <nav
               aria-label={t("componentsNav")}
-              className="border-border flex gap-4 overflow-x-auto border-b pb-2 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:flex-col xl:gap-3 xl:overflow-y-auto xl:border-b-0 xl:pb-0"
+              className="border-border flex flex-col gap-3 border-b pb-3 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto xl:border-b-0 xl:pb-0"
             >
               {byGroup.map((entry) => (
-                <div key={entry.group} className="shrink-0">
+                <div key={entry.group}>
                   <p className="text-muted px-1 text-xs font-semibold">{tGroups(entry.group)}</p>
-                  <ul className="mt-1 flex gap-1 xl:flex-col">
-                    {entry.items.map((item) => (
-                      <li key={item.component}>
-                        <Link
-                          href={href({ component: item.component })}
-                          aria-current={item.component === component ? "page" : undefined}
-                          className={cn(
-                            "rounded-control flex min-h-11 items-center px-3 text-sm whitespace-nowrap xl:whitespace-normal",
-                            item.component === component
-                              ? "bg-primary text-primary-fg font-medium"
-                              : "hover:bg-surface-subtle",
-                          )}
-                        >
-                          {tComponents(item.component)}
-                        </Link>
-                      </li>
-                    ))}
+                  <ul className="mt-1 flex flex-wrap gap-1 xl:flex-col xl:flex-nowrap">
+                    {entry.items.map((item) => {
+                      const lines = countOf(item.component);
+                      const current = item.component === component;
+                      return (
+                        <li key={item.component}>
+                          <Link
+                            href={href({ component: item.component })}
+                            aria-current={current ? "page" : undefined}
+                            className={cn(
+                              "rounded-control border-border flex min-h-10 items-center justify-between gap-2 border px-3 text-sm xl:border-0",
+                              current
+                                ? "bg-primary text-primary-fg border-primary font-medium"
+                                : lines === 0
+                                  ? "text-muted hover:bg-surface-subtle"
+                                  : "hover:bg-surface-subtle",
+                            )}
+                          >
+                            <span>{tComponents(item.component)}</span>
+                            {lines !== undefined ? (
+                              <span className={cn("text-xs tabular-nums", current ? "text-primary-fg" : "text-muted")}>
+                                {lines}
+                              </span>
+                            ) : null}
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}
+              <p className="text-muted px-1 text-xs">{t("componentsHint")}</p>
             </nav>
 
             {component ? (
               <section aria-labelledby="component-title" className="flex min-w-0 flex-col gap-3">
                 <div className="flex flex-wrap items-end gap-3">
-                  <h2 id="component-title" className="min-w-[min(100%,14rem)] flex-1 text-lg font-semibold">
-                    {tComponents(component)}
-                  </h2>
+                  <div className="min-w-[min(100%,14rem)] flex-1">
+                    <h2 id="component-title" className="text-lg font-semibold">
+                      {tComponents(component)}
+                    </h2>
+                    {tHelp.has(component) ? <p className="text-muted text-sm">{tHelp(component)}</p> : null}
+                  </div>
                   <form
                     method="get"
                     action={`/prices/${productType}`}
@@ -301,10 +327,9 @@ export default async function PriceListPage({ params, searchParams }: Props) {
       )}
 
       {prices.mode === "factory_price_list" ? (
+        open ? null : (
         <PartnerSection id="propose" title={t("propose.title")} description={t("propose.body")}>
-          {open ? (
-            <p className="text-muted">{t("propose.oneAtATime")}</p>
-          ) : canPropose ? (
+          {canPropose ? (
             <Card padding="md">
               <CreateProposal productTypeId={productTypeId} typeName={name} />
             </Card>
@@ -312,6 +337,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
             <p className="text-muted">{t("readOnly")}</p>
           )}
         </PartnerSection>
+        )
       ) : (
         <PartnerSection title={t("rateCardMode.title")}>
           <p>{t("rateCardMode.body")}</p>

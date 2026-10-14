@@ -72,7 +72,10 @@
     "digest": "Checksum {sha}",
     "switch": "Choose a version",
     "current": "Version {version} (in force)",
-    "upcoming": "Version {version} (from {date})"
+    "upcoming": "Version {version} (from {date})",
+    "inForce": "Prices in force — version {version}",
+    "coming": "Next prices — version {version}",
+    "parts": "{filled} of {total} parts have prices — pick a part below to read it"
   },
   "origin": {
     "factory_proposal": "From your proposal",
@@ -81,12 +84,12 @@
     "import": "Imported from a file"
   },
   "componentsNav": "Price components",
-  "rowsCaption": "{component} prices",
+  "rowsCaption": "{component} table",
   "noRows": "No prices in this part of the version yet",
   "noVersion": "No price list yet",
   "noVersionBody": "Start by proposing your first prices below",
   "propose": {
-    "title": "Change prices",
+    "title": "Propose new prices",
     "body": "1. Pick when new prices start → 2. edit prices in the sheet → 3. send to Packio; they apply once approved",
     "open": "You have an open proposal",
     "openLink": "Open it",
@@ -594,7 +597,8 @@
       "change": "Old → new",
       "removed": "Remove this line",
       "drop": "Remove"
-    }
+    },
+    "anyRange": "Any"
   },
   "lines": {
     "empty": "No lines",
@@ -604,7 +608,8 @@
       "remove": "Remove line"
     },
     "counter": "Packio's counter: {values}",
-    "comment": "Note: {comment}"
+    "comment": "Note: {comment}",
+    "removeNote": "Remove this line — the figures below are the prices in force"
   },
   "proposal": {
     "metaTitle": "Price proposal",
@@ -636,23 +641,40 @@
     "evidenceEmpty": "No evidence yet",
     "withdrawTitle": "No longer needed?",
     "evidenceOpen": "Open",
-    "evidenceTitlePlain": "Supporting evidence"
+    "evidenceTitlePlain": "Supporting evidence",
+    "backList": "Back to {type} prices",
+    "next": {
+      "submitted": {
+        "title": "Sent to Packio — waiting for review",
+        "body": "Customers keep getting version {version} meanwhile. Once Packio approves, the new prices start on {date}. To change anything, withdraw and start again"
+      },
+      "under_review": {
+        "title": "Packio is reviewing it",
+        "body": "Customers keep getting version {version} meanwhile; once approved the new prices start on {date}"
+      },
+      "countered": {
+        "title": "Packio countered — your answer is needed",
+        "body": "See the lines Packio countered below and accept or decline them. Customers keep getting version {version} meanwhile"
+      }
+    }
   },
   "cta": {
-    "continueDraft": "Continue the draft",
-    "viewOpen": "View the sent proposal",
-    "propose": "Change prices"
+    "continueDraft": "Continue editing",
+    "viewOpen": "View the proposal sent",
+    "propose": "Propose new prices"
   },
   "openNotice": {
     "draft": "You have a draft price proposal not yet sent",
     "sent": "Packio is reviewing your price proposal",
-    "meta": "From {date} · {lines, plural, one {# line} other {# lines}}"
+    "meta": "From {date} · {lines, plural, one {# line} other {# lines}}",
+    "draftNext": "Packio has not seen these changes; customers still get the current prices. Carry on and send when ready",
+    "sentNext": "While Packio reviews it, customers keep getting the current prices; once approved the new prices start on the date you chose"
   },
   "table": {
     "count": "{total, plural, one {# line} other {# lines}}",
     "filtered": "{shown} of {total} lines",
-    "dimensions": "What the line applies to",
-    "values": "Prices and values",
+    "dimensions": "Applies to",
+    "values": "Prices / values used",
     "search": "Search",
     "searchPlaceholder": "e.g. KA125 or flexo",
     "noMatch": "No line matches “{query}”",
@@ -662,11 +684,82 @@
     "versionNo": "Version {version}",
     "from": "From {date}",
     "lines": "Lines",
-    "open": "Proposal / next version"
+    "open": "Proposal / next version",
+    "anyRange": "Any",
+    "emptyValue": "— means not charged on that line",
+    "anyEverywhere": "Applies to any: {columns}"
   },
   "tierShort": {
     "A": "Instant price on every spec",
     "B": "Instant price on some specs",
     "C": "Packio asks per job"
+  },
+  "componentsHint": "The number is how many price lines a part has; a part at 0 is not used for your prices yet",
+  "componentHelp": {
+    "material_prices": "What the factory pays per unit of each material — the material cost of every job",
+    "paper_sheets": "The paper sheets the factory stocks (grade, gsm, size) — used to pick the sheet a job nests on best",
+    "paper_sizes": "Sheet sizes each press takes — used to check a job fits",
+    "paper_roll_widths": "Roll widths in stock, for work printed from the reel",
+    "film_prices": "Film price per area, for lamination and window film",
+    "foil_prices": "Hot-foil price per area (gold, silver …)",
+    "print_prices": "Print price by process, colours and quantity band",
+    "print_plates": "Printing plate price per colour, charged once per job",
+    "print_blocks": "Printing block price (e.g. flexo), per area or per piece",
+    "ink_colours": "Ink colours offered and the surcharge for special colours",
+    "finish_prices": "Coating and finishing (UV, lamination, emboss …) by area and quantity",
+    "finish_plates": "Blocks for finishing — foil and emboss dies",
+    "diecut_prices": "Die-cutting price by sheet size and quantity band",
+    "diecut_block_prices": "Cutting-die price per design by die size, charged once per design",
+    "assembly_prices": "Gluing and forming price per piece by box style and quantity",
+    "assembly_sheets": "Sheets used in assembly (pads, dividers)",
+    "sortings": "Sorting and inspection price per piece",
+    "packing_prices": "Packing into cartons and on pallets",
+    "difficulty_levels": "Job difficulty levels, used to add to the price of hard work",
+    "print_wastes": "Print waste: make-ready sheets and spoilage % by quantity",
+    "finish_wastes": "Waste allowed for coating and finishing",
+    "diecut_wastes": "Waste allowed for die-cutting",
+    "assembly_wastes": "Waste allowed for gluing and forming",
+    "semi_plate_wastes": "Waste on semi-finished plates",
+    "paper_trims": "Margins kept round the job (gripper, trim) — used when nesting",
+    "print_type_terms": "Terms per print process — minimum quantity, lead time",
+    "factory_margins": "The factory's margin on top of cost",
+    "step_prices": "Prices stepping down by quantity",
+    "code_margins": "Margins for particular product codes",
+    "difficulty_margins": "Margin added per difficulty level",
+    "fix_cost_pcts": "Share of fixed costs added to the price",
+    "percent_reduces": "Percentage discounts by condition",
+    "standard_size_prices": "Fixed prices for standard sizes — customers get them instantly",
+    "stock_product_prices": "Prices of ready-made stock products",
+    "service_prices": "Service prices — design, samples",
+    "conditions": "General conditions applied in pricing",
+    "calculate_conditions": "Calculation settings such as rounding",
+    "production_conditions": "Production conditions — sizes and quantities taken",
+    "pattern_conditions": "Conditions per box style",
+    "process_exclusions": "Processes the factory does not do — jobs needing them won't come",
+    "spec_details": "Further spec details used in pricing",
+    "board_prices": "Corrugated board price by flute, grade and quantity band",
+    "corrugate_print_type_terms": "Terms per print process for corrugated",
+    "corrugate_process_terms": "Terms per corrugated production step",
+    "corrugate_die_blocks": "Cutting dies for corrugated",
+    "corrugate_print_prices": "Print price for corrugated",
+    "corrugate_diecut_prices": "Die-cutting price for corrugated",
+    "corrugate_assembly_prices": "Stitching, gluing and forming for corrugated",
+    "corrugate_pattern_conditions": "Conditions per corrugated box style",
+    "fixed_options": "Options always included with a box style",
+    "label_print_type_terms": "Terms per label process — digital, flexo",
+    "label_paper_sheets": "Label stock in sheets and rolls, with prices",
+    "label_roll_print_prices": "Roll label print price by length and quantity",
+    "label_diecut_prices": "Label die-cutting by size and number of labels",
+    "pouch_print_type_terms": "Terms per pouch print process",
+    "pouch_material_prices": "Pouch material (film structure) price per area",
+    "pouch_print_prices": "Pouch print price by colours and quantity",
+    "pouch_option_prices": "Options — zip, valve, hang hole",
+    "pouch_process_prices": "Laminating and forming pouches",
+    "pouch_min_quantities": "Minimum order per pouch type",
+    "pouch_factory_margins": "Factory margin for pouches",
+    "pouch_option_rules": "Which options each pouch type takes",
+    "b_print_wastes": "Print waste, formula B (the legacy calculator)",
+    "b_print_prices": "Print price, formula B (the legacy calculator)",
+    "b_assembly_prices": "Assembly price, formula B (the legacy calculator)"
   }
 }

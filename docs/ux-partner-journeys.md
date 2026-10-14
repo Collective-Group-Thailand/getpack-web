@@ -184,3 +184,19 @@ VAT register), v0.53.0 (Packio work in the owner's numbers, OEE overtime).
   a revised version in Admin → Settings (`styles.intake_terms`).
 - UAT rehearsal: the books open with the opening stock and catch up the documents already there (API D-405), so the
   October close checklist passes every check.
+
+## Factory prices, walked again (2026-10-15)
+
+Asked for by the product owner after trying the screens himself ("ดูแล้วงงๆ"). **Walked as** the owner reading his label
+and carton prices, with a draft and a sent proposal open.
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| P.1 | An open proposal was announced three times — a header button, a box, and a greyed "แก้ราคา" section at the bottom. | One box says what is happening and what customers get meanwhile, with its button (continue editing / view what was sent); the header offers "เสนอราคาใหม่" only when nothing is open, and the edit section hides while a proposal is open. |
+| P.2 | "ฉบับที่ 2 · 42 บรรทัด" did not say these are the prices customers get now. | "ราคาที่ใช้อยู่ตอนนี้ — ฉบับที่ 2" (or "ราคาฉบับถัดไป"), and how many parts hold prices. |
+| P.3 | Fifteen parts in one sideways-scrolling strip, cut off at the right; the page opened on a part with no prices. | The parts wrap in their groups with the number of lines on each (API D-406); empty parts are dimmed; the page opens on the first part that has prices. |
+| P.4 | A part's name ("ขอบตัดกระดาษ", "สูตร B") did not say what it is for. | One line under every part's name explaining what it holds and how the price uses it. |
+| P.5 | The prices were off the right edge behind 10 condition columns — "ตั้งแต่ / ถึง" pairs and "ไม่จำกัด ไม่จำกัด". | Each from/to pair is one range ("0–20", "≥ 2,000"); a range open on every line is dropped and named once below; past three conditions they stack in one column — the prices stay on screen, in bold; "—" is explained. |
+| P.6 | A proposal's lines read "จำนวนแผ่น — · 499" and a removal showed bare numbers. | Lines say what they apply to with ranges; a removal says "ขอยกเลิกบรรทัดนี้ — ตัวเลขคือราคาที่ใช้อยู่"; a change shows the old price struck through → the new one. |
+| P.7 | After sending, nothing said what happens next; "back" went to the overview. | A box per stage (sent, under review, countered) with what customers get meanwhile and when the new prices start; back returns to that product's prices. |
+| P.8 | The editor's table had the same split ranges and did not mark rows already in the draft. | Ranges in the editor too; rows in the draft are tinted. |

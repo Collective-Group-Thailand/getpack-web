@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { PROPOSAL_LINE_STATUS } from "@/domain/status";
 import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
+import { Badge } from "@/ui/components/Badge";
 import { Card } from "@/ui/components/Card";
 import { cn } from "@/ui/lib/cn";
 
@@ -10,6 +11,9 @@ import {
   cellText,
   changedKeys,
   columnsOf,
+  pairDimensions,
+  rangeLabel,
+  rangeText,
   referenceLookup,
   type PriceComponentDef,
   type PriceReference,
@@ -34,14 +38,25 @@ export async function lineLabeller(definitions: PriceComponentDef[], references:
           `${label(column.key)} ${cellText(values?.[column.key], column, referenceName, labels, valueKeys.has(column.key))}`,
       )
       .join(" · ");
+  const cell = (column: { key: string; type: Schemas["PriceColumnType"] }, value: unknown) =>
+    cellText(value, column, referenceName, labels, valueKeys.has(column.key));
+  /** What a line applies to, short: each from/to pair as one range, an open pair ("any") left out. */
+  const applies = (component: Schemas["PriceComponent"], values: Values | null) =>
+    pairDimensions(columnsOf(definitions, component).dimensions)
+      .flatMap((pair) => {
+        if (pair.kind === "single") return [`${label(pair.column.key)} ${cell(pair.column, values?.[pair.column.key])}`];
+        const range = rangeText(pair, values ?? {}, cell, "");
+        return range ? [`${rangeLabel(label(pair.lower.key))} ${range}`] : [];
+      })
+      .join(" · ");
   return {
     title: (line: Pick<Line, "component" | "currentValues" | "proposedValues">) => {
-      const dims = text(line.component, (line.proposedValues ?? line.currentValues) as Values | null, "dimensions");
+      const dims = applies(line.component, (line.proposedValues ?? line.currentValues) as Values | null);
       return dims ? `${tComponents(line.component)} · ${dims}` : tComponents(line.component);
     },
+    applies,
     values: (component: Schemas["PriceComponent"], values: Values | null) => text(component, values, "values"),
-    cell: (column: { key: string; type: Schemas["PriceColumnType"] }, value: unknown) =>
-      cellText(value, column, referenceName, labels, valueKeys.has(column.key)),
+    cell,
     column: label,
   };
 }
@@ -62,6 +77,7 @@ export async function LineList({
   showDecision?: boolean;
 }) {
   const t = await getTranslations("partnerPrices.lines");
+  const tComponents = await getTranslations("partnerPrices.components");
   const label = await lineLabeller(definitions, references);
   if (!lines.length) return <p className="text-muted">{t("empty")}</p>;
   return (
@@ -69,35 +85,44 @@ export async function LineList({
       {lines.map((line) => {
         const columns = columnsOf(definitions, line.component).values;
         const changed = changedKeys(line.currentValues as Values | null, line.proposedValues as Values | null);
+        const current = line.currentValues as Values | null;
+        const proposed = line.proposedValues as Values | null;
         return (
           <li key={line.id}>
             <Card padding="md" className="flex flex-col gap-2">
               <div className="flex flex-wrap items-start gap-2">
-                <p className="min-w-0 flex-1 font-medium">{label.title(line)}</p>
+                <Badge tone={line.action === "remove" ? "danger" : line.action === "add" ? "success" : "warning"}>
+                  {t(`actions.${line.action}`)}
+                </Badge>
+                <p className="min-w-0 flex-1 font-medium">{tComponents(line.component)}</p>
                 {showDecision ? <StatusChip map={PROPOSAL_LINE_STATUS} value={line.decision} /> : null}
               </div>
-              <p className="text-muted text-sm">{t(`actions.${line.action}`)}</p>
+              {label.applies(line.component, proposed ?? current) ? (
+                <p className="text-muted text-sm">{label.applies(line.component, proposed ?? current)}</p>
+              ) : null}
+              {line.action === "remove" ? <p className="text-sm">{t("removeNote")}</p> : null}
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm tabular-nums">
-                {columns.map((column) => (
-                  <div key={column.key} className="contents">
-                    <dt className="text-muted">{label.column(column.key)}</dt>
-                    <dd className={cn(changed.has(column.key) && line.action === "change" && "font-semibold")}>
-                      {line.currentValues && line.action !== "add" ? (
-                        <>
-                          {label.cell(column, (line.currentValues as Values)[column.key])}
-                          {line.action === "change" && changed.has(column.key) ? (
-                            <>
-                              {" → "}
-                              {label.cell(column, (line.proposedValues as Values | null)?.[column.key])}
-                            </>
-                          ) : null}
-                        </>
-                      ) : (
-                        label.cell(column, (line.proposedValues as Values | null)?.[column.key])
-                      )}
-                    </dd>
-                  </div>
-                ))}
+                {columns.map((column) => {
+                  const isChanged = line.action === "change" && changed.has(column.key);
+                  return (
+                    <div key={column.key} className="contents">
+                      <dt className="text-muted">{label.column(column.key)}</dt>
+                      <dd className={cn(line.action === "change" && !isChanged && "text-muted")}>
+                        {line.action === "add" ? (
+                          <span className="font-semibold">{label.cell(column, proposed?.[column.key])}</span>
+                        ) : isChanged ? (
+                          <>
+                            <span className="text-muted line-through">{label.cell(column, current?.[column.key])}</span>
+                            {" → "}
+                            <span className="font-semibold">{label.cell(column, proposed?.[column.key])}</span>
+                          </>
+                        ) : (
+                          label.cell(column, current?.[column.key])
+                        )}
+                      </dd>
+                    </div>
+                  );
+                })}
               </dl>
               {line.counterValues ? (
                 <p className="bg-warning-subtle text-warning-subtle-fg rounded-md p-2 text-sm">
