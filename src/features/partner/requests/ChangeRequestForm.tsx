@@ -28,6 +28,8 @@ const TOPICS = [
   "site_visit",
   "other",
 ] as const satisfies readonly ChangeRequestTopic[];
+/** Topics about one product type; the others (zones, payout terms, anything else) are factory-wide. */
+const TYPED = new Set<ChangeRequestTopic>(["capability", "capacity", "tolerance", "participation_tier", "pricing_arrangement"]);
 
 /**
  * "Please change this" to the Partner team (`partner.changeRequests.create`). The factory never
@@ -81,7 +83,7 @@ export function ChangeRequestForm({
     setError(null);
     // CONTRACT-GAP partner.change-requests — a request names no product type, so the one it is about
     // leads the message, in the factory's own words.
-    const typeName = productTypes.find((item) => item.id === type)?.name;
+    const typeName = TYPED.has(topic) ? productTypes.find((item) => item.id === type)?.name : undefined;
     const text = typeName ? t("aboutType", { type: typeName, message: message.trim() }) : message.trim();
     try {
       await browserApi().POST("/v1/partner/factories/{factoryId}/change-requests", {
@@ -114,7 +116,7 @@ export function ChangeRequestForm({
           />
         </Field>
       ) : null}
-      {productTypes.length > 1 && !productTypeId ? (
+      {productTypes.length > 1 && !productTypeId && TYPED.has(topic) ? (
         <Field label={t("productType")}>
           <Select
             value={type}

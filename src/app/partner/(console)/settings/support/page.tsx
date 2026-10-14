@@ -15,7 +15,7 @@ export default async function SupportAccessPage() {
   const { contract } = await partnerServerApis();
   const read = await attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/support-grants", { params: { path: { factoryId: context.factoryId } } })).data!);
   return (
-    <PartnerPage title={t("title")} description={t("body")} back={{ href: "/settings", label: t("back") }}>
+    <PartnerPage title={t("title")} description={t("body")}>
       {read.data ? <SupportGrants grants={read.data} /> : <PageError error={read.error} />}
     </PartnerPage>
   );

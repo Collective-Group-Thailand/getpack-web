@@ -18,7 +18,7 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | **done** (web `feat/ux-round6-finance`, API v0.52.0) |
 | 7 | The books: ledger, journals, reports, accounts, assets, bank | **done** (web `feat/ux-round7-books`) |
 | 8 | Insight: dashboard, costs, profit, OEE | **done** (web `feat/ux-round8-insight`, API v0.53.0) |
-| 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | |
+| 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | **done** (web `feat/ux-round9-factory`) |
 
 ## Round 1 — the day's work
 
@@ -152,3 +152,27 @@ stock value vs. ledger, the chart with rule editor, bank import with auto-match 
 
 Already good and kept: the cost sheet per order (material, machine minutes at the machine's rate, labour, overhead,
 per unit), machine rates, OEE per machine and day with pause reasons.
+
+## Round 9 — the factory
+
+**Walked as** the owner after go-live (settings and people, what the factory agreed with Packio, requests, documents,
+the handbook, support access, the phone's full menu).
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 9.1 | After go-live the company details, payout account, capabilities, zones and agreements were only reachable through the onboarding address — the menu no longer shows onboarding. | Settings opens with "ข้อมูลโรงงานกับ Packio": eight cards (company, documents, payout account, capabilities, weekly capacity, delivery zones, payout terms, agreements) to read them and ask for a change. |
+| 9.2 | The External auditor / CPA role showed as `factory_auditor` in the users list. | Named like every other role. |
+| 9.3 | A request about anything ("เรื่องอื่น") still asked for a product type and prefixed it to the message. | The product type is asked only for topics about one (capability, capacity, tolerance, tier, pricing). |
+| 9.4 | On a phone, "เพิ่มเติม" listed ~50 menus with no way to find one. | A search box on top filters by name, description and group. |
+| 9.5 | Style intakes said "not open" with nowhere to go. | A link to tell Packio the factory has designs to offer (requests). |
+| 9.6 | Support access, a menu of its own, opened with a "back to settings" link. | Removed. |
+
+Already good and kept: users and roles with deactivate, working hours and closures, ERP settings, notification
+channels per topic, the label printer per device, performance against Packio's KPIs, documents with folders, versions
+and expiry, the handbook with categories, the support grant with its log, the alerts list.
+
+## Summary
+
+Nine rounds, every partner menu walked as its user at 1280 px and 390 px: no page scrolls sideways, no page or console
+errors beyond the test browser's caret style. API releases v0.51.0 (inbox, units), v0.52.0 (Packio statements in the
+VAT register), v0.53.0 (Packio work in the owner's numbers, OEE overtime).
