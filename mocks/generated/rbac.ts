@@ -1,12 +1,12 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: packio-api docs/rbac.md at v0.52.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
+ * Source: packio-api docs/rbac.md at v0.53.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
  *
  * The permissions each D-140 staff role and factory role holds in packio-api, verbatim. The mock
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "9cd212f", tag: "v0.52.0" } as const;
+export const RBAC_SOURCE = { commit: "9cd212f", tag: "v0.53.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",

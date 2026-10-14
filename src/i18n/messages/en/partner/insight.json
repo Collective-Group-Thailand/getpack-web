@@ -448,7 +448,14 @@
     "lowStock": "Low stock",
     "item": "Item",
     "available": "Available",
-    "reorderPoint": "Reorder point"
+    "reorderPoint": "Reorder point",
+    "packio": "Work from Packio",
+    "packioRevenue": "Packio revenue this month",
+    "packioRevenueHint": "From {n} confirmed statements",
+    "packioToConfirm": "Statements to confirm",
+    "packioToConfirmHint": "{amount} in all",
+    "packioToInvoice": "Confirmed, tax invoice to attach",
+    "salesOwn": "Own sales this month"
   },
   "costs": {
     "title": "Job costs",
@@ -486,12 +493,13 @@
   },
   "profit": {
     "title": "Gross profit",
-    "body": "The month's net invoiced sales less the cost of what was delivered",
+    "body": "The month’s gross profit: Packio work and the factory’s own sales, less their cost",
     "by": "By",
     "views": {
       "customer": "Customer",
       "item": "Item",
-      "sales_order": "Sales order"
+      "sales_order": "Sales order",
+      "packio_job": "Packio jobs"
     },
     "month": "Month",
     "show": "Show",
@@ -502,7 +510,11 @@
     "empty": "No invoices this month",
     "emptyBody": "Profit shows once invoices are issued",
     "pct": "%",
-    "note": "Sales exclude VAT; credit and debit notes are not included; cost is the stock cost at delivery"
+    "note": "Sales exclude VAT; credit and debit notes are not included; cost is the stock cost at delivery",
+    "notePackio": "Revenue is the job’s purchase order (before VAT, shipping included); cost is the production order’s cost at today’s rates — jobs whose production order finished in the month",
+    "noCost": "No cost yet",
+    "noCostHint": "No material issued or machine time recorded — not counted as profit",
+    "noCostCount": "{n} jobs have no cost yet — profit overstated"
   },
   "oee": {
     "title": "Machine OEE",
