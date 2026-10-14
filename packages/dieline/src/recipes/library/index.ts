@@ -24,6 +24,7 @@ import teStraightSeal from "./data/te-straight-seal.json" with { type: "json" };
 import te2Airplane from "./data/te2-airplane.json" with { type: "json" };
 import te2Reverse from "./data/te2-reverse.json" with { type: "json" };
 import te2Straight from "./data/te2-straight.json" with { type: "json" };
+import te2Seal from "./data/te2-seal.json" with { type: "json" };
 import pizzaBox from "./data/pizza-box.json" with { type: "json" };
 import lockCornerTray from "./data/lock-corner-tray.json" with { type: "json" };
 import archiveBox from "./data/archive-box.json" with { type: "json" };
@@ -177,6 +178,7 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   te2Airplane,
   te2Reverse,
   te2Straight,
+  te2Seal,
   pizzaBox,
   lockCornerTray,
   archiveBox,

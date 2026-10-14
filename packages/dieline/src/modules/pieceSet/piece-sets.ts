@@ -66,6 +66,21 @@ export const lidAndBase: PieceSetModule = {
       };
       if (handles !== "none" && !lid) add(trayHandHoles(handles, f, full ? 30 : lidDepthOf(v) + 15));
       if (handles !== "none" && lid && full) add(trayHandHoles(handles, f, f.height - 30 - HAND_HOLE_HEIGHT_MM));
+      // A front window (`windowPanel` = `wall-front`, the master `front_window`): in the base's front
+      // wall below a partial lid's rim; with a full lid, through the base's front wall and the lid's
+      // wall over it — the lid is turned over onto the base, so its own back wall is the one in front.
+      if (!lid)
+        add({
+          "wall-front": windowHole(
+            v,
+            "wall-front",
+            f.height,
+            f.height + f.length,
+            f.height + f.width,
+            2 * f.height + f.width - (full ? 0 : lidDepthOf(v) + c),
+          ),
+        });
+      if (lid && full) add({ "wall-back": windowHole(v, "wall-front", f.height, f.height + f.length, 0, f.height) });
       if (lid) {
         // A top window in the lid's top (`windowPanel` = `lid-base`); a finger hole in its front and back walls.
         holes.base = windowHole(v, "lid-base", f.height, f.height + f.length, f.height, f.height + f.width);
@@ -132,7 +147,7 @@ export const sleeveAndDrawer: PieceSetModule = {
     const c = DRAWER_CLEARANCE_MM;
     const drawerH = H + a.trayDepth;
     const drawerL = L + a.panel;
-    const holes = bool(v, "fingerHole", true)
+    const holes: Record<string, Contour[]> = bool(v, "fingerHole", true)
       ? {
           "wall-front": [
             ellipse(
@@ -144,6 +159,17 @@ export const sleeveAndDrawer: PieceSetModule = {
           ],
         }
       : {};
+    // A side window (`windowPanel` = `sleeve-left`, the master `front_window`): through the sleeve's
+    // side and the drawer's long wall behind it, so the product shows.
+    // The sleeve's panels run along the drawer: its window's width is the drawer wall's height.
+    const across = {
+      ...v,
+      windowWidth: v.windowHeight,
+      windowHeight: v.windowWidth,
+      windowOffsetX: -num(v, "windowOffsetY", 0),
+      windowOffsetY: v.windowOffsetX,
+    } as ParamValues;
+    holes["wall-back"] = windowHole(across, "sleeve-left", drawerH, drawerH + drawerL, 0, drawerH);
     const drawer = buildTray({
       length: drawerL,
       width: W + a.panel,

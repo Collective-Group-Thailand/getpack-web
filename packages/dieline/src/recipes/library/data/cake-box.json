@@ -12,7 +12,15 @@
       },
       "top_window": {
         "window": "rect",
-        "windowPanel": "lid"
+        "windowPanel": "lid",
+        "windowWidth": 120,
+        "windowHeight": 120
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "wall-front",
+        "windowWidth": 120,
+        "windowHeight": 50
       }
     }
   },
@@ -25,7 +33,9 @@
     "th": "ถาดติดกาวสำเร็จ ฝาพับติดผนังหลัง ขอบฝาติดกาวกางพร้อมใช้ เลือกหน้าต่างบนฝาได้",
     "en": "A ready-glued tray whose hinged lid pops up with it, lips glued; with an optional lid window"
   },
-  "materials": ["paperboard"],
+  "materials": [
+    "paperboard"
+  ],
   "params": [
     {
       "ref": "length",
@@ -52,6 +62,13 @@
           "label": {
             "th": "บนฝา",
             "en": "Lid top"
+          }
+        },
+        {
+          "value": "wall-front",
+          "label": {
+            "th": "ผนังด้านหน้า",
+            "en": "Front wall"
           }
         }
       ]

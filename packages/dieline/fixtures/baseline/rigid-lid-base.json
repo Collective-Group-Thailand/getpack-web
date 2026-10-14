@@ -1,5 +1,5 @@
 {
-  "definition": "00f08102f8935e",
+  "definition": "0fc1ab0209a444",
   "gift · board-350": {
     "build": "0035a5afad3ce7",
     "hinges": "19ea828a6acf50",
@@ -192,6 +192,12 @@
     "validate": "177ada375a3441",
     "closed": "1847c855dffa70"
   },
+  "gift · board-350 · windowPanel=wall-front": {
+    "build": "0035a5afad3ce7",
+    "hinges": "19ea828a6acf50",
+    "validate": "177ada375a3441",
+    "closed": "1847c855dffa70"
+  },
   "gift · board-350 · windowWidth=min": {
     "build": "0035a5afad3ce7",
     "hinges": "19ea828a6acf50",
@@ -330,6 +336,12 @@
     "validate": "177ada375a3441",
     "closed": "1847c855dffa70"
   },
+  "gift · board-350 · window=rect@wall-front": {
+    "build": "17e45d32692778",
+    "hinges": "19ea828a6acf50",
+    "validate": "0561bd83bb38b3",
+    "closed": "1847c855dffa70"
+  },
   "gift · board-350 · window=rect:oversized": {
     "build": "13c29fe765d780",
     "hinges": "19ea828a6acf50",
@@ -342,6 +354,12 @@
     "validate": "177ada375a3441",
     "closed": "1847c855dffa70"
   },
+  "gift · board-350 · window=rounded@wall-front": {
+    "build": "0f0a12db132888",
+    "hinges": "19ea828a6acf50",
+    "validate": "0561bd83bb38b3",
+    "closed": "1847c855dffa70"
+  },
   "gift · board-350 · window=rounded:oversized": {
     "build": "13c0521fdade18",
     "hinges": "19ea828a6acf50",
@@ -352,6 +370,12 @@
     "build": "1908139cbef438",
     "hinges": "19ea828a6acf50",
     "validate": "177ada375a3441",
+    "closed": "1847c855dffa70"
+  },
+  "gift · board-350 · window=ellipse@wall-front": {
+    "build": "040d40ec760f7d",
+    "hinges": "19ea828a6acf50",
+    "validate": "0561bd83bb38b3",
     "closed": "1847c855dffa70"
   },
   "gift · board-350 · window=ellipse:oversized": {
