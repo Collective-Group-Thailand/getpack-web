@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.51.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.52.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -22896,9 +22896,9 @@ export interface paths {
         };
         /**
          * Sales tax report (รายงานภาษีขาย)
-         * @description The month’s tax invoices and credit / debit notes in date and number order; voided ones with no value (D-367).
+         * @description The month’s tax invoices and credit / debit notes in date and number order; voided ones with no value (D-367); Packio billing statements the factory confirmed in the month as `packio_statement` rows (D-401).
          *
-         *     Implements: D-367.
+         *     Implements: D-367, D-401.
          */
         get: operations["partner.erpTax.salesVat"];
         put?: never;
@@ -22918,9 +22918,9 @@ export interface paths {
         };
         /**
          * ภ.พ.30 summary
-         * @description Output VAT, input VAT and what is payable or carried forward for the month, with the due date (D-367).
+         * @description Output VAT (including Packio statements confirmed in the month, D-401), input VAT and what is payable or carried forward for the month, with the due date (D-367).
          *
-         *     Implements: D-367.
+         *     Implements: D-367, D-401.
          */
         get: operations["partner.erpTax.vat30"];
         put?: never;
@@ -54539,7 +54539,10 @@ export interface components {
             date: string;
             /** @example IV-2610-0005 */
             docNo: string;
-            /** @example tax_invoice */
+            /**
+             * @description `packio_statement`: a Packio billing statement the factory confirmed — its sale to Packio (D-401)
+             * @example tax_invoice
+             */
             kind: components["schemas"]["ErpVatRowKind"];
             /**
              * @description Net; negative for a credit note
@@ -54565,8 +54568,11 @@ export interface components {
              */
             voided: boolean;
         };
-        /** @enum {string} */
-        ErpVatRowKind: "tax_invoice" | "credit_note" | "debit_note" | "supplier_tax_invoice";
+        /**
+         * @description `packio_statement`: a Packio billing statement the factory confirmed — its sale to Packio (D-401)
+         * @enum {string}
+         */
+        ErpVatRowKind: "tax_invoice" | "credit_note" | "debit_note" | "supplier_tax_invoice" | "packio_statement";
         ErpVerifyNcrDto: {
             /** @example ล็อตถัดไปสีตรงมาตรฐาน */
             note: string;

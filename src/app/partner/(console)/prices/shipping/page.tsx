@@ -32,10 +32,9 @@ export default async function ShippingRatesPage() {
       (await contract.GET("/v1/partner/factories/{factoryId}/shipping-rate-card", { params: { path: { factoryId } } }))
         .data!,
   );
-  const back = { href: "/prices", label: t("back") };
   if (!card.data)
     return (
-      <PartnerPage title={t("title")} back={back}>
+      <PartnerPage title={t("title")}>
         <PageError error={card.error} />
       </PartnerPage>
     );
@@ -66,7 +65,7 @@ export default async function ShippingRatesPage() {
     ].join(" · ");
 
   return (
-    <PartnerPage title={t("title")} back={back} description={t("body")}>
+    <PartnerPage title={t("title")} description={t("body")}>
       {open?.data ? (
         <PartnerSection
           title={t("openTitle", { version: open.data.versionNo })}

@@ -6,6 +6,7 @@ import { blockedReason, offered } from "@/features/partner/account/offered";
 import { PartnerFileButton } from "@/features/partner/account/files";
 import { ConfirmStatement, DisputeStatement, TaxInvoiceForm } from "@/features/partner/billing/actions";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -278,6 +279,7 @@ export default async function StatementPage({ params }: Props) {
           </ul>
         </PartnerSection>
       ) : null}
+      <PostedEntries sourceId={statement.id} />
     </PartnerPage>
   );
 }

@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_RECEIPT_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { ReceiptActions } from "@/features/partner/sales/ReceivableForms";
 import { StatusChip } from "@/features/partner/status";
@@ -101,6 +102,7 @@ export default async function ReceiptPage({ params }: Props) {
           ]}
         />
       </PartnerSection>
+      <PostedEntries sourceId={rc.id} />
     </PartnerPage>
   );
 }

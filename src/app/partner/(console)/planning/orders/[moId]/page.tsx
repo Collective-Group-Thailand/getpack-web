@@ -6,6 +6,7 @@ import { ERP_OPERATION_STATUS, ERP_PRODUCTION_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain, formatQty } from "@/features/partner/erp/format";
 import { MoActions, OperationButtons, ReturnMaterial } from "@/features/partner/erp/MoActions";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
 import { StatusChip } from "@/features/partner/status";
@@ -256,6 +257,7 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
       </PartnerSection>
 
       <RelatedDocuments type="production_order" id={mo.id} label={mo.moNo} />
+      <PostedEntries sourceId={mo.id} />
     </PartnerPage>
   );
 }

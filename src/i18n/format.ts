@@ -47,9 +47,8 @@ export function formatTHB(
 
   const groupedWhole = new Intl.NumberFormat(localeTag(locale)).format(BigInt(whole));
   const paddedFraction = decimals > 0 ? `.${fraction.padEnd(decimals, "0").slice(0, decimals)}` : "";
-  const formatted = `${negative ? "-" : ""}${groupedWhole}${paddedFraction}`;
-
-  return withSymbol ? `฿${formatted}` : formatted;
+  // The sign goes before the symbol ("-฿500.50"), as Intl writes it.
+  return `${negative ? "-" : ""}${withSymbol ? "฿" : ""}${groupedWhole}${paddedFraction}`;
 }
 
 /** A plain count — quantities, pieces, points. */

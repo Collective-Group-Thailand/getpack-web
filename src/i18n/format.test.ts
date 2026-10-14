@@ -28,7 +28,7 @@ describe("formatTHB", () => {
   });
 
   it("handles negatives, for credit notes and refunds", () => {
-    expect(formatTHB("-500.50")).toBe("฿-500.50");
+    expect(formatTHB("-500.50")).toBe("-฿500.50");
   });
 
   it("never prints NaN in front of a customer", () => {

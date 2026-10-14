@@ -80,7 +80,6 @@ export default async function PayoutsPage({ searchParams }: Props) {
     <PartnerPage
       title={t("title")}
       description={t("body")}
-      back={{ href: "/billing", label: t("back") }}
       actions={
         <>
           <Button asChild variant="secondary" size="md" iconStart="calendar">

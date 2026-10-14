@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ERP_DELIVERY_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatQty } from "@/features/partner/erp/format";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { DeliveryActions } from "@/features/partner/sales/DeliveryForms";
 import { StatusChip } from "@/features/partner/status";
@@ -133,6 +134,7 @@ export default async function DeliveryPage({ params }: Props) {
           ]}
         />
       </PartnerSection>
+      <PostedEntries sourceId={doc.id} />
     </PartnerPage>
   );
 }
