@@ -15,7 +15,7 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | **done** (web `feat/ux-round3-plan`) |
 | 4 | Quality: checks, NCRs, templates | **done** (web `feat/ux-round4-quality`) |
 | 5 | Sales: CRM, quotations, sales orders, deliveries | **done** (web `feat/ux-round5-sales`) |
-| 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | next |
+| 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | **done** (web `feat/ux-round6-finance`, API v0.52.0) |
 | 7 | The books: ledger, journals, reports, accounts, assets, bank | |
 | 8 | Insight: dashboard, costs, profit, OEE | |
 | 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | |
@@ -98,3 +98,23 @@ verification, the COA, templates with checkpoints.
 
 Already good and kept: the CRM overview by stage and salesperson, leads → opportunities → quotations, the quotation and
 sales-order pages (credit limit, reservations, delivered / invoiced per line, PDFs), delivery notes.
+
+## Round 6 — finance
+
+**Walked as** the accountant (month end: invoices, receipts, payables, Packio statements and payouts, tax) and the owner
+(confirming a Packio statement, prices and shipping rates).
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 6.1 | A document said nothing about what it put in the books — to see the entry of an invoice, a receipt, a goods receipt or a Packio payout the accountant searched the journals by number. | "บันทึกบัญชีแล้ว": every posted document (Packio statement and payout, sales invoice and note, receipt, supplier invoice and payment, goods receipt, delivery note, production order) lists its journal entries — number, rule, debit / credit lines — each opening the entry (`PostedEntries`, ledger readers only). |
+| 6.2 | The sales VAT register left out the factory's sale to Packio: its VAT was in the ledger and in the PP30 check, but not in the report the accountant files from. | API D-401: Packio statements the factory confirmed in the month are rows of the sales register ("ใบกำกับภาษีถึง Packio"), numbered by the factory's tax invoice once recorded; the PP30 summary and the export include them; the note says so. |
+| 6.3 | Register lines were text — checking one meant finding the document elsewhere. | Each line opens its document (invoice, note, supplier invoice, Packio statement); document numbers do not break. |
+| 6.4 | The tax month had only a month picker; PP30 is filed for last month. | "‹ เดือนก่อน / เดือนถัดไป ›" beside the picker on every tax view. |
+| 6.5 | Negative amounts read "฿-100.00". | "-฿100.00" everywhere (the sign before the symbol, as Intl writes it). |
+| 6.6 | A confirmed Packio statement without the factory's tax invoice looked done, though Packio pays only once it is attached. | Billing summary (to check and confirm / confirmed, tax invoice to attach / disputed, with amounts); such rows are marked "ต้องแนบใบกำกับภาษี". |
+| 6.7 | Payouts and shipping rates are menus of their own but opened with a "back to billing / prices" link. | The back links are gone on top-level menus. |
+
+Already good and kept: invoices from deliveries or orders with the tax-invoice switch, receivables aging and receipts
+with allocation, payables with the 3-way match and WHT at payment, 50 ทวิ, the payout schedule per order (advance,
+balance, retention) and the statement of account, factory prices with proposals, the shipping rate card with its
+pending version.

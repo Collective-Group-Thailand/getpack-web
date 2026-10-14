@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ERP_ISSUED_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain, formatQty } from "@/features/partner/erp/format";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { NoteActions } from "@/features/partner/sales/NoteForms";
 import { StatusChip } from "@/features/partner/status";
@@ -104,6 +105,7 @@ export default async function NotePage({ params }: Props) {
           <dd className="text-end text-lg font-semibold">{format.thb(note.total)}</dd>
         </dl>
       </PartnerSection>
+      <PostedEntries sourceId={note.id} />
     </PartnerPage>
   );
 }

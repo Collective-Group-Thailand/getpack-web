@@ -615,6 +615,9 @@
     "body": "Output and input VAT reports, the PP.30 summary, PND.3/53, 50 bis certificates and files for the accountant",
     "month": "Tax month",
     "show": "Show",
+    "monthNav": "Choose month",
+    "prevMonth": "‹ Previous month",
+    "nextMonth": "Next month ›",
     "views": {
       "label": "Tax views",
       "vat": "VAT reports",
@@ -645,7 +648,8 @@
         "tax_invoice": "Tax invoice",
         "credit_note": "Credit note",
         "debit_note": "Debit note",
-        "supplier_tax_invoice": "Supplier tax invoice"
+        "supplier_tax_invoice": "Supplier tax invoice",
+        "packio_statement": "Tax invoice to Packio (billing statement)"
       },
       "party": "Buyer / seller",
       "taxId": "Tax ID",
@@ -662,7 +666,7 @@
       "payable": "To pay",
       "credit": "Overpaid (carried forward)",
       "due": "File by {date}",
-      "note": "Worked out from the documents here — check with your accountant before filing"
+      "note": "Worked out from the documents here, including the VAT on Packio statements confirmed in the month — check with your accountant before filing; record the filing when closing the period in the books"
     },
     "wht": {
       "forms": "Form",

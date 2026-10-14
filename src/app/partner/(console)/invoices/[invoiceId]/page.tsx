@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_ISSUED_STATUS, ERP_RECEIPT_STATUS, ERP_SALES_INVOICE_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { Row, RowList } from "@/features/partner/rows";
 import { InvoiceActions } from "@/features/partner/sales/InvoiceForms";
@@ -179,6 +180,7 @@ export default async function InvoicePage({ params }: Props) {
           )}
         </PartnerSection>
       </div>
+      <PostedEntries sourceId={doc.id} />
     </PartnerPage>
   );
 }
