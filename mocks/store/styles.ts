@@ -23,6 +23,18 @@ import { customerOf } from "./customers";
 type Card = Schemas["StyleCardDto"];
 type Detail = Schemas["StyleDetailDto"];
 type Row = (typeof master.styles)[number];
+/** The master's product types as packio-api maps them (`PRODUCT_TYPE_OF`, D-407). */
+const PRODUCT_TYPE_OF: Record<string, string> = {
+  folding: "folding_carton",
+  corrugate: "corrugated",
+  label: "label_sticker",
+  tag_sleeve: "tag_sleeve",
+  pouch: "flexible_pouch",
+  rigid: "rigid_box",
+  paper_bag: "paper_bag",
+  mailer: "flexible_pouch",
+  shrink_sleeve: "label_sticker",
+};
 
 const axesOf = (row: Row) => row.variant_axes.split(";").filter(Boolean);
 const MULTI = new Set(["pouch_feat"]);
@@ -185,6 +197,7 @@ function detail(s: MockStyle, favourite: boolean | null): Detail {
       .filter((axis) => values.has(axis))
       .map((axis) => ({ axis, multiSelect: MULTI.has(axis), values: [...values.get(axis)!] })),
     construction: s.row.construction,
+    productTypeCode: PRODUCT_TYPE_OF[s.row.product_type] ?? null,
     descriptionEn: null,
     descriptionTh: null,
     leadTime: s.pricePath === "instant" ? { minDays: 7, maxDays: 12 } : null,

@@ -320,6 +320,8 @@
     "configure": "Configure and price",
     "designInStudio": "Design in 3D Studio",
     "requestQuote": "Request a quote",
+    "rfqNote": "No instant price for this one yet — design it in the 3D Studio, then ask for a quotation. Our team finds a factory that can make it and replies with a price.",
+    "studioUnavailable": "This variant can't open in the studio yet — request a quotation with its code instead.",
     "preview": "Preview",
     "show3d": "Turn it round in 3D",
     "loading3d": "Preparing the 3D view…",
