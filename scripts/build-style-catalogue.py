@@ -187,15 +187,40 @@ add("PK-TG-05","tag","tag_sleeve","tag_sleeve","การ์ดแทรก/ก�
 
 # ---------- Variant expansion ----------
 ALLOWED_TUCK_PAIRS = [(t,b) for t in AX["tuck_top"] for b in AX["tuck_bottom"] if not (t=="seal" and b=="four_flap_lock")]
+
+# Combinations no factory can build (D-408): each rule names its bases, the axis values that together are impossible,
+# and why. packio-api's importer drops them (`excluded_combinations`); the counts below exclude them too.
+EXCLUDED = [
+    {"bases": ["PK-TE-01"], "when": {"tuck_top": ["straight_tuck"], "hang": ["euro_slot", "round_hole", "sombrero_header"]},
+     "reason": "A straight tuck's top lid hinges on the back panel's edge, where a hang tab stands; a hang tab takes a reverse, airplane or seal top."},
+    {"bases": ["PK-SP-01"], "when": {"window": ["top_window"]},
+     "reason": "A pillow box's faces are its front and back (front_window); its ends are curved closures."},
+    {"bases": ["PK-SP-02"], "when": {"window": ["top_window"]},
+     "reason": "The gable top is the handle; a window goes in the front panel."},
+    {"bases": ["PK-SP-03", "PK-SP-04"], "when": {"tuck_top": ["seal", "airplane_tuck"]},
+     "reason": "A polygon carton closes with a polygon tuck lid (straight or reverse); seal and airplane ends are rectangular constructions."},
+    {"bases": ["PK-DS-03", "PK-PG-02", "PK-SL-01"], "when": {"window": ["top_window"]},
+     "reason": "The top is open (a display, a bag's mouth, a sleeve's end); a window goes in the front."},
+]
+
+def excluded(code, options):
+    return any(code in rule["bases"] and all(options.get(a) in vs for a, vs in rule["when"].items()) for rule in EXCLUDED)
+
 def variant_count(row):
-    n = 1
+    combos = [{}]
     axes = row["variant_axes"]
-    if "tuck_top" in axes and "tuck_bottom" in axes:
-        n *= len(ALLOWED_TUCK_PAIRS)
-        axes = [a for a in axes if a not in ("tuck_top","tuck_bottom")]
+    paired = "tuck_top" in axes and "tuck_bottom" in axes
     for a in axes:
-        n *= (2 ** len(AX[a])) if a == "pouch_feat" else len(AX[a])
-    return n
+        if paired and a == "tuck_bottom":
+            continue
+        if paired and a == "tuck_top":
+            choices = [{"tuck_top": t, "tuck_bottom": b} for t, b in ALLOWED_TUCK_PAIRS]
+        elif a == "pouch_feat":
+            choices = [{a: k} for k in range(2 ** len(AX[a]))]
+        else:
+            choices = [{a: v} for v in AX[a]]
+        combos = [{**c, **ch} for c in combos for ch in choices]
+    return sum(1 for c in combos if not excluded(row["code"], c))
 
 rows = []
 for r in BASE:
@@ -210,7 +235,7 @@ cols = ["code","family","category","product_type","name_th","name_en","construct
 with open("docs/design-tool/style-library-master.csv","w",newline="",encoding="utf-8-sig") as f:
     w = csv.DictWriter(f, fieldnames=cols); w.writeheader(); [w.writerow({k:r[k] for k in cols}) for r in rows]
 with open("docs/design-tool/style-library-master.json","w",encoding="utf-8") as f:
-    json.dump({"axes":AX,"allowed_tuck_pairs":ALLOWED_TUCK_PAIRS,"styles":rows}, f, ensure_ascii=False, indent=2)
+    json.dump({"axes":AX,"allowed_tuck_pairs":ALLOWED_TUCK_PAIRS,"excluded_combinations":EXCLUDED,"styles":rows}, f, ensure_ascii=False, indent=2)
 
 # ---------- Summary ----------
 from collections import defaultdict
