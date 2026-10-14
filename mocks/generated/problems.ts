@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.53.1). */
+/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.54.0). */
 
 export interface OperationProblems {
   method: string;
@@ -1266,6 +1266,7 @@ export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {
   "partner.payables.getPayout": {"method":"GET","path":"/v1/partner/factories/{factoryId}/payouts/{payoutId}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.payables.payoutDocuments": {"method":"GET","path":"/v1/partner/factories/{factoryId}/payouts/{payoutId}/documents","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"payouts.run_invalid_status":409,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.priceLists.signOff": {"method":"POST","path":"/v1/partner/factories/{factoryId}/price-list-versions/{versionId}/actions/sign-off","problems":{"idempotency.key_invalid":400,"idempotency.key_required":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"idempotency.in_progress":409,"partners.version_not_awaiting":409,"idempotency.key_reused":422,"http.too_many_requests":429,"internal.unexpected":500}},
+  "partner.priceLists.componentCounts": {"method":"GET","path":"/v1/partner/factories/{factoryId}/price-list-versions/{versionId}/component-counts","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.priceLists.listLines": {"method":"GET","path":"/v1/partner/factories/{factoryId}/price-list-versions/{versionId}/lines","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.priceLists.list": {"method":"GET","path":"/v1/partner/factories/{factoryId}/price-lists","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.priceProposals.list": {"method":"GET","path":"/v1/partner/factories/{factoryId}/price-proposals","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},

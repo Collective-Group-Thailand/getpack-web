@@ -64,12 +64,14 @@ export default async function ProposalPage({ params, searchParams }: Props) {
       )
     : null;
   const list = prices.lists.data?.find((candidate) => candidate.id === item.priceListId);
+  // Back to the price list it changes, where the factory came from.
+  const listBack = list?.productTypeCode ? { href: `/prices/${list.productTypeCode}`, label: t("backList", { type: name }) } : back;
 
   return (
     <PartnerPage
       full
       title={factoryOwn ? t("titleOwn", { type: name }) : t("titleRateCard", { type: name })}
-      back={back}
+      back={listBack}
       meta={<StatusChip map={PROPOSAL_STATUS} value={item.status} size="md" />}
       description={t("meta", {
         from: format.date(item.proposedEffectiveFrom),
@@ -77,6 +79,14 @@ export default async function ProposalPage({ params, searchParams }: Props) {
         lines: item.lineCounts.total,
       })}
     >
+      {factoryOwn && ["submitted", "under_review", "countered"].includes(item.status) ? (
+        <Callout tone={item.status === "countered" ? "warning" : "info"} title={t(`next.${item.status}.title`)}>
+          {t(`next.${item.status}.body`, {
+            version: list?.current?.versionNo ?? item.baseVersionNo ?? 0,
+            date: format.date(item.proposedEffectiveFrom),
+          })}
+        </Callout>
+      ) : null}
       {item.comment ? (
         <Callout tone="neutral" title={factoryOwn ? t("reasonOwn") : t("reasonPackio")}>
           {item.comment}
