@@ -39,6 +39,11 @@ export function MoActions({ order, locale }: { order: Mo; locale: string }) {
 
   return (
     <div className="flex flex-wrap gap-2">
+      {order.nextActions.some((a) => a.key === "erp_mo.edit" && !a.disabledReason) ? (
+        <Button asChild size="lg" variant="secondary" iconStart="edit">
+          <Link href={`/planning/orders/${order.id}/edit`}>{t("edit")}</Link>
+        </Button>
+      ) : null}
       <ActionBar
         offered={order.nextActions}
         failed={tCommon("failed")}

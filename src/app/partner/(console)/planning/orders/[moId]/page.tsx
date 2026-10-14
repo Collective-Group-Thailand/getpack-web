@@ -57,6 +57,7 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
   const canRecord = canAt(context, "factory_production.record") && running;
   const canReturn = mo.nextActions.some((a) => a.key === "erp_mo.return");
 
+  const nowId = [...mo.operations].sort((a, b) => a.seq - b.seq).find((op) => op.status !== "done" && op.status !== "skipped")?.id;
   return (
     <PartnerPage
       wide
@@ -198,7 +199,8 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
                       {op.seq}. {op.name}
                     </p>
                     <p className="text-muted text-sm">
-                      {op.machine?.name ?? t("detail.anyMachine")} · {t("detail.minutes", { n: op.plannedMinutes })}
+                      {op.machine?.name ?? t("detail.anyMachine")}
+                      {op.plannedMinutes > 0 ? ` · ${t("detail.minutes", { n: op.plannedMinutes })}` : ""}
                       {op.status === "done"
                         ? ` · ${t("detail.output", { good: formatQty(op.goodQty, locale), scrap: formatQty(op.scrapQty, locale) })}`
                         : ""}
@@ -221,13 +223,29 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
                   </span>
                 </div>
                 {canRecord || (op.milestoneSync === "failed" && (op.status === "done" || op.status === "skipped")) ? (
-                  <OperationButtons
-                    orderId={mo.id}
-                    operation={op}
-                    unit={unit(mo.unit)}
-                    defaultGood={mo.quantity}
-                    jobHref={mo.job ? `/jobs/${mo.job.id}` : undefined}
-                  />
+                  // The step to work on now shows its buttons; a later one keeps them folded (out of order is possible, not invited).
+                  op.id === nowId || op.status === "done" || op.status === "skipped" || op.status === "in_progress" || op.status === "paused" ? (
+                    <OperationButtons
+                      orderId={mo.id}
+                      operation={op}
+                      unit={unit(mo.unit)}
+                      defaultGood={mo.quantity}
+                      jobHref={mo.job ? `/jobs/${mo.job.id}` : undefined}
+                    />
+                  ) : (
+                    <details className="text-sm">
+                      <summary className="text-muted cursor-pointer select-none">{t("detail.outOfOrder")}</summary>
+                      <div className="mt-2">
+                        <OperationButtons
+                          orderId={mo.id}
+                          operation={op}
+                          unit={unit(mo.unit)}
+                          defaultGood={mo.quantity}
+                          jobHref={mo.job ? `/jobs/${mo.job.id}` : undefined}
+                        />
+                      </div>
+                    </details>
+                  )
                 ) : null}
               </li>
             ))}

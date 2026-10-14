@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { WeekCapacity } from "@/features/partner/capacity/WeekCapacity";
+import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
@@ -14,8 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * The factory's weeks (F5 5.2, `partner.factories.capacityCalendar`): weekly capacity per product
  * type against the load its accepted jobs book, and the days that differ from its working week —
- * the national calendar's holidays and its own closures (D-101, D-161). The factory changes its
- * capacity through the Partner team (a change request); its own closures are edited in U2.9.
+ * the national calendar's holidays and its own closures (D-101, D-161). A planner with
+ * `factory_capacity.manage` changes one week's capacity in place (a holiday, an overhaul, an extra shift);
+ * its standing weekly capacity still changes through the Partner team; closures are edited in U2.9.
  */
 export default async function CapacityPage() {
   const [t, tUnits, format, locale] = await Promise.all([
@@ -25,6 +27,7 @@ export default async function CapacityPage() {
     getLocale(),
   ]);
   const context = await factoryContext();
+  const manage = canAt(context, "factory_capacity.manage");
   const { contract } = await partnerServerApis();
   const calendar = await attempt(
     async () =>
@@ -140,6 +143,15 @@ export default async function CapacityPage() {
                           <span className="text-muted text-xs whitespace-nowrap">
                             {format.number(booked)} / {format.number(capacity)}
                           </span>
+                          {manage ? (
+                            <WeekCapacity
+                              productTypeId={type.productTypeId}
+                              productTypeName={type.productTypeNameTh}
+                              weekStart={weekStart}
+                              weekLabel={format.date(weekStart, { style: "dayMonth" })}
+                              capacity={week.capacity}
+                            />
+                          ) : null}
                         </span>
                       ) : (
                         <span className="text-muted text-sm">{t("noCapacity")}</span>
