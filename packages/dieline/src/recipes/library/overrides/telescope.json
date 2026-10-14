@@ -26,6 +26,10 @@
       "top_window": {
         "window": "rect",
         "windowPanel": "lid-base"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "wall-front"
       }
     },
     "thumb": {
@@ -46,7 +50,11 @@
     "th": "ตัวกล่องและฝาครอบแยกชิ้น ฝาครอบลึกเต็มหรือครึ่ง เปิดแล้วดูพรีเมียม เหมาะกับของขวัญ เสื้อผ้า",
     "en": "A base and a separate lid, full or partial depth — a premium opening for gifts and apparel"
   },
-  "materials": ["paperboard", "corrugated", "rigid"],
+  "materials": [
+    "paperboard",
+    "corrugated",
+    "rigid"
+  ],
   "params": [
     {
       "ref": "length",
@@ -77,6 +85,13 @@
           "label": {
             "th": "ด้านบนฝา",
             "en": "Lid top"
+          }
+        },
+        {
+          "value": "wall-front",
+          "label": {
+            "th": "ผนังด้านหน้า",
+            "en": "Front wall"
           }
         }
       ]
@@ -144,6 +159,12 @@
     "height": "height"
   },
   "legacy": {
-    "patternKeys": ["pid:4", "pid:32", "mapping:11", "folding-cover-box", "pid:29"]
+    "patternKeys": [
+      "pid:4",
+      "pid:32",
+      "mapping:11",
+      "folding-cover-box",
+      "pid:29"
+    ]
   }
 }
