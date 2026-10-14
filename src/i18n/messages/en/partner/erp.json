@@ -95,6 +95,12 @@
       "previous": "Previous",
       "next": "Next",
       "page": "Page {n}"
+    },
+    "estimate": {
+      "subtotal": "Before VAT (estimate)",
+      "vat": "VAT {rate}%",
+      "total": "Total (estimate)",
+      "note": "The saved document's figures are worked out by the system"
     }
   },
   "stock": {
@@ -498,6 +504,14 @@
     "detail": {
       "orders": "Purchase orders with this supplier",
       "noOrders": "No purchase orders yet"
+    },
+    "open": {
+      "title": "Open balance",
+      "body": "Invoices not yet fully paid with this partner",
+      "weOwe": "We owe",
+      "theyOwe": "They owe",
+      "overdue": "Overdue",
+      "invoices": "{count} invoices"
     }
   },
   "settings": {
@@ -585,5 +599,38 @@
       "dailySummaryHint": "To whoever reads insight (owner, accountant, planner)",
       "rates": "Set machine hourly rates on the Job costs page"
     }
+  },
+  "count": {
+    "tabs": {
+      "label": "How to count",
+      "sheet": "Whole-warehouse sheet",
+      "single": "Item by item / adjust / opening"
+    },
+    "search": "Find on the sheet",
+    "searchPlaceholder": "Code or name",
+    "blind": "Blind count (hide the system quantity)",
+    "onlyDiff": "Only differences",
+    "print": "Print the sheet",
+    "loading": "Loading the warehouse…",
+    "empty": "Nothing in this warehouse yet",
+    "caption": "Count sheet",
+    "item": "Item",
+    "system": "System",
+    "counted": "Counted",
+    "difference": "Difference",
+    "match": "Matches",
+    "byLot": "Kept by lot — count it item by item",
+    "countedFor": "Counted quantity of {item}",
+    "summary": "{counted} of {total} counted · {changed} differ (lines left empty are not adjusted)",
+    "reasonPlaceholder": "E.g. October month-end count",
+    "submit": "Post {count} counted lines",
+    "nothingCounted": "Nothing counted yet"
+  },
+  "issueFor": {
+    "title": "Issue for a production order",
+    "body": "Orders on the floor — open one and use \"Issue materials\"; the lines come from its recipe",
+    "short": "Not enough material in stock",
+    "ready": "Materials ready to issue",
+    "other": "Other issues and returns"
   }
 }
