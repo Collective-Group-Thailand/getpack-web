@@ -2,17 +2,34 @@
   "schemaVersion": 1,
   "id": "cake-box",
   "base": "PK-SP-07",
-  "variant": {
-    "handle": "none"
-  },
+  "variant": {},
   "variants": {
+    "handle": {
+      "none": {
+        "handles": "none"
+      },
+      "die_cut_handle": {
+        "handles": "side"
+      },
+      "insert_handle": {
+        "handles": "insert"
+      }
+    },
     "window": {
       "none": {
         "window": "none"
       },
       "top_window": {
         "window": "rect",
-        "windowPanel": "lid"
+        "windowPanel": "lid",
+        "windowWidth": 120,
+        "windowHeight": 120
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "wall-front",
+        "windowWidth": 120,
+        "windowHeight": 50
       }
     }
   },
@@ -53,6 +70,13 @@
             "th": "บนฝา",
             "en": "Lid top"
           }
+        },
+        {
+          "value": "wall-front",
+          "label": {
+            "th": "ผนังด้านหน้า",
+            "en": "Front wall"
+          }
         }
       ]
     },
@@ -60,7 +84,8 @@
     "windowHeight",
     "windowOffsetX",
     "windowOffsetY",
-    "windowRadius"
+    "windowRadius",
+    "handles"
   ],
   "defaults": {
     "length": 220,
@@ -73,7 +98,8 @@
     "windowHeight": 120,
     "windowOffsetX": 0,
     "windowOffsetY": 0,
-    "windowRadius": 6
+    "windowRadius": 6,
+    "handles": "none"
   },
   "presets": [
     {
@@ -128,6 +154,9 @@
   "features": [
     {
       "module": "trayWindow"
+    },
+    {
+      "module": "handHoles"
     }
   ],
   "outerSize": {

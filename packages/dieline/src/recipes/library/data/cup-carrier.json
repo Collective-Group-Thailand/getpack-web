@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "cup-carrier",
+  "base": "PK-TG-03",
+  "category": "specialty",
+  "name": {
+    "th": "กล่องหิ้วแก้ว 2 / 4 ใบ",
+    "en": "Cup carrier (two or four cups)"
+  },
+  "description": {
+    "th": "กล่องหิ้วหลังคาจั่วมีหูหิ้ว ก้นล็อกอัตโนมัติ มีช่องกั้นแยกแก้ว 2 หรือ 4 ช่อง",
+    "en": "A gabled carrier with a handle and a crash-lock bottom, with a divider for two or four cups"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 160,
+      "max": 260
+    },
+    {
+      "ref": "width",
+      "min": 80,
+      "max": 260
+    },
+    {
+      "ref": "height",
+      "min": 100,
+      "max": 220
+    },
+    "handleHeight",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "partition"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "length": 200,
+    "width": 200,
+    "height": 160,
+    "handleHeight": 50,
+    "partition": "2x2"
+  },
+  "presets": [
+    {
+      "id": "four",
+      "label": {
+        "th": "4 แก้ว 200 × 200 × 160",
+        "en": "Four cups 200 × 200 × 160"
+      },
+      "values": {
+        "length": 200,
+        "width": 200,
+        "height": 160,
+        "partition": "2x2"
+      }
+    },
+    {
+      "id": "two",
+      "label": {
+        "th": "2 แก้ว 200 × 100 × 160",
+        "en": "Two cups 200 × 100 × 160"
+      },
+      "values": {
+        "length": 200,
+        "width": 100,
+        "height": 160,
+        "partition": "1x2"
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "gableHandle"
+    },
+    "bottom": {
+      "module": "crashLock"
+    }
+  },
+  "features": [
+    {
+      "module": "partitionInsert"
+    }
+  ],
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "height + side / 2"
+  },
+  "variant": {}
+}

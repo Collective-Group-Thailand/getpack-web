@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "te4-partition",
+  "base": "PK-TE-04",
+  "variant": {},
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบมีช่องกั้นในตัว",
+    "en": "Tuck-end carton with partition"
+  },
+  "description": {
+    "th": "กล่องฝาเสียบกลับด้าน มีแผ่นกั้นแบ่งช่องตัดมาพร้อมกล่อง รองรับหัวแขวน",
+    "en": "Reverse tuck carton with a divider cut with the box to split it into cells; takes a hang header"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "hangerHeight",
+    "hangHole",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "partition"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "hangHole": "none",
+    "partition": "1x2",
+    "length": 120,
+    "width": 60,
+    "height": 150
+  },
+  "presets": [
+    {
+      "id": "twin",
+      "label": {
+        "th": "คู่ 120 × 60 × 150",
+        "en": "Twin 120 × 60 × 150"
+      },
+      "values": {
+        "length": 120,
+        "width": 60,
+        "height": 150
+      }
+    },
+    {
+      "id": "four",
+      "label": {
+        "th": "สี่ช่อง 140 × 140 × 160",
+        "en": "Four cells 140 × 140 × 160"
+      },
+      "values": {
+        "length": 140,
+        "width": 140,
+        "height": 160,
+        "partition": "2x2"
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "front"
+      }
+    },
+    "bottom": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "thumbNotch",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "hangTab",
+      "with": {
+        "end": "top",
+        "optional": true
+      }
+    },
+    {
+      "module": "partitionInsert"
+    }
+  ]
+}

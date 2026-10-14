@@ -24,6 +24,21 @@ import teStraightSeal from "./data/te-straight-seal.json" with { type: "json" };
 import te2Airplane from "./data/te2-airplane.json" with { type: "json" };
 import te2Reverse from "./data/te2-reverse.json" with { type: "json" };
 import te2Straight from "./data/te2-straight.json" with { type: "json" };
+import te2Seal from "./data/te2-seal.json" with { type: "json" };
+import te3DoubleWall from "./data/te3-double-wall.json" with { type: "json" };
+import te3DoubleWallWindow from "./data/te3-double-wall-window.json" with { type: "json" };
+import te4Partition from "./data/te4-partition.json" with { type: "json" };
+import snackTray from "./data/snack-tray.json" with { type: "json" };
+import burgerClamshell from "./data/burger-clamshell.json" with { type: "json" };
+import cupCarrier from "./data/cup-carrier.json" with { type: "json" };
+import octagonalBin from "./data/octagonal-bin.json" with { type: "json" };
+import rigidCollapsible from "./data/rigid-collapsible.json" with { type: "json" };
+import popcornBox from "./data/popcorn-box.json" with { type: "json" };
+import foodPail from "./data/food-pail.json" with { type: "json" };
+import teSealhangTuck from "./data/te-sealhang-tuck.json" with { type: "json" };
+import teSealhangSnap from "./data/te-sealhang-snap.json" with { type: "json" };
+import teSealhangCrash from "./data/te-sealhang-crash.json" with { type: "json" };
+import teSealhangSeal from "./data/te-sealhang-seal.json" with { type: "json" };
 import pizzaBox from "./data/pizza-box.json" with { type: "json" };
 import lockCornerTray from "./data/lock-corner-tray.json" with { type: "json" };
 import archiveBox from "./data/archive-box.json" with { type: "json" };
@@ -177,6 +192,21 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   te2Airplane,
   te2Reverse,
   te2Straight,
+  te2Seal,
+  te3DoubleWall,
+  te3DoubleWallWindow,
+  te4Partition,
+  snackTray,
+  burgerClamshell,
+  cupCarrier,
+  octagonalBin,
+  rigidCollapsible,
+  popcornBox,
+  foodPail,
+  teSealhangTuck,
+  teSealhangSnap,
+  teSealhangCrash,
+  teSealhangSeal,
   pizzaBox,
   lockCornerTray,
   archiveBox,

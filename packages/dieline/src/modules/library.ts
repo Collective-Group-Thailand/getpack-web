@@ -1,5 +1,7 @@
 import { paperBag } from "./body/bag";
 import { partitionSet } from "./body/partition";
+import { taperedTray } from "./body/tapered";
+import { sealHang } from "./closure/tube-closures";
 import { polyMailer } from "./body/poly-mailer";
 import { easel, envelope, foldedCard, paperTube, presentationFolder, pyramid, shrinkSleeve } from "./body/wave2-bodies";
 import { coverFlaps, displayTop, osc, petal } from "./closure/wave2-closures";
@@ -65,4 +67,6 @@ export const WAVE_MODULES: readonly ModuleDef[] = [
   petal,
   easel,
   floorDisplay,
+  taperedTray,
+  sealHang,
 ];

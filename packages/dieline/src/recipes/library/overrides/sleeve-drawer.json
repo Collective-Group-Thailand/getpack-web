@@ -18,6 +18,12 @@
       "top_window": {
         "window": "rect",
         "windowPanel": "sleeve-top"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "sleeve-left",
+        "windowWidth": 20,
+        "windowHeight": 60
       }
     },
     "insert": {
@@ -67,6 +73,13 @@
           "label": {
             "th": "ด้านบนปลอก",
             "en": "Sleeve top"
+          }
+        },
+        {
+          "value": "sleeve-left",
+          "label": {
+            "th": "ด้านข้างปลอก",
+            "en": "Sleeve side"
           }
         }
       ]

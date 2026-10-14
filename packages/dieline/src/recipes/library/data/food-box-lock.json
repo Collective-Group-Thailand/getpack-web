@@ -2,9 +2,7 @@
   "schemaVersion": 1,
   "id": "food-box-lock",
   "base": "PK-SP-16",
-  "variant": {
-    "handle": "none"
-  },
+  "variant": {},
   "category": "specialty",
   "name": {
     "th": "กล่องอาหารมุมล็อก ฝามีหน้าต่าง",
@@ -51,7 +49,8 @@
     "windowHeight",
     "windowOffsetX",
     "windowOffsetY",
-    "windowRadius"
+    "windowRadius",
+    "handles"
   ],
   "defaults": {
     "length": 180,
@@ -65,7 +64,8 @@
     "windowHeight": 60,
     "windowOffsetX": 0,
     "windowOffsetY": 0,
-    "windowRadius": 6
+    "windowRadius": 6,
+    "handles": "none"
   },
   "presets": [
     {
@@ -103,6 +103,18 @@
         "width": 180,
         "height": 70
       }
+    },
+    {
+      "id": "carry",
+      "label": {
+        "th": "หิ้วได้ 220 × 160 × 90",
+        "en": "Carry 220 × 160 × 90"
+      },
+      "values": {
+        "length": 220,
+        "width": 160,
+        "height": 90
+      }
     }
   ],
   "body": {
@@ -123,10 +135,26 @@
     },
     {
       "module": "trayWindow"
+    },
+    {
+      "module": "handHoles"
     }
   ],
   "outerSize": {
     "width": "width + 3 * t",
     "height": "height + t"
+  },
+  "variants": {
+    "handle": {
+      "none": {
+        "handles": "none"
+      },
+      "die_cut_handle": {
+        "handles": "side"
+      },
+      "insert_handle": {
+        "handles": "insert"
+      }
+    }
   }
 }
