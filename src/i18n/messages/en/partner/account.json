@@ -252,7 +252,9 @@
     "erpLink": "Stock and document settings",
     "support": "Packio support access",
     "supportBody": "Let the Packio team read your ERP dashboard and settings for up to 7 days, and see who looked when",
-    "supportLink": "Manage support access"
+    "supportLink": "Manage support access",
+    "profile": "Your factory with Packio",
+    "profileBody": "Company details, documents, payout account, capabilities and agreements — view them here; ask the Partner team to change them"
   },
   "files": {
     "failed": "Could not open the file",

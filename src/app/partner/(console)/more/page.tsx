@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { canAt, factoryContext } from "@/features/partner/context/server";
 import { PartnerPage } from "@/features/partner/frame";
-import { Row, RowList } from "@/features/partner/rows";
+import { MoreMenu } from "@/features/partner/shell/MoreMenu";
 import { partnerBottomItems, partnerSidebar } from "@/features/partner/shell/sidebar";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,24 +30,22 @@ export default async function MorePage() {
   const bodyKey = (key: string) => `items.${key === "shippingRates" ? "shipping" : key}.body`;
   return (
     <PartnerPage title={t("title")}>
-      {groups.map((group) => (
-        <section key={group.key} aria-labelledby={`more-${group.key}`} className="flex flex-col gap-2">
-          <h2 id={`more-${group.key}`} className="text-muted text-sm font-semibold">
-            {tGroups(group.key)}
-          </h2>
-          <RowList>
-            {group.items.map((item) => (
-              <Row
-                key={item.key}
-                href={item.href}
-                icon={item.icon}
-                title={tItems(item.key)}
-                meta={t.has(bodyKey(item.key)) ? t(bodyKey(item.key)) : undefined}
-              />
-            ))}
-          </RowList>
-        </section>
-      ))}
+      <MoreMenu
+        label={t("search")}
+        placeholder={t("searchPlaceholder")}
+        empty={t("noMatch")}
+        groups={groups.map((group) => ({
+          key: group.key,
+          title: tGroups(group.key),
+          items: group.items.map((item) => ({
+            key: item.key,
+            href: item.href,
+            icon: item.icon,
+            title: tItems(item.key),
+            ...(t.has(bodyKey(item.key)) ? { meta: t(bodyKey(item.key)) } : {}),
+          })),
+        }))}
+      />
     </PartnerPage>
   );
 }

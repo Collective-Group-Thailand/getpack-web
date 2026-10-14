@@ -357,7 +357,8 @@
       "titlePlaceholder": "เช่น กล่องหูช้างฝาเสียบ",
       "baseCodePlaceholder": "เช่น RSC-01 (ไม่ทราบเว้นว่างได้)",
       "notePlaceholder": "เช่น ผลิตได้ขนาดสูงสุดเท่าไร ใช้เครื่องอะไร"
-    }
+    },
+    "closedAsk": "บอก Packio ว่าคุณมีแบบที่อยากเสนอ"
   },
   "spec": {
     "style": {

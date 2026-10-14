@@ -102,7 +102,10 @@
         "title": "Payables",
         "body": "Supplier invoices, payments and what is owed"
       }
-    }
+    },
+    "search": "Search the menu",
+    "searchPlaceholder": "Type a menu, e.g. tax, production order",
+    "noMatch": "No menu matches"
   },
   "sidebar": {
     "groups": {
