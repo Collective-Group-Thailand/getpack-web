@@ -6,8 +6,11 @@ import { listArticleCategories, listArticles } from "@/features/customer/catalog
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { articleHref } from "@/features/customer/catalog/paths";
+import { pageContext } from "@/features/customer/content/page-meta.server";
+import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
+import { itemListSchema, localePath, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { LinkPagination } from "@/ui/components/LinkPagination";
@@ -46,6 +49,31 @@ export default async function ArticlesPage({
     listArticles({ category, page, perPage: PER_PAGE }),
   ]);
   const pages = Math.max(1, Math.ceil(articles.meta.total / articles.meta.perPage));
+  const seo = await pageContext("/articles", t("articles.heading"));
+  // The index as a CollectionPage listing the articles on it (SEO pass); the first unfiltered
+  // page only, which is the one in the sitemap.
+  const structured =
+    !category && page === 1
+      ? [
+          seo.breadcrumb,
+          webPageSchema({
+            type: "CollectionPage",
+            name: t("articles.title"),
+            description: t("articles.description"),
+            url: seo.url,
+            locale: seo.language,
+          }),
+          itemListSchema(
+            articles.data.map((article) => ({
+              name: pick(currentLocale, article.titleTh, article.titleEn),
+              url: `${seo.origin}${localePath(articleHref(article.slug), seo.locale)}`,
+              description: article.excerptTh,
+              image: article.coverUrl,
+            })),
+            t("articles.heading"),
+          ),
+        ]
+      : [];
   const href = (target: { category?: string; page?: number }) => {
     const search = new URLSearchParams();
     if (target.category) search.set("category", target.category);
@@ -63,6 +91,9 @@ export default async function ArticlesPage({
 
   return (
     <div className="max-w-content mx-auto px-5 py-8 md:px-8 md:py-12">
+      {structured.map((data, index) => (
+        <JsonLd key={index} data={data} />
+      ))}
       <header className="max-w-2xl">
         <h1 className="text-3xl font-bold md:text-4xl">{t("articles.heading")}</h1>
         <p className="text-muted mt-2">{t("articles.intro")}</p>

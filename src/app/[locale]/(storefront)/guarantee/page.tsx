@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { pageContext } from "@/features/customer/content/page-meta.server";
+import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { NextStep } from "@/features/customer/shell/NextStep";
 import { getGuarantee } from "@/features/customer/trust/api.server";
 import { getFormat } from "@/features/shared/format/server";
+import { webPageSchema } from "@/lib/seo";
 import type { Schemas } from "@/lib/api/types";
 import { Link } from "@/i18n/navigation";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -31,9 +34,12 @@ export default async function GuaranteePage({ params }: { params: Promise<{ loca
     getFormat(),
     getGuarantee().catch(() => null),
   ]);
+  const page = await pageContext("/guarantee", t("title"));
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 md:py-12">
+      <JsonLd data={page.breadcrumb} />
+      <JsonLd data={webPageSchema({ name: t("title"), description: t("intro"), url: page.url, locale: page.language })} />
       <header>
         <h1 className="text-3xl font-bold md:text-4xl">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>
