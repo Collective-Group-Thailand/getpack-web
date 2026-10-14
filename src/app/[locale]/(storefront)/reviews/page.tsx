@@ -3,8 +3,11 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { NextStep } from "@/features/customer/shell/NextStep";
 import { pick } from "@/features/customer/catalog/localize";
+import { pageContext } from "@/features/customer/content/page-meta.server";
+import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getReviewSummary, listReviews } from "@/features/customer/trust/api.server";
 import { getFormat } from "@/features/shared/format/server";
+import { organizationSchema, webPageSchema } from "@/lib/seo";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Meter } from "@/ui/components/Meter";
 
@@ -29,8 +32,33 @@ export default async function ReviewsPage({ params }: { params: Promise<{ locale
     listReviews().catch(() => ({ reviews: [], total: 0 })),
   ]);
 
+  const page = await pageContext("/reviews", t("title"));
+  // An aggregate rating is claimed only when the API has verified reviews to back it (D-181):
+  // the same rule as the Organization data, which carries no rating of its own.
+  const rated = summary && summary.count > 0 && summary.averageRating;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 md:py-12">
+      <JsonLd data={page.breadcrumb} />
+      <JsonLd
+        data={{
+          ...webPageSchema({ name: t("title"), description: t("intro"), url: page.url, locale: page.language }),
+          ...(rated
+            ? {
+                mainEntity: {
+                  ...organizationSchema(page.origin),
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: summary.averageRating,
+                    reviewCount: summary.count,
+                    bestRating: 5,
+                    worstRating: 1,
+                  },
+                },
+              }
+            : {}),
+        }}
+      />
       <header>
         <h1 className="text-3xl font-bold md:text-4xl">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>

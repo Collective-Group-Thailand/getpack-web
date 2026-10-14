@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { listFaqs } from "@/features/customer/catalog/api.server";
+import { pageContext } from "@/features/customer/content/page-meta.server";
+import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { pick } from "@/features/customer/catalog/localize";
 import { Link } from "@/i18n/navigation";
+import { webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { DisclosureList } from "@/ui/components/DisclosureList";
 import { Field } from "@/ui/components/Field";
@@ -34,9 +37,12 @@ const TOPICS: { key: string; href: string; icon: IconName }[] = [
 export default async function Page() {
   const [t, locale, groups] = await Promise.all([getTranslations("help.centre"), getLocale(), listFaqs()]);
   const top = groups.flatMap((group) => group.faqs).slice(0, 6);
+  const page = await pageContext("/help", t("title"));
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10">
+      <JsonLd data={page.breadcrumb} />
+      <JsonLd data={webPageSchema({ name: t("title"), description: t("intro"), url: page.url, locale: page.language })} />
       <header className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="text-muted">{t("intro")}</p>
