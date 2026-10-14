@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "id": "burger-clamshell",
+  "base": "PK-SP-09",
+  "variant": {},
+  "category": "specialty",
+  "name": {
+    "th": "กล่องแฮมเบอร์เกอร์ฝาหอย",
+    "en": "Clamshell burger box"
+  },
+  "description": {
+    "th": "กล่องชิ้นเดียว ฝาพับติดผนังหลัง ปิดด้วยลิ้นล็อกด้านหน้า มุมล็อกไม่ใช้กาว สำหรับเบอร์เกอร์และอาหารพร้อมทาน",
+    "en": "One piece: a lid hinged on the back wall closes with a front lock tab; glue-free locking corners — for burgers and ready meals"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 350
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 120
+    },
+    "cornerLock",
+    "tuckDepth",
+    "grain"
+  ],
+  "defaults": {
+    "length": 110,
+    "width": 110,
+    "height": 80,
+    "grain": "across",
+    "cornerLock": "lock"
+  },
+  "presets": [
+    {
+      "id": "burger",
+      "label": {
+        "th": "เบอร์เกอร์ 110 × 110 × 80",
+        "en": "Burger 110 × 110 × 80"
+      },
+      "values": {
+        "length": 110,
+        "width": 110,
+        "height": 80
+      }
+    },
+    {
+      "id": "meal",
+      "label": {
+        "th": "อาหารกล่อง 180 × 140 × 70",
+        "en": "Meal 180 × 140 × 70"
+      },
+      "values": {
+        "length": 180,
+        "width": 140,
+        "height": 70
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "tuck"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "lockCorners"
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  }
+}

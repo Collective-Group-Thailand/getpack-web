@@ -50,11 +50,7 @@
     "th": "ตัวกล่องและฝาครอบแยกชิ้น ฝาครอบลึกเต็มหรือครึ่ง เปิดแล้วดูพรีเมียม เหมาะกับของขวัญ เสื้อผ้า",
     "en": "A base and a separate lid, full or partial depth — a premium opening for gifts and apparel"
   },
-  "materials": [
-    "paperboard",
-    "corrugated",
-    "rigid"
-  ],
+  "materials": ["paperboard", "corrugated", "rigid"],
   "params": [
     {
       "ref": "length",
@@ -159,12 +155,6 @@
     "height": "height"
   },
   "legacy": {
-    "patternKeys": [
-      "pid:4",
-      "pid:32",
-      "mapping:11",
-      "folding-cover-box",
-      "pid:29"
-    ]
+    "patternKeys": ["pid:4", "pid:32", "mapping:11", "folding-cover-box", "pid:29"]
   }
 }

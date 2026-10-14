@@ -74,8 +74,9 @@ export const telescopeLid: FeatureModule = {
     const h = telescopeLidDepth(v) + a.trayDepth;
     const faces = prefixFaces(
       buildTray({
-        length: num(v, "length", 300) + 2 * c + a.panel,
-        width: num(v, "width", 200) + 2 * c + a.panel,
+        // `length` / `width` (expressions): the body's inside across, when it is not a rectangle's (an octagon's).
+        length: (cfg.length ? ctx.num(cfg.length as string) : num(v, "length", 300)) + 2 * c + a.panel,
+        width: (cfg.width ? ctx.num(cfg.width as string) : num(v, "width", 200)) + 2 * c + a.panel,
         height: h,
         cornerFlap: cornerFlapOf(h),
       }),

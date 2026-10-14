@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "id": "te3-double-wall",
+  "base": "PK-TE-03",
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    },
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบผนังสองชั้น",
+    "en": "Double-wall tuck-front carton"
+  },
+  "description": {
+    "th": "ผนังหน้าและผนังข้างพับซ้อนสองชั้น ฝาพับติดผนังหลังปิดด้วยลิ้นเสียบด้านหน้า แข็งแรงสำหรับส่งออนไลน์",
+    "en": "Front and end walls folded over double; a lid hinged on the back closes with a front tuck — e-commerce strength in paperboard"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 450
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 250
+    },
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "grain",
+    "tuckCorners",
+    "fingerHole",
+    "window",
+    {
+      "ref": "windowPanel",
+      "options": [
+        {
+          "value": "lid",
+          "label": {
+            "th": "บนฝา",
+            "en": "Lid top"
+          }
+        },
+        {
+          "value": "wall-front",
+          "label": {
+            "th": "ผนังด้านหน้า",
+            "en": "Front wall"
+          }
+        }
+      ]
+    },
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "length": 250,
+    "width": 180,
+    "height": 80,
+    "grain": "across",
+    "tuckCorners": "rounded",
+    "fingerHole": false,
+    "window": "none",
+    "windowPanel": "lid",
+    "windowWidth": 60,
+    "windowHeight": 40,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 6
+  },
+  "presets": [
+    {
+      "id": "small",
+      "label": {
+        "th": "เล็ก 200 × 150 × 50",
+        "en": "Small 200 × 150 × 50"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 50
+      }
+    },
+    {
+      "id": "medium",
+      "label": {
+        "th": "กลาง 250 × 180 × 80",
+        "en": "Medium 250 × 180 × 80"
+      },
+      "values": {
+        "length": 250,
+        "width": 180,
+        "height": 80
+      }
+    },
+    {
+      "id": "large",
+      "label": {
+        "th": "ใหญ่ 350 × 250 × 100",
+        "en": "Large 350 × 250 × 100"
+      },
+      "values": {
+        "length": 350,
+        "width": 250,
+        "height": 100
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "tuck"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "rollOverWalls",
+      "with": {
+        "walls": ["front", "left", "right"]
+      }
+    },
+    {
+      "module": "trayWindow"
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  }
+}
