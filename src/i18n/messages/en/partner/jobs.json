@@ -357,7 +357,8 @@
       "titlePlaceholder": "e.g. Tuck-end box with dust flaps",
       "baseCodePlaceholder": "e.g. RSC-01 (leave blank if unsure)",
       "notePlaceholder": "e.g. largest size you can make, which machine"
-    }
+    },
+    "closedAsk": "Tell Packio you have designs to offer"
   },
   "spec": {
     "style": {

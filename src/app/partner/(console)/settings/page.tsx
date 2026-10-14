@@ -21,6 +21,9 @@ import { Card } from "@/ui/components/Card";
 import { Icon } from "@/ui/icons";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 
+/** What the factory agreed with Packio, kept on its onboarding steps — read here after go-live, changed by request. */
+const PROFILE_STEPS = ["application", "kyc", "bank_account", "capability", "capacity", "delivery_zones", "payout_policy", "agreement"] as const;
+
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerAccount.settings"))("title") };
 }
@@ -33,6 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function SettingsPage() {
   const t = await getTranslations("partnerAccount.settings");
+  const tSteps = await getTranslations("partnerOnboarding.steps");
   const tUsers = await getTranslations("partnerAccount.users");
   const tRoles = await getTranslations("partner.shell.roles");
   const tCommon = await getTranslations("common");
@@ -70,6 +74,7 @@ export default async function SettingsPage() {
       "factory_purchaser",
       "factory_maintenance",
       "factory_sales",
+      "factory_auditor",
     ].includes(role)
       ? tRoles(role as "factory_owner")
       : role;
@@ -140,6 +145,23 @@ export default async function SettingsPage() {
         </PartnerSection>
       ) : null}
 
+      {canAt(context, "factory_profile.read") ? (
+        <PartnerSection title={t("profile")} description={t("profileBody")}>
+          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {PROFILE_STEPS.map((step) => (
+              <li key={step}>
+                <Link
+                  href={`/onboarding/${step}`}
+                  className="border-border bg-surface hover:bg-surface-subtle flex h-full flex-col gap-0.5 rounded-xl border px-4 py-3 transition-colors"
+                >
+                  <span className="font-medium">{tSteps(`${step}.title`)}</span>
+                  <span className="text-muted text-sm">{tSteps(`${step}.body`)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </PartnerSection>
+      ) : null}
       <PartnerSection title={t("hours")} description={t("hoursBody")}>
         <Link href="/settings/hours" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">
           {t("hoursLink")}

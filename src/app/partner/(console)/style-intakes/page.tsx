@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { STYLE_INTAKE_STATUS } from "@/domain/status";
@@ -39,7 +40,16 @@ export default async function StyleIntakesPage() {
   return (
     <PartnerPage title={t("title")} description={t("body")}>
       <PartnerSection title={t("offerTitle")} description={t("offerBody")}>
-        {terms.data ? <SubmitIntake terms={terms.data} /> : <p className="text-muted text-sm">{t("closed")}</p>}
+        {terms.data ? (
+          <SubmitIntake terms={terms.data} />
+        ) : (
+          <p className="text-muted text-sm">
+            {t("closed")}{" "}
+            <Link className="text-link underline" href="/requests">
+              {t("closedAsk")}
+            </Link>
+          </p>
+        )}
       </PartnerSection>
       <PartnerSection title={t("listTitle")}>
         {list.data ? (
