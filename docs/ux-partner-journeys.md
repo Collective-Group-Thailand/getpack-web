@@ -11,8 +11,8 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | Round | Menus | Status |
 |---|---|---|
 | 1 | The day's work: Today, alerts, jobs, floor, kiosk, QC, samples, shipping, claims, the shell | **done** (web `feat/ux-round1-daily`, API v0.51.0) |
-| 2 | Stock and buying: stock, purchasing, RFQs, trading partners | next |
-| 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | |
+| 2 | Stock and buying: stock, purchasing, RFQs, trading partners | **done** (web `feat/ux-round2-supply`) |
+| 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | next |
 | 4 | Quality: checks, NCRs, templates | |
 | 5 | Sales: CRM, quotations, sales orders, deliveries | |
 | 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | |
@@ -41,3 +41,20 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 Already good and kept: the job page (accept with the countdown, spec and approved artwork before saying yes, steps
 with one next action), the shipment page (labels → dispatch → proof of delivery), the samples evidence form, the QC
 queue.
+
+## Round 2 — stock and buying
+
+**Walked as** the storekeeper (receive, issue, count, transfer) and the purchaser (requests, orders, RFQs, suppliers).
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 2.1 | The storekeeper and the purchaser had no Today — the goods due today, late orders and items below reorder (now in the inbox) had no home for them. | Today joins both roles' menus (first on the phone's bar). |
+| 2.2 | A month-end count meant adding items one by one into a form, without seeing what the system holds. | A **count sheet** for the whole warehouse: every item with the system quantity (or hidden for a blind count), the count typed beside it, the difference live, "only differences" filter, search, print; only lines counted are posted as one count with its reason; items kept by lot go to the single-item form. |
+| 2.3 | "เบิกของ" asked for a free-text job reference, while the production orders waiting for material were elsewhere. | The issue page lists the orders on the floor first (material ready / not enough in stock) and opens the order, where issuing follows its recipe; the free form stays for other issues and returns. |
+| 2.4 | A supplier's or customer's page did not say what is open with them. | "ยอดค้าง": what we owe the supplier and what the customer owes, with the overdue part, each opening the filtered list. |
+| 2.5 | A purchase order showed no money until it was saved. | A live estimate (before VAT, VAT, total — inclusive / exclusive / none) while typing, replaced by the saved figures. |
+| 2.6 | On a phone, three-way switches (supplier / customer / both) pushed the page sideways. | Segmented controls wrap their labels on small screens (every form). |
+| 2.7 | Sweep: every partner page at 390 px. | No page scrolls sideways now; no page or console errors (two attribute warnings were the test browser's own caret style). |
+
+Already good and kept: receiving from the open purchase orders (lines prefilled, partial receipts), the stock overview's
+tiles and low-stock view, purchase requests → orders, RFQ comparison, the supplier scorecard and prices per item.

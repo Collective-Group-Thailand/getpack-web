@@ -100,6 +100,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
 
   it("gives the store and the buying desk their stock, orders and suppliers (D-319)", () => {
     expect(items("factory_storekeeper")).toEqual([
+      "today",
       "alerts",
       "salesOrders",
       "deliveries",
@@ -115,6 +116,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
       "settings",
     ]);
     expect(items("factory_purchaser")).toEqual([
+      "today",
       "alerts",
       "stock",
       "purchasing",
@@ -128,7 +130,7 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
     ]);
     expect(
       partnerBottomItems("active", ["factory_storekeeper"], grants("factory_storekeeper")).map((i) => i.key),
-    ).toEqual(["stock", "deliveries", "purchasing", "tradingPartners"]);
+    ).toEqual(["today", "stock", "deliveries", "purchasing"]);
   });
 
   it("gives the sales desk its customers and deals through to delivery and what they owe (D-371)", () => {

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { useFormat } from "@/features/shared/format/useFormat";
+
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { Select } from "@/features/partner/select";
@@ -50,6 +52,7 @@ export function PurchaseOrderForm({
   const { factoryId } = useFactory();
   const router = useRouter();
   const [refresh] = useRefresh();
+  const format = useFormat();
   const [supplierId, setSupplierId] = useState(order?.supplier.id ?? initialSupplierId ?? "");
   const [orderedOn, setOrderedOn] = useState(order?.orderedOn ?? bangkokToday());
   const [expectedOn, setExpectedOn] = useState(order?.expectedOn ?? "");
@@ -231,7 +234,38 @@ export function PurchaseOrderForm({
         showOnHand
         terms={terms}
       />
-      <p className="text-muted text-sm">{tCommon("moneyNote")}</p>
+      {(() => {
+        // An estimate while typing (satang, no floats); the API's figures replace it once saved.
+        const satang = (v: string | undefined) => {
+          const n = Number(plainNumber(v ?? ""));
+          return Number.isFinite(n) ? n : 0;
+        };
+        const gross = lines.reduce((total, line) => {
+          const amount = satang(line.quantity) * satang(line.price) * (1 - satang(line.discountPct) / 100);
+          return total + Math.round(amount * 100);
+        }, 0);
+        const rate = vatMode === "none" ? 0 : satang(vatRate) / 100;
+        const net = vatMode === "inclusive" ? Math.round(gross / (1 + rate)) : gross;
+        const vat = vatMode === "inclusive" ? gross - net : Math.round(net * rate);
+        const thb = (n: number) => format.thb((n / 100).toFixed(2));
+        return gross > 0 ? (
+          <dl className="border-border bg-surface ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 rounded-xl border p-3 text-sm" aria-live="polite">
+            <dt className="text-muted">{tCommon("estimate.subtotal")}</dt>
+            <dd className="text-end tabular-nums">{thb(net)}</dd>
+            {vatMode !== "none" ? (
+              <>
+                <dt className="text-muted">{tCommon("estimate.vat", { rate: plainNumber(vatRate) || "0" })}</dt>
+                <dd className="text-end tabular-nums">{thb(vat)}</dd>
+              </>
+            ) : null}
+            <dt className="font-semibold">{tCommon("estimate.total")}</dt>
+            <dd className="text-end font-semibold tabular-nums">{thb(net + vat)}</dd>
+            <dd className="text-muted col-span-2 text-xs">{tCommon("estimate.note")}</dd>
+          </dl>
+        ) : (
+          <p className="text-muted text-sm">{tCommon("moneyNote")}</p>
+        );
+      })()}
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("supplierRef")}>
           <Input

@@ -49,7 +49,7 @@ export function SegmentedControl<T extends string = string>({
         if (next) onValueChange(next as T);
       }}
       aria-label={label}
-      className={cn("border-border bg-surface-subtle rounded-control inline-flex gap-0.5 border p-0.5", className)}
+      className={cn("border-border bg-surface-subtle rounded-control inline-flex max-w-full gap-0.5 border p-0.5", className)}
     >
       {options.map((option) => (
         <ToggleGroup.Item
@@ -59,12 +59,13 @@ export function SegmentedControl<T extends string = string>({
           aria-label={option.ariaLabel}
           data-segment={size}
           className={cn(
-            "inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent font-medium whitespace-nowrap",
+            // On a phone a long label wraps inside its segment rather than pushing the page sideways.
+            "inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent text-center leading-tight font-medium sm:whitespace-nowrap",
             "text-muted duration-fast ease-standard transition-colors",
             // Design language v3: the chosen segment is an ink hairline and semibold — no shadow.
             "data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:border-fg data-[state=on]:font-semibold",
             "disabled:pointer-events-none disabled:opacity-50",
-            size === "sm" ? "h-7 px-2 text-xs" : size === "xl" ? "h-11 px-4 text-base" : "h-9 px-3 text-sm",
+            size === "sm" ? "min-h-7 px-2 text-xs" : size === "xl" ? "min-h-11 px-4 py-1 text-base" : "min-h-9 px-3 py-1 text-sm",
           )}
         >
           {option.icon ? <Icon name={option.icon} size={size === "xl" ? 18 : 16} /> : null}
