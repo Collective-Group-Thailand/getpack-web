@@ -37,3 +37,17 @@ export function codeOfSlug(slug: string): string | null {
 
 export const compareHref = (codes: readonly string[]) =>
   codes.length ? `/styles/compare?codes=${codes.map(encodeURIComponent).join(",")}` : "/styles/compare";
+
+/**
+ * The quotation request for one variant (D-407): the RFQ form of the style's product type
+ * (`/rfq/<category>?type=<productType>`), with the base and the variant code added — or the
+ * contact page when the style has no form yet.
+ */
+export function variantRfqHref(rfqHref: string | null, base: string, code: string): string {
+  if (!rfqHref) return "/contact";
+  const [path, query = ""] = rfqHref.split("?");
+  const params = new URLSearchParams(query);
+  params.set("base", base);
+  params.set("style", code);
+  return `${path}?${params.toString()}`;
+}

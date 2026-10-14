@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { defaultsOf, presetsOf, RECIPES } from "@packio/dieline";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -11,16 +10,14 @@ import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { codeOfSlug, DIELINE_FRAGMENT, styleHref, styleSlug, STYLES_HREF } from "@/features/customer/styles/paths";
-import { studioHref as studioEntry } from "@/features/customer/studio/paths";
 import { StyleDetailActions } from "@/features/customer/styles/StyleDetailActions";
 import { VariantPicker } from "@/features/customer/styles/VariantPicker";
-import { getPathname, Link, redirect } from "@/i18n/navigation";
+import { getPathname, redirect } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { readAccessToken } from "@/lib/auth/session";
 import { breadcrumbSchema, localePath, publicOrigin } from "@/lib/seo";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
-import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
 type Params = Promise<{ locale: string; slug: string }>;
@@ -34,19 +31,6 @@ function languages(origin: string, style: StyleDetail) {
     ...(Object.fromEntries(routing.locales.map((l) => [l, url(l)])) as Record<Locale, string>),
     "x-default": url(routing.defaultLocale),
   };
-}
-
-/**
- * The studio for this style (U4.1): the engine's recipe of the base, at its first starting size, on
- * the product the style is priced through — or `null` when the engine draws no recipe of the base.
- */
-function studioHref(code: string, productSlug: string): string | null {
-  const recipe = RECIPES.find((candidate) => candidate.base === code);
-  if (!recipe) return null;
-  const values = { ...defaultsOf(recipe), ...presetsOf(recipe)[0]?.values };
-  const [l, w, h] = [values.length, values.width, values.height];
-  if (typeof l !== "number" || typeof w !== "number" || typeof h !== "number") return null;
-  return studioEntry({ product: productSlug, style: recipe.id, dims: { l, w, h }, step: "box" });
 }
 
 async function load(slug: string) {
@@ -96,8 +80,15 @@ export default async function StylePage({ params }: { params: Params }) {
   const rfqCategory = tree.find(
     (c) => c.code === style.category || c.types.some((type) => type.code === style.category),
   );
+  // The quotation form of the style's product type (D-407), the variant added by the picker.
+  const quoteHref = rfqCategory
+    ? `${rfqHref(rfqCategory.code)}${style.productTypeCode ? `?type=${style.productTypeCode}` : ""}`
+    : null;
   const range = (min: number | null, max: number | null) =>
-    min !== null && max !== null ? t("detail.range", { min: format.number(min), max: format.number(max) }) : "none";
+    // Whole millimetres inside the rule (a derived minimum like 23.554 reads as 24).
+    min !== null && max !== null
+      ? t("detail.range", { min: format.number(Math.ceil(min)), max: format.number(Math.floor(max)) })
+      : "none";
 
   const facts = [
     { term: t("detail.code"), description: <span className="font-mono">{style.code}</span> },
@@ -189,37 +180,13 @@ export default async function StylePage({ params }: { params: Params }) {
         <VariantPicker
           style={style}
           name={name}
-          instantActions={
-            style.startingPrice ? (
-              <>
-                <Button asChild>
-                  <Link href={configureHref(style.startingPrice.catalogProductSlug)}>{t("detail.configure")}</Link>
-                </Button>
-                {studioHref(style.code, style.startingPrice.catalogProductSlug) ? (
-                  <Button asChild variant="secondary" iconStart="sparkles">
-                    <Link href={studioHref(style.code, style.startingPrice.catalogProductSlug)!}>
-                      {t("detail.designInStudio")}
-                    </Link>
-                  </Button>
-                ) : null}
-              </>
-            ) : (
-              <Button asChild variant="secondary">
-                <Link href={rfqCategory ? rfqHref(rfqCategory.code) : "/contact"}>{t("detail.requestQuote")}</Link>
-              </Button>
-            )
-          }
+          actions={{ productSlug: style.startingPrice?.catalogProductSlug ?? null, rfqHref: quoteHref }}
           dieline={{
             sizeRanges: style.sizeRanges,
             signedIn,
             signInHref: `/sign-in?returnTo=${encodeURIComponent(`${href}#${DIELINE_FRAGMENT}`)}`,
             orderHref: style.startingPrice ? configureHref(style.startingPrice.catalogProductSlug) : null,
           }}
-          rfqActions={
-            <Button asChild variant="secondary">
-              <Link href={rfqCategory ? rfqHref(rfqCategory.code) : "/contact"}>{t("detail.requestQuote")}</Link>
-            </Button>
-          }
         />
       </div>
 

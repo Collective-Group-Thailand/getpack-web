@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import { getStyle } from "@packio/dieline";
+import { getStyle, isStyleId } from "@packio/dieline";
 
 import { defaultProductForStyle, getDesignerCatalog } from "@/features/customer/catalog/api.server";
 import { getMyDesign } from "@/features/customer/designer/api.server";
@@ -35,7 +35,13 @@ export default async function StudioPage({
   const saved = signedIn && id !== "new" ? await getMyDesign(id) : null;
   if (signedIn && id !== "new" && !saved && uuid(id)) notFound();
 
-  const seed = id === "new" ? seedOf(query) : undefined;
+  // A library style or a published variant (D-407) is read against the whole library, loaded here only then.
+  const library =
+    id === "new" && typeof query.style === "string" && (query.sv || !isStyleId(query.style))
+      ? await import("@packio/dieline/library")
+      : null;
+  library?.registerLibrary();
+  const seed = id === "new" ? seedOf(query, library?.ALL_RECIPES) : undefined;
   // A box style with no product (the header, the sample): the style's own product type prices it.
   const productSlug =
     text(query.product) ??
@@ -49,7 +55,7 @@ export default async function StudioPage({
 
   // A new design's seed is its identity: another `?style=&l=&w=&h=` (the sample link, a style
   // page) on the same route mounts a fresh studio instead of keeping the old one's state (round 2, B6).
-  const seedKey = id === "new" ? ["style", "l", "w", "h", "product", "template"].map((k) => text(query[k]) ?? "").join(":") : id;
+  const seedKey = id === "new" ? ["style", "l", "w", "h", "sv", "rv", "product", "template"].map((k) => text(query[k]) ?? "").join(":") : id;
 
   return (
     <Studio

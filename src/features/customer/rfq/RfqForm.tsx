@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
 import { pick } from "@/features/customer/catalog/localize";
 import { uploadFile, type FilePurpose, type UploadedFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format/useFormat";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
@@ -37,6 +37,8 @@ export interface RfqFormProps {
   fromProduct: { slug: string; name: string } | null;
   /** The configurator's calculation that routed here (D-102), sent as `routedFrom`. */
   calculationId?: string | null;
+  /** The published style variant chosen on a style page (D-407), sent as `styleVariantCode`. */
+  style?: { code: string; name: string; href: string } | null;
 }
 
 interface Attached {
@@ -58,7 +60,7 @@ const newKey = () =>
  * who is asked to sign in at the end submits the same answers straight after. The submit carries
  * one idempotency key per attempt, so a double tap files one request.
  */
-export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: RfqFormProps) {
+export function RfqForm({ form, signedIn, fromProduct, calculationId = null, style = null }: RfqFormProps) {
   const t = useTranslations("quoteRequests.form");
   const locale = useLocale();
   const format = useFormat();
@@ -130,6 +132,7 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
         body: {
           productTypeCode: form.productTypeCode,
           specSchemaVersion: form.specSchemaVersion,
+          ...(style ? { styleVariantCode: style.code } : {}),
           ...(calculationId ? { routedFrom: { calculationId } } : {}),
           spec,
           ...(form.dimensions.asked && dims.l && dims.w
@@ -179,6 +182,7 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
         body: {
           productTypeCode: form.productTypeCode,
           specSchemaVersion: form.specSchemaVersion,
+          ...(style ? { styleVariantCode: style.code } : {}),
           spec,
           ...(form.dimensions.asked && dims.l && dims.w
             ? {
@@ -276,6 +280,14 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
       </div>
 
       {fromProduct ? <Callout tone="info">{t("fromProduct", { name: fromProduct.name })}</Callout> : null}
+      {style ? (
+        <Callout tone="info">
+          {t("chosenStyle", { name: style.name, code: style.code })}{" "}
+          <Link href={style.href} className="text-primary underline underline-offset-2">
+            {t("chosenStyleChange")}
+          </Link>
+        </Callout>
+      ) : null}
 
       <FormSection title={t("specTitle")}>
         <div className="grid gap-4 sm:grid-cols-2">

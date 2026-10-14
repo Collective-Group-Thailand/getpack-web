@@ -183,6 +183,8 @@ function SetupForm({ initial, catalog, onConfirm, onClose, hasContent, isNew = f
       ...materialPart,
       patternId: style === initialStyle ? patternId : null,
       productDims: mode === "custom" && box ? product : undefined,
+      // The studio's choices (a published variant, D-407) stay with the style they were made on.
+      ...(style === initialStyle && initial?.studio ? { studio: initial.studio } : {}),
     });
   };
 
