@@ -176,3 +176,11 @@ and expiry, the handbook with categories, the support grant with its log, the al
 Nine rounds, every partner menu walked as its user at 1280 px and 390 px: no page scrolls sideways, no page or console
 errors beyond the test browser's caret style. API releases v0.51.0 (inbox, units), v0.52.0 (Packio statements in the
 VAT register), v0.53.0 (Packio work in the owner's numbers, OEE overtime).
+
+## Owner decisions (2026-10-14)
+
+- Tax point of Packio revenue: the day the factory confirms the billing statement (D-397 / D-401 confirmed).
+- Dieline intake: opened with the standard terms v1 (API D-404); "เสนอแบบไดคัท" now accepts offers. Legal may publish
+  a revised version in Admin → Settings (`styles.intake_terms`).
+- UAT rehearsal: the books open with the opening stock and catch up the documents already there (API D-405), so the
+  October close checklist passes every check.
