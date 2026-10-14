@@ -14,6 +14,7 @@ import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Field } from "@/ui/components/Field";
+import { FilePickButton } from "@/ui/components/FilePickButton";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 import { uploadFile } from "@/features/shared/files/upload";
@@ -225,14 +226,13 @@ export function ErpSettingsForm({
         </Field>
         <Field label={tSales("logo")} hint={logoId ? tSales("logoSet") : tSales("logoHint")} error={errors.documentLogoFileId}>
           <span className="flex flex-wrap items-center gap-2">
-            <input
-              type="file"
+            <FilePickButton
+              label={logoId ? tSales("logoReplace") : tSales("logoChoose")}
               accept="image/png,image/jpeg"
-              aria-label={tSales("logo")}
-              disabled={!canEdit || logoBusy}
-              className="text-sm"
-              onChange={async (event) => {
-                const file = event.target.files?.[0];
+              icon="image"
+              disabled={!canEdit}
+              loading={logoBusy}
+              onFiles={async ([file]) => {
                 if (!file) return;
                 setLogoBusy(true);
                 try {
