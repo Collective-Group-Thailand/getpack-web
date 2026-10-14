@@ -121,7 +121,7 @@ export function RfqQuotes({ rfq, accepted }: { rfq: Rfq; accepted: Saved | null 
       {quotations.map((quote) => {
         const current = acceptable && quote.status === "sent";
         return (
-          <article key={quote.id} className="border-border rounded-xl border">
+          <article key={quote.id} className="bg-surface border-border rounded-xl border">
             <header className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
               <h3 className="font-semibold">{t("quoteVersion", { version: quote.versionNo })}</h3>
               <div className="flex items-center gap-2 text-sm">

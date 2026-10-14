@@ -18,7 +18,7 @@ import { Field } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { NumberInput } from "@/ui/components/Input";
 import { PriceSummary } from "@/ui/components/PriceSummary";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 import { productFamilyOf, ProductThumb } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
@@ -92,13 +92,13 @@ function Destinations({
   }
 
   return (
-    <fieldset className="border-border flex flex-col gap-3 rounded-lg border p-3">
+    <fieldset className="bg-surface border-border flex flex-col gap-3 rounded-lg border p-3">
       <legend className="px-1 text-sm font-medium">{t("legend", { quantity: format.number(item.quantity) })}</legend>
       {addresses.length === 0 ? <p className="text-muted text-sm">{t("noAddresses")}</p> : null}
       {rows.map((row, index) => (
         <div key={index} className="flex flex-wrap items-end gap-2">
           <Field label={t("address", { index: index + 1 })} className="min-w-48 flex-1">
-            <Select
+            <SearchableSelect
               value={row.addressId || undefined}
               placeholder={t("choose")}
               onValueChange={(addressId) =>
@@ -254,7 +254,7 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
     <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <ul className="flex flex-col gap-4" aria-label={t("itemsLabel")}>
         {cart.items.map((item) => (
-          <li key={item.id} className="border-border rounded-2xl border p-4">
+          <li key={item.id} className="bg-surface border-border rounded-2xl border p-4">
             <article aria-labelledby={`cart-item-${item.id}`} className="flex flex-col gap-4">
               <div className="flex items-start gap-4">
                 {item.summary.product?.imageUrl ? (
@@ -358,7 +358,7 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
               <div className="grid gap-4 sm:grid-cols-[14rem_minmax(0,1fr)]">
                 {item.source === "instant" ? (
                   <Field label={t("designOption")} hint={t("designOptionHint")}>
-                    <Select
+                    <SearchableSelect
                       value={item.designOption}
                       onValueChange={(designOption) =>
                         mutate.mutate(() =>
@@ -425,7 +425,7 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
         ))}
       </ul>
 
-      <aside aria-labelledby="cart-summary" className="border-border h-fit rounded-2xl border p-5 lg:sticky lg:top-20">
+      <aside aria-labelledby="cart-summary" className="bg-surface border-border h-fit rounded-2xl border p-5 lg:sticky lg:top-20">
         <h2 id="cart-summary" className="text-lg font-semibold">
           {t("summary")}
         </h2>

@@ -89,7 +89,7 @@ export function PrivacySettings({
         </h2>
         <ul className="mt-4 flex flex-col gap-3">
           {consents.map((consent) => (
-            <li key={consent.purpose} className="border-border flex flex-col gap-2 rounded-lg border p-4">
+            <li key={consent.purpose} className="bg-surface border-border flex flex-col gap-2 rounded-lg border p-4">
               {consent.required ? (
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
@@ -133,7 +133,7 @@ export function PrivacySettings({
         {requests.length > 0 ? (
           <ul className="mt-4 flex flex-col gap-2">
             {requests.map((request) => (
-              <li key={request.id} className="border-border rounded-lg border p-3 text-sm">
+              <li key={request.id} className="bg-surface border-border rounded-lg border p-3 text-sm">
                 <p className="font-medium">
                   {t(`kinds.${request.kind}`)} · {t(`statuses.${request.status}`)}
                 </p>

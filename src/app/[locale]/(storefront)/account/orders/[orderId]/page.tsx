@@ -108,7 +108,7 @@ export default async function Page({
           {t("detail.back")}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[2.375rem] leading-tight">{name}</h1>
+          <h1 className="text-title leading-tight">{name}</h1>
           {/* One chip (UX audit step 12): the artwork's state is in the card below and on its page. */}
           <StatusChip map={ORDER_STATUS} value={order.status} size="md" />
         </div>
@@ -243,7 +243,7 @@ export default async function Page({
                 {instalments.map((instalment) => (
                   <li
                     key={instalment.id}
-                    className="border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+                    className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
                   >
                     <div>
                       <p className="font-medium">{pick(locale, instalment.labelTh, instalment.labelEn)}</p>
@@ -307,7 +307,7 @@ export default async function Page({
                 {detail.documents.map((document) => (
                   <li
                     key={document.id}
-                    className="border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+                    className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
                   >
                     <div>
                       <p className="font-medium">
@@ -360,7 +360,7 @@ export default async function Page({
                 {detail.claims.map((claim) => (
                   <li
                     key={claim.id}
-                    className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3"
+                    className="bg-surface border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3"
                   >
                     <Link
                       href={`/account/orders/${order.id}/claims/${claim.id}`}

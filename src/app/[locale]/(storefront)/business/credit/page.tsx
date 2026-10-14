@@ -34,7 +34,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-8">
       <header>
-        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+        <h1 className="text-title leading-tight">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
 
@@ -114,7 +114,7 @@ export default async function Page() {
               {issued.map((statement) => (
                 <li
                   key={statement.id}
-                  className="border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+                  className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
                 >
                   <div>
                     <p className="font-medium">{t("period", { period: statement.month })}</p>

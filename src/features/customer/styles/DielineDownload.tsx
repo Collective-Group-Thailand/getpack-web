@@ -13,7 +13,7 @@ import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 import { facetLabel, type StylesT } from "./labels";
 
@@ -87,7 +87,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
     min !== null && max !== null ? `${formatNumber(min, locale)}–${formatNumber(max, locale)}` : "—";
 
   return (
-    <section aria-labelledby="dieline-download" className="border-border rounded-card flex flex-col gap-3 border p-4">
+    <section aria-labelledby="dieline-download" className="bg-surface border-border rounded-card flex flex-col gap-3 border p-4">
       <div>
         <h3 id="dieline-download" className="text-sm font-semibold">
           {t("title")}
@@ -102,7 +102,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
         <>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("material")}>
-              <Select
+              <SearchableSelect
                 value={material}
                 onValueChange={setMaterial}
                 options={sizeRanges.map((r) => ({
@@ -112,7 +112,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
               />
             </Field>
             <Field label={t("basis")}>
-              <Select
+              <SearchableSelect
                 value={basis}
                 onValueChange={(v) => setBasis(v as Basis)}
                 options={(["internal", "external", "over_crease"] as const).map((value) => ({

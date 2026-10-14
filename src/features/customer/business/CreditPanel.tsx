@@ -15,7 +15,7 @@ import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 type Credit = Schemas["CompanyCreditDto"];
@@ -122,7 +122,7 @@ export function CreditApplication({ companyId, credit }: { companyId: string; cr
         </Field>
         {terms.length > 0 ? (
           <Field label={t("term")}>
-            <Select
+            <SearchableSelect
               value={term}
               onValueChange={setTerm}
               options={terms.map((days) => ({ value: String(days), label: t("days", { days }) }))}

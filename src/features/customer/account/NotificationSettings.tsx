@@ -113,7 +113,7 @@ export function NotificationSettings({
         <h2 id="notify-matrix" className="text-lg font-semibold">
           {t("matrix")}
         </h2>
-        <div className="border-border mt-4 overflow-x-auto rounded-xl border" aria-busy={saving || undefined}>
+        <div className="bg-surface border-border mt-4 overflow-x-auto rounded-xl border" aria-busy={saving || undefined}>
           <table className="w-full text-sm">
             <caption className="sr-only">{t("matrix")}</caption>
             <thead className="bg-bg-subtle text-muted text-xs">
@@ -180,7 +180,7 @@ export function NotificationSettings({
             return (
               <li
                 key={provider}
-                className="border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+                className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
               >
                 <div>
                   <p className="font-medium">{t(`providers.${provider}`)}</p>

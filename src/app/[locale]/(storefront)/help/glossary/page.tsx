@@ -17,7 +17,7 @@ export default async function Page() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
       <header>
-        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+        <h1 className="text-title leading-tight">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       <GlossaryList terms={terms} />

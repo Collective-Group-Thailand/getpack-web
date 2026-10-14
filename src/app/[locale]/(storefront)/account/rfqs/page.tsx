@@ -33,7 +33,7 @@ export default async function Page() {
 
   return (
     <div>
-      <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+      <h1 className="text-title leading-tight">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
       {draft || sent.length > 0 ? (
         <section aria-labelledby="rfq-baskets" className="mt-6">
@@ -86,7 +86,7 @@ export default async function Page() {
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
           {list.map((rfq) => (
-            <li key={rfq.id} className="border-border rounded-xl border">
+            <li key={rfq.id} className="bg-surface border-border rounded-xl border">
               <Link
                 href={`/account/rfqs/${rfq.id}`}
                 className="hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl p-4"

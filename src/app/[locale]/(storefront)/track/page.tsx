@@ -33,7 +33,7 @@ export default async function Page({
   return (
     <div className="max-w-content mx-auto flex w-full flex-col gap-8 px-5 py-10 md:px-8 md:py-14">
       <header className="max-w-2xl">
-        <h1 className="text-[2.375rem] leading-tight">{t("title")}</h1>
+        <h1 className="text-title leading-tight">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">

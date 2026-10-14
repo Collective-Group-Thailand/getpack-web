@@ -157,5 +157,9 @@
       "unknown": "Not checked"
     },
     "page": "Page {page}"
+  },
+  "select": {
+    "search": "Type to search…",
+    "empty": "No matching option"
   }
 }

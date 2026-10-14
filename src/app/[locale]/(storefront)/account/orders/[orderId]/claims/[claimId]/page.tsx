@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <Link href={`/account/orders/${orderId}`} className="text-primary text-sm underline-offset-4 hover:underline">
           {t("back", { code: claim.orderCode })}
         </Link>
-        <h1 className="text-[2rem] leading-tight">{t("title", { claim: claim.claimNo })}</h1>
+        <h1 className="text-title leading-tight">{t("title", { claim: claim.claimNo })}</h1>
       </header>
       {timeline ? <ClaimTimeline timeline={timeline} /> : null}
       <ClaimThread initial={claim} />

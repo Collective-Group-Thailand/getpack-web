@@ -80,7 +80,7 @@ export function ApiClients({ companyId, initial }: { companyId: string; initial:
 
   return (
     <div className="flex flex-col gap-8">
-      <section aria-labelledby="api-issue" className="border-border flex flex-col gap-3 rounded-xl border p-4">
+      <section aria-labelledby="api-issue" className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
         <h2 id="api-issue" className="font-semibold">
           {t("issueTitle")}
         </h2>
@@ -129,7 +129,7 @@ export function ApiClients({ companyId, initial }: { companyId: string; initial:
           {initial.map((client) => (
             <li
               key={client.id}
-              className="border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm"
+              className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm"
             >
               <div className="min-w-0">
                 <p className="font-medium">

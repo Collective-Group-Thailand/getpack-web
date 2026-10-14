@@ -14,7 +14,7 @@ import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 type Asset = Schemas["CompanyAssetDto"];
@@ -78,7 +78,7 @@ export function BrandAssets({
         {assets.map((asset) => (
           <li
             key={asset.id}
-            className="border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+            className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
           >
             <div className="min-w-0">
               <p className="font-medium">
@@ -114,14 +114,14 @@ export function BrandAssets({
       {canManage ? (
         <section
           aria-labelledby="asset-add"
-          className="border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
+          className="bg-surface border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
         >
           <h2 id="asset-add" className="text-lg font-semibold">
             {t("addTitle")}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("kind")}>
-              <Select
+              <SearchableSelect
                 value={kind}
                 onValueChange={setKind}
                 options={KINDS.map((value) => ({ value, label: t(`kinds.${value}`) }))}

@@ -259,7 +259,7 @@ export async function ProductView({
               {t("product.sizes")}
             </h2>
             {instant ? <p className="text-muted mt-1 text-sm">{t("product.sizesHint")}</p> : null}
-            <div className="border-border mt-4 overflow-x-auto rounded-xl border">
+            <div className="bg-surface border-border mt-4 overflow-x-auto rounded-xl border">
               <table className="w-full text-sm">
                 <caption className="sr-only">{t("product.sizesCaption", { name })}</caption>
                 <thead className="bg-bg-subtle text-muted">

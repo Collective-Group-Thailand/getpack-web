@@ -172,7 +172,7 @@ export function VariantPicker({
           );
         })}
 
-        <div className="border-border rounded-card flex flex-col gap-2 border p-4" aria-live="polite">
+        <div className="bg-surface border-border rounded-card flex flex-col gap-2 border p-4" aria-live="polite">
           <p className="text-sm font-medium">{t("detail.variant")}</p>
           {variant ? (
             <>

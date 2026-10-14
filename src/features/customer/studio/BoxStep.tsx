@@ -33,7 +33,7 @@ import { Field } from "@/ui/components/Field";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 import { recipeOfVariant } from "./library";
 
@@ -165,7 +165,7 @@ function StyleSection({ spec, openSetup }: { spec: DesignSpec; openSetup: () => 
         <div className="space-y-3">
           {detail.axes.map((axis) => (
             <Field key={axis.axis} label={axisLabel(tStyles, axis.axis)}>
-              <Select
+              <SearchableSelect
                 value={typeof picked[axis.axis] === "string" ? (picked[axis.axis] as string) : ""}
                 placeholder={t("chooseVariant")}
                 onValueChange={(value) => {
@@ -488,7 +488,7 @@ function FinishSection({
       </h3>
       {coatings.length > 0 ? (
         <Field label={t("coating")}>
-          <Select
+          <SearchableSelect
             value={studio.coatingId ?? "none"}
             onValueChange={(value) => onChange({ coatingId: value === "none" ? null : value })}
             options={[

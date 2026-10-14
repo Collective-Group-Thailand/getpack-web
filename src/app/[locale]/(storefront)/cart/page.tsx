@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   if (!actor) {
     return (
       <div className="max-w-content mx-auto px-5 py-8 md:px-8">
-        <h1 className="text-[2rem] leading-tight md:text-[2.375rem]">{t("title")}</h1>
+        <h1 className="text-title leading-tight">{t("title")}</h1>
         <GuestCartView signInHref={`/sign-in?returnTo=${encodeURIComponent("/cart")}`} />
       </div>
     );
@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { cart, addresses } = await getCartAndBook();
   return (
     <div className="max-w-content mx-auto px-5 py-8 md:px-8">
-      <h1 className="text-[2rem] leading-tight md:text-[2.375rem]">{t("title")}</h1>
+      <h1 className="text-title leading-tight">{t("title")}</h1>
       <CartView initialCart={cart} initialAddresses={addresses} />
     </div>
   );

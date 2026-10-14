@@ -17,7 +17,7 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Spinner } from "@/ui/components/Spinner";
 import { cn } from "@/ui/lib/cn";
 
@@ -114,7 +114,7 @@ export function PriceDock({
 
   // The API's suggested quantities when it has some; otherwise any quantity in its range.
   const quantityChip = !configurator ? null : configurator.quantity.presets.length > 0 && qty ? (
-    <Select
+    <SearchableSelect
       aria-label={t("quantity")}
       value={String(qty)}
       onValueChange={(value) => onQuantity(Number(value))}

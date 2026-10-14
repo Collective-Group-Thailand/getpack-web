@@ -74,7 +74,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ locale
             </h2>
             <ul className="flex flex-col gap-4">
               {list.reviews.map((review) => (
-                <li key={review.id} className="border-border flex flex-col gap-2 rounded-xl border p-4">
+                <li key={review.id} className="bg-surface border-border flex flex-col gap-2 rounded-xl border p-4">
                   <p className="text-sm font-medium">
                     {t("reviewHead", {
                       rating: review.rating,
