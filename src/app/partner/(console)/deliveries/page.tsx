@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { ERP_DELIVERY_STATUS } from "@/domain/status";
-import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
-import { PageError, PartnerPage } from "@/features/partner/frame";
-import { ViewTabs } from "@/features/partner/rows";
+import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { Row, RowList, ViewTabs } from "@/features/partner/rows";
 import { pagerLabels } from "@/features/partner/sales/view";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -52,11 +52,47 @@ export default async function DeliveriesPage({
         })
       ).data!,
   );
+  // What is still to deliver: confirmed orders not fully delivered — where a new delivery note starts.
+  const toDeliver =
+    view === "draft" && canAt(context, "factory_delivery.manage")
+      ? (
+          await attempt(
+            async () =>
+              (
+                await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-orders", {
+                  params: { path: { factoryId: context.factoryId }, query: { status: "open", perPage: 20 } },
+                })
+              ).data!.data.filter((so) => so.status === "confirmed" || so.status === "partially_delivered"),
+          )
+        ).data ?? []
+      : [];
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/deliveries${queryOf({ view: next === "draft" ? undefined : next, ...extra })}`;
 
   return (
     <PartnerPage full title={t("title")} description={t("body")}>
+      {toDeliver.length ? (
+        <PartnerSection title={t("toDeliver.title")} description={t("toDeliver.body")}>
+          <RowList label={t("toDeliver.title")}>
+            {toDeliver.map((so) => (
+              <Row
+                key={so.id}
+                href={`/deliveries/new?so=${so.id}`}
+                icon="truck"
+                tone={so.late ? "danger" : "neutral"}
+                title={`${so.soNo} · ${so.customer.name}`}
+                meta={[
+                  t("toDeliver.delivered", { pct: Math.round(Number(so.deliveredPct)) }),
+                  so.deliveryDate ? t("toDeliver.due", { date: format.date(so.deliveryDate) }) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+                aside={t("toDeliver.make")}
+              />
+            ))}
+          </RowList>
+        </PartnerSection>
+      ) : null}
       <ViewTabs
         label={t("views.label")}
         current={view}

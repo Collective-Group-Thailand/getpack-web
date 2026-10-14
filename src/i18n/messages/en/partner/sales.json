@@ -308,6 +308,13 @@
       "cancelDraft": "{no} is a draft and can simply be cancelled",
       "cancelIssued": "The goods on {no} return to stock",
       "cancelled": "Cancelled"
+    },
+    "toDeliver": {
+      "title": "Orders to deliver",
+      "body": "Confirmed orders not yet fully delivered — open one to make its delivery note",
+      "delivered": "{pct}% delivered",
+      "due": "Due {date}",
+      "make": "Make a delivery note"
     }
   },
   "methods": {

@@ -37,10 +37,8 @@ export default async function PartnerHomePage() {
   const only = (role: string) => context.roles.length > 0 && context.roles.every((r) => r === role);
   if (producing && only("factory_qc")) redirect("/qc");
   if (producing && only("factory_shipping")) redirect("/ship");
-  // E3 (D-357): the maintenance crew opens on its orders.
-  if (only("factory_maintenance") && canAt(context, "factory_maintenance.read")) redirect("/maintenance");
-  // E4 (D-371): the sales desk opens on its pipeline.
-  if (only("factory_sales") && canAt(context, "factory_sales.read")) redirect("/crm");
+  // The maintenance crew and the sales desk open on Today too (D-399): their machines down, expiring quotations
+  // and follow-ups are in the inbox there.
   const [steps, prices, floor] = await Promise.all([
     onboarding
       ? attempt(
