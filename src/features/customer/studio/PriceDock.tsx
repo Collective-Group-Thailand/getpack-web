@@ -41,6 +41,8 @@ export interface PriceDockProps {
   orderDisabled: boolean;
   /** Why the order button is off, said under it — a disabled button with no reason is a dead end. */
   orderDisabledReason?: string;
+  /** No order button: the order step's own panel holds the one order action (no two buttons for one thing). */
+  hideOrder?: boolean;
 }
 
 /**
@@ -62,6 +64,7 @@ export function PriceDock({
   onOrder,
   orderDisabled,
   orderDisabledReason,
+  hideOrder = false,
 }: PriceDockProps) {
   const t = useTranslations("studio.dock");
   const locale = useLocale() as "th" | "en";
@@ -138,7 +141,7 @@ export function PriceDock({
     />
   );
 
-  const orderButton = (
+  const orderButton = hideOrder ? null : (
     <div className={cn("flex flex-col gap-1.5", layout === "rail" && "w-full")}>
       <Button onClick={onOrder} disabled={orderDisabled} className={layout === "rail" ? "w-full" : undefined}>
         {rfq ? t("requestQuote") : t("order")}

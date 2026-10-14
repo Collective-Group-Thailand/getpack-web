@@ -204,7 +204,7 @@ function SetupForm({ initial, catalog, onConfirm, onClose, hasContent, isNew = f
 
   return (
     <>
-      <div className="grid gap-6 md:grid-cols-[1fr_260px]">
+      <div className="grid items-start gap-6 md:grid-cols-[1fr_260px]">
         <div className="space-y-5">
           <Field label={t("styleHeading")}>
             <div className="space-y-3">
@@ -335,7 +335,8 @@ function SetupForm({ initial, catalog, onConfirm, onClose, hasContent, isNew = f
           ) : null}
         </div>
 
-        <aside className="bg-surface-subtle flex flex-col rounded-xl p-3">
+        {/* Stays in view while the style list scrolls, so the chosen box is always beside its options. */}
+        <aside className="bg-surface-subtle flex flex-col rounded-xl p-3 md:sticky md:top-0">
           <div className="aspect-square w-full">
             {errors.length === 0 ? (
               <BoxPreview styleId={style} values={values} material={material} colour={boardColour(materialPart)} />
