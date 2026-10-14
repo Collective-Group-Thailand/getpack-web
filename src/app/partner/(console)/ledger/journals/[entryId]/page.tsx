@@ -32,6 +32,8 @@ const SOURCE_HREF: Record<string, (id: string) => string> = {
   erp_gl_fixed_asset: () => `/ledger/assets`,
   erp_gl_depreciation_run: () => `/ledger/assets`,
   erp_gl_bank_statement_line: () => `/ledger/bank`,
+  billing_statement: (id) => `/billing/${id}`,
+  payout_item: (id) => `/payouts/${id}`,
 };
 
 /** One journal entry (D-389): its lines and dimensions, the document it came from, and what may be done to it. */
