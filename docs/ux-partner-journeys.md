@@ -17,7 +17,7 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | 5 | Sales: CRM, quotations, sales orders, deliveries | **done** (web `feat/ux-round5-sales`) |
 | 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | **done** (web `feat/ux-round6-finance`, API v0.52.0) |
 | 7 | The books: ledger, journals, reports, accounts, assets, bank | **done** (web `feat/ux-round7-books`) |
-| 8 | Insight: dashboard, costs, profit, OEE | |
+| 8 | Insight: dashboard, costs, profit, OEE | **done** (web `feat/ux-round8-insight`, API v0.53.0) |
 | 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | |
 
 ## Round 1 — the day's work
@@ -137,3 +137,18 @@ pending version.
 Already good and kept: the overview strip, maker-checker journals with reversal and auto-reversal, recurring journals,
 the trial balance → general ledger → entry → document drill-down, P&L / balance sheet / cash flow in the DBD layout,
 stock value vs. ledger, the chart with rule editor, bank import with auto-match and fees.
+
+## Round 8 — insight
+
+**Walked as** the owner (how is the month going, what does a Packio job earn, how are the machines doing).
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 8.1 | The dashboard's "sales this month" counted only the factory's own invoices (฿8,350) while Packio — most of the work — had paid ฿239,951 that month; the owner could not see his main income. | "งานจาก Packio" first on the dashboard (API D-402): revenue from statements confirmed this month, statements to confirm (with the amount), confirmed ones still needing the tax invoice; the own-sales tile is named as such. |
+| 8.2 | Gross profit was by customer, item and sales order only — a Packio job's margin could not be seen. | "งาน Packio" view (the default): each job finished in the month, the purchase order's net over the production order's cost, opening the job's cost sheet. |
+| 8.3 | A job with nothing issued and no machine time showed a 100 % margin. | Marked "ยังไม่มีต้นทุน" (no %), and the total warns how many jobs have no cost yet. |
+| 8.4 | OEE showed 0 % on a day a machine ran without a shift (1,440 / 0 minutes), dragging the week down. | API D-403: time run beyond the planned time extends it — availability 100 %, not 0 %; the factory OEE weighs machines by that time. |
+| 8.5 | Production order numbers broke over two lines on the cost report. | Kept on one line. |
+
+Already good and kept: the cost sheet per order (material, machine minutes at the machine's rate, labour, overhead,
+per unit), machine rates, OEE per machine and day with pause reasons.
