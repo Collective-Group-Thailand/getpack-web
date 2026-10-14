@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.50.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.51.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -18035,6 +18035,28 @@ export interface paths {
          *     Implements: D-350.
          */
         post: operations["partner.erpItemSuppliers.addCharge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What is waiting for me
+         * @description Across the ERP, what the signed-in person can act on now, by their permissions: approvals (never their own proposals), what is overdue, due today and coming soon — each item names the document or the list it opens (D-399).
+         *
+         *     Implements: D-399.
+         */
+        get: operations["partner.erpInsight.inbox"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -49539,6 +49561,76 @@ export interface components {
             /** @example ให้ทีม Packio ช่วยตรวจตัวเลขต้นทุน */
             reason: string;
         };
+        ErpInboxCountsDto: {
+            /** @example 2 */
+            approve: number;
+            /** @example 1 */
+            overdue: number;
+            /** @example 4 */
+            soon: number;
+            /** @example 3 */
+            today: number;
+        };
+        ErpInboxDocumentDto: {
+            /**
+             * @description Its public id (a period, a filing: its own key)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f901
+             */
+            id: string;
+            /** @example PR-2610-0004 */
+            number: string | null;
+            /**
+             * @description What the item opens: an ERP document type
+             * @example erp_purchase_request
+             */
+            type: string;
+        };
+        ErpInboxDto: {
+            /**
+             * Format: date
+             * @example 2026-10-14
+             */
+            asOf: string;
+            counts: components["schemas"]["ErpInboxCountsDto"];
+            /** @description Approvals first, then overdue, today and soon */
+            items: components["schemas"]["ErpInboxItemDto"][];
+        };
+        ErpInboxItemDto: {
+            /** @example 12500.00 */
+            amount: string | null;
+            /**
+             * @description Documents behind the item (1 for one document; more for a count)
+             * @example 1
+             */
+            count: number;
+            /**
+             * Format: date
+             * @description Its due / reference day
+             * @example 2026-10-14
+             */
+            date: string | null;
+            /** @description The one document it is about; null for a count */
+            document: components["schemas"]["ErpInboxDocumentDto"] | null;
+            /** @example purchase_request:0192f3a0-7c1e-7d2a-9b1f-00000000f901 */
+            key: string;
+            /** @example purchase_request */
+            kind: components["schemas"]["ErpInboxKind"];
+            /**
+             * @description Who or what it concerns (supplier, customer, machine, proposer)
+             * @example ฝ่ายจัดซื้อ ทดสอบ
+             */
+            party: string | null;
+            /** @example approve */
+            section: components["schemas"]["ErpInboxSection"];
+            /** @example warning */
+            tone: components["schemas"]["ErpInboxTone"];
+        };
+        /** @enum {string} */
+        ErpInboxKind: "purchase_request" | "purchase_request_more" | "invoice_variance" | "invoice_variance_more" | "journal" | "journal_more" | "account_change" | "rule_version" | "receipt_late" | "receipt_late_more" | "receipt_today" | "po_draft" | "stock_low" | "payable_overdue" | "payable_week" | "mo_late" | "mo_late_more" | "mo_to_release" | "machine_down" | "ncr_due" | "ncr_due_more" | "quotation_expiring" | "so_draft" | "followup_today" | "followup_late" | "delivery_late" | "delivery_late_more" | "delivery_today" | "receivable_overdue" | "period_to_close" | "bank_lines" | "tax_due" | "alerts";
+        /** @enum {string} */
+        ErpInboxSection: "approve" | "overdue" | "today" | "soon";
+        /** @enum {string} */
+        ErpInboxTone: "danger" | "warning" | "info";
         ErpInspectionTemplateDto: {
             checkpoints: components["schemas"]["ErpCheckpointSpecDto"][];
             /**
@@ -208852,6 +208944,125 @@ export interface operations {
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpInsight.inbox": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The inbox */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2026-10-14",
+                     *       "counts": {
+                     *         "approve": 1,
+                     *         "overdue": 3,
+                     *         "soon": 0,
+                     *         "today": 0
+                     *       },
+                     *       "items": [
+                     *         {
+                     *           "amount": null,
+                     *           "count": 1,
+                     *           "date": "2026-10-13",
+                     *           "document": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f901",
+                     *             "number": "PR-2610-0004",
+                     *             "type": "erp_purchase_request"
+                     *           },
+                     *           "key": "purchase_request:0192f3a0-7c1e-7d2a-9b1f-00000000f901",
+                     *           "kind": "purchase_request",
+                     *           "party": "ฝ่ายจัดซื้อ ทดสอบ",
+                     *           "section": "approve",
+                     *           "tone": "warning"
+                     *         },
+                     *         {
+                     *           "amount": "48150.00",
+                     *           "count": 3,
+                     *           "date": null,
+                     *           "document": null,
+                     *           "key": "receivable_overdue:all",
+                     *           "kind": "receivable_overdue",
+                     *           "party": null,
+                     *           "section": "overdue",
+                     *           "tone": "danger"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpInboxDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

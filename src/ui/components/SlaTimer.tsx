@@ -49,6 +49,8 @@ export function SlaTimer({ dueAt, state, format, absolute, none = "—", classNa
   return (
     <span
       title={absolute}
+      // The server and the browser read the clock a moment apart: the minute may differ, by design.
+      suppressHydrationWarning
       className={cn(
         "inline-flex items-center gap-1 text-xs font-medium whitespace-nowrap tabular-nums",
         tone === "danger" && "text-danger",

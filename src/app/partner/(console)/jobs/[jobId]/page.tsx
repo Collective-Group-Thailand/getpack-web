@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { INSPECTION_STATUS, JOB_ISSUE_STATUS, JOB_STATUS, QC_RESULT } from "@/domain/status";
+import { ERP_PRODUCTION_STATUS, INSPECTION_STATUS, JOB_ISSUE_STATUS, JOB_STATUS, QC_RESULT } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { addressLine } from "@/features/partner/address";
 import { ViewFile } from "@/features/partner/viewer";
@@ -24,6 +24,7 @@ import { jobName, stepName } from "@/features/partner/jobs/JobCard";
 import { specLines } from "@/features/partner/jobs/spec";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
+import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -95,6 +96,21 @@ export default async function JobPage({ params }: Props) {
     download(job.approvedFileId),
     download(job.dielineFileId),
   ]);
+  // The ERP's production order for this job (made on acceptance): where the factory plans and records it.
+  const mo =
+    context.factoryId && canAt(context, "factory_planning.read")
+      ? (
+          await attempt(
+            async () =>
+              (
+                await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders", {
+                  params: { path: { factoryId: context.factoryId }, query: { q: job.jobNo, source: "packio_job", perPage: 5 } },
+                })
+              ).data!.data.find((order) => order.title.startsWith(job.jobNo)) ?? null,
+          )
+        ).data
+      : null;
+  const [tTable] = await Promise.all([getTranslations("partnerJobs.table")]);
   const offered = new Set(job.nextActions.filter((action) => !action.disabledReason).map((action) => action.key));
   // A QC inspector records quality, not production (round 2, Phase 1): the steps of the floor are
   // shown to them, but their start / finish buttons are the operators' — except the QC step itself.
@@ -121,7 +137,12 @@ export default async function JobPage({ params }: Props) {
     <PartnerPage
       title={job.jobNo}
       back={back}
-      meta={<StatusChip map={JOB_STATUS} value={job.status} size="md" />}
+      meta={
+        <span className="flex flex-wrap items-center gap-2">
+          <StatusChip map={JOB_STATUS} value={job.status} size="md" />
+          {job.kind !== "production" ? <Badge tone="info">{tTable(`kinds.${job.kind}`)}</Badge> : null}
+        </span>
+      }
       description={
         job.promisedShipDate
           ? t("summary", {
@@ -133,6 +154,32 @@ export default async function JobPage({ params }: Props) {
       }
       wide
     >
+      {job.kind !== "production" ? (
+        <Callout tone="info">{t(`kindNote.${job.kind}`, { quantity: format.number(job.quantityOrdered) })}</Callout>
+      ) : null}
+      {canAt(context, "factory_planning.read") && job.status !== "released" && job.kind !== "mockup" ? (
+        <Card padding="md" className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-semibold">{t("erpTitle")}</h2>
+            {mo ? (
+              <Link href={`/planning/orders/${mo.id}`} className="text-primary text-sm font-medium underline underline-offset-2">
+                {t("erpOpen", { no: mo.moNo })}
+              </Link>
+            ) : null}
+          </div>
+          {mo ? (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <StatusChip map={ERP_PRODUCTION_STATUS} value={mo.status} />
+              <Badge tone={mo.short ? "warning" : "success"}>{mo.short ? t("erpShort") : t("erpReady")}</Badge>
+              <span className="text-muted">{t("erpProgress", { pct: Math.round(Number(mo.progressPct)) })}</span>
+              {mo.dueOn ? <span className="text-muted">{t("erpDue", { date: format.date(mo.dueOn) })}</span> : null}
+            </div>
+          ) : (
+            <p className="text-muted text-sm">{t("erpNone")}</p>
+          )}
+          <p className="text-muted text-xs">{t("erpBody")}</p>
+        </Card>
+      ) : null}
       {job.status === "released" ? (
         <Card padding="md" className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">{t("acceptTitle")}</h2>

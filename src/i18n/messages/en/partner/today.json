@@ -53,5 +53,63 @@
       "step_overdue": "The current step is past due",
       "inspection_planned": "Packio plans to inspect this job"
     }
+  },
+  "inbox": {
+    "sections": {
+      "approve": "Waiting for your approval",
+      "overdue": "Overdue",
+      "today": "Today",
+      "soon": "Coming up"
+    },
+    "sectionHints": {
+      "approve": "Proposed by others, waiting for your decision",
+      "overdue": "Deal with these first",
+      "today": "Due today",
+      "soon": "Get ahead of these"
+    },
+    "summary": "Your work at a glance",
+    "allClear": "All clear — nothing waiting for you",
+    "more": "and {count} more",
+    "kinds": {
+      "purchase_request": "Approve purchase request {number}",
+      "purchase_request_more": "{count} more purchase requests to approve",
+      "invoice_variance": "Invoice {number} differs from the order",
+      "invoice_variance_more": "{count} more invoices with a price difference",
+      "journal": "Approve journal: {number}",
+      "journal_more": "{count} more journals to approve",
+      "account_change": "Approve chart change {number}",
+      "rule_version": "Approve the new posting rule {number}",
+      "receipt_late": "Not received yet: {number}",
+      "receipt_late_more": "{count} more orders past their delivery day",
+      "receipt_today": "Arriving today: {number}",
+      "po_draft": "{count} draft purchase orders not sent",
+      "stock_low": "{count} items below their reorder point",
+      "payable_overdue": "{count} supplier invoices overdue",
+      "payable_week": "{count} supplier invoices due within 7 days",
+      "mo_late": "Production order {number} is late",
+      "mo_late_more": "{count} more late production orders",
+      "mo_to_release": "{count} production orders to release this week",
+      "machine_down": "Machine down: {party}",
+      "ncr_due": "NCR {number} action due",
+      "ncr_due_more": "{count} more NCRs due",
+      "quotation_expiring": "Quotation {number} expires soon",
+      "so_draft": "{count} draft sales orders not confirmed",
+      "followup_today": "{count} customer follow-ups today",
+      "followup_late": "{count} overdue customer follow-ups",
+      "delivery_late": "Delivery {number} is past its day",
+      "delivery_late_more": "{count} more late deliveries",
+      "delivery_today": "Delivering today: {number}",
+      "receivable_overdue": "{count} customer invoices overdue",
+      "period_to_close": "Close the books for {number}",
+      "bank_lines": "{count} bank lines to reconcile",
+      "tax_due": "File PP30 for {number}",
+      "alerts": "{count} alerts not yet seen"
+    },
+    "due": "Due {date}",
+    "on": "{date}",
+    "by": "By {name}",
+    "acceptJob": "Accept Packio job {no} ({quantity} pcs)",
+    "acceptBy": "Accept or decline by {at}",
+    "packioWork": "Work from Packio"
   }
 }

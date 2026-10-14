@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.50.0). */
+/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.51.0). */
 
 export interface OperationProblems {
   method: string;
@@ -982,6 +982,7 @@ export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {
   "partner.erpGoodsReceipts.create": {"method":"POST","path":"/v1/partner/factories/{factoryId}/erp/goods-receipts","problems":{"http.bad_request":400,"http.malformed_json":400,"idempotency.key_invalid":400,"idempotency.key_required":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"erp.invalid_status":409,"idempotency.in_progress":409,"erp.archived":422,"erp.lot_required":422,"erp.not_a_supplier":422,"erp.over_receipt":422,"erp.unit_not_allowed":422,"idempotency.key_reused":422,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.erpGoodsReceipts.get": {"method":"GET","path":"/v1/partner/factories/{factoryId}/erp/goods-receipts/{grId}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.erpItemSuppliers.addCharge": {"method":"POST","path":"/v1/partner/factories/{factoryId}/erp/goods-receipts/{grId}/charges","problems":{"http.bad_request":400,"http.malformed_json":400,"idempotency.key_invalid":400,"idempotency.key_required":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"idempotency.in_progress":409,"idempotency.key_reused":422,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
+  "partner.erpInsight.inbox": {"method":"GET","path":"/v1/partner/factories/{factoryId}/erp/inbox","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.erpInsight.costReport": {"method":"GET","path":"/v1/partner/factories/{factoryId}/erp/insight/costs","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.erpInsight.oee": {"method":"GET","path":"/v1/partner/factories/{factoryId}/erp/insight/oee","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "partner.erpInsight.profitability": {"method":"GET","path":"/v1/partner/factories/{factoryId}/erp/insight/profitability","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},

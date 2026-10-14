@@ -101,7 +101,12 @@
       "date": "Reported",
       "status": "Status",
       "deduction": "Deducted"
-    }
+    },
+    "answerBy": "Answer by {at}",
+    "answerOverdue": "Past the answer time ({at}) — Packio may decide without the factory's explanation",
+    "claimedAmount": "Amount claimed",
+    "severity": "Severity",
+    "openJob": "Open job {no}"
   },
   "performance": {
     "title": "Your performance",

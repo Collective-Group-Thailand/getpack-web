@@ -526,6 +526,7 @@
     "skipped": "Skipped",
     "good": "Good",
     "scrap": "Scrap",
-    "save": "Save"
+    "save": "Save",
+    "nextSteps": "Next: {list} ({count} steps — tap to see)"
   }
 }
