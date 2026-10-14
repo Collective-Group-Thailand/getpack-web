@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.51.0). */
+/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.52.0). */
 
 export interface OperationProblems {
   method: string;

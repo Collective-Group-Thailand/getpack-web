@@ -6,6 +6,7 @@ import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/pa
 import { AddChargeForm } from "@/features/partner/erp/ChargesEditor";
 import { formatQty } from "@/features/partner/erp/format";
 import { erpSuppliers } from "@/features/partner/erp/server";
+import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -192,6 +193,7 @@ export default async function GoodsReceiptPage({ params }: Props) {
           />
         ) : null}
       </PartnerSection>
+      <PostedEntries sourceId={r.id} />
     </PartnerPage>
   );
 }

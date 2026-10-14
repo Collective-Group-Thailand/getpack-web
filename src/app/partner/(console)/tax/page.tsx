@@ -25,6 +25,19 @@ const VIEWS = ["vat", "vat30", "wht", "certificates", "exports"] as const;
 type View = (typeof VIEWS)[number];
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 const thisMonth = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 7);
+const shift = (month: string, by: number) => {
+  const [y, m] = month.split("-").map(Number) as [number, number];
+  const d = new Date(Date.UTC(y, m - 1 + by, 1));
+  return d.toISOString().slice(0, 7);
+};
+/** Where a register line's document lives. */
+const SOURCE_HREF: Record<string, (id: string) => string> = {
+  tax_invoice: (id) => `/invoices/${id}`,
+  credit_note: (id) => `/invoices/notes/${id}`,
+  debit_note: (id) => `/invoices/notes/${id}`,
+  supplier_tax_invoice: (id) => `/payables/invoices/${id}`,
+  packio_statement: (id) => `/billing/${id}`,
+};
 
 /**
  * The factory's tax for a month (D-366, D-367): the output and input VAT reports, the ภ.พ.30 summary, the
@@ -74,6 +87,7 @@ export default async function TaxPage({
                 caption={t(`vat.${kind}`)}
                 rows={report.rows}
                 rowKey={(row) => `${row.kind}-${row.sourceId}`}
+                rowHref={(row) => SOURCE_HREF[row.kind]?.(row.sourceId) ?? `/tax${queryOf({ month })}`}
                 empty={<EmptyState icon="receipt" title={t("vat.empty")} />}
                 columns={[
                   { key: "d", header: tCommon("date"), className: "whitespace-nowrap", cell: (row) => format.date(row.date) },
@@ -83,7 +97,7 @@ export default async function TaxPage({
                     primary: true,
                     cell: (row) => (
                       <span className="flex flex-wrap items-center gap-1 font-mono">
-                        {row.docNo}
+                        <span className="whitespace-nowrap">{row.docNo}</span>
                         {row.voided ? <Badge tone="danger">{t("vat.voided")}</Badge> : null}
                       </span>
                     ),
@@ -223,6 +237,16 @@ export default async function TaxPage({
         <Button type="submit" variant="secondary">
           {t("show")}
         </Button>
+        <nav aria-label={t("monthNav")} className="flex gap-2">
+          <Link className="text-link text-sm underline" href={href(view, { month: shift(month, -1), form: view === "wht" ? form : undefined })}>
+            {t("prevMonth")}
+          </Link>
+          {month < thisMonth() ? (
+            <Link className="text-link text-sm underline" href={href(view, { month: shift(month, 1), form: view === "wht" ? form : undefined })}>
+              {t("nextMonth")}
+            </Link>
+          ) : null}
+        </nav>
         {view === "certificates" ? (
           <Link className="text-link ms-auto text-sm underline" href="/payables?view=payments">
             {t("certificates.fromPayments")}

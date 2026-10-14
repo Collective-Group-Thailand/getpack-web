@@ -1,10 +1,10 @@
 {
   "$comment": "The backend contract this app is generated against (ADR-0006). Bump this file in its own PR: pnpm gen:api --adopt --tag vX.Y.Z (tagged packio-api releases only) rewrites it and contract/openapi.json together, and the resulting type errors are the change list.",
-  "version": "0.51.0",
-  "tag": "v0.51.0",
-  "commit": "c4e5c27e46197e91bc91532254e4653bc2931d13",
-  "sha256": "ed525c80d1ea970d721ba4e61595db21c9f50cd23a47d266e83822d2cd4375f5",
-  "source": "https://github.com/collective-group-th/packio-api/releases/download/v0.51.0/openapi.json",
+  "version": "0.52.0",
+  "tag": "v0.52.0",
+  "commit": "7675922f41f2b9730fdfa12a5c23e95ced903cc0",
+  "sha256": "e1f3fa09c444130c88703a1e4f7c9bb797399654bfbd0adc1108079f44a8f4e6",
+  "source": "https://github.com/collective-group-th/packio-api/releases/download/v0.52.0/openapi.json",
   "localSource": "../packio-api/contract/openapi.json",
   "vendored": "contract/openapi.json"
 }
