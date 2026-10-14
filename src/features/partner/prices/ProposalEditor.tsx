@@ -31,10 +31,13 @@ import {
   cellText,
   columnsOf,
   decimalText,
-  referenceLookup,
-  sortRows,
+  pairDimensions,
   type PriceComponentDef,
   type PriceReference,
+  rangeLabel,
+  rangeText,
+  referenceLookup,
+  sortRows,
   type Values,
 } from "./values";
 
@@ -125,6 +128,16 @@ export function ProposalEditor({
   );
   const show = (column: Column, value: unknown) =>
     cellText(value, column, referenceName, labels, valueKeys.has(column.key));
+  const pairs = pairDimensions(dimensions);
+  /** What a line applies to, short: from/to pairs as ranges, open ones left out (as on the price page). */
+  const appliesOf = (component: Schemas["PriceComponent"], values: Values) =>
+    pairDimensions(columnsOf(allDefinitions, component).dimensions)
+      .flatMap((pair) => {
+        if (pair.kind === "single") return [show(pair.column, values[pair.column.key])];
+        const range = rangeText(pair, values, show, "");
+        return range ? [`${rangeLabel(label(pair.lower.key))} ${range}`] : [];
+      })
+      .join(" · ");
   const dirty = Object.keys(pending).length + added.length;
 
   // Leaving with unsaved cells loses them: let the browser ask first.
@@ -368,13 +381,12 @@ export function ProposalEditor({
                 header: t("table.line"),
                 primary: true,
                 cell: (line) => {
-                  const columns = columnsOf(allDefinitions, line.component);
                   const values = ((line.action === "add" ? line.proposedValues : line.currentValues) ?? {}) as Values;
                   return (
                     <span className="flex flex-col">
                       <span className="font-medium">{tComponents(line.component)}</span>
                       <span className="text-muted text-sm">
-                        {columns.dimensions.map((column) => show(column, values[column.key])).join(" · ")}
+                        {appliesOf(line.component, values)}
                       </span>
                     </span>
                   );
@@ -492,14 +504,22 @@ export function ProposalEditor({
             <table className="w-full border-separate border-spacing-0 text-sm tabular-nums">
               <thead className="sticky top-0 z-10">
                 <tr>
-                  {all.map((column, index) => (
+                  {pairs.map((pair) => (
+                    <th
+                      key={pair.key}
+                      scope="col"
+                      className="bg-surface-subtle border-border border-b px-2 py-2 text-start align-bottom font-medium"
+                    >
+                      {pair.kind === "single" ? label(pair.column.key) : rangeLabel(label(pair.lower.key))}
+                    </th>
+                  ))}
+                  {valueColumns.map((column, index) => (
                     <th
                       key={column.key}
                       scope="col"
                       className={cn(
-                        "border-border border-b px-2 py-2 text-start align-bottom font-medium",
-                        index < dimensions.length ? "bg-surface-subtle" : "bg-sage-subtle",
-                        index === dimensions.length && "border-s",
+                        "bg-sage-subtle border-border border-b px-2 py-2 text-start align-bottom font-medium",
+                        index === 0 && "border-s",
                       )}
                     >
                       {label(column.key)}
@@ -518,15 +538,18 @@ export function ProposalEditor({
                   const removing = change?.remove ?? (inDraft?.action === "remove" && !change);
                   return (
                     <tr key={row.lineKey} className={cn("group", removing && "bg-danger-subtle/40")}>
-                      {dimensions.map((column) => (
+                      {pairs.map((pair) => (
                         <td
-                          key={column.key}
+                          key={pair.key}
                           className={cn(
                             "border-border border-b px-2 py-1.5 whitespace-nowrap",
                             removing && "line-through",
+                            inDraft && !removing && "bg-warning-subtle/40",
                           )}
                         >
-                          {show(column, (row.values as Values)[column.key])}
+                          {pair.kind === "single"
+                            ? show(pair.column, (row.values as Values)[pair.column.key])
+                            : rangeText(pair, row.values as Values, show, t("anyRange"))}
                         </td>
                       ))}
                       {valueColumns.map((column, index) => {
