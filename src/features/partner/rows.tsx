@@ -106,8 +106,9 @@ export function ViewTabs({
   current: string;
 }) {
   return (
-    <nav aria-label={label} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-      <ul className="flex gap-1.5">
+    // A phone scrolls the tabs sideways; a wider screen wraps them so none hides past the edge.
+    <nav aria-label={label} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:overflow-visible md:px-0">
+      <ul className="flex gap-1.5 md:flex-wrap">
         {items.map((item) => (
           <li key={item.key} className="shrink-0">
             <Link

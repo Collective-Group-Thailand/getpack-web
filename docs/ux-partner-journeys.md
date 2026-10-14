@@ -1,0 +1,43 @@
+# Partner zone — UX & journey programme
+
+Asked for by the product owner on 2026-10-14: improve the UX/UI and the journeys of **every partner menu** (Packio
+and the factory ERP), menu by menu, walking each as its real user, until the system is complete. Decisions are
+delegated; API-side decisions are recorded in packio-api `docs/decisions.md` (D-399 onwards).
+
+How a menu is walked: sign in as the role that lives in it (UAT users `factory-<role>@uat.example.invalid`), on a
+1280 px office screen and a 390 px phone, with rehearsal data from `pnpm uat:populate`; do the job end to end; note
+what blocks, confuses, is missing or is out of place; fix it (web, and API when a feature needs it); walk it again.
+
+| Round | Menus | Status |
+|---|---|---|
+| 1 | The day's work: Today, alerts, jobs, floor, kiosk, QC, samples, shipping, claims, the shell | **done** (web `feat/ux-round1-daily`, API v0.51.0) |
+| 2 | Stock and buying: stock, purchasing, RFQs, trading partners | next |
+| 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | |
+| 4 | Quality: checks, NCRs, templates | |
+| 5 | Sales: CRM, quotations, sales orders, deliveries | |
+| 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | |
+| 7 | The books: ledger, journals, reports, accounts, assets, bank | |
+| 8 | Insight: dashboard, costs, profit, OEE | |
+| 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | |
+
+## Round 1 — the day's work
+
+**Walked as** the owner (everything), an operator (floor, kiosk), QC (queue) and shipping.
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 1.1 | Today showed only Packio work; the ERP's approvals and deadlines were nowhere — the owner had to open every menu to find what waited for him. | ERP inbox (API D-399) merged with the Packio tasks in four sections — *waiting for your approval*, *overdue*, *today*, *coming up* — with a summary strip that jumps to each; each row opens the document or its list. |
+| 1.2 | A Packio job offer with a 24-hour clock was only a row in the queue at the bottom. | Each offer is a task at the top ("รับงาน Packio … ตอบรับหรือปฏิเสธภายใน …"); the Packio counters and queue sit under their own heading. |
+| 1.3 | The owner's sidebar had ~50 items in nine groups — a long scroll to find anything. | Groups fold (the day's work and the current group stay open; choices remembered on the device), and a menu search (press `/`, Enter opens the first match). |
+| 1.4 | View tabs (alerts' kinds, jobs' views) ran off the right edge on a desktop. | Tabs wrap on wider screens; a phone still scrolls them sideways. |
+| 1.5 | A mock-up job read "กล่อง 1 ชิ้น" with a 500-piece delivery under it — nothing said it was a mock-up. | Job kind badge (mock-up / re-production) in the job list and on the job, and a note explaining the quantity. |
+| 1.6 | A Packio job and the production order made from it were two worlds: the job did not say whether materials were ready or where to plan it. | "ในระบบโรงงาน" card on the job: its MO, status, materials ready / missing, progress, due day, link. |
+| 1.7 | The floor offered *start* on every step of every order at once (step 100 "ready to ship" before step 30). | One card per order with the step to do now (running or paused first); later steps folded under it in order. Zero planned minutes are no longer shown. |
+| 1.8 | Production orders from Packio jobs showed `partnerErp.common.units.piece` (unit `piece` unknown to the ERP). | API maps Packio's `piece` to `pcs` (D-400) and migrates old rows; screens fall back to the raw unit rather than a key. |
+| 1.9 | Countdowns ("รับงานภายใน 23 ชม. 34 นาที") broke hydration when the minute turned between server and browser. | The timer text is allowed to differ at hydration. |
+| 1.10 | The kiosk lived inside the office shell — a tablet by the machine showed the sidebar and dimmed after a minute. | A full-screen switch next to the kiosk's actions, and the screen is kept awake while the kiosk is open (Wake Lock). |
+| 1.11 | A claim said "Packio wants an answer" with no deadline; its references were plain text. | The answer-by time (and an overdue warning) from the claim's SLA; the job reference opens the job; the claimed amount is shown. |
+
+Already good and kept: the job page (accept with the countdown, spec and approved artwork before saying yes, steps
+with one next action), the shipment page (labels → dispatch → proof of delivery), the samples evidence form, the QC
+queue.

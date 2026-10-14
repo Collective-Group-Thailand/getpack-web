@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
@@ -54,10 +55,13 @@ export default async function ClaimPage({ params }: Props) {
       meta={<StatusChip map={CLAIM_STATUS} value={claim.status} size="md" />}
       description={t(`types.${claim.type}`)}
     >
-      {/* CONTRACT-GAP partner.claims — no factory answer-by time is published (no setting decided). */}
       {respond && !respond.disabledReason ? (
-        <Callout tone="warning" icon="warning" title={t("answerTitle")}>
-          {t("answerBody")}
+        <Callout tone={claim.sla.responseOverdue ? "danger" : "warning"} icon="warning" title={t("answerTitle")}>
+          {claim.sla.responseDueAt
+            ? claim.sla.responseOverdue
+              ? t("answerOverdue", { at: format.dateTime(claim.sla.responseDueAt) })
+              : `${t("answerBy", { at: format.dateTime(claim.sla.responseDueAt) })} — ${t("answerBody")}`
+            : t("answerBody")}
         </Callout>
       ) : null}
       {blocked ? (
@@ -74,9 +78,20 @@ export default async function ClaimPage({ params }: Props) {
             ...(claim.claimedQuantity !== null
               ? [{ term: t("quantity"), description: format.number(claim.claimedQuantity) }]
               : []),
+            ...(claim.claimedAmount ? [{ term: t("claimedAmount"), description: format.thb(claim.claimedAmount) }] : []),
             {
               term: t("reference"),
-              description: [claim.orderCode, claim.jobNo, claim.shipmentNo].filter(Boolean).join(" · ") || "—",
+              description: (
+                <span className="flex flex-wrap gap-x-2">
+                  {claim.orderCode ? <span>{claim.orderCode}</span> : null}
+                  {claim.jobId && claim.jobNo ? (
+                    <Link href={`/jobs/${claim.jobId}`} className="text-primary underline underline-offset-2" aria-label={t("openJob", { no: claim.jobNo })}>
+                      {claim.jobNo}
+                    </Link>
+                  ) : null}
+                  {claim.shipmentNo ? <span>{claim.shipmentNo}</span> : null}
+                </span>
+              ),
             },
             { term: t("liability"), description: t(`liabilities.${claim.liability}`) },
             { term: t("submitted"), description: format.dateTime(claim.submittedAt) },

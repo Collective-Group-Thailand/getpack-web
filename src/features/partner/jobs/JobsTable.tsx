@@ -38,8 +38,13 @@ export async function JobsTable({ jobs, caption }: { jobs: JobSummary[]; caption
           cell: (job) => (
             <span className="flex flex-col gap-1">
               <span>{jobName(job)}</span>
-              {job.atRisk || job.inspectionRequired ? (
+              {job.atRisk || job.inspectionRequired || job.kind !== "production" ? (
                 <span className="flex flex-wrap gap-1">
+                  {job.kind !== "production" ? (
+                    <Badge tone="info" size="sm">
+                      {t(`kinds.${job.kind}`)}
+                    </Badge>
+                  ) : null}
                   {job.atRisk ? (
                     <Badge tone="danger" size="sm">
                       {t("late")}
