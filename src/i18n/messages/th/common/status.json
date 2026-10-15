@@ -971,5 +971,54 @@
     "active": "ใช้งาน",
     "disposed": "จำหน่ายแล้ว",
     "written_off": "ตัดจำหน่ายแล้ว"
+  },
+  "agent": {
+    "active": "ใช้งาน",
+    "suspended": "ระงับชั่วคราว",
+    "ended": "สิ้นสุดแล้ว"
+  },
+  "agentApplication": {
+    "submitted": "รอพิจารณา",
+    "approved": "อนุมัติแล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "withdrawn": "ถอนใบสมัคร"
+  },
+  "agentLink": {
+    "active": "ผูกอยู่",
+    "ended": "สิ้นสุดแล้ว"
+  },
+  "agentLead": {
+    "registered": "คุ้มครองอยู่",
+    "converted": "เป็นลูกค้าแล้ว",
+    "expired": "หมดเวลาคุ้มครอง",
+    "rejected": "ไม่รับลงทะเบียน",
+    "withdrawn": "ถอนแล้ว"
+  },
+  "agentCommission": {
+    "pending": "รอยืนยัน",
+    "held": "ระงับตรวจสอบ",
+    "earned": "ได้รับสิทธิ์แล้ว",
+    "statemented": "อยู่ในใบแจ้งยอด",
+    "paid": "จ่ายแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "agentStatement": {
+    "draft": "ร่าง",
+    "approved": "อนุมัติแล้ว",
+    "exported": "ส่งเงินเดือนแล้ว",
+    "paid": "จ่ายแล้ว",
+    "voided": "ยกเลิก"
+  },
+  "agentPlanVersion": {
+    "draft": "รออนุมัติ",
+    "approved": "อนุมัติแล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "withdrawn": "ถอนแล้ว"
+  },
+  "agentFactoryLink": {
+    "pending": "รอผ่านเงื่อนไข",
+    "qualified": "ผ่านเงื่อนไข",
+    "expired": "หมดเวลา",
+    "ended": "สิ้นสุดแล้ว"
   }
 }

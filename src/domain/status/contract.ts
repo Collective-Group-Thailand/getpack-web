@@ -329,3 +329,27 @@ export type DefectSeverity = Schemas["DefectSeverity"];
 /** Packio Factory ERP E6 (D-385 – D-396). **Source: contract** (packio-api v0.49.0). */
 export type ErpGlBankLineStatus = Schemas["ErpGlBankLineStatus"];
 export type ErpGlAssetStatus = Schemas["ErpGlAssetStatus"];
+
+/** A sales agent (D-416). **Source: contract** (v0.65.0). */
+export type AgentStatus = Schemas["AgentStatus"];
+
+/** An application to become a sales agent (D-416). **Source: contract** (v0.65.0). */
+export type AgentApplicationStatus = Schemas["AgentApplicationStatus"];
+
+/** A customer or company attributed to an agent (D-417). **Source: contract** (v0.65.0). */
+export type AgentLinkStatus = Schemas["AgentLinkStatus"];
+
+/** A protected prospect (D-417). **Source: contract** (v0.65.0). */
+export type AgentLeadStatus = Schemas["AgentLeadStatus"];
+
+/** One commission line (D-418). **Source: contract** (v0.65.0). */
+export type AgentCommissionStatus = Schemas["AgentCommissionStatus"];
+
+/** A monthly agent statement (D-420). **Source: contract** (v0.65.0). */
+export type AgentStatementStatus = Schemas["AgentStatementStatus"];
+
+/** A commission plan version (D-418). **Source: contract** (v0.65.0). */
+export type AgentPlanVersionStatus = Schemas["AgentPlanVersionStatus"];
+
+/** A factory brought in by an agent (D-419). **Source: contract** (v0.65.0). */
+export type AgentFactoryLinkStatus = Schemas["AgentFactoryLinkStatus"];
