@@ -79,5 +79,10 @@
     "savingsList": "Discounts applied",
     "atCheckout": "Code discounts are calculated at checkout",
     "minus": "−{amount}"
+  },
+  "attachedDesign": {
+    "named": "“{title}” version {version} ·",
+    "loading": "Loading the design… ·",
+    "open": "Open in Studio"
   }
 }

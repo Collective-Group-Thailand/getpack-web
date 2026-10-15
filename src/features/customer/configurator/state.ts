@@ -98,6 +98,12 @@ export interface ConfiguratorState {
   postcode: string;
   promoCode: string;
   designOption: DesignOption;
+  /**
+   * The customer's Studio design this configuration orders (B4.1, `AddCartItemDto.designDocumentId`):
+   * the studio's "order this" opens the configurator on it, and the cart line carries it so the
+   * order's artwork is the design, not an upload to make later.
+   */
+  designDocumentId: string | null;
   /** D-247: an optional target per piece (THB incl. VAT, excl. shipping), as typed. */
   target: string;
   load: LoadInput;
@@ -202,6 +208,7 @@ export function initialState(configurator: Configurator, seed: Partial<Configura
     postcode: "",
     promoCode: "",
     designOption: configurator.design.default,
+    designDocumentId: null,
     target: "",
     load: DEFAULT_LOAD,
     advisory: null,
@@ -384,6 +391,8 @@ export function chosenOf(configurator: Configurator, state: ConfiguratorState, k
  * pattern, inside size and material where this product offers them, and the online-designer
  * option. Anything this product does not offer is left at its defaults.
  */
+const DESIGN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function seedFromDesign(
   configurator: Configurator,
   query: {
@@ -401,7 +410,10 @@ export function seedFromDesign(
      * its print choice so the configurator opens on the very configuration it priced. `none` = blank.
      */
     ink?: string;
-    /** How the artwork comes (`DesignOption`) — `/studio/upload` opens the configurator on `own_file`. */
+    /**
+     * How the artwork comes (`DesignOption`) — `/studio/upload` opens the configurator on `own_file` —
+     * or a Studio design's id: the studio's "order this" (`OrderAction`), which orders that design.
+     */
     design?: string;
   },
 ): Partial<ConfiguratorState> | undefined {
@@ -424,7 +436,10 @@ export function seedFromDesign(
       : query.ink
         ? query.ink.split(",").filter((id) => front?.options.some((option) => option.id === id))
         : null;
-  const design = configurator.design.options.find((option) => option === query.design);
+  const designId = query.design && DESIGN_ID.test(query.design) ? query.design : null;
+  const design = designId
+    ? configurator.design.options.find((option) => option === "online_designer")
+    : configurator.design.options.find((option) => option === query.design);
   if (!pattern && !material && !(l && w) && !tiers && !standard && !inks && !design) return undefined;
   const seed: Partial<ConfiguratorState> = {};
   if (standard) {
@@ -464,6 +479,7 @@ export function seedFromDesign(
   }
   // A design's "order this" keeps the online designer; the home page's quick start leaves the choice open.
   if (design) seed.designOption = design;
+  if (design && designId) seed.designDocumentId = designId;
   else if (query.from !== "home" && configurator.design.options.includes("online_designer"))
     seed.designOption = "online_designer";
   return seed;

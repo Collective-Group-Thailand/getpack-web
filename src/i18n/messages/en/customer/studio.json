@@ -232,6 +232,7 @@
     "sample": "Order a sample first",
     "unavailableTitle": "This design cannot be ordered from the studio yet",
     "unavailableBody": "Print files are not made automatically for this box style yet. Order through the product page and attach this design.",
+    "catalogueBody": "This design is drawn on a catalogue product, so the studio cannot build its print file yet. Press \"Order\" to order it from the product page with this design attached; price and quantity are chosen there.",
     "orderNow": "Order now",
     "addToCart": "Add to cart",
     "sendForApproval": "Send for approval",

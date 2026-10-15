@@ -48,13 +48,15 @@
     "templateDownload": "Get the dieline link",
     "templateOpen": "Open the dieline",
     "templateFailed": "Couldn't get the dieline link. Please try again.",
-    "hintNoRules": "PDF, AI, PSD, PNG or JPG, up to {count} files at a time"
+    "hintNoRules": "PDF, AI, PSD, PNG or JPG, up to {count} files at a time",
+    "titleInstead": "Or upload your own artwork"
   },
   "versions": {
     "title": "Files sent",
     "version": "Version {version}",
     "latest": "Latest",
-    "meta": "Sent {date} · {files}"
+    "meta": "Sent {date} · {files}",
+    "metaDesign": "Sent {date} · from the Studio design"
   },
   "design": {
     "failed": "That didn't work. Please try again.",
@@ -95,5 +97,13 @@
     "paidRoundNet": "Revision fee {fee} (before VAT)",
     "checklist": "Check each before approving",
     "approveType": "Type {code} to confirm"
+  },
+  "fromDesign": {
+    "title": "This order's Studio design",
+    "body": "“{title}” version {version}, as ordered, can be sent as the artwork right now; prepress checks it and sends a proof, no upload needed.",
+    "sent": "“{title}” version {version} is with prepress. Follow the check and the proof below.",
+    "submit": "Send this design for checking",
+    "open": "Edit in Studio",
+    "failed": "The design could not be sent. Try again."
   }
 }

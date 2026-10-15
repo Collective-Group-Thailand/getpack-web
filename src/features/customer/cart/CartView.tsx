@@ -26,6 +26,7 @@ import { Icon } from "@/ui/icons";
 import { geoName, type Address } from "../account/address";
 import { rfqHref } from "../catalog/paths";
 import { productNameOf, specLinesOf } from "../orders/summary";
+import { AttachedDesign } from "./AttachedDesign";
 import { editCart, lineBlockers, readCart, type Cart, type CartItem } from "./cart-client";
 import { PromoCodeBox } from "./PromoCodeBox";
 import { useGuestCartMerge } from "./useGuestCartMerge";
@@ -372,6 +373,9 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
                       }
                       options={DESIGN_OPTIONS.map((option) => ({ value: option, label: tDesign(`${option}.label`) }))}
                     />
+                    {item.designOption === "online_designer" && item.designDocumentId ? (
+                      <AttachedDesign designId={item.designDocumentId} versionNo={item.designVersionNo} />
+                    ) : null}
                   </Field>
                 ) : (
                   <p className="text-sm">
