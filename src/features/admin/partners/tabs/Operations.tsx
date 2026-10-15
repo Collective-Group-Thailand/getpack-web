@@ -234,15 +234,16 @@ export function Operations({ factory }: { factory: Factory }) {
           ) : null
         }
       >
-        {(capabilities.data ?? []).length > 1 ? (
+        {new Set((capabilities.data ?? []).map((item) => item.productTypeId)).size > 1 ? (
           <div className="mb-3 max-w-xs">
             <Field label={t("productType")}>
               <Select
                 value={chosen ?? undefined}
                 onValueChange={setTypeId}
-                options={(capabilities.data ?? []).map((item) => ({
-                  value: item.productTypeId,
-                  label: typeName(item.productTypeId),
+                // One entry per product type: a type can have several capabilities (one per print type).
+                options={[...new Set((capabilities.data ?? []).map((item) => item.productTypeId))].map((id) => ({
+                  value: id,
+                  label: typeName(id),
                 }))}
               />
             </Field>
