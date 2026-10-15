@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.60.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.61.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -15112,7 +15112,15 @@ export interface paths {
          */
         get: operations["admin.styleImports.list"];
         put?: never;
-        post?: never;
+        /**
+         * Import a style library file
+         * @description Confirms a previewed import (D-411): the file is planned again and refused with `styles.import_stale` when its checksum is not the previewed one; then one run applies the changes to unpublished rows and holds those to published rows for Prepress, then Marketing (D-242). `run` is null when nothing changed.
+         *
+         *     Implements: D-411, D-242.
+         *
+         *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["admin.styleImports.create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -15135,6 +15143,30 @@ export interface paths {
         get: operations["admin.styleImports.get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/style-imports/actions/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview a style library import
+         * @description A dry run of `styles:import` (D-242) on an uploaded JSON file (purpose `import`): the master file or a recipe bundle, planned into the changes applied at once and those held for the `style_library_change` approval. Nothing is written. `noop` when the same file was imported or nothing would change (D-411).
+         *
+         *     Implements: D-411, D-242.
+         *
+         *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["admin.styleImports.preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -40551,6 +40583,21 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000b2001
              */
             fileId?: string;
+        };
+        ConfirmStyleImportDto: {
+            /**
+             * @description The `checksum` of the preview being confirmed: a file or library that changed since is refused
+             * @example b1946ac92492d2347c6235b4d26111840a4c8e12f0e3a1d6c5b2e9f7a8d4c3b2
+             */
+            checksum: string;
+            /**
+             * Format: uuid
+             * @description An uploaded file (`purpose: import`, JSON)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ae004
+             */
+            fileId: string;
+            /** @example master */
+            kind: components["schemas"]["StyleImportKind"];
         };
         ConsentDto: {
             /**
@@ -74205,8 +74252,80 @@ export interface components {
             addedAt: string;
             style: components["schemas"]["StyleCardDto"];
         };
+        StyleImportFileDto: {
+            /**
+             * Format: uuid
+             * @description An uploaded file (`purpose: import`, JSON)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ae004
+             */
+            fileId: string;
+            /** @example master */
+            kind: components["schemas"]["StyleImportKind"];
+        };
         /** @enum {string} */
         StyleImportKind: "master" | "recipes";
+        /** @enum {string} */
+        StyleImportNoopReason: "same_checksum" | "no_changes";
+        StyleImportPreviewDto: {
+            /**
+             * @description sha256 of the file (hex) — confirm with it
+             * @example b1946ac9…
+             */
+            checksum: string;
+            /**
+             * @description Changes applied at once (unpublished rows)
+             * @example [
+             *       {
+             *         "code": "PK-SP-26",
+             *         "op": "base.create",
+             *         "variants": 1
+             *       }
+             *     ]
+             */
+            direct: {
+                [key: string]: unknown;
+            }[];
+            /** @example style-library-master.json */
+            fileName: string;
+            /** @example master */
+            kind: components["schemas"]["StyleImportKind"];
+            /**
+             * @description Nothing would change (the same file, or no differences)
+             * @example false
+             */
+            noop: boolean;
+            /** @example null */
+            noopReason: components["schemas"]["StyleImportNoopReason"] | null;
+            /**
+             * @description Changes to published rows, held for the `style_library_change` approval (Prepress, then Marketing)
+             * @example [
+             *       {
+             *         "code": "PK-SP-25",
+             *         "op": "base.retire"
+             *       }
+             *     ]
+             */
+            pending: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * @example {
+             *       "basesCreated": 0,
+             *       "basesRetired": 1,
+             *       "basesUpdated": 122,
+             *       "variantsCreated": 0
+             *     }
+             */
+            summary: {
+                [key: string]: number;
+            };
+        };
+        StyleImportResultDto: {
+            /** @example null */
+            noopReason: components["schemas"]["StyleImportNoopReason"] | null;
+            /** @description The run; null when nothing changed */
+            run: components["schemas"]["StyleImportRunDto"] | null;
+        };
         StyleImportRunDto: {
             /**
              * Format: uuid
@@ -189464,6 +189583,140 @@ export interface operations {
             };
         };
     };
+    "admin.styleImports.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmStyleImportDto"];
+            };
+        };
+        responses: {
+            /** @description The run */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "noopReason": null,
+                     *       "run": {
+                     *         "approvalRequestId": null,
+                     *         "checksum": "b1946ac92492d2347c6235b4d2611184",
+                     *         "createdAt": "2026-10-03T10:00:00+07:00",
+                     *         "createdById": "0192f3a0-7c1e-7d2a-9b1f-0000000ae005",
+                     *         "decidedAt": "2026-10-03T10:00:00+07:00",
+                     *         "diff": {
+                     *           "summary": {
+                     *             "basesCreated": 105,
+                     *             "variantsCreated": 960
+                     *           }
+                     *         },
+                     *         "fileName": "style-library-master.json",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae004",
+                     *         "kind": "master",
+                     *         "status": "applied"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StyleImportResultDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file.infected`, `file.not_ready`, `styles.import_stale` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `styles.import_unreadable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.styleImports.get": {
         parameters: {
             query?: never;
@@ -189541,6 +189794,140 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.styleImports.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StyleImportFileDto"];
+            };
+        };
+        responses: {
+            /** @description The plan */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "checksum": "b1946ac92492d2347c6235b4d26111840a4c8e12f0e3a1d6c5b2e9f7a8d4c3b2",
+                     *       "direct": [],
+                     *       "fileName": "style-library-master.json",
+                     *       "kind": "master",
+                     *       "noop": false,
+                     *       "noopReason": null,
+                     *       "pending": [
+                     *         {
+                     *           "code": "PK-SP-25",
+                     *           "op": "base.retire"
+                     *         }
+                     *       ],
+                     *       "summary": {
+                     *         "basesCreated": 0,
+                     *         "basesRetired": 1,
+                     *         "basesUpdated": 122,
+                     *         "variantsCreated": 0
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StyleImportPreviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file.infected`, `file.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `styles.import_unreadable`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

@@ -59,7 +59,8 @@
     "assistant": "ผู้ช่วย AI",
     "samples": "ตัวอย่างสินค้า",
     "structural_requests": "คำขอออกแบบโครงสร้าง",
-    "style_intakes": "นำเข้าแบบกล่อง"
+    "style_intakes": "นำเข้าแบบกล่อง",
+    "style_library": "คลังแบบกล่อง"
   },
   "palette": {
     "screens": "หน้าจอ",
