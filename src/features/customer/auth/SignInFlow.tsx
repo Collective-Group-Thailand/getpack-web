@@ -422,23 +422,20 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
 }
 
 /**
- * One third-party option.
+ * One third-party option, with the provider's mark (`BrandMark`) beside its label.
  *
  * Disabled with an explanation rather than hidden: a returning customer who signed up with
  * Google needs to know the option exists and is temporarily off. Its SDK is imported on click
- * (`provider-sdks.ts`), so it costs the page nothing until then. No third-party logos (CLAUDE.md:
- * no third-party assets) — the words name the provider.
- */
-/**
- * A provider's button carries the provider's mark (`BrandMark`) before its label, in the
- * provider's own button colours where its guidelines ask for them: Apple black on white text,
- * LINE green with white text, Google white with a grey hairline. The values are the providers'
- * published button colours, not Packio's palette, which is why they sit here and not in tokens.
+ * (`provider-sdks.ts`), so it costs the page nothing until then.
+ *
+ * Google and Apple are the providers' white buttons — white in every theme, so Apple's black mark
+ * always shows — on Packio's hairline; LINE is its own green with the white mark. These are the
+ * providers' published button colours, not Packio's palette, which is why they sit here.
  */
 const PROVIDER_STYLE: Record<Brand, string> = {
-  google: "bg-white text-[#1f1f1f] border-[#747775] hover:bg-[#f2f2f2]",
-  apple: "bg-black text-white border-black hover:bg-[#1a1a1a]",
-  line: "bg-[#06C755] text-white border-[#06C755] hover:bg-[#05b34c]",
+  google: "bg-white text-[#1f1f1f] border-border hover:bg-[#f7f7f7]",
+  apple: "bg-white text-[#1f1f1f] border-border hover:bg-[#f7f7f7]",
+  line: "bg-[#06C755] text-white border-[#06C755] hover:bg-[#05b34c] hover:border-[#05b34c]",
 };
 
 function ProviderButton({
@@ -465,9 +462,9 @@ function ProviderButton({
       disabled={!available || disabled}
       title={available ? undefined : unavailable}
       onClick={onClick}
-      className={cn("relative", PROVIDER_STYLE[brand])}
+      className={cn("gap-3", PROVIDER_STYLE[brand])}
     >
-      <BrandMark brand={brand} className="absolute start-4 size-5" />
+      <BrandMark brand={brand} className="size-5 shrink-0" />
       {label}
     </Button>
   );
