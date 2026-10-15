@@ -19,7 +19,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import type { RichTextDocument } from "@/ui/components/RichTextEditor";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
@@ -259,7 +259,7 @@ export function ArticleEditor({ articleId }: { articleId: string | null }) {
             </CardHeader>
             <div className="flex flex-col gap-3">
               <Field label={t("status")}>
-                <Select
+                <SearchableSelect
                   value={draft.status}
                   onValueChange={(status) => update({ status })}
                   options={(["draft", "published", "archived"] as const).map((value) => ({
@@ -288,7 +288,7 @@ export function ArticleEditor({ articleId }: { articleId: string | null }) {
                 />
               </Field>
               <Field label={t("seoPage")} hint={t("seoPageHint")}>
-                <Select
+                <SearchableSelect
                   value={draft.seoPageId || NONE}
                   onValueChange={(seoPageId) => update({ seoPageId })}
                   options={[{ value: NONE, label: t("none") }, ...(refs.options["seo-pages"] ?? [])]}

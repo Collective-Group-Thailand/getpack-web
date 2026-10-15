@@ -15,7 +15,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { Pagination } from "@/ui/components/Pagination";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
@@ -246,7 +246,7 @@ export function BoardSheets() {
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("factory")} required>
-              <Select
+              <SearchableSelect
                 value={draft.factoryId || undefined}
                 placeholder={t("chooseFactory")}
                 onValueChange={(value) => setDraft({ ...draft, factoryId: value })}
@@ -254,7 +254,7 @@ export function BoardSheets() {
               />
             </Field>
             <Field label={t("board")} required>
-              <Select
+              <SearchableSelect
                 value={draft.materialId || undefined}
                 placeholder={t("chooseBoard")}
                 onValueChange={(value) => setDraft({ ...draft, materialId: value })}

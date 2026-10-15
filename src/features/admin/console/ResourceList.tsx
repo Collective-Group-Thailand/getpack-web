@@ -116,12 +116,7 @@ export function ResourceList<TRow extends object>({
           />
         ))}
         {state.q || JSON.stringify(state.filters) !== JSON.stringify(defaults.filters ?? {}) ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9"
-            onClick={() => update({ q: "", filters: { ...defaults.filters } })}
-          >
+          <Button variant="ghost" onClick={() => update({ q: "", filters: { ...defaults.filters } })}>
             {t("clearFilters")}
           </Button>
         ) : null}

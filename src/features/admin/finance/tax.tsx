@@ -23,7 +23,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { JsonView } from "@/ui/components/JsonView";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
@@ -210,7 +210,7 @@ export function TaxReports() {
       actions={
         <div className="flex flex-wrap items-end gap-2">
           <Field label={t("month")} className="w-44">
-            <Select
+            <SearchableSelect
               value={month}
               onValueChange={(value) => router.replace(`${pathname}?period=${value}`)}
               options={(months.length ? months : [month]).map((value) => ({
@@ -640,7 +640,7 @@ function PayReturn({
           <Input type="date" value={paidOn} onChange={(event) => setPaidOn(event.target.value || bangkokToday())} />
         </Field>
         <Field label={t("fromAccount")}>
-          <Select
+          <SearchableSelect
             value={chosen || undefined}
             onValueChange={setAccountId}
             options={usable.map((item) => ({
@@ -1046,7 +1046,7 @@ export function DocumentSeries() {
           }}
         >
           <Field label={t("type")} required requiredLabel={tCommon("state.required")}>
-            <Select
+            <SearchableSelect
               value={form.docType || undefined}
               onValueChange={(docType) => setForm({ ...form, docType: docType as Schemas["DocumentType"] })}
               placeholder={t("pickType")}
@@ -1058,7 +1058,7 @@ export function DocumentSeries() {
               <Input value={form.prefix} onChange={(event) => setForm({ ...form, prefix: event.target.value })} />
             </Field>
             <Field label={t("reset")}>
-              <Select<Schemas["SequenceReset"]>
+              <SearchableSelect<Schemas["SequenceReset"]>
                 value={form.resetPeriod}
                 onValueChange={(resetPeriod) => setForm({ ...form, resetPeriod })}
                 options={(["never", "yearly", "monthly"] as const).map((value) => ({

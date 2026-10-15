@@ -14,7 +14,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
 
 import { bangkokToday } from "../analytics/period";
@@ -191,7 +191,7 @@ export function ReportView({ reportKey }: { reportKey: string }) {
               return (
                 <div key="range" className="contents">
                   <Field label={t("period")}>
-                    <Select
+                    <SearchableSelect
                       value={draft.preset}
                       onValueChange={(preset) => setDraft({ ...draft, preset })}
                       options={PRESETS.map((value) => ({ value, label: t(`presets.${value}`) }))}
@@ -241,7 +241,7 @@ export function ReportView({ reportKey }: { reportKey: string }) {
             if (filter.kind === "uuid" && options.length === 0) return null;
             return (
               <Field key={key} label={t(`filters.${key}`)}>
-                <Select
+                <SearchableSelect
                   value={draft.values[key] || "all"}
                   onValueChange={(value) =>
                     setDraft({ ...draft, values: { ...draft.values, [key]: value === "all" ? "" : value } })

@@ -12,7 +12,7 @@ import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
@@ -131,14 +131,14 @@ export function StudioElementsDesk() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
         <Field label={t("kind")} className="min-w-40">
-          <Select
+          <SearchableSelect
             value={kind}
             onValueChange={(value) => setKind(value as Kind | "all")}
             options={[{ value: "all", label: t("all") }, ...KINDS.map((k) => ({ value: k, label: t(`kinds.${k}`) }))]}
           />
         </Field>
         <Field label={t("status")} className="min-w-40">
-          <Select
+          <SearchableSelect
             value={status}
             onValueChange={(value) => setStatus(value as Status | "all")}
             options={[
@@ -222,7 +222,7 @@ export function StudioElementsDesk() {
             </Field>
           </div>
           <Field label={t("kind")} required>
-            <Select
+            <SearchableSelect
               value={draft.kind}
               onValueChange={(value) => setDraft({ ...draft, kind: value as Kind })}
               options={KINDS.map((k) => ({ value: k, label: t(`kinds.${k}`) }))}

@@ -20,7 +20,7 @@ import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
@@ -312,7 +312,7 @@ export function CreateOrder({
           </CardHeader>
           <div className="flex flex-col gap-4">
             <Field label={t("taxProfile")} hint={juristic ? t("taxHintJuristic") : t("taxHint")}>
-              <Select
+              <SearchableSelect
                 value={taxProfileId}
                 onValueChange={setTaxProfileId}
                 options={[
@@ -336,7 +336,7 @@ export function CreateOrder({
               />
             </Field>
             <Field label={t("mockup")} hint={t("mockupHint")}>
-              <Select
+              <SearchableSelect
                 value={mockupOption}
                 onValueChange={(value) => setMockupOption(value as MockupOption)}
                 options={(["none", "with_print", "without_print"] as const).map((value) => ({
@@ -650,7 +650,7 @@ function AddAddressDialog({
         </Field>
         {areas.length > 0 ? (
           <Field label={t("subdistrict")} className="sm:col-span-2">
-            <Select
+            <SearchableSelect
               value={values.subdistrictId || undefined}
               onValueChange={(subdistrictId) => setValues({ ...values, subdistrictId })}
               placeholder={t("choose")}

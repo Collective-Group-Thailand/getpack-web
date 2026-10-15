@@ -19,7 +19,11 @@
       "empty": "Nothing found. Try an order code, a phone number or an e-mail."
     },
     "waiting": "waiting",
-    "openNav": "Open navigation"
+    "openNav": "Open navigation",
+    "searchMenu": "Find a menu",
+    "searchMenuPlaceholder": "Find a menu (press /)",
+    "noMenuMatch": "No menu matches",
+    "menuSearchKey": "Jump to the menu search"
   },
   "menu": {
     "dashboard": "Overview",

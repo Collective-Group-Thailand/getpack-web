@@ -13,7 +13,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, AssignDialog, ConfirmAction, NextActionBar, problemMessage } from "../console";
@@ -159,7 +159,7 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           }}
         >
           <Field label={t("decline.reason")} hint={t("decline.reasonHint")} required>
-            <Select
+            <SearchableSelect
               value={reasonCode || undefined}
               onValueChange={setReasonCode}
               placeholder={t("decline.choose")}
@@ -243,7 +243,7 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           }}
         >
           <Field label={t("accept.via")} required>
-            <Select
+            <SearchableSelect
               value={via || undefined}
               onValueChange={(value) => setVia(value as Schemas["RfqAcceptanceChannel"])}
               placeholder={t("accept.chooseVia")}

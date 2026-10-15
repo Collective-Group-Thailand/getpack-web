@@ -17,7 +17,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Icon, type IconName } from "@/ui/icons";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { useActor, useCan } from "../console/actor";
@@ -237,14 +237,14 @@ export function SamplesView() {
               />
             </Field>
             <Field label={t("population")} className="xl:col-span-2">
-              <Select<Schemas["AuditPopulation"]>
+              <SearchableSelect<Schemas["AuditPopulation"]>
                 value={form.population}
                 onValueChange={(population) => setForm({ ...form, population })}
                 options={POPULATIONS.map((value) => ({ value, label: t(`populations.${value}`) }))}
               />
             </Field>
             <Field label={t("method")}>
-              <Select<Schemas["SampleMethod"]>
+              <SearchableSelect<Schemas["SampleMethod"]>
                 value={form.method}
                 onValueChange={(method) => setForm({ ...form, method })}
                 options={[

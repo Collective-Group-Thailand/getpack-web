@@ -10,7 +10,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { QueryError, useCan, useProductTypes } from "../../console";
@@ -257,7 +257,7 @@ export function Terms({ factory }: { factory: Factory }) {
           ) : null}
           {open.kind === "arrangement" ? (
             <Field label={t("ownershipMode")}>
-              <Select
+              <SearchableSelect
                 value={values.ownershipMode}
                 onValueChange={(ownershipMode) => setValues({ ...values, ownershipMode })}
                 options={(["factory_price_list", "platform_rate_card"] as const).map((value) => ({
@@ -270,7 +270,7 @@ export function Terms({ factory }: { factory: Factory }) {
           {open.kind === "participation" ? (
             <>
               <Field label={t("tierLabel")} hint={t(`tierMeaning.${values.tier ?? "C"}`)}>
-                <Select
+                <SearchableSelect
                   value={values.tier}
                   onValueChange={(tier) => setValues({ ...values, tier })}
                   options={(["A", "B", "C"] as const).map((value) => ({ value, label: t("tier", { tier: value }) }))}
@@ -314,14 +314,14 @@ export function Terms({ factory }: { factory: Factory }) {
                 />
               </Field>
               <Field label={t("advanceTrigger")}>
-                <Select
+                <SearchableSelect
                   value={values.advanceTrigger}
                   onValueChange={(advanceTrigger) => setValues({ ...values, advanceTrigger })}
                   options={TRIGGERS.map((value) => ({ value, label: t(`triggers.${value}`) }))}
                 />
               </Field>
               <Field label={t("balanceTrigger")}>
-                <Select
+                <SearchableSelect
                   value={values.balanceTrigger}
                   onValueChange={(balanceTrigger) => setValues({ ...values, balanceTrigger })}
                   options={TRIGGERS.map((value) => ({ value, label: t(`triggers.${value}`) }))}

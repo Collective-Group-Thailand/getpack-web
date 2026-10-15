@@ -18,7 +18,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { FileField } from "../catalogue/FileField";
@@ -286,7 +286,7 @@ export function StudioTemplatesDesk() {
         >
           {!draft.id && library.length ? (
             <Field label={t("fromLibrary")} hint={t("fromLibraryHint")}>
-              <Select
+              <SearchableSelect
                 placeholder={t("chooseLibrary")}
                 onValueChange={(code) => {
                   const tpl = TEMPLATE_LIBRARY.find((x) => x.code === code);

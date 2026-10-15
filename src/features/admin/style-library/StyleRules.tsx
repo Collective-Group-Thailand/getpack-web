@@ -14,7 +14,7 @@ import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import {
@@ -173,7 +173,7 @@ function PriceRules() {
     >
       <div className="mb-3 flex flex-wrap items-end gap-3">
         <Field label={t("calculator")} className="min-w-48">
-          <Select
+          <SearchableSelect
             value={calculator}
             onValueChange={(value) => setCalculator(value as CalculatorKey | "all")}
             options={[
@@ -183,7 +183,7 @@ function PriceRules() {
           />
         </Field>
         <Field label={t("status")} className="min-w-40">
-          <Select
+          <SearchableSelect
             value={status}
             onValueChange={(value) => setStatus(value as "active" | "retired")}
             options={[
@@ -237,7 +237,7 @@ function PriceRules() {
           }}
         >
           <Field label={t("calculator")} required>
-            <Select
+            <SearchableSelect
               value={draft.calculatorKey}
               onValueChange={(value) => setDraft((d) => ({ ...d, calculatorKey: value as CalculatorKey }))}
               options={CALCULATORS.map((c) => ({ value: c, label: t(`calculators.${c}`) }))}
@@ -245,7 +245,7 @@ function PriceRules() {
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("axis")} required>
-              <Select
+              <SearchableSelect
                 value={draft.axis || undefined}
                 placeholder={t("chooseAxis")}
                 onValueChange={(value) => setDraft((d) => ({ ...d, axis: value, value: "" }))}
@@ -253,7 +253,7 @@ function PriceRules() {
               />
             </Field>
             <Field label={t("value")} required>
-              <Select
+              <SearchableSelect
                 value={draft.value || undefined}
                 placeholder={t("chooseValue")}
                 disabled={!chosenAxis}
@@ -263,7 +263,7 @@ function PriceRules() {
             </Field>
           </div>
           <Field label={t("effect")} required hint={t(`effectHints.${draft.effect}`)}>
-            <Select
+            <SearchableSelect
               value={draft.effect}
               onValueChange={(value) => setDraft((d) => ({ ...d, effect: value as Effect }))}
               options={(["neutral", "configuration"] as const).map((e) => ({ value: e, label: t(`effects.${e}`) }))}
@@ -411,7 +411,7 @@ function ProcessRules() {
           }}
         >
           <Field label={t("process")} required>
-            <Select
+            <SearchableSelect
               value={draft.processCode || undefined}
               placeholder={t("chooseProcess")}
               onValueChange={(value) => setDraft((d) => ({ ...d, processCode: value }))}
@@ -419,7 +419,7 @@ function ProcessRules() {
             />
           </Field>
           <Field label={t("scope")} required>
-            <Select
+            <SearchableSelect
               value={draft.scope}
               onValueChange={(value) => setDraft((d) => ({ ...d, scope: value as Scope }))}
               options={SCOPES.map((s) => ({ value: s, label: t(`scopes.${s}`) }))}

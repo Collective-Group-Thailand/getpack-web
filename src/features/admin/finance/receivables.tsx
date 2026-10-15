@@ -18,7 +18,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { useCan } from "../console/actor";
@@ -563,7 +563,7 @@ export function CompanyStatements() {
       actions={
         <div className="flex flex-wrap items-end gap-3">
           <Field label={t("company")} className="w-72">
-            <Select
+            <SearchableSelect
               value={chosen || undefined}
               onValueChange={setCompanyId}
               placeholder={t("pickCompany")}

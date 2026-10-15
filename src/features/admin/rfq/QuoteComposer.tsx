@@ -13,7 +13,7 @@ import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, problemMessage } from "../console";
@@ -199,7 +199,7 @@ export function QuoteComposer({ rfq, draft, onClose }: { rfq: Rfq; draft: RfqQuo
         </CardTitle>
         {answered.length > 0 ? (
           <div className="w-full sm:w-72">
-            <Select
+            <SearchableSelect
               aria-label={t("fillFrom")}
               placeholder={t("fillFrom")}
               onValueChange={fillFrom}

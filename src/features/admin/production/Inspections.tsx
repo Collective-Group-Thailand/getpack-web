@@ -14,7 +14,7 @@ import { Button } from "@/ui/components/Button";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import {
@@ -199,7 +199,7 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
             />
           </Field>
           <Field label={t("inspector")} hint={t("inspectorHint")}>
-            <Select
+            <SearchableSelect
               value={scheduling.inspectorId || undefined}
               placeholder={t("me")}
               onValueChange={(inspectorId) => setScheduling({ ...scheduling, inspectorId })}

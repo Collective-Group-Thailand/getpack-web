@@ -15,7 +15,7 @@ import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { StatusChip, useCan } from "../../console";
@@ -295,7 +295,7 @@ export function Compliance({ factory }: { factory: Factory }) {
           }}
         >
           <Field label={t("docType")}>
-            <Select
+            <SearchableSelect
               value={docType}
               onValueChange={(value) => setDocType(value as Schemas["KycDocType"])}
               options={DOC_TYPES.map((value) => ({ value, label: t(`docTypes.${value}`) }))}
@@ -429,7 +429,7 @@ export function Compliance({ factory }: { factory: Factory }) {
             />
           </Field>
           <Field label={t("outcome")}>
-            <Select
+            <SearchableSelect
               value={call.outcome}
               onValueChange={(value) => setCall({ ...call, outcome: value as Schemas["BankVerificationOutcome"] })}
               options={(["confirmed", "mismatch", "unreachable"] as const).map((value) => ({

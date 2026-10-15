@@ -10,7 +10,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SearchInput } from "@/ui/components/SearchInput";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 import { adminBrowserApis, FormDialog, FormError } from "../console";
 import { useRefs } from "../catalogue/useRefs";
@@ -114,7 +114,7 @@ export function EditCapabilityDialog({
         </Field>
       </div>
       <Field label={t("status")} hint={t("statusHint")}>
-        <Select
+        <SearchableSelect
           value={draft.status}
           onValueChange={(status) => setDraft({ ...draft, status: status as Status })}
           options={(["active", "inactive"] as const).map((value) => ({ value, label: t(`capabilityStatus.${value}`) }))}
@@ -194,7 +194,7 @@ export function CapabilityItemsDialog({
     >
       <div className="flex flex-wrap items-end gap-3">
         <Field label={t("kind")} className="w-56">
-          <Select
+          <SearchableSelect
             value={kind}
             onValueChange={(value) => {
               setKind(value as Kind);
@@ -296,7 +296,7 @@ export function EditMachineDialog({
         <Textarea rows={2} value={draft.details} onChange={(e) => setDraft({ ...draft, details: e.target.value })} />
       </Field>
       <Field label={t("status")}>
-        <Select
+        <SearchableSelect
           value={draft.status}
           onValueChange={(status) => setDraft({ ...draft, status: status as Status })}
           options={(["active", "inactive"] as const).map((value) => ({ value, label: t(`capabilityStatus.${value}`) }))}

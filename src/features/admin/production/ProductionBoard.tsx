@@ -15,7 +15,7 @@ import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { Sheet } from "@/ui/components/Sheet";
 import { Field } from "@/ui/components/Field";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -97,7 +97,7 @@ export function ProductionBoard() {
         </Button>
         {factories.length ? (
           <Field label={t("factory")} labelHidden className="w-56">
-            <Select
+            <SearchableSelect
               value={factoryId ?? ALL}
               onValueChange={(value) => router.replace(href({ factoryId: value === ALL ? undefined : value }))}
               options={[{ value: ALL, label: t("allFactories") }, ...factories]}
@@ -106,7 +106,7 @@ export function ProductionBoard() {
         ) : null}
         {productTypes.options.length ? (
           <Field label={t("productType")} labelHidden className="w-56">
-            <Select
+            <SearchableSelect
               value={productTypeCode ?? ALL}
               onValueChange={(value) => router.replace(href({ productTypeCode: value === ALL ? undefined : value }))}
               options={[{ value: ALL, label: t("allProductTypes") }, ...productTypes.options]}

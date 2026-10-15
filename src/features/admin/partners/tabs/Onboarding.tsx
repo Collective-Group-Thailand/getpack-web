@@ -11,7 +11,7 @@ import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { QueryError, StatusChip, useCan } from "../../console";
@@ -123,7 +123,7 @@ export function Onboarding({ factory }: { factory: Factory }) {
           }}
         >
           <Field label={t("status")}>
-            <Select
+            <SearchableSelect
               value={status}
               onValueChange={(value) => setStatus(value as Step["status"])}
               options={(["pending", "in_progress", "submitted", "approved", "rejected", "waived"] as const).map(

@@ -19,7 +19,7 @@ import { Field } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
@@ -433,7 +433,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
             <Input value={form.name} disabled={!editable} onChange={(event) => set({ name: event.target.value })} />
           </Field>
           <Field label={t("fields.kind")} hint={item ? t("hints.kindFixed") : t(`kindHints.${form.kind}`)}>
-            <Select
+            <SearchableSelect
               value={form.kind}
               disabled={Boolean(item) || !editable}
               onValueChange={(kind) => set({ kind: kind as Draft["kind"] })}
@@ -444,7 +444,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
             />
           </Field>
           <Field label={t("fields.campaign")} hint={item ? t("hints.campaignFixed") : undefined}>
-            <Select
+            <SearchableSelect
               value={form.campaignId || "none"}
               disabled={Boolean(item) || !editable}
               onValueChange={(value) => set({ campaignId: value === "none" ? "" : value })}
@@ -481,7 +481,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
             />
           </Field>
           <Field label={t("fields.stacking")} hint={t(`stackingHints.${form.stacking}`)}>
-            <Select
+            <SearchableSelect
               value={form.stacking}
               disabled={!editable}
               onValueChange={(stacking) => set({ stacking: stacking as Draft["stacking"] })}
@@ -582,7 +582,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
         {redeemed ? <Callout tone="info" className="mb-3" title={t("benefitLocked")} /> : null}
         <div className="grid gap-3 md:grid-cols-3">
           <Field label={t("fields.benefitType")}>
-            <Select
+            <SearchableSelect
               value={benefit.type}
               disabled={!editable || redeemed}
               onValueChange={(type) => setBenefit({ type: type as BenefitType })}
@@ -604,7 +604,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
             : null}
           {benefit.type === "tiered" ? (
             <Field label={t("fields.basis")}>
-              <Select
+              <SearchableSelect
                 value={benefit.basis}
                 disabled={!editable || redeemed}
                 onValueChange={(basis) => setBenefit({ basis: basis as Draft["benefit"]["basis"] })}
