@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "tent-card",
+  "base": "PK-DS-05",
+  "category": "specialty",
+  "name": {
+    "th": "ป้ายตั้งโต๊ะทรงสามเหลี่ยม",
+    "en": "Table tent card"
+  },
+  "description": {
+    "th": "ป้ายสามเหลี่ยมตั้งโต๊ะ สองหน้าพิมพ์ ติดกาวที่ยอด สำหรับร้านอาหารและเคาน์เตอร์",
+    "en": "A triangular tent with two printed faces, glued at the apex — restaurant tables and counters"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 20,
+      "max": 200
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 400
+    },
+    "grain"
+  ],
+  "defaults": {
+    "length": 150,
+    "width": 60,
+    "height": 100,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "เล็ก 100 × 50 × 70",
+        "en": "Small 100 × 50 × 70"
+      },
+      "values": {
+        "length": 100,
+        "width": 50,
+        "height": 70
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "กลาง 150 × 60 × 100",
+        "en": "Medium 150 × 60 × 100"
+      },
+      "values": {
+        "length": 150,
+        "width": 60,
+        "height": 100
+      }
+    }
+  ],
+  "body": {
+    "module": "tentCard"
+  },
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length",
+    "width": "width + 2 * t",
+    "height": "height + t"
+  }
+}

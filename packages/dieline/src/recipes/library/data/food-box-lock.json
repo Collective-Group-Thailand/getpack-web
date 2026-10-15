@@ -53,9 +53,9 @@
     "handles"
   ],
   "defaults": {
-    "length": 180,
-    "width": 130,
-    "height": 60,
+    "length": 220,
+    "width": 160,
+    "height": 90,
     "grain": "across",
     "cornerLock": "lock",
     "window": "rect",

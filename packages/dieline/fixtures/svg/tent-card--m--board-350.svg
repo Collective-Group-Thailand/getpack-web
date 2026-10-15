@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="160mm" height="293.806mm" viewBox="0 0 160 293.806" data-style="tent-card">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M5 5 L155 5"/><path d="M155 5 L155 109.403"/><path d="M5 109.403 L5 5"/><path d="M155 109.403 L155 169.403"/><path d="M5 169.403 L5 109.403"/><path d="M155 169.403 L155 273.806"/><path d="M5 273.806 L5 169.403"/><path d="M5 273.806 L11 288.806"/><path d="M11 288.806 L149 288.806"/><path d="M149 288.806 L155 273.806"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"><path d="M155 109.403 L5 109.403"/><path d="M155 169.403 L5 169.403"/><path d="M155 273.806 L5 273.806"/></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"><path d="M12 274.806 L148 274.806"/><path d="M148 274.806 L148 287.806"/><path d="M148 287.806 L12 287.806"/><path d="M12 287.806 L12 274.806"/></g>
+</svg>

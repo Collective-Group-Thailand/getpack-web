@@ -54,7 +54,10 @@
     "glueWidth",
     "glueSide",
     "grain",
-    "partition"
+    "partition",
+    "headerShape",
+    "headerShapeHeight",
+    "headerPath"
   ],
   "defaults": {
     "@extends": "carton",
@@ -62,7 +65,10 @@
     "partition": "1x2",
     "length": 120,
     "width": 60,
-    "height": 150
+    "height": 150,
+    "headerShape": "none",
+    "headerPath": "M0 60 C20 0 80 0 100 60",
+    "headerShapeHeight": 50
   },
   "presets": [
     {
@@ -125,6 +131,12 @@
     },
     {
       "module": "partitionInsert"
+    },
+    {
+      "module": "shapedHeader",
+      "with": {
+        "end": "top"
+      }
     }
   ]
 }

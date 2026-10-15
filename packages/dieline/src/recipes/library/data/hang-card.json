@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "id": "hang-card",
+  "base": "PK-TG-07",
+  "variant": {},
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "การ์ดแพ็คแขวน (บลิสเตอร์)",
+    "en": "Blister / hang card"
+  },
+  "description": {
+    "th": "การ์ดพิมพ์แข็งสำหรับซีลบลิสเตอร์หรือแพ็คสินค้าแขวน มีรูแขวนด้านบน",
+    "en": "A printed backing card for a blister or skin pack, hung by a hole at the top"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    },
+    "hangHole"
+  ],
+  "defaults": {
+    "length": 120,
+    "width": 180,
+    "hangHole": "euro"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "เล็ก 100 × 150",
+        "en": "Small 100 × 150"
+      },
+      "values": {
+        "length": 100,
+        "width": 150
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "กลาง 120 × 180",
+        "en": "Medium 120 × 180"
+      },
+      "values": {
+        "length": 120,
+        "width": 180
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ใหญ่ 150 × 220",
+        "en": "Large 150 × 220"
+      },
+      "values": {
+        "length": 150,
+        "width": 220
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rectangle"
+    }
+  },
+  "features": [
+    {
+      "module": "hangHole",
+      "with": {
+        "cx": "length / 2",
+        "cy": "16"
+      }
+    }
+  ]
+}

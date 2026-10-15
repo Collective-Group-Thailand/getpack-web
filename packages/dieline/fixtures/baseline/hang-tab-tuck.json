@@ -1,5 +1,5 @@
 {
-  "definition": "0211f98253223f",
+  "definition": "006ea0ab0ed3fb",
   "cosmetic · board-350": {
     "build": "0e4097afe13e11",
     "hinges": "1fc979ac2c3b60",
@@ -457,6 +457,174 @@
     "closed": "15e0da69fcb93a"
   },
   "cosmetic · board-350 · windowRadius>max": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · insert=none": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · insert=die_cut": {
+    "build": "1df1a93eaa51a5",
+    "hinges": "01e1dedc3ddd03",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityShape=default": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityShape=rect": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityShape=circle": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityShape=bottle": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x1": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x2": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x3": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x4": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x5": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x6": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=2x2": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=2x3": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=2x4": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=2x5": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=3x3": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=3x4": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=4x4": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=4x6": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityLength=min": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityLength=max": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityLength<min": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityLength>max": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityWidth=min": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityWidth=max": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityWidth<min": {
+    "build": "0e4097afe13e11",
+    "hinges": "1fc979ac2c3b60",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityWidth>max": {
     "build": "0e4097afe13e11",
     "hinges": "1fc979ac2c3b60",
     "validate": "15202279b28c9e",

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="349.953mm" height="127.82mm" viewBox="0 0 349.953 127.82" data-style="paper-cup">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M5 31.511 A312.57 312.57 0 0 1 256.953 31.511"/><path d="M256.953 31.511 L216.742 122.82"/><path d="M216.742 122.82 A212.799 212.799 0 0 0 45.211 122.82"/><path d="M45.211 122.82 L5 31.511"/><path d="M344.953 39 A34 34 0 0 1 310.953 73"/><path d="M310.953 73 A34 34 0 0 1 276.953 39"/><path d="M276.953 39 A34 34 0 0 1 310.953 5"/><path d="M310.953 5 A34 34 0 0 1 344.953 39"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"><path d="M248.833 30.231 L254.326 32.546"/><path d="M254.326 32.546 L215.697 120.184"/><path d="M215.697 120.184 L212.489 118.838"/><path d="M212.489 118.838 L248.833 30.231"/></g>
+</svg>

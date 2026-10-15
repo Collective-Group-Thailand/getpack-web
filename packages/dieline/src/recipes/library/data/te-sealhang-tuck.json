@@ -28,7 +28,9 @@
       },
       "top_window": {
         "window": "rect",
-        "windowPanel": "lid"
+        "windowPanel": "lid",
+        "windowWidth": 40,
+        "windowHeight": 20
       }
     }
   },
@@ -72,11 +74,21 @@
     "windowOffsetY",
     "windowRadius",
     "hangerHeight",
-    "hangHole"
+    "hangHole",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
   ],
   "defaults": {
     "@extends": "carton",
-    "hangHole": "euro"
+    "hangHole": "euro",
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40
   },
   "presets": "carton",
   "body": {
@@ -103,6 +115,13 @@
     },
     {
       "module": "window"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
     }
   ]
 }

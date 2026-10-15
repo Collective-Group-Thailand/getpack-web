@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "u-liner",
+  "base": "PK-IN-04",
+  "category": "corrugated",
+  "name": {
+    "th": "แผ่นรองลูกฟูกพับตัวยู",
+    "en": "Corrugated U-liner"
+  },
+  "description": {
+    "th": "แผ่นลูกฟูกพับสองรอยเป็นตัวยู เสริมผนังสองด้านและพื้นกล่องขนส่ง",
+    "en": "A corrugated pad scored twice into a U, doubling two walls and the floor of a shipper"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 80,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 800
+    },
+    "grain"
+  ],
+  "defaults": {
+    "length": 300,
+    "width": 200,
+    "height": 150,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "m",
+      "label": {
+        "th": "กลาง 300 × 200 × 150",
+        "en": "Medium 300 × 200 × 150"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 150
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ใหญ่ 500 × 400 × 300",
+        "en": "Large 500 × 400 × 300"
+      },
+      "values": {
+        "length": 500,
+        "width": 400,
+        "height": 300
+      }
+    }
+  ],
+  "body": {
+    "module": "uLiner"
+  },
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length",
+    "width": "width + t",
+    "height": "height"
+  }
+}

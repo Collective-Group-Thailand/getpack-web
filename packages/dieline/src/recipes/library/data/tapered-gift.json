@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "tapered-gift",
+  "base": "PK-SP-22",
+  "category": "specialty",
+  "name": {
+    "th": "กล่องของขวัญทรงสอบ (ปากเล็ก)",
+    "en": "Tapered gift box"
+  },
+  "description": {
+    "th": "กล่องทรงสอบปากเล็กกว่าก้น ผนังติดกาวที่มุม ฝาบนพับปิดสี่ด้าน",
+    "en": "A box whose top is narrower than its base, glued at the corners, closed by four top flaps"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 300
+    },
+    {
+      "ref": "width",
+      "min": 50,
+      "max": 250
+    },
+    {
+      "ref": "height",
+      "min": 50,
+      "max": 300
+    },
+    {
+      "ref": "taper",
+      "min": -60,
+      "max": -2
+    },
+    "grain"
+  ],
+  "defaults": {
+    "length": 120,
+    "width": 120,
+    "height": 100,
+    "taper": -15,
+    "pailHandle": "none",
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "เล็ก 100 × 100 × 80",
+        "en": "Small 100 × 100 × 80"
+      },
+      "values": {
+        "length": 100,
+        "width": 100,
+        "height": 80
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "กลาง 140 × 140 × 110",
+        "en": "Medium 140 × 140 × 110"
+      },
+      "values": {
+        "length": 140,
+        "width": 140,
+        "height": 110
+      }
+    }
+  ],
+  "body": {
+    "module": "taperedTray",
+    "with": {
+      "top": "flaps"
+    }
+  },
+  "closedSize": {
+    "length": "length + 2 * max(taper, 0)",
+    "width": "width + 2 * max(taper, 0)",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length + 2 * max(taper, 0)",
+    "width": "width + 2 * max(taper, 0)",
+    "height": "height"
+  },
+  "variant": {}
+}

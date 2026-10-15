@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "hanger5-tuck",
+  "base": "PK-TE-06",
+  "variant": {
+    "tuck_bottom": "tuck"
+  },
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    },
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid",
+        "windowWidth": 40,
+        "windowHeight": 20
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องแขวน 5 แผง (หัวแขวนสองชั้น)",
+    "en": "Five-panel hanger box"
+  },
+  "description": {
+    "th": "แผงหลังยืดขึ้นเป็นหัวแขวนสองชั้นพับทบด้านหลัง เจาะรูแขวนทะลุทั้งสองชั้น ฝาบนเสียบจากด้านหน้า",
+    "en": "The back panel carried up and folded down behind itself as a two-ply header, the hang hole through both; the top lid tucks from the front"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "hangerHeight",
+    "hangHole",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "hangHole": "none"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "front"
+      }
+    },
+    "bottom": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "thumbNotch",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "hangTab",
+      "with": {
+        "end": "top",
+        "ply": 2
+      }
+    },
+    {
+      "module": "window"
+    }
+  ]
+}

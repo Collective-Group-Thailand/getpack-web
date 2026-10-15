@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "id": "pentagonal-carton",
+  "base": "PK-SP-26",
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องห้าเหลี่ยม",
+    "en": "Pentagonal carton"
+  },
+  "description": {
+    "th": "กล่องปริซึม 5 เหลี่ยม ฝาเหลี่ยมพร้อมลิ้นเสียบบน-ล่าง",
+    "en": "A 5-sided prism carton, polygon tuck lids top and bottom"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    "side",
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 400
+    },
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "tuckCorners",
+    "glueWidth",
+    "glueSide",
+    "grain"
+  ],
+  "defaults": {
+    "side": 50,
+    "height": 150,
+    "tuckCorners": "rounded",
+    "glueSide": "left",
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "ด้าน 40 สูง 120",
+        "en": "Side 40 × 120"
+      },
+      "values": {
+        "side": 40,
+        "height": 120
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "ด้าน 50 สูง 150",
+        "en": "Side 50 × 150"
+      },
+      "values": {
+        "side": 50,
+        "height": 150
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ด้าน 70 สูง 200",
+        "en": "Side 70 × 200"
+      },
+      "values": {
+        "side": 70,
+        "height": 200
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "with": {
+      "dims": {
+        "panel": "side + t * tan(pi / 5)",
+        "depth": "height + 2 * t",
+        "glue": "glueWidth ?? glueWidthFor(panel)"
+      },
+      "panels": [
+        {
+          "id": "side-1",
+          "label": "front",
+          "width": "panel"
+        },
+        {
+          "id": "side-2",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-3",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-4",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-5",
+          "label": "side",
+          "width": "panel"
+        }
+      ],
+      "depth": "depth",
+      "glue": "glue",
+      "glueRight": "glueSide == 'right'",
+      "grain": "side-1",
+      "root": "side-1",
+      "turn": 72.0
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "polygonTuckLid",
+      "with": {
+        "sides": 5
+      }
+    },
+    "bottom": {
+      "module": "polygonTuckLid",
+      "with": {
+        "sides": 5
+      }
+    }
+  },
+  "constraints": [
+    {
+      "id": "octagonal.tuck_depth",
+      "code": "tuck.too_deep",
+      "severity": "error",
+      "param": "tuckDepth",
+      "require": "(tuckDepth ?? tuckDepthFor(2 * side)) < height - 5",
+      "message": {
+        "th": "ลิ้นเสียบลึกเกินความสูงกล่อง",
+        "en": "The tuck is deeper than the box is tall"
+      }
+    }
+  ],
+  "closedSize": {
+    "length": "side * (1 + sqrt(5)) / 2",
+    "width": "side * (1 / (2 * tan(pi / 5)) + 1 / (2 * sin(pi / 5)))",
+    "height": "height"
+  },
+  "variant": {},
+  "features": []
+}
