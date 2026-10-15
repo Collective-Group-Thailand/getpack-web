@@ -51,3 +51,20 @@ export function variantRfqHref(rfqHref: string | null, base: string, code: strin
   params.set("style", code);
   return `${path}?${params.toString()}`;
 }
+
+/** A feature's page across the library (D-410): "กล่องมีหน้าต่าง" — every style that offers it. */
+export const topicHubHref = (topic: string) => `/styles/options/${topic}`;
+
+/** A product's page (D-410): "กล่องสบู่" — the styles that suit it. */
+export const forUseCaseHref = (useCase: string) => `/styles/for/${useCase}`;
+
+/** One style's page for one feature (D-410): "กล่องฝาเสียบมีหน้าต่าง". */
+export const styleTopicHref = (code: string, name: string, topic: string) => `${styleHref(code, name)}/${topic}`;
+
+/** Where a variant's drawn dieline is served as an image (D-410): options as `axis=value`, sets joined by `+`. */
+export function previewSrc(base: string, options: Record<string, unknown>): string {
+  const search = new URLSearchParams();
+  for (const [axis, value] of Object.entries(options).sort(([a], [b]) => a.localeCompare(b)))
+    search.set(axis, Array.isArray(value) ? [...value].map(String).sort().join("+") || "none" : String(value));
+  return `/style-previews/${encodeURIComponent(base)}?${search.toString()}`;
+}

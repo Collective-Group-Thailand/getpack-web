@@ -449,6 +449,41 @@ export async function listAllStyles(): Promise<StyleCard[]> {
   return out;
 }
 
+export type StyleVariantCard = Schemas["StyleVariantCardDto"];
+export type StyleVariantList = Schemas["StyleVariantListDto"];
+export type StyleVariantSort = Schemas["StyleVariantSort"];
+
+export interface StyleVariantListQuery {
+  style?: string;
+  category?: string;
+  family?: string;
+  materialClass?: string;
+  pricePath?: Schemas["QuoteMode"];
+  useCase?: string;
+  /** `axis:value`; one axis's values are alternatives, different axes all apply (D-410). */
+  option?: string[];
+  q?: string;
+  sort?: StyleVariantSort;
+  cursor?: string;
+  limit?: number;
+}
+
+/** A page of every shown variant, as cards (`store.styles.listVariants`, D-410). Public and cached. */
+export async function listStyleVariants(query: StyleVariantListQuery = {}): Promise<StyleVariantList> {
+  const { data } = await (await publicApi("catalogue")).GET("/v1/store/styles/variants", { params: { query } });
+  return data!;
+}
+
+/** The library's headline counts — every shown variant and style — or `null` when the API is down. */
+export async function getLibraryTotals(): Promise<{ variants: number; styles: number } | null> {
+  try {
+    const { meta } = await listStyleVariants({ limit: 1 });
+    return meta.libraryTotal > 0 ? { variants: meta.libraryTotal, styles: meta.libraryStyles } : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getStyle(code: string): Promise<StyleDetail | null> {
   const api = await publicApi("catalogue");
   return orNull(api.GET("/v1/store/styles/{code}", { params: { path: { code } } }).then((r) => r.data!));

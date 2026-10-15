@@ -2,7 +2,9 @@ import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 
 import { getSitemapEntries, listAllStyles, type SitemapEntry } from "@/features/customer/catalog/api.server";
-import { styleHref } from "@/features/customer/styles/paths";
+import { styleHref, styleTopicHref, topicHubHref, forUseCaseHref } from "@/features/customer/styles/paths";
+import { topicsOf } from "@/features/customer/styles/topics";
+import { USE_CASES } from "@/features/customer/styles/use-cases";
 import { articleHref, categoryHref, productHref, stockProductHref } from "@/features/customer/catalog/paths";
 import { routing } from "@/i18n/routing";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
@@ -63,6 +65,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
       changeFrequency: "monthly" as const,
     })),
+    // D-410: a style's page per sought-after feature, a page per feature and per product — the
+    // variants themselves are cards, not pages.
+    ...styles.flatMap((style) =>
+      topicsOf(style.options ?? []).map((topic) => ({
+        path: styleTopicHref(style.code, style.nameTh, topic.id),
+        priority: 0.6,
+        changeFrequency: "monthly" as const,
+      })),
+    ),
+    ...(styles.length
+      ? [...new Set(styles.flatMap((style) => topicsOf(style.options ?? []).map((topic) => topic.id)))].map(
+          (topic) => ({ path: topicHubHref(topic), priority: 0.7, changeFrequency: "weekly" as const }),
+        )
+      : []),
+    ...(styles.length
+      ? USE_CASES.map((useCase) => ({
+          path: forUseCaseHref(useCase),
+          priority: 0.7,
+          changeFrequency: "weekly" as const,
+        }))
+      : []),
   ];
 
   return entries.map(({ path, priority, changeFrequency, lastModified }) => {

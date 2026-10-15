@@ -35,6 +35,8 @@ const br = { br: () => <br /> };
 
 export interface HeroFacts {
   templates: number | null;
+  /** Every variant of the style library (D-410), which the hero states over the template count. */
+  library?: number | null;
   moq: number | null;
 }
 
@@ -86,7 +88,13 @@ export async function HomeHero({
             <div>
               {photo?.caption ? <p className="text-muted mb-4 max-w-[16em] text-[13px]">{photo.caption}</p> : null}
               <ul aria-label={t("facts.label")} className="grid gap-2.5 text-[0.90625rem]">
-                {facts.templates !== null ? (
+                {facts.library ? (
+                  <li>
+                    <Link href="/styles" className={UNDERLINE}>
+                      {t.rich("facts.library", { ...b, count: facts.library })}
+                    </Link>
+                  </li>
+                ) : facts.templates !== null ? (
                   <li>{t.rich("facts.templates", { ...b, count: facts.templates })}</li>
                 ) : null}
                 <li>{t.rich("facts.proof", b)}</li>
@@ -161,10 +169,13 @@ export async function TemplateGallery({
   categories,
   photos,
   locale,
+  library = null,
 }: {
   styles: StyleCard[];
   total: number;
   categories: number;
+  /** The library's headline counts (D-410). */
+  library?: { variants: number; styles: number } | null;
   photos: Map<string, HomePhoto>;
   locale: string;
 }) {
@@ -200,7 +211,16 @@ export async function TemplateGallery({
         {card(first!, true)}
         <li className="pe-6 pt-2">
           <p className="max-w-[18em] text-[1.0625rem] leading-relaxed">{t("body")}</p>
-          {total > 0 ? (
+          {library ? (
+            <>
+              <p className="text-muted mt-3.5 text-[13px]">
+                {t("library", { count: library.variants, styles: library.styles, categories })}
+              </p>
+              <Link href="/styles" className={cn("mt-2 inline-block text-[0.90625rem]", UNDERLINE)}>
+                {t("libraryLink", { count: library.variants })}
+              </Link>
+            </>
+          ) : total > 0 ? (
             <p className="text-muted mt-3.5 text-[13px]">{t("count", { count: total, categories })}</p>
           ) : null}
         </li>

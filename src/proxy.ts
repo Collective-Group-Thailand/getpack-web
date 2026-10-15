@@ -78,6 +78,8 @@ const CRAWLER_FILES = new Set(["/robots.txt", "/sitemap.xml", "/llms.txt"]);
  * (`build-checks/no-untracked-third-party-assets.mjs`).
  */
 const STOREFRONT_MEDIA = "/media/";
+/** A style variant's drawn dieline (D-410): a route handler outside `[locale]`, like the BFF. */
+const STYLE_PREVIEWS = "/style-previews/";
 
 export default async function proxy(request: NextRequest): Promise<NextResponse> {
   const zone = resolveZone(request.headers.get("host"), zoneHosts, enabledZones);
@@ -158,7 +160,7 @@ function route(request: NextRequest, zone: Zone, requestHeaders: Headers): NextR
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
-  if (zone === "customer" && pathname.startsWith(STOREFRONT_MEDIA)) {
+  if (zone === "customer" && (pathname.startsWith(STOREFRONT_MEDIA) || pathname.startsWith(STYLE_PREVIEWS))) {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 

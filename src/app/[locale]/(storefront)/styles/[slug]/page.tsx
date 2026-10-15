@@ -8,11 +8,20 @@ import { pick } from "@/features/customer/catalog/localize";
 import { configureHref, rfqHref } from "@/features/customer/catalog/paths";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
-import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
-import { codeOfSlug, DIELINE_FRAGMENT, styleHref, styleSlug, STYLES_HREF } from "@/features/customer/styles/paths";
+import { axisLabel, facetLabel, valueLabel, type StylesT } from "@/features/customer/styles/labels";
+import {
+  codeOfSlug,
+  DIELINE_FRAGMENT,
+  styleHref,
+  styleSlug,
+  STYLES_HREF,
+  styleTopicHref,
+} from "@/features/customer/styles/paths";
+import { shortName, topicsOf } from "@/features/customer/styles/topics";
+import { optionSummary } from "@/features/customer/styles/VariantCardFace";
 import { StyleDetailActions } from "@/features/customer/styles/StyleDetailActions";
 import { VariantPicker } from "@/features/customer/styles/VariantPicker";
-import { getPathname, redirect } from "@/i18n/navigation";
+import { getPathname, Link, redirect } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { readAccessToken } from "@/lib/auth/session";
 import { breadcrumbSchema, localePath, publicOrigin } from "@/lib/seo";
@@ -21,6 +30,10 @@ import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
 type Params = Promise<{ locale: string; slug: string }>;
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+/** The fragment of the variant picker, where a chosen variant's link lands. */
+const PICKER = "options";
 
 const nameIn = (style: StyleDetail, locale: string) => pick(locale, style.nameTh, style.nameEn);
 
@@ -56,15 +69,21 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
  * code, the verified international code (D-211), instant or quotation, the sizes per material and
  * the API's "starting from" — and the variant picker with its 3D model on request.
  */
-export default async function StylePage({ params }: { params: Params }) {
+export default async function StylePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const style = await load(slug);
   if (!style) notFound();
   const name = nameIn(style, locale);
+  // A card of the variants grid opens its style with that variant chosen (D-410).
+  const v = (await searchParams)["v"];
+  const chosen = style.variants.find((x) => x.code === (Array.isArray(v) ? v[0] : v))?.code;
   // The code decides the page; a stale or other-language name is sent to this language's URL.
   if (decodeURIComponent(slug) !== styleSlug(style.code, name))
-    redirect({ href: styleHref(style.code, name), locale: locale as Locale });
+    redirect({
+      href: `${styleHref(style.code, name)}${chosen ? `?v=${encodeURIComponent(chosen)}` : ""}`,
+      locale: locale as Locale,
+    });
 
   const [t, tree, jar, origin, format] = await Promise.all([
     getTranslations("styles"),
@@ -76,6 +95,10 @@ export default async function StylePage({ params }: { params: Params }) {
   const words = t as unknown as StylesT;
   const signedIn = Boolean(readAccessToken(jar));
   const href = styleHref(style.code, name);
+  const short = shortName(name);
+  const topics = topicsOf(style.options);
+  // "กล่องฝาเสียบมีหน้าต่าง" / "Tuck-end carton with a window".
+  const topicLabel = (id: string) => `${short}${locale === "en" ? " " : ""}${t(`topics.${id}.phrase`)}`;
   const url = `${origin}${getPathname({ href, locale: locale as Locale })}`;
   const rfqCategory = tree.find(
     (c) => c.code === style.category || c.types.some((type) => type.code === style.category),
@@ -176,10 +199,12 @@ export default async function StylePage({ params }: { params: Params }) {
         />
       </header>
 
-      <div className="mt-8">
+      <div className="mt-8 scroll-mt-24" id={PICKER}>
         <VariantPicker
+          key={chosen ?? "first"}
           style={style}
           name={name}
+          initialCode={chosen}
           actions={{ productSlug: style.startingPrice?.catalogProductSlug ?? null, rfqHref: quoteHref }}
           dieline={{
             sizeRanges: style.sizeRanges,
@@ -218,6 +243,70 @@ export default async function StylePage({ params }: { params: Params }) {
           </ul>
         </section>
       </div>
+
+      {/* D-410: every option in words and every variant code in the page's text — what a search for a
+          variant finds; the variants themselves are not pages. */}
+      <section aria-labelledby="style-all-options" className="mt-12">
+        <h2 id="style-all-options" className="mb-2 text-lg font-semibold">
+          {t("detail.allOptions")}
+        </h2>
+        <p className="text-muted mb-4 text-sm">
+          {t("detail.allOptionsIntro", { name, axes: style.axes.length, count: style.variantCount })}
+        </p>
+        {style.axes.length ? (
+          <DescriptionList
+            columns={1}
+            items={style.axes.map((axis) => ({
+              term: axisLabel(words, axis.axis),
+              description: axis.values.map((value) => valueLabel(words, axis.axis, value)).join(", "),
+            }))}
+          />
+        ) : null}
+      </section>
+
+      {topics.length ? (
+        <section aria-labelledby="style-topics" className="mt-10">
+          <h2 id="style-topics" className="mb-3 text-lg font-semibold">
+            {t("detail.optionPages", { name: short })}
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {topics.map((topic) => (
+              <li key={topic.id}>
+                <Link
+                  href={styleTopicHref(style.code, name, topic.id)}
+                  className="border-border hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-control inline-block border px-3 py-1.5 text-sm outline-none focus-visible:ring-2"
+                >
+                  {topicLabel(topic.id)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {style.variants.length > 1 ? (
+        <section aria-labelledby="style-all-variants" className="mt-10">
+          <h2 id="style-all-variants" className="mb-2 text-lg font-semibold">
+            {t("detail.allVariants")}
+          </h2>
+          <p className="text-muted mb-3 text-sm">{t("detail.allVariantsIntro")}</p>
+          <ul className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            {style.variants.map((variant) => (
+              <li key={variant.code} className="min-w-0">
+                <Link
+                  href={`${href}?v=${encodeURIComponent(variant.code)}#${PICKER}`}
+                  rel="nofollow"
+                  scroll={false}
+                  className="text-primary font-mono underline-offset-2 hover:underline"
+                >
+                  {variant.code}
+                </Link>{" "}
+                <span className="text-muted">{optionSummary(words, variant.options)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }
