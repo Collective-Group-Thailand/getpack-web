@@ -171,7 +171,6 @@ import taperedGift from "./data/tapered-gift.json" with { type: "json" };
 import nestableTray from "./data/nestable-tray.json" with { type: "json" };
 import paperCup from "./data/paper-cup.json" with { type: "json" };
 import paperBowl from "./data/paper-bowl.json" with { type: "json" };
-import triangularCarton from "./data/triangular-carton.json" with { type: "json" };
 import pentagonalCarton from "./data/pentagonal-carton.json" with { type: "json" };
 import uLiner from "./data/u-liner.json" with { type: "json" };
 import hanger5Tuck from "./data/hanger5-tuck.json" with { type: "json" };
@@ -361,7 +360,6 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   nestableTray,
   paperCup,
   paperBowl,
-  triangularCarton,
   pentagonalCarton,
   uLiner,
   hanger5Tuck,

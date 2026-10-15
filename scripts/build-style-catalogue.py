@@ -203,9 +203,139 @@ add("PK-SP-22","specialty","folding_carton","folding","กล่องของ�
 add("PK-TR-06","tray","folding_carton","folding","ถาดทรงสอบซ้อนได้","Nestable tapered tray","Drafted walls glued at the corners; trays nest when stacked.","food_board",[],4,"L")
 add("PK-SP-23","specialty","folding_carton","folding","แก้วกระดาษพิมพ์ลาย","Paper cup blank","Unrolled cone-frustum wall with side-seam overlap plus a skirted bottom disc.","food_board",[],4,"M")
 add("PK-SP-24","specialty","folding_carton","folding","ชามกระดาษ","Paper bowl blank","Low wide frustum wall plus a skirted bottom disc.","food_board",[],4,"M")
-add("PK-SP-25","specialty","folding_carton","folding","กล่องสามเหลี่ยม","Triangular carton","Three equal side panels, triangular tuck lids top and bottom.","paperboard",[],4,"M")
 add("PK-SP-26","specialty","folding_carton","folding","กล่องห้าเหลี่ยม","Pentagonal carton","Five equal side panels, pentagonal tuck lids top and bottom.","paperboard",[],4,"M")
 add("PK-IN-04","insert","insert","corrugate","แผ่นรองลูกฟูกพับตัวยู","Corrugated U-liner","Pad scored twice into a U, doubling two walls and the floor of a shipper.","corrugated",[],4,"L","FEFCO 09xx family (verify)")
+
+
+# ---------- What each structure suits (D-410) ----------
+# Use cases group the styles on the storefront's "boxes for …" pages (กล่องครีม, กล่องสบู่ …); a base may suit several.
+# Vocabulary: cosmetics, soap, supplements, food, snack, bakery, beverage, tea_coffee, jewelry, apparel, electronics,
+# candle_fragrance, produce, gift, luxury, retail, shipping, ecommerce, protection, branding.
+CARTON = ["cosmetics", "soap", "supplements", "retail"]
+USE_CASES = {
+    "PK-TE-01": CARTON + ["snack", "tea_coffee", "electronics", "candle_fragrance"],
+    "PK-TE-02": CARTON + ["snack", "tea_coffee"],
+    "PK-TE-03": ["cosmetics", "luxury", "gift", "candle_fragrance", "jewelry"],
+    "PK-TE-04": ["cosmetics", "supplements", "beverage", "candle_fragrance"],
+    "PK-TE-05": ["supplements", "food", "snack", "cosmetics", "ecommerce"],
+    "PK-TE-06": ["retail", "electronics", "cosmetics", "snack"],
+    "PK-FT-01": ["cosmetics", "snack", "tea_coffee", "supplements", "retail"],
+    "PK-FT-02": ["snack", "tea_coffee", "retail"],
+    "PK-DS-01": ["retail", "snack", "cosmetics", "branding"],
+    "PK-DS-02": ["retail", "snack", "supplements"],
+    "PK-DS-03": ["retail", "snack", "cosmetics"],
+    "PK-DS-04": ["retail", "branding"],
+    "PK-DS-05": ["branding", "retail", "food"],
+    "PK-DS-06": ["retail", "snack", "branding"],
+    "PK-TR-01": ["food", "bakery", "produce", "gift"],
+    "PK-TR-02": ["food", "bakery", "gift"],
+    "PK-TR-03": ["gift", "bakery", "apparel"],
+    "PK-TR-04": ["ecommerce", "gift", "cosmetics", "apparel", "jewelry"],
+    "PK-TR-05": ["food", "bakery", "snack"],
+    "PK-TR-06": ["food", "snack", "produce"],
+    "PK-SL-01": ["gift", "food", "soap", "branding"],
+    "PK-SL-02": ["gift", "jewelry", "cosmetics", "tea_coffee", "luxury"],
+    "PK-SL-03": ["branding", "food", "soap", "gift"],
+    "PK-SL-04": ["gift", "cosmetics", "tea_coffee"],
+    "PK-SL-05": ["gift", "electronics", "cosmetics"],
+    "PK-LB-01": ["gift", "apparel", "jewelry", "bakery", "luxury"],
+    "PK-SP-01": ["gift", "jewelry", "cosmetics", "snack"],
+    "PK-SP-02": ["gift", "bakery", "snack", "food"],
+    "PK-SP-03": ["gift", "tea_coffee", "candle_fragrance", "snack"],
+    "PK-SP-04": ["gift", "tea_coffee", "candle_fragrance"],
+    "PK-SP-05": ["gift", "snack", "food", "cosmetics"],
+    "PK-SP-06": ["beverage", "gift"],
+    "PK-SP-07": ["bakery", "food", "gift"],
+    "PK-SP-08": ["food", "snack"],
+    "PK-SP-09": ["food"],
+    "PK-SP-10": ["food", "snack"],
+    "PK-SP-11": ["snack", "food"],
+    "PK-SP-12": ["branding"],
+    "PK-SP-13": ["branding", "gift"],
+    "PK-SP-14": ["gift", "candle_fragrance", "snack"],
+    "PK-SP-15": ["gift", "snack", "candle_fragrance"],
+    "PK-SP-16": ["food", "bakery"],
+    "PK-SP-17": ["food", "snack"],
+    "PK-SP-18": ["beverage", "gift", "luxury"],
+    "PK-SP-19": ["retail", "food"],
+    "PK-SP-20": ["food", "snack"],
+    "PK-SP-22": ["gift", "candle_fragrance", "cosmetics"],
+    "PK-SP-23": ["beverage", "tea_coffee"],
+    "PK-SP-24": ["food"],
+    "PK-SP-26": ["gift", "tea_coffee", "candle_fragrance"],
+    "PK-IN-01": ["protection", "cosmetics", "beverage", "electronics"],
+    "PK-IN-02": ["protection", "beverage"],
+    "PK-IN-03": ["protection", "gift"],
+    "PK-IN-04": ["protection", "shipping"],
+    "PK-CS-01": ["shipping", "ecommerce"],
+    "PK-CS-02": ["shipping", "produce"],
+    "PK-CS-03": ["shipping", "protection"],
+    "PK-CS-04": ["shipping"],
+    "PK-CS-05": ["shipping"],
+    "PK-CS-06": ["shipping", "produce"],
+    "PK-CS-07": ["shipping", "ecommerce"],
+    "PK-CS-08": ["shipping", "ecommerce"],
+    "PK-CS-09": ["shipping", "ecommerce"],
+    "PK-CT-01": ["shipping", "gift", "apparel"],
+    "PK-CT-02": ["produce", "shipping"],
+    "PK-CT-03": ["gift", "apparel", "shipping"],
+    "PK-CF-01": ["ecommerce", "apparel", "cosmetics", "gift", "shipping"],
+    "PK-CF-02": ["food"],
+    "PK-CF-03": ["shipping", "ecommerce"],
+    "PK-CF-04": ["ecommerce", "shipping"],
+    "PK-CF-05": ["produce", "shipping"],
+    "PK-CF-06": ["shipping"],
+    "PK-CF-07": ["apparel", "ecommerce"],
+    "PK-CF-08": ["produce"],
+    "PK-CF-09": ["ecommerce", "shipping"],
+    "PK-CF-10": ["ecommerce", "apparel", "shipping"],
+    "PK-CZ-01": ["ecommerce", "gift"],
+    "PK-CG-01": ["shipping", "ecommerce"],
+    "PK-CG-02": ["produce", "beverage", "gift"],
+    "PK-CG-03": ["ecommerce", "shipping"],
+    "PK-CD-01": ["retail", "snack"],
+    "PK-CD-02": ["retail", "branding"],
+    "PK-CI-01": ["beverage", "protection", "shipping"],
+    "PK-CI-02": ["protection", "shipping"],
+    "PK-CI-03": ["protection", "shipping"],
+    "PK-CI-04": ["beverage", "shipping", "protection"],
+    "PK-CB-01": ["shipping"],
+    "PK-CB-02": ["shipping", "produce"],
+    "PK-CB-03": ["shipping"],
+    "PK-RG-01": ["luxury", "gift", "jewelry", "cosmetics", "apparel"],
+    "PK-RG-02": ["luxury", "candle_fragrance", "cosmetics", "jewelry"],
+    "PK-RG-03": ["luxury", "gift", "electronics", "cosmetics"],
+    "PK-RG-04": ["luxury", "gift", "apparel", "ecommerce"],
+    "PK-RG-05": ["luxury", "jewelry", "gift", "cosmetics"],
+    "PK-RG-06": ["luxury", "jewelry", "gift"],
+    "PK-RG-07": ["tea_coffee", "candle_fragrance", "beverage", "luxury"],
+    "PK-RG-08": ["luxury", "beverage", "gift"],
+    "PK-PB-01": ["snack", "tea_coffee", "food", "supplements"],
+    "PK-PB-02": ["snack", "cosmetics", "supplements"],
+    "PK-PB-03": ["snack", "food"],
+    "PK-PB-04": ["tea_coffee", "snack", "food"],
+    "PK-PB-05": ["tea_coffee", "food"],
+    "PK-PB-06": ["ecommerce", "apparel", "shipping"],
+    "PK-PB-07": ["ecommerce", "protection", "shipping"],
+    "PK-PB-08": ["beverage", "food", "cosmetics"],
+    "PK-PG-01": ["retail", "apparel", "gift", "branding"],
+    "PK-PG-02": ["food", "bakery", "retail"],
+    "PK-LA-01": ["branding", "food", "beverage", "cosmetics"],
+    "PK-LA-02": ["branding", "ecommerce"],
+    "PK-LA-03": ["beverage", "cosmetics", "branding"],
+    "PK-LA-04": ["ecommerce", "food", "branding"],
+    "PK-LA-05": ["beverage", "branding"],
+    "PK-LA-06": ["supplements", "cosmetics", "branding"],
+    "PK-LA-07": ["beverage", "cosmetics", "branding"],
+    "PK-TG-01": ["apparel", "branding", "retail", "gift"],
+    "PK-TG-02": ["tea_coffee", "beverage", "branding"],
+    "PK-TG-03": ["tea_coffee", "beverage", "food"],
+    "PK-TG-04": ["snack", "retail", "branding"],
+    "PK-TG-05": ["ecommerce", "branding", "gift"],
+    "PK-TG-06": ["supplements", "cosmetics", "branding"],
+    "PK-TG-07": ["retail", "electronics", "cosmetics"],
+    "PK-TG-08": ["beverage", "branding"],
+}
 
 # ---------- Variant expansion ----------
 ALLOWED_TUCK_PAIRS = [(t,b) for t in AX["tuck_top"] for b in AX["tuck_bottom"] if not (t=="seal" and b=="four_flap_lock")]
@@ -244,18 +374,22 @@ def variant_count(row):
         combos = [{**c, **ch} for c in combos for ch in choices]
     return sum(1 for c in combos if not excluded(row["code"], c))
 
+missing = [r["code"] for r in BASE if r["code"] not in USE_CASES]
+assert not missing and len(USE_CASES) == len(BASE), f"use cases missing for {missing}"
 rows = []
 for r in BASE:
     r = dict(r)
     r["distinct_variants"] = variant_count(r)
     r["variant_axes"] = ";".join(r["variant_axes"])
+    r["use_cases"] = USE_CASES[r["code"]]
     r["pricing_path_at_launch"] = "instant_after_signoff" if r["product_type"] in CALCULATOR_TYPES else "rfq_no_calculator"
     rows.append(r)
 
 cols = ["code","family","category","product_type","name_th","name_en","construction","material_class","variant_axes",
         "distinct_variants","wave","complexity","reference","pricing_path_at_launch"]
 with open("docs/design-tool/style-library-master.csv","w",newline="",encoding="utf-8-sig") as f:
-    w = csv.DictWriter(f, fieldnames=cols); w.writeheader(); [w.writerow({k:r[k] for k in cols}) for r in rows]
+    w = csv.DictWriter(f, fieldnames=cols + ["use_cases"]); w.writeheader()
+    [w.writerow({**{k:r[k] for k in cols}, "use_cases": ";".join(r["use_cases"])}) for r in rows]
 with open("docs/design-tool/style-library-master.json","w",encoding="utf-8") as f:
     json.dump({"axes":AX,"allowed_tuck_pairs":ALLOWED_TUCK_PAIRS,"excluded_combinations":EXCLUDED,"styles":rows}, f, ensure_ascii=False, indent=2)
 

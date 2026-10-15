@@ -523,7 +523,7 @@ strict `drawableBy` with the real engine (`v0.57.0`).
 
 A survey of Packhelp, Pakfactory, Packlane, Refine, PackMojo, Pacdora, templatemaker.nl, packsdo, FEFCO / ECMA
 catalogues and Thai printers (`docs/design-tool/style-survey-2026-10.md`) found 61 structures we lacked. The first
-18 are in: **123 bases, 987 variants, every one drawn.**
+17 are in (the triangular carton PK-SP-25 was dropped as the same structure as PK-SP-05, D-410): **122 bases, 986 variants, every one drawn.**
 
 | Base | Name | Recipe(s) / module |
 | --- | --- | --- |
@@ -541,7 +541,7 @@ catalogues and Thai printers (`docs/design-tool/style-survey-2026-10.md`) found 
 | PK-SP-22 | Tapered gift box | `tapered-gift` (`taperedTray`, negative taper) |
 | PK-TR-06 | Nestable tapered tray | `nestable-tray` |
 | PK-SP-23, PK-SP-24 | Paper cup, paper bowl | `paper-cup`, `paper-bowl`, body `cupBlank` |
-| PK-SP-25, PK-SP-26 | Triangular, pentagonal carton | `triangular-carton`, `pentagonal-carton` |
+| PK-SP-26 | Pentagonal carton | `pentagonal-carton` (PK-SP-25, a triangular carton, was dropped: PK-SP-05 is the same structure) |
 | PK-IN-04 | Corrugated U-liner | `u-liner`, body `uLiner` |
 
 Also new on existing bases (parameters, not variants): **cavity inserts cut to the product** (`cavityShape`
