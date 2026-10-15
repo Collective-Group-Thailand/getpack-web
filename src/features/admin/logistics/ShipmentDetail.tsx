@@ -39,13 +39,22 @@ import {
 import { FileButton, FileList } from "./files";
 import type { Shipment } from "./resources";
 import { piecesOf } from "./ShipmentsList";
+import { PodDialog, StatusDialog } from "./ShipmentUpdates";
 
-type Verb = "split" | "book_carrier" | "resolve_exception" | "review_pod" | "cancel";
+type Verb = "split" | "book_carrier" | "resolve_exception" | "review_pod" | "cancel" | "update_status" | "record_pod";
 type Dialog = { kind: Verb; key: string; decision?: "accept" | "reject" };
 type Carrier = Schemas["FallbackCarrier"];
 type Resolution = Schemas["ShipmentExceptionResolution"];
 
-const SUPPORTED = new Set<string>(["split", "book_carrier", "resolve_exception", "review_pod", "cancel"]);
+const SUPPORTED = new Set<string>([
+  "split",
+  "book_carrier",
+  "resolve_exception",
+  "review_pod",
+  "cancel",
+  "update_status",
+  "record_pod",
+]);
 const FALLBACK_CARRIERS = ["flash_express", "deliveree"] as const satisfies readonly Carrier[];
 
 async function readShipment(shipmentId: string) {
@@ -433,6 +442,28 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
         </div>
       </div>
 
+      {dialog?.kind === "update_status" ? (
+        <StatusDialog
+          shipment={shipment}
+          idempotencyKey={dialog.key}
+          onClose={() => setDialog(null)}
+          onDone={(updated, nextEtag) => {
+            toast.success(t("statusUpdate.done"));
+            settle(updated, nextEtag);
+          }}
+        />
+      ) : null}
+      {dialog?.kind === "record_pod" ? (
+        <PodDialog
+          shipment={shipment}
+          idempotencyKey={dialog.key}
+          onClose={() => setDialog(null)}
+          onDone={(updated, nextEtag) => {
+            toast.success(t("podRecord.done"));
+            settle(updated, nextEtag);
+          }}
+        />
+      ) : null}
       {dialog?.kind === "split" ? (
         <FormDialog
           title={t("splitTitle")}

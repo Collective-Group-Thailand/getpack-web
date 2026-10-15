@@ -81,6 +81,18 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   `lead_time`). The library templates named families that do not exist (`folding_carton`, `corrugated`); they now
   name box families with all faces. Tried in a browser against packio-api with real object storage (S3-compatible
   server locally) and the worker: template with thumbnail upload, element publish, canned add / archive, rich menu.
+- **Round 3 — logistics** (packio-api v0.63.0, D-413): `/shipping` desk — customer rate card (summary in force /
+  next / open, versions, rates by zone and band, draft by copy or empty, a line editor that marks overlapping bands
+  and bad values before sending, Excel import with preview and export, submit for C-Level approval, withdraw,
+  delete draft, a quote check), `/shipping/zones` (schemes, zones, postcodes pasted any way with the bad ones
+  named), `/shipping/carriers` (enable / disable, Packio's accounts by secret reference, a test quote),
+  `/shipping/calendar` (holidays and extra working days by year, import a year from Excel); a factory's shipping
+  payout tab (draft, edit, send, withdraw, answer counters line by line, staff-only suggestions); on a shipment,
+  correcting the transit status and recording a POD (photos and signature uploaded as evidence). A form dialog now
+  lists the API's field errors beside the fields. A new version dated today takes effect a minute from now (its
+  start of day would be refused as back-dated). Tried in a browser against packio-api with real object storage:
+  draft → edit → submit, zone postcodes, a holiday, the factory tab, status correction and POD → delivered with the
+  order reconciled.
 - Open: CMS images and template thumbnails upload as purpose `document`, which packio-api keeps as a financial
   record (≥ 10 years); an image purpose with standard retention belongs in round 4 (catalogue extras).
 
