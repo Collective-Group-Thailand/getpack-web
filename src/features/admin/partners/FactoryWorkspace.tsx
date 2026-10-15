@@ -34,6 +34,7 @@ import { Profile } from "./tabs/Profile";
 import { ErpSupport } from "./tabs/ErpSupport";
 import { SiteVisits } from "./tabs/SiteVisits";
 import { Terms } from "./tabs/Terms";
+import { FactoryRateCard } from "../shipping";
 
 type Action = Schemas["FactoryStatusAction"];
 
@@ -76,6 +77,7 @@ export function FactoryWorkspace({
   const t = useTranslations("partners.detail");
   const pathname = usePathname();
   const canManage = useCan("partners.manage");
+  const canBuyPrices = useCan("factory_buy_prices.read");
   const refresh = useFactoryRefresh(factoryId);
   const [current, setCurrent] = useState<string>(tab);
   const [action, setAction] = useState<Action | "activate" | "owner" | null>(null);
@@ -104,6 +106,9 @@ export function FactoryWorkspace({
     { value: "terms", label: t("tabs.terms"), content: <Terms factory={factory} /> },
     { value: "visits", label: t("tabs.visits"), content: <SiteVisits factory={factory} /> },
     { value: "pricing", label: t("tabs.pricing"), content: <Pricing factory={factory} /> },
+    ...(canBuyPrices
+      ? [{ value: "shipping", label: t("tabs.shipping"), content: <FactoryRateCard factoryId={factory.id} /> }]
+      : []),
     { value: "erp", label: t("tabs.erp"), content: <ErpSupport factory={factory} /> },
   ];
   const offered = canManage ? OFFERED[factory.status] : [];
