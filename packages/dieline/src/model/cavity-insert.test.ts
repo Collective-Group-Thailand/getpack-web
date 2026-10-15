@@ -16,7 +16,11 @@ import { collisions } from "./collide";
  */
 const board = Object.values(REFERENCE_MATERIALS).find((m) => m.kind === "paperboard")!;
 const recipe = (id: string) => ALL_RECIPES.find((r) => r.id === id)!;
-const at = (id: string, values: ParamValues) => ({ ...defaultsOf(recipe(id)), ...presetsOf(recipe(id))[0]?.values, ...values });
+const at = (id: string, values: ParamValues) => ({
+  ...defaultsOf(recipe(id)),
+  ...presetsOf(recipe(id))[0]?.values,
+  ...values,
+});
 const errors = (id: string, v: ParamValues) =>
   styleFromRecipe(recipe(id))
     .validate(v, board)
@@ -29,19 +33,45 @@ const cases: [string, string, ParamValues, number][] = [
   [
     "five bottles lying in a hinged-lid tray",
     "tray-lid-lock",
-    { length: 200, width: 150, height: 40, insert: "die_cut", cavityShape: "bottle", cavityGrid: "1x5", cavityLength: 120, cavityWidth: 25 },
+    {
+      length: 200,
+      width: 150,
+      height: 40,
+      insert: "die_cut",
+      cavityShape: "bottle",
+      cavityGrid: "1x5",
+      cavityLength: 120,
+      cavityWidth: 25,
+    },
     5,
   ],
   [
     "a cream jar in a reverse tuck end",
     "te-reverse-crash",
-    { length: 70, width: 70, height: 70, insert: "die_cut", cavityShape: "circle", cavityGrid: "1x1", cavityLength: 50 },
+    {
+      length: 70,
+      width: 70,
+      height: 70,
+      insert: "die_cut",
+      cavityShape: "circle",
+      cavityGrid: "1x1",
+      cavityLength: 50,
+    },
     1,
   ],
   [
     "six rectangles in a double-wall carton",
     "te3-double-wall",
-    { length: 250, width: 180, height: 80, insert: "die_cut", cavityShape: "rect", cavityGrid: "2x3", cavityLength: 60, cavityWidth: 60 },
+    {
+      length: 250,
+      width: 180,
+      height: 80,
+      insert: "die_cut",
+      cavityShape: "rect",
+      cavityGrid: "2x3",
+      cavityLength: 60,
+      cavityWidth: 60,
+    },
     6,
   ],
 ];

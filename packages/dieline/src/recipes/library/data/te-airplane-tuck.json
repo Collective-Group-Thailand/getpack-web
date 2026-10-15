@@ -44,10 +44,7 @@
     "th": "กล่องกระดาษแข็งฝาเสียบแบบเครื่องบินและก้นเสียบ ตามโครงสร้างตระกูลฝาเสียบ",
     "en": "Folding carton with a airplane tuck top and a tuck bottom — the tuck-end family's closure pair"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",

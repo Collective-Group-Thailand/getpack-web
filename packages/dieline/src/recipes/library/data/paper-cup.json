@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "paper-cup",
+  "base": "PK-SP-23",
+  "category": "flat",
+  "name": {
+    "th": "แก้วกระดาษพิมพ์ลาย",
+    "en": "Paper cup blank"
+  },
+  "description": {
+    "th": "แผ่นคลี่ผนังแก้วกระดาษ (ส่วนโค้ง) พร้อมแผ่นก้น ขึ้นรูปบนเครื่องทำแก้ว",
+    "en": "The paper cup wall (an unrolled cone) and its bottom disc, formed on a cup machine"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "topDiameter",
+      "min": 40,
+      "max": 250
+    },
+    {
+      "ref": "bottomDiameter",
+      "min": 30,
+      "max": 220
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 200
+    },
+    "overlap"
+  ],
+  "defaults": {
+    "topDiameter": 80,
+    "bottomDiameter": 56,
+    "height": 93,
+    "overlap": 8
+  },
+  "presets": [
+    {
+      "id": "8oz",
+      "label": {
+        "th": "8 ออนซ์",
+        "en": "8 oz"
+      },
+      "values": {
+        "topDiameter": 80,
+        "bottomDiameter": 56,
+        "height": 93
+      }
+    },
+    {
+      "id": "12oz",
+      "label": {
+        "th": "12 ออนซ์",
+        "en": "12 oz"
+      },
+      "values": {
+        "topDiameter": 90,
+        "bottomDiameter": 60,
+        "height": 110
+      }
+    },
+    {
+      "id": "16oz",
+      "label": {
+        "th": "16 ออนซ์",
+        "en": "16 oz"
+      },
+      "values": {
+        "topDiameter": 90,
+        "bottomDiameter": 60,
+        "height": 135
+      }
+    }
+  ],
+  "body": {
+    "module": "cupBlank"
+  }
+}

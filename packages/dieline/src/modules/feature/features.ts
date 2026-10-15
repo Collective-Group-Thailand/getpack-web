@@ -121,6 +121,40 @@ export const hangTab: FeatureModule = {
     const kind = str(ctx.v, "hangHole", "euro");
     const holes = kind === "sombrero" ? [sombreroHole(cx, -h * 0.4)] : hangHoleShape(kind, cx, cy);
     const r = Math.min(6, h / 3, (back.x1 - back.x0) / 4);
+    // `ply: 2` (the five-panel hanger box): a second ply hinged on the header's top, folded down behind
+    // it, the hole cut through both.
+    if (cfg.ply === 2) {
+      const mirror = (c: Contour): Contour => c.map((e) => mapEdge(e, (p) => [p[0], -2 * h - p[1]], true));
+      const front = face(
+        `hanger-${c.end}`,
+        "hanger",
+        "hanger",
+        [
+          line([back.x0, 0], [back.x0, -h], "cut"),
+          line([back.x0, -h], [back.x1, -h], "crease"),
+          line([back.x1, -h], [back.x1, 0], "cut"),
+          line([back.x1, 0], [back.x0, 0], "crease"),
+        ],
+        { holes },
+      );
+      const ply = face(
+        `hanger-ply-${c.end}`,
+        "hanger",
+        "hanger",
+        [
+          line([back.x0, -h], [back.x0, -2 * h + r], "cut"),
+          ...roundedTop(back.x0, back.x1, -2 * h, r),
+          line([back.x1, -2 * h + r], [back.x1, -h], "cut"),
+          line([back.x1, -h], [back.x0, -h], "crease"),
+        ],
+        { holes: holes.map(mirror) },
+      );
+      return {
+        ...base,
+        attachments: [...base.attachments, { face: front, span: [back.x0, back.x1] }],
+        faces: [...(base.faces ?? []), ply],
+      };
+    }
     const hanger = face(
       `hanger-${c.end}`,
       "hanger",
@@ -135,7 +169,40 @@ export const hangTab: FeatureModule = {
     );
     return { ...base, attachments: [...base.attachments, { face: hanger, span: [back.x0, back.x1] }] };
   },
-  hinges: (_ctx, cfg) => ({ angles: { [`hanger-${cfg.end as string}`]: 0 } }),
+  hinges: (_ctx, cfg) => ({
+    angles: { [`hanger-${cfg.end as string}`]: 0, ...(cfg.ply === 2 ? { [`hanger-ply-${cfg.end as string}`]: 180 } : {}) },
+  }),
+};
+
+/**
+ * Depth scores (the multi-depth shipper, PK-CS-07): `depthSteps` creases round the tube every
+ * `depthStep` mm down from the top crease, so the box can be cut down to the fill height and its
+ * flaps folded on the score. ⚠ Score spacing to be confirmed by Prepress.
+ */
+export const depthScores: FeatureModule = {
+  id: "depthScores",
+  slot: "feature",
+  status: "implemented",
+  fits: ["tube"],
+  label: t("รอยพับลดความสูง", "Depth scores"),
+  params: ["depthSteps", "depthStep"],
+  processes: ["die_cut"],
+  contributes: { kinds: [], roles: ["crease"] },
+  constraints: [
+    {
+      id: "depthScores.fit",
+      code: "size.scores_too_deep",
+      severity: "error",
+      param: "depthSteps",
+      require: "(depthSteps ?? 3) * (depthStep ?? 50) <= height - 40",
+      message: t("รอยพับลดความสูงลึกเกินกล่อง (เหลือผนังอย่างน้อย 40 มม.)", "The depth scores reach too far down (keep 40 mm of wall)"),
+    },
+  ],
+  tubeMarks(ctx, _cfg, p) {
+    const n = num(ctx.v, "depthSteps", 3);
+    const step = num(ctx.v, "depthStep", 50);
+    return Array.from({ length: n }, (_, i) => line([p.x0, p.y0 + step * (i + 1)], [p.x1, p.y0 + step * (i + 1)], "crease"));
+  },
 };
 
 /** Hand hole: a stadium 90 × 30 mm (narrower on small boxes), 30 mm below the top crease. ⚠ */

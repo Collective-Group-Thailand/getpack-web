@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "paper-bowl",
+  "base": "PK-SP-24",
+  "category": "flat",
+  "name": {
+    "th": "ชามกระดาษ",
+    "en": "Paper bowl blank"
+  },
+  "description": {
+    "th": "แผ่นคลี่ผนังชามกระดาษพร้อมแผ่นก้น สำหรับอาหารร้อนและสลัด",
+    "en": "The paper bowl wall and its bottom disc — hot food and salads"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "topDiameter",
+      "min": 40,
+      "max": 250
+    },
+    {
+      "ref": "bottomDiameter",
+      "min": 30,
+      "max": 220
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 200
+    },
+    "overlap"
+  ],
+  "defaults": {
+    "topDiameter": 150,
+    "bottomDiameter": 125,
+    "height": 60,
+    "overlap": 10
+  },
+  "presets": [
+    {
+      "id": "500ml",
+      "label": {
+        "th": "500 มล.",
+        "en": "500 ml"
+      },
+      "values": {
+        "topDiameter": 150,
+        "bottomDiameter": 125,
+        "height": 50
+      }
+    },
+    {
+      "id": "750ml",
+      "label": {
+        "th": "750 มล.",
+        "en": "750 ml"
+      },
+      "values": {
+        "topDiameter": 150,
+        "bottomDiameter": 125,
+        "height": 60
+      }
+    },
+    {
+      "id": "1000ml",
+      "label": {
+        "th": "1,000 มล.",
+        "en": "1000 ml"
+      },
+      "values": {
+        "topDiameter": 165,
+        "bottomDiameter": 140,
+        "height": 70
+      }
+    }
+  ],
+  "body": {
+    "module": "cupBlank"
+  }
+}

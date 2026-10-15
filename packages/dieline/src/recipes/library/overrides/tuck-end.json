@@ -31,10 +31,7 @@
     "th": "กล่องกระดาษแข็งสำหรับสินค้าขายปลีก ลิ้นเสียบบนและล่างพับจากด้านหลังเหมือนกัน",
     "en": "Retail carton whose top and bottom tucks both hinge from the back panel"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",

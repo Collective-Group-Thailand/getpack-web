@@ -92,7 +92,8 @@
     "tag": "Tag",
     "telescope": "Telescope",
     "tray": "Tray",
-    "tuck_end": "Tuck end"
+    "tuck_end": "Tuck end",
+    "leaflet": "Leaflet"
   },
   "useCases": {
     "cosmetics": "Cosmetics",
@@ -130,7 +131,8 @@
     "pouch_feat": "Features",
     "bag_gusset": "Gusset",
     "bag_handle": "Handles",
-    "partition": "Cells"
+    "partition": "Cells",
+    "fold": "Fold"
   },
   "values": {
     "tuck_top": {
@@ -260,6 +262,12 @@
       "3x4": "3 × 4",
       "4x4": "4 × 4",
       "4x6": "4 × 6"
+    },
+    "fold": {
+      "bi_fold": "Bi-fold",
+      "tri_fold": "Tri-fold",
+      "z_fold": "Z-fold",
+      "gate_fold": "Gate fold"
     }
   },
   "card": {

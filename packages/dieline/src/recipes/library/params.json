@@ -752,9 +752,7 @@
     ],
     "when": {
       "key": "insert",
-      "in": [
-        "die_cut"
-      ]
+      "in": ["die_cut"]
     }
   },
   "cavityGrid": {
@@ -867,11 +865,7 @@
     ],
     "when": {
       "key": "cavityShape",
-      "in": [
-        "rect",
-        "circle",
-        "bottle"
-      ]
+      "in": ["rect", "circle", "bottle"]
     }
   },
   "cavityLength": {
@@ -887,11 +881,7 @@
     "step": 0.5,
     "when": {
       "key": "cavityShape",
-      "in": [
-        "rect",
-        "circle",
-        "bottle"
-      ]
+      "in": ["rect", "circle", "bottle"]
     }
   },
   "cavityWidth": {
@@ -907,10 +897,7 @@
     "step": 0.5,
     "when": {
       "key": "cavityShape",
-      "in": [
-        "rect",
-        "bottle"
-      ]
+      "in": ["rect", "bottle"]
     }
   },
   "headerShape": {
@@ -998,9 +985,7 @@
     },
     "when": {
       "key": "headerShape",
-      "in": [
-        "custom"
-      ]
+      "in": ["custom"]
     }
   },
   "headerShapeHeight": {
@@ -1016,15 +1001,7 @@
     "step": 0.5,
     "when": {
       "key": "headerShape",
-      "in": [
-        "arch",
-        "peak",
-        "wave",
-        "scallop",
-        "cloud",
-        "flower",
-        "custom"
-      ]
+      "in": ["arch", "peak", "wave", "scallop", "cloud", "flower", "custom"]
     }
   },
   "headerHeight": {
@@ -1037,6 +1014,69 @@
     },
     "min": 40,
     "max": 400,
+    "step": 1
+  },
+  "foldScheme": {
+    "key": "foldScheme",
+    "kind": "enum",
+    "group": "construction",
+    "label": {
+      "th": "แบบการพับ",
+      "en": "Fold"
+    },
+    "options": [
+      {
+        "value": "bi_fold",
+        "label": {
+          "th": "พับครึ่ง",
+          "en": "Bi-fold"
+        }
+      },
+      {
+        "value": "tri_fold",
+        "label": {
+          "th": "พับสามตอน (ม้วนเข้า)",
+          "en": "Tri-fold (roll)"
+        }
+      },
+      {
+        "value": "z_fold",
+        "label": {
+          "th": "พับซิกแซก (Z)",
+          "en": "Z-fold"
+        }
+      },
+      {
+        "value": "gate_fold",
+        "label": {
+          "th": "พับประตู",
+          "en": "Gate fold"
+        }
+      }
+    ]
+  },
+  "depthSteps": {
+    "key": "depthSteps",
+    "kind": "number",
+    "group": "options",
+    "label": {
+      "th": "จำนวนรอยพับลดความสูง",
+      "en": "Depth scores"
+    },
+    "min": 1,
+    "max": 6,
+    "step": 1
+  },
+  "depthStep": {
+    "key": "depthStep",
+    "kind": "length",
+    "group": "options",
+    "label": {
+      "th": "ระยะห่างรอยพับลดความสูง",
+      "en": "Depth score spacing"
+    },
+    "min": 20,
+    "max": 200,
     "step": 1
   }
 }

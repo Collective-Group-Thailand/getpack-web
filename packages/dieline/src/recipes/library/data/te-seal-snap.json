@@ -31,10 +31,7 @@
     "th": "กล่องกระดาษแข็งฝาปิดกาวและก้นล็อก 1-2-3 ตามโครงสร้างตระกูลฝาเสียบ",
     "en": "Folding carton with a seal top and a snap-lock (1-2-3) bottom — the tuck-end family's closure pair"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",

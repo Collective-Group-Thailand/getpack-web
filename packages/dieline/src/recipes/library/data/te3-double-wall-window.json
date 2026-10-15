@@ -27,9 +27,7 @@
     "th": "ผนังข้างพับซ้อนสองชั้น ผนังหน้าชั้นเดียวมีหน้าต่าง ฝาพับติดผนังหลังปิดด้วยลิ้นเสียบ",
     "en": "End walls folded over double; a single front wall carries the window; a back-hinged lid with a front tuck"
   },
-  "materials": [
-    "paperboard"
-  ],
+  "materials": ["paperboard"],
   "params": [
     {
       "ref": "length",
@@ -48,9 +46,7 @@
     },
     {
       "ref": "tuckDepth",
-      "omit": [
-        "help"
-      ]
+      "omit": ["help"]
     },
     "grain",
     "tuckCorners",
@@ -160,10 +156,7 @@
     {
       "module": "rollOverWalls",
       "with": {
-        "walls": [
-          "left",
-          "right"
-        ]
+        "walls": ["left", "right"]
       }
     },
     {

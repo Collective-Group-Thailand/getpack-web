@@ -31,10 +31,7 @@
     "th": "ฝาบนเป็นลิ้นเสียบ ก้นพับล็อกกันเองโดยไม่ต้องใช้กาว รับน้ำหนักได้ดีกว่าฝาเสียบธรรมดา",
     "en": "Tuck top; the bottom flaps interlock without glue and carry more weight than a tuck"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",
@@ -116,11 +113,6 @@
     }
   ],
   "legacy": {
-    "patternKeys": [
-      "pid:16",
-      "pid:17",
-      "mapping:94",
-      "folding-truck-end-snap-lock-bottom"
-    ]
+    "patternKeys": ["pid:16", "pid:17", "mapping:94", "folding-truck-end-snap-lock-bottom"]
   }
 }

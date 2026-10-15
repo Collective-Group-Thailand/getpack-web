@@ -41,10 +41,7 @@
     "th": "หูแขวนยื่นจากด้านหลัง เจาะรูแบบยูโรหรือรูกลม สำหรับแขวนบนราวในร้าน ฝาบนพับจากด้านหน้า",
     "en": "A hang tab rises from the back with a euro slot or round hole for peg display; the top lid hinges from the front"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",
@@ -130,9 +127,6 @@
     }
   ],
   "legacy": {
-    "patternKeys": [
-      "pid:6",
-      "pid:8"
-    ]
+    "patternKeys": ["pid:6", "pid:8"]
   }
 }
