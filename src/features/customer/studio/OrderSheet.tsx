@@ -88,6 +88,11 @@ export function OrderSheet({
   const [rendered, setRendered] = useState<{ done: number; total: number } | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
+  // The server prints only a style-library box (an approved recipe to draw from, `studio.print_unavailable`
+  // otherwise): a design drawn on a catalogue product is ordered from the product page with the design
+  // attached, and the sheet says so up front instead of after a minute of saving and uploading.
+  const catalogueOnly = !spec?.studio?.styleVariantCode;
+  const blocked = unavailable || catalogueOnly;
   const [approvalLink, setApprovalLink] = useState<string | null>(null);
   const cancelled = useRef(false);
 
@@ -350,21 +355,21 @@ export function OrderSheet({
         </Link>
       </p>
 
-      {unavailable ? (
+      {blocked ? (
         <Callout tone="info" title={t("unavailableTitle")}>
-          <p className="mb-2 text-sm">{t("unavailableBody")}</p>
+          <p className="mb-2 text-sm">{t(catalogueOnly ? "catalogueBody" : "unavailableBody")}</p>
           <OrderAction link={null} productSlug={productSlug} />
         </Callout>
       ) : null}
       {problem ? <Callout tone="danger" title={problem} /> : null}
 
       <div className="flex flex-col gap-2">
-        <Button disabled={!ready || phase !== null || unavailable} onClick={() => void order("checkout")}>
+        <Button disabled={!ready || phase !== null || blocked} onClick={() => void order("checkout")}>
           {t("orderNow")}
         </Button>
         <Button
           variant="secondary"
-          disabled={!ready || phase !== null || unavailable}
+          disabled={!ready || phase !== null || blocked}
           onClick={() => void order("cart")}
         >
           {t("addToCart")}
@@ -372,7 +377,7 @@ export function OrderSheet({
         {companyBuyer ? (
           <Button
             variant="ghost"
-            disabled={!ready || phase !== null || unavailable}
+            disabled={!ready || phase !== null || blocked}
             onClick={() => void order("approval")}
           >
             {t("sendForApproval")}

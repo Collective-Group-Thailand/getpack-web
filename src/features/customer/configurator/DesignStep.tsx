@@ -1,11 +1,13 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format/useFormat";
+import { Link } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
+import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -38,6 +40,17 @@ export function DesignStep({ configurator, state, onChange, designerAvailable }:
   const designOptions = configurator.design.options.filter(
     (option) => option !== "online_designer" || designerAvailable,
   );
+  // The Studio design this order carries (the studio's "order this"): named here so the customer
+  // sees it is attached, and can drop it to order the box blank or with an upload instead.
+  const attached = state.designOption === "online_designer" ? state.designDocumentId : null;
+  const design = useQuery({
+    queryKey: [...queryKeys.zone("customer"), "design-brief", attached],
+    queryFn: async ({ signal }) =>
+      (await browserApi().GET("/v1/store/designs/{designId}", { params: { path: { designId: attached! } }, signal }))
+        .data!,
+    enabled: !!attached,
+    staleTime: 60_000,
+  });
   const check = useMutation({
     mutationFn: async (code: string) =>
       (
@@ -75,6 +88,24 @@ export function DesignStep({ configurator, state, onChange, designerAvailable }:
           }))}
         />
       </Field>
+
+      {attached ? (
+        <Callout tone="success" title={t("attached.title")}>
+          <p className="text-sm">
+            {design.data
+              ? t("attached.body", { title: design.data.title, version: design.data.versionNo ?? 1 })
+              : t("attached.loading")}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="secondary">
+              <Link href={`/studio/${attached}`}>{t("attached.open")}</Link>
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => onChange({ designDocumentId: null })}>
+              {t("attached.detach")}
+            </Button>
+          </div>
+        </Callout>
+      ) : null}
 
       <form
         className="flex flex-col gap-2"

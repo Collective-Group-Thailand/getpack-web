@@ -111,6 +111,20 @@ checked by script; `ConsentStep.test.tsx` was rewritten for the new step and `pr
   delivers the designer PDF as `application/illustrator`. Contract widened locally until adopted
   (`docs/contract-requests.md`, store.dielines.download-ai).
 
+- **Studio → order, end to end on real S3 (2026-10-15, after the merge):** `uploadFile` waits for the worker's
+  scan (`waitUntilScanned`, typed `ScanError`, 90 s) because every use of a file is refused until it is `clean`;
+  a slow or rejected scan reads as a sentence on the order sheet, not a file id. The studio can print only a
+  style-library box (packio-api `printable()` needs a style variant with an approved recipe), so a design drawn on
+  a catalogue product now says so before saving and uploading, and its "order" goes through the product page —
+  which was dropping the design: `seedFromDesign` reads the design id from `?design=`, the design step shows the
+  attached design (title, version, open / detach), the cart line carries `designDocumentId`, the cart names the
+  design, and the order's artwork page offers "send this design for checking" (`store.designs.submitForOrder`)
+  above the upload. Walked: Studio → สั่งผลิต → configurator → cart (WELCOME10) → checkout → order
+  UATOR-2610-00017 → artwork from the design, preflight passed. packio-api: a failed scan attempt retries after
+  30 s instead of the 10-minute lease, and a `NoSuchKey` read right after `complete`'s HEAD is retried with
+  backoff (seen twice on the shared UAT bucket; cause outside the code — check the bucket's lifecycle rules and
+  event notifications, or give Packio its own bucket).
+
 ### Found, not fixed here
 
 - Browser uploads (artwork, studio print files, logos) need the S3 host in CSP (`NEXT_PUBLIC_ASSET_BASE_URL`,

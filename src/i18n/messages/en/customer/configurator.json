@@ -233,7 +233,14 @@
       "fixed": "{amount} off",
       "cap": " (up to {amount})"
     },
-    "promoValidUntil": "Valid until {date}"
+    "promoValidUntil": "Valid until {date}",
+    "attached": {
+      "title": "Studio design attached",
+      "body": "“{title}” version {version} will be this order's artwork; we check the file and send a proof before printing.",
+      "loading": "Loading the design…",
+      "open": "Open in Studio",
+      "detach": "Don't use this design"
+    }
   },
   "preview": {
     "boxLabel": "{name}, {l} × {w} × {h} mm, {material}",

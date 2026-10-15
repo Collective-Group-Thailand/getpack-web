@@ -233,7 +233,14 @@
       "fixed": "ลด {amount}",
       "cap": " (สูงสุด {amount})"
     },
-    "promoValidUntil": "ใช้ได้ถึง {date}"
+    "promoValidUntil": "ใช้ได้ถึง {date}",
+    "attached": {
+      "title": "แนบแบบจาก Studio แล้ว",
+      "body": "แบบ “{title}” เวอร์ชัน {version} จะเป็นไฟล์งานของออเดอร์นี้ ทีมงานตรวจไฟล์และส่งพรูฟให้ก่อนผลิต",
+      "loading": "กำลังโหลดแบบ…",
+      "open": "เปิดใน Studio",
+      "detach": "ไม่ใช้แบบนี้"
+    }
   },
   "preview": {
     "boxLabel": "{name} ขนาด {l} × {w} × {h} มม. {material}",
