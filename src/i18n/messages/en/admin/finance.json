@@ -756,6 +756,7 @@
       "input_vat": "Input VAT",
       "input_vat_pending": "Input VAT pending document",
       "wht_receivable": "WHT receivable",
+      "wht_pnd1": "WHT PND 1",
       "wht_pnd3": "WHT PND 3",
       "wht_pnd53": "WHT PND 53"
     },
@@ -1230,6 +1231,7 @@
         "vendor_bill": "Vendor bill"
       },
       "forms": {
+        "pnd1": "PND 1",
         "pnd3": "PND 3",
         "pnd53": "PND 53"
       },
@@ -1288,6 +1290,7 @@
       "certificate": "Withholding tax certificate {number} ({form})",
       "certificateAmounts": "Paid {paid} on {date} · withheld {rate} = {amount}",
       "forms": {
+        "pnd1": "PND 1",
         "pnd3": "PND 3",
         "pnd53": "PND 53"
       },
@@ -1895,6 +1898,7 @@
       "sales_tax": "Sales tax report",
       "purchase_tax": "Purchase tax report",
       "pp30": "PP 30 working paper (VAT)",
+      "pnd1": "PND 1 (sales agent commission)",
       "pnd3": "PND 3 (individuals)",
       "pnd53": "PND 53 (companies)",
       "wht_issued_register": "WHT certificates issued (50 Tawi)",
@@ -1930,6 +1934,7 @@
         "sales_tax": "Output VAT by tax invoice, credit and debit note. Documents dated in an earlier month are marked late.",
         "purchase_tax": "Input VAT claimed with a valid tax invoice, by document.",
         "pp30": "Output VAT less input VAT for the month. Finalising closes the month's VAT into VAT payable.",
+        "pnd1": "Tax withheld from sales agents' commission (section 40(2)), by 50 Tawi certificate. The export is the attachment for filing.",
         "pnd3": "Tax withheld from individuals, by 50 Tawi certificate. The export is the attachment for filing.",
         "pnd53": "Tax withheld from companies, by 50 Tawi certificate. The export is the attachment for filing.",
         "wht_issued_register": "Every 50 Tawi issued in the month, both forms.",
@@ -2022,6 +2027,7 @@
       "waived": "Waived",
       "issued": "Issued",
       "void": "Void",
+      "pnd1": "PND 1",
       "pnd3": "PND 3",
       "pnd53": "PND 53",
       "hire_of_work": "Hire of work",

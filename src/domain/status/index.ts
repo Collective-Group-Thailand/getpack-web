@@ -11,6 +11,14 @@
 export { defineStatusMap, statusMeta, UNKNOWN_STATUS, type StatusMeta, type StatusTone } from "./types";
 
 export type {
+  AgentStatus,
+  AgentApplicationStatus,
+  AgentLinkStatus,
+  AgentLeadStatus,
+  AgentCommissionStatus,
+  AgentStatementStatus,
+  AgentPlanVersionStatus,
+  AgentFactoryLinkStatus,
   AssistantTurnOutcome,
   ConversationSlaState,
   ConversationStatus,
@@ -87,6 +95,16 @@ export type {
 
 // Imported rather than re-exported straight through, because `STATUS_MAPS` below needs them
 // in scope; `export { … } from` would not put them there.
+import {
+  AGENT_APPLICATION_STATUS,
+  AGENT_COMMISSION_STATUS,
+  AGENT_FACTORY_LINK_STATUS,
+  AGENT_LEAD_STATUS,
+  AGENT_LINK_STATUS,
+  AGENT_PLAN_VERSION_STATUS,
+  AGENT_STATEMENT_STATUS,
+  AGENT_STATUS,
+} from "./agents";
 import { ARTWORK_STATUS } from "./artwork";
 import { CALL_OFF_RELEASE_STATUS, CALL_OFF_STATUS } from "./calloff";
 import { STRUCTURAL_REQUEST_STATUS, STYLE_INTAKE_STATUS } from "./structural";
@@ -204,6 +222,17 @@ import {
   ERP_PURCHASE_REQUEST_STATUS,
   ERP_SUPPLIER_INVOICE_STATUS,
 } from "./erp";
+
+export {
+  AGENT_STATUS,
+  AGENT_APPLICATION_STATUS,
+  AGENT_LINK_STATUS,
+  AGENT_LEAD_STATUS,
+  AGENT_COMMISSION_STATUS,
+  AGENT_STATEMENT_STATUS,
+  AGENT_PLAN_VERSION_STATUS,
+  AGENT_FACTORY_LINK_STATUS,
+};
 
 export {
   ERP_CHECK_RESULT,
@@ -448,4 +477,12 @@ export const STATUS_MAPS = {
   erpNcrSeverity: ERP_NCR_SEVERITY,
   erpGlBankLine: ERP_GL_BANK_LINE_STATUS,
   erpGlAsset: ERP_GL_ASSET_STATUS,
+  agent: AGENT_STATUS,
+  agentApplication: AGENT_APPLICATION_STATUS,
+  agentLink: AGENT_LINK_STATUS,
+  agentLead: AGENT_LEAD_STATUS,
+  agentCommission: AGENT_COMMISSION_STATUS,
+  agentStatement: AGENT_STATEMENT_STATUS,
+  agentPlanVersion: AGENT_PLAN_VERSION_STATUS,
+  agentFactoryLink: AGENT_FACTORY_LINK_STATUS,
 } as const;

@@ -81,7 +81,8 @@
       "company": "My company",
       "companyNamed": "My company · {name}",
       "account": "Account"
-    }
+    },
+    "agent": "Sales agent"
   },
   "home": {
     "title": "My account",
