@@ -383,13 +383,14 @@ export const storeStyleHandlers: HttpHandler[] = [
  */
 const downloadsToday = new Map<string, number>();
 const DAILY = 20;
-const FAKE_FILE: Record<Schemas["DrawingFormat"], { mime: string; body: string }> = {
+const FAKE_FILE: Record<Schemas["DielineDownloadFormat"], { mime: string; body: string }> = {
   svg: {
     mime: "image/svg+xml",
     body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="60"><rect x="1" y="1" width="98" height="58" fill="none" stroke="#e00"/></svg>',
   },
   pdf: { mime: "application/pdf", body: "%PDF-1.4\n% mock dieline\n%%EOF\n" },
   dxf: { mime: "image/vnd.dxf", body: "0\nSECTION\n0\nENDSEC\n0\nEOF\n" },
+  ai: { mime: "application/illustrator", body: "%PDF-1.4\n% mock dieline (Illustrator)\n%%EOF\n" },
 };
 
 storeStyleHandlers.push(
@@ -397,9 +398,9 @@ storeStyleHandlers.push(
     const customer = customerOf(request);
     if (!customer) return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
     const body = (await request.json().catch(() => null)) as Schemas["DownloadDielineDto"] | null;
-    if (!body || !["pdf", "dxf", "svg"].includes(body.format))
+    if (!body || !["pdf", "dxf", "svg", "ai"].includes(body.format))
       return problem(422, "validation.failed", "ข้อมูลไม่ครบ", [
-        { path: "format", code: "enum", message: "pdf|dxf|svg" },
+        { path: "format", code: "enum", message: "pdf|dxf|svg|ai" },
       ]);
     const style = [...byCode.values()].find((s) => body.variantCode.startsWith(s.row.code));
     if (!style) return problem(404, "styles.variant_not_found", "ไม่พบแบบกล่องนี้");

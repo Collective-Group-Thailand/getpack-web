@@ -45,7 +45,11 @@ function scan(paths: string[], pattern: RegExp, allow: (hit: Hit) => boolean = (
 // This file names every forbidden pattern, so it is never scanned itself.
 const SELF = relative(root, fileURLToPath(import.meta.url));
 const code = files("src", /\.(tsx?|css)$/).filter((file) => file !== SELF && !file.endsWith("schema.d.ts"));
-const ui = code.filter((file) => !/\.(test|stories)\.tsx?$/.test(file));
+// Share cards (`opengraph-image`, `seo/og-image`) are PNGs drawn by satori from inline styles: no CSS variables
+// reach them, and they are images rather than the interface, so the interface's rules do not scan them.
+const ui = code.filter(
+  (file) => !/\.(test|stories)\.tsx?$/.test(file) && !/(opengraph-image|seo\/og-image)\.tsx$/.test(file),
+);
 const words = [...code, ...files("mocks", /\.ts$/), ...files("e2e", /\.ts$/)];
 
 describe("design language v3", () => {

@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.58.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.59.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -45824,7 +45824,7 @@ export interface components {
             /** @example PK-TE-01-K7QD-60x40x120-paperboard.pdf */
             fileName: string;
             /** @example pdf */
-            format: components["schemas"]["DrawingFormat"];
+            format: components["schemas"]["DielineDownloadFormat"];
             /**
              * Format: uuid
              * @description The download
@@ -45858,6 +45858,8 @@ export interface components {
              */
             violations: string[];
         };
+        /** @enum {string} */
+        DielineDownloadFormat: "svg" | "dxf" | "pdf" | "ai";
         DielineQuantitiesDto: {
             /**
              * @description Blank area net of cut-outs, mm²
@@ -46139,8 +46141,11 @@ export interface components {
         /** @enum {string} */
         DocumentType: "qt" | "iv" | "tr" | "rc" | "cn" | "dn" | "po" | "gr" | "bs" | "pv" | "wt" | "jv" | "order_group" | "job" | "claim" | "shipment" | "rfq" | "support_ticket" | "rfq_basket";
         DownloadDielineDto: {
-            /** @example pdf */
-            format: components["schemas"]["DrawingFormat"];
+            /**
+             * @description `ai` is the designer PDF delivered as an Illustrator file (.ai) — same drawing, same layers and swatches
+             * @example pdf
+             */
+            format: components["schemas"]["DielineDownloadFormat"];
             /**
              * @description Height (depth), mm, in the basis given; 0 for a flat item
              * @example 100

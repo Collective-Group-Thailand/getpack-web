@@ -18,12 +18,8 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { facetLabel, type StylesT } from "./labels";
 
 type Basis = "internal" | "external" | "over_crease";
-/**
- * The engine's three formats plus `ai`: the designer PDF delivered as an Illustrator file. The
- * vendored contract does not list `ai` until packio-api's next contract build is adopted
- * (`pnpm gen:api --adopt`), so the body is widened here — CONTRACT-REQUEST store.dielines.download-ai.
- */
-type Format = Schemas["DrawingFormat"] | "ai";
+/** The engine's three formats plus `ai`: the designer PDF delivered as an Illustrator file (packio-api v0.59.0). */
+type Format = Schemas["DielineDownloadFormat"];
 
 export interface DielineDownloadProps {
   variantCode: string;
@@ -68,7 +64,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
           variantCode,
           materialClass: material,
           measurementBasis: basis,
-          format: format as Schemas["DrawingFormat"],
+          format,
           lengthMm: Number(size.l),
           widthMm: Number(size.w),
           heightMm: flat ? 0 : Number(size.h),
