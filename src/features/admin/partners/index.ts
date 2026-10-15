@@ -5,3 +5,5 @@ export { IndexSeries } from "./IndexSeries";
 export { ProposalReview } from "./ProposalReview";
 export { ProposalsList } from "./ProposalsList";
 export { PartnersNav } from "./PartnersNav";
+export { ChangeRequests } from "./ChangeRequests";
+export { BoardSheets } from "./BoardSheets";

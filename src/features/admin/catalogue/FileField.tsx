@@ -12,8 +12,30 @@ import { Icon } from "@/ui/icons";
 import { problemMessage } from "../console";
 import { NONE } from "./form-model";
 
+type Purpose = "image" | "document" | "design_asset";
+
+/**
+ * What an upload is kept as (D-415): a published picture as `image` (standard retention), a font
+ * or SVG as `design_asset`, anything else — a PDF — as `document`. A signed or legal file passes
+ * `purpose="document"` so it keeps the financial-record retention.
+ */
+export function purposeOf(file: File): Purpose {
+  if (/^image\/(png|jpeg|webp)$/.test(file.type)) return "image";
+  if (file.type.startsWith("font/") || /\.(ttf|otf|woff2?)$/i.test(file.name) || file.type === "image/svg+xml")
+    return "design_asset";
+  return "document";
+}
+
 /** A file reference field: the current file's id, a way to clear it, and an upload that sets it. */
-export function FileField({ value, onChange }: { value: unknown; onChange: (value: unknown) => void }) {
+export function FileField({
+  value,
+  onChange,
+  purpose,
+}: {
+  value: unknown;
+  onChange: (value: unknown) => void;
+  purpose?: Purpose;
+}) {
   const t = useTranslations("catalogue.file");
   const [busy, setBusy] = useState(false);
   return (
@@ -35,8 +57,7 @@ export function FileField({ value, onChange }: { value: unknown; onChange: (valu
           if (!file) return;
           setBusy(true);
           try {
-            // The contract names no image purpose yet; `document` is the closest (open question).
-            onChange((await uploadFile("admin", file, "document")).id);
+            onChange((await uploadFile("admin", file, purpose ?? purposeOf(file))).id);
             toast.success(t("uploaded", { name: file.name }));
           } catch (error) {
             toast.error(problemMessage(error, t("failed")));

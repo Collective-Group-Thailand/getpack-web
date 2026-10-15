@@ -33,6 +33,8 @@ export function Profile({ factory }: { factory: Factory }) {
   const addresses = useFactoryPart(factory.id, "/v1/admin/factories/{factoryId}/addresses");
   const contacts = useFactoryPart(factory.id, "/v1/admin/factories/{factoryId}/contacts");
   const [open, setOpen] = useState<"company" | "address" | "contact" | null>(null);
+  // The address or contact being edited (PATCH); null adds a new one.
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [company, setCompany] = useState(factory);
   const [address, setAddress] = useState<Address>({
     kind: "plant",
@@ -94,7 +96,24 @@ export function Profile({ factory }: { factory: Factory }) {
         title={t("addresses")}
         actions={
           canManage ? (
-            <Button size="sm" variant="secondary" iconStart="plus" onClick={() => setOpen("address")}>
+            <Button
+              size="sm"
+              variant="secondary"
+              iconStart="plus"
+              onClick={() => {
+                setEditingId(null);
+                setAddress({
+                  kind: "plant",
+                  line1: "",
+                  line2: null,
+                  postcode: null,
+                  subdistrictId: null,
+                  lat: null,
+                  lng: null,
+                });
+                setOpen("address");
+              }}
+            >
               {t("addAddress")}
             </Button>
           ) : null
@@ -105,6 +124,28 @@ export function Profile({ factory }: { factory: Factory }) {
             <li key={item.id} className="flex flex-wrap items-center gap-2 py-2">
               <Badge size="sm">{t(`addressKinds.${item.kind}`)}</Badge>
               <span>{[item.line1, item.line2, item.postcode].filter(Boolean).join(" ")}</span>
+              {canManage ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="ms-auto"
+                  onClick={() => {
+                    setEditingId(item.id);
+                    setAddress({
+                      kind: item.kind,
+                      line1: item.line1,
+                      line2: item.line2,
+                      postcode: item.postcode,
+                      subdistrictId: item.subdistrictId,
+                      lat: item.lat,
+                      lng: item.lng,
+                    });
+                    setOpen("address");
+                  }}
+                >
+                  {t("edit")}
+                </Button>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -114,7 +155,16 @@ export function Profile({ factory }: { factory: Factory }) {
         title={t("contacts")}
         actions={
           canManage ? (
-            <Button size="sm" variant="secondary" iconStart="plus" onClick={() => setOpen("contact")}>
+            <Button
+              size="sm"
+              variant="secondary"
+              iconStart="plus"
+              onClick={() => {
+                setEditingId(null);
+                setContact({ name: "", roleTitle: null, phone: null, email: null, isPrimary: false });
+                setOpen("contact");
+              }}
+            >
               {t("addContact")}
             </Button>
           ) : null
@@ -131,6 +181,26 @@ export function Profile({ factory }: { factory: Factory }) {
                 </Badge>
               ) : null}
               <span className="text-muted">{[item.phone, item.email].filter(Boolean).join(" · ")}</span>
+              {canManage ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="ms-auto"
+                  onClick={() => {
+                    setEditingId(item.id);
+                    setContact({
+                      name: item.name,
+                      roleTitle: item.roleTitle,
+                      phone: item.phone,
+                      email: item.email,
+                      isPrimary: item.isPrimary,
+                    });
+                    setOpen("contact");
+                  }}
+                >
+                  {t("edit")}
+                </Button>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -201,14 +271,20 @@ export function Profile({ factory }: { factory: Factory }) {
 
       {open === "address" ? (
         <FormDialog
-          title={t("addAddress")}
+          title={editingId ? t("editAddress") : t("addAddress")}
           submitLabel={t("save")}
           onClose={() => setOpen(null)}
           onSubmit={async () => {
-            await adminBrowserApis().contract.POST("/v1/admin/factories/{factoryId}/addresses", {
-              params: { path: { factoryId: factory.id } },
-              body: address,
-            });
+            if (editingId)
+              await adminBrowserApis().contract.PATCH("/v1/admin/factories/{factoryId}/addresses/{addressId}", {
+                params: { path: { factoryId: factory.id, addressId: editingId } },
+                body: address,
+              });
+            else
+              await adminBrowserApis().contract.POST("/v1/admin/factories/{factoryId}/addresses", {
+                params: { path: { factoryId: factory.id } },
+                body: address,
+              });
             toast.success(t("saved"));
             refresh();
           }}
@@ -226,6 +302,12 @@ export function Profile({ factory }: { factory: Factory }) {
           <Field label={t("line1")} required>
             <Input value={address.line1} onChange={(event) => setAddress({ ...address, line1: event.target.value })} />
           </Field>
+          <Field label={t("line2")}>
+            <Input
+              value={address.line2 ?? ""}
+              onChange={(event) => setAddress({ ...address, line2: event.target.value || null })}
+            />
+          </Field>
           <Field label={t("postcode")}>
             <Input
               inputMode="numeric"
@@ -238,14 +320,20 @@ export function Profile({ factory }: { factory: Factory }) {
 
       {open === "contact" ? (
         <FormDialog
-          title={t("addContact")}
+          title={editingId ? t("editContact") : t("addContact")}
           submitLabel={t("save")}
           onClose={() => setOpen(null)}
           onSubmit={async () => {
-            await adminBrowserApis().contract.POST("/v1/admin/factories/{factoryId}/contacts", {
-              params: { path: { factoryId: factory.id } },
-              body: contact,
-            });
+            if (editingId)
+              await adminBrowserApis().contract.PATCH("/v1/admin/factories/{factoryId}/contacts/{contactId}", {
+                params: { path: { factoryId: factory.id, contactId: editingId } },
+                body: contact,
+              });
+            else
+              await adminBrowserApis().contract.POST("/v1/admin/factories/{factoryId}/contacts", {
+                params: { path: { factoryId: factory.id } },
+                body: contact,
+              });
             toast.success(t("saved"));
             refresh();
           }}

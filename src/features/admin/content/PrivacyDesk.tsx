@@ -440,6 +440,7 @@ function Agreements() {
           </Field>
           <Field label={t("pdf")} hint={t("pdfHint")}>
             <FileField
+              purpose="document"
               value={draft.pdfFileId}
               onChange={(value) => setDraft({ ...draft, pdfFileId: String(value ?? "") })}
             />

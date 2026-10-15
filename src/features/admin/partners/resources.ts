@@ -18,6 +18,8 @@ export const FACTORY_TABS = [
   "profile",
   "compliance",
   "operations",
+  "processes",
+  "hours",
   "terms",
   "visits",
   "pricing",

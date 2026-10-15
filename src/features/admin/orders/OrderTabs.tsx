@@ -36,6 +36,7 @@ import { cn } from "@/ui/lib/cn";
 import { adminBrowserApis, QueryError, StatusChip, useCan, useSlaFormat } from "../console";
 import { useGroupPayments, useGroupSchedule, type QueuedSlip } from "./data";
 import type { Order, OrderGroup } from "./resources";
+import { JobPanel } from "../production/JobPanel";
 
 function Section({
   title,
@@ -780,6 +781,9 @@ export function ProductionTab({ order }: { order: Order }) {
               ))}
             </ol>
           )}
+          <div className="border-border mt-4 border-t pt-4">
+            <JobPanel job={job} />
+          </div>
         </Section>
       ))}
     </div>
