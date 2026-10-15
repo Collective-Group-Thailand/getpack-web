@@ -479,7 +479,8 @@
     "not_configured": "Board advice is not set up yet",
     "not_supported": "Board advice covers supported corrugated boxes only",
     "acknowledgement_required": "Acknowledge this board's cautions before choosing it",
-    "option_unknown": "That board is not part of this advice"
+    "option_unknown": "That board is not part of this advice",
+    "material_not_board": "Board strength sheets are for corrugated boards only"
   },
   "samples": {
     "evidence_missing": "A measured size, the material used and at least one photo are needed",
@@ -503,7 +504,9 @@
     "role_required": "Only someone holding that role (Marketing or Prepress) can approve as it",
     "maker_checker": "Whoever imported the recipe cannot approve it; another Prepress member must",
     "recipe_approved": "This recipe is already approved",
-    "reference_mismatch": "The code typed does not match the library's"
+    "reference_mismatch": "The code typed does not match the library's",
+    "capability_decided": "This capability is already decided",
+    "site_visit_not_passed": "Verify only against a passing site visit"
   },
   "studio": {
     "spec_mismatch": "The spec does not match this design's box",

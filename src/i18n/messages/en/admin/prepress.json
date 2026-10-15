@@ -308,5 +308,45 @@
     "openFile": "Open {name}",
     "downloadFile": "Download {name}",
     "downloadFailed": "Could not download the file"
+  },
+  "onBehalf": {
+    "button": "Record the customer's answer",
+    "title": "The customer's answer on proof v{version}",
+    "intro": "Given by phone, LINE, e-mail or in person, recorded with a reason. An approval on their behalf has the same effects as their own.",
+    "approve": "Approve for the customer",
+    "requestChanges": "Request changes for the customer",
+    "reasonRequired": "Give a reason of at least 3 characters.",
+    "commentRequired": "Write what the customer wants changed.",
+    "approved": "Approval recorded",
+    "changesRequested": "Change request recorded",
+    "decision": "The customer",
+    "channel": "Confirmed via",
+    "channels": {
+      "phone": "Phone",
+      "line": "LINE",
+      "email": "E-mail",
+      "in_person": "In person"
+    },
+    "reason": "Why it is recorded for them",
+    "reasonHint": "e.g. the customer called at 14:20",
+    "comment": "What they asked",
+    "commentHint": "Required for changes",
+    "rerun": "Run preflight again",
+    "rerunStarted": "Preflight started again",
+    "failed": "That didn't work",
+    "design": {
+      "assign": "Assign a designer",
+      "reassign": "Change designer",
+      "cancel": "Cancel the design",
+      "assignTitle": "Assign a designer",
+      "assignBody": "The hired design of {code}",
+      "personHint": "Only people who manage design services",
+      "assigned": "Assigned",
+      "failed": "That didn't work",
+      "cancelTitle": "Cancel the design of {code}",
+      "cancelBody": "Recorded with the reason; the designer stops work on it.",
+      "reason": "Reason",
+      "cancelled": "Design cancelled"
+    }
   }
 }
