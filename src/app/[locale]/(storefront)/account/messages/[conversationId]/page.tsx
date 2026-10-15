@@ -34,7 +34,7 @@ export default async function Page({ params }: { params: Promise<{ conversationI
         {t("back")}
       </Link>
       <div>
-        <h1 className="text-[2rem] leading-tight">
+        <h1 className="text-title leading-tight">
           {thread.subject
             ? t("about", { label: thread.subject.label, kind: t(`kinds.${thread.subjectType}`) })
             : t("kinds.support")}

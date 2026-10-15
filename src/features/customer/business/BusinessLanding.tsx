@@ -1,6 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
+import { pageContext } from "@/features/customer/content/page-meta.server";
+import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { Link } from "@/i18n/navigation";
+import { serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { Icon, type IconName } from "@/ui/icons";
 
@@ -16,8 +19,19 @@ const BENEFITS: { key: string; icon: IconName }[] = [
 /** Packio for business, for a visitor (F3 3.7): what a company account adds, and how to open one. */
 export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
   const t = await getTranslations("business.landing");
+  const page = await pageContext("/business", t("metaTitle"));
   return (
     <div className="flex flex-col gap-14">
+      <JsonLd data={page.breadcrumb} />
+      <JsonLd data={webPageSchema({ name: t("metaTitle"), description: t("intro"), url: page.url, locale: page.language })} />
+      <JsonLd
+        data={serviceSchema({
+          name: t("metaTitle"),
+          description: t("intro"),
+          url: page.url,
+          serviceType: "Business packaging procurement account",
+        })}
+      />
       <header className="flex max-w-3xl flex-col gap-4">
         <h1 className="text-4xl leading-[1.12] md:text-5xl lg:text-[3.5rem]">{t("title")}</h1>
         <p className="text-muted max-w-[40em] text-lg leading-relaxed">{t("intro")}</p>

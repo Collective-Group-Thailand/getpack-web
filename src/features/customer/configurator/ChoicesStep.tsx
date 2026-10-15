@@ -45,7 +45,7 @@ function AreaFields({
   const current: AreaInput = value ?? { amount: 1, widthMm: null, lengthMm: null };
   const toNumber = (text: string) => (text.trim() === "" ? null : Math.max(0, Math.round(Number(text))));
   return (
-    <div className="border-border ms-7 mt-2 grid grid-cols-3 gap-2 rounded-lg border p-3">
+    <div className="bg-surface border-border ms-7 mt-2 grid grid-cols-3 gap-2 rounded-lg border p-3">
       <Field label={t("areaAmount")} className="col-span-1">
         <NumberInput
           min={1}
@@ -174,7 +174,7 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
       ) : null}
       {perPart
         ? parts.map((part) => (
-            <fieldset key={part.subPatternId} className="border-border flex flex-col gap-4 rounded-lg border p-4">
+            <fieldset key={part.subPatternId} className="bg-surface border-border flex flex-col gap-4 rounded-lg border p-4">
               <legend className="px-1 text-sm font-semibold">{part.name}</legend>
               {printHint}
               {groups.filter(isPrint).map((group) => {

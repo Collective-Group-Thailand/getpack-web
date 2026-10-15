@@ -16,7 +16,7 @@ export default async function Page() {
   const [t, { addresses, taxProfiles }] = await Promise.all([getTranslations("account.book"), getAddressBook()]);
   return (
     <div>
-      <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+      <h1 className="text-title leading-tight">{t("title")}</h1>
       <p className="text-muted mt-1 mb-6">{t("intro")}</p>
       <AddressBook addresses={addresses} taxProfiles={taxProfiles} />
     </div>

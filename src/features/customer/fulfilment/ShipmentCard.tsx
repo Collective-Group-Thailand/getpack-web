@@ -18,7 +18,7 @@ export async function ShipmentCard({ shipment, orderCode }: { shipment: Shipment
   const [t, format] = await Promise.all([getTranslations("fulfilment.shipment"), getFormat()]);
   const item = shipment.items.find((entry) => entry.orderCode === orderCode) ?? shipment.items[0];
   return (
-    <article aria-labelledby={`shipment-${shipment.id}`} className="border-border rounded-lg border p-4">
+    <article aria-labelledby={`shipment-${shipment.id}`} className="bg-surface border-border rounded-lg border p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 id={`shipment-${shipment.id}`} className="font-medium">
           {t("toNoUnit", {

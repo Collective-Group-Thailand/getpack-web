@@ -4,7 +4,7 @@ import { NextStep } from "@/features/customer/shell/NextStep";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { breadcrumbSchema, publicOrigin } from "@/lib/seo";
+import { breadcrumbSchema, publicOrigin, webPageSchema } from "@/lib/seo";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { LinkPagination } from "@/ui/components/LinkPagination";
@@ -134,11 +134,23 @@ export async function CategoryView({
           { name },
         ])}
       />
+      <JsonLd
+        data={webPageSchema({
+          type: "CollectionPage",
+          name,
+          description,
+          url: `${origin}${localised(categoryHref(category.code))}`,
+          locale,
+          speakableSelector: ["#category-answer"],
+        })}
+      />
       <Breadcrumbs items={crumbs} label={t("breadcrumbs.label")} />
       <div className="mt-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div className="max-w-3xl">
           <h1 className="text-4xl leading-[1.15]">{name}</h1>
-          <p className="text-muted mt-2">{description}</p>
+          <p id="category-answer" className="text-muted mt-2">
+            {description}
+          </p>
         </div>
         <p className="text-muted text-sm" aria-live="polite">
           {t("list.results", { count: all.length })}

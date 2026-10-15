@@ -10,6 +10,7 @@ import { activeStage } from "@/features/designer/active-stage";
 import type { EditorChromeContext } from "@/features/designer/components/Editor";
 import type { PrintRule } from "@/features/designer/lib/checks";
 import { useEditor } from "@/features/designer/store/editor";
+import { ScanError } from "@/features/shared/files/upload";
 import { formatDate, formatPercent, formatTHB } from "@/i18n/format";
 import { Link, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
@@ -209,6 +210,7 @@ export function OrderSheet({
       else if (isApiError(error) && error.code === "studio.checks_not_ready") setProblem(t("checksNotReady"));
       // A network failure (an upload that never reached storage) is not a message for the customer.
       else if (error instanceof TypeError) setProblem(t("networkFailed"));
+      else if (error instanceof ScanError) setProblem(t(error.kind === "timeout" ? "scanPending" : "scanRejected"));
       else setProblem(isApiError(error) ? error.detail : error instanceof Error ? error.message : t("failed"));
       setPhase(null);
     }

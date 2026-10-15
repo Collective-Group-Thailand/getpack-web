@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { getSupportChannels } from "@/features/customer/catalog/api.server";
+import { pageContext } from "@/features/customer/content/page-meta.server";
 import { ContactForm } from "@/features/customer/help/ContactForm";
+import { JsonLd } from "@/features/customer/seo/JsonLd";
+import { organizationSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Link } from "@/i18n/navigation";
@@ -16,8 +19,28 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Contact (F3 3.7): the channels the API lists, and a message that becomes a ticket. */
 export default async function Page() {
   const [t, channels] = await Promise.all([getTranslations("help.contact"), getSupportChannels()]);
+  const page = await pageContext("/contact", t("title"));
+  // The contact page as an entity, with the channels the API lists as the organisation's contact
+  // points — a phone or an email appears here only when the API has one (SEO pass).
+  const contactPoints = channels
+    ? [
+        ...(channels.phone ? [{ "@type": "ContactPoint", contactType: "customer service", telephone: channels.phone }] : []),
+        ...(channels.email ? [{ "@type": "ContactPoint", contactType: "customer service", email: channels.email }] : []),
+      ]
+    : [];
   return (
     <div className="max-w-content mx-auto grid w-full gap-10 px-5 py-10 md:px-8 md:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+      <JsonLd data={page.breadcrumb} />
+      <JsonLd
+        data={{
+          ...webPageSchema({ type: "ContactPage", name: t("title"), description: t("intro"), url: page.url, locale: page.language }),
+          mainEntity: {
+            ...organizationSchema(page.origin),
+            ...(contactPoints.length > 0 ? { contactPoint: contactPoints } : {}),
+            ...(channels?.hours ? { openingHours: channels.hours } : {}),
+          },
+        }}
+      />
       <header className="flex flex-col gap-4">
         <h1 className="text-4xl leading-tight md:text-5xl">{t("title")}</h1>
         <p className="text-muted text-lg leading-relaxed">{t("intro")}</p>

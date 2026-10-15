@@ -186,7 +186,7 @@ export function StartScreen({
                 dims: { l: 70, w: 40, h: 150 },
                 step: "design",
               })}
-              className="border-border text-muted hover:text-fg hover:border-primary focus-visible:ring-focus-ring rounded-card flex h-full min-h-[5.75rem] items-center justify-center gap-2 border border-dashed px-4 text-center text-sm font-medium outline-none focus-visible:ring-2"
+              className="bg-surface border-border text-muted hover:text-fg hover:border-primary focus-visible:ring-focus-ring rounded-card flex h-full min-h-[5.75rem] items-center justify-center gap-2 border border-dashed px-4 text-center text-sm font-medium outline-none focus-visible:ring-2"
             >
               <Icon name="sparkles" size={16} aria-hidden="true" />
               {t("sample")}

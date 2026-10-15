@@ -24,6 +24,7 @@ export {
 export { Badge, badgeVariants, type BadgeProps } from "./Badge";
 export { Button, buttonVariants, type ButtonProps } from "./Button";
 export { Callout, type CalloutProps } from "./Callout";
+export { CouponDivider, CouponFrame, CouponSavingRow, type CouponFrameProps } from "./CouponFrame";
 export { Card, CardDescription, CardFooter, CardHeader, CardTitle, type CardProps } from "./Card";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
 export { ColumnToggle, type ColumnToggleProps } from "./ColumnToggle";

@@ -98,7 +98,7 @@ export function BranchesManager({
     <div className="flex flex-col gap-8">
       <ul className="grid gap-3 md:grid-cols-2">
         {branches.map((branch) => (
-          <li key={branch.id} className="border-border flex flex-col gap-2 rounded-lg border p-4">
+          <li key={branch.id} className="bg-surface border-border flex flex-col gap-2 rounded-lg border p-4">
             <div className="flex items-center justify-between gap-2">
               <p className="font-medium">{branch.name}</p>
               <Badge tone={branch.branchType === "head_office" ? "primary" : "neutral"}>
@@ -131,7 +131,7 @@ export function BranchesManager({
           noValidate
           onSubmit={(event) => void add(event)}
           aria-labelledby="branch-add"
-          className="border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
+          className="bg-surface border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
         >
           <h2 id="branch-add" className="text-lg font-semibold">
             {t("addTitle")}

@@ -5,7 +5,7 @@ import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { breadcrumbSchema, faqPageSchema, productSchema, publicOrigin } from "@/lib/seo";
+import { breadcrumbSchema, faqPageSchema, productSchema, publicOrigin, webPageSchema } from "@/lib/seo";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
@@ -106,6 +106,19 @@ export async function ProductView({
         )}
       />
       {faqEntries.length > 0 ? <JsonLd data={faqPageSchema(faqEntries)} /> : null}
+      {/* The page as an ItemPage whose description paragraph is the speakable answer (AEO). */}
+      {description ? (
+        <JsonLd
+          data={webPageSchema({
+            type: "ItemPage",
+            name,
+            description,
+            url: `${origin}${localised(productHref(product.slug))}`,
+            locale,
+            speakableSelector: ["#product-answer"],
+          })}
+        />
+      ) : null}
 
       <Breadcrumbs items={crumbs} label={t("breadcrumbs.label")} />
 
@@ -147,7 +160,11 @@ export async function ProductView({
               ) : null}
             </p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight">{name}</h1>
-            {description ? <p className="text-muted mt-3 text-base leading-relaxed">{description}</p> : null}
+            {description ? (
+              <p id="product-answer" className="text-muted mt-3 text-base leading-relaxed">
+                {description}
+              </p>
+            ) : null}
           </div>
 
           <div className="border-border bg-surface rounded-card border p-6">
@@ -259,7 +276,7 @@ export async function ProductView({
               {t("product.sizes")}
             </h2>
             {instant ? <p className="text-muted mt-1 text-sm">{t("product.sizesHint")}</p> : null}
-            <div className="border-border mt-4 overflow-x-auto rounded-xl border">
+            <div className="bg-surface border-border mt-4 overflow-x-auto rounded-xl border">
               <table className="w-full text-sm">
                 <caption className="sr-only">{t("product.sizesCaption", { name })}</caption>
                 <thead className="bg-bg-subtle text-muted">

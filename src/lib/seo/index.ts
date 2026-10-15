@@ -1,11 +1,20 @@
 export { alternateUrls, currentPathname, isIndexableZone, localePath, publicOrigin, type AlternateUrls } from "./urls";
 export {
   breadcrumbSchema,
+  definedTermSetSchema,
   faqPageSchema,
+  howToSchema,
+  itemListSchema,
   jsonLdText,
   organizationSchema,
   productSchema,
+  serviceSchema,
+  webPageSchema,
+  webSiteSchema,
   type Crumb,
+  type HowToStepInput,
+  type ListItemInput,
   type OrganizationSchema,
   type ProductSchemaInput,
+  type WebPageInput,
 } from "./structured-data";

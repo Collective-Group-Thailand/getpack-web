@@ -30,7 +30,10 @@ export function ProfileStep({
   onDone: () => void;
 }) {
   const t = useTranslations("auth.customer.profile");
-  const [name, setName] = useState(displayName);
+  // The API names a new customer after their masked number ("ลูกค้า +66•••••0177") until they say
+  // otherwise; that is not a name to hand back as the field's value — the field starts empty
+  // with a hint, and only a name the customer typed earlier comes back.
+  const [name, setName] = useState(/[•·*]/.test(displayName) ? "" : displayName);
   const [type, setType] = useState<CustomerType>("individual");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -57,7 +60,13 @@ export function ProfileStep({
       {error ? <Callout tone="danger" live title={error} /> : null}
 
       <Field label={t("name")}>
-        <Input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" disabled={pending} />
+        <Input
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          autoComplete="name"
+          placeholder={t("namePlaceholder")}
+          disabled={pending}
+        />
       </Field>
       <Field label={t("type")}>
         <RadioCards<CustomerType>

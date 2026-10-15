@@ -91,7 +91,7 @@ export function MaterialsLibrary({ materials }: { materials: Material[] }) {
           const offer = m.offeredOn[0];
           const selected = compare.includes(m.code);
           return (
-            <li key={m.code} className="border-border flex flex-col gap-3 rounded-xl border p-4">
+            <li key={m.code} className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h2 className="font-semibold">{pick(locale, m.nameTh, m.nameEn)}</h2>

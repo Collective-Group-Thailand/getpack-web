@@ -122,7 +122,7 @@ export function LogisticsStep({
           description={t("palletHint")}
         />
         {load.pallet ? (
-          <div className="border-border flex flex-col gap-3 rounded-lg border p-3">
+          <div className="bg-surface border-border flex flex-col gap-3 rounded-lg border p-3">
             <Field label={t("palletPattern")}>
               <RadioCards
                 columns={2}

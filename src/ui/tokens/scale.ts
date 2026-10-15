@@ -90,6 +90,13 @@ export const FONT_SIZE = {
   lg: "clamp(1.125rem, 1.1rem + 0.13vw, 1.1875rem)",
   xl: "clamp(1.25rem, 1.19rem + 0.27vw, 1.375rem)",
   "2xl": "clamp(1.5rem, 1.39rem + 0.54vw, 1.75rem)",
+  /**
+   * The title of a working page — the account, cart, checkout, a form: 24 px on a phone, 28 px on
+   * a desktop. The 32 px those pages used read as oversized next to their own lists and forms
+   * (owner feedback 2026-10-14); the marketing scale below is for pages that sell, not pages
+   * that work.
+   */
+  title: "clamp(1.5rem, 1.35rem + 0.65vw, 1.75rem)",
   /** A page title: 38 px on a desktop (UX audit type scale 64 / 48 / 38). */
   "3xl": "clamp(1.875rem, 1.6rem + 1.2vw, 2.375rem)",
   /** A section opener: 48 px. */
