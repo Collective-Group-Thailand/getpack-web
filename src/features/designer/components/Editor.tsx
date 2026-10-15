@@ -995,7 +995,10 @@ export default function Editor({
                   {canvasDieline ? <FocusChip dieline={canvasDieline} /> : null}
                   {chrome?.notice ? (
                     <div className="pointer-events-none absolute inset-x-0 top-2 flex justify-center px-3">
-                      <div className="pointer-events-auto">{chrome.notice}</div>
+                      {/* Notices wrap inside the stage: a long one (a locked version's) was clipped at both edges. */}
+                      <div className="pointer-events-auto flex max-w-full flex-wrap justify-center gap-2 [&>*]:max-w-full [&>*]:text-center [&>*]:whitespace-normal">
+                        {chrome.notice}
+                      </div>
                     </div>
                   ) : null}
 
@@ -1015,9 +1018,9 @@ export default function Editor({
                       // Below 1280 the split's 3D floats as a card over the canvas, so an open tool
                       // panel never squeezes the artwork (the "StudioEditor" board's responsive note).
                       view === "split"
-                        // Small enough that the artwork stays visible beside it when a tool panel
-                        // narrows the canvas (a 256 px card covered most of a 370 px canvas).
-                        ? "border-border shadow-overlay absolute end-3 bottom-3 z-20 max-h-[40%] w-40 overflow-y-auto rounded-2xl border lg:w-52 xl:static xl:max-h-none xl:w-[42%] xl:shrink-0 xl:overflow-visible xl:rounded-none xl:border-0 xl:border-s xl:shadow-none"
+                        ? // Small enough that the artwork stays visible beside it when a tool panel
+                          // narrows the canvas (a 256 px card covered most of a 370 px canvas).
+                          "border-border shadow-overlay absolute end-3 bottom-3 z-20 max-h-[40%] w-40 overflow-y-auto rounded-2xl border lg:w-52 xl:static xl:max-h-none xl:w-[42%] xl:shrink-0 xl:overflow-visible xl:rounded-none xl:border-0 xl:border-s xl:shadow-none"
                         : "flex-1",
                     )}
                   >
