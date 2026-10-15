@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "cone-holder",
+  "base": "PK-SP-20",
+  "category": "folding_carton",
+  "name": {
+    "th": "ถาดใส่โคนไอศกรีม",
+    "en": "Ice-cream cone holder"
+  },
+  "description": {
+    "th": "ถาดมุมล็อก มีแผ่นรองเจาะรูกลมเรียงแถวสำหรับตั้งโคนไอศกรีมหรือแก้ว",
+    "en": "A lock-corner tray with a platform of round holes that hold ice-cream cones or cups upright"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 80,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 120
+    },
+    "cornerLock",
+    "grain",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
+  ],
+  "defaults": {
+    "length": 200,
+    "width": 140,
+    "height": 50,
+    "grain": "across",
+    "cornerLock": "lock",
+    "insert": "die_cut",
+    "cavityShape": "circle",
+    "cavityGrid": "2x3",
+    "cavityLength": 50,
+    "cavityWidth": 50
+  },
+  "presets": [
+    {
+      "id": "six",
+      "label": {
+        "th": "6 โคน 200 × 140 × 50",
+        "en": "Six cones 200 × 140 × 50"
+      },
+      "values": {
+        "length": 200,
+        "width": 140,
+        "height": 50,
+        "cavityGrid": "2x3"
+      }
+    },
+    {
+      "id": "four",
+      "label": {
+        "th": "4 โคน 140 × 140 × 50",
+        "en": "Four cones 140 × 140 × 50"
+      },
+      "values": {
+        "length": 140,
+        "width": 140,
+        "height": 50,
+        "cavityGrid": "2x2"
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "features": [
+    {
+      "module": "lockCorners"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t"
+      }
+    }
+  ],
+  "outerSize": {
+    "height": "height + t"
+  },
+  "variant": {}
+}

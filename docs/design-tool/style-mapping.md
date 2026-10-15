@@ -518,3 +518,33 @@ strict `drawableBy` with the real engine (`v0.57.0`).
 | PK-TG-01 | custom tag euro / sombrero (2) | `tag-custom` |
 
 ⚠ As before, every new construction's clearances, flap depths and hole positions are "to be confirmed by Prepress".
+
+### Market survey additions (D-409, 2026-10-15)
+
+A survey of Packhelp, Pakfactory, Packlane, Refine, PackMojo, Pacdora, templatemaker.nl, packsdo, FEFCO / ECMA
+catalogues and Thai printers (`docs/design-tool/style-survey-2026-10.md`) found 61 structures we lacked. The first
+18 are in: **123 bases, 987 variants, every one drawn.**
+
+| Base | Name | Recipe(s) / module |
+| --- | --- | --- |
+| PK-CS-07 | Slotted box with 1-2-3 snap bottom | `rsc-snap` |
+| PK-CS-08 | Slotted box with tuck-in lid | `rsc-tuck-lid` |
+| PK-CS-09 | Multi-depth shipping box | `rsc-multi-depth`, feature `depthScores` |
+| PK-SL-05 | Holster / slipcase | `holster` |
+| PK-TE-06 | Five-panel hanger box (60 variants) | `hanger5-*`, `hangTab` `ply: 2` |
+| PK-DS-05 | Table tent card | `tent-card`, body `tentCard` |
+| PK-DS-06 | Corrugated dump bin | `dump-bin` (open top + `shapedHeader`) |
+| PK-TG-06 | Folded leaflet (bi / tri / Z / gate) | `folded-leaflet`, body `leaflet` |
+| PK-TG-07 | Blister / hang card | `hang-card` |
+| PK-TG-08 | Bottle necker | `bottle-necker` |
+| PK-SP-20 | Ice-cream cone holder | `cone-holder` (circle cavities) |
+| PK-SP-22 | Tapered gift box | `tapered-gift` (`taperedTray`, negative taper) |
+| PK-TR-06 | Nestable tapered tray | `nestable-tray` |
+| PK-SP-23, PK-SP-24 | Paper cup, paper bowl | `paper-cup`, `paper-bowl`, body `cupBlank` |
+| PK-SP-25, PK-SP-26 | Triangular, pentagonal carton | `triangular-carton`, `pentagonal-carton` |
+| PK-IN-04 | Corrugated U-liner | `u-liner`, body `uLiner` |
+
+Also new on existing bases (parameters, not variants): **cavity inserts cut to the product** (`cavityShape`
+rectangle / circle / bottle, `cavityGrid`, product size) on every tuck end and tray with an insert, and a **shaped
+display header** (`headerShape` arch, peak, wave, scallop, cloud, flower or the customer's SVG profile) on
+front-hinged tuck ends.

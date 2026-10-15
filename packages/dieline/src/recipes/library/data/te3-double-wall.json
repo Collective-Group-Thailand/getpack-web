@@ -30,9 +30,7 @@
     "th": "ผนังหน้าและผนังข้างพับซ้อนสองชั้น ฝาพับติดผนังหลังปิดด้วยลิ้นเสียบด้านหน้า แข็งแรงสำหรับส่งออนไลน์",
     "en": "Front and end walls folded over double; a lid hinged on the back closes with a front tuck — e-commerce strength in paperboard"
   },
-  "materials": [
-    "paperboard"
-  ],
+  "materials": ["paperboard"],
   "params": [
     {
       "ref": "length",
@@ -51,9 +49,7 @@
     },
     {
       "ref": "tuckDepth",
-      "omit": [
-        "help"
-      ]
+      "omit": ["help"]
     },
     "grain",
     "tuckCorners",
@@ -163,11 +159,7 @@
     {
       "module": "rollOverWalls",
       "with": {
-        "walls": [
-          "front",
-          "left",
-          "right"
-        ]
+        "walls": ["front", "left", "right"]
       }
     },
     {

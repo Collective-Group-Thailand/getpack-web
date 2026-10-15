@@ -44,10 +44,7 @@
     "th": "กล่องกระดาษแข็งฝาเสียบสลับและก้นล็อก 4 ปีก ตามโครงสร้างตระกูลฝาเสียบ",
     "en": "Folding carton with a reverse tuck top and a four-flap lock bottom — the tuck-end family's closure pair"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",

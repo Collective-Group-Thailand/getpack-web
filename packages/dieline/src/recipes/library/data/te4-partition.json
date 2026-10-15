@@ -28,10 +28,7 @@
     "th": "กล่องฝาเสียบกลับด้าน มีแผ่นกั้นแบ่งช่องตัดมาพร้อมกล่อง รองรับหัวแขวน",
     "en": "Reverse tuck carton with a divider cut with the box to split it into cells; takes a hang header"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",

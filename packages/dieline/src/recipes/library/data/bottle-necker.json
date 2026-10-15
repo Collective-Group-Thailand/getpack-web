@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "bottle-necker",
+  "base": "PK-TG-08",
+  "variant": {},
+  "category": "flat",
+  "name": {
+    "th": "ป้ายคล้องคอขวด",
+    "en": "Bottle necker"
+  },
+  "description": {
+    "th": "ป้ายกระดาษมีรูสวมคอขวด ใช้คล้องโปรโมชั่นหรือข้อมูลสินค้า",
+    "en": "A card with a hole for the bottle neck, for promotions and product facts"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 40,
+      "max": 200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 300
+    },
+    "neckDiameter"
+  ],
+  "defaults": {
+    "length": 70,
+    "width": 120,
+    "neckDiameter": 30
+  },
+  "presets": [
+    {
+      "id": "wine",
+      "label": {
+        "th": "ขวดไวน์ 70 × 120",
+        "en": "Wine 70 × 120"
+      },
+      "values": {
+        "length": 70,
+        "width": 120,
+        "neckDiameter": 30
+      }
+    },
+    {
+      "id": "small",
+      "label": {
+        "th": "ขวดเล็ก 55 × 95",
+        "en": "Small bottle 55 × 95"
+      },
+      "values": {
+        "length": 55,
+        "width": 95,
+        "neckDiameter": 24
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rectangle"
+    }
+  },
+  "features": [
+    {
+      "module": "neckHole"
+    }
+  ]
+}

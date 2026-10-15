@@ -31,10 +31,7 @@
     "th": "ลิ้นเสียบบนพับจากด้านหลัง ลิ้นเสียบล่างพับจากด้านหน้า ใช้กระดาษคุ้มกว่าในงานพิมพ์จำนวนมาก",
     "en": "Top tuck hinges from the back, bottom tuck from the front — nests tighter on the press sheet"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",
@@ -117,8 +114,6 @@
     }
   ],
   "legacy": {
-    "patternKeys": [
-      "rte"
-    ]
+    "patternKeys": ["rte"]
   }
 }

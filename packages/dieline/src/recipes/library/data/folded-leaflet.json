@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "folded-leaflet",
+  "base": "PK-TG-06",
+  "variants": {
+    "fold": {
+      "bi_fold": {
+        "foldScheme": "bi_fold"
+      },
+      "tri_fold": {
+        "foldScheme": "tri_fold"
+      },
+      "z_fold": {
+        "foldScheme": "z_fold"
+      },
+      "gate_fold": {
+        "foldScheme": "gate_fold"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ใบแทรก / แผ่นพับ",
+    "en": "Folded leaflet / package insert"
+  },
+  "description": {
+    "th": "ใบแทรกพับครึ่ง พับสาม พับซิกแซก หรือพับประตู สำหรับคู่มือ ฉลากยา และโปรโมชั่น",
+    "en": "A bi-, tri-, Z- or gate-folded insert — instructions, pharma inserts, promotions"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 40,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 420
+    },
+    "foldScheme"
+  ],
+  "defaults": {
+    "length": 99,
+    "height": 210,
+    "foldScheme": "bi_fold"
+  },
+  "presets": [
+    {
+      "id": "dl",
+      "label": {
+        "th": "DL 99 × 210",
+        "en": "DL 99 × 210"
+      },
+      "values": {
+        "length": 99,
+        "height": 210
+      }
+    },
+    {
+      "id": "a5",
+      "label": {
+        "th": "A5 148 × 210",
+        "en": "A5 148 × 210"
+      },
+      "values": {
+        "length": 148,
+        "height": 210
+      }
+    }
+  ],
+  "body": {
+    "module": "leaflet"
+  }
+}

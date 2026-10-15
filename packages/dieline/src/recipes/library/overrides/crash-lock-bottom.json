@@ -31,10 +31,7 @@
     "th": "ก้นทากาวมาจากโรงงาน กางกล่องแล้วก้นล็อกเป็นรูปทันที เร็วที่สุดในไลน์บรรจุ",
     "en": "The bottom is pre-glued at the factory and snaps square as the carton is opened — fastest to pack"
   },
-  "materials": [
-    "paperboard",
-    "corrugated"
-  ],
+  "materials": ["paperboard", "corrugated"],
   "params": [
     {
       "ref": "length",
@@ -114,8 +111,6 @@
     }
   ],
   "legacy": {
-    "patternKeys": [
-      "pid:7"
-    ]
+    "patternKeys": ["pid:7"]
   }
 }

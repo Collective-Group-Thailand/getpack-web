@@ -32,9 +32,7 @@
     "th": "ฝาบนปิดกาว ก้นเป็นลิ้นเสียบที่ล็อกด้วยร่องหรือแรงเสียดทานกับปีกกันฝุ่น",
     "en": "Glued top; the bottom tuck locks by slits or friction against the dust flaps"
   },
-  "materials": [
-    "paperboard"
-  ],
+  "materials": ["paperboard"],
   "params": [
     {
       "ref": "length",

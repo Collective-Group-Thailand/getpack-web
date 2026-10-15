@@ -41,6 +41,7 @@ AX = {
  "bag_gusset": ["gusseted","flat"],
  "bag_handle": ["twisted_paper","flat_paper","rope","die_cut","none"],
  "partition": ["2x2","2x3","3x3","3x4","4x4","4x6"],
+ "fold": ["bi_fold","tri_fold","z_fold","gate_fold"],
 }
 
 # ---------- Folding carton (paperboard) ----------
@@ -185,6 +186,27 @@ add("PK-LA-07","label","label","shrink_sleeve","ฉลากหดรัดร�
 add("PK-TG-04","tag","tag_sleeve","tag_sleeve","หัวกระดาษปิดถุง","Bag header card","Folded card stapled over a poly bag with hang hole.","paperboard",["hang"],2,"L")
 add("PK-TG-05","tag","tag_sleeve","tag_sleeve","การ์ดแทรก/การ์ดขอบคุณ","Insert / thank-you card","Flat or folded printed card, optional die-cut shape.","paperboard",["shape_flat"],1,"L")
 
+
+# ---------- Market survey additions (wave 4, D-409, 2026-10-15) ----------
+add("PK-CS-07","slotted","corrugated","corrugate","กล่องลูกฟูกฝาชน ก้นล็อก 1-2-3","Slotted box with snap-lock (1-2-3) bottom","RSC top flaps; 1-2-3 snap-lock bottom that closes without tape.","corrugated",["hand_holes"],4,"L","FEFCO 0215 family (verify)")
+add("PK-CS-08","slotted","corrugated","corrugate","กล่องลูกฟูกฝาเสียบ","Slotted box with tuck-in lid","Top is a lid with a tuck from the back panel, minor flaps as dust flaps; reclosable; RSC bottom.","corrugated",["hand_holes"],4,"L","FEFCO 0211 family (verify)")
+add("PK-CS-09","slotted","corrugated","corrugate","กล่องลูกฟูกปรับความสูงได้","Multi-depth shipping box","RSC scored round at several heights; cut down to the fill height and fold the flaps on the score.","corrugated",["joint"],4,"L")
+add("PK-SL-05","sleeve","folding_carton","folding","กล่องสวมปลายปิด (ฮอลสเตอร์)","Holster / slipcase","Sleeve closed at one end by a tuck, open at the other with a thumb notch.","paperboard",["window","thumb"],4,"L")
+add("PK-TE-06","tuck_end","folding_carton","folding","กล่องแขวน 5 แผง","Five-panel hanger box","Back panel carried up and folded down behind itself as a two-ply header; hang hole through both plies; top lid tucks from the front.","paperboard",["tuck_bottom","hang","window"],4,"M")
+add("PK-DS-05","display","folding_carton","folding","ป้ายตั้งโต๊ะทรงสามเหลี่ยม","Table tent card","Two printed faces leaning to an apex over a base, glue tab at the apex.","paperboard",[],4,"L")
+add("PK-DS-06","display","corrugated","corrugate","ถังโชว์สินค้าลูกฟูก (ดัมพ์บิน)","Corrugated dump bin","Free-standing open bin, crash-lock bottom, header carried up from the back wall.","corrugated",["header"],4,"M")
+add("PK-TG-06","leaflet","tag_sleeve","tag_sleeve","ใบแทรก / แผ่นพับ","Folded leaflet / package insert","One sheet in panels creased for a bi, tri (roll), Z or gate fold.","paperboard",["fold"],4,"L")
+add("PK-TG-07","tag","tag_sleeve","tag_sleeve","การ์ดแพ็คแขวน (บลิสเตอร์)","Blister / hang card","Printed backing card for a blister or skin pack, hang hole at the top.","paperboard",["hang"],4,"L")
+add("PK-TG-08","tag","tag_sleeve","tag_sleeve","ป้ายคล้องคอขวด","Bottle necker","Card with a hole sized to the bottle neck.","paperboard",[],4,"L")
+add("PK-SP-20","specialty","folding_carton","folding","ถาดใส่โคนไอศกรีม","Ice-cream cone holder","Lock-corner tray with a platform of round holes holding cones or cups upright.","food_board",[],4,"L")
+add("PK-SP-22","specialty","folding_carton","folding","กล่องของขวัญทรงสอบ","Tapered gift box","Top narrower than the base; trapezoid walls glued at the corners; four top flaps.","paperboard",[],4,"M")
+add("PK-TR-06","tray","folding_carton","folding","ถาดทรงสอบซ้อนได้","Nestable tapered tray","Drafted walls glued at the corners; trays nest when stacked.","food_board",[],4,"L")
+add("PK-SP-23","specialty","folding_carton","folding","แก้วกระดาษพิมพ์ลาย","Paper cup blank","Unrolled cone-frustum wall with side-seam overlap plus a skirted bottom disc.","food_board",[],4,"M")
+add("PK-SP-24","specialty","folding_carton","folding","ชามกระดาษ","Paper bowl blank","Low wide frustum wall plus a skirted bottom disc.","food_board",[],4,"M")
+add("PK-SP-25","specialty","folding_carton","folding","กล่องสามเหลี่ยม","Triangular carton","Three equal side panels, triangular tuck lids top and bottom.","paperboard",[],4,"M")
+add("PK-SP-26","specialty","folding_carton","folding","กล่องห้าเหลี่ยม","Pentagonal carton","Five equal side panels, pentagonal tuck lids top and bottom.","paperboard",[],4,"M")
+add("PK-IN-04","insert","insert","corrugate","แผ่นรองลูกฟูกพับตัวยู","Corrugated U-liner","Pad scored twice into a U, doubling two walls and the floor of a shipper.","corrugated",[],4,"L","FEFCO 09xx family (verify)")
+
 # ---------- Variant expansion ----------
 ALLOWED_TUCK_PAIRS = [(t,b) for t in AX["tuck_top"] for b in AX["tuck_bottom"] if not (t=="seal" and b=="four_flap_lock")]
 
@@ -199,8 +221,8 @@ EXCLUDED = [
      "reason": "The gable top is the handle; a window goes in the front panel."},
     {"bases": ["PK-SP-03", "PK-SP-04"], "when": {"tuck_top": ["seal", "airplane_tuck"]},
      "reason": "A polygon carton closes with a polygon tuck lid (straight or reverse); seal and airplane ends are rectangular constructions."},
-    {"bases": ["PK-DS-03", "PK-PG-02", "PK-SL-01"], "when": {"window": ["top_window"]},
-     "reason": "The top is open (a display, a bag's mouth, a sleeve's end); a window goes in the front."},
+    {"bases": ["PK-DS-03", "PK-PG-02", "PK-SL-01", "PK-SL-05"], "when": {"window": ["top_window"]},
+     "reason": "The top is open (a display, a bag's mouth, a sleeve's or a holster's end); a window goes in the front."},
 ]
 
 def excluded(code, options):
@@ -242,7 +264,7 @@ from collections import defaultdict
 by_cat = defaultdict(lambda:[0,0]); by_wave = defaultdict(lambda:[0,0])
 for r in rows:
     by_cat[r["category"]][0]+=1; by_cat[r["category"]][1]+=r["distinct_variants"]
-    for w_ in (1,2,3):
+    for w_ in (1,2,3,4):
         if r["wave"]<=w_: by_wave[w_][0]+=1; by_wave[w_][1]+=r["distinct_variants"]
 print("base structures:", len(rows), " distinct variants:", sum(r["distinct_variants"] for r in rows))
 for k,v in sorted(by_cat.items()): print(f"  {k:15s} base={v[0]:3d} variants={v[1]:5d}")
