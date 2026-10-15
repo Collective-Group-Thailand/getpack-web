@@ -312,7 +312,7 @@ export async function ScreenToFactory({ sample, packing }: { sample: HomePhoto |
       </div>
       <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {frames.map((frame) => (
-          <li key={frame.key} className="border-border overflow-hidden border">
+          <li key={frame.key} className="border-border bg-surface rounded-card overflow-hidden border">
             <div className="bg-sage-subtle aspect-[4/3] overflow-hidden">{frame.picture}</div>
             <div className="border-border border-t px-4.5 pt-4 pb-4.5">
               <p className="text-primary text-[13px] font-semibold">{t(`${frame.key}.day`)}</p>
@@ -522,7 +522,7 @@ export async function QualityBand({
         ? t("factsClaim", { days: claimDays })
         : t("factsNone");
   const shortcut =
-    "border-fg-inverse/25 text-fg-inverse block border p-4.5 outline-none hover:border-fg-inverse/60 focus-visible:ring-2 focus-visible:ring-fg-inverse";
+    "border-fg-inverse/25 text-fg-inverse rounded-card block border p-4.5 outline-none hover:border-fg-inverse/60 focus-visible:ring-2 focus-visible:ring-fg-inverse";
   return (
     <section aria-labelledby="home-quality" className="bg-sage text-fg-inverse mt-20 min-[1055px]:mt-26">
       {/* Photo | content on large screens, always: without a photo the left cell is an empty panel.
