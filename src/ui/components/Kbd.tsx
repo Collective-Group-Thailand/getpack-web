@@ -36,6 +36,7 @@ export const KEYCAP = {
   esc: "Esc",
   del: "Delete",
   question: "?",
+  slash: "/",
   k: "K",
   z: "Z",
   d: "D",

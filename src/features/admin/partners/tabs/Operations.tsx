@@ -10,7 +10,7 @@ import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
@@ -237,7 +237,7 @@ export function Operations({ factory }: { factory: Factory }) {
         {new Set((capabilities.data ?? []).map((item) => item.productTypeId)).size > 1 ? (
           <div className="mb-3 max-w-xs">
             <Field label={t("productType")}>
-              <Select
+              <SearchableSelect
                 value={chosen ?? undefined}
                 onValueChange={setTypeId}
                 // One entry per product type: a type can have several capabilities (one per print type).
@@ -383,7 +383,7 @@ export function Operations({ factory }: { factory: Factory }) {
           }}
         >
           <Field label={t("productType")} required>
-            <Select
+            <SearchableSelect
               value={capability.productTypeId || undefined}
               onValueChange={(productTypeId) => setCapability({ ...capability, productTypeId })}
               placeholder={t("choose")}
@@ -503,7 +503,7 @@ export function Operations({ factory }: { factory: Factory }) {
               />
             </Field>
             <Field label={t("unit")}>
-              <Select
+              <SearchableSelect
                 value={capacity.capacityUnit}
                 onValueChange={(value) => setCapacity({ ...capacity, capacityUnit: value as Schemas["CapacityUnit"] })}
                 options={(["sheets", "pieces", "sqm", "jobs"] as const).map((value) => ({
@@ -551,7 +551,7 @@ export function Operations({ factory }: { factory: Factory }) {
           }}
         >
           <Field label={t("week")} required>
-            <Select
+            <SearchableSelect
               value={override.weekStart || undefined}
               onValueChange={(weekStart) => setOverride({ ...override, weekStart })}
               placeholder={t("choose")}

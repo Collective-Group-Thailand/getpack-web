@@ -23,7 +23,7 @@ import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { useActor, useCan } from "../console/actor";
@@ -202,7 +202,7 @@ function NewRun({ onClose }: { onClose: () => void }) {
             />
           </Field>
           <Field label={t("account")} required requiredLabel={tCommon("state.required")}>
-            <Select
+            <SearchableSelect
               value={chosen || undefined}
               onValueChange={setAccountId}
               placeholder={t("pickAccount")}
@@ -220,7 +220,7 @@ function NewRun({ onClose }: { onClose: () => void }) {
             label={t("format")}
             hint={account ? t("formatDefault", { format: account.defaultBulkFormat }) : undefined}
           >
-            <Select
+            <SearchableSelect
               value={bankFormat || "default"}
               onValueChange={(value) => setBankFormat(value === "default" ? "" : value)}
               options={[

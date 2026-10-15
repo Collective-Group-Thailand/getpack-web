@@ -5,7 +5,7 @@ import { Controller, type Control, type FieldValues, type Path } from "react-hoo
 
 import { FormField } from "@/ui/components/FormField";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 
 /**
@@ -128,7 +128,7 @@ export function FormFields<TValues extends FieldValues>({
                   );
                 case "select":
                   return (
-                    <Select
+                    <SearchableSelect
                       value={(value as string) || undefined}
                       onValueChange={onChange}
                       options={[...field.options]}

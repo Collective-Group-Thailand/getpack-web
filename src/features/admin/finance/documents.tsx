@@ -22,7 +22,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { useCan } from "../console/actor";
@@ -590,7 +590,7 @@ function DebitNote({ doc, onClose }: { doc: CustomerDocument; onClose: () => voi
           <Input inputMode="decimal" value={net} onChange={(event) => setNet(event.target.value)} />
         </Field>
         <Field label={t("reason")} required requiredLabel={tCommon("state.required")} error={errors.reasonCode}>
-          <Select
+          <SearchableSelect
             value={reasonCode || undefined}
             onValueChange={setReasonCode}
             placeholder={t("pickReason")}

@@ -19,7 +19,7 @@ import { Dialog } from "@/ui/components/Dialog";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { StatusBadge } from "@/ui/components/StatusBadge";
 import { toast } from "@/ui/components/Toast";
@@ -539,7 +539,7 @@ function CreateDelegation({
           />
         </Field>
         <Field label={t("policy")}>
-          <Select
+          <SearchableSelect
             value={policy}
             onValueChange={setPolicy}
             options={[

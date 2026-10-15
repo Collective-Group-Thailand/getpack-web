@@ -18,7 +18,7 @@ import { Combobox, type ComboboxOption } from "@/ui/components/Combobox";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
@@ -220,7 +220,7 @@ function Workspace({
           <div className="space-y-4">
             {productTypes.length > 1 ? (
               <Field label={t("productType")}>
-                <Select
+                <SearchableSelect
                   value={productTypeCode}
                   onValueChange={setProductTypeCode}
                   options={productTypes.map((row) => ({ value: row.code, label: row.nameTh }))}

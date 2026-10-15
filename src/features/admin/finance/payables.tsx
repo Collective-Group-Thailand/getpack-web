@@ -32,7 +32,7 @@ import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
@@ -700,7 +700,7 @@ function CaptureInvoice({ statement, onClose }: { statement: BillingStatement; o
           <Input inputMode="decimal" value={form.vatAmount} onChange={set("vatAmount")} />
         </Field>
         <Field label={t("source")} className="sm:col-span-2">
-          <Select<Schemas["TaxInvoiceCaptureSource"]>
+          <SearchableSelect<Schemas["TaxInvoiceCaptureSource"]>
             value={form.source}
             onValueChange={(source) => setForm({ ...form, source })}
             options={[
@@ -1126,14 +1126,14 @@ function CreateVendor({ onClose }: { onClose: () => void }) {
           />
         </Field>
         <Field label={t("kind")}>
-          <Select<Schemas["OtherVendorKind"]>
+          <SearchableSelect<Schemas["OtherVendorKind"]>
             value={form.kind}
             onValueChange={(kind) => setForm({ ...form, kind })}
             options={OTHER_KINDS.map((value) => ({ value, label: tVendors(`kinds.${value}`) }))}
           />
         </Field>
         <Field label={t("juristic")} hint={t("juristicHint")}>
-          <Select<Schemas["JuristicType"]>
+          <SearchableSelect<Schemas["JuristicType"]>
             value={form.juristicType}
             onValueChange={(juristicType) => setForm({ ...form, juristicType })}
             options={(["company", "partnership", "individual"] as const).map((value) => ({
@@ -1143,7 +1143,7 @@ function CreateVendor({ onClose }: { onClose: () => void }) {
           />
         </Field>
         <Field label={t("wht")}>
-          <Select<Schemas["WhtCategory"]>
+          <SearchableSelect<Schemas["WhtCategory"]>
             value={form.defaultWhtCategory}
             onValueChange={(defaultWhtCategory) => setForm({ ...form, defaultWhtCategory })}
             options={WHT_CATEGORIES.map((value) => ({ value, label: tVendors(`whtCategories.${value}`) }))}
@@ -1380,7 +1380,7 @@ function ProposeBankAccount({ vendor, onClose }: { vendor: Vendor; onClose: () =
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("bank")} required requiredLabel={tCommon("state.required")}>
-          <Select
+          <SearchableSelect
             value={form.bankCode}
             onValueChange={(bankCode) => setForm({ ...form, bankCode })}
             options={["002", "004", "006", "011", "014", "025", "069"].map((code) => ({
@@ -1497,7 +1497,7 @@ function RecordCall({ account, vendorId, onClose }: { account: BankAccount; vend
           />
         </Field>
         <Field label={t("outcome")} className="sm:col-span-2">
-          <Select<Schemas["BankVerificationOutcome"]>
+          <SearchableSelect<Schemas["BankVerificationOutcome"]>
             value={form.outcome}
             onValueChange={(outcome) => setForm({ ...form, outcome })}
             options={(["confirmed", "mismatch", "unreachable"] as const).map((value) => ({
@@ -1617,7 +1617,7 @@ function RecordBill({ vendor, onClose }: { vendor: Vendor; onClose: () => void }
               requiredLabel={tCommon("state.required")}
               error={errors[`lines[${index}].accountCode`]}
             >
-              <Select
+              <SearchableSelect
                 value={line.accountCode || undefined}
                 onValueChange={(accountCode) => update(index, { accountCode })}
                 placeholder={t("pickAccount")}
@@ -1628,7 +1628,7 @@ function RecordBill({ vendor, onClose }: { vendor: Vendor; onClose: () => void }
               />
             </Field>
             <Field label={t("wht")}>
-              <Select<Schemas["WhtCategory"]>
+              <SearchableSelect<Schemas["WhtCategory"]>
                 value={line.whtCategory}
                 onValueChange={(whtCategory) => update(index, { whtCategory })}
                 options={WHT_CATEGORIES.map((value) => ({ value, label: tVendors(`whtCategories.${value}`) }))}

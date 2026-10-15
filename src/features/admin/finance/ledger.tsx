@@ -23,7 +23,7 @@ import { IconButton } from "@/ui/components/IconButton";
 import { Input, Textarea } from "@/ui/components/Input";
 import { JsonView } from "@/ui/components/JsonView";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
@@ -279,7 +279,7 @@ export function JournalLinesEditor({
                   />
                 </Field>
                 <Field label={t("side")}>
-                  <Select<DraftLine["side"]>
+                  <SearchableSelect<DraftLine["side"]>
                     aria-label={t("sideOf", { no: index + 1 })}
                     value={line.side}
                     onValueChange={(side) => update(line.key, { side })}
@@ -319,7 +319,7 @@ export function JournalLinesEditor({
                   hint={needsCostCentre ? t("costCentreRequired") : undefined}
                   error={errors[`lines[${index}].dimensions`]}
                 >
-                  <Select
+                  <SearchableSelect
                     aria-label={t("costCentreOf", { no: index + 1 })}
                     value={line.costCentre || "none"}
                     onValueChange={(value) => update(line.key, { costCentre: value === "none" ? "" : value })}
@@ -929,7 +929,7 @@ function ProposeAccountChange({
             />
           </Field>
           <Field label={t("parent")}>
-            <Select
+            <SearchableSelect
               value={fields.parentCode || undefined}
               onValueChange={(parentCode) => setFields({ ...fields, parentCode })}
               placeholder={t("pickParent")}
@@ -937,14 +937,14 @@ function ProposeAccountChange({
             />
           </Field>
           <Field label={t("type")}>
-            <Select<Schemas["AccountType"]>
+            <SearchableSelect<Schemas["AccountType"]>
               value={fields.accountType}
               onValueChange={(accountType) => setFields({ ...fields, accountType })}
               options={ACCOUNT_TYPES.map((value) => ({ value, label: t(`types.${value}`) }))}
             />
           </Field>
           <Field label={t("normalSide")}>
-            <Select<Schemas["LedgerSide"]>
+            <SearchableSelect<Schemas["LedgerSide"]>
               value={fields.normalSide}
               onValueChange={(normalSide) => setFields({ ...fields, normalSide })}
               options={[
@@ -954,7 +954,7 @@ function ProposeAccountChange({
             />
           </Field>
           <Field label={t("cashFlow")}>
-            <Select<Schemas["CashFlowClass"]>
+            <SearchableSelect<Schemas["CashFlowClass"]>
               value={fields.cashFlowClass}
               onValueChange={(cashFlowClass) => setFields({ ...fields, cashFlowClass })}
               options={CASH_FLOWS.map((value) => ({ value, label: t(`cashFlows.${value}`) }))}

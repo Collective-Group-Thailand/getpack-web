@@ -68,14 +68,6 @@
     text-wrap: pretty;
   }
 
-  /*
-   * The back office and the factory app set their page title at 30 px; sub-headings stay at their
-   * own sizes for density (design language v3 keeps one typeface, Anuphan, everywhere).
-   */
-  [data-zone="admin"] main h1 {
-    font-size: 1.875rem;
-  }
-
   /* One word in a storefront heading carries the accent: the brand colour (Anuphan has no italic). */
   [data-zone="customer"] :is(h1, h2) em {
     font-style: normal;
@@ -402,7 +394,8 @@
 
 /*
  * The factory app's type scale — one scale, fixed sizes, every screen (product owner, 2026-10-09:
- * "check the font sizes properly"). The zone remaps Tailwind's size tokens, so every `text-*`
+ * "check the font sizes properly"). The back office uses the same scale, control heights and
+ * field sizes (product owner, 2026-10-13: "bring what we adjusted in partner to the admin portal"). The zone remaps Tailwind's size tokens, so every `text-*`
  * utility in every component lands on one of six sizes instead of the shared fluid clamps:
  *
  *   xs 12  badges, chips, tiny meta        lg 17  section titles, stat values
@@ -412,7 +405,7 @@
  * Inputs are 16 px on a phone only (iOS zooms the page into a smaller field), 15 px from a tablet.
  * Control heights: 44 px on a phone, 40 px from a tablet (iPad portrait) up.
  */
-[data-zone="partner"] {
+:is([data-zone="partner"], [data-zone="admin"]) {
   --text-xs: 0.75rem;
   --text-xs--line-height: 1.125rem;
   --text-sm: 0.8125rem;
@@ -428,73 +421,79 @@
   --text-3xl: 1.5rem;
   --text-3xl--line-height: 2rem;
 }
-[data-zone="partner"] main h1 {
+:is([data-zone="partner"], [data-zone="admin"]) main h1 {
   font-size: var(--text-xl);
   line-height: var(--text-xl--line-height);
 }
 /* Every button, big action, segment and stepper title reads at body size; weight, not size, ranks them. */
-[data-zone="partner"] main :is([data-size="xl"], [data-size="lg"], [data-size="md"], [data-segment="xl"]),
-[data-zone="partner"] main [data-big] > span > span:first-child,
-[data-zone="partner"] main [data-stepper] li > div:last-child > p:first-child > .text-lg {
+:is([data-zone="partner"], [data-zone="admin"])
+  main
+  :is([data-size="xl"], [data-size="lg"], [data-size="md"], [data-segment="xl"]),
+:is([data-zone="partner"], [data-zone="admin"]) main [data-big] > span > span:first-child,
+:is([data-zone="partner"], [data-zone="admin"]) main [data-stepper] li > div:last-child > p:first-child > .text-lg {
   font-size: var(--text-base);
   line-height: var(--text-base--line-height);
 }
-[data-zone="partner"] main [data-big] > span > span + span,
-[data-zone="partner"] main dl:not([data-terms]) dt,
-[data-zone="partner"] main p:is([id$="-hint"], [id$="-error"]) {
+:is([data-zone="partner"], [data-zone="admin"]) main [data-big] > span > span + span,
+:is([data-zone="partner"], [data-zone="admin"]) main dl:not([data-terms]) dt,
+:is([data-zone="partner"], [data-zone="admin"]) main p:is([id$="-hint"], [id$="-error"]) {
   font-size: var(--text-sm);
   line-height: var(--text-sm--line-height);
 }
 /* One control height per screen class: 44 px on a phone, 40 px from a tablet (sm 36 / 32). */
-[data-zone="partner"] main :not(input):is([data-size="xl"], [data-size="lg"], [data-size="md"]),
-[data-zone="partner"] main [data-segment="xl"],
-[data-zone="partner"] main button[aria-haspopup="listbox"]:not(td *),
-[data-zone="partner"] main details > summary {
+:is([data-zone="partner"], [data-zone="admin"])
+  main
+  :not(input):is([data-size="xl"], [data-size="lg"], [data-size="md"]),
+:is([data-zone="partner"], [data-zone="admin"]) main [data-segment="xl"],
+:is([data-zone="partner"], [data-zone="admin"]) main button[aria-haspopup="listbox"]:not(td *),
+:is([data-zone="partner"], [data-zone="admin"]) main details > summary {
   min-height: 2.75rem;
   height: auto;
 }
-[data-zone="partner"] main :not(input)[data-size="sm"] {
+:is([data-zone="partner"], [data-zone="admin"]) main :not(input)[data-size="sm"] {
   min-height: 2.25rem;
   height: auto;
 }
-[data-zone="partner"] main [data-big] {
+:is([data-zone="partner"], [data-zone="admin"]) main [data-big] {
   min-height: 3.25rem;
 }
-[data-zone="partner"] main [data-big] > svg {
+:is([data-zone="partner"], [data-zone="admin"]) main [data-big] > svg {
   width: 1.25rem;
   height: 1.25rem;
 }
-[data-zone="partner"] main :is(input, textarea, select) {
+:is([data-zone="partner"], [data-zone="admin"]) main :is(input, textarea, select) {
   font-size: 1rem;
 }
-[data-zone="partner"] main input[data-size="lg"],
-[data-zone="partner"] main button[aria-haspopup="listbox"]:not(td *) {
+:is([data-zone="partner"], [data-zone="admin"]) main input[data-size="lg"],
+:is([data-zone="partner"], [data-zone="admin"]) main button[aria-haspopup="listbox"]:not(td *) {
   height: 2.75rem;
 }
 /* An example in a field is a hint, not the answer: smaller and quieter than what gets typed. */
-[data-zone="partner"] main :is(input, textarea)::placeholder {
+:is([data-zone="partner"], [data-zone="admin"]) main :is(input, textarea)::placeholder {
   font-size: var(--text-sm);
 }
 /* One card rhythm: every partner card breathes the same. */
-[data-zone="partner"] main .rounded-card.p-4 {
+:is([data-zone="partner"], [data-zone="admin"]) main .rounded-card.p-4 {
   padding: 1rem;
 }
 
 @media (width >= 48rem) {
-  [data-zone="partner"] main :is(input, textarea, select) {
+  :is([data-zone="partner"], [data-zone="admin"]) main :is(input, textarea, select) {
     font-size: var(--text-base);
   }
-  [data-zone="partner"] main :not(input):is([data-size="xl"], [data-size="lg"], [data-size="md"]),
-  [data-zone="partner"] main [data-segment="xl"],
-  [data-zone="partner"] main button[aria-haspopup="listbox"]:not(td *),
-  [data-zone="partner"] main details > summary {
+  :is([data-zone="partner"], [data-zone="admin"])
+    main
+    :not(input):is([data-size="xl"], [data-size="lg"], [data-size="md"]),
+  :is([data-zone="partner"], [data-zone="admin"]) main [data-segment="xl"],
+  :is([data-zone="partner"], [data-zone="admin"]) main button[aria-haspopup="listbox"]:not(td *),
+  :is([data-zone="partner"], [data-zone="admin"]) main details > summary {
     min-height: 2.5rem;
   }
-  [data-zone="partner"] main input[data-size="lg"],
-  [data-zone="partner"] main button[aria-haspopup="listbox"]:not(td *) {
+  :is([data-zone="partner"], [data-zone="admin"]) main input[data-size="lg"],
+  :is([data-zone="partner"], [data-zone="admin"]) main button[aria-haspopup="listbox"]:not(td *) {
     height: 2.5rem;
   }
-  [data-zone="partner"] main :not(input)[data-size="sm"] {
+  :is([data-zone="partner"], [data-zone="admin"]) main :not(input)[data-size="sm"] {
     min-height: 2rem;
   }
   [data-zone="partner"] main :not(input):is([data-size="xl"], [data-size="lg"]) {
@@ -506,7 +505,7 @@
     min-width: 12rem;
     padding-inline: 1.25rem;
   }
-  [data-zone="partner"] main [data-big] {
+  :is([data-zone="partner"], [data-zone="admin"]) main [data-big] {
     min-height: 3rem;
     padding-block: 0.5rem;
     width: auto;
@@ -514,7 +513,7 @@
     max-width: 28rem;
     align-self: flex-start;
   }
-  [data-zone="partner"] main .rounded-card.p-4 {
+  :is([data-zone="partner"], [data-zone="admin"]) main .rounded-card.p-4 {
     padding: 1.25rem;
   }
 }

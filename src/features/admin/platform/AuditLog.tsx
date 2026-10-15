@@ -190,7 +190,7 @@ export function AuditLog() {
           onChange={(value) => setFilter("to", value)}
         />
         {Object.keys(filters).length > 0 ? (
-          <Button variant="ghost" size="sm" className="h-9" onClick={() => update({ filters: {} })}>
+          <Button variant="ghost" onClick={() => update({ filters: {} })}>
             {t("clear")}
           </Button>
         ) : null}

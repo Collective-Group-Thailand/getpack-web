@@ -13,7 +13,7 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Switch } from "@/ui/components/Switch";
@@ -238,7 +238,7 @@ export function InboxThread({ initial }: { initial: Conversation }) {
         {canReply ? (
           <div className="flex flex-col gap-2">
             {canned.data?.length ? (
-              <Select
+              <SearchableSelect
                 aria-label={t("canned")}
                 value={template || undefined}
                 onValueChange={setTemplate}

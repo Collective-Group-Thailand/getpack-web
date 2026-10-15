@@ -16,7 +16,7 @@ import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, FormDialog, QueryError, Section, StatusChip } from "../console";
@@ -183,7 +183,7 @@ export function StructuralRequestDetail({ requestId }: { requestId: string }) {
           }}
         >
           <Field label={t("assignee")}>
-            <Select
+            <SearchableSelect
               value={assignee}
               onValueChange={setAssignee}
               placeholder={t("assigneePlaceholder")}

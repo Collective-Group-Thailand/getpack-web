@@ -15,7 +15,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { ConfirmAction, problemMessage, useCan } from "../../console";
@@ -254,7 +254,7 @@ export function Processes({ factory }: { factory: Factory }) {
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("process")} required>
-              <Select
+              <SearchableSelect
                 value={proposing.processCode || undefined}
                 placeholder={t("chooseProcess")}
                 onValueChange={(processCode) => setProposing({ ...proposing, processCode })}
@@ -262,7 +262,7 @@ export function Processes({ factory }: { factory: Factory }) {
               />
             </Field>
             <Field label={t("materialClass")} required>
-              <Select
+              <SearchableSelect
                 value={proposing.materialClass}
                 onValueChange={(materialClass) => setProposing({ ...proposing, materialClass })}
                 options={MATERIAL_CLASSES.map((code) => ({ value: code, label: materialName(code) }))}
@@ -344,7 +344,7 @@ export function Processes({ factory }: { factory: Factory }) {
         >
           {passing.length ? (
             <Field label={t("siteVisit")} required>
-              <Select
+              <SearchableSelect
                 value={visitId || undefined}
                 onValueChange={setVisitId}
                 options={passing.map((v) => ({ value: v.id, label: t("visitOn", { date: format.date(v.visitedOn) }) }))}

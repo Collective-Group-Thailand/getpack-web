@@ -28,7 +28,7 @@ import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SearchInput } from "@/ui/components/SearchInput";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Sheet } from "@/ui/components/Sheet";
 import { toast } from "@/ui/components/Toast";
 
@@ -587,7 +587,7 @@ export function BankImports({ initial }: { initial: InitialPage<SettlementSummar
       <Section title={t("statementTitle")} description={t("statementNote")}>
         <div className="grid gap-3 sm:grid-cols-[18rem_1fr]">
           <Field label={t("account")} required requiredLabel={tCommon("state.required")}>
-            <Select
+            <SearchableSelect
               value={chosen || undefined}
               onValueChange={setAccountId}
               options={active.map((account) => ({
@@ -706,7 +706,7 @@ function SettlementImport({ accounts }: { accounts: Schemas["CompanyBankAccountD
     <Section title={t("title")} description={t("description")}>
       <div className="grid gap-3 sm:grid-cols-4">
         <Field label={t("provider")}>
-          <Select<Schemas["SettlementProvider"]>
+          <SearchableSelect<Schemas["SettlementProvider"]>
             value={form.provider}
             onValueChange={(provider) => setForm({ ...form, provider })}
             options={(["scb", "twoc2p"] as const).map((value) => ({ value, label: tImport(`providers.${value}`) }))}
@@ -721,7 +721,7 @@ function SettlementImport({ accounts }: { accounts: Schemas["CompanyBankAccountD
           />
         </Field>
         <Field label={t("account")}>
-          <Select
+          <SearchableSelect
             value={chosen || undefined}
             onValueChange={(accountId) => setForm({ ...form, accountId })}
             options={accounts.map((account) => ({
@@ -1030,7 +1030,7 @@ function ProposeCompanyAccount({ onClose }: { onClose: () => void }) {
       <div className="grid gap-3 sm:grid-cols-2">
         <Callout tone="info" title={t("dual")} className="sm:col-span-2" />
         <Field label={t("bank")}>
-          <Select
+          <SearchableSelect
             value={form.bankCode}
             onValueChange={(bankCode) => setForm({ ...form, bankCode })}
             options={["002", "004", "006", "011", "014", "025", "069"].map((value) => ({ value, label: value }))}
@@ -1054,7 +1054,7 @@ function ProposeCompanyAccount({ onClose }: { onClose: () => void }) {
           <Input value={form.accountName} onChange={(event) => setForm({ ...form, accountName: event.target.value })} />
         </Field>
         <Field label={t("purpose")}>
-          <Select<Schemas["BankAccountPurpose"]>
+          <SearchableSelect<Schemas["BankAccountPurpose"]>
             value={form.purpose}
             onValueChange={(purpose) => setForm({ ...form, purpose })}
             options={(["collection", "payout", "both"] as const).map((value) => ({

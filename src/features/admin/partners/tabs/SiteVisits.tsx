@@ -12,7 +12,7 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { StatusChip, useCan } from "../../console";
@@ -109,7 +109,7 @@ export function SiteVisits({ factory }: { factory: Factory }) {
               <Input type="date" value={visitedOn} onChange={(event) => setVisitedOn(event.target.value)} />
             </Field>
             <Field label={t("result")}>
-              <Select
+              <SearchableSelect
                 value={result}
                 onValueChange={(value) => setResult(value as Schemas["SiteVisitResult"])}
                 options={(["pass", "conditional", "fail"] as const).map((value) => ({
@@ -123,7 +123,7 @@ export function SiteVisits({ factory }: { factory: Factory }) {
             <legend className="mb-2 text-sm font-medium">{t("checklist")}</legend>
             {CHECKLIST.map((key) => (
               <Field key={key} label={t(`items.${key}`)}>
-                <Select
+                <SearchableSelect
                   value={marks[key]}
                   onValueChange={(value) => setMarks({ ...marks, [key]: value as Mark })}
                   options={(["pass", "fix", "fail"] as const).map((value) => ({ value, label: t(`marks.${value}`) }))}

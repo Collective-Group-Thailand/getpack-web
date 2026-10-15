@@ -12,7 +12,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable } from "@/ui/components/DataTable";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
 
 import { QueryError, Section } from "../console";
@@ -57,7 +57,7 @@ export function JourneyFunnels({ period }: { period: Period | null }) {
       title={t("title")}
       description={t("note")}
       actions={
-        <Select
+        <SearchableSelect
           aria-label={t("journey")}
           value={journey}
           onValueChange={(value) => setJourney(value as Journey)}
