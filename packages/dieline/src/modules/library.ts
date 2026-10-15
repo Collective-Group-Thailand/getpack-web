@@ -2,6 +2,8 @@ import { paperBag } from "./body/bag";
 import { partitionSet } from "./body/partition";
 import { taperedTray } from "./body/tapered";
 import { sealHang } from "./closure/tube-closures";
+import { shapedHeader } from "./feature/header";
+import { cupBlank, leaflet, tentCard, uLiner } from "./body/wave4-bodies";
 import { polyMailer } from "./body/poly-mailer";
 import { easel, envelope, foldedCard, paperTube, presentationFolder, pyramid, shrinkSleeve } from "./body/wave2-bodies";
 import { coverFlaps, displayTop, osc, petal } from "./closure/wave2-closures";
@@ -23,6 +25,7 @@ import { airplaneTuck, flipTop, fourFlapLock, openEnd, slitLock } from "./closur
 import { dieCutInsert, insertBody } from "./feature/insert";
 import { displayHeader, lockCorners, telescopeLid } from "./feature/tray-features";
 import { fingerNotch, vents } from "./feature/wave-features";
+import { depthScores } from "./feature/features";
 import type { ModuleDef } from "./types";
 
 /** The modules the style library's waves add (U3.4) — registered by `@packio/dieline/library`. */
@@ -69,4 +72,10 @@ export const WAVE_MODULES: readonly ModuleDef[] = [
   floorDisplay,
   taperedTray,
   sealHang,
+  shapedHeader,
+  tentCard,
+  leaflet,
+  cupBlank,
+  uLiner,
+  depthScores,
 ];

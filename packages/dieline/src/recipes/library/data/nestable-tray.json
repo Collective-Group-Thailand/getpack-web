@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "id": "nestable-tray",
+  "base": "PK-TR-06",
+  "variant": {},
+  "category": "tray_lid",
+  "name": {
+    "th": "ถาดทรงสอบซ้อนได้",
+    "en": "Nestable tapered tray"
+  },
+  "description": {
+    "th": "ถาดผนังสอบติดกาวที่มุม ซ้อนเก็บได้ สำหรับเบเกอรี่และผลไม้",
+    "en": "A tray with drafted walls glued at the corners, which nest when stacked — bakery and fruit"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 50,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 120
+    },
+    {
+      "ref": "taper",
+      "min": 2,
+      "max": 10
+    },
+    "grain"
+  ],
+  "defaults": {
+    "length": 180,
+    "width": 120,
+    "height": 40,
+    "taper": 8,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "เล็ก 150 × 100 × 35",
+        "en": "Small 150 × 100 × 35"
+      },
+      "values": {
+        "length": 150,
+        "width": 100,
+        "height": 35
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "กลาง 200 × 140 × 45",
+        "en": "Medium 200 × 140 × 45"
+      },
+      "values": {
+        "length": 200,
+        "width": 140,
+        "height": 45
+      }
+    }
+  ],
+  "body": {
+    "module": "taperedTray",
+    "with": {
+      "top": "open"
+    }
+  },
+  "closedSize": {
+    "length": "length + 2 * taper",
+    "width": "width + 2 * taper",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length + 2 * taper",
+    "width": "width + 2 * taper",
+    "height": "height"
+  }
+}

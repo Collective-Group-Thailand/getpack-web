@@ -1,5 +1,5 @@
 {
-  "definition": "0fb05a0c4e1382",
+  "definition": "0434625aac80de",
   "twin · board-350": {
     "build": "128717b7887357",
     "hinges": "14bd91e7b7b654",
@@ -310,6 +310,78 @@
     "build": "11efbb57519ec4",
     "hinges": "16a69254c0eaa9",
     "validate": "121b0a1d62c61b",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShape=none": {
+    "build": "128717b7887357",
+    "hinges": "14bd91e7b7b654",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShape=arch": {
+    "build": "1d9daae851ae9b",
+    "hinges": "10c45546126b3d",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShape=peak": {
+    "build": "1c4d760b445cbd",
+    "hinges": "10c45546126b3d",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShape=wave": {
+    "build": "118d7132864c6d",
+    "hinges": "10c45546126b3d",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShape=scallop": {
+    "build": "190fe560b9cf3d",
+    "hinges": "10c45546126b3d",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShape=cloud": {
+    "build": "0616f37b0372e4",
+    "hinges": "10c45546126b3d",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShape=flower": {
+    "build": "10a010d9421cc7",
+    "hinges": "10c45546126b3d",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShape=custom": {
+    "build": "129992e930281f",
+    "hinges": "10c45546126b3d",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShapeHeight=min": {
+    "build": "128717b7887357",
+    "hinges": "14bd91e7b7b654",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShapeHeight=max": {
+    "build": "128717b7887357",
+    "hinges": "14bd91e7b7b654",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShapeHeight<min": {
+    "build": "128717b7887357",
+    "hinges": "14bd91e7b7b654",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "twin · board-350 · headerShapeHeight>max": {
+    "build": "128717b7887357",
+    "hinges": "14bd91e7b7b654",
+    "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   }
 }

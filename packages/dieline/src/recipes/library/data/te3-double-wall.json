@@ -78,7 +78,12 @@
     "windowHeight",
     "windowOffsetX",
     "windowOffsetY",
-    "windowRadius"
+    "windowRadius",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
   ],
   "defaults": {
     "length": 250,
@@ -93,7 +98,12 @@
     "windowHeight": 40,
     "windowOffsetX": 0,
     "windowOffsetY": 0,
-    "windowRadius": 6
+    "windowRadius": 6,
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40
   },
   "presets": [
     {
@@ -154,6 +164,12 @@
     },
     {
       "module": "trayWindow"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t"
+      }
     }
   ],
   "outerSize": {

@@ -105,7 +105,7 @@ describe("the style library mock", () => {
     const api = anonymous();
     const { data: first } = await api.GET("/v1/store/styles", { params: { query: { limit: 24 } } });
     expect(first!.data).toHaveLength(24);
-    expect(first!.facets.category.reduce((n, f) => n + f.count, 0)).toBe(105);
+    expect(first!.facets.category.reduce((n, f) => n + f.count, 0)).toBe(123);
     const { data: second } = await api.GET("/v1/store/styles", {
       params: { query: { limit: 24, cursor: first!.meta.nextCursor! } },
     });

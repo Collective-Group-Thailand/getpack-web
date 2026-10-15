@@ -157,6 +157,28 @@ import petalSeal from "./data/petal-seal.json" with { type: "json" };
 import petalFourflap from "./data/petal-fourflap.json" with { type: "json" };
 import easelDisplay from "./data/easel-display.json" with { type: "json" };
 import floorDisplay from "./data/floor-display.json" with { type: "json" };
+import rscSnap from "./data/rsc-snap.json" with { type: "json" };
+import rscTuckLid from "./data/rsc-tuck-lid.json" with { type: "json" };
+import rscMultiDepth from "./data/rsc-multi-depth.json" with { type: "json" };
+import holster from "./data/holster.json" with { type: "json" };
+import hangCard from "./data/hang-card.json" with { type: "json" };
+import bottleNecker from "./data/bottle-necker.json" with { type: "json" };
+import foldedLeaflet from "./data/folded-leaflet.json" with { type: "json" };
+import tentCard from "./data/tent-card.json" with { type: "json" };
+import dumpBin from "./data/dump-bin.json" with { type: "json" };
+import coneHolder from "./data/cone-holder.json" with { type: "json" };
+import taperedGift from "./data/tapered-gift.json" with { type: "json" };
+import nestableTray from "./data/nestable-tray.json" with { type: "json" };
+import paperCup from "./data/paper-cup.json" with { type: "json" };
+import paperBowl from "./data/paper-bowl.json" with { type: "json" };
+import triangularCarton from "./data/triangular-carton.json" with { type: "json" };
+import pentagonalCarton from "./data/pentagonal-carton.json" with { type: "json" };
+import uLiner from "./data/u-liner.json" with { type: "json" };
+import hanger5Tuck from "./data/hanger5-tuck.json" with { type: "json" };
+import hanger5SnapLock123 from "./data/hanger5-snap-lock-123.json" with { type: "json" };
+import hanger5CrashLock from "./data/hanger5-crash-lock.json" with { type: "json" };
+import hanger5Seal from "./data/hanger5-seal.json" with { type: "json" };
+import hanger5FourFlapLock from "./data/hanger5-four-flap-lock.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -325,4 +347,26 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   petalFourflap,
   easelDisplay,
   floorDisplay,
+  rscSnap,
+  rscTuckLid,
+  rscMultiDepth,
+  holster,
+  hangCard,
+  bottleNecker,
+  foldedLeaflet,
+  tentCard,
+  dumpBin,
+  coneHolder,
+  taperedGift,
+  nestableTray,
+  paperCup,
+  paperBowl,
+  triangularCarton,
+  pentagonalCarton,
+  uLiner,
+  hanger5Tuck,
+  hanger5SnapLock123,
+  hanger5CrashLock,
+  hanger5Seal,
+  hanger5FourFlapLock,
 ] as unknown as StyleRecipe[];

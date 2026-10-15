@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "id": "rsc-multi-depth",
+  "base": "PK-CS-09",
+  "variants": {
+    "joint": {
+      "glue_flap": {
+        "joint": "glue"
+      },
+      "stitch_flap": {
+        "joint": "stitch"
+      },
+      "tape_joint": {
+        "joint": "tape"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกปรับความสูงได้",
+    "en": "Multi-depth shipping box"
+  },
+  "description": {
+    "th": "กล่องฝาชนที่มีรอยพับรอบกล่องหลายระดับ ตัดลดความสูงให้พอดีสินค้าแล้วพับฝาที่รอยพับได้",
+    "en": "An RSC scored round at several heights: cut it down to the fill height and fold the flaps on the score"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 200,
+      "max": 1000
+    },
+    "joint",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "depthSteps",
+    "depthStep"
+  ],
+  "defaults": {
+    "@extends": "slotted",
+    "joint": "glue",
+    "depthSteps": 3,
+    "depthStep": 50,
+    "length": 300,
+    "width": 200,
+    "height": 250
+  },
+  "presets": [
+    {
+      "id": "m",
+      "label": {
+        "th": "กลาง 300 × 200 × 250",
+        "en": "Medium 300 × 200 × 250"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 250
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ใหญ่ 400 × 300 × 300",
+        "en": "Large 400 × 300 × 300"
+      },
+      "values": {
+        "length": 400,
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "xl",
+      "label": {
+        "th": "ใหญ่พิเศษ 500 × 400 × 400",
+        "en": "Extra large 500 × 400 × 400"
+      },
+      "values": {
+        "length": 500,
+        "width": 400,
+        "height": 400
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "joint == 'tape' ? side : side - a.gluePanel",
+        "depth": "height + a.depth",
+        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+      }
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "rsc"
+    },
+    "bottom": {
+      "module": "rsc"
+    }
+  },
+  "features": [
+    {
+      "module": "depthScores"
+    }
+  ]
+}

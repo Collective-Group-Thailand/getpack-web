@@ -7,7 +7,8 @@ import type { BodyModule, BuildContext, ModuleConfig } from "../types";
 
 /**
  * A tapered tray (PK-SP-11 popcorn box, PK-SP-08 food pail): a flat base `length` × `width`, four
- * walls flaring out by `taper` on every side over the height `height`, glued at the corners by
+ * walls flaring out by `taper` on every side over the height `height` (leaning in when it is negative: a
+ * tapered gift box), glued at the corners by
  * flaps on the front and back walls that fold inside the end walls — the cross layout of a glued
  * tray with trapezoid walls. With `top` = `flaps` (the pail) each wall carries a top flap folded in
  * flat: the end walls' first, as dust flaps, then the long walls' meeting at the centre over them.
@@ -36,7 +37,8 @@ function geometry(ctx: BuildContext, cfg: ModuleConfig): Geometry {
   const H = num(ctx.v, "height", 100);
   const taper = num(ctx.v, "taper", 15);
   const s = Math.hypot(H, taper);
-  const g = Math.min(15, s / 4, Math.min(L, W) / 4);
+  // Narrower than a quarter of the narrowest wall edge, base or rim, so two flaps never meet inside one end wall.
+  const g = Math.min(15, s / 4, Math.min(L, W, L + 2 * taper, W + 2 * taper) / 4);
   const flaps = cfg.top === "flaps";
   const topL = L + 2 * taper;
   const topW = W + 2 * taper;
@@ -79,8 +81,8 @@ export const taperedTray: BodyModule = {
       code: "size.taper_too_steep",
       severity: "error",
       param: "taper",
-      require: "taper >= 0 and taper <= height / 2",
-      message: t("ความสอบต้องไม่เกินครึ่งหนึ่งของความสูง", "The taper may be at most half the height"),
+      require: "abs(taper) <= height / 2",
+      message: t("ความสอบต้องไม่เกินครึ่งหนึ่งของความสูง", "The taper may be at most half the height either way"),
     },
   ],
   build(ctx, cfg) {

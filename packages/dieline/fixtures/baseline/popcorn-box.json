@@ -117,11 +117,11 @@
   "s · board-350 · taper=max": {
     "build": "12ac1295b71ba2",
     "hinges": "0285b9e4bc62e3",
-    "validate": "10f589f03ff905",
+    "validate": "1e14460f1eddc4",
     "closed": "1acd055f2c9d8c"
   },
   "s · board-350 · taper<min": {
-    "build": "06b1a30c2867aa",
+    "build": "0e9c6e42af6f58",
     "hinges": "0f3d51900cbd0b",
     "validate": "0b0c01f42f097d",
     "closed": "01879ba5860528"

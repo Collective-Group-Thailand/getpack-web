@@ -1,0 +1,135 @@
+{
+  "definition": "15cea7cc937534",
+  "500ml · label-film": {
+    "build": "08b2845410285e",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · board-350": {
+    "build": "08b2845410285e",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "750ml · label-film": {
+    "build": "1a436131e48d4a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "750ml · board-350": {
+    "build": "1a436131e48d4a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "1000ml · label-film": {
+    "build": "1a8259226c8aef",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "1000ml · board-350": {
+    "build": "1a8259226c8aef",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · topDiameter=min": {
+    "build": "007b58f9858ab0",
+    "hinges": "15e0da69fcb93a",
+    "validate": "136418e2cd6e0b",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · topDiameter=max": {
+    "build": "15f39b20fe3ee5",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · topDiameter<min": {
+    "build": "162f78ae7594e8",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0f985389415cf6",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · topDiameter>max": {
+    "build": "159fcb74ffe9fe",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1cbfb92ada68bb",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · bottomDiameter=min": {
+    "build": "1ccc3eb2bc8f23",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · bottomDiameter=max": {
+    "build": "0ffac01848abff",
+    "hinges": "15e0da69fcb93a",
+    "validate": "136418e2cd6e0b",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · bottomDiameter<min": {
+    "build": "0b17c11ed59046",
+    "hinges": "15e0da69fcb93a",
+    "validate": "09ff2ac3d83c47",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · bottomDiameter>max": {
+    "build": "19c536f4521bae",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1e5e324ccb45fc",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · height=min": {
+    "build": "17ed491dec9268",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · height=max": {
+    "build": "1e783c45326587",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · height<min": {
+    "build": "1687e89ccd8339",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0dfacfab4d4fc6",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · height>max": {
+    "build": "0ec9de28223815",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0ee6176d79b403",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · overlap=min": {
+    "build": "02bbd7a05a7942",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · overlap=max": {
+    "build": "02b25b02759992",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · overlap<min": {
+    "build": "03ede44cc3824e",
+    "hinges": "15e0da69fcb93a",
+    "validate": "032d1b613177e3",
+    "closed": "15e0da69fcb93a"
+  },
+  "500ml · label-film · overlap>max": {
+    "build": "1b566b28cb911b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "03cfff900a94d0",
+    "closed": "15e0da69fcb93a"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "definition": "15b8e122e1fe35",
+  "dl · label-film": {
+    "build": "1c5d86323122eb",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · board-350": {
+    "build": "1c5d86323122eb",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "a5 · label-film": {
+    "build": "185130cdd684a2",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a5 · board-350": {
+    "build": "185130cdd684a2",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · length=min": {
+    "build": "1607a48b786457",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · length=max": {
+    "build": "1fce8aa109d04b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · length<min": {
+    "build": "135532932fc99b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0481af8584fc69",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · length>max": {
+    "build": "093a7cf8358ae2",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0746f84b875b12",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · height=min": {
+    "build": "1b449553e027d3",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · height=max": {
+    "build": "1dc6dcaffdd2ea",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · height<min": {
+    "build": "08359acd938d86",
+    "hinges": "15e0da69fcb93a",
+    "validate": "16b9f2ce53c341",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · height>max": {
+    "build": "0cb09ecd041f3b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "02de2133b70796",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · foldScheme=bi_fold": {
+    "build": "1c5d86323122eb",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · foldScheme=tri_fold": {
+    "build": "1cebfb567527b5",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · foldScheme=z_fold": {
+    "build": "01970b72b35056",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "dl · label-film · foldScheme=gate_fold": {
+    "build": "072cfd18ed2cbc",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  }
+}
