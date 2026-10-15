@@ -28,7 +28,7 @@ export interface RequestTriage {
   shippedIn?: string;
 }
 
-export const TRIAGE_SOURCE = {"commit":"69e1351","triagedAgainst":"packio-web@f225d30","contract":"v0.63.0"} as const;
+export const TRIAGE_SOURCE = {"commit":"69e1351","triagedAgainst":"packio-web@f225d30","contract":"v0.64.0"} as const;
 
 export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "DELETE /v1/admin/rfqs/{rfqId}/quotes/{quoteId}": {"request":"admin.rfq-quotes","verdict":"published_differently","group":"U-B0.2","operationId":"admin.rfqs.discardQuotation","publishedAs":"POST /v1/admin/rfq-quotations/{rfqQuoteId}/actions/discard","gaps":0},

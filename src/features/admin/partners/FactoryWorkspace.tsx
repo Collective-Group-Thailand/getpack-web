@@ -28,7 +28,9 @@ import { FormDialog } from "./parts";
 import type { Factory, FactoryTab } from "./resources";
 import { Compliance } from "./tabs/Compliance";
 import { Onboarding } from "./tabs/Onboarding";
+import { FactoryHours } from "./tabs/Hours";
 import { Operations } from "./tabs/Operations";
+import { Processes } from "./tabs/Processes";
 import { Pricing } from "./tabs/Pricing";
 import { Profile } from "./tabs/Profile";
 import { ErpSupport } from "./tabs/ErpSupport";
@@ -103,6 +105,8 @@ export function FactoryWorkspace({
     { value: "profile", label: t("tabs.profile"), content: <Profile factory={factory} /> },
     { value: "compliance", label: t("tabs.compliance"), content: <Compliance factory={factory} /> },
     { value: "operations", label: t("tabs.operations"), content: <Operations factory={factory} /> },
+    { value: "processes", label: t("tabs.processes"), content: <Processes factory={factory} /> },
+    { value: "hours", label: t("tabs.hours"), content: <FactoryHours factory={factory} /> },
     { value: "terms", label: t("tabs.terms"), content: <Terms factory={factory} /> },
     { value: "visits", label: t("tabs.visits"), content: <SiteVisits factory={factory} /> },
     { value: "pricing", label: t("tabs.pricing"), content: <Pricing factory={factory} /> },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -9,11 +9,13 @@ import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
+import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { Select } from "@/ui/components/Select";
+import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, QueryError } from "../console";
+import { adminBrowserApis, problemMessage, QueryError, useCan } from "../console";
 
 type Scorecard = Schemas["ScorecardDto"];
 type MonthCard = Schemas["FactoryScorecardDto"];
@@ -53,6 +55,26 @@ export function Scorecards() {
   });
   const factoryId = params.get("factoryId") ?? factories.data?.[0]?.id ?? null;
   const factory = factories.data?.find((candidate) => candidate.id === factoryId);
+  const queryClient = useQueryClient();
+  const canRecompute = useCan("production.manage");
+  // After a correction (a job's dates, a claim) — the monthly job computes last month on the 1st (D-155).
+  const recompute = useMutation({
+    mutationFn: async (month: string) =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/factories/{factoryId}/scorecards/actions/recompute", {
+          params: { path: { factoryId: factoryId! } },
+          body: { month },
+        })
+      ).data!,
+    onSuccess: () => {
+      toast.success(t("recomputed"));
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.related("admin", "factory", factoryId ?? "", "scorecards"),
+      });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "scorecard") });
+    },
+    onError: (error) => toast.error(problemMessage(error, t("recomputeFailed"))),
+  });
   const cards = useQuery({
     queryKey: queryKeys.related("admin", "factory", factoryId ?? "", "scorecards"),
     enabled: Boolean(factoryId),
@@ -106,6 +128,25 @@ export function Scorecards() {
       cell: (row: MonthCard) => (row[metric] === null ? "–" : format.percent(row[metric])),
     })),
     { id: "jobs", header: t("jobs"), numeric: true, cell: (row) => format.number(row.jobsCount) },
+    ...(canRecompute && factoryId
+      ? [
+          {
+            id: "recompute",
+            header: <span className="sr-only">{t("recompute")}</span>,
+            cell: (row: MonthCard) => (
+              <Button
+                size="sm"
+                variant="ghost"
+                iconStart="refresh"
+                loading={recompute.isPending && recompute.variables === row.month}
+                onClick={() => recompute.mutate(row.month)}
+              >
+                {t("recompute")}
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (

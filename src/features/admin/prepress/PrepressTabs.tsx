@@ -32,6 +32,7 @@ import { checklistRows, PreflightChecklist } from "@/features/shared/artwork/Pre
 import { adminBrowserApis, problemMessage, StatusChip, useActor, useCan, useSlaFormat } from "../console";
 import type { Order } from "../orders/resources";
 import { useProof } from "./data";
+import { DecideOnBehalf, DesignServiceActions, RerunPreflight } from "./OnBehalf";
 import { FileItem } from "./FileItem";
 import { SubmissionDialogs } from "./PrepressActions";
 import type {
@@ -88,25 +89,28 @@ function SubmissionCard({ order, submission }: { order: Order; submission: Artwo
         </>
       }
       actions={
-        accept || reject ? (
-          <div className="flex flex-wrap gap-2">
-            {reject ? (
-              <Button size="sm" variant="secondary" iconStart="undo" onClick={() => setOpen("submission.reject")}>
-                {t("reject")}
-              </Button>
-            ) : null}
-            {accept ? (
-              <Button
-                size="sm"
-                iconStart="check"
-                disabled={Boolean(accept.blockedBy)}
-                onClick={() => setOpen("submission.accept")}
-              >
-                {t("accept")}
-              </Button>
-            ) : null}
-          </div>
-        ) : null
+        <div className="flex flex-wrap gap-2">
+          <RerunPreflight submission={submission} orderId={order.id} />
+          {accept || reject ? (
+            <>
+              {reject ? (
+                <Button size="sm" variant="secondary" iconStart="undo" onClick={() => setOpen("submission.reject")}>
+                  {t("reject")}
+                </Button>
+              ) : null}
+              {accept ? (
+                <Button
+                  size="sm"
+                  iconStart="check"
+                  disabled={Boolean(accept.blockedBy)}
+                  onClick={() => setOpen("submission.accept")}
+                >
+                  {t("accept")}
+                </Button>
+              ) : null}
+            </>
+          ) : null}
+        </div>
       }
     >
       {/* CONTRACT-GAP admin.prepress — the submission does not say who submitted it. */}
@@ -421,6 +425,7 @@ export function ProofsTab({
         return (
           <Section
             key={proof.id}
+            actions={<DecideOnBehalf proof={proof} orderId={proof.orderId} />}
             title={
               <>
                 {t("version", { version: proof.versionNo })}
@@ -613,6 +618,7 @@ export function DesignTab({ service }: { service: DesignService | null }) {
             <StatusChip map={DESIGN_SERVICE_STATUS} value={service.status} />
           </>
         }
+        actions={<DesignServiceActions service={service} />}
       >
         <div className="grid gap-4 md:grid-cols-3">
           <div>

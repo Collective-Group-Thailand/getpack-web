@@ -17,12 +17,14 @@ import { toast } from "@/ui/components/Toast";
 import { useCan, useProductTypes } from "../../console";
 import { adminBrowserApis } from "../../console/api";
 import { bangkokDay, useFactoryPart, useFactoryRefresh } from "../hooks";
+import { CapabilityItemsDialog, EditCapabilityDialog, EditMachineDialog } from "../CapabilityDialogs";
 import { FormDialog, Section } from "../parts";
 import type { Factory } from "../resources";
 
 type Capability = Schemas["CapabilityDto"];
 type Week = Schemas["CapacityWeekDto"];
 type Zone = Schemas["DeliveryZoneDto"];
+type Machine = Schemas["MachineDto"];
 
 /**
  * What the factory can make and how much (D-101): capability per product type with its order and
@@ -48,6 +50,9 @@ export function Operations({ factory }: { factory: Factory }) {
   );
   const [open, setOpen] = useState<"capability" | "machine" | "capacity" | "override" | null>(null);
   const [draftZones, setDraftZones] = useState<Zone[] | null>(null);
+  const [editing, setEditing] = useState<
+    { kind: "capability" | "items"; capability: Capability } | { kind: "machine"; machine: Machine } | null
+  >(null);
   const [capability, setCapability] = useState({
     productTypeId: "",
     minOrderQty: "",
@@ -104,6 +109,22 @@ export function Operations({ factory }: { factory: Factory }) {
         <Badge size="sm" tone={row.status === "active" ? "success" : "neutral"}>
           {t(`capabilityStatus.${row.status}`)}
         </Badge>
+      ),
+    },
+    {
+      id: "actions",
+      header: t("actions"),
+      cell: (row) => (
+        <span className="flex flex-wrap gap-1">
+          <Button size="sm" variant="ghost" onClick={() => setEditing({ kind: "items", capability: row })}>
+            {t("itemsButton")}
+          </Button>
+          {canManage ? (
+            <Button size="sm" variant="secondary" onClick={() => setEditing({ kind: "capability", capability: row })}>
+              {t("edit")}
+            </Button>
+          ) : null}
+        </span>
       ),
     },
   ];
@@ -178,6 +199,21 @@ export function Operations({ factory }: { factory: Factory }) {
                 <span className="text-muted">{t("sheet", { width: item.maxWidthMm, length: item.maxLengthMm })}</span>
               ) : null}
               {item.details ? <span className="text-muted">· {item.details}</span> : null}
+              {item.status === "inactive" ? (
+                <Badge size="sm" tone="neutral">
+                  {t("capabilityStatus.inactive")}
+                </Badge>
+              ) : null}
+              {canManage ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="ms-auto"
+                  onClick={() => setEditing({ kind: "machine", machine: item })}
+                >
+                  {t("edit")}
+                </Button>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -286,6 +322,43 @@ export function Operations({ factory }: { factory: Factory }) {
           ))}
         </ul>
       </Section>
+
+      {editing?.kind === "capability" ? (
+        <EditCapabilityDialog
+          factoryId={factory.id}
+          capability={editing.capability}
+          typeName={typeName(editing.capability.productTypeId)}
+          onClose={() => setEditing(null)}
+          onDone={() => {
+            toast.success(t("saved"));
+            refresh();
+          }}
+        />
+      ) : null}
+      {editing?.kind === "items" ? (
+        <CapabilityItemsDialog
+          factoryId={factory.id}
+          capability={editing.capability}
+          typeName={typeName(editing.capability.productTypeId)}
+          canManage={canManage}
+          onClose={() => setEditing(null)}
+          onDone={() => {
+            toast.success(t("saved"));
+            refresh();
+          }}
+        />
+      ) : null}
+      {editing?.kind === "machine" ? (
+        <EditMachineDialog
+          factoryId={factory.id}
+          machine={editing.machine}
+          onClose={() => setEditing(null)}
+          onDone={() => {
+            toast.success(t("saved"));
+            refresh();
+          }}
+        />
+      ) : null}
 
       {open === "capability" ? (
         <FormDialog

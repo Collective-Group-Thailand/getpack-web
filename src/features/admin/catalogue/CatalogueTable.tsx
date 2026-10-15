@@ -22,6 +22,7 @@ import {
 import { createRow, deleteRow, updateRow, type CatalogueRow } from "./api";
 import { FileField } from "./FileField";
 import { buildSchema, emptyValues, NONE, toBody, toValues, type FormValues } from "./form-model";
+import { useRelations } from "./relations";
 import { listFor } from "./resources";
 import { ENUMS, kindOf, tableByKey } from "./tables";
 import { useRefs } from "./useRefs";
@@ -68,6 +69,7 @@ export function CatalogueTable({
     .map((field) => kindOf(def, field))
     .flatMap((kind) => (kind.kind === "ref" ? [kind.table] : []));
   const refs = useRefs(refTables);
+  const relations = useRelations(def);
   const statusMap: Record<string, StatusMeta> = def.status === "ContentStatus" ? CONTENT_STATUS : CATALOG_STATUS;
 
   const label = (field: string) => (t.has(`fields.${field}`) ? t(`fields.${field}`) : field);
@@ -221,30 +223,33 @@ export function CatalogueTable({
   });
 
   return (
-    <CrudList
-      config={config}
-      columns={[...columns, ...extraColumns]}
-      caption={t(`tables.${def.key}.title`)}
-      fields={fields}
-      filters={filters}
-      searchLabel={t("search")}
-      initial={initial}
-      toolbarEnd={
-        <>
-          {toolbarEnd}
-          {def.importKind && canImport ? (
-            <Button size="sm" variant="secondary" iconStart="spreadsheet" asChild>
-              <Link href={`/catalogue/import?kind=${def.importKind}`}>{t("importExport")}</Link>
-            </Button>
-          ) : null}
-        </>
-      }
-      labels={{
-        create: t("create"),
-        createTitle: t("createTitle", { table: t(`tables.${def.key}.title`) }),
-        editTitle: (row) => t("editTitle", { name: listFor(def).getRowName!(row) }),
-        empty: t("empty"),
-      }}
-    />
+    <>
+      {relations.dialog}
+      <CrudList
+        config={config}
+        columns={[...columns, ...extraColumns, ...relations.column]}
+        caption={t(`tables.${def.key}.title`)}
+        fields={fields}
+        filters={filters}
+        searchLabel={t("search")}
+        initial={initial}
+        toolbarEnd={
+          <>
+            {toolbarEnd}
+            {def.importKind && canImport ? (
+              <Button size="sm" variant="secondary" iconStart="spreadsheet" asChild>
+                <Link href={`/catalogue/import?kind=${def.importKind}`}>{t("importExport")}</Link>
+              </Button>
+            ) : null}
+          </>
+        }
+        labels={{
+          create: t("create"),
+          createTitle: t("createTitle", { table: t(`tables.${def.key}.title`) }),
+          editTitle: (row) => t("editTitle", { name: listFor(def).getRowName!(row) }),
+          empty: t("empty"),
+        }}
+      />
+    </>
   );
 }
