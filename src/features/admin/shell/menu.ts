@@ -51,6 +51,10 @@ const MENU_ICONS: Record<string, IconName> = {
   claims: "flag",
   partners: "handshake",
   catalogue: "box",
+  style_library: "layers",
+  structural_requests: "ruler",
+  style_intakes: "upload",
+  samples: "package-check",
   cms: "article",
   marketing: "megaphone",
   customers: "user",
@@ -77,7 +81,7 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
   { key: "overview", entries: ["dashboard", "approvals"] },
   { key: "sales", entries: ["orders", "inbox", "cs_calculators", "quotations", "rfq", "discount_memos"] },
   { key: "operations", entries: ["prepress", "production", "shipments", "claims", "samples"] },
-  { key: "supply", entries: ["partners", "catalogue", "structural_requests", "style_intakes"] },
+  { key: "supply", entries: ["partners", "catalogue", "style_library", "structural_requests", "style_intakes"] },
   { key: "growth", entries: ["marketing", "cms", "customers", "companies"] },
   { key: "insights", entries: ["analytics", "assistant", "reports", "finance"] },
   {
@@ -114,24 +118,6 @@ export interface SidebarItem {
   key: string;
   href: string;
   icon?: IconName;
-}
-
-/**
- * Screens packio-api's menu does not list yet (CONTRACT-REQUEST admin.menu-samples), offered by
- * the permission that opens them — so they live in the sidebar as modules of their own instead of
- * as buttons on the order desk's header (UX audit, /orders). Dropped once the API sends them.
- */
-export function localItems(permissions: readonly string[]): SidebarItem[] {
-  const has = (...wanted: string[]) => wanted.some((permission) => permissions.includes(permission));
-  return [
-    ...(has("samples.read") ? [{ key: "samples", href: "/samples", icon: "package-check" as const }] : []),
-    ...(has("structural_requests.manage", "structural_requests.design")
-      ? [{ key: "structural_requests", href: "/structural-requests", icon: "ruler" as const }]
-      : []),
-    ...(has("styles.import", "styles.approve_recipe")
-      ? [{ key: "style_intakes", href: "/style-intakes", icon: "upload" as const }]
-      : []),
-  ];
 }
 
 export function sidebarItems(menu: readonly MenuEntry[]): SidebarItem[] {

@@ -59,7 +59,8 @@
     "assistant": "AI assistant",
     "samples": "Samples",
     "structural_requests": "Structural design requests",
-    "style_intakes": "Style intakes"
+    "style_intakes": "Style intakes",
+    "style_library": "Style library"
   },
   "palette": {
     "screens": "Screens",

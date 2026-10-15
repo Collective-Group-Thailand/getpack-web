@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.60.0). */
+/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.61.0). */
 
 export interface OperationProblems {
   method: string;
@@ -833,6 +833,8 @@ export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {
   "admin.studioTemplates.submit": {"method":"POST","path":"/v1/admin/studio-templates/{templateId}/actions/submit","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"studio.template_not_editable":409,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.styleCoverage.get": {"method":"GET","path":"/v1/admin/style-coverage","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.styleImports.list": {"method":"GET","path":"/v1/admin/style-imports","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
+  "admin.styleImports.create": {"method":"POST","path":"/v1/admin/style-imports","problems":{"http.bad_request":400,"http.malformed_json":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"file.infected":409,"file.not_ready":409,"styles.import_stale":409,"styles.import_unreadable":422,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
+  "admin.styleImports.preview": {"method":"POST","path":"/v1/admin/style-imports/actions/preview","problems":{"http.bad_request":400,"http.malformed_json":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"file.infected":409,"file.not_ready":409,"styles.import_unreadable":422,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.styleImports.get": {"method":"GET","path":"/v1/admin/style-imports/{runId}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.styleIntakes.list": {"method":"GET","path":"/v1/admin/style-intakes","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.styleIntakes.get": {"method":"GET","path":"/v1/admin/style-intakes/{intakeId}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"http.too_many_requests":429,"internal.unexpected":500}},
@@ -2094,6 +2096,8 @@ export const PROBLEM_EXAMPLES: Record<string, ProblemExample> = {
   "studio.spec_missing": {"code":"studio.spec_missing","detail":"แบบนี้ยังไม่มีรายละเอียดกล่อง กรุณาเลือกกล่องในสตูดิโอก่อน","status":422,"title":"ยังไม่ได้ตั้งค่ากล่อง","type":"https://errors.packio/studio.spec_missing"},
   "studio.template_not_editable": {"code":"studio.template_not_editable","detail":"เทมเพลตยังไม่อยู่ในสถานะที่ทำรายการนี้ได้","status":409,"title":"เทมเพลตยังไม่อยู่ในขั้นตอนนี้","type":"https://errors.packio/studio.template_not_editable"},
   "styles.capability_decided": {"code":"styles.capability_decided","detail":"ความสามารถการผลิตรายการนี้ได้รับการพิจารณาแล้ว","status":409,"title":"พิจารณาแล้ว","type":"https://errors.packio/styles.capability_decided"},
+  "styles.import_stale": {"code":"styles.import_stale","detail":"ผลการนำเข้าไม่ตรงกับที่ดูตัวอย่างไว้ (ไฟล์หรือคลังเปลี่ยนไป) กรุณาดูตัวอย่างอีกครั้ง","status":409,"title":"ไฟล์เปลี่ยนไปจากที่ดูตัวอย่าง","type":"https://errors.packio/styles.import_stale"},
+  "styles.import_unreadable": {"code":"styles.import_unreadable","detail":"ไฟล์ต้องเป็น JSON ของ master file หรือ recipe bundle ตามรูปแบบของคลังแบบกล่อง","status":422,"title":"ไฟล์นำเข้าไม่ถูกต้อง","type":"https://errors.packio/styles.import_unreadable"},
   "styles.intake_closed": {"code":"styles.intake_closed","detail":"โรงงานจะส่งไดคัทได้เมื่อมีการประกาศเงื่อนไขการรับไดคัทแล้ว","status":409,"title":"ยังไม่เปิดรับไดคัท","type":"https://errors.packio/styles.intake_closed"},
   "styles.intake_decided": {"code":"styles.intake_decided","detail":"ไดคัทที่ส่งมานี้ได้รับการอนุมัติหรือปฏิเสธแล้ว","status":409,"title":"พิจารณาแล้ว","type":"https://errors.packio/styles.intake_decided"},
   "styles.intake_terms_outdated": {"code":"styles.intake_terms_outdated","detail":"เงื่อนไขการรับไดคัทมีการเปลี่ยนแปลง กรุณาอ่านและยอมรับฉบับปัจจุบัน","status":409,"title":"เงื่อนไขมีการเปลี่ยนแปลง","type":"https://errors.packio/styles.intake_terms_outdated"},
