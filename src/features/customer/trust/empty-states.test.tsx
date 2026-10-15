@@ -1,8 +1,9 @@
 // @vitest-environment node
 import { createTranslator } from "next-intl";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToReadableStream } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
+import catalog from "@/i18n/messages/th/customer/catalog.json";
 import storefront from "@/i18n/messages/th/customer/storefront.json";
 
 /**
@@ -12,11 +13,16 @@ import storefront from "@/i18n/messages/th/customer/storefront.json";
  */
 
 vi.mock("server-only", () => ({}));
+// The pages' structured data reads the request's origin (`publicOrigin`): a fixed one outside a request.
+vi.mock("next/headers", () => ({
+  headers: async () => new Headers({ host: "packio.test", "x-forwarded-proto": "https" }),
+  cookies: async () => ({ get: () => undefined, getAll: () => [] }),
+}));
 vi.mock("next-intl/server", () => ({
   setRequestLocale: () => undefined,
   getLocale: async () => "th",
   getTranslations: async (namespace: string) =>
-    createTranslator({ locale: "th", messages: { storefront }, namespace: namespace as never }),
+    createTranslator({ locale: "th", messages: { storefront, catalog }, namespace: namespace as never }),
 }));
 // The next action every empty state now offers (U5.1 §3), as a plain link: it reads the client intl context.
 vi.mock("@/features/customer/shell/NextStep", () => ({
@@ -47,8 +53,12 @@ vi.mock("@/features/customer/trust/api.server", () => ({
   }),
 }));
 
-const render = async (page: (props: { params: Promise<{ locale: string }> }) => Promise<React.ReactElement>) =>
-  renderToStaticMarkup(await page({ params: Promise.resolve({ locale: "th" }) }));
+// Streamed to the end: the pages' structured data and breadcrumbs now suspend while they resolve.
+const render = async (page: (props: { params: Promise<{ locale: string }> }) => Promise<React.ReactElement>) => {
+  const stream = await renderToReadableStream(await page({ params: Promise.resolve({ locale: "th" }) }));
+  await stream.allReady;
+  return new Response(stream).text();
+};
 
 describe("trust pages with nothing to show yet", () => {
   it("reviews: says there are none and that samples are never used", async () => {

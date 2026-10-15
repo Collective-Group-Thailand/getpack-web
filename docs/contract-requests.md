@@ -273,9 +273,10 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 - ~~**`partner.payouts.schedule` totals**~~ — not needed: `partner.payables.financeSummary` (published) already gives the month's earned / paid / retained and what Packio owes; `/payouts` opens with it (2026-10-09).
 - **Data check, not a contract change:** UAT job `UATJOB-2610-00009` reads `quantityOrdered: 1` while its destination reads `quantity: 500` — the factory sees two different quantities on one job.
 
-## store.dielines.download-ai — `.ai` as a download format (2026-10-14)
+## ~~store.dielines.download-ai — `.ai` as a download format (2026-10-14)~~ — done, packio-api v0.59.0
 
 `POST /v1/store/dielines/downloads` — `format` gains `ai`: the designer PDF (D-302) delivered as an
 Illustrator file (`.ai`, `application/illustrator`); `DielineDownloadDto.format` echoes it. Shipped in
 packio-api on the same day (`DIELINE_DOWNLOAD_FORMATS`, `dieline-downloads.dto.ts`); the storefront
 widens the vendored type until that contract build is adopted (`DielineDownload.tsx`).
+**Done (v0.59.0, adopted 2026-10-15):** `DielineDownloadFormat` (`svg`, `dxf`, `pdf`, `ai`); the storefront and the mock use it, no widening left.

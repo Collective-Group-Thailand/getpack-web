@@ -13,7 +13,7 @@ import { extendTailwindMerge } from "tailwind-merge";
 export const SEMANTIC_SCALE_NAMES = {
   radius: ["control", "card", "panel", "thumb", "cta", "band"],
   shadow: ["card", "overlay", "lift", "panel", "cta"],
-  text: ["display"],
+  text: ["display", "title"],
 };
 
 const twMerge = extendTailwindMerge({ extend: { theme: SEMANTIC_SCALE_NAMES } });
