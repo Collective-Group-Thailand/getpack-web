@@ -105,7 +105,7 @@ describe("the style library mock", () => {
     const api = anonymous();
     const { data: first } = await api.GET("/v1/store/styles", { params: { query: { limit: 24 } } });
     expect(first!.data).toHaveLength(24);
-    expect(first!.facets.category.reduce((n, f) => n + f.count, 0)).toBe(123);
+    expect(first!.facets.category.reduce((n, f) => n + f.count, 0)).toBe(122);
     const { data: second } = await api.GET("/v1/store/styles", {
       params: { query: { limit: 24, cursor: first!.meta.nextCursor! } },
     });
@@ -118,6 +118,24 @@ describe("the style library mock", () => {
     const { data } = await anonymous().GET("/v1/store/styles/{code}", { params: { path: { code: "PK-TE-01" } } });
     expect(data!.variants).toHaveLength(183);
     expect(data!.axes.map((a) => a.axis)).toEqual(["tuck_top", "tuck_bottom", "hang", "window"]);
+  });
+
+  it("lists every variant as a card with disjunctive option facets (D-410)", async () => {
+    const api = anonymous();
+    const { data: all } = await api.GET("/v1/store/styles/variants", { params: { query: { limit: 24 } } });
+    expect(all!.data).toHaveLength(24);
+    expect(all!.meta).toMatchObject({ libraryStyles: 122, total: all!.meta.libraryTotal });
+    const { data: front } = await api.GET("/v1/store/styles/variants", {
+      params: { query: { style: "PK-TE-01", option: ["window:front_window"], limit: 100 } },
+    });
+    expect(front!.data.every((v) => v.baseCode === "PK-TE-01" && v.options["window"] === "front_window")).toBe(true);
+    const count = (value: string) => front!.facets.option.find((f) => f.value === value)?.count ?? 0;
+    // The chosen axis keeps its other values' counts: a front and a top window are alternatives.
+    expect(count("window:top_window")).toBeGreaterThan(0);
+    const { data: either } = await api.GET("/v1/store/styles/variants", {
+      params: { query: { style: "PK-TE-01", option: ["window:front_window", "window:top_window"], limit: 1 } },
+    });
+    expect(either!.meta.total).toBe(front!.meta.total + count("window:top_window"));
   });
 
   it("keeps a customer's favourites", async () => {

@@ -15,6 +15,7 @@ import type { DielineDownloadProps } from "./DielineDownload";
 import { DielineDownloadEntry } from "./DielineDownloadEntry";
 import { VariantActions, type VariantActionsProps } from "./VariantActions";
 import { axisLabel, valueLabel, type StylesT } from "./labels";
+import { previewSrc } from "./paths";
 import { change, optionsOf, selectionOf, variantOf, type Selection } from "./variants";
 
 const StylePreview3D = dynamic(() => import("./StylePreview3D"), {
@@ -42,9 +43,12 @@ export function VariantPicker({
   name,
   actions,
   dieline,
+  initialCode,
 }: {
   style: StyleDetail;
   name: string;
+  /** The variant chosen on arrival (`?v=` — a card of the variants grid, D-410); else the first. */
+  initialCode?: string;
   /** The free dieline of the chosen variant (U2.F2), when offered. */
   dieline?: Omit<DielineDownloadProps, "variantCode">;
   /** Where the chosen variant goes: the configurator or a quotation, and the studio (D-407). */
@@ -52,9 +56,10 @@ export function VariantPicker({
 }) {
   const t = useTranslations("styles") as unknown as StylesT & ReturnType<typeof useTranslations>;
   const id = useId();
-  const [selection, setSelection] = useState<Selection>(() =>
-    style.variants[0] ? selectionOf(style.variants[0], style.axes) : {},
-  );
+  const [selection, setSelection] = useState<Selection>(() => {
+    const first = style.variants.find((v) => v.code === initialCode) ?? style.variants[0];
+    return first ? selectionOf(first, style.axes) : {};
+  });
   const [show3d, setShow3d] = useState(false);
   const variant = variantOf(style.variants, selection);
   const thumb =
@@ -85,6 +90,16 @@ export function VariantPicker({
               width={640}
               height={480}
               className="h-auto max-w-full"
+            />
+          ) : variant ? (
+            // The engine's flat drawing of the chosen variant until the API renders its thumbnail (D-410).
+            // eslint-disable-next-line @next/next/no-img-element -- an SVG this app draws
+            <img
+              src={previewSrc(style.code, variant.options)}
+              alt={t("detail.thumbnailAlt", { name, code: variant.code })}
+              width={640}
+              height={480}
+              className="bg-surface aspect-[4/3] h-auto w-full max-w-full object-contain p-4"
             />
           ) : (
             <Icon name="box" size={64} className="text-subtle" aria-hidden="true" />

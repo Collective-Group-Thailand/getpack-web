@@ -1,12 +1,12 @@
 /**
  * The style library (`store.styles.*`, `store.styleFavourites.*`, U3.B1–B6), mocked over the
  * programme's master file (`docs/design-tool/style-library-master.json`): every base is published,
- * 105 styles and 960 variants, so the library is measured at the size it launches at (U3.5 §4).
+ * 122 styles and 986 variants, so the library is measured at the size it launches at (U3.5 §4).
  *
  * A wave-1 base publishes the variants the engine draws (`@packio/dieline/library`) — what the API
  * does once its recipes are approved (D-243); a later-wave base publishes its axes' combinations
- * up to its master count. Prices, lead times, partner counts and use cases are the mock's own fake
- * figures; the shapes are the published DTOs.
+ * up to its master count. Use cases are the master's (D-410); prices, lead times and partner counts
+ * are the mock's own fake figures; the shapes are the published DTOs.
  */
 
 import { http, HttpResponse, type HttpHandler } from "msw";
@@ -54,15 +54,8 @@ const SYNONYMS: Record<string, string[]> = {
   "PK-TE-01": ["กล่องครีม", "กล่องเครื่องสำอาง", "cosmetic box"],
 };
 
-const USE_CASES: Record<string, string[]> = {
-  folding_carton: ["cosmetics", "food", "retail"],
-  corrugated: ["shipping", "ecommerce"],
-  rigid: ["gift", "luxury"],
-  flexible: ["food", "ecommerce"],
-  insert: ["protection"],
-  label: ["branding"],
-  tag_sleeve: ["branding", "retail"],
-};
+/** The products a style suits — the master file's `use_cases` (D-410). */
+const caseCodesOf = (row: Row): string[] => (row as Row & { use_cases?: string[] }).use_cases ?? [];
 
 /** A short, stable variant code from its option key, as the API's `PK-…-XXXX`. */
 function variantCode(base: string, key: string): string {
@@ -172,6 +165,11 @@ function card(s: MockStyle, favourite: boolean | null): Card {
     referenceCode: null,
     startingPrice: startingPrice(s),
     variantCount: s.variants.length,
+    options: (() => {
+      const { closure, feature } = optionFacets(s);
+      return [...[...closure].sort(), ...[...feature].sort()];
+    })(),
+    thumbnailUrl: null,
   };
 }
 
@@ -214,7 +212,7 @@ function detail(s: MockStyle, favourite: boolean | null): Detail {
         source: s.row.wave === 1 ? "recipe" : "pattern_rules",
       },
     ],
-    useCases: USE_CASES[s.row.category] ?? [],
+    useCases: caseCodesOf(s.row),
     variants: s.variants,
   };
 }
@@ -261,7 +259,7 @@ function filterStyles(filters: Filters, q: string | undefined, skip?: keyof Filt
     if (f.family && s.row.family !== f.family) return false;
     if (f.materialClass && s.row.material_class !== f.materialClass) return false;
     if (f.pricePath && s.pricePath !== f.pricePath) return false;
-    if (f.useCase && !(USE_CASES[s.row.category] ?? []).includes(f.useCase)) return false;
+    if (f.useCase && !caseCodesOf(s.row).includes(f.useCase)) return false;
     const options = optionFacets(s);
     if (f.closure && !options.closure.has(f.closure)) return false;
     if (f.feature && !options.feature.has(f.feature)) return false;
@@ -318,13 +316,93 @@ export const storeStyleHandlers: HttpHandler[] = [
       feature: count(filterStyles(filters, q, "feature"), (s) => optionFacets(s).feature),
       materialClass: count(filterStyles(filters, q, "materialClass"), (s) => [s.row.material_class]),
       pricePath: count(filterStyles(filters, q, "pricePath"), (s) => [s.pricePath]),
-      useCase: count(filterStyles(filters, q, "useCase"), (s) => USE_CASES[s.row.category] ?? []),
+      useCase: count(filterStyles(filters, q, "useCase"), (s) => caseCodesOf(s.row)),
     };
     return HttpResponse.json({
       data: page.map((s) => card(s, mine ? mine.has(s.row.code) : null)),
       facets,
       meta: { nextCursor: start + limit < rows.length ? String(start + limit) : null },
     } satisfies Schemas["StyleListDto"]);
+  }),
+
+  // D-410: every variant as a card — options `axis:value` (one axis's values are alternatives, axes
+  // all apply; a variant without the axis reads as `none`), disjunctive option facets.
+  http.get("*/v1/store/styles/variants", ({ request }) => {
+    const url = new URL(request.url);
+    const p = (k: string) => url.searchParams.get(k)?.trim() || undefined;
+    const q = p("q");
+    const style = p("style");
+    const bases = filterStyles(
+      { category: p("category"), family: p("family"), materialClass: p("materialClass"), useCase: p("useCase") },
+      undefined,
+    ).filter(
+      (s) => (!style || s.row.code === style) && (!q || matches(s, q) || q.toUpperCase().startsWith(s.row.code)),
+    );
+    const pricePath = p("pricePath");
+    const all = bases.flatMap((s) =>
+      s.variants
+        .filter((v) => !pricePath || v.pricePath === pricePath)
+        .filter((v) => !q || matches(s, q) || v.code.includes(q.toUpperCase()))
+        .map((v) => ({ s, v })),
+    );
+    const wanted = new Map<string, Set<string>>();
+    for (const o of url.searchParams.getAll("option").flatMap((x) => x.split(","))) {
+      const [axis, value] = o.split(":");
+      if (axis && value) wanted.set(axis, (wanted.get(axis) ?? new Set()).add(value));
+    }
+    const valuesOf = (options: Record<string, unknown>, axis: string) => {
+      const value = options[axis];
+      const list = (Array.isArray(value) ? value : value === undefined ? [] : [value]).map(String);
+      return list.length ? list : ["none"];
+    };
+    const passes = (options: Record<string, unknown>, except?: string) =>
+      [...wanted].every(([axis, values]) => axis === except || valuesOf(options, axis).some((v) => values.has(v)));
+    const matched = all.filter(({ v }) => passes(v.options));
+    const axes = new Set([...all.flatMap(({ v }) => Object.keys(v.options)), ...wanted.keys()]);
+    const option = new Map<string, number>();
+    for (const { v } of all)
+      for (const axis of axes) {
+        if (!passes(v.options, axis)) continue;
+        for (const value of new Set(valuesOf(v.options, axis)))
+          option.set(`${axis}:${value}`, (option.get(`${axis}:${value}`) ?? 0) + 1);
+      }
+    const counted = (values: string[]) => {
+      const n = new Map<string, number>();
+      for (const value of values) n.set(value, (n.get(value) ?? 0) + 1);
+      return [...n].map(([value, c]) => ({ value, count: c })).sort((a, b) => b.count - a.count);
+    };
+    const sort = p("sort") ?? "popular";
+    if (sort === "name") matched.sort((a, b) => SORTS.name(a.s, b.s) || a.v.code.localeCompare(b.v.code));
+    else if (sort === "instant_first")
+      matched.sort((a, b) => Number(b.v.pricePath === "instant") - Number(a.v.pricePath === "instant"));
+    else matched.sort((a, b) => SORTS.popular(a.s, b.s));
+    const limit = Math.min(100, Math.max(1, Number(p("limit")) || 24));
+    const start = Number(p("cursor") ?? 0) || 0;
+    return HttpResponse.json({
+      data: matched.slice(start, start + limit).map(({ s, v }) => ({
+        code: v.code,
+        baseCode: s.row.code,
+        nameTh: s.row.name_th,
+        nameEn: s.row.name_en,
+        category: s.row.category,
+        family: s.row.family,
+        materialClass: s.row.material_class,
+        options: v.options,
+        pricePath: v.pricePath,
+        thumbnailUrl: null,
+      })),
+      facets: {
+        option: [...option].sort((a, b) => a[0].localeCompare(b[0])).map(([value, n]) => ({ value, count: n })),
+        category: counted(matched.map(({ s }) => s.row.category)),
+        materialClass: counted(matched.map(({ s }) => s.row.material_class)),
+      },
+      meta: {
+        nextCursor: start + limit < matched.length ? String(start + limit) : null,
+        total: matched.length,
+        libraryTotal: STYLES.reduce((n, s) => n + s.variants.length, 0),
+        libraryStyles: STYLES.length,
+      },
+    } satisfies Schemas["StyleVariantListDto"]);
   }),
 
   http.get("*/v1/store/styles/compare", ({ request }) => {

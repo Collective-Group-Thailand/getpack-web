@@ -548,3 +548,22 @@ Also new on existing bases (parameters, not variants): **cavity inserts cut to t
 rectangle / circle / bottle, `cavityGrid`, product size) on every tuck end and tray with an insert, and a **shaped
 display header** (`headerShape` arch, peak, wave, scallop, cloud, flower or the customer's SVG profile) on
 front-hinged tuck ends.
+
+## Browsing and search pages (D-410)
+
+The library front page stays one card per base: its variant count shown large ("60 แบบย่อย"), chips of
+the features it offers (`topics.ts`: window, hang tab, lock bottom, handle, insert …) and the API's
+thumbnail — until that is rendered, the engine's own drawing of the variant (`/style-previews/<base>?…`,
+`preview.server.ts`). `/styles?view=variants` lists every variant as a card (`store.styles.listVariants`),
+filtered by top, bottom, window, hang tab, other features and material, paged by cursor, `noindex`; a
+card opens its style with the variant chosen (`?v=`). What a search finds:
+
+| Page | URL | Count |
+|---|---|---|
+| A style, every option in words and every variant code in its text | `/styles/<code>-<name>` | 122 |
+| A style with one sought-after feature ("กล่องฝาเสียบมีหน้าต่าง") | `/styles/<code>-<name>/<topic>` | 135 |
+| A feature across the library ("กล่องมีหน้าต่าง") | `/styles/options/<topic>` | 16 |
+| A product ("กล่องสบู่", "กล่องครีมและเครื่องสำอาง") — the master's `use_cases` | `/styles/for/<use case>` | 20 |
+
+Variants that differ only in a detail (a round or a euro hang hole, a front or a top window) share a
+topic: they are cards on its page, never pages of their own.

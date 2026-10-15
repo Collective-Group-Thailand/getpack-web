@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.59.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.60.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -31567,6 +31567,28 @@ export interface paths {
          *     Implements: D-245, D-246, D-243, D-050.
          */
         get: operations["store.styles.compare"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/styles/variants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Browse every variant of the library
+         * @description Every shown variant of the published styles as a card (D-410) — the grid behind "every variant": the style's filters (search, category, family, use case, material class) or one style (`style`), with the variant's price path and its options (`option=axis:value`, repeated or comma-separated: one axis's values are alternatives, different axes all apply). Option facets with counts are disjunctive (an axis's own filter is left out of its counts, `none` included); `meta.total` counts the matches, `libraryTotal` / `libraryStyles` the whole shown library (the storefront's headline count). Sorts `popular` (search relevance first with `q`), `instant_first`, `name`; cursor pages. A variant is a card, never its own page: it opens its style with the variant chosen.
+         *
+         *     Implements: D-410, D-245, D-243, D-050.
+         */
+        get: operations["store.styles.listVariants"];
         put?: never;
         post?: never;
         delete?: never;
@@ -74042,6 +74064,15 @@ export interface components {
             nameEn: string;
             /** @example กล่องฝาเสียบ (ปรับฝาบน-ล่างได้) */
             nameTh: string;
+            /**
+             * @description The options its shown variants offer, `axis:value` (never `none`): closures first, then features — the chips on a card
+             * @example [
+             *       "tuck_bottom:crash_lock",
+             *       "window:front_window",
+             *       "hang:euro_slot"
+             *     ]
+             */
+            options: string[];
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
             /**
@@ -74051,6 +74082,11 @@ export interface components {
             referenceCode: string | null;
             /** @description Null without a price hint (D-220) */
             startingPrice: components["schemas"]["StylePriceDto"] | null;
+            /**
+             * @description A rendered thumbnail of the style (its first variant's); null before thumbnails are rendered
+             * @example null
+             */
+            thumbnailUrl: string | null;
             /**
              * @description Publishable variants
              * @example 228
@@ -74097,6 +74133,15 @@ export interface components {
             /** @example กล่องฝาเสียบ (ปรับฝาบน-ล่างได้) */
             nameTh: string;
             /**
+             * @description The options its shown variants offer, `axis:value` (never `none`): closures first, then features — the chips on a card
+             * @example [
+             *       "tuck_bottom:crash_lock",
+             *       "window:front_window",
+             *       "hang:euro_slot"
+             *     ]
+             */
+            options: string[];
+            /**
              * @description Partners able to make it — only with ≥ 3 active factories (D-201); never who they are
              * @example null
              */
@@ -74116,6 +74161,11 @@ export interface components {
             sizeRanges: components["schemas"]["StyleSizeRangeDto"][];
             /** @description Null without a price hint (D-220) */
             startingPrice: components["schemas"]["StylePriceDto"] | null;
+            /**
+             * @description A rendered thumbnail of the style (its first variant's); null before thumbnails are rendered
+             * @example null
+             */
+            thumbnailUrl: string | null;
             /**
              * @example [
              *       "cosmetics"
@@ -74492,12 +74542,76 @@ export interface components {
             /** @example กล่องครีม */
             term: string;
         };
+        StyleVariantCardDto: {
+            /** @example PK-TE-01 */
+            baseCode: string;
+            /** @example folding_carton */
+            category: string;
+            /** @example PK-TE-01-K7QD */
+            code: string;
+            /** @example tuck_end */
+            family: string;
+            /** @example paperboard */
+            materialClass: string;
+            /** @example Tuck-end carton (configurable ends) */
+            nameEn: string;
+            /** @example กล่องฝาเสียบ (ปรับฝาบน-ล่างได้) */
+            nameTh: string;
+            /**
+             * @example {
+             *       "hang": "none",
+             *       "tuck_bottom": "crash_lock",
+             *       "tuck_top": "reverse_tuck",
+             *       "window": "front_window"
+             *     }
+             */
+            options: {
+                [key: string]: unknown;
+            };
+            /** @example rfq */
+            pricePath: components["schemas"]["QuoteMode"];
+            /**
+             * @description The variant's rendered thumbnail, else its style's; null before thumbnails are rendered
+             * @example null
+             */
+            thumbnailUrl: string | null;
+        };
         StyleVariantCountsDto: {
             /** @example 228 */
             active: number;
             /** @example 0 */
             publishable: number;
             /** @example 228 */
+            total: number;
+        };
+        StyleVariantFacetsDto: {
+            category: components["schemas"]["StyleFacetValueDto"][];
+            materialClass: components["schemas"]["StyleFacetValueDto"][];
+            /** @description Option values `axis:value` (`none` included: a variant without the axis counts, and filters, as `none`) with counts under every other filter — an axis's own filter is left out of its counts */
+            option: components["schemas"]["StyleFacetValueDto"][];
+        };
+        StyleVariantListDto: {
+            data: components["schemas"]["StyleVariantCardDto"][];
+            facets: components["schemas"]["StyleVariantFacetsDto"];
+            meta: components["schemas"]["StyleVariantListMeta"];
+        };
+        StyleVariantListMeta: {
+            /**
+             * @description Every shown style of the library
+             * @example 122
+             */
+            libraryStyles: number;
+            /**
+             * @description Every shown variant of the library
+             * @example 986
+             */
+            libraryTotal: number;
+            /** @example eyJpZCI6IjEyMyJ9 */
+            nextCursor: string | null;
+            /**
+             * @description Variants matching the query and filters
+             * @example 986
+             */
             total: number;
         };
         StyleVariantRefDto: {
@@ -74528,6 +74642,8 @@ export interface components {
              */
             priceReasons: components["schemas"]["StylePriceReason"][];
         };
+        /** @enum {string} */
+        StyleVariantSort: "popular" | "instant_first" | "name";
         SubjectRefDto: {
             /**
              * Format: uuid
@@ -309011,6 +309127,10 @@ export interface operations {
                      *           "materialClass": "paperboard",
                      *           "nameEn": "Tuck-end carton (configurable ends)",
                      *           "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
+                     *           "options": [
+                     *             "tuck_bottom:crash_lock",
+                     *             "window:front_window"
+                     *           ],
                      *           "pricePath": "instant",
                      *           "referenceCode": null,
                      *           "startingPrice": {
@@ -309020,7 +309140,8 @@ export interface operations {
                      *             "quantity": 1000,
                      *             "unitPrice": "4.85"
                      *           },
-                     *           "variantCount": 228
+                     *           "thumbnailUrl": null,
+                     *           "variantCount": 183
                      *         }
                      *       }
                      *     ]
@@ -309289,6 +309410,10 @@ export interface operations {
                      *           "materialClass": "paperboard",
                      *           "nameEn": "Tuck-end carton (configurable ends)",
                      *           "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
+                     *           "options": [
+                     *             "tuck_bottom:crash_lock",
+                     *             "window:front_window"
+                     *           ],
                      *           "pricePath": "instant",
                      *           "referenceCode": null,
                      *           "startingPrice": {
@@ -309298,7 +309423,8 @@ export interface operations {
                      *             "quantity": 1000,
                      *             "unitPrice": "4.85"
                      *           },
-                     *           "variantCount": 228
+                     *           "thumbnailUrl": null,
+                     *           "variantCount": 183
                      *         }
                      *       ],
                      *       "facets": {
@@ -309451,6 +309577,10 @@ export interface operations {
                      *       "materialClass": "paperboard",
                      *       "nameEn": "Tuck-end carton (configurable ends)",
                      *       "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
+                     *       "options": [
+                     *         "tuck_bottom:crash_lock",
+                     *         "window:front_window"
+                     *       ],
                      *       "partnersCount": null,
                      *       "pricePath": "instant",
                      *       "productTypeCode": "folding_carton",
@@ -309474,8 +309604,9 @@ export interface operations {
                      *         "quantity": 1000,
                      *         "unitPrice": "4.85"
                      *       },
+                     *       "thumbnailUrl": null,
                      *       "useCases": [],
-                     *       "variantCount": 228,
+                     *       "variantCount": 183,
                      *       "variants": [
                      *         {
                      *           "code": "PK-TE-01-K7QD",
@@ -309601,6 +309732,10 @@ export interface operations {
                      *         "materialClass": "paperboard",
                      *         "nameEn": "Tuck-end carton (configurable ends)",
                      *         "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
+                     *         "options": [
+                     *           "tuck_bottom:crash_lock",
+                     *           "window:front_window"
+                     *         ],
                      *         "partnersCount": null,
                      *         "pricePath": "instant",
                      *         "productTypeCode": "folding_carton",
@@ -309624,8 +309759,9 @@ export interface operations {
                      *           "quantity": 1000,
                      *           "unitPrice": "4.85"
                      *         },
+                     *         "thumbnailUrl": null,
                      *         "useCases": [],
-                     *         "variantCount": 228,
+                     *         "variantCount": 183,
                      *         "variants": [
                      *           {
                      *             "code": "PK-TE-01-K7QD",
@@ -309670,6 +309806,152 @@ export interface operations {
             };
             /** @description Problem: `styles.variant_not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.styles.listVariants": {
+        parameters: {
+            query?: {
+                category?: string;
+                cursor?: string;
+                family?: string;
+                limit?: number;
+                materialClass?: string;
+                /** @description Options `axis:value`, repeated or comma-separated: values of one axis are alternatives, different axes all apply */
+                option?: string[];
+                pricePath?: components["schemas"]["QuoteMode"];
+                /** @description Search over the styles (as `store.styles.list`) and variant codes */
+                q?: string;
+                sort?: components["schemas"]["StyleVariantSort"];
+                /** @description One style's variants only (its public code) */
+                style?: string;
+                useCase?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of variants with facets */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "baseCode": "PK-TE-01",
+                     *           "category": "folding_carton",
+                     *           "code": "PK-TE-01-K7QD",
+                     *           "family": "tuck_end",
+                     *           "materialClass": "paperboard",
+                     *           "nameEn": "Tuck-end carton (configurable ends)",
+                     *           "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
+                     *           "options": {
+                     *             "hang": "none",
+                     *             "tuck_bottom": "crash_lock",
+                     *             "tuck_top": "reverse_tuck",
+                     *             "window": "front_window"
+                     *           },
+                     *           "pricePath": "rfq",
+                     *           "thumbnailUrl": null
+                     *         }
+                     *       ],
+                     *       "facets": {
+                     *         "category": [
+                     *           {
+                     *             "count": 183,
+                     *             "value": "folding_carton"
+                     *           }
+                     *         ],
+                     *         "materialClass": [
+                     *           {
+                     *             "count": 183,
+                     *             "value": "paperboard"
+                     *           }
+                     *         ],
+                     *         "option": [
+                     *           {
+                     *             "count": 61,
+                     *             "value": "window:front_window"
+                     *           },
+                     *           {
+                     *             "count": 61,
+                     *             "value": "window:none"
+                     *           }
+                     *         ]
+                     *       },
+                     *       "meta": {
+                     *         "libraryStyles": 122,
+                     *         "libraryTotal": 986,
+                     *         "nextCursor": null,
+                     *         "total": 183
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StyleVariantListDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

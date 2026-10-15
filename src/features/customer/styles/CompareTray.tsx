@@ -23,7 +23,7 @@ export function CompareTray() {
         <h2 className="text-sm font-medium">{t("tray")}</h2>
         <ul className="flex flex-wrap gap-1">
           {compare.codes.map((code) => (
-            <li key={code} className="bg-bg-subtle flex items-center gap-1 rounded-control ps-3 font-mono text-sm">
+            <li key={code} className="bg-bg-subtle rounded-control flex items-center gap-1 ps-3 font-mono text-sm">
               {code}
               <IconButton
                 name="close"
