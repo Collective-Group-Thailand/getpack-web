@@ -11,6 +11,9 @@ import { browserApi } from "@/lib/api/browser";
 
 const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
+/** A length in mm at the API's precision (two decimals), never `-0`. */
+const mm = (value: number) => Math.round(value * 100) / 100 || 0;
+
 /**
  * The studio's renders of a version for its print file (D-280, ADR-0013): packio-api assembles the
  * print PDF from the engine's vector die and **these** — the artwork the studio itself drew, at
@@ -53,10 +56,12 @@ export async function uploadRenders(
         kind: body.kind,
         side: body.side,
         ...(body.separation ? { separation: body.separation } : {}),
-        xMm: body.x,
-        yMm: body.y,
-        widthMm: body.width,
-        heightMm: body.height,
+        // The API takes two decimals (0.01 mm, AddRenderDto); a tile's edge computed from pixels at
+        // 300 dpi is a long float, which it refused as 422 — the whole order step failed on it.
+        xMm: mm(body.x),
+        yMm: mm(body.y),
+        widthMm: mm(body.width),
+        heightMm: mm(body.height),
       },
     });
     count += 1;
