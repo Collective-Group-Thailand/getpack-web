@@ -18,7 +18,9 @@
       },
       "top_window": {
         "window": "rect",
-        "windowPanel": "lid"
+        "windowPanel": "lid",
+        "windowWidth": 40,
+        "windowHeight": 20
       }
     }
   },
