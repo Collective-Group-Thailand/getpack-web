@@ -29,7 +29,9 @@
       },
       "front_window": {
         "window": "rect",
-        "windowPanel": "wall-front"
+        "windowPanel": "wall-front",
+        "windowWidth": 50,
+        "windowHeight": 12
       }
     },
     "thumb": {
