@@ -48,13 +48,15 @@
     "templateDownload": "ขอลิงก์แบบไดคัท",
     "templateOpen": "เปิดแบบไดคัท",
     "templateFailed": "ขอลิงก์แบบไดคัทไม่สำเร็จ กรุณาลองใหม่",
-    "hintNoRules": "PDF, AI, PSD, PNG หรือ JPG ส่งได้ครั้งละไม่เกิน {count} ไฟล์"
+    "hintNoRules": "PDF, AI, PSD, PNG หรือ JPG ส่งได้ครั้งละไม่เกิน {count} ไฟล์",
+    "titleInstead": "หรืออัปโหลดไฟล์งานเอง"
   },
   "versions": {
     "title": "ไฟล์ที่ส่งแล้ว",
     "version": "ฉบับที่ {version}",
     "latest": "ล่าสุด",
-    "meta": "ส่งเมื่อ {date} · {files}"
+    "meta": "ส่งเมื่อ {date} · {files}",
+    "metaDesign": "ส่งเมื่อ {date} · จากแบบใน Studio"
   },
   "design": {
     "failed": "ทำรายการไม่สำเร็จ กรุณาลองใหม่",
@@ -95,5 +97,13 @@
     "paidRoundNet": "ค่าแก้ไข {fee} (ก่อน VAT)",
     "checklist": "ตรวจทุกข้อก่อนอนุมัติ",
     "approveType": "พิมพ์ {code} เพื่อยืนยัน"
+  },
+  "fromDesign": {
+    "title": "แบบจาก Studio ของออเดอร์นี้",
+    "body": "แบบ “{title}” เวอร์ชัน {version} ที่สั่งผลิต ส่งเป็นไฟล์งานได้ทันที ทีมพรีเพรสจะตรวจและส่งพรูฟให้ ไม่ต้องอัปโหลดไฟล์เอง",
+    "sent": "ส่งแบบ “{title}” เวอร์ชัน {version} ให้ทีมตรวจแล้ว ติดตามผลตรวจและพรูฟได้ด้านล่าง",
+    "submit": "ส่งแบบนี้ให้ทีมตรวจ",
+    "open": "แก้ไขใน Studio",
+    "failed": "ส่งแบบไม่สำเร็จ ลองอีกครั้ง"
   }
 }

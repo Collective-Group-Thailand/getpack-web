@@ -145,7 +145,14 @@ export function useQuoteActions({
         await editCart((ifMatch) =>
           api.POST("/v1/store/cart/items", {
             params: { header: { "If-Match": ifMatch } },
-            body: { quoteId: quote.id, quoteOptionId: option.id, designOption: state.designOption },
+            body: {
+              quoteId: quote.id,
+              quoteOptionId: option.id,
+              designOption: state.designOption,
+              ...(state.designOption === "online_designer" && state.designDocumentId
+                ? { designDocumentId: state.designDocumentId }
+                : {}),
+            },
           }),
         );
         void queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });

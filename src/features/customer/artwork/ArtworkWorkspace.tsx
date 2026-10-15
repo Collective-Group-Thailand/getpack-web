@@ -104,7 +104,14 @@ function Findings({ submission }: { submission: Submission }) {
  * and whether each check blocks or warns (D-070), and the box's dieline and size, which open the
  * online designer on this box for an order made with it.
  */
-export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
+/** The studio design an order was placed with (D-276), when the order page found one. */
+export interface OrderedDesign {
+  designId: string;
+  title: string;
+  versionNo: number;
+}
+
+export function ArtworkWorkspace({ initial, design = null }: { initial: Artwork; design?: OrderedDesign | null }) {
   const t = useTranslations("artwork");
   const format = useFormat();
   const queryClient = useQueryClient();
@@ -123,6 +130,8 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  const [sendingDesign, setSendingDesign] = useState(false);
+  const [designFailure, setDesignFailure] = useState<string | null>(null);
 
   const { order } = artwork;
   const uploading = pending.some((file) => !file.fileId && !file.failed);
@@ -158,6 +167,23 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
       } catch {
         setPending((current) => current.map((item) => (item.key === entry.key ? { ...item, failed: true } : item)));
       }
+    }
+  }
+
+  /** The order's own design becomes its artwork (`store.designs.submitForOrder`): no upload to make. */
+  async function submitDesign() {
+    setSendingDesign(true);
+    setDesignFailure(null);
+    try {
+      await browserApi().POST("/v1/store/orders/{orderId}/artwork-submissions/from-design", {
+        params: { path: { orderId } },
+        body: {},
+      });
+      await queryClient.invalidateQueries({ queryKey: artworkKey(orderId) });
+    } catch (error) {
+      setDesignFailure(isApiError(error) ? error.detail : t("fromDesign.failed"));
+    } finally {
+      setSendingDesign(false);
     }
   }
 
@@ -217,11 +243,40 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
 
       {artwork.designService ? <DesignServicePanel artwork={artwork} /> : null}
 
+      {/* An order placed with a studio design (D-276): the design is the artwork, one click away. */}
+      {design && order.designOption === "online_designer" && order.artworkStatus !== "approved" ? (
+        <section aria-labelledby="artwork-design">
+          <Callout tone={latest?.source === "designer" ? "success" : "info"} title={t("fromDesign.title")}>
+            <p className="text-sm">
+              {t(latest?.source === "designer" ? "fromDesign.sent" : "fromDesign.body", {
+                title: design.title,
+                version: design.versionNo,
+              })}
+            </p>
+            {designFailure ? (
+              <p className="text-danger mt-1 text-sm" role="alert">
+                {designFailure}
+              </p>
+            ) : null}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {latest?.source !== "designer" && artwork.actions.upload ? (
+                <Button size="sm" iconStart="upload" loading={sendingDesign} onClick={() => void submitDesign()}>
+                  {t("fromDesign.submit")}
+                </Button>
+              ) : null}
+              <Button asChild size="sm" variant="secondary" iconStart="palette">
+                <Link href={`/studio/${design.designId}?step=design`}>{t("fromDesign.open")}</Link>
+              </Button>
+            </div>
+          </Callout>
+        </section>
+      ) : null}
+
       {/* Once a proof is approved the file is fixed (B4.1): the upload steps away. */}
       {order.designOption !== "hired_design" && order.artworkStatus !== "approved" ? (
         <section aria-labelledby="artwork-upload" className="flex flex-col gap-4">
           <h2 id="artwork-upload" className="text-lg font-semibold">
-            {t("upload.title")}
+            {t(design && order.designOption === "online_designer" ? "upload.titleInstead" : "upload.title")}
           </h2>
           <p className="text-muted text-sm">{t("upload.checksIntro")}</p>
           {rules ? (
@@ -349,13 +404,15 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
                   <StatusChip map={PREFLIGHT_STATUS} value={submission.preflightStatus} />
                 </div>
                 <p className="text-muted text-xs">
-                  {t("versions.meta", {
-                    date: format.dateTime(submission.submittedAt),
-                    files: submission.files
-                      .map((entry) => entry.originalName ?? entry.linkUrl ?? "")
-                      .filter(Boolean)
-                      .join(", "),
-                  })}
+                  {submission.source === "designer"
+                    ? t("versions.metaDesign", { date: format.dateTime(submission.submittedAt) })
+                    : t("versions.meta", {
+                        date: format.dateTime(submission.submittedAt),
+                        files: submission.files
+                          .map((entry) => entry.originalName ?? entry.linkUrl ?? "")
+                          .filter(Boolean)
+                          .join(", "),
+                      })}
                 </p>
                 {submission.rejectReason ? <p className="text-sm">{submission.rejectReason}</p> : null}
                 {index === 0 ? <Findings submission={submission} /> : null}

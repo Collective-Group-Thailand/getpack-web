@@ -195,6 +195,7 @@ export function Configurator({
       postcode: previous.postcode,
       load: previous.load,
       designOption: previous.designOption,
+      designDocumentId: previous.designDocumentId,
     }));
 
   const byId = optionsById(configurator);
@@ -452,7 +453,7 @@ export function Configurator({
             configurator={configurator}
             state={state}
             onChange={update}
-            designerAvailable={boxStyleOf(configurator, state) !== null}
+            designerAvailable={boxStyleOf(configurator, state) !== null || !!state.designDocumentId}
           />
         );
       case "summary":
