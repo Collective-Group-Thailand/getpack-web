@@ -93,7 +93,17 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   start of day would be refused as back-dated). Tried in a browser against packio-api with real object storage:
   draft → edit → submit, zone postcodes, a holiday, the factory tab, status correction and POD → delivered with the
   order reconciled.
-- Open: CMS images and template thumbnails upload as purpose `document`, which packio-api keeps as a financial
+- **Round 4 — factories, production, prepress, catalogue** (packio-api v0.64.0, D-414, D-415): factory tabs for
+  processes (propose / verify against a passing site visit / reject / withdraw) and working hours (versions,
+  closures), edits of addresses, contacts, capabilities, what it makes per product type and machines;
+  `/partners/requests`, `/partners/boards`; a job panel on the production board and the order (hold, resume,
+  reassign, issues, QC); inspection scheduling, scorecard recompute, `/production/tooling`; proof decisions on the
+  customer's behalf, preflight rerun, hired design assign / cancel; a "more" menu on catalogue rows (product images,
+  options, patterns, reference configuration, stock images and attributes, palettes, template fonts and design,
+  pattern flutes and geometry, band tables, article categories, FAQ products) and the geometry tables. Pictures
+  upload as purpose `image` (standard retention); signed files stay `document`, fonts `design_asset`. Tried in a
+  browser against packio-api with real object storage: hours and a closure, a proposal, items, an address, a board
+  sheet with its file, hold / resume, a product image, options, bands.
   record (≥ 10 years); an image purpose with standard retention belongs in round 4 (catalogue extras).
 
 ---
