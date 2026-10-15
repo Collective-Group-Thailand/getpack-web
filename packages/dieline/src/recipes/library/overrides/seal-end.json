@@ -31,7 +31,10 @@
     "th": "ปิดทั้งสองด้านด้วยกาว แน่นหนา เหมาะกับสินค้าเทใส่อัตโนมัติ เช่น ซีเรียล ผงซักฟอก",
     "en": "Both ends closed with glue — tamper-evident, for auto-filled goods like cereal or detergent"
   },
-  "materials": ["paperboard", "corrugated"],
+  "materials": [
+    "paperboard",
+    "corrugated"
+  ],
   "params": [
     {
       "ref": "length",
@@ -57,13 +60,23 @@
     "windowHeight",
     "windowOffsetX",
     "windowOffsetY",
-    "windowRadius"
+    "windowRadius",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
   ],
   "defaults": {
     "@extends": "carton",
     "length": 190,
     "width": 60,
-    "height": 280
+    "height": 280,
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40
   },
   "presets": [
     {
@@ -118,6 +131,13 @@
   "features": [
     {
       "module": "window"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
     }
   ],
   "legacy": {

@@ -31,7 +31,10 @@
     "th": "กล่องกระดาษแข็งฝาเสียบและก้นล็อก 4 ปีก ตามโครงสร้างตระกูลฝาเสียบ",
     "en": "Folding carton with a tuck top and a four-flap lock bottom — the tuck-end family's closure pair"
   },
-  "materials": ["paperboard", "corrugated"],
+  "materials": [
+    "paperboard",
+    "corrugated"
+  ],
   "params": [
     {
       "ref": "length",
@@ -61,10 +64,20 @@
     "windowHeight",
     "windowOffsetX",
     "windowOffsetY",
-    "windowRadius"
+    "windowRadius",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
   ],
   "defaults": {
-    "@extends": "carton"
+    "@extends": "carton",
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40
   },
   "presets": "carton",
   "body": {
@@ -91,6 +104,13 @@
     },
     {
       "module": "window"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
     }
   ]
 }

@@ -41,7 +41,10 @@
     "th": "หูแขวนตั้งบนขอบแผงหลัง ฝาบนปิดด้วยปีกหน้าเต็มความลึกทากาวกับปีกกันฝุ่น",
     "en": "A hang tab stands on the back panel; the top closes with a full-depth front flap glued to the dust flaps"
   },
-  "materials": ["paperboard", "corrugated"],
+  "materials": [
+    "paperboard",
+    "corrugated"
+  ],
   "params": [
     {
       "ref": "length",
@@ -69,11 +72,21 @@
     "windowOffsetY",
     "windowRadius",
     "hangerHeight",
-    "hangHole"
+    "hangHole",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
   ],
   "defaults": {
     "@extends": "carton",
-    "hangHole": "euro"
+    "hangHole": "euro",
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40
   },
   "presets": "carton",
   "body": {
@@ -97,6 +110,13 @@
     },
     {
       "module": "window"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
     }
   ]
 }

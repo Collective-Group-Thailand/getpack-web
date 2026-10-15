@@ -31,7 +31,10 @@
     "th": "ฝาบนเป็นลิ้นเสียบ ก้นพับล็อกกันเองโดยไม่ต้องใช้กาว รับน้ำหนักได้ดีกว่าฝาเสียบธรรมดา",
     "en": "Tuck top; the bottom flaps interlock without glue and carry more weight than a tuck"
   },
-  "materials": ["paperboard", "corrugated"],
+  "materials": [
+    "paperboard",
+    "corrugated"
+  ],
   "params": [
     {
       "ref": "length",
@@ -62,10 +65,20 @@
     "windowHeight",
     "windowOffsetX",
     "windowOffsetY",
-    "windowRadius"
+    "windowRadius",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
   ],
   "defaults": {
-    "@extends": "carton"
+    "@extends": "carton",
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40
   },
   "presets": "carton",
   "body": {
@@ -93,9 +106,21 @@
     },
     {
       "module": "window"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
     }
   ],
   "legacy": {
-    "patternKeys": ["pid:16", "pid:17", "mapping:94", "folding-truck-end-snap-lock-bottom"]
+    "patternKeys": [
+      "pid:16",
+      "pid:17",
+      "mapping:94",
+      "folding-truck-end-snap-lock-bottom"
+    ]
   }
 }
