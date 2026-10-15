@@ -4,6 +4,7 @@ import {
   getCatalogueTree,
   getLibraryTotals,
   getSupportChannels,
+  listAllStyles,
   listFaqs,
   listStyles,
 } from "@/features/customer/catalog/api.server";
@@ -24,6 +25,7 @@ import {
 } from "@/features/customer/home/HomeSections";
 import { lowestPresetQty } from "@/features/customer/home/studio-hero";
 import { getStudioHero } from "@/features/customer/home/studio-hero.server";
+import { homeTemplates } from "@/features/customer/home/templates";
 import { getGuarantee, getNetworkStats } from "@/features/customer/trust/api.server";
 
 /**
@@ -40,10 +42,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [content, tree, styles, faqs, channels, guarantee, network, hero, library] = await Promise.all([
+  const [content, tree, styles, published, faqs, channels, guarantee, network, hero, library] = await Promise.all([
     getHomeContent(locale),
     getCatalogueTree(),
     listStyles({ sort: "popular", limit: 7 }).catch(() => null),
+    // The curated templates are looked up in the whole (cached) library; popular ones fill any gap.
+    listAllStyles().catch(() => []),
     listFaqs().catch(() => []),
     getSupportChannels(),
     getGuarantee().catch(() => null),
@@ -81,7 +85,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <TrustRow />
       {content.photos.mosaic ? <PhotoMosaic photos={content.photos.mosaic} /> : null}
       <TemplateGallery
-        styles={styles?.data ?? []}
+        styles={homeTemplates(published, styles?.data ?? [])}
         total={templateCount}
         categories={styleCategories.filter((facet) => facet.count > 0).length}
         library={library}

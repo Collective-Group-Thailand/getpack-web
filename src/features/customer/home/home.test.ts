@@ -57,11 +57,19 @@ describe("home CMS content (Phase 4)", () => {
 describe("isoBox", () => {
   it("draws three closed faces and a logo only when printed", () => {
     const plain = isoBox({ w: 18, d: 12, h: 5 }, "mailer", MATERIAL_TINT.kraft350, "none");
-    expect(plain.top).toMatch(/^M.* Z$/);
+    expect(plain.faces).toHaveLength(3);
+    for (const face of plain.faces) expect(face.d).toMatch(/^M.* Z$/);
     expect(plain.logo).toBeNull();
     const full = isoBox({ w: 18, d: 12, h: 5 }, "lid", MATERIAL_TINT.art350, "full");
     expect(full.logo?.fill).toBe("#f6f3ee");
-    expect(full.fills.top).toBe("rgb(58,124,110)");
+    expect(full.faces.at(-1)!.fill).toBe("rgb(58,124,110)");
+  });
+
+  it("turns: the logo face shows only while it faces the viewer", () => {
+    const at = (yaw: number) => isoBox({ w: 18, d: 12, h: 5 }, "mailer", MATERIAL_TINT.kraft350, "one", yaw);
+    expect(at(0).logo).not.toBeNull();
+    expect(at(180).logo).toBeNull();
+    expect(at(45).faces.length).toBeGreaterThanOrEqual(2);
   });
 
   it("fits any size inside the panel's viewBox", () => {
@@ -70,12 +78,15 @@ describe("isoBox", () => {
       { w: 10, d: 10, h: 18 },
       { w: 60, d: 2, h: 2 },
     ]) {
-      const box = isoBox(size, "tuck", MATERIAL_TINT.corrE, "one");
-      const numbers = [box.top, box.left, box.right]
-        .join(" ")
-        .match(/-?\d+(\.\d+)?/g)!
-        .map(Number);
-      expect(Math.max(...numbers.map(Math.abs))).toBeLessThanOrEqual(160);
+      for (const yaw of [0, 30, 45, 90, 135, 200, 315]) {
+        const box = isoBox(size, "tuck", MATERIAL_TINT.corrE, "one", yaw);
+        const points = box.outlines
+          .join(" ")
+          .match(/-?\d+(\.\d+)? -?\d+(\.\d+)?/g)!
+          .map((pair) => pair.split(" ").map(Number) as [number, number]);
+        expect(Math.max(...points.map(([x]) => Math.abs(x)))).toBeLessThanOrEqual(175);
+        expect(Math.max(...points.map(([, y]) => Math.abs(y)))).toBeLessThanOrEqual(150);
+      }
     }
   });
 });
