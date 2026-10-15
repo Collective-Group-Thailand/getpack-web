@@ -116,6 +116,8 @@ export function CatalogueTable({
             return <Icon name="paperclip" size={16} label={t("hasFile")} />;
           case "json":
             return <span className="text-muted font-mono text-xs">{t("jsonSet")}</span>;
+          case "list":
+            return <span className="block max-w-72 truncate">{Array.isArray(value) ? value.join(", ") : ""}</span>;
           default:
             return (
               <span className={MONO.has(field) ? "font-mono text-sm whitespace-nowrap" : "block max-w-72 truncate"}>
@@ -169,6 +171,8 @@ export function CatalogueTable({
     switch (kind.kind) {
       case "textarea":
         return { ...common, kind: "textarea", rows: 4 };
+      case "list":
+        return { ...common, kind: "text", hint: common.hint ?? t("listHint") };
       case "number":
         return { ...common, kind: "number", unit: field.endsWith("Mm") ? t("units.mm") : undefined };
       case "switch":

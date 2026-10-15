@@ -81,6 +81,22 @@ describe("the form model", () => {
     expect(toBody(types, values, "update")).not.toHaveProperty("code");
   });
 
+  it("edits a list field as one comma-separated line", () => {
+    const glossary = tableByKey("glossary-terms")!;
+    const values = toValues(glossary, {
+      id: "1",
+      termTh: "ไดคัท",
+      definitionTh: "ตัดตามแบบ",
+      aliases: ["die cut", "ตัดตามรูป"],
+    });
+    expect(values.aliases).toBe("die cut, ตัดตามรูป");
+    expect(toBody(glossary, { ...values, aliases: "die cut, ตัดตามรูป,, ไดคัต " }, "update").aliases).toEqual([
+      "die cut",
+      "ตัดตามรูป",
+      "ไดคัต",
+    ]);
+  });
+
   it("parses a JSON field and refuses one that is not an object", () => {
     const schema = buildSchema(types);
     const base = { ...emptyValues(types), code: "x", nameTh: "x", nameEn: "x", categoryId: "c" };

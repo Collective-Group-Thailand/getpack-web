@@ -68,6 +68,24 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-10 | **Packio Factory ERP E1 — stock, purchasing, trading partners** (branch `feat/factory-erp-e1`, merged to main; packio-api v0.44.0 adopted) | `gen:api --adopt --tag v0.44.0`, `gen:rbac` (roles Storekeeper, Purchaser). New sidebar group คลังและจัดซื้อ: `/stock` (overview strip, task tiles, items / low / movements views, reorder list → draft POs), `/stock/items/new`, `/stock/items/[itemId]`, `/stock/receive` (pick the delivering PO, its open lines prefilled; or without a PO), `/stock/issue`, `/stock/count` (count / adjust / opening), `/stock/transfer`, `/purchasing` (open / draft / all / receipts), `/purchasing/new`, `/purchasing/[poId]` (nextActions: edit, approve with typed confirm, receive, close, cancel), `/purchasing/[poId]/edit`, `/purchasing/[poId]/print` (A4 purchase order; AppShell chrome now `print:hidden`), `/purchasing/receipts/[grId]`, `/partners` (+ new, detail), `/settings/erp` (warehouses, rules, prefixes, modules). Namespace `partnerErp` th/en, status map `ERP_PURCHASE_ORDER_STATUS`, `erp_po.*` action presentation, `erp.*` problem copy, stateful MSW mock `mocks/partner/erp.ts` + `partner-erp-mocks.test.ts`, nav tests for the new roles, Lighthouse URLs. Verified against the real API (v0.44.0 on PostgreSQL 16 + UAT seed): receive against a PO, issue, PO draft → approve, print, at 1280 and 390. tsgo, eslint, vitest (1160) green. | Phone e2e spec for the ERP screens; per-warehouse balance filter by item id (uses `q=sku`); E2 (planning, MRP) | Money is never summed in the browser: PO totals appear after saving (the API computes them). Warehouse toggles send `If-Match: *` (unconditional flag change). |
 ---
 
+## Admin completion, in rounds (D-411) — 2026-10-15
+
+- **Round 1 — style library** (packio-api v0.61.0): `/style-library` desk (bases, sign-offs, curation, variants,
+  imports, coverage, rules, next styles).
+- **Round 2 — studio and CMS** (packio-api v0.62.0, D-412): `/studio-catalog` (templates: from the library or a
+  layout JSON with a face/slot map, families from the library's bases, thumbnail upload, submit / approve / return /
+  retire — approving one's own shows the maker-checker message) and `/studio-catalog/elements`; `/reviews`;
+  `/line`; `/privacy` (PDPA requests with export download, consent texts, agreement versions); `/inbox/canned`
+  (linked from the inbox); CMS glossary terms and customer stories. Client checks follow the API's patterns
+  (`content/codes.ts`): template / element codes lower-case, rich menu keys, canned tags (`lead-time` →
+  `lead_time`). The library templates named families that do not exist (`folding_carton`, `corrugated`); they now
+  name box families with all faces. Tried in a browser against packio-api with real object storage (S3-compatible
+  server locally) and the worker: template with thumbnail upload, element publish, canned add / archive, rich menu.
+- Open: CMS images and template thumbnails upload as purpose `document`, which packio-api keeps as a financial
+  record (≥ 10 years); an image purpose with standard retention belongs in round 4 (catalogue extras).
+
+---
+
 ## Customer web UX + SEO/AEO/GEO pass — 2026-10-14/15
 
 Branch `feat/customer-ux-seo` (13 commits), driven by the owner walking every customer menu. Verified in the
@@ -1072,7 +1090,7 @@ Unit 1,040 (+ anchors, CSP per zone). e2e: `storefront-studio-collab.spec.ts` (f
 
 ### Found on the real API
 - **Idempotency-Key must be a uuid** — the first keys were readable composites; now `stableIdempotencyKey()` (uuid v5 layout).
-- **The dev stack's storage is a placeholder** (`https://fake-s3.invalid`): no browser upload completes there, so the order flow stops at the renders with "ส่งไฟล์งานพิมพ์ไม่สำเร็จ…" and adds nothing to the cart; packio-api refuses an order of a version without renders. The full order (print job, cart, lock) is therefore proven on the mock only. Both in `docs/integration.md`.
+- *(Superseded 2026-10-15: real object storage is in use; see `docs/integration.md`.)* **The dev stack's storage was a placeholder** (`https://fake-s3.invalid`): no browser upload completes there, so the order flow stops at the renders with "ส่งไฟล์งานพิมพ์ไม่สำเร็จ…" and adds nothing to the cart; packio-api refuses an order of a version without renders. The full order (print job, cart, lock) is therefore proven on the mock only. Both in `docs/integration.md`.
 - **A thumbnail upload fetched a `data:` URL**, which our CSP's `connect-src` refuses (every studio save logged it): decoded in place now.
 - **`designer.shortcuts.group.*` were missing** (the `group` key is the "group" action's label): the shortcut sections are `shortcuts.groups.*` now.
 

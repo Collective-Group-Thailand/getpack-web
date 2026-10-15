@@ -132,7 +132,20 @@
     "videoUrl": "Video link",
     "weightG": "Weight (g)",
     "widthMm": "Width",
-    "z": "Z factor"
+    "z": "Z factor",
+    "termTh": "Term (Thai)",
+    "termEn": "Term (English)",
+    "definitionTh": "Definition (Thai)",
+    "definitionEn": "Definition (English)",
+    "aliases": "Aliases",
+    "brandNameTh": "Brand",
+    "productTh": "Product",
+    "provinceTh": "Province",
+    "quantity": "Quantity",
+    "leadTimeDays": "Lead time (days)",
+    "quoteTh": "Customer quote",
+    "photoFileId": "Photo",
+    "consentFileId": "Customer consent"
   },
   "hints": {
     "code": "The key used by Excel import; must be unique",
@@ -244,6 +257,11 @@
     "QuoteMode": {
       "instant": "Instant",
       "rfq": "RFQ"
+    },
+    "HomeCaseStatus": {
+      "draft": "Draft",
+      "approved": "Approved",
+      "withdrawn": "Withdrawn"
     }
   },
   "tables": {
@@ -414,6 +432,14 @@
     "import": {
       "title": "Excel import & export",
       "description": "Export as the template, edit, and import through a preview"
+    },
+    "glossary-terms": {
+      "title": "Glossary",
+      "description": "Printing and packaging terms shown in Help, with the words customers may use for them"
+    },
+    "home-cases": {
+      "title": "Customer stories",
+      "description": "Real customer work on the home page; each needs the customer's consent and an approval. The home shows the section once three are approved"
     }
   },
   "sectionTitles": {
@@ -743,5 +769,15 @@
       "save": "Save the match"
     }
   },
-  "rowCount": "{count} rows"
+  "rowCount": "{count} rows",
+  "cases": {
+    "decide": "Home page",
+    "approve": "Approve for the home page",
+    "withdraw": "Withdraw",
+    "approved": "Approved: the story shows on the home page",
+    "withdrawn": "Withdrawn from the home page",
+    "needsConsent": "Attach the customer's consent first",
+    "failed": "That did not work"
+  },
+  "listHint": "Separate each with a comma (,)"
 }
