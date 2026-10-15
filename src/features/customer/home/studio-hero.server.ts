@@ -1,6 +1,6 @@
 import "server-only";
 
-import { resolveStyleId } from "@packio/dieline";
+import { RECIPES, resolveStyleId } from "@packio/dieline";
 
 import { publicApi } from "@/features/customer/catalog/api.server";
 import { isApiError } from "@/lib/api/problem";
@@ -13,6 +13,19 @@ import {
   type HeroPriced,
   type HeroShapeView,
 } from "./studio-hero";
+
+/**
+ * The studio style a hero shape opens: the product's dieline key when the engine knows it, else the
+ * engine's own recipe for the shape's style code (D-310 names PK-CF-01, PK-TE-01, … — a product's
+ * dieline key is often a pattern code the engine does not alias). Only the engine's core styles count:
+ * the browser draws these without loading the whole library.
+ */
+function styleIdOf(shape: HeroShapeView): string | null {
+  const byKey = resolveStyleId(shape.dielineKey);
+  if (byKey) return byKey;
+  const recipe = shape.styleCode ? RECIPES.find((entry) => entry.base === shape.styleCode) : undefined;
+  return recipe ? resolveStyleId(recipe.id) : null;
+}
 
 /** Previews tried before the hero gives up on opening with a price (each is one engine run). */
 const ATTEMPTS = 4;
@@ -53,7 +66,7 @@ export async function getStudioHero(): Promise<StudioHero> {
       console.warn("home hero: presets unavailable", error);
       return null;
     });
-  const shapes = shapesOf(presets).map((shape) => ({ ...shape, styleId: resolveStyleId(shape.dielineKey) }));
+  const shapes = shapesOf(presets).map((shape) => ({ ...shape, styleId: styleIdOf(shape) }));
   const api = await publicApi("prices");
   for (const selection of candidates(selectionOfDefault(presets), shapes).slice(0, ATTEMPTS)) {
     const body = requestOf(selection, shapes);
