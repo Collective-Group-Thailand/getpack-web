@@ -113,6 +113,19 @@
   ::placeholder {
     color: var(--color-subtle);
     opacity: 1;
+    /* A hint, not a value: a step below the control's own text, which Thai in Anuphan
+     * otherwise matches in weight and reads as already filled in (owner feedback 2026-10-14). */
+    font-size: 0.9375em;
+  }
+
+  /*
+   * Storefront controls at 15 px on a desktop: 16 px Thai in a 40-px control crowds its box.
+   * A phone keeps 16 px — iOS Safari zooms into any smaller control on focus.
+   */
+  @media (min-width: 768px) {
+    [data-zone="customer"] :is(input, textarea, select)[data-size="md"] {
+      font-size: 0.9375rem;
+    }
   }
 
   ::selection {

@@ -49,6 +49,14 @@ export async function uploadFile(
     factoryId?: string;
     /** A file uploaded for a B2B company (its brand assets, D-227). */
     companyId?: string;
+    /**
+     * Return only once the API has scanned the file (the default). Every call that *uses* a file
+     * — a message attachment, a slip, a render — is refused with `file.not_ready` until then, and
+     * the scan runs in the worker a moment after `complete`; waiting here is what every caller
+     * would otherwise have to do itself. `false` returns right after `complete`, for a caller
+     * that only stores the id for later.
+     */
+    waitForScan?: boolean;
   } = {},
 ): Promise<UploadedFile> {
   const api = browserApi();
@@ -94,5 +102,54 @@ export async function uploadFile(
         ? (await api.POST("/v1/partner/files/{fileId}/actions/complete", path)).data
         : (await api.POST("/v1/store/files/{fileId}/actions/complete", path)).data;
   if (!completed) throw new Error("complete returned no body");
-  return completed;
+  if (options.waitForScan === false || completed.scanStatus === "clean" || completed.scanStatus === "skipped")
+    return completed;
+  return waitUntilScanned(zone, completed.id, { signal: options.signal });
+}
+
+/**
+ * Waits until the API has scanned an uploaded file. `complete` only *queues* the malware scan
+ * (api-conventions §3); anything that then *uses* the file — a studio render, a print job — is
+ * refused with `file.not_ready` until the worker marks it `clean`. Polls the file every half
+ * second, up to `timeoutMs`; an infected file throws, so the caller never retries over it.
+ */
+/** Why a scan wait ended without a usable file; `timeout` is worth a retry, the others are not. */
+export class ScanError extends Error {
+  constructor(
+    readonly kind: "timeout" | "infected" | "failed",
+    readonly fileId: string,
+  ) {
+    super(kind === "timeout" ? `file ${fileId} was not scanned in time` : `file ${fileId} is ${kind}`);
+    this.name = "ScanError";
+  }
+}
+
+export async function waitUntilScanned(
+  zone: Zone,
+  fileId: string,
+  options: { timeoutMs?: number; signal?: AbortSignal } = {},
+): Promise<UploadedFile> {
+  const api = browserApi();
+  const deadline = Date.now() + (options.timeoutMs ?? 90_000);
+  const read = async () => {
+    const path = { params: { path: { fileId } } };
+    const { data } =
+      zone === "admin"
+        ? await api.GET("/v1/admin/files/{fileId}", path)
+        : zone === "partner"
+          ? await api.GET("/v1/partner/files/{fileId}", path)
+          : await api.GET("/v1/store/files/{fileId}", path);
+    if (!data) throw new Error("file read returned no body");
+    return data;
+  };
+  for (;;) {
+    if (options.signal?.aborted) throw new DOMException("aborted", "AbortError");
+    const file = await read();
+    // `skipped` is a deployment with no scanner: the file is as ready as it will ever be.
+    if (file.scanStatus === "clean" || file.scanStatus === "skipped") return file;
+    if (file.scanStatus !== "pending")
+      throw new ScanError(file.scanStatus === "infected" ? "infected" : "failed", fileId);
+    if (Date.now() >= deadline) throw new ScanError("timeout", fileId);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
 }

@@ -17,6 +17,7 @@ import { ConsentStep } from "./ConsentStep";
 import { consentsToAsk, loadOnboarding, needsProfile, type Consent, type ConsentSource } from "./onboarding";
 import { OTP_CODE_LENGTH, type OtpChallenge } from "./otp";
 import { ProfileStep } from "./ProfileStep";
+import { BrandMark, type Brand } from "./BrandMark";
 import { firebaseConfigured, lineConfigured } from "./providers";
 import { useResendTimer } from "./useResendTimer";
 
@@ -374,6 +375,7 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
 
       <div className="flex flex-col gap-2.5">
         <ProviderButton
+          brand="google"
           available={providers.firebase}
           disabled={pending}
           label={t("customer.google")}
@@ -381,6 +383,7 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
           onClick={() => withFirebase("google")}
         />
         <ProviderButton
+          brand="apple"
           available={providers.firebase}
           disabled={pending}
           label={t("customer.apple")}
@@ -388,6 +391,7 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
           onClick={() => withFirebase("apple")}
         />
         <ProviderButton
+          brand="line"
           available={providers.line}
           disabled={pending}
           label={t("customer.line")}
@@ -425,13 +429,27 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
  * (`provider-sdks.ts`), so it costs the page nothing until then. No third-party logos (CLAUDE.md:
  * no third-party assets) — the words name the provider.
  */
+/**
+ * A provider's button carries the provider's mark (`BrandMark`) before its label, in the
+ * provider's own button colours where its guidelines ask for them: Apple black on white text,
+ * LINE green with white text, Google white with a grey hairline. The values are the providers'
+ * published button colours, not Packio's palette, which is why they sit here and not in tokens.
+ */
+const PROVIDER_STYLE: Record<Brand, string> = {
+  google: "bg-white text-[#1f1f1f] border-[#747775] hover:bg-[#f2f2f2]",
+  apple: "bg-black text-white border-black hover:bg-[#1a1a1a]",
+  line: "bg-[#06C755] text-white border-[#06C755] hover:bg-[#05b34c]",
+};
+
 function ProviderButton({
+  brand,
   available,
   disabled,
   label,
   unavailable,
   onClick,
 }: {
+  brand: Brand;
   available: boolean;
   disabled?: boolean;
   label: string;
@@ -447,7 +465,9 @@ function ProviderButton({
       disabled={!available || disabled}
       title={available ? undefined : unavailable}
       onClick={onClick}
+      className={cn("relative", PROVIDER_STYLE[brand])}
     >
+      <BrandMark brand={brand} className="absolute start-4 size-5" />
       {label}
     </Button>
   );

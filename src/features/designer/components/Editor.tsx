@@ -1015,7 +1015,9 @@ export default function Editor({
                       // Below 1280 the split's 3D floats as a card over the canvas, so an open tool
                       // panel never squeezes the artwork (the "StudioEditor" board's responsive note).
                       view === "split"
-                        ? "border-border shadow-overlay absolute end-3 bottom-3 z-20 max-h-[calc(100%-1.5rem)] w-64 overflow-y-auto rounded-2xl border xl:static xl:max-h-none xl:w-[42%] xl:shrink-0 xl:overflow-visible xl:rounded-none xl:border-0 xl:border-s xl:shadow-none"
+                        // Small enough that the artwork stays visible beside it when a tool panel
+                        // narrows the canvas (a 256 px card covered most of a 370 px canvas).
+                        ? "border-border shadow-overlay absolute end-3 bottom-3 z-20 max-h-[40%] w-40 overflow-y-auto rounded-2xl border lg:w-52 xl:static xl:max-h-none xl:w-[42%] xl:shrink-0 xl:overflow-visible xl:rounded-none xl:border-0 xl:border-s xl:shadow-none"
                         : "flex-1",
                     )}
                   >

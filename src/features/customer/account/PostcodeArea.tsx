@@ -10,7 +10,7 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 export type PostcodeArea = Schemas["StorePostcodeAreaDto"];
 
@@ -105,7 +105,7 @@ export function PostcodeAreaField({
         required
         requiredLabel={t("requiredMark")}
       >
-        <Select
+        <SearchableSelect
           value={chosen?.subdistrict.id}
           onValueChange={(id) => choose(list.find((area) => area.subdistrict.id === id))}
           placeholder={t("choose")}

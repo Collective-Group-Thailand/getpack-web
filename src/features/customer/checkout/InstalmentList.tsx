@@ -40,7 +40,7 @@ export function InstalmentList({ instalments }: { instalments: Instalment[] }) {
   }
 
   return (
-    <div className="border-border mt-6 overflow-x-auto rounded-xl border">
+    <div className="bg-surface border-border mt-6 overflow-x-auto rounded-xl border">
       <table className="w-full text-sm">
         <caption className="sr-only">{t("caption")}</caption>
         <thead className="bg-bg-subtle text-muted text-xs">

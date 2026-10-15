@@ -477,6 +477,8 @@ export function Studio({
                 onQuantity={setQuantity}
                 onOrder={() => goTo("order")}
                 orderDisabled={!hasContent}
+                orderDisabledReason={hasContent ? undefined : t("dock.needsContent")}
+                hideOrder={shown === "order"}
               />
             ),
         }}

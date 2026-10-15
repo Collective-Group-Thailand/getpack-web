@@ -14,7 +14,7 @@ import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { PhotoPicker, type PickedPhoto } from "./PhotoPicker";
@@ -133,7 +133,7 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
 
       {claimable.length > 1 ? (
         <Field label={t("shipment")}>
-          <Select
+          <SearchableSelect
             value={shipmentId}
             onValueChange={setShipmentId}
             options={claimable.map((shipment) => ({

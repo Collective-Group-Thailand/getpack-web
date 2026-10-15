@@ -90,7 +90,7 @@ export default async function Page({
       <p className="text-muted mt-2">{t("intro")}</p>
       <ol className="text-muted mt-4 grid gap-2 text-sm sm:grid-cols-3">
         {(["step1", "step2", "step3"] as const).map((step, index) => (
-          <li key={step} className="border-border flex gap-2 rounded-lg border p-3">
+          <li key={step} className="bg-surface border-border flex gap-2 rounded-lg border p-3">
             <span className="text-primary font-semibold tabular-nums">{index + 1}</span>
             {t(`how.${step}`)}
           </li>

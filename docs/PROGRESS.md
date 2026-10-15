@@ -68,6 +68,58 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-10 | **Packio Factory ERP E1 — stock, purchasing, trading partners** (branch `feat/factory-erp-e1`, merged to main; packio-api v0.44.0 adopted) | `gen:api --adopt --tag v0.44.0`, `gen:rbac` (roles Storekeeper, Purchaser). New sidebar group คลังและจัดซื้อ: `/stock` (overview strip, task tiles, items / low / movements views, reorder list → draft POs), `/stock/items/new`, `/stock/items/[itemId]`, `/stock/receive` (pick the delivering PO, its open lines prefilled; or without a PO), `/stock/issue`, `/stock/count` (count / adjust / opening), `/stock/transfer`, `/purchasing` (open / draft / all / receipts), `/purchasing/new`, `/purchasing/[poId]` (nextActions: edit, approve with typed confirm, receive, close, cancel), `/purchasing/[poId]/edit`, `/purchasing/[poId]/print` (A4 purchase order; AppShell chrome now `print:hidden`), `/purchasing/receipts/[grId]`, `/partners` (+ new, detail), `/settings/erp` (warehouses, rules, prefixes, modules). Namespace `partnerErp` th/en, status map `ERP_PURCHASE_ORDER_STATUS`, `erp_po.*` action presentation, `erp.*` problem copy, stateful MSW mock `mocks/partner/erp.ts` + `partner-erp-mocks.test.ts`, nav tests for the new roles, Lighthouse URLs. Verified against the real API (v0.44.0 on PostgreSQL 16 + UAT seed): receive against a PO, issue, PO draft → approve, print, at 1280 and 390. tsgo, eslint, vitest (1160) green. | Phone e2e spec for the ERP screens; per-warehouse balance filter by item id (uses `q=sku`); E2 (planning, MRP) | Money is never summed in the browser: PO totals appear after saving (the API computes them). Warehouse toggles send `If-Match: *` (unconditional flag change). |
 ---
 
+## Customer web UX + SEO/AEO/GEO pass — 2026-10-14/15
+
+Branch `feat/customer-ux-seo` (13 commits), driven by the owner walking every customer menu. Verified in the
+browser against the UAT stack; `pnpm lint`/`typecheck` ran per-file (the full project typecheck does not fit the
+agent VM's 4 GB — run `pnpm typecheck && pnpm test` on the Mac before merging). The i18n th/en key parity was
+checked by script; `ConsentStep.test.tsx` was rewritten for the new step and `proxy.test.ts` covers `/llms.txt`.
+
+### Done
+
+- **Promo code** is a coupon-shaped box (`CouponFrame` in `src/ui`, the one place the `accent` tone may be used by
+  a feature) in the cart summary and the checkout, with the API's refusal inline, each code's state in words, and
+  the preview's promotion savings under a "you save" heading. Test coupon `WELCOME10` (10 %, min ฿1,000) exists in UAT.
+- **Surfaces**: the light page is one step darker and the hairline one step stronger (`primitives.ts`; all 141
+  contrast pairs still pass); 93 bordered boxes that had no background are `bg-surface`; the account nav is a panel
+  with a bar on the open item.
+- **Type**: a `title` step (24–28 px) for working pages replaces the 32–38 px titles on account, cart, checkout,
+  track, configure; placeholders a step below the control; desktop storefront controls 15 px (phones keep 16 px).
+- **Edit flows**: address and tax-profile add/edit in a titled side sheet; area (postcode, sub-district) editable
+  on both (the API always took it); saved E.164 phones pass the form's national-format check.
+- **Selects**: every customer-zone `Select` is `SearchableSelect` (search box from six options; copy in `common.select`).
+- **Guest-cart merge** tries a refused browser line once (`pk_guest_cart_tried_v1`), so the cart no longer
+  announces "could not move 1 line" on every visit.
+- **Consent at sign-in**: two ticks (terms + privacy, linked; news and offers covering every channel, with the
+  channels under "choose channels"); cookie analytics carried from the banner. Profile step no longer hands back
+  the masked-number placeholder as a name.
+- **Orders**: a journey tracker before the API lists production stages (`fulfilment/journey.ts` reads the
+  progress timestamps); the artwork workspace is a button.
+- **Studio**: locked steps say why (toast + title); the disabled order button says what is missing; one order
+  action on the order step; smaller floating 3D card below xl; fit margin scales with the view; the setup
+  dialog's preview is sticky; `SegmentedControl` segments size from their labels.
+- **Sign-in providers**: Google/Apple/LINE buttons carry the provider's mark from `public/brands/<brand>.svg`
+  (official assets to be dropped in — README there) in the provider's published button colours.
+- **Content pages** (`pages` namespace, th/en): how-it-works (HowTo + FAQPage), about (AboutPage), partner-with-us
+  (Service), terms / privacy (PDPA) / cookies with a table of contents — replacing six `ComingSoon` placeholders.
+- **SEO**: generated Open Graph cards (`opengraph-image.tsx`, brand card + product/category card; Anuphan static
+  TTFs in `features/customer/seo/fonts`), og:type/site_name/locale and `summary_large_image`, `WebSite` +
+  `SearchAction`, page-type JSON-LD across the storefront (CollectionPage/ItemList, DefinedTermSet, ContactPage,
+  Service, AggregateRating only with verified reviews, Breadcrumb + WebPage elsewhere), `speakable` on every
+  answer-first paragraph, and `/llms.txt` built from the same copy and API data (served on the indexed zone only).
+- **.ai dieline download**: `ai` beside PDF/DXF/SVG in `DielineDownload`; packio-api `feat/dieline-ai-download`
+  delivers the designer PDF as `application/illustrator`. Contract widened locally until adopted
+  (`docs/contract-requests.md`, store.dielines.download-ai).
+
+### Found, not fixed here
+
+- Browser uploads (artwork, studio print files, logos) need the S3 host in CSP (`NEXT_PUBLIC_ASSET_BASE_URL`,
+  set in `.env.local` for UAT — restart `pnpm dev`) **and** a CORS policy on the bucket. With
+  `INTEGRATIONS_MODE=fake` no browser upload can succeed at all (`fake-s3.invalid`).
+- UAT has no published API styles, so `/styles/[slug]` and the free-dieline form cannot be exercised yet.
+- Open owner asks in the task list: customer-uploaded fonts in the studio (with print embedding and a licence
+  acknowledgement), full account-nav regrouping on wide screens.
+
 ## Partner portal UX pass — 2026-10-09
 
 Asked by the product owner: "the partner zone is hard to use — editing anything is confusing". A tour of every partner page at 1054 on :3001 (UAT API, factory F9001, owner persona), then three slices merged to main. Same design language as the storefront work of the same day (v3: paper/ink/sage, four radii, no eyebrow, Proof wording, the glossary).
