@@ -40,6 +40,7 @@ export function photosFromManifest(locale: string, assets: LocalManifestAsset[],
     process: { sample: null, packing: null },
     quality: null,
     templates: new Map(),
+    categories: new Map(),
   };
   const mosaic: (HomePhoto | null)[] = Array.from({ length: MOSAIC_SIZE }, () => null);
   for (const asset of assets) {
@@ -52,6 +53,8 @@ export function photosFromManifest(locale: string, assets: LocalManifestAsset[],
     else if (position === "frame-4") photos.process.sample = found;
     else if (position === "frame-9") photos.process.packing = found;
     else if (tile) mosaic[Number(tile[1]) - 1] = found;
+    else if (/^category-[a-z0-9]+([_-][a-z0-9]+)*$/.test(position))
+      photos.categories.set(position.slice("category-".length), found);
     else if (position.startsWith("template-")) {
       const name = position.slice("template-".length);
       const code = STYLE_CODE.test(name) ? name : asset.styleCode;
@@ -66,6 +69,8 @@ export function photosFromManifest(locale: string, assets: LocalManifestAsset[],
 export function fillEmptySlots(cms: HomePhotos, local: HomePhotos): HomePhotos {
   const templates = new Map(local.templates);
   for (const [code, value] of cms.templates) templates.set(code, value);
+  const categories = new Map(local.categories);
+  for (const [code, value] of cms.categories) categories.set(code, value);
   return {
     hero: cms.hero ?? local.hero,
     mosaic: cms.mosaic ?? local.mosaic,
@@ -75,5 +80,6 @@ export function fillEmptySlots(cms: HomePhotos, local: HomePhotos): HomePhotos {
     },
     quality: cms.quality ?? local.quality,
     templates,
+    categories,
   };
 }

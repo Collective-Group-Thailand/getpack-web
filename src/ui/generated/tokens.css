@@ -220,10 +220,10 @@
 /* Light is the base: no cookie, no OS preference, no surprises. */
 
 :root {
-  --sem-bg: oklch(96.7% 0.0029 264.54);
+  --sem-bg: oklch(96.51% 0.0074 80.72);
   --sem-bg-subtle: oklch(94.17% 0.0052 247.88);
   --sem-surface: oklch(100% 0 0);
-  --sem-surface-subtle: oklch(96.7% 0.0029 264.54);
+  --sem-surface-subtle: oklch(96.51% 0.0074 80.72);
   --sem-surface-raised: oklch(100% 0 0);
   --sem-overlay: oklch(26.2% 0.011 72 / 0.55);
   --sem-border: oklch(89.21% 0.0087 247.92);
@@ -387,7 +387,7 @@
   --sem-bg: oklch(100% 0 0);
   --sem-bg-subtle: oklch(100% 0 0);
   --sem-surface: oklch(100% 0 0);
-  --sem-surface-subtle: oklch(96.7% 0.0029 264.54);
+  --sem-surface-subtle: oklch(96.51% 0.0074 80.72);
   --sem-surface-raised: oklch(100% 0 0);
   --sem-overlay: oklch(0% 0 0 / 0.7);
   --sem-border: oklch(50.5% 0.0207 72);

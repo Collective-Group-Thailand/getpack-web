@@ -25,6 +25,8 @@ const MANIFEST = [
   asset("frame-9"),
   asset("template-mailer", "stack.jpg", { styleCode: "PK-CF-01" }),
   asset("template-bakery", "bag.jpg"),
+  asset("category-paper_bag", "kraft-bag.jpg"),
+  asset("category-Not A Code", "x.jpg"),
 ];
 
 describe("local home-photo fallback", () => {
@@ -37,6 +39,8 @@ describe("local home-photo fallback", () => {
     expect(photos.process.packing?.src).toBe("/media/home/frame-9.jpg");
     // A template photo is keyed by style code; one without a code is left out, never guessed.
     expect([...photos.templates.keys()]).toEqual(["PK-CF-01"]);
+    // A category photo is keyed by the category's code; anything else is ignored.
+    expect([...photos.categories.keys()]).toEqual(["paper_bag"]);
   });
 
   it("needs all five mosaic tiles", () => {

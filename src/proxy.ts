@@ -80,6 +80,8 @@ const CRAWLER_FILES = new Set(["/robots.txt", "/sitemap.xml", "/llms.txt"]);
 const STOREFRONT_MEDIA = "/media/";
 /** A style variant's drawn dieline (D-410): a route handler outside `[locale]`, like the BFF. */
 const STYLE_PREVIEWS = "/style-previews/";
+/** The sign-in providers' marks (`public/brands/`, `BrandMark`): static files, never locale-prefixed. */
+const BRAND_MARKS = "/brands/";
 
 export default async function proxy(request: NextRequest): Promise<NextResponse> {
   const zone = resolveZone(request.headers.get("host"), zoneHosts, enabledZones);
@@ -160,7 +162,10 @@ function route(request: NextRequest, zone: Zone, requestHeaders: Headers): NextR
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
-  if (zone === "customer" && (pathname.startsWith(STOREFRONT_MEDIA) || pathname.startsWith(STYLE_PREVIEWS))) {
+  if (
+    zone === "customer" &&
+    (pathname.startsWith(STOREFRONT_MEDIA) || pathname.startsWith(STYLE_PREVIEWS) || pathname.startsWith(BRAND_MARKS))
+  ) {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
