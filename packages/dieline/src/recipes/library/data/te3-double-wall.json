@@ -30,7 +30,9 @@
     "th": "ผนังหน้าและผนังข้างพับซ้อนสองชั้น ฝาพับติดผนังหลังปิดด้วยลิ้นเสียบด้านหน้า แข็งแรงสำหรับส่งออนไลน์",
     "en": "Front and end walls folded over double; a lid hinged on the back closes with a front tuck — e-commerce strength in paperboard"
   },
-  "materials": ["paperboard"],
+  "materials": [
+    "paperboard"
+  ],
   "params": [
     {
       "ref": "length",
@@ -49,7 +51,9 @@
     },
     {
       "ref": "tuckDepth",
-      "omit": ["help"]
+      "omit": [
+        "help"
+      ]
     },
     "grain",
     "tuckCorners",
@@ -78,7 +82,12 @@
     "windowHeight",
     "windowOffsetX",
     "windowOffsetY",
-    "windowRadius"
+    "windowRadius",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
   ],
   "defaults": {
     "length": 250,
@@ -93,7 +102,12 @@
     "windowHeight": 40,
     "windowOffsetX": 0,
     "windowOffsetY": 0,
-    "windowRadius": 6
+    "windowRadius": 6,
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40
   },
   "presets": [
     {
@@ -149,11 +163,21 @@
     {
       "module": "rollOverWalls",
       "with": {
-        "walls": ["front", "left", "right"]
+        "walls": [
+          "front",
+          "left",
+          "right"
+        ]
       }
     },
     {
       "module": "trayWindow"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t"
+      }
     }
   ],
   "outerSize": {

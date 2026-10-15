@@ -32,7 +32,9 @@
     "th": "กล่องกระดาษแข็งฝาเสียบแบบเครื่องบิน ลิ้นเสียบล็อกด้วยแรงเสียดทานหรือล็อกร่อง ก้นเสียบ",
     "en": "Folding carton with a airplane tuck top held by friction or slit locks, and a tuck bottom"
   },
-  "materials": ["paperboard"],
+  "materials": [
+    "paperboard"
+  ],
   "params": [
     {
       "ref": "length",
@@ -55,11 +57,27 @@
     "lock",
     "glueWidth",
     "glueSide",
-    "grain"
+    "grain",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth",
+    "headerShape",
+    "headerShapeHeight",
+    "headerPath"
   ],
   "defaults": {
     "@extends": "carton",
-    "lock": "friction"
+    "lock": "friction",
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40,
+    "headerShape": "none",
+    "headerPath": "M0 60 C20 0 80 0 100 60",
+    "headerShapeHeight": 50
   },
   "presets": "carton",
   "body": {
@@ -83,6 +101,19 @@
   "features": [
     {
       "module": "slitLock",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
+    },
+    {
+      "module": "shapedHeader",
       "with": {
         "end": "top"
       }

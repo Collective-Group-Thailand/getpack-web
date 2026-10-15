@@ -1,5 +1,5 @@
 {
-  "definition": "1ff76cb84e1224",
+  "definition": "0aa65b7efc1f82",
   "cosmetic · board-350": {
     "build": "022909ff34137c",
     "hinges": "13e44bbb93109e",
@@ -416,6 +416,174 @@
   },
   "cosmetic · board-350 · hangHole=none": {
     "build": "1f0346a48decad",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · insert=none": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · insert=die_cut": {
+    "build": "0ec95bcb6ff274",
+    "hinges": "1e44f671932595",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityShape=default": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityShape=rect": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityShape=circle": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityShape=bottle": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x1": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x2": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x3": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x4": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x5": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=1x6": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=2x2": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=2x3": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=2x4": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=2x5": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=3x3": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=3x4": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=4x4": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityGrid=4x6": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityLength=min": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityLength=max": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityLength<min": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityLength>max": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityWidth=min": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityWidth=max": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityWidth<min": {
+    "build": "022909ff34137c",
+    "hinges": "13e44bbb93109e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · cavityWidth>max": {
+    "build": "022909ff34137c",
     "hinges": "13e44bbb93109e",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"

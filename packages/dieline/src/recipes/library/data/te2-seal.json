@@ -32,7 +32,9 @@
     "th": "ฝาบนปิดกาว ก้นเป็นลิ้นเสียบที่ล็อกด้วยร่องหรือแรงเสียดทานกับปีกกันฝุ่น",
     "en": "Glued top; the bottom tuck locks by slits or friction against the dust flaps"
   },
-  "materials": ["paperboard"],
+  "materials": [
+    "paperboard"
+  ],
   "params": [
     {
       "ref": "length",
@@ -55,11 +57,21 @@
     "lock",
     "glueWidth",
     "glueSide",
-    "grain"
+    "grain",
+    "insert",
+    "cavityShape",
+    "cavityGrid",
+    "cavityLength",
+    "cavityWidth"
   ],
   "defaults": {
     "@extends": "carton",
-    "lock": "friction"
+    "lock": "friction",
+    "insert": "none",
+    "cavityShape": "default",
+    "cavityGrid": "1x1",
+    "cavityLength": 50,
+    "cavityWidth": 40
   },
   "presets": "carton",
   "body": {
@@ -82,6 +94,13 @@
       "module": "slitLock",
       "with": {
         "end": "bottom"
+      }
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
       }
     }
   ]
