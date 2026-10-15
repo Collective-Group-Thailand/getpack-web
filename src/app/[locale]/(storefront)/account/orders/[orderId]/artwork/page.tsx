@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { getMyArtwork } from "@/features/customer/artwork/api.server";
 import { ArtworkWorkspace } from "@/features/customer/artwork/ArtworkWorkspace";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { findLockedDesignOf } from "@/features/customer/orders/api.server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ARTWORK_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
@@ -27,7 +28,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId } = await params;
-  const [t, artwork] = await Promise.all([getTranslations("artwork"), getMyArtwork(orderId)]);
+  const [t, artwork, design] = await Promise.all([
+    getTranslations("artwork"),
+    getMyArtwork(orderId),
+    // The studio design the order was placed with, if any: a convenience the page never fails over.
+    findLockedDesignOf(orderId).catch(() => null),
+  ]);
   if (!artwork) notFound();
 
   return (
@@ -41,7 +47,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           <StatusChip map={ARTWORK_STATUS} value={artwork.order.artworkStatus} size="md" />
         </div>
       </header>
-      <ArtworkWorkspace initial={artwork} />
+      <ArtworkWorkspace initial={artwork} design={design} />
     </div>
   );
 }

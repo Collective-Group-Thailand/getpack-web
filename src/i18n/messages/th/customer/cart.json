@@ -79,5 +79,10 @@
     "savingsList": "ส่วนลดที่ได้รับ",
     "atCheckout": "ส่วนลดจากโค้ดคำนวณในขั้นชำระเงิน",
     "minus": "−{amount}"
+  },
+  "attachedDesign": {
+    "named": "แบบ “{title}” เวอร์ชัน {version} ·",
+    "loading": "กำลังโหลดชื่อแบบ… ·",
+    "open": "เปิดใน Studio"
   }
 }

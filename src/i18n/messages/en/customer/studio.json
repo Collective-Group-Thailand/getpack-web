@@ -232,6 +232,7 @@
     "sample": "Order a sample first",
     "unavailableTitle": "This design cannot be ordered from the studio yet",
     "unavailableBody": "Print files are not made automatically for this box style yet. Order through the product page and attach this design.",
+    "catalogueBody": "This design is drawn on a catalogue product, so the studio cannot build its print file yet. Press \"Order\" to order it from the product page with this design attached; price and quantity are chosen there.",
     "orderNow": "Order now",
     "addToCart": "Add to cart",
     "sendForApproval": "Send for approval",
@@ -399,7 +400,12 @@
     "recentOrdered": "Ordered · {code}",
     "sample": "Play with a sample design (not saved)",
     "describeTitle": "I have a product, I need a box",
-    "close": "Close"
+    "close": "Close",
+    "signInForDesign": {
+      "title": "This design is saved in an account",
+      "body": "This link is a design saved in your account. Sign in and you will come straight back to it.",
+      "action": "Sign in to open this design"
+    }
   },
   "home": {
     "metaTitle": "Box design studio",
