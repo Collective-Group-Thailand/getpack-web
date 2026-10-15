@@ -140,7 +140,8 @@
       "terms": "Commercial terms",
       "visits": "Site visits",
       "pricing": "Prices",
-      "erp": "Factory ERP (support)"
+      "erp": "Factory ERP (support)",
+      "shipping": "Shipping payout"
     },
     "statusActions": "Change status",
     "actions": {

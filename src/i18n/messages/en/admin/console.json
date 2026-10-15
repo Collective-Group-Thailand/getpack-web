@@ -59,7 +59,8 @@
   "form": {
     "baht": "THB",
     "choose": "Choose",
-    "failed": "Could not save"
+    "failed": "Could not save",
+    "fieldErrors": "Fix these fields"
   },
   "crud": {
     "actions": "Actions",

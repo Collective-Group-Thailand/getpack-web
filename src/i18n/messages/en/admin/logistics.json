@@ -120,7 +120,9 @@
       "book_carrier": "Book a fallback carrier",
       "resolve_exception": "Resolve",
       "review_pod": "Review the POD",
-      "cancel": "Cancel the shipment"
+      "cancel": "Cancel the shipment",
+      "update_status": "Correct transit status",
+      "record_pod": "Record proof of delivery"
     },
     "paymentHoldTitle": "Cannot be picked up yet",
     "paymentHoldBody": "The order still owes an instalment due before shipping; pick-up is refused until it is paid (B3.2).",
@@ -139,7 +141,59 @@
     "bookReason": "Why the fallback carrier",
     "cancelTitle": "Cancel {no}",
     "cancelBody": "{no} from {factory} is cancelled; this cannot be undone.",
-    "cancelled": "{no} cancelled"
+    "cancelled": "{no} cancelled",
+    "transit": {
+      "in_transit": "In transit",
+      "out_for_delivery": "Out for delivery",
+      "failed": "Delivery failed",
+      "returned": "Returned to the factory"
+    },
+    "statusUpdate": {
+      "title": "Correct the status of {no}",
+      "intro": "Recorded as a staff event, for any carrier. Delivered takes a proof of delivery instead.",
+      "submit": "Save status",
+      "status": "Status",
+      "location": "Location",
+      "occurredAt": "Happened at",
+      "occurredAtHint": "Empty means now (Bangkok time)",
+      "note": "Note",
+      "noteRequired": "A failed or returned trip needs a note of at least 3 characters.",
+      "done": "Status saved"
+    },
+    "podRecord": {
+      "title": "Record proof of delivery for {no}",
+      "introFleet": "Factory fleet: the receiver's name, a signature and at least one photo. Recording delivers the trip and, with the order's last trip, reconciles the order.",
+      "introCarrier": "Fallback carrier: the receiver's name and a photo or the carrier's POD reference.",
+      "submit": "Record delivery",
+      "receiver": "Receiver",
+      "receiverRequired": "Give the receiver's name.",
+      "deliveredFor": "Pieces accepted — {job} ({order})",
+      "deliveredHint": "{quantity} shipped; no more than that",
+      "quantityInvalid": "Pieces accepted must be between 0 and the pieces shipped.",
+      "photos": "Delivery photos",
+      "photosHint": "{count} chosen (up to 10)",
+      "drop": "Drop photos or",
+      "browse": "choose them",
+      "tooLarge": "{name} is too large",
+      "wrongType": "{name} is not an image",
+      "removePhoto": "Remove {name}",
+      "fleetEvidence": "A factory delivery needs at least one photo and a signature.",
+      "carrierEvidence": "Add a photo or the carrier's POD reference.",
+      "carrierRef": "Carrier's POD reference",
+      "carrierRefHint": "From the carrier's system, if any",
+      "note": "Note",
+      "done": "Delivery recorded",
+      "signature": {
+        "label": "Receiver's signature",
+        "labelRequired": "Receiver's signature (required)",
+        "hint": "Sign in the box or type the name",
+        "clear": "Clear",
+        "draw": "Sign",
+        "type": "Type the name",
+        "typedName": "Receiver's name",
+        "mode": "How to sign"
+      }
+    }
   },
   "claims": {
     "title": "Claims",
