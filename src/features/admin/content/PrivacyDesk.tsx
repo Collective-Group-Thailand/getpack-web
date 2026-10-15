@@ -69,9 +69,7 @@ function Requests() {
     action: "complete" | "reject";
     answer: string;
     key: string;
-  } | null>(
-    null,
-  );
+  } | null>(null);
   const query = useQuery({
     queryKey: queryKeys.list("admin", "privacy_request", { status, page }),
     placeholderData: keepPreviousData,
@@ -109,7 +107,10 @@ function Requests() {
       header: t("status"),
       cell: (row) => (
         <div>
-          <Badge tone={row.status === "submitted" ? "warning" : row.status === "completed" ? "success" : "neutral"} size="sm">
+          <Badge
+            tone={row.status === "submitted" ? "warning" : row.status === "completed" ? "success" : "neutral"}
+            size="sm"
+          >
             {t(`statuses.${row.status}`)}
           </Badge>
           {row.answer ? <p className="text-muted mt-1 text-xs">{row.answer}</p> : null}
@@ -122,15 +123,27 @@ function Requests() {
       cell: (row) =>
         row.status === "submitted" ? (
           <span className="flex flex-wrap gap-1">
-            <Button size="sm" onClick={() => setDeciding({ request: row, action: "complete", answer: "", key: newIdempotencyKey() })}>
+            <Button
+              size="sm"
+              onClick={() => setDeciding({ request: row, action: "complete", answer: "", key: newIdempotencyKey() })}
+            >
               {t(row.kind === "export" ? "completeExport" : "completeDeletion")}
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setDeciding({ request: row, action: "reject", answer: "", key: newIdempotencyKey() })}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setDeciding({ request: row, action: "reject", answer: "", key: newIdempotencyKey() })}
+            >
               {t("reject")}
             </Button>
           </span>
         ) : row.export ? (
-          <Button size="sm" variant="secondary" iconStart="download" onClick={() => exportFile.mutate(row.export!.fileId)}>
+          <Button
+            size="sm"
+            variant="secondary"
+            iconStart="download"
+            onClick={() => exportFile.mutate(row.export!.fileId)}
+          >
             {t("download")}
           </Button>
         ) : null,
@@ -214,7 +227,11 @@ function Requests() {
           }}
         >
           <Field label={t("answer")} hint={t("answerHint")} required={deciding.action === "reject"}>
-            <Textarea rows={4} value={deciding.answer} onChange={(e) => setDeciding({ ...deciding, answer: e.target.value })} />
+            <Textarea
+              rows={4}
+              value={deciding.answer}
+              onChange={(e) => setDeciding({ ...deciding, answer: e.target.value })}
+            />
           </Field>
         </FormDialog>
       ) : null}
@@ -226,9 +243,7 @@ function Consents() {
   const t = useTranslations("content.privacy.consents");
   const locale = useLocale();
   const queryClient = useQueryClient();
-  const [draft, setDraft] = useState<
-    (Schemas["PublishConsentTextDto"] & { purpose: Purpose }) | null
-  >(null);
+  const [draft, setDraft] = useState<(Schemas["PublishConsentTextDto"] & { purpose: Purpose }) | null>(null);
   const query = useQuery({
     queryKey: queryKeys.list("admin", "consent_purpose", {}),
     queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/consent-purposes")).data!,
@@ -296,7 +311,12 @@ function Consents() {
           }}
         >
           <Field label={t("effectiveFrom")} required>
-            <Input type="date" value={draft.effectiveFrom} min={today()} onChange={(e) => setDraft({ ...draft, effectiveFrom: e.target.value })} />
+            <Input
+              type="date"
+              value={draft.effectiveFrom}
+              min={today()}
+              onChange={(e) => setDraft({ ...draft, effectiveFrom: e.target.value })}
+            />
           </Field>
           <Field label={t("textTh")} required>
             <Textarea rows={5} value={draft.textTh} onChange={(e) => setDraft({ ...draft, textTh: e.target.value })} />
@@ -405,7 +425,12 @@ function Agreements() {
           }}
         >
           <Field label={t("effectiveFrom")} required>
-            <Input type="date" value={draft.effectiveFrom} min={today()} onChange={(e) => setDraft({ ...draft, effectiveFrom: e.target.value })} />
+            <Input
+              type="date"
+              value={draft.effectiveFrom}
+              min={today()}
+              onChange={(e) => setDraft({ ...draft, effectiveFrom: e.target.value })}
+            />
           </Field>
           <Field label={t("textTh")} required>
             <Textarea rows={8} value={draft.textTh} onChange={(e) => setDraft({ ...draft, textTh: e.target.value })} />
@@ -414,7 +439,10 @@ function Agreements() {
             <Textarea rows={6} value={draft.textEn} onChange={(e) => setDraft({ ...draft, textEn: e.target.value })} />
           </Field>
           <Field label={t("pdf")} hint={t("pdfHint")}>
-            <FileField value={draft.pdfFileId} onChange={(value) => setDraft({ ...draft, pdfFileId: String(value ?? "") })} />
+            <FileField
+              value={draft.pdfFileId}
+              onChange={(value) => setDraft({ ...draft, pdfFileId: String(value ?? "") })}
+            />
           </Field>
           <Field label={t("reason")} hint={t("reasonHint")} required>
             <Input value={draft.reason} onChange={(e) => setDraft({ ...draft, reason: e.target.value })} />

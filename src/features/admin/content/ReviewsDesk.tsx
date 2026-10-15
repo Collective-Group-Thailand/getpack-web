@@ -78,7 +78,9 @@ export function ReviewsDesk() {
       header: t("comment"),
       cell: (row) => (
         <div className="max-w-xl">
-          <p className="text-sm whitespace-pre-line">{row.comment ?? <span className="text-muted">{t("noComment")}</span>}</p>
+          <p className="text-sm whitespace-pre-line">
+            {row.comment ?? <span className="text-muted">{t("noComment")}</span>}
+          </p>
           {row.reply ? (
             <p className="text-muted border-border mt-1 border-s-2 ps-2 text-xs">
               {t("replied")}: {row.reply.body}
@@ -105,7 +107,10 @@ export function ReviewsDesk() {
       id: "status",
       header: t("status"),
       cell: (row) => (
-        <Badge tone={row.status === "published" ? "success" : row.status === "pending" ? "warning" : "neutral"} size="sm">
+        <Badge
+          tone={row.status === "published" ? "success" : row.status === "pending" ? "warning" : "neutral"}
+          size="sm"
+        >
           {t(`statuses.${row.status}`)}
         </Badge>
       ),
@@ -192,7 +197,11 @@ export function ReviewsDesk() {
           }}
         >
           <Field label={t("replyLabel")} hint={t("replyHint")} required>
-            <Textarea rows={5} value={replying.body} onChange={(e) => setReplying({ ...replying, body: e.target.value })} />
+            <Textarea
+              rows={5}
+              value={replying.body}
+              onChange={(e) => setReplying({ ...replying, body: e.target.value })}
+            />
           </Field>
         </FormDialog>
       ) : null}

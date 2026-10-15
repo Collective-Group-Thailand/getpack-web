@@ -167,7 +167,8 @@ export const TEMPLATE_LIBRARY: LibraryTemplate[] = (Object.keys(DRESS) as UseCas
       nameTh: `${dress.name.th} · ${ARCHETYPE_NAMES[archetype].th}`,
       nameEn: `${dress.name.en} · ${ARCHETYPE_NAMES[archetype].en}`,
       useCases: [useCase],
-      styleFamilies: ["folding_carton", "corrugated"],
+      // Library families whose boxes have the faces these layouts use (top, front, back, sides).
+      styleFamilies: ["tuck_end", "slotted", "mailer", "telescope", "ready_glued", "flip_top", "rigid", "lid_base"],
       layoutSchemaVersion: LAYOUT_SCHEMA_VERSION,
       layout: ARCHETYPES[archetype](dress),
     };

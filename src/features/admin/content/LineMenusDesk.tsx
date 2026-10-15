@@ -17,6 +17,7 @@ import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, FormDialog, FormError, QueryError, useCan } from "../console";
+import { RICH_MENU_KEY } from "./codes";
 
 type Menu = Schemas["RichMenuDto"];
 type Audience = Schemas["RichMenuAudience"];
@@ -97,7 +98,7 @@ export function LineMenusDesk() {
           submitLabel={t("save")}
           onClose={() => setDraft(null)}
           onSubmit={async () => {
-            if (!/^[a-z0-9_-]{2,40}$/.test(draft.key) || !draft.providerMenuId.trim()) throw new FormError(t("incomplete"));
+            if (!RICH_MENU_KEY.test(draft.key) || !draft.providerMenuId.trim()) throw new FormError(t("incomplete"));
             await adminBrowserApis().contract.PUT("/v1/admin/line/rich-menus/{key}", {
               params: { path: { key: draft.key } },
               body: { audience: draft.audience, providerMenuId: draft.providerMenuId.trim(), active: draft.active },
@@ -128,7 +129,11 @@ export function LineMenusDesk() {
               onChange={(e) => setDraft({ ...draft, providerMenuId: e.target.value })}
             />
           </Field>
-          <Switch label={t("active")} checked={draft.active} onCheckedChange={(active) => setDraft({ ...draft, active })} />
+          <Switch
+            label={t("active")}
+            checked={draft.active}
+            onCheckedChange={(active) => setDraft({ ...draft, active })}
+          />
         </FormDialog>
       ) : null}
     </div>
