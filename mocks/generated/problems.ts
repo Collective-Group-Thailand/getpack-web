@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.59.0). */
+/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.60.0). */
 
 export interface OperationProblems {
   method: string;
@@ -1670,6 +1670,7 @@ export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {
   "store.styleFavourites.remove": {"method":"DELETE","path":"/v1/store/style-favourites/{code}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.styles.list": {"method":"GET","path":"/v1/store/styles","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.styles.compare": {"method":"GET","path":"/v1/store/styles/compare","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"styles.variant_not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
+  "store.styles.listVariants": {"method":"GET","path":"/v1/store/styles/variants","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.styles.get": {"method":"GET","path":"/v1/store/styles/{code}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"styles.variant_not_found":404,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.support.getChannels": {"method":"GET","path":"/v1/store/support-channels","problems":{"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.support.contact": {"method":"POST","path":"/v1/store/support/actions/contact","problems":{"http.bad_request":400,"http.malformed_json":400,"idempotency.key_invalid":400,"idempotency.key_required":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"idempotency.in_progress":409,"idempotency.key_reused":422,"support.contact_required":422,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},

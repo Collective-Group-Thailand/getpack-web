@@ -523,7 +523,7 @@ strict `drawableBy` with the real engine (`v0.57.0`).
 
 A survey of Packhelp, Pakfactory, Packlane, Refine, PackMojo, Pacdora, templatemaker.nl, packsdo, FEFCO / ECMA
 catalogues and Thai printers (`docs/design-tool/style-survey-2026-10.md`) found 61 structures we lacked. The first
-18 are in: **123 bases, 987 variants, every one drawn.**
+17 are in (the triangular carton PK-SP-25 was dropped as the same structure as PK-SP-05, D-410): **122 bases, 986 variants, every one drawn.**
 
 | Base | Name | Recipe(s) / module |
 | --- | --- | --- |
@@ -541,10 +541,29 @@ catalogues and Thai printers (`docs/design-tool/style-survey-2026-10.md`) found 
 | PK-SP-22 | Tapered gift box | `tapered-gift` (`taperedTray`, negative taper) |
 | PK-TR-06 | Nestable tapered tray | `nestable-tray` |
 | PK-SP-23, PK-SP-24 | Paper cup, paper bowl | `paper-cup`, `paper-bowl`, body `cupBlank` |
-| PK-SP-25, PK-SP-26 | Triangular, pentagonal carton | `triangular-carton`, `pentagonal-carton` |
+| PK-SP-26 | Pentagonal carton | `pentagonal-carton` (PK-SP-25, a triangular carton, was dropped: PK-SP-05 is the same structure) |
 | PK-IN-04 | Corrugated U-liner | `u-liner`, body `uLiner` |
 
 Also new on existing bases (parameters, not variants): **cavity inserts cut to the product** (`cavityShape`
 rectangle / circle / bottle, `cavityGrid`, product size) on every tuck end and tray with an insert, and a **shaped
 display header** (`headerShape` arch, peak, wave, scallop, cloud, flower or the customer's SVG profile) on
 front-hinged tuck ends.
+
+## Browsing and search pages (D-410)
+
+The library front page stays one card per base: its variant count shown large ("60 แบบย่อย"), chips of
+the features it offers (`topics.ts`: window, hang tab, lock bottom, handle, insert …) and the API's
+thumbnail — until that is rendered, the engine's own drawing of the variant (`/style-previews/<base>?…`,
+`preview.server.ts`). `/styles?view=variants` lists every variant as a card (`store.styles.listVariants`),
+filtered by top, bottom, window, hang tab, other features and material, paged by cursor, `noindex`; a
+card opens its style with the variant chosen (`?v=`). What a search finds:
+
+| Page | URL | Count |
+|---|---|---|
+| A style, every option in words and every variant code in its text | `/styles/<code>-<name>` | 122 |
+| A style with one sought-after feature ("กล่องฝาเสียบมีหน้าต่าง") | `/styles/<code>-<name>/<topic>` | 135 |
+| A feature across the library ("กล่องมีหน้าต่าง") | `/styles/options/<topic>` | 16 |
+| A product ("กล่องสบู่", "กล่องครีมและเครื่องสำอาง") — the master's `use_cases` | `/styles/for/<use case>` | 20 |
+
+Variants that differ only in a detail (a round or a euro hang hole, a front or a top window) share a
+topic: they are cards on its page, never pages of their own.

@@ -88,7 +88,10 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
     min !== null && max !== null ? `${formatNumber(min, locale)}–${formatNumber(max, locale)}` : "—";
 
   return (
-    <section aria-labelledby="dieline-download" className="bg-surface border-border rounded-card flex flex-col gap-3 border p-4">
+    <section
+      aria-labelledby="dieline-download"
+      className="bg-surface border-border rounded-card flex flex-col gap-3 border p-4"
+    >
       <div>
         <h3 id="dieline-download" className="text-sm font-semibold">
           {t("title")}

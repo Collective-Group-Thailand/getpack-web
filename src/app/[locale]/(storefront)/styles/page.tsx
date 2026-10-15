@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
-import { listStyles } from "@/features/customer/catalog/api.server";
+import { getLibraryTotals, listStyles } from "@/features/customer/catalog/api.server";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { CompareTray } from "@/features/customer/styles/CompareTray";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
@@ -16,7 +16,11 @@ import {
   toQuery,
   type FilterKey,
 } from "@/features/customer/styles/query";
+import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
+import { LibraryViews } from "@/features/customer/styles/LibraryViews";
 import { StyleResults } from "@/features/customer/styles/StyleResults";
+import { isVariantsView, readVariantParams } from "@/features/customer/styles/variant-query";
+import { VariantsView } from "@/features/customer/styles/VariantsView";
 import { StudioStyleLibrary } from "@/features/customer/styles/StudioStyleLibrary";
 import { StyleCardActions } from "@/features/customer/styles/StyleCardActions";
 import { cardWords, StyleCardFace } from "@/features/customer/styles/StyleCardFace";
@@ -40,15 +44,21 @@ const CATEGORIES = ["folding_carton", "corrugated", "rigid", "flexible", "label"
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
-  const [t, locale, origin] = await Promise.all([getTranslations("styles"), getLocale(), publicOrigin()]);
-  const params = readParams(await searchParams);
+  const [t, locale, origin, raw] = await Promise.all([
+    getTranslations("styles"),
+    getLocale(),
+    publicOrigin(),
+    searchParams,
+  ]);
+  const params = readParams(raw);
   const { canonical, languages } = alternateUrls(origin, STYLES_HREF, locale as Locale);
   return {
     title: t("meta.listTitle"),
     description: t("meta.listDescription"),
     alternates: { canonical, languages },
-    // A filtered or searched view is a view of this page, not a page of its own (U3.5 §5).
-    ...(isFiltered(params) ? { robots: { index: false, follow: true } } : {}),
+    // A filtered or searched view — and the variants grid, whose cards are not pages (D-410) — is a
+    // view of this page, not a page of its own (U3.5 §5).
+    ...(isFiltered(params) || isVariantsView(raw) ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -66,14 +76,42 @@ export default async function StylesPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const query = readParams(await searchParams);
-  const [t, list, jar, origin, format] = await Promise.all([
+  const raw = await searchParams;
+  const variantsView = isVariantsView(raw);
+  const query = readParams(raw);
+  const [t, list, jar, origin, format, totals] = await Promise.all([
     getTranslations("styles"),
-    listStyles(toQuery(query, PER_PAGE)),
+    // The variants grid reads its own page; the styles list then is not needed.
+    variantsView ? null : listStyles(toQuery(query, PER_PAGE)),
     cookies(),
     publicOrigin(),
     getFormat(),
+    getLibraryTotals(),
   ]);
+  const header = (
+    <header className="max-w-3xl">
+      <h1 className="text-3xl font-bold md:text-4xl">
+        {query.q && !variantsView ? t("list.resultsFor", { q: query.q }) : t("list.heading")}
+      </h1>
+      {totals && !query.q ? (
+        <p className="text-primary mt-2 text-xl font-semibold md:text-2xl">
+          {t("claim.headline", { count: totals.variants })}
+        </p>
+      ) : null}
+      {!query.q ? <p className="text-muted mt-2">{variantsView ? t("list.variantsIntro") : t("list.intro")}</p> : null}
+      {totals ? <LibraryViews current={variantsView ? "variants" : "styles"} totals={totals} /> : null}
+    </header>
+  );
+
+  if (variantsView || !list)
+    return (
+      <div className="max-w-content mx-auto px-5 py-8 pb-28 md:px-8 md:py-12">
+        {header}
+        <VariantsView params={readVariantParams(raw)} locale={locale} />
+        <LibraryLinks />
+      </div>
+    );
+
   const words = t as unknown as StylesT;
   const signedIn = Boolean(readAccessToken(jar));
   const here = listHref(query);
@@ -103,12 +141,7 @@ export default async function StylesPage({
           })),
         }}
       />
-      <header className="max-w-2xl">
-        <h1 className="text-3xl font-bold md:text-4xl">
-          {query.q ? t("list.resultsFor", { q: query.q }) : t("list.heading")}
-        </h1>
-        {!query.q ? <p className="text-muted mt-2">{t("list.intro")}</p> : null}
-      </header>
+      {header}
 
       <nav aria-label={t("list.categories")} className="-mx-4 mt-6 overflow-x-auto px-4">
         <ul className="flex gap-1">
@@ -121,7 +154,7 @@ export default async function StylesPage({
                   href={listHref(query, { category })}
                   aria-current={current ? "page" : undefined}
                   className={cn(
-                    "focus-visible:ring-focus-ring block rounded-control px-3 py-1.5 text-sm whitespace-nowrap outline-none focus-visible:ring-2",
+                    "focus-visible:ring-focus-ring rounded-control block px-3 py-1.5 text-sm whitespace-nowrap outline-none focus-visible:ring-2",
                     current ? "bg-primary text-primary-fg" : "hover:bg-bg-subtle",
                   )}
                 >
@@ -287,6 +320,7 @@ export default async function StylesPage({
           </Callout>
         </div>
       </div>
+      <LibraryLinks />
       <CompareTray />
     </div>
   );

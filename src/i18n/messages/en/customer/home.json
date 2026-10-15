@@ -13,7 +13,8 @@
       "label": "At a glance",
       "templates": "<b>{count}</b> box templates to start from",
       "proof": "<b>Every job</b> checked by our prepress team",
-      "moq": "<b>{count}</b> pieces minimum order"
+      "moq": "<b>{count}</b> pieces minimum order",
+      "library": "<b>{count} styles</b>, every one yours to design"
     }
   },
   "trust": {
@@ -49,7 +50,9 @@
       "title": "Can't find your shape?<br></br>Send the spec, we build it",
       "body": "Magnetic lids, tubes, displays — our team draws the dieline, then you open it in the studio like any other template",
       "action": "Send a spec"
-    }
+    },
+    "library": "{count} variants of {styles} base styles · {categories} categories — every one yours to design",
+    "libraryLink": "See all {count} styles in the library"
   },
   "process": {
     "title": "The same box<br></br>from the first line to your customer's hands",
