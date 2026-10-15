@@ -24,8 +24,7 @@ export const MENU_CATALOGUE: readonly {
   /** One permission, or any of several (the finance workspace opens for each of its desks). */
   permission: StaffPermission | readonly StaffPermission[] | null;
 }[] = [
-  // packio-api src/modules/iam/menu.catalog.ts (v0.6.0), verbatim. There is no CMS entry: the CMS
-  // screens open by their URL only (CONTRACT-GAP admin.menu-cms).
+  // packio-api src/modules/iam/menu.catalog.ts (v0.61.0), verbatim.
   { key: "dashboard", path: "/admin", permission: null },
   { key: "orders", path: "/admin/orders", permission: "orders.read" },
   { key: "cs_calculators", path: "/admin/cs", permission: "quotes.calculate" },
@@ -37,7 +36,17 @@ export const MENU_CATALOGUE: readonly {
   { key: "claims", path: "/admin/claims", permission: "claims.read" },
   { key: "partners", path: "/admin/partners", permission: "partners.read" },
   { key: "catalogue", path: "/admin/catalogue", permission: "catalog.read" },
+  { key: "style_library", path: "/admin/style-library", permission: "styles.read" },
+  {
+    key: "structural_requests",
+    path: "/admin/structural-requests",
+    permission: ["structural_requests.manage", "structural_requests.design"],
+  },
+  { key: "style_intakes", path: "/admin/style-intakes", permission: ["styles.import", "styles.approve_recipe"] },
+  { key: "samples", path: "/admin/samples", permission: "samples.read" },
+  { key: "inbox", path: "/admin/inbox", permission: "conversations.read" },
   { key: "marketing", path: "/admin/marketing", permission: "promotions.read" },
+  { key: "cms", path: "/admin/cms", permission: "cms.manage" },
   { key: "customers", path: "/admin/customers", permission: "customers.read" },
   { key: "companies", path: "/admin/companies", permission: "companies.read" },
   { key: "discount_memos", path: "/admin/discount-memos", permission: "discount_memos.read" },
@@ -66,6 +75,7 @@ export const MENU_CATALOGUE: readonly {
   { key: "audit_logs", path: "/admin/audit-logs", permission: "audit_logs.read" },
   { key: "outbox", path: "/admin/outbox", permission: "outbox.manage" },
   { key: "analytics", path: "/admin/analytics", permission: "analytics.read" },
+  { key: "assistant", path: "/admin/assistant", permission: "assistant.manage" },
   { key: "reports", path: "/admin/reports", permission: null },
   { key: "ops", path: "/admin/ops", permission: "ops.read" },
 ];

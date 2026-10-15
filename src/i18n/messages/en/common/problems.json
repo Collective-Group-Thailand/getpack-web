@@ -495,7 +495,15 @@
     "variant_not_found": "This style was not found",
     "intake_closed": "Dieline offers are not open yet (no intake terms are in force)",
     "intake_decided": "This offer has already been decided",
-    "intake_terms_outdated": "The intake terms have changed — please read and accept them again"
+    "intake_terms_outdated": "The intake terms have changed — please read and accept them again",
+    "import_unreadable": "The file must be the master file or a recipe bundle, as JSON",
+    "import_stale": "The file or the library changed since the preview; preview it again",
+    "price_rule_exists": "This option already has a rule in this calculator",
+    "price_rule_retired": "This rule is already retired",
+    "role_required": "Only someone holding that role (Marketing or Prepress) can approve as it",
+    "maker_checker": "Whoever imported the recipe cannot approve it; another Prepress member must",
+    "recipe_approved": "This recipe is already approved",
+    "reference_mismatch": "The code typed does not match the library's"
   },
   "studio": {
     "spec_mismatch": "The spec does not match this design's box",

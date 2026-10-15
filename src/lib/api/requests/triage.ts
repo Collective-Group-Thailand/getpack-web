@@ -28,7 +28,7 @@ export interface RequestTriage {
   shippedIn?: string;
 }
 
-export const TRIAGE_SOURCE = {"commit":"0de3b53","triagedAgainst":"packio-web@f225d30","contract":"v0.43.2"} as const;
+export const TRIAGE_SOURCE = {"commit":"69e1351","triagedAgainst":"packio-web@f225d30","contract":"v0.61.0"} as const;
 
 export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "DELETE /v1/admin/rfqs/{rfqId}/quotes/{quoteId}": {"request":"admin.rfq-quotes","verdict":"published_differently","group":"U-B0.2","operationId":"admin.rfqs.discardQuotation","publishedAs":"POST /v1/admin/rfq-quotations/{rfqQuoteId}/actions/discard","gaps":0},
@@ -368,7 +368,12 @@ export const REQUEST_TRIAGE: Readonly<Record<string, RequestTriage>> = {
   "admin.geo": {"verdict":"published_differently","group":"U-B0.2","shippedIn":"v0.5.0"},
   "admin.imports": {"verdict":"published_differently","group":"U-B0.3","shippedIn":"v0.6.0"},
   "admin.inspections": {"verdict":"published_differently","group":"U-B0.2","shippedIn":"v0.5.0"},
+  "admin.menu-assistant": {"verdict":"published","group":"U-B0.3"},
+  "admin.menu-cms": {"verdict":"published","group":"U-B0.3"},
   "admin.menu-entries": {"verdict":"published","group":"U-B0.3","shippedIn":"v0.6.0"},
+  "admin.menu-inbox": {"verdict":"published","group":"U-B0.3"},
+  "admin.menu-samples": {"verdict":"published","group":"U-B0.3"},
+  "admin.menu-styles": {"verdict":"published","group":"U-B0.3"},
   "admin.order-actions": {"verdict":"published_differently","group":"U-B0.2","shippedIn":"v0.5.0"},
   "admin.order-notes": {"verdict":"published","group":"U-B0.2","shippedIn":"v0.5.0"},
   "admin.orders": {"verdict":"published_differently","group":"U-B0.2","shippedIn":"v0.5.0"},
@@ -469,6 +474,7 @@ export const REQUEST_TRIAGE: Readonly<Record<string, RequestTriage>> = {
   "store.sample-kits": {"verdict":"deferred","group":"U-B0.1","shippedIn":"v0.4.0"},
   "store.search-faq-hits": {"verdict":"published","group":"U-B0.1","shippedIn":"v0.4.0"},
   "store.sitemap": {"verdict":"published_differently","group":"U-B0.1","shippedIn":"v0.4.0"},
+  "store.styles.card-thumbnail": {"verdict":"published_differently","group":"U-B0.1"},
   "store.support": {"verdict":"published","group":"U-B0.1","shippedIn":"v0.4.0"},
   "store.support-channels": {"verdict":"published","group":"U-B0.1","shippedIn":"v0.4.0"},
   "store.tracking": {"verdict":"published_differently","group":"U-B0.1","shippedIn":"v0.4.0"},
