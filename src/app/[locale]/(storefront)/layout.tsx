@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AgentLinkClaim } from "@/features/customer/agent/AgentLinkClaim";
 import { FunnelPageView } from "@/features/customer/analytics/FunnelPageView";
 import { MobileBottomNav, SiteFooter, SiteHeader } from "@/features/customer/shell";
 import { ConsentBanner } from "@/features/customer/shell/ConsentBanner";
@@ -40,6 +41,7 @@ export default async function StorefrontLayout({
     >
       <GoogleTagManager />
       <FunnelPageView />
+      <AgentLinkClaim />
       <OrganizationJsonLd origin={origin} />
       <JsonLd data={webSiteSchema(origin, locale)} />
       {children}

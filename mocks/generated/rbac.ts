@@ -1,16 +1,22 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: packio-api docs/rbac.md at v0.64.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
+ * Source: packio-api docs/rbac.md at v0.65.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
  *
  * The permissions each D-140 staff role and factory role holds in packio-api, verbatim. The mock
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "9cd212f", tag: "v0.64.0" } as const;
+export const RBAC_SOURCE = { commit: "0d9f98f", tag: "v0.65.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
   "advisory.read",
+  "agent_commissions.adjust",
+  "agent_plans.approve",
+  "agent_plans.manage",
+  "agent_statements.approve",
+  "agents.manage",
+  "agents.read",
   "agreements.manage",
   "analytics.manage",
   "analytics.prospectus",
@@ -182,6 +188,8 @@ export type StaffPermission = (typeof STAFF_PERMISSIONS)[number];
 
 /** Cost and margin data (D-141), marked ◆ in the source. */
 export const SENSITIVE_PERMISSIONS: readonly StaffPermission[] = [
+  "agent_plans.approve",
+  "agent_statements.approve",
   "factory_buy_prices.read",
   "factory_cost.read",
   "factory_shipping_rates.manage",
@@ -196,6 +204,12 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
   superadmin: [
     "advisory.evaluate",
     "advisory.read",
+    "agent_commissions.adjust",
+    "agent_plans.approve",
+    "agent_plans.manage",
+    "agent_statements.approve",
+    "agents.manage",
+    "agents.read",
     "agreements.manage",
     "analytics.manage",
     "analytics.prospectus",
@@ -363,6 +377,10 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "zones.manage",
   ],
   c_level: [
+    "agent_plans.approve",
+    "agent_plans.manage",
+    "agents.manage",
+    "agents.read",
     "analytics.prospectus",
     "analytics.read",
     "analytics.read_factories",
@@ -408,6 +426,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "tax.read",
   ],
   vp: [
+    "agent_plans.approve",
+    "agents.read",
     "analytics.prospectus",
     "analytics.read",
     "analytics.read_factories",
@@ -432,6 +452,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "shipments.read",
   ],
   director: [
+    "agents.read",
     "analytics.read",
     "analytics.read_factories",
     "approvals.act",
@@ -453,6 +474,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
   admin: [
     "advisory.evaluate",
     "advisory.read",
+    "agents.manage",
+    "agents.read",
     "analytics.manage",
     "analytics.read",
     "approvals.delegate",
@@ -677,6 +700,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "styles.verify_reference",
   ],
   finance: [
+    "agents.read",
     "approvals.act",
     "approvals.delegate",
     "approvals.read",
@@ -734,6 +758,9 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "vendor_bank_accounts.verify",
   ],
   finance_manager: [
+    "agent_commissions.adjust",
+    "agent_statements.approve",
+    "agents.read",
     "approvals.act",
     "approvals.delegate",
     "approvals.read",
@@ -847,9 +874,27 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "styles.curate",
     "styles.read",
   ],
+  sales_manager: [
+    "agent_plans.manage",
+    "agents.manage",
+    "agents.read",
+    "analytics.read",
+    "approvals.delegate",
+    "approvals.read",
+    "calendars.read",
+    "companies.read",
+    "customers.read",
+    "files.read",
+    "files.upload",
+    "orders.read",
+    "partners.read",
+    "reports.export",
+    "settings.read",
+  ],
   partner_manager: [
     "advisory.evaluate",
     "advisory.read",
+    "agents.read",
     "agreements.manage",
     "analytics.prospectus",
     "analytics.read",
