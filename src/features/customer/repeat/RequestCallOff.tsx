@@ -11,7 +11,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 /**
  * "ล็อกราคาไว้เรียกของทีละงวด" on a saved quotation (U2.F5, D-290): ask its factory to lock the
@@ -61,7 +61,7 @@ export function RequestCallOff({ quoteId, optionId, label }: { quoteId: string; 
         }
       >
         <Field label={t("months")}>
-          <Select
+          <SearchableSelect
             value={months}
             onValueChange={setMonths}
             options={["3", "6", "9", "12"].map((value) => ({

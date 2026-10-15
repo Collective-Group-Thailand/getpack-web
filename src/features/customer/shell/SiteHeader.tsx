@@ -115,7 +115,7 @@ export async function SiteHeader() {
                   ))}
                 </ul>
               ) : (
-                <div className="border-border rounded-card mb-4 flex items-center gap-3 border p-4">
+                <div className="bg-surface border-border rounded-card mb-4 flex items-center gap-3 border p-4">
                   <span className="bg-sage-subtle text-fg grid size-10 shrink-0 place-items-center rounded-full">
                     <Icon name="user" size={20} aria-hidden="true" />
                   </span>

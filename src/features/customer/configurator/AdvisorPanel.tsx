@@ -146,7 +146,7 @@ export function AdvisorPanel({
   };
 
   return (
-    <section aria-labelledby="advisor-title" className="border-border flex flex-col gap-3 rounded-2xl border p-4">
+    <section aria-labelledby="advisor-title" className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 id="advisor-title" className="font-semibold">
           {t("title")}

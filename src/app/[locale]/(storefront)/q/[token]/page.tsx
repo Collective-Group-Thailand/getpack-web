@@ -51,7 +51,7 @@ export default async function QuoteLinkPage({ params }: { params: Promise<{ toke
         </div>
       </header>
 
-      <section className="border-border grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
+      <section className="bg-surface border-border grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
         <div>
           <p className="text-muted text-sm">{t("to")}</p>
           <p className="font-medium">{quote.buyer.name}</p>
@@ -121,7 +121,7 @@ export default async function QuoteLinkPage({ params }: { params: Promise<{ toke
       {quote.status === "sent" ? (
         <QuoteAnswer token={token} quoteNo={quote.quoteNo} />
       ) : (
-        <p className="border-border rounded-xl border p-4 font-medium" role="status">
+        <p className="bg-surface border-border rounded-xl border p-4 font-medium" role="status">
           {quote.status === "accepted"
             ? t("acceptedBy", { name: quote.acceptedName ?? "", at: quote.acceptedAt ? format.dateTime(quote.acceptedAt) : "" })
             : t(`closed.${quote.status}`)}

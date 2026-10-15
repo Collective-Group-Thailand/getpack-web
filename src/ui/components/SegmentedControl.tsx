@@ -60,7 +60,9 @@ export function SegmentedControl<T extends string = string>({
           data-segment={size}
           className={cn(
             // On a phone a long label wraps inside its segment rather than pushing the page sideways.
-            "inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent text-center leading-tight font-medium sm:whitespace-nowrap",
+            // `flex-auto`, not `flex-1`: segments start from their label's width and share the rest,
+            // so a long label ("3D คู่แผ่นคลี่") no longer spills past its own outline.
+            "inline-flex min-w-0 flex-auto items-center justify-center gap-1.5 rounded-md border border-transparent text-center leading-tight font-medium sm:whitespace-nowrap",
             "text-muted duration-fast ease-standard transition-colors",
             // Design language v3: the chosen segment is an ink hairline and semibold — no shadow.
             "data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:border-fg data-[state=on]:font-semibold",

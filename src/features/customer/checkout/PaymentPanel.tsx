@@ -164,7 +164,7 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
       {data.qrPayload && data.status === "pending" ? (
         <section
           aria-labelledby="pay-qr"
-          className="border-border flex flex-col items-center gap-3 rounded-2xl border p-6 text-center"
+          className="bg-surface border-border flex flex-col items-center gap-3 rounded-2xl border p-6 text-center"
         >
           <h2 id="pay-qr" className="font-semibold">
             {t("qrTitle")}
@@ -210,7 +210,7 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
       ) : null}
 
       {data.redirectUrl && data.status === "pending" ? (
-        <section aria-labelledby="pay-redirect" className="border-border rounded-2xl border p-6">
+        <section aria-labelledby="pay-redirect" className="bg-surface border-border rounded-2xl border p-6">
           <h2 id="pay-redirect" className="font-semibold">
             {tMethods(`${data.method}.label`)}
           </h2>
@@ -291,7 +291,7 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
   }
 
   return (
-    <section aria-labelledby="pay-transfer" className="border-border flex flex-col gap-4 rounded-2xl border p-6">
+    <section aria-labelledby="pay-transfer" className="bg-surface border-border flex flex-col gap-4 rounded-2xl border p-6">
       <h2 id="pay-transfer" className="font-semibold">
         {t("title")}
       </h2>

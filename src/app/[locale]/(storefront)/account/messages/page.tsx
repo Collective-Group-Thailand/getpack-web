@@ -35,7 +35,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+        <h1 className="text-title leading-tight">{t("title")}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
 
@@ -44,7 +44,7 @@ export default async function Page() {
           <h2 id="threads" className="sr-only">
             {t("threads")}
           </h2>
-          <ul className="divide-border border-border divide-y rounded-xl border">
+          <ul className="bg-surface divide-border border-border divide-y rounded-xl border">
             {threads.map((thread) => (
               <li key={thread.id}>
                 <Link
@@ -78,7 +78,7 @@ export default async function Page() {
         </section>
       ) : null}
 
-      <section aria-labelledby="new-message" className="border-border flex flex-col gap-3 rounded-xl border p-4">
+      <section aria-labelledby="new-message" className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
         <h2 id="new-message" className="font-semibold">
           {support ? t("continueSupport") : t("newSupport")}
         </h2>

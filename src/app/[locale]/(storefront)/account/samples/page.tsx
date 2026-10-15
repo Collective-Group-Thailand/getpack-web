@@ -21,7 +21,7 @@ export default async function Page() {
   const [t, format, samples] = await Promise.all([getTranslations("myOrders.samples"), getFormat(), listMySamples()]);
   return (
     <div>
-      <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+      <h1 className="text-title leading-tight">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
       {samples.length === 0 ? (
         <EmptyState
@@ -38,7 +38,7 @@ export default async function Page() {
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
           {samples.map((sample) => (
-            <li key={sample.id} className="border-border rounded-xl border">
+            <li key={sample.id} className="bg-surface border-border rounded-xl border">
               <Link
                 href={`/account/samples/${sample.id}`}
                 className="hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl p-4"

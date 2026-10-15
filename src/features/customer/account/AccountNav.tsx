@@ -111,8 +111,10 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
           aria-current={current ? "page" : undefined}
           className={cn(
             "flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm",
+            // The open section is a filled row with a bar at its start, not a tint alone — on
+            // the page's own surface a tint was all that told it apart (owner feedback 2026-10-14).
             current
-              ? "bg-primary-subtle text-primary-subtle-fg font-medium"
+              ? "bg-primary-subtle text-primary-subtle-fg border-primary border-s-[3px] ps-2.5 font-semibold"
               : "text-muted hover:bg-bg-subtle hover:text-fg",
           )}
         >
@@ -130,7 +132,12 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
   };
 
   return (
-    <nav aria-label={t("label")} className="lg:sticky lg:top-20 lg:self-start">
+    <nav
+      aria-label={t("label")}
+      // Its own panel on a wide screen, so it reads as the account's menu rather than as text
+      // floating at the page's edge; on a phone each group is already a bordered fold.
+      className="lg:border-border lg:bg-surface lg:rounded-card lg:sticky lg:top-20 lg:self-start lg:border lg:p-3"
+    >
       <ul className="flex flex-col gap-1">
         {link({ key: "overview", href: "/account", icon: "dashboard", exact: true })}
       </ul>
@@ -146,7 +153,7 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
             </p>
             <ul className="hidden flex-col gap-0.5 lg:flex">{group.items.map(link)}</ul>
             {/* A phone: the same group, folded unless it holds this page. */}
-            <details open={holdsCurrent} className="border-border rounded-xl border lg:hidden">
+            <details open={holdsCurrent} className="bg-surface border-border rounded-xl border lg:hidden">
               <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
                 <span className="min-w-0 flex-1 truncate">{title}</span>
                 {group.items.some((item) => item.badge) ? (

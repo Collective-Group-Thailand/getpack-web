@@ -30,7 +30,7 @@ export default async function Page() {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-[2rem] leading-tight">{t("listTitle")}</h1>
+          <h1 className="text-title leading-tight">{t("listTitle")}</h1>
           <p className="text-muted mt-1">{t("listIntro")}</p>
         </div>
         <Button asChild iconStart="plus">
@@ -52,7 +52,7 @@ export default async function Page() {
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
           {requests.map((r) => (
-            <li key={r.id} className="border-border rounded-xl border">
+            <li key={r.id} className="bg-surface border-border rounded-xl border">
               <Link
                 href={`/account/structural-requests/${r.id}`}
                 className="hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl p-4"

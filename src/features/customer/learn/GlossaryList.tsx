@@ -38,7 +38,7 @@ export function GlossaryList({ terms }: { terms: GlossaryTerm[] }) {
       {shown.length === 0 ? (
         <p className="text-muted text-sm">{t("noMatch", { query })}</p>
       ) : (
-        <dl className="divide-border border-border divide-y rounded-xl border">
+        <dl className="bg-surface divide-border border-border divide-y rounded-xl border">
           {shown.map((term) => (
             <div key={term.slug} id={term.slug} className="target:bg-primary-subtle scroll-mt-24 p-4 transition-colors">
               <dt className="font-semibold">

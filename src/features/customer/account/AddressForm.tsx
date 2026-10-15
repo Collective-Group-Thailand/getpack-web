@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { browserApi } from "@/lib/api/browser";
@@ -12,7 +12,7 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 
-import { geoName, type Address } from "./address";
+import type { Address } from "./address";
 import { PostcodeAreaField, type ChosenArea } from "./PostcodeArea";
 
 export type { Address } from "./address";
@@ -26,10 +26,19 @@ interface Draft {
   isDefault: boolean;
 }
 
+/**
+ * The API holds a phone in E.164 (`+66812345678`); the field and the check want the national
+ * form (`0812345678`). Editing a saved address used to fail its own phone check for this reason.
+ */
+export function nationalThaiPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  return digits.startsWith("66") && digits.length === 11 ? `0${digits.slice(2)}` : digits;
+}
+
 const fromAddress = (address: Address): Draft => ({
   label: address.label,
   recipientName: address.recipientName,
-  phone: address.phone,
+  phone: nationalThaiPhone(address.phone),
   line1: address.line1,
   line2: address.line2 ?? "",
   isDefault: address.isDefault,
@@ -178,22 +187,31 @@ function EditAddress({
   onCancel?: () => void;
 }) {
   const t = useTranslations("account.addressForm");
-  const locale = useLocale();
   const [draft, setDraft] = useState<Draft>(() => fromAddress(address));
-  const [errors, setErrors] = useState<Partial<Record<keyof Draft, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof Draft | "postcode" | "subdistrict", string>>>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const set = (patch: Partial<Draft>) => setDraft((current) => ({ ...current, ...patch }));
-  const area = [geoName(locale, address.subdistrict), geoName(locale, address.province), address.postcode]
-    .filter(Boolean)
-    .join(" ");
+  // The area starts as the saved one and may be changed like any other field — it used to be
+  // shown as fixed text with no way to move an address to another postcode (owner feedback
+  // 2026-10-14); `store.addresses.update` has taken the area all along.
+  const [postcode, setPostcode] = useState(address.postcode);
+  const [area, setArea] = useState<ChosenArea | null>(() =>
+    address.subdistrict
+      ? { postcode: address.postcode, provinceId: address.province.id, subdistrictId: address.subdistrict.id }
+      : null,
+  );
+  const areaChanged =
+    postcode !== address.postcode || (area !== null && area.subdistrictId !== address.subdistrict?.id);
 
   function validate() {
-    const found: Partial<Record<keyof Draft, string>> = {};
+    const found: Partial<Record<keyof Draft | "postcode" | "subdistrict", string>> = {};
     if (!draft.label.trim()) found.label = t("required");
     if (!draft.recipientName.trim()) found.recipientName = t("required");
     if (!/^0\d{8,9}$/.test(draft.phone)) found.phone = t("phoneInvalid");
     if (!draft.line1.trim()) found.line1 = t("required");
+    if (!/^\d{5}$/.test(postcode)) found.postcode = t("required");
+    else if (!area) found.subdistrict = t("required");
     return found;
   }
 
@@ -222,6 +240,9 @@ function EditAddress({
           line1: draft.line1.trim(),
           line2: draft.line2.trim() || null,
           isDefault: draft.isDefault,
+          ...(areaChanged && area
+            ? { postcode: area.postcode, provinceId: area.provinceId, subdistrictId: area.subdistrictId }
+            : {}),
         },
       });
       onSaved(data!);
@@ -253,10 +274,17 @@ function EditAddress({
         <Field label={t("phone")} error={errors.phone} required requiredLabel={t("requiredMark")}>
           <PhoneInput value={draft.phone} onChange={(phone) => set({ phone })} />
         </Field>
-        <p className="flex flex-col gap-1 self-end pb-2 text-sm">
-          <span className="text-muted">{t("areaFixed")}</span>
-          <span>{area}</span>
-        </p>
+      </div>
+      <PostcodeAreaField
+        postcode={postcode}
+        subdistrictId={area?.subdistrictId ?? ""}
+        errors={{ postcode: errors.postcode, subdistrict: errors.subdistrict }}
+        onChange={(next) => {
+          setPostcode(next.postcode);
+          setArea(next.area);
+        }}
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field
           label={t("line1")}
           hint={t("line1Hint")}

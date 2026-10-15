@@ -78,7 +78,7 @@ export async function LaunchpadPanel({ launchpad, hasBrandKit }: { launchpad: La
               <li key={row.id} className="w-44 shrink-0 snap-start">
                 <Link
                   href={studioHref({ designId: row.id })}
-                  className="border-border hover:border-primary focus-visible:outline-primary flex flex-col overflow-hidden rounded-xl border transition"
+                  className="bg-surface border-border hover:border-primary focus-visible:outline-primary flex flex-col overflow-hidden rounded-xl border transition"
                 >
                   <span className="bg-surface-subtle block aspect-[4/3] p-2">
                     <DesignThumb fileId={row.thumbnailFileId} empty={t("noThumbnail")} />
@@ -115,7 +115,7 @@ export async function LaunchpadPanel({ launchpad, hasBrandKit }: { launchpad: La
             {launchpad.reorderCandidates.map((row) => (
               <li
                 key={`${row.orderId}-${row.suggestionId ?? "order"}`}
-                className="border-border flex flex-col gap-2 rounded-xl border p-4"
+                className="bg-surface border-border flex flex-col gap-2 rounded-xl border p-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">{pick(locale, row.productType.nameTh, row.productType.nameEn)}</p>

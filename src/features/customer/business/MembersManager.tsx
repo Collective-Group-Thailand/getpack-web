@@ -107,7 +107,7 @@ export function MembersManager({
     <div className="flex flex-col gap-8">
       <ul className="flex flex-col gap-3">
         {members.map((member) => (
-          <li key={member.id} className="border-border rounded-lg border p-4">
+          <li key={member.id} className="bg-surface border-border rounded-lg border p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-medium">
@@ -186,7 +186,7 @@ export function MembersManager({
       {canManage ? (
         <section
           aria-labelledby="members-invite"
-          className="border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
+          className="bg-surface border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
         >
           <h2 id="members-invite" className="text-lg font-semibold">
             {t("inviteTitle")}

@@ -59,7 +59,7 @@ export default async function Page({ params }: { params: Promise<{ sampleId: str
           {t("back")}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[2rem] leading-tight">{t("detailTitle")}</h1>
+          <h1 className="text-title leading-tight">{t("detailTitle")}</h1>
           <StatusChip map={SAMPLE_STATUS} value={sample.status} size="md" />
           <StatusChip map={SAMPLE_KIND} value={sample.kind} />
         </div>

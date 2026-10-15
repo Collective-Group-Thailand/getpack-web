@@ -23,7 +23,7 @@ import { Field } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
@@ -249,7 +249,7 @@ function Slider({ proof, other, slider }: { proof: Proof; other: Proof; slider: 
   if (!under || !over) return <p className="text-muted text-sm">{t("loadingPage")}</p>;
   return (
     <div
-      className="border-border relative overflow-hidden rounded-xl border"
+      className="bg-surface border-border relative overflow-hidden rounded-xl border"
       role="img"
       aria-label={t("sliderAlt", { a: other.versionNo, b: proof.versionNo, percent: slider })}
     >
@@ -410,7 +410,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
       <div className="flex flex-wrap items-center gap-3">
         {proofs.length > 1 ? (
           <div className="w-48">
-            <Select
+            <SearchableSelect
               aria-label={t("version")}
               value={String(proof.versionNo)}
               onValueChange={(value) => {
@@ -540,7 +540,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
             <>
               <div className="flex flex-wrap items-center gap-3">
                 <div className="w-48">
-                  <Select
+                  <SearchableSelect
                     aria-label={t("compareWith")}
                     value={String(other.versionNo)}
                     onValueChange={(value) => setAgainst(Number(value))}
@@ -711,7 +711,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
           {open ? (
             <section
               aria-labelledby="proof-decision"
-              className="border-border flex flex-col gap-3 rounded-xl border p-4"
+              className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4"
             >
               <h2 id="proof-decision" className="font-semibold">
                 {t("decide")}

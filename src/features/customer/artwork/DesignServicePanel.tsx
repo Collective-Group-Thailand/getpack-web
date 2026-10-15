@@ -167,7 +167,7 @@ export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
               {t("due", { target: format.date(service.targetDueAt), max: format.date(service.maxDueAt) })}
             </p>
           ) : null}
-          <div className="border-border rounded-xl border p-4">
+          <div className="bg-surface border-border rounded-xl border p-4">
             <Meter
               value={service.freeRounds ? Math.min(100, Math.round((used / service.freeRounds) * 100)) : 100}
               label={t("freeRounds")}
@@ -178,7 +178,7 @@ export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
           </div>
           <ol className="flex flex-col gap-2">
             {service.rounds.map((round) => (
-              <li key={round.id} className="border-border flex flex-col gap-2 rounded-lg border p-3 text-sm">
+              <li key={round.id} className="bg-surface border-border flex flex-col gap-2 rounded-lg border p-3 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">
                     {round.kind === "initial"

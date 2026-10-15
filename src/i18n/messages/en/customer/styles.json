@@ -390,6 +390,11 @@
         "2": "CutContour, Crease, Bleed and Safe are separate layers — put your artwork on a new layer below CutContour.",
         "3": "Do not edit or delete the dieline layers; the factory makes the cutting die from them."
       },
+      "ai": {
+        "1": "Open directly in Illustrator (File › Open): every path is editable and the CutContour and Crease spot swatches are kept",
+        "2": "If Illustrator asks about PDF content, continue — this is the same dieline as the PDF, named .ai",
+        "3": "Put your artwork on a new layer under the dieline and never edit or delete the cut and crease lines"
+      },
       "dxf": {
         "1": "Open it in a CAD program or Illustrator; the units are millimetres.",
         "2": "Import at 1:1 scale, then measure one side against the size you asked for.",

@@ -10,9 +10,12 @@ import {
 import { pick } from "@/features/customer/catalog/localize";
 import { ProductGrid, type GridItem } from "@/features/customer/catalog/ProductGrid";
 import { CategoryTiles } from "@/features/customer/catalog/CategoryTiles";
+import { categoryHref } from "@/features/customer/catalog/paths";
 import { ProductSearchForm } from "@/features/customer/catalog/ProductSearchForm";
+import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { breadcrumbSchema, itemListSchema, localePath, publicOrigin, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { LinkPagination } from "@/ui/components/LinkPagination";
@@ -56,9 +59,10 @@ export default async function ProductsPage({
   const productType = one(query.productType);
   const view = one(query.view) === "list" ? "list" : "grid";
 
-  const [t, currentLocale, tree, products, stock] = await Promise.all([
+  const [t, currentLocale, origin, tree, products, stock] = await Promise.all([
     getTranslations("catalog"),
     getLocale(),
+    publicOrigin(),
     getCatalogueTree(),
     listProducts({ q, page, perPage: PER_PAGE, productType }),
     // Stock products are shown with the first page only: they are a shelf, not the catalogue.
@@ -101,8 +105,38 @@ export default async function ProductsPage({
   const shelf: GridItem[] = stock.data.map((product) => ({ kind: "stock", product }));
   const empty = catalogue.length === 0 && shelf.length === 0;
 
+  // The catalogue as an entity (SEO pass): a CollectionPage over the list of categories, and the
+  // breadcrumb — only on the unfiltered first page, which is the one a crawler should index.
+  const pageUrl = `${origin}${localePath("/products", currentLocale as Locale)}`;
+  const structured =
+    !q && !productType && page === 1
+      ? [
+          breadcrumbSchema([
+            { name: t("breadcrumbs.home"), url: `${origin}${localePath("/", currentLocale as Locale)}` },
+            { name: t("breadcrumbs.products") },
+          ]),
+          webPageSchema({
+            type: "CollectionPage",
+            name: t("meta.productsTitle"),
+            description: t("meta.productsDescription"),
+            url: pageUrl,
+            locale: currentLocale,
+          }),
+          itemListSchema(
+            tree.map((category) => ({
+              name: pick(currentLocale, category.nameTh, category.nameEn),
+              url: `${origin}${localePath(categoryHref(category.code), currentLocale as Locale)}`,
+            })),
+            t("list.heading"),
+          ),
+        ]
+      : [];
+
   return (
     <div className="max-w-content mx-auto px-5 py-8 md:px-8 md:py-12">
+      {structured.map((data, index) => (
+        <JsonLd key={index} data={data} />
+      ))}
       <header className="max-w-2xl">
         <h1 className="text-3xl font-bold md:text-4xl">{q ? t("list.resultsFor", { q }) : t("list.heading")}</h1>
         {!q ? <p className="text-muted mt-2">{t("list.intro")}</p> : null}

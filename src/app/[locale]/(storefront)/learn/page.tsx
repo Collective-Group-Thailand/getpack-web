@@ -39,7 +39,7 @@ export default async function Page() {
             <li key={path.slug}>
               <Link
                 href={`/learn/${path.slug}`}
-                className="border-border hover:border-primary flex h-full flex-col gap-2 rounded-xl border p-5 transition"
+                className="bg-surface border-border hover:border-primary flex h-full flex-col gap-2 rounded-xl border p-5 transition"
               >
                 <Icon name="article" size={20} className="text-primary" />
                 <span className="text-lg font-semibold">{pick(locale, path.titleTh, path.titleEn)}</span>

@@ -40,7 +40,7 @@ export function SuggestionCard({ suggestion }: { suggestion: Schemas["ReorderSug
   };
 
   return (
-    <li className="border-border flex flex-col gap-3 rounded-xl border p-4">
+    <li className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
       <div>
         <p className="font-semibold">{pick(locale, suggestion.productType.nameTh, suggestion.productType.nameEn)}</p>
         <p className="text-sm">

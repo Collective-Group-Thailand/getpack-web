@@ -36,7 +36,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
+        <h1 className="text-title leading-tight">{t("title")}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
       <section aria-labelledby="wallet-credit">
@@ -54,7 +54,7 @@ export default async function Page() {
             {credit.entries.map((entry) => (
               <li
                 key={entry.id}
-                className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
+                className="bg-surface border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
               >
                 <div>
                   <p className="font-medium">{t(`sources.${entry.source}`)}</p>
@@ -90,7 +90,7 @@ export default async function Page() {
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {codes.map((offer) => (
-              <li key={offer.code} className="border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
+              <li key={offer.code} className="bg-surface border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-mono font-semibold">{offer.code}</span>
                   <StatusChip map={PROMOTION_OFFER_STATUS} value={offer.status} />

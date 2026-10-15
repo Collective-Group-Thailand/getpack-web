@@ -17,7 +17,7 @@ export default async function Page() {
   const options = types.map((type) => ({ value: type.code, label: locale === "en" ? type.nameEn : type.nameTh }));
   return (
     <div className="max-w-2xl">
-      <h1 className="text-[2rem] leading-tight">{t("newTitle")}</h1>
+      <h1 className="text-title leading-tight">{t("newTitle")}</h1>
       <p className="text-muted mt-1 mb-6">{t("newIntro")}</p>
       <RequestStructure productTypes={options} />
     </div>
