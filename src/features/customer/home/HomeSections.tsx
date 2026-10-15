@@ -583,9 +583,25 @@ const NOT_A_RANGE = new Set(["standard_product", "service"]);
 export const isPackagingCategory = (category: CatalogueCategory): boolean =>
   category.types.some((type) => !NOT_A_RANGE.has(type.code));
 
-export async function ProductRows({ categories, locale }: { categories: CatalogueCategory[]; locale: string }) {
+/**
+ * The four categories the row leads with, in the "Main" board's order: the ranges a small brand buys
+ * first. Ones the catalogue does not list are skipped and the next categories fill the row.
+ */
+const HOME_CATEGORY_CODES = ["folding_carton", "corrugated", "paper_bag", "label_sticker"];
+
+export async function ProductRows({
+  categories,
+  photos,
+  locale,
+}: {
+  categories: CatalogueCategory[];
+  /** CMS photos by category code (`home-photos.categories`); a category without one keeps its drawing. */
+  photos: Map<string, HomePhoto>;
+  locale: string;
+}) {
   const [t, format] = await Promise.all([getTranslations("home.products"), getFormat()]);
-  const shown = categories.slice(0, 4);
+  const curated = HOME_CATEGORY_CODES.flatMap((code) => categories.filter((category) => category.code === code));
+  const shown = [...curated, ...categories.filter((category) => !curated.includes(category))].slice(0, 4);
   if (shown.length === 0) return null;
   return (
     <section aria-labelledby="home-products" className={SECTION}>
@@ -617,10 +633,16 @@ export async function ProductRows({ categories, locale }: { categories: Catalogu
                 href={categoryHref(category.code)}
                 className="border-border hover:text-primary grid grid-cols-[4.5rem_1fr] items-center gap-3.5 border-t py-4"
               >
-                <ProductThumb
-                  family={productFamilyOf(category.code)}
-                  className="size-18 rounded-none [&_svg]:max-w-14"
-                />
+                {photos.get(category.code) ? (
+                  <figure className="bg-sage-subtle size-18 overflow-hidden">
+                    <Photo photo={{ ...photos.get(category.code)!, alt: "" }} />
+                  </figure>
+                ) : (
+                  <ProductThumb
+                    family={productFamilyOf(category.code)}
+                    className="size-18 rounded-none [&_svg]:max-w-14"
+                  />
+                )}
                 <span>
                   <b className="block text-[0.9375rem] font-semibold">
                     {pick(locale, category.nameTh, category.nameEn)}
