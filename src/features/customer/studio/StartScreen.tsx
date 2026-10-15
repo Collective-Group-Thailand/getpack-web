@@ -12,6 +12,8 @@ import type { DesignSpec } from "@/features/designer/types";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
+import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { Dialog } from "@/ui/components/Dialog";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -45,6 +47,7 @@ export function StartScreen({
   productSlug,
   productName,
   signedIn,
+  accountDesignId = null,
 }: {
   onChooseBox: () => void;
   /** A box suggested from the product's size: sets it and moves on. */
@@ -53,6 +56,12 @@ export function StartScreen({
   productSlug: string | null;
   productName: string | null;
   signedIn: boolean;
+  /**
+   * A design link opened while signed out that is not one of this browser's designs: most likely the
+   * customer's account design after the session ended, so the page asks them to sign in for it
+   * instead of silently starting a new box.
+   */
+  accountDesignId?: string | null;
 }) {
   const t = useTranslations("studio.startScreen");
   const format = useFormat();
@@ -114,6 +123,17 @@ export function StartScreen({
         <p className="text-muted mx-auto mt-3 max-w-[40em]">{signedIn ? t("lead") : t("leadGuest")}</p>
         {productName ? <p className="mt-2 text-sm font-medium">{t("forProduct", { name: productName })}</p> : null}
       </div>
+
+      {accountDesignId ? (
+        <Callout tone="info" title={t("signInForDesign.title")} className="mx-auto mt-8 w-full max-w-2xl">
+          <p className="text-sm">{t("signInForDesign.body")}</p>
+          <Button asChild size="sm" className="mt-3">
+            <Link href={`/sign-in?returnTo=${encodeURIComponent(`/studio/${accountDesignId}`)}`}>
+              {t("signInForDesign.action")}
+            </Link>
+          </Button>
+        </Callout>
+      ) : null}
 
       <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <li>

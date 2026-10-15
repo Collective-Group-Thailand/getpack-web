@@ -42,6 +42,8 @@ import { initialStep, lockedReason, type StepFacts, type StudioStep } from "./st
 import { useStudioChecks } from "./checks";
 import { useChecksClean, useStudioFunnel } from "./funnel";
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const STUDIO_ROUTE = "/studio/[designId]";
 
 // ① and ② load when they are shown: a design opened on ③ never pays for them.
@@ -199,6 +201,14 @@ export function Studio({
     });
     return true;
   }, []);
+
+  // A design link opened signed out that this browser does not hold: the account's design, behind a sign-in.
+  const [accountDesignId, setAccountDesignId] = useState<string | null>(null);
+  useEffect(() => {
+    if (mode === "store" || design || seed || !UUID.test(id) || designRepo.get(id)) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- browser storage is read after mount
+    setAccountDesignId(id);
+  }, [mode, design, seed, id]);
 
   // ① offers its own ways to a box: the setup dialog opens only when asked there.
   const [autoSetup] = useState(() => step !== "start");
@@ -421,6 +431,7 @@ export function Studio({
                 catalog?.product ? (locale === "en" ? catalog.product.nameEn : catalog.product.nameTh) : null
               }
               signedIn={mode === "store"}
+              accountDesignId={accountDesignId}
             />
           ),
           views: true,

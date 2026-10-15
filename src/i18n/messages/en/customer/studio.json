@@ -400,7 +400,12 @@
     "recentOrdered": "Ordered · {code}",
     "sample": "Play with a sample design (not saved)",
     "describeTitle": "I have a product, I need a box",
-    "close": "Close"
+    "close": "Close",
+    "signInForDesign": {
+      "title": "This design is saved in an account",
+      "body": "This link is a design saved in your account. Sign in and you will come straight back to it.",
+      "action": "Sign in to open this design"
+    }
   },
   "home": {
     "metaTitle": "Box design studio",
