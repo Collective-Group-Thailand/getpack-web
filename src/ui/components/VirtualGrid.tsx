@@ -84,7 +84,8 @@ export function VirtualGrid<T>({
     let tallest = 0;
     for (const row of ref.current.querySelectorAll<HTMLElement>(":scope > [role=presentation]"))
       for (const cell of row.children)
-        tallest = Math.max(tallest, (cell.firstElementChild ?? cell).getBoundingClientRect().height);
+        // A stretched card's own content may overflow its row: `scrollHeight` counts it.
+        tallest = Math.max(tallest, (cell.firstElementChild as HTMLElement | null)?.scrollHeight ?? 0);
     if (tallest > rowHeight + 0.5) setRowHeight(Math.ceil(tallest));
   });
 
@@ -141,7 +142,13 @@ export function VirtualGrid<T>({
         ref={row === first ? rowRef : undefined}
         role="presentation"
         className="absolute grid"
-        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap, insetInline: 0, top: row * stride }}
+        style={{
+          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+          gridTemplateRows: `${rowHeight}px`,
+          gap,
+          insetInline: 0,
+          top: row * stride,
+        }}
       >
         {items.slice(row * columns, row * columns + columns).map((item, i) => cell(item, row * columns + i))}
       </div>,
