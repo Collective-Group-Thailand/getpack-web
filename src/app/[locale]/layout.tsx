@@ -40,6 +40,16 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     description: t("meta.description"),
     applicationName: BRAND_NAME,
     authors: [{ name: BRAND_COMPANY }],
+    // The share card's frame. The image itself is the segment's `opengraph-image` (the brand
+    // card, or a product's own), which Next adds to both og:image and twitter:image.
+    openGraph: {
+      type: "website",
+      siteName: BRAND_NAME,
+      locale: locale === "th" ? "th_TH" : "en_US",
+      alternateLocale: locale === "th" ? ["en_US"] : ["th_TH"],
+    },
+    twitter: { card: "summary_large_image" },
+    formatDetection: { telephone: false },
   };
 }
 

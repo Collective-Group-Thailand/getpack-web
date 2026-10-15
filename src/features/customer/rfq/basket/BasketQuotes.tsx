@@ -75,7 +75,7 @@ export function BasketQuotes({ basket }: { basket: Basket }) {
             .sort((a, b) => b.versionNo - a.versionNo)[0];
           const accepted = rfq?.acceptedQuoteId ?? null;
           return (
-            <li key={item.id} className="border-border flex flex-col gap-3 rounded-xl border p-4">
+            <li key={item.id} className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-medium">
                   {index + 1}. {name}

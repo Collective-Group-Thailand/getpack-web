@@ -405,7 +405,7 @@ function DerivedSizes({
       ).filter(([, size]) => size !== null)
     : [];
   return (
-    <section aria-labelledby="derived-sizes" className="border-border rounded-xl border p-3" aria-live="polite">
+    <section aria-labelledby="derived-sizes" className="bg-surface border-border rounded-xl border p-3" aria-live="polite">
       <div className="flex items-center justify-between gap-2">
         <h3 id="derived-sizes" className="text-sm font-medium">
           {t("derived.title")}

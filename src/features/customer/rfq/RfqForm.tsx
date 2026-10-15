@@ -18,7 +18,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field, FormSection } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { IconButton } from "@/ui/components/IconButton";
 
 import { quantityBand } from "../analytics/bands";
@@ -318,7 +318,7 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null, sty
                 className={entry.type === "textarea" ? "sm:col-span-2" : undefined}
               >
                 {entry.type === "select" ? (
-                  <Select
+                  <SearchableSelect
                     value={typeof value === "string" ? value : ""}
                     onValueChange={set}
                     placeholder={t("choose")}
@@ -454,7 +454,7 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null, sty
               {files.map((file) => (
                 <li
                   key={file.key}
-                  className="border-border flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+                  className="bg-surface border-border flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
                 >
                   <span className="min-w-0 flex-1 truncate">{file.name}</span>
                   <span className={file.failed ? "text-danger text-xs" : "text-muted text-xs"}>

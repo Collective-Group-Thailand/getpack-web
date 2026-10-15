@@ -91,7 +91,7 @@ export function DescribeProduct({
       {asked && asked.length > 0 ? (
         <ol className="space-y-2" aria-label={t("results")}>
           {asked.map((suggestion) => (
-            <li key={suggestion.spec.styleId} className="border-border rounded-card space-y-2 border p-3">
+            <li key={suggestion.spec.styleId} className="bg-surface border-border rounded-card space-y-2 border p-3">
               <p className="text-sm font-medium">{suggestion.style.name[locale]}</p>
               <ul className="text-muted list-disc ps-4 text-xs">
                 {suggestion.reasons.map((reason) => (

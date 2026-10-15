@@ -12,7 +12,7 @@ import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PhoneInput } from "@/ui/components/PhoneInput";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 type Ticket = Schemas["SupportTicketDto"];
 /** The storefront's topic keys; the API takes any `snake_case` key (`SupportContactDto.topic`). */
@@ -117,7 +117,7 @@ export function ContactForm({ defaultTopic }: { defaultTopic?: Topic }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t("topic")}>
-          <Select
+          <SearchableSelect
             value={topic}
             onValueChange={setTopic}
             options={TOPICS.map((value) => ({ value, label: t(`topics.${value}`) }))}

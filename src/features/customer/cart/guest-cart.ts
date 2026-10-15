@@ -102,6 +102,38 @@ export function clearGuestCart(): void {
   write(EMPTY);
 }
 
+const TRIED_KEY = "pk_guest_cart_tried_v1";
+
+/**
+ * Lines the account's cart refused on an earlier visit (no instant price any more, a product
+ * withdrawn). They stay in this browser for the guest to see, but the merge does not try them —
+ * and announce the failure — on every visit (owner walkthrough 2026-10-14: the empty cart kept
+ * saying "could not move 1 line").
+ */
+export function readTriedLines(): ReadonlySet<string> {
+  const store = storage();
+  if (!store) return new Set();
+  try {
+    const parsed: unknown = JSON.parse(store.getItem(TRIED_KEY) ?? "[]");
+    return new Set(Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function markTriedLines(ids: readonly string[]): void {
+  const store = storage();
+  if (!store) return;
+  try {
+    const kept = readGuestCart().map((line) => line.id);
+    const next = [...new Set([...readTriedLines(), ...ids])].filter((id) => kept.includes(id));
+    if (next.length === 0) store.removeItem(TRIED_KEY);
+    else store.setItem(TRIED_KEY, JSON.stringify(next));
+  } catch {
+    // Storage refused: the line is tried again next visit, which is the old behaviour.
+  }
+}
+
 function subscribe(onChange: () => void): () => void {
   const onStorage = (event: StorageEvent) => {
     if (event.key === KEY) onChange();

@@ -69,7 +69,7 @@ const ROOT_ASSETS = new Set([
  * them on `admin.packio.co.th` would publish the shape of the back office to anyone who
  * asked.
  */
-const CRAWLER_FILES = new Set(["/robots.txt", "/sitemap.xml"]);
+const CRAWLER_FILES = new Set(["/robots.txt", "/sitemap.xml", "/llms.txt"]);
 
 /**
  * Storefront media files in `public/media/` (the dev-only home photos, `HOME_PHOTOS_LOCAL_MANIFEST`):

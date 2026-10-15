@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { browserApi } from "@/lib/api/browser";
@@ -13,7 +13,7 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
 
-import { geoName, type TaxProfile } from "./address";
+import type { TaxProfile } from "./address";
 import { PostcodeAreaField, type ChosenArea } from "./PostcodeArea";
 import { formatTaxId, isValidThaiTaxId } from "./tax-id";
 
@@ -215,7 +215,6 @@ function EditTaxProfile({
   onCancel?: () => void;
 }) {
   const t = useTranslations("account.taxForm");
-  const locale = useLocale();
   const [name, setName] = useState(profile.name);
   const [line1, setLine1] = useState(profile.line1);
   const [line2, setLine2] = useState(profile.line2 ?? "");
@@ -225,9 +224,16 @@ function EditTaxProfile({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const area = [geoName(locale, profile.subdistrict), geoName(locale, profile.province), profile.postcode]
-    .filter(Boolean)
-    .join(" ");
+  // The registered address may move; the identity (type, tax id, branch) may not — a changed tax
+  // id is a new profile. The area used to be fixed text here (owner feedback 2026-10-14).
+  const [postcode, setPostcode] = useState(profile.postcode);
+  const [area, setArea] = useState<ChosenArea | null>(() =>
+    profile.subdistrict
+      ? { postcode: profile.postcode, provinceId: profile.province.id, subdistrictId: profile.subdistrict.id }
+      : null,
+  );
+  const areaChanged =
+    postcode !== profile.postcode || (area !== null && area.subdistrictId !== profile.subdistrict?.id);
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
@@ -235,6 +241,8 @@ function EditTaxProfile({
     const found: Record<string, string> = {};
     if (!name.trim()) found.name = t("required");
     if (!line1.trim()) found.line1 = t("required");
+    if (!/^\d{5}$/.test(postcode)) found.postcode = t("required");
+    else if (!area) found.subdistrict = t("required");
     if (documentEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(documentEmail.trim()))
       found.documentEmail = t("emailInvalid");
     setErrors(found);
@@ -258,6 +266,9 @@ function EditTaxProfile({
           documentEmail: documentEmail.trim() || null,
           withholdsTax: profile.taxType !== "individual" && withholdsTax,
           isDefault,
+          ...(areaChanged && area
+            ? { postcode: area.postcode, provinceId: area.provinceId, subdistrictId: area.subdistrictId }
+            : {}),
         },
       });
       onSaved(data!);
@@ -275,19 +286,29 @@ function EditTaxProfile({
           {failure}
         </Callout>
       ) : null}
-      <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
-        <dt className="text-muted">{t("type")}</dt>
-        <dd>{t(`types.${profile.taxType}`)}</dd>
-        <dt className="text-muted">{t("taxId")}</dt>
-        <dd className="tabular-nums">{formatTaxId(profile.taxId)}</dd>
-        <dt className="text-muted">{t("branch")}</dt>
-        <dd>{profile.branchType === "head_office" ? t("headOffice") : t("branchNo", { code: profile.branchCode })}</dd>
-        <dt className="text-muted">{t("areaFixed")}</dt>
-        <dd>{area}</dd>
-      </dl>
+      <div className="bg-bg-subtle rounded-lg px-4 py-3">
+        <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
+          <dt className="text-muted">{t("type")}</dt>
+          <dd>{t(`types.${profile.taxType}`)}</dd>
+          <dt className="text-muted">{t("taxId")}</dt>
+          <dd className="tabular-nums">{formatTaxId(profile.taxId)}</dd>
+          <dt className="text-muted">{t("branch")}</dt>
+          <dd>{profile.branchType === "head_office" ? t("headOffice") : t("branchNo", { code: profile.branchCode })}</dd>
+        </dl>
+        <p className="text-muted mt-2 text-xs">{t("fixedHint")}</p>
+      </div>
       <Field label={t("name")} error={errors.name} required requiredLabel={t("requiredMark")}>
         <Input value={name} onChange={(event) => setName(event.target.value)} />
       </Field>
+      <PostcodeAreaField
+        postcode={postcode}
+        subdistrictId={area?.subdistrictId ?? ""}
+        errors={{ postcode: errors.postcode, subdistrict: errors.subdistrict }}
+        onChange={(next) => {
+          setPostcode(next.postcode);
+          setArea(next.area);
+        }}
+      />
       <Field label={t("line1")} error={errors.line1} required requiredLabel={t("requiredMark")}>
         <Input value={line1} onChange={(event) => setLine1(event.target.value)} />
       </Field>

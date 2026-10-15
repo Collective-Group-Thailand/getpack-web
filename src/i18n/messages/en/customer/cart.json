@@ -61,5 +61,23 @@
     "merged": "Moved {count, plural, one {# item} other {# items}} from before you signed in",
     "mergeFailed": "{count, plural, one {# item} other {# items}} could not be moved because the price or product changed. Please configure again.",
     "added": "{name} added to the cart"
+  },
+  "promo": {
+    "title": "Have a promo code?",
+    "savingTitle": "You save {amount}",
+    "hint": "Up to {max} codes. Automatic promotions apply by themselves when you qualify.",
+    "full": "All {max} code slots are used — remove one to add another",
+    "label": "Promo code",
+    "placeholder": "e.g. WELCOME10",
+    "apply": "Apply",
+    "duplicate": "Code {code} is already on your cart",
+    "accepted": "Applied — the discount shows in the summary",
+    "rejected": "Does not apply to this cart: {reason}",
+    "rejectedUnknown": "the promotion's conditions are not met",
+    "remove": "Remove code {code}",
+    "appliedList": "Codes on your cart",
+    "savingsList": "Discounts applied",
+    "atCheckout": "Code discounts are calculated at checkout",
+    "minus": "−{amount}"
   }
 }

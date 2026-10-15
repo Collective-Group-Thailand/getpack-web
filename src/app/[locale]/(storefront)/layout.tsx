@@ -5,7 +5,8 @@ import { MobileBottomNav, SiteFooter, SiteHeader } from "@/features/customer/she
 import { ConsentBanner } from "@/features/customer/shell/ConsentBanner";
 import { GoogleTagManager } from "@/features/customer/shell/GoogleTagManager";
 import { OrganizationJsonLd } from "@/features/customer/shell/OrganizationJsonLd";
-import { publicOrigin } from "@/lib/seo";
+import { JsonLd } from "@/features/customer/seo/JsonLd";
+import { publicOrigin, webSiteSchema } from "@/lib/seo";
 import { AppShell } from "@/ui/components/AppShell";
 
 /**
@@ -20,8 +21,14 @@ import { AppShell } from "@/ui/components/AppShell";
  * would render with no header, no skip link and no landmarks, which is an accessibility
  * failure that looks like a styling bug.
  */
-export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
-  const [t, origin] = await Promise.all([getTranslations("common"), publicOrigin()]);
+export default async function StorefrontLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const [t, origin, { locale }] = await Promise.all([getTranslations("common"), publicOrigin(), params]);
 
   return (
     <AppShell
@@ -34,6 +41,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
       <GoogleTagManager />
       <FunnelPageView />
       <OrganizationJsonLd origin={origin} />
+      <JsonLd data={webSiteSchema(origin, locale)} />
       {children}
       {/* The guided-help launcher waits for the Structure Advisor (U2.2, D-223). */}
       <ConsentBanner />

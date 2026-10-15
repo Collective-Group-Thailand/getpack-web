@@ -115,3 +115,132 @@ export function faqPageSchema(entries: readonly { question: string; answer: stri
 export function jsonLdText(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
+
+/* ------------------------------------------------------------------------------------ *
+ * Site-wide and page-type data (SEO/AEO pass, 2026-10-14). The same rule: every value is
+ * copy from `src/i18n` or data the API returned — nothing invented, no ratings.
+ * ------------------------------------------------------------------------------------ */
+
+/** The site as an entity, with its search box — what a search engine shows as a sitelinks search. */
+export function webSiteSchema(origin: string, locale: string, searchPath = "/search") {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${origin}/#website`,
+    name: BRAND_NAME,
+    url: origin,
+    inLanguage: locale,
+    publisher: { "@type": "Organization", name: BRAND_NAME, legalName: BRAND_COMPANY },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${origin}${searchPath}?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
+  } as const;
+}
+
+export interface WebPageInput {
+  type?: "WebPage" | "AboutPage" | "ContactPage" | "CollectionPage" | "FAQPage" | "ItemPage";
+  name: string;
+  description?: string | null;
+  url: string;
+  locale: string;
+  /** The answer-first paragraph, flagged for voice and AI answers (`speakable`). */
+  speakableSelector?: readonly string[];
+  dateModified?: string;
+}
+
+/** A page as an entity: its type, name, language and — for AEO — which part answers the question. */
+export function webPageSchema(input: WebPageInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": input.type ?? "WebPage",
+    name: input.name,
+    ...(input.description ? { description: input.description } : {}),
+    url: input.url,
+    inLanguage: input.locale,
+    isPartOf: { "@type": "WebSite", name: BRAND_NAME },
+    ...(input.speakableSelector
+      ? { speakable: { "@type": "SpeakableSpecification", cssSelector: [...input.speakableSelector] } }
+      : {}),
+    ...(input.dateModified ? { dateModified: input.dateModified } : {}),
+  } as const;
+}
+
+export interface HowToStepInput {
+  name: string;
+  text: string;
+  url?: string;
+}
+
+/** The ordering process as a HowTo — the markup an answer engine reads for "how do I order". */
+export function howToSchema(input: { name: string; description: string; steps: readonly HowToStepInput[] }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: input.name,
+    description: input.description,
+    step: input.steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.name,
+      text: step.text,
+      ...(step.url ? { url: step.url } : {}),
+    })),
+  } as const;
+}
+
+export interface ListItemInput {
+  name: string;
+  url: string;
+  description?: string | null;
+  image?: string | null;
+}
+
+/** A list of pages (categories, styles, articles) in the order shown. */
+export function itemListSchema(items: readonly ListItemInput[], name?: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    ...(name ? { name } : {}),
+    numberOfItems: items.length,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      url: item.url,
+      ...(item.description ? { description: item.description } : {}),
+      ...(item.image ? { image: item.image } : {}),
+    })),
+  } as const;
+}
+
+/** A glossary: every term with its definition, as a `DefinedTermSet`. */
+export function definedTermSetSchema(input: { name: string; url: string; terms: readonly { term: string; definition: string }[] }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "DefinedTermSet",
+    name: input.name,
+    url: input.url,
+    hasDefinedTerm: input.terms.map((entry) => ({
+      "@type": "DefinedTerm",
+      name: entry.term,
+      description: entry.definition,
+      inDefinedTermSet: input.url,
+    })),
+  } as const;
+}
+
+/** What Packio offers as a service (the business page): named, by the brand, in Thailand. */
+export function serviceSchema(input: { name: string; description: string; url: string; serviceType: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: input.name,
+    description: input.description,
+    url: input.url,
+    serviceType: input.serviceType,
+    areaServed: { "@type": "Country", name: "Thailand" },
+    provider: { "@type": "Organization", name: BRAND_NAME, legalName: BRAND_COMPANY },
+  } as const;
+}

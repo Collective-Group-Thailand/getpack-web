@@ -99,23 +99,27 @@ export async function StudioHome({
           <li key={path.key}>
             <Link
               href={path.href}
+              // A card that looks pressable — a surface with a hairline that darkens on hover,
+              // the lead path with the brand hairline — rather than a bare rule over text that
+              // read as a column heading (owner walkthrough 2026-10-14).
               className={cn(
-                "group flex h-full flex-col gap-3 border-t pe-6 pt-6 pb-6 outline-none",
-                "lead" in path && path.lead ? "border-primary" : "border-fg",
+                "group bg-surface rounded-card duration-base ease-standard flex h-full flex-col gap-3 border p-5 transition-colors outline-none",
+                "hover:border-primary focus-visible:border-primary",
+                "lead" in path && path.lead ? "border-primary" : "border-border",
               )}
             >
               <span
                 aria-hidden="true"
                 className={cn(
-                  "border-border grid h-30 place-items-center overflow-hidden border",
-                  "tint" in path && path.tint ? "bg-sage-subtle" : "bg-surface",
+                  "grid h-30 place-items-center overflow-hidden rounded-xl",
+                  "tint" in path && path.tint ? "bg-sage-subtle" : "bg-bg-subtle",
                 )}
               >
                 {path.picture}
               </span>
               <h2 className="text-xl">{t(`paths.${path.key}.title`)}</h2>
               <p className="text-muted text-[0.90625rem]">{path.body}</p>
-              <span className="mt-auto inline-flex items-center gap-1.5 text-[0.90625rem] font-semibold group-hover:underline group-focus-visible:underline">
+              <span className="text-primary mt-auto inline-flex items-center gap-1.5 text-[0.90625rem] font-semibold group-hover:underline group-focus-visible:underline">
                 {t(`paths.${path.key}.go`)}
                 <span aria-hidden="true">→</span>
               </span>

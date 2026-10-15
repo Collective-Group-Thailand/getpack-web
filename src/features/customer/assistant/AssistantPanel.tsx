@@ -227,7 +227,7 @@ export function AssistantPanel({ signedIn, signInHref }: { signedIn: boolean; si
 function AiNote({ retentionDays = null }: { retentionDays?: number | null }) {
   const t = useTranslations("assistant");
   return (
-    <div className="border-border flex flex-col gap-1 rounded-lg border p-3 text-xs">
+    <div className="bg-surface border-border flex flex-col gap-1 rounded-lg border p-3 text-xs">
       <p className="flex items-center gap-2 font-medium">
         <Badge size="sm" tone="info" icon="sparkles">
           {t("aiLabel")}

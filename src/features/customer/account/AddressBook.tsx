@@ -11,6 +11,7 @@ import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Sheet } from "@/ui/components/Sheet";
 import { toast } from "@/ui/components/Toast";
 
 import { addressLine, type Address, type TaxProfile } from "./address";
@@ -25,6 +26,8 @@ type Editing = { kind: "address"; item?: Address } | { kind: "tax"; item?: TaxPr
  */
 export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; taxProfiles: TaxProfile[] }) {
   const t = useTranslations("account.book");
+  const tAddress = useTranslations("account.addressForm");
+  const tTax = useTranslations("account.taxForm");
   const locale = useLocale();
   const router = useRouter();
   const [editing, setEditing] = useState<Editing>(null);
@@ -63,23 +66,16 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
           <h2 id="book-addresses" className="text-lg font-semibold">
             {t("addresses")}
           </h2>
-          {editing?.kind !== "address" ? (
-            <Button size="sm" iconStart="plus" onClick={() => setEditing({ kind: "address" })}>
-              {t("addAddress")}
-            </Button>
-          ) : null}
+          <Button size="sm" iconStart="plus" onClick={() => setEditing({ kind: "address" })}>
+            {t("addAddress")}
+          </Button>
         </div>
-        {editing?.kind === "address" ? (
-          <div className="border-border mt-4 rounded-xl border p-4">
-            <AddressForm address={editing.item} onSaved={saved} onCancel={() => setEditing(null)} />
-          </div>
-        ) : null}
-        {addresses.length === 0 && editing?.kind !== "address" ? (
+        {addresses.length === 0 ? (
           <EmptyState className="mt-4" icon="map-pin" title={t("noAddresses")} description={t("noAddressesBody")} />
         ) : (
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {addresses.map((address) => (
-              <li key={address.id} className="border-border flex flex-col gap-2 rounded-xl border p-4">
+              <li key={address.id} className="bg-surface border-border flex flex-col gap-2 rounded-xl border p-4">
                 <p className="flex items-center gap-2 font-semibold">
                   {address.label}
                   {address.isDefault ? <Badge tone="primary">{t("default")}</Badge> : null}
@@ -113,23 +109,16 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
           <h2 id="book-tax" className="text-lg font-semibold">
             {t("taxProfiles")}
           </h2>
-          {editing?.kind !== "tax" ? (
-            <Button size="sm" iconStart="plus" onClick={() => setEditing({ kind: "tax" })}>
-              {t("addTax")}
-            </Button>
-          ) : null}
+          <Button size="sm" iconStart="plus" onClick={() => setEditing({ kind: "tax" })}>
+            {t("addTax")}
+          </Button>
         </div>
-        {editing?.kind === "tax" ? (
-          <div className="border-border mt-4 rounded-xl border p-4">
-            <TaxProfileForm profile={editing.item} onSaved={saved} onCancel={() => setEditing(null)} />
-          </div>
-        ) : null}
-        {taxProfiles.length === 0 && editing?.kind !== "tax" ? (
+        {taxProfiles.length === 0 ? (
           <p className="text-muted mt-4 text-sm">{t("noTax")}</p>
         ) : (
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {taxProfiles.map((profile) => (
-              <li key={profile.id} className="border-border flex flex-col gap-2 rounded-xl border p-4">
+              <li key={profile.id} className="bg-surface border-border flex flex-col gap-2 rounded-xl border p-4">
                 <p className="flex items-center gap-2 font-semibold">
                   {profile.name}
                   {profile.isDefault ? <Badge tone="primary">{t("default")}</Badge> : null}
@@ -159,6 +148,39 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
           </ul>
         )}
       </section>
+
+      {/*
+       * Add and edit happen in a side sheet that says which record it is, over the list that stays
+       * where it was — an inline form that replaced the card had no title and the list jumped
+       * (owner feedback 2026-10-14). Closing the sheet is the cancel.
+       */}
+      <Sheet
+        open={editing?.kind === "address"}
+        onOpenChange={(open) => !open && setEditing(null)}
+        title={
+          editing?.kind === "address" && editing.item
+            ? tAddress("editTitle", { label: editing.item.label })
+            : tAddress("newTitle")
+        }
+        description={editing?.kind === "address" && editing.item ? tAddress("editHint") : undefined}
+        closeLabel={tAddress("cancel")}
+      >
+        {editing?.kind === "address" ? (
+          <AddressForm address={editing.item} onSaved={saved} onCancel={() => setEditing(null)} />
+        ) : null}
+      </Sheet>
+      <Sheet
+        open={editing?.kind === "tax"}
+        onOpenChange={(open) => !open && setEditing(null)}
+        title={
+          editing?.kind === "tax" && editing.item ? tTax("editTitle", { name: editing.item.name }) : tTax("newTitle")
+        }
+        closeLabel={tTax("cancel")}
+      >
+        {editing?.kind === "tax" ? (
+          <TaxProfileForm profile={editing.item} onSaved={saved} onCancel={() => setEditing(null)} />
+        ) : null}
+      </Sheet>
 
       <AlertDialog
         open={removing !== null}

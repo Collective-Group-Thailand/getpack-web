@@ -15,8 +15,9 @@
     "save": "Save address",
     "cancel": "Cancel",
     "newTitle": "New address",
-    "areaFixed": "Sub-district, province and postcode",
-    "postcodeInvalid": "A five-digit postcode"
+    "postcodeInvalid": "A five-digit postcode",
+    "editTitle": "Edit address: {label}",
+    "editHint": "Orders already placed keep the address they were placed with"
   },
   "taxForm": {
     "required": "Please fill this in",
@@ -31,7 +32,6 @@
     "save": "Save",
     "cancel": "Cancel",
     "newTitle": "New tax-invoice details",
-    "areaFixed": "Province and postcode",
     "name": "Name on the tax invoice",
     "line1": "Registered address",
     "line2": "More details",
@@ -49,7 +49,9 @@
     "branchCodeInvalid": "A five-digit branch number",
     "branchLabel": "Branch",
     "branchCode": "Branch number",
-    "postcodeInvalid": "A five-digit postcode"
+    "postcodeInvalid": "A five-digit postcode",
+    "editTitle": "Edit tax profile: {name}",
+    "fixedHint": "The type, tax ID and branch cannot change — for a new tax ID, add a new profile"
   },
   "nav": {
     "label": "My account",

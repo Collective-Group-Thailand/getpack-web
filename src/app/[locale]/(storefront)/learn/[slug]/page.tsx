@@ -32,7 +32,7 @@ export default async function Page({ params }: Props) {
         {t("back")}
       </Link>
       <header>
-        <h1 className="text-[2rem] leading-tight">{pick(locale, path.titleTh, path.titleEn)}</h1>
+        <h1 className="text-title leading-tight">{pick(locale, path.titleTh, path.titleEn)}</h1>
         <p className="text-muted mt-2">{pick(locale, path.summaryTh, path.summaryEn)}</p>
       </header>
       <ol className="flex flex-col gap-3">
@@ -40,7 +40,7 @@ export default async function Page({ params }: Props) {
           <li key={step.articleSlug}>
             <Link
               href={`/articles/${step.articleSlug}`}
-              className="border-border hover:border-primary flex items-center gap-4 rounded-xl border p-4 transition"
+              className="bg-surface border-border hover:border-primary flex items-center gap-4 rounded-xl border p-4 transition"
             >
               <span className="bg-primary-subtle text-primary flex size-8 shrink-0 items-center justify-center rounded-full font-semibold tabular-nums">
                 {index + 1}

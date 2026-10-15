@@ -43,7 +43,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[2.375rem] leading-tight">{t("title")}</h1>
+          <h1 className="text-title leading-tight">{t("title")}</h1>
           {ORDER_STATUSES.has(tracking.status) ? (
             <StatusChip map={ORDER_STATUS} value={tracking.status as keyof typeof ORDER_STATUS} size="md" />
           ) : null}
@@ -71,7 +71,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             {t("shipments")}
           </h2>
           {tracking.shipments.map((shipment) => (
-            <article key={shipment.shipmentNo} className="border-border rounded-lg border p-4">
+            <article key={shipment.shipmentNo} className="bg-surface border-border rounded-lg border p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-medium">{t("shipmentNo", { shipment: shipment.shipmentNo })}</h3>
                 <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />

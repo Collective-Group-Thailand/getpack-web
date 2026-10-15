@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
+import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -37,14 +38,17 @@ export function StepBar({
               {index > 0 ? <Icon name="chevron-right" size={14} aria-hidden="true" className="text-muted" /> : null}
               <button
                 type="button"
-                onClick={() => onStep(id)}
-                disabled={locked !== null}
+                // A locked step still answers a click — with why it is locked — rather than
+                // doing nothing, which read as the bar being broken (owner walkthrough 2026-10-14).
+                onClick={() => (locked ? toast.info(t(`locked.${locked}`)) : onStep(id))}
+                aria-disabled={locked !== null || undefined}
+                title={locked ? t(`locked.${locked}`) : undefined}
                 aria-current={id === step ? "step" : undefined}
                 aria-describedby={locked ? `studio-step-${id}-locked` : undefined}
                 className={cn(
                   // No colour transition: axe (and a reader) must never meet a half-faded pair.
                   "focus-visible:ring-focus-ring rounded-control flex items-center gap-1.5 px-3 py-1 text-sm outline-none focus-visible:ring-2",
-                  "disabled:cursor-not-allowed",
+                  "aria-disabled:cursor-not-allowed",
                   id === step
                     ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
                     : locked

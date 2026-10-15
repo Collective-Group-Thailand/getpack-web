@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: Promise<{ agreementId: 
           {t("back")}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[2rem] leading-tight">
+          <h1 className="text-title leading-tight">
             {pick(locale, agreement.productType.nameTh, agreement.productType.nameEn)}
           </h1>
           <StatusChip map={CALL_OFF_STATUS} value={agreement.status} size="md" />
@@ -77,7 +77,7 @@ export default async function Page({ params }: { params: Promise<{ agreementId: 
             {agreement.releases.map((r) => (
               <li
                 key={r.id}
-                className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
+                className="bg-surface border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
               >
                 <span>
                   {t("releaseRow", {

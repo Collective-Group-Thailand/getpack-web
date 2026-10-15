@@ -17,7 +17,7 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Spinner } from "@/ui/components/Spinner";
 import { cn } from "@/ui/lib/cn";
 
@@ -39,6 +39,10 @@ export interface PriceDockProps {
   /** ⑤ — the dock's primary action. */
   onOrder: () => void;
   orderDisabled: boolean;
+  /** Why the order button is off, said under it — a disabled button with no reason is a dead end. */
+  orderDisabledReason?: string;
+  /** No order button: the order step's own panel holds the one order action (no two buttons for one thing). */
+  hideOrder?: boolean;
 }
 
 /**
@@ -59,6 +63,8 @@ export function PriceDock({
   onQuantity,
   onOrder,
   orderDisabled,
+  orderDisabledReason,
+  hideOrder = false,
 }: PriceDockProps) {
   const t = useTranslations("studio.dock");
   const locale = useLocale() as "th" | "en";
@@ -114,7 +120,7 @@ export function PriceDock({
 
   // The API's suggested quantities when it has some; otherwise any quantity in its range.
   const quantityChip = !configurator ? null : configurator.quantity.presets.length > 0 && qty ? (
-    <Select
+    <SearchableSelect
       aria-label={t("quantity")}
       value={String(qty)}
       onValueChange={(value) => onQuantity(Number(value))}
@@ -135,10 +141,17 @@ export function PriceDock({
     />
   );
 
-  const orderButton = (
-    <Button onClick={onOrder} disabled={orderDisabled} className={layout === "rail" ? "w-full" : undefined}>
-      {rfq ? t("requestQuote") : t("order")}
-    </Button>
+  const orderButton = hideOrder ? null : (
+    <div className={cn("flex flex-col gap-1.5", layout === "rail" && "w-full")}>
+      <Button onClick={onOrder} disabled={orderDisabled} className={layout === "rail" ? "w-full" : undefined}>
+        {rfq ? t("requestQuote") : t("order")}
+      </Button>
+      {orderDisabled && orderDisabledReason && layout === "rail" ? (
+        <p className="text-muted text-xs" role="status">
+          {orderDisabledReason}
+        </p>
+      ) : null}
+    </div>
   );
 
   const priceText = rfq ? (

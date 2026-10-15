@@ -140,7 +140,7 @@ describe("crawler files", () => {
   it("serves robots.txt and sitemap.xml unprefixed on the indexed zone", async () => {
     // Unprefixed matters: passed to next-intl these become `/th/robots.txt`, and a crawler
     // gets a 404 — the kind of failure nobody notices until the site is not in the index.
-    for (const path of ["/robots.txt", "/sitemap.xml"]) {
+    for (const path of ["/robots.txt", "/sitemap.xml", "/llms.txt"]) {
       const response = await proxy(request("packio.co.th", path));
       expect(response.status).toBe(200);
       expect(rewriteTarget(response)).toBeNull();
@@ -150,7 +150,7 @@ describe("crawler files", () => {
   it("does not answer them at all on a zone that is noindex", async () => {
     // Answering on admin.packio.co.th would publish the shape of the back office to anyone.
     for (const host of ["admin.packio.co.th", "partner.packio.co.th"]) {
-      for (const path of ["/robots.txt", "/sitemap.xml"]) {
+      for (const path of ["/robots.txt", "/sitemap.xml", "/llms.txt"]) {
         expect((await proxy(request(host, path))).status, `${host}${path}`).toBe(404);
       }
     }

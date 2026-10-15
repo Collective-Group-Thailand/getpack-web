@@ -116,12 +116,15 @@ const art = (values: Record<keyof ArtSet, string>): ArtSet =>
  */
 export const ART = {
   light: art({
-    "paper-50": "#F8F9FA",
-    "paper-100": "#F1F3F5",
+    // One step darker than v3's near-white (#F8F9FA / #F1F3F5 / #E3E6EA): a white card on that
+    // page was 1.03:1 from it and read as the page itself (owner feedback 2026-10-14 — "cards and
+    // the account sidebar blend into the background"). The gate still holds every text pair.
+    "paper-50": "#F3F4F6",
+    "paper-100": "#E9ECEF",
     surface: "#FFFFFF",
     "kraft-200": "#DCCDB3",
     "kraft-400": "#C8A97B",
-    border: "#E3E6EA",
+    border: "#D7DCE1",
     "ink-900": "#1A1D21",
     "ink-600": "#4F5660",
     "ink-300": "#838B95",

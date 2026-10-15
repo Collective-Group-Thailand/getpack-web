@@ -194,7 +194,7 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
             {artwork.proofs.map((proof) => (
               <li
                 key={proof.id}
-                className="border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+                className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
               >
                 <div>
                   <p className="font-medium">{t("proofs.version", { version: proof.versionNo })}</p>
@@ -282,7 +282,7 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
                     return (
                       <li
                         key={file.key}
-                        className="border-border flex items-center gap-3 rounded-lg border px-3 py-2 text-sm"
+                        className="bg-surface border-border flex items-center gap-3 rounded-lg border px-3 py-2 text-sm"
                       >
                         <span className="min-w-0 flex-1 truncate">{file.name}</span>
                         {file.failed ? (
@@ -340,7 +340,7 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
           </h2>
           <ol className="mt-3 flex flex-col gap-4">
             {artwork.submissions.map((submission, index) => (
-              <li key={submission.id} className="border-border flex flex-col gap-3 rounded-xl border p-4">
+              <li key={submission.id} className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">
                     {t("versions.version", { version: submission.versionNo })}

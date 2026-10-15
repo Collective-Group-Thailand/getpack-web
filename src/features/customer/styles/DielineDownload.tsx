@@ -13,12 +13,17 @@ import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 import { facetLabel, type StylesT } from "./labels";
 
 type Basis = "internal" | "external" | "over_crease";
-type Format = Schemas["DrawingFormat"];
+/**
+ * The engine's three formats plus `ai`: the designer PDF delivered as an Illustrator file. The
+ * vendored contract does not list `ai` until packio-api's next contract build is adopted
+ * (`pnpm gen:api --adopt`), so the body is widened here — CONTRACT-REQUEST store.dielines.download-ai.
+ */
+type Format = Schemas["DrawingFormat"] | "ai";
 
 export interface DielineDownloadProps {
   variantCode: string;
@@ -63,7 +68,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
           variantCode,
           materialClass: material,
           measurementBasis: basis,
-          format,
+          format: format as Schemas["DrawingFormat"],
           lengthMm: Number(size.l),
           widthMm: Number(size.w),
           heightMm: flat ? 0 : Number(size.h),
@@ -87,7 +92,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
     min !== null && max !== null ? `${formatNumber(min, locale)}–${formatNumber(max, locale)}` : "—";
 
   return (
-    <section aria-labelledby="dieline-download" className="border-border rounded-card flex flex-col gap-3 border p-4">
+    <section aria-labelledby="dieline-download" className="bg-surface border-border rounded-card flex flex-col gap-3 border p-4">
       <div>
         <h3 id="dieline-download" className="text-sm font-semibold">
           {t("title")}
@@ -102,7 +107,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
         <>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("material")}>
-              <Select
+              <SearchableSelect
                 value={material}
                 onValueChange={setMaterial}
                 options={sizeRanges.map((r) => ({
@@ -112,7 +117,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
               />
             </Field>
             <Field label={t("basis")}>
-              <Select
+              <SearchableSelect
                 value={basis}
                 onValueChange={(v) => setBasis(v as Basis)}
                 options={(["internal", "external", "over_crease"] as const).map((value) => ({
@@ -152,7 +157,7 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
             label={t("format")}
             value={format}
             onValueChange={setFormat}
-            options={(["pdf", "dxf", "svg"] as const).map((value) => ({ value, label: value.toUpperCase() }))}
+            options={(["pdf", "ai", "dxf", "svg"] as const).map((value) => ({ value, label: value.toUpperCase() }))}
           />
           <Button iconStart="download" loading={busy} disabled={!ready} onClick={() => void download()}>
             {t("download")}
