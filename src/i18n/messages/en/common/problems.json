@@ -515,7 +515,9 @@
     "checks_not_ready": "This design has not passed its checks",
     "print_unavailable": "Print files cannot be made automatically for this box style yet",
     "quote_not_of_version": "The quotation is not for this version",
-    "renders_missing": "The artwork of this version has not been sent"
+    "renders_missing": "The artwork of this version has not been sent",
+    "template_not_editable": "The template isn't in a state that allows this",
+    "maker_checker": "A template is approved by someone other than its author"
   },
   "dielines": {
     "material_class_not_offered": "This style is not offered in that material class",

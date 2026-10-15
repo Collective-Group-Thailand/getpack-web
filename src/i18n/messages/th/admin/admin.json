@@ -60,7 +60,11 @@
     "samples": "ตัวอย่างสินค้า",
     "structural_requests": "คำขอออกแบบโครงสร้าง",
     "style_intakes": "นำเข้าแบบกล่อง",
-    "style_library": "คลังแบบกล่อง"
+    "style_library": "คลังแบบกล่อง",
+    "studio_catalog": "แคตตาล็อกสตูดิโอ",
+    "reviews": "รีวิวจากลูกค้า",
+    "line": "LINE",
+    "privacy": "ความเป็นส่วนตัวและข้อตกลง"
   },
   "palette": {
     "screens": "หน้าจอ",

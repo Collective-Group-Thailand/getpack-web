@@ -60,7 +60,11 @@
     "samples": "Samples",
     "structural_requests": "Structural design requests",
     "style_intakes": "Style intakes",
-    "style_library": "Style library"
+    "style_library": "Style library",
+    "studio_catalog": "Studio catalogue",
+    "reviews": "Customer reviews",
+    "line": "LINE",
+    "privacy": "Privacy and agreements"
   },
   "palette": {
     "screens": "Screens",
