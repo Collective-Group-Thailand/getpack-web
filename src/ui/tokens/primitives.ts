@@ -119,7 +119,9 @@ export const ART = {
     // One step darker than v3's near-white (#F8F9FA / #F1F3F5 / #E3E6EA): a white card on that
     // page was 1.03:1 from it and read as the page itself (owner feedback 2026-10-14 — "cards and
     // the account sidebar blend into the background"). The gate still holds every text pair.
-    "paper-50": "#F3F4F6",
+    // The page itself is the "Main" board's warm paper (owner, 2026-10-15): white cards and the
+    // cool hairlines stay as they are.
+    "paper-50": "#F6F3EE",
     "paper-100": "#E9ECEF",
     surface: "#FFFFFF",
     "kraft-200": "#DCCDB3",
