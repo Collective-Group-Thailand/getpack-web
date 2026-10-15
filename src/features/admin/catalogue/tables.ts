@@ -13,6 +13,8 @@ import type { IconName } from "@/ui/icons";
 
 export type FieldKind =
   | { kind: "text" | "textarea" | "number" | "switch" | "json" | "file" | "datetime" }
+  /** A list of short strings (aliases, tags), edited as one line separated by commas. */
+  | { kind: "list" }
   | { kind: "enum"; enum: EnumName }
   | { kind: "ref"; table: string };
 
@@ -32,6 +34,7 @@ export const ENUMS = {
   HomeSectionKind: ["product_types", "catalog_products", "showcase", "articles", "banner", "custom"],
   BannerPosition: ["home_hero", "home_strip", "category", "popup"],
   QuoteMode: ["instant", "rfq"],
+  HomeCaseStatus: ["draft", "approved", "withdrawn"],
 } as const satisfies { [K in keyof Schemas]?: readonly Schemas[K][] };
 export type EnumName = keyof typeof ENUMS;
 
@@ -803,6 +806,49 @@ export const TABLES: readonly TableDef[] = [
     filters: ["subjectType"],
     kinds: { subjectId: { kind: "text" } },
     deletable: true,
+  }),
+  define<"GlossaryTermDto", "CreateGlossaryTermDto", "UpdateGlossaryTermDto">({
+    key: "glossary-terms",
+    zone: "cms",
+    section: "content",
+    path: "/v1/admin/cms/glossary-terms",
+    icon: "document",
+    columns: ["termTh", "termEn", "sort", "status"],
+    fields: ["termTh", "termEn", "definitionTh", "definitionEn", "aliases", "sort", "status"],
+    required: ["termTh", "definitionTh"],
+    kinds: { definitionTh: { kind: "textarea" }, definitionEn: { kind: "textarea" }, aliases: { kind: "list" } },
+    deletable: true,
+    defaultSort: "sort",
+  }),
+  define<"HomeCaseDto", "CreateHomeCaseDto", "UpdateHomeCaseDto">({
+    key: "home-cases",
+    zone: "cms",
+    section: "content",
+    path: "/v1/admin/cms/home-cases",
+    icon: "star",
+    status: null,
+    columns: ["brandNameTh", "productTh", "provinceTh", "quantity", "sort", "status"],
+    fields: [
+      "brandNameTh",
+      "productTh",
+      "provinceTh",
+      "quantity",
+      "leadTimeDays",
+      "quoteTh",
+      "photoFileId",
+      "consentFileId",
+      "sort",
+    ],
+    required: ["brandNameTh", "productTh", "provinceTh", "quantity", "leadTimeDays", "quoteTh"],
+    filters: ["status"],
+    kinds: {
+      quoteTh: { kind: "textarea" },
+      photoFileId: { kind: "file" },
+      consentFileId: { kind: "file" },
+      status: { kind: "enum", enum: "HomeCaseStatus" },
+    },
+    deletable: true,
+    defaultSort: "sort",
   }),
   define<"SeoPageDto", "CreateSeoPageDto">({
     key: "seo-pages",

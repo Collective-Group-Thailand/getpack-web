@@ -40,9 +40,7 @@ const MENU_ICONS: Record<string, IconName> = {
   cs_calculators: "calculator",
   quotations: "receipt",
   rfq: "chat",
-  // CONTRACT-REQUEST admin.menu-inbox: ready for when packio-api adds the entry.
   inbox: "inbox",
-  // CONTRACT-REQUEST admin.menu-assistant
   assistant: "sparkles",
   discount_memos: "percent",
   prepress: "image",
@@ -56,6 +54,10 @@ const MENU_ICONS: Record<string, IconName> = {
   style_intakes: "upload",
   samples: "package-check",
   cms: "article",
+  studio_catalog: "pen-tool",
+  reviews: "star",
+  line: "chat",
+  privacy: "shield-check",
   marketing: "megaphone",
   customers: "user",
   companies: "building",
@@ -82,7 +84,7 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
   { key: "sales", entries: ["orders", "inbox", "cs_calculators", "quotations", "rfq", "discount_memos"] },
   { key: "operations", entries: ["prepress", "production", "shipments", "claims", "samples"] },
   { key: "supply", entries: ["partners", "catalogue", "style_library", "structural_requests", "style_intakes"] },
-  { key: "growth", entries: ["marketing", "cms", "customers", "companies"] },
+  { key: "growth", entries: ["marketing", "cms", "studio_catalog", "reviews", "line", "customers", "companies"] },
   { key: "insights", entries: ["analytics", "assistant", "reports", "finance"] },
   {
     key: "system",
@@ -93,6 +95,7 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
       "notification_templates",
       "notification_routes",
       "audit_logs",
+      "privacy",
       "outbox",
       "ops",
     ],

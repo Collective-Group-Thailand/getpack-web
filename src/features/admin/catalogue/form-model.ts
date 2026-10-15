@@ -84,6 +84,8 @@ export function toValues(def: TableDef, row: CatalogueRow): FormValues {
       switch (kindOf(def, field).kind) {
         case "json":
           return [field, value && typeof value === "object" ? JSON.stringify(value, null, 2) : ""];
+        case "list":
+          return [field, Array.isArray(value) ? value.join(", ") : ""];
         case "datetime":
           return [field, toLocalInput(value)];
         case "switch":
@@ -108,6 +110,12 @@ export function toBody(def: TableDef, values: FormValues, mode: "create" | "upda
         body[field] = text ? (JSON.parse(text) as unknown) : field === "rfqSpecSchema" ? null : {};
         break;
       }
+      case "list":
+        body[field] = (typeof value === "string" ? value : "")
+          .split(/[,\n]/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+        break;
       case "datetime":
         body[field] = typeof value === "string" && value ? `${value}:00+07:00` : null;
         break;
