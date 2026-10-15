@@ -55,7 +55,7 @@ export async function HomeHero({
     <section aria-labelledby="home-title" className={cn(HOME_WRAP, "pt-10 md:pt-16")}>
       <div className="grid items-center gap-10 lg:grid-cols-[4.6fr_7.4fr] lg:gap-12">
         <div>
-          <h1 id="home-title" className="text-[2.125rem] leading-[1.1] md:text-5xl lg:text-[3.5rem]">
+          <h1 id="home-title" className="text-[2.125rem] leading-[1.1] md:text-5xl lg:text-[2.75rem] xl:text-[3.5rem]">
             {t.rich("title", br)}
           </h1>
           <p className="text-muted mt-5 max-w-[26em] text-[1.0625rem] leading-relaxed md:text-lg">{t("lead")}</p>
