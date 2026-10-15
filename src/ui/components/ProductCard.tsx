@@ -6,6 +6,8 @@ export interface ProductCardImage {
   src: string;
   /** Required by type: an image without alt text is an accessibility failure (design-system.md §6). */
   alt: string;
+  /** `contain` for a drawing (a dieline) that must show whole, on a plain plate; photos `cover`. */
+  fit?: "cover" | "contain";
 }
 
 export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
@@ -22,6 +24,8 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   price?: React.ReactNode;
   /** Lead time, minimum order — one quiet line. */
   meta?: React.ReactNode;
+  /** Block content under the facts (chips, a short list) — not a paragraph, so it may hold lists. */
+  details?: React.ReactNode;
   /**
    * Buttons of their own (save, compare), in a row under the facts — raised above the stretched
    * title link so they stay separately clickable and focusable.
@@ -63,6 +67,7 @@ export function ProductCard({
   topLine,
   price,
   meta,
+  details,
   badges,
   promoBadge,
   hoverCta,
@@ -106,7 +111,10 @@ export function ProductCard({
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             decoding="async"
-            className="duration-base ease-standard h-full w-full object-cover transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className={cn(
+              "duration-base ease-standard h-full w-full transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100",
+              image.fit === "contain" ? "bg-surface object-contain p-4" : "object-cover",
+            )}
           />
         ) : (
           <div className="flex h-full items-center justify-center p-6" aria-hidden="true">
@@ -145,6 +153,7 @@ export function ProductCard({
         </Heading>
         {price ? <p className="mt-auto pt-2 text-base tabular-nums">{price}</p> : null}
         {meta ? <p className="text-muted text-xs">{meta}</p> : null}
+        {details ? <div className="pt-1">{details}</div> : null}
         {actions ? <div className="relative z-10 mt-2 flex flex-wrap items-center gap-1">{actions}</div> : null}
       </div>
     </Component>

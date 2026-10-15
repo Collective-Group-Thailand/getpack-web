@@ -1,6 +1,12 @@
 import { setRequestLocale } from "next-intl/server";
 
-import { getCatalogueTree, getSupportChannels, listFaqs, listStyles } from "@/features/customer/catalog/api.server";
+import {
+  getCatalogueTree,
+  getLibraryTotals,
+  getSupportChannels,
+  listFaqs,
+  listStyles,
+} from "@/features/customer/catalog/api.server";
 import { getHomeContent } from "@/features/customer/home/content.server";
 import {
   CustomerCases,
@@ -34,7 +40,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [content, tree, styles, faqs, channels, guarantee, network, hero] = await Promise.all([
+  const [content, tree, styles, faqs, channels, guarantee, network, hero, library] = await Promise.all([
     getHomeContent(locale),
     getCatalogueTree(),
     listStyles({ sort: "popular", limit: 7 }).catch(() => null),
@@ -43,6 +49,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     getGuarantee().catch(() => null),
     getNetworkStats().catch(() => null),
     getStudioHero(),
+    getLibraryTotals(),
   ]);
 
   // Instant-price categories lead, as they lead the catalogue (UX audit step 4). Only packaging
@@ -65,6 +72,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         photo={content.photos.hero}
         facts={{
           templates: templateCount > 0 ? templateCount : null,
+          // D-410: "986 แบบ ออกแบบเองได้ทุกแบบ" — every shown variant, as the API counts it.
+          library: library?.variants ?? null,
           // The lowest quantity the hero presets offer — what the panel beside it starts from.
           moq: lowestPresetQty(hero.shapes),
         }}
@@ -75,6 +84,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         styles={styles?.data ?? []}
         total={templateCount}
         categories={styleCategories.filter((facet) => facet.count > 0).length}
+        library={library}
         photos={content.photos.templates}
         locale={locale}
       />

@@ -7,7 +7,10 @@
     "compareTitle": "Compare styles"
   },
   "breadcrumbs": {
-    "library": "Style library"
+    "library": "Style library",
+    "variants": "Every variant",
+    "topics": "By feature",
+    "useCases": "By product"
   },
   "list": {
     "heading": "Box and packaging style library",
@@ -31,7 +34,22 @@
     "shown": "Showing {shown} of {total, plural, one {# style} other {# styles}}",
     "shownMore": "Showing {shown} styles",
     "grid": "Styles",
-    "count": "({count})"
+    "count": "({count})",
+    "viewLabel": "View",
+    "viewStyles": "Base styles",
+    "viewVariants": "Every variant",
+    "variantsHeading": "Every variant in the library",
+    "variantsIntro": "Every variant you can design, filtered by top, bottom, window, hang tab and material. A card opens its style with that variant chosen.",
+    "variantResults": "{count, plural, one {# variant} other {# variants}}",
+    "variantGrid": "Variants",
+    "byUseCase": "Shop by product",
+    "byTopic": "Shop by feature",
+    "filterTop": "Top",
+    "filterBottom": "Bottom",
+    "filterWindow": "Window",
+    "filterHang": "Hang tab",
+    "filterMore": "Other features",
+    "filterMaterial": "Material"
   },
   "sorts": {
     "relevance": "Best match",
@@ -97,12 +115,23 @@
   },
   "useCases": {
     "cosmetics": "Cosmetics",
+    "soap": "Soap",
+    "supplements": "Supplements",
     "food": "Food",
+    "snack": "Snacks",
+    "bakery": "Bakery",
+    "beverage": "Beverages",
+    "tea_coffee": "Tea & coffee",
+    "jewelry": "Jewellery",
+    "apparel": "Apparel",
+    "electronics": "Electronics",
+    "candle_fragrance": "Candles & fragrance",
+    "produce": "Fruit & vegetables",
+    "gift": "Gifts",
+    "luxury": "Premium",
     "retail": "Retail",
     "shipping": "Shipping",
     "ecommerce": "E-commerce",
-    "gift": "Gifts",
-    "luxury": "Premium goods",
     "protection": "Protection",
     "branding": "Branding"
   },
@@ -276,7 +305,11 @@
     "from": "From {price} each",
     "fromQuantity": "at {quantity} pieces",
     "reference": "International code {code}",
-    "featured": "Featured"
+    "featured": "Featured",
+    "subVariants": "{count, plural, other {# variants}}",
+    "moreChips": "+{count}",
+    "variantOf": "A variant of {name}",
+    "openVariant": "See variant {code}"
   },
   "favourites": {
     "add": "Save this style",
@@ -338,7 +371,13 @@
     "thumbnailAlt": "{name}, variant {code}",
     "useCases": "Good for",
     "back": "Style library",
-    "makers": "Made by"
+    "makers": "Made by",
+    "allOptions": "Every option of this style",
+    "allOptionsIntro": "{name} has {axes, plural, one {# option} other {# options}} to set, {count, plural, one {# variant} other {# variants}} in all — design any of them in the 3D Studio.",
+    "allVariants": "Every variant code",
+    "allVariantsIntro": "Pick a code to choose that variant above.",
+    "optionPages": "{name} by feature",
+    "choose": "Choose this one"
   },
   "preview3d": {
     "canvas": "The box in 3D — drag to turn",
@@ -500,5 +539,206 @@
     },
     "fefco": "FEFCO {code}",
     "ecma": "ECMA {code}"
+  },
+  "useCasePages": {
+    "cosmetics": {
+      "title": "Cream and cosmetics boxes",
+      "intro": "Box styles for creams, serums, lipsticks and skincare, from standard tuck-end cartons to premium rigid boxes, with windows, hang tabs and inserts that hold the bottle."
+    },
+    "soap": {
+      "title": "Soap boxes",
+      "intro": "Boxes and sleeves for bar soap, handmade soap and gift sets — a window to show the bar, or a belly band for a natural look."
+    },
+    "supplements": {
+      "title": "Supplement and medicine boxes",
+      "intro": "Boxes for supplements, capsules, medicine and health products, with tamper-evident locks, tear strips and folded leaflets."
+    },
+    "food": {
+      "title": "Food boxes",
+      "intro": "Food-grade boxes and trays, from meal boxes and burger clamshells to food trays, paper cups and bowls."
+    },
+    "snack": {
+      "title": "Snack boxes",
+      "intro": "Boxes, pouches and trays for snacks, cookies and popcorn, for the shelf and on the go."
+    },
+    "bakery": {
+      "title": "Cake and bakery boxes",
+      "intro": "Cake boxes, bread boxes and bakery trays, with windows, handles and locking lids."
+    },
+    "beverage": {
+      "title": "Bottle and drink packaging",
+      "intro": "Wine boxes, bottle carriers, cup carriers, bottle labels and shippers with cells."
+    },
+    "tea_coffee": {
+      "title": "Tea and coffee packaging",
+      "intro": "Boxes, flat-bottom pouches, cup sleeves and paper tubes for tea, coffee and brewed drinks."
+    },
+    "jewelry": {
+      "title": "Jewellery boxes",
+      "intro": "Rigid boxes, drawer boxes and pillow boxes for rings, necklaces, earrings and watches."
+    },
+    "apparel": {
+      "title": "Apparel and shoe boxes",
+      "intro": "Mailer boxes, shoe boxes, telescope boxes, paper bags and hang tags for clothing brands."
+    },
+    "electronics": {
+      "title": "Electronics boxes",
+      "intro": "Boxes for accessories, earphones, cables and gadgets, with hang tabs for pegs and inserts that hold the product."
+    },
+    "candle_fragrance": {
+      "title": "Candle and fragrance boxes",
+      "intro": "Boxes for candles, perfume and reed diffusers — hexagonal cartons, paper tubes and shoulder-neck rigid boxes."
+    },
+    "produce": {
+      "title": "Fruit and vegetable boxes",
+      "intro": "Corrugated boxes and trays for fruit, vegetables and farm produce, with vents, hand holes and telescope lids."
+    },
+    "gift": {
+      "title": "Gift boxes",
+      "intro": "Gift boxes in every shape, from pillow, pyramid and petal boxes to rigid boxes with magnetic lids."
+    },
+    "luxury": {
+      "title": "Premium boxes",
+      "intro": "Rigid and double-wall boxes for premium products, closing with magnets, ribbons or as a book."
+    },
+    "retail": {
+      "title": "Retail packaging",
+      "intro": "Shelf and peg packaging, counter displays and corrugated display stands."
+    },
+    "shipping": {
+      "title": "Shipping boxes",
+      "intro": "Corrugated boxes for shipping and storage — slotted, overlap, lock-bottom and pallet-size boxes."
+    },
+    "ecommerce": {
+      "title": "E-commerce and mailer boxes",
+      "intro": "Mailer boxes, self-seal boxes and courier bags for online shops."
+    },
+    "protection": {
+      "title": "Inserts and protective packaging",
+      "intro": "Cavity inserts, bottle-neck inserts, partitions and edge protectors that get products there safely."
+    },
+    "branding": {
+      "title": "Labels, tags and brand print",
+      "intro": "Labels, stickers, hang tags, thank-you cards, leaflets and table tents that make the brand stand out."
+    }
+  },
+  "topics": {
+    "with-window": {
+      "chip": "Window",
+      "phrase": "with a window",
+      "title": "Boxes with a window",
+      "about": "A cut-out that shows the product inside, with or without clear film, on the front or the top."
+    },
+    "with-hang-tab": {
+      "chip": "Hang tab",
+      "phrase": "with a hang tab",
+      "title": "Boxes with a hang tab",
+      "about": "A tab for hanging on store pegs — euro slot, round hole or sombrero header."
+    },
+    "lock-bottom": {
+      "chip": "Lock bottom",
+      "phrase": "with a lock bottom",
+      "title": "Lock-bottom boxes",
+      "about": "A bottom that locks itself as the box opens and carries more weight than a tuck — crash lock, 1-2-3 snap lock or four-flap lock."
+    },
+    "with-handle": {
+      "chip": "Handle",
+      "phrase": "with a handle",
+      "title": "Boxes with a handle",
+      "about": "A carry handle — die-cut in the board, an inserted handle, or a cord on a bag."
+    },
+    "with-hand-holes": {
+      "chip": "Hand holes",
+      "phrase": "with hand holes",
+      "title": "Boxes with hand holes",
+      "about": "Cut-outs to lift a heavy box by, on the ends or the sides."
+    },
+    "with-insert": {
+      "chip": "Insert",
+      "phrase": "with an insert",
+      "title": "Boxes with an insert",
+      "about": "A die-cut insert that holds the product still, its cavities cut to the product: round, rectangular or bottle-shaped."
+    },
+    "magnetic-closure": {
+      "chip": "Magnetic closure",
+      "phrase": "with a magnetic closure",
+      "title": "Magnetic closure boxes",
+      "about": "A lid held by magnets hidden in the board — a soft, premium close."
+    },
+    "ribbon-closure": {
+      "chip": "Ribbon",
+      "phrase": "with a ribbon closure",
+      "title": "Ribbon closure boxes",
+      "about": "Tied shut with a ribbon — for gift and premium boxes."
+    },
+    "with-zipper": {
+      "chip": "Zipper",
+      "phrase": "with a zipper",
+      "title": "Pouches with a zipper",
+      "about": "A resealable zipper that keeps the contents fresh."
+    },
+    "with-tear-strip": {
+      "chip": "Tear strip",
+      "phrase": "with a tear strip",
+      "title": "Boxes with a tear strip",
+      "about": "A strip that opens the box easily and shows at once if it was opened."
+    },
+    "self-seal": {
+      "chip": "Self-seal",
+      "phrase": "with a self-seal strip",
+      "title": "Self-seal boxes",
+      "about": "A built-in adhesive strip that closes the box without tape; a second strip for returns."
+    },
+    "with-vents": {
+      "chip": "Vents",
+      "phrase": "with vents",
+      "title": "Boxes with vents",
+      "about": "Vent holes that let fruit and vegetables breathe and keep the box dry."
+    },
+    "with-thumb-notch": {
+      "chip": "Thumb notch",
+      "phrase": "with a thumb notch",
+      "title": "Boxes with a thumb notch",
+      "about": "A notch for a thumb to pull the lid or the drawer."
+    },
+    "airplane-tuck": {
+      "chip": "Airplane tuck",
+      "phrase": "with an airplane tuck",
+      "title": "Airplane-tuck boxes",
+      "about": "A tuck lid with locking side flaps that closes tighter than a plain tuck."
+    },
+    "with-header-card": {
+      "chip": "Header card",
+      "phrase": "with a header card",
+      "title": "Boxes with a header card",
+      "about": "A header behind the product for the logo and a promotion."
+    },
+    "lock-corner": {
+      "chip": "Lock corner",
+      "phrase": "with lock corners",
+      "title": "Lock-corner trays and boxes",
+      "about": "Corners that lock together without glue, set up by hand in the shop."
+    }
+  },
+  "claim": {
+    "headline": "{count, plural, one {# style} other {# styles}}, every one yours to design",
+    "body": "{styles, plural, one {# base structure} other {# base structures}} with the top, bottom, window, hang tab and insert to choose — design any of them in the 3D Studio now.",
+    "cta": "See every style"
+  },
+  "topicPage": {
+    "metaTitle": "{title} — {count, plural, one {# style} other {# styles}} to design",
+    "metaDescription": "{title}: {about} {count, plural, one {# variant} other {# variants}} to choose from, every one yours to design in the 3D Studio and order from Packio.",
+    "variants": "{count, plural, one {# variant} other {# variants}} {title}",
+    "seeStyle": "Every option of the {name}",
+    "otherStyles": "Other styles {phrase}",
+    "otherTopics": "More of the {name}",
+    "hubIntro": "{about} {styles, plural, one {# style} other {# styles}}, {count, plural, one {# variant} other {# variants}} in all.",
+    "styles": "Styles {phrase}"
+  },
+  "useCasePage": {
+    "metaTitle": "{title} — styles to design yourself",
+    "metaDescription": "{title}: {intro}",
+    "count": "{styles, plural, one {# style} other {# styles}} · {count, plural, one {# variant} other {# variants}}",
+    "other": "Other products"
   }
 }

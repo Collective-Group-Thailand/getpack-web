@@ -35,7 +35,8 @@ const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : us
  * the browser's find-in-page keep working for what is on screen.
  *
  * Columns follow the width (`minColumnWidth`); rows are measured from the first one rendered and
- * are assumed equal, which a grid of same-shaped cards is. The first `initialItems` render on the
+ * take the height of the tallest row rendered since, so cards of uneven height (a second line of
+ * title, chips or no chips) never overlap; each cell stretches to its row. The first `initialItems` render on the
  * server, so the page has content before any script runs. It is a list (`role="list"`) and each
  * cell says where it sits in the whole (`aria-posinset` / `aria-setsize`), so a screen reader
  * hears "12 of 105" though the other cells are not in the document.
@@ -77,6 +78,16 @@ export function VirtualGrid<T>({
   const rows = Math.ceil(items.length / columns);
   const stride = rowHeight + gap;
 
+  // Rows only grow: the tallest rendered row sets the stride for all.
+  useIsomorphicLayoutEffect(() => {
+    if (!measured || !ref.current) return;
+    let tallest = 0;
+    for (const row of ref.current.querySelectorAll<HTMLElement>(":scope > [role=presentation]"))
+      for (const cell of row.children)
+        tallest = Math.max(tallest, (cell.firstElementChild ?? cell).getBoundingClientRect().height);
+    if (tallest > rowHeight + 0.5) setRowHeight(Math.ceil(tallest));
+  });
+
   useEffect(() => {
     if (!measured) return;
     const update = () => {
@@ -97,7 +108,13 @@ export function VirtualGrid<T>({
   }, [measured, stride, rows, overscan]);
 
   const cell = (item: T, index: number) => (
-    <div key={itemKey(item)} role="listitem" aria-posinset={index + 1} aria-setsize={items.length} className="min-w-0">
+    <div
+      key={itemKey(item)}
+      role="listitem"
+      aria-posinset={index + 1}
+      aria-setsize={items.length}
+      className="flex min-w-0 [&>*]:w-full"
+    >
       {renderItem(item, index)}
     </div>
   );
