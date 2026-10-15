@@ -48,6 +48,7 @@ export async function uploadRenders(
       height: number;
     },
   ) => {
+    // `uploadFile` returns once the worker has scanned the tile: the render is refused until then.
     const uploaded = await uploadFile("customer", file, "artwork");
     await browserApi().POST("/v1/store/studio/{designId}/versions/{versionNo}/renders", {
       params: { path: { designId: input.designId, versionNo: input.versionNo } },
