@@ -38,7 +38,15 @@ export function LayoutMap({ layout, label }: { layout: TemplateLayout; label: st
                   />
                 ) : slot.kind === "text" ? (
                   <g key={slot.id}>
-                    <rect x={box.x} y={box.y} width={box.w} height={box.h} fill="none" stroke={fill} strokeDasharray="2 2" />
+                    <rect
+                      x={box.x}
+                      y={box.y}
+                      width={box.w}
+                      height={box.h}
+                      fill="none"
+                      stroke={fill}
+                      strokeDasharray="2 2"
+                    />
                     <text
                       x={box.x + 2}
                       y={box.y + Math.min(box.h - 2, 10)}

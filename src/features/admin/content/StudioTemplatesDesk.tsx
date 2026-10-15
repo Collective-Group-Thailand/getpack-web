@@ -23,6 +23,8 @@ import { toast } from "@/ui/components/Toast";
 
 import { FileField } from "../catalogue/FileField";
 import { adminBrowserApis, FormDialog, FormError, problemMessage, QueryError, useCan } from "../console";
+import { STUDIO_CODE } from "./codes";
+import { useStyleFamilies } from "./families";
 import { LayoutMap } from "./LayoutMap";
 
 type Template = Schemas["AdminStudioTemplateDto"];
@@ -52,7 +54,7 @@ interface Draft {
   nameTh: string;
   nameEn: string;
   useCases: UseCase[];
-  styleFamilies: string;
+  styleFamilies: string[];
   layout: string;
   thumbnailFileId: string;
 }
@@ -63,7 +65,7 @@ const empty: Draft = {
   nameTh: "",
   nameEn: "",
   useCases: [],
-  styleFamilies: "folding_carton, corrugated",
+  styleFamilies: [],
   layout: "",
   thumbnailFileId: "",
 };
@@ -85,6 +87,7 @@ function parseLayout(text: string): TemplateLayout | null {
  */
 export function StudioTemplatesDesk() {
   const t = useTranslations("content.templates");
+  const tStyles = useTranslations("styles");
   const locale = useLocale();
   const queryClient = useQueryClient();
   const canManage = useCan("studio_catalog.manage");
@@ -92,6 +95,7 @@ export function StudioTemplatesDesk() {
   const [status, setStatus] = useState<Status | "all">("all");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [preview, setPreview] = useState<Template | null>(null);
+  const families = useStyleFamilies();
   const key = queryKeys.list("admin", "studio_template", { status });
   const query = useQuery({
     queryKey: key,
@@ -102,7 +106,8 @@ export function StudioTemplatesDesk() {
         })
       ).data!,
   });
-  const refresh = () => void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "studio_template") });
+  const refresh = () =>
+    void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "studio_template") });
   const act = useMutation({
     mutationFn: async ({ id, action }: { id: string; action: "submit" | "approve" | "return" | "retire" }) => {
       const path = { params: { path: { templateId: id } } };
@@ -129,7 +134,7 @@ export function StudioTemplatesDesk() {
       nameTh: row.nameTh,
       nameEn: row.nameEn,
       useCases: [...row.useCases],
-      styleFamilies: row.styleFamilies.join(", "),
+      styleFamilies: row.styleFamilies,
       layout: JSON.stringify(row.layout, null, 2),
       thumbnailFileId: row.thumbnailFileId ?? "",
     });
@@ -140,7 +145,11 @@ export function StudioTemplatesDesk() {
       header: t("name"),
       cell: (row) => (
         <div className="min-w-0">
-          <button type="button" className="text-primary text-start font-medium hover:underline" onClick={() => setPreview(row)}>
+          <button
+            type="button"
+            className="text-primary text-start font-medium hover:underline"
+            onClick={() => setPreview(row)}
+          >
             {name(row)}
           </button>
           <p className="text-muted font-mono text-xs">{row.code}</p>
@@ -152,7 +161,12 @@ export function StudioTemplatesDesk() {
       header: t("useCases"),
       cell: (row) => row.useCases.map((u) => t(`useCaseNames.${u}`)).join(", "),
     },
-    { id: "families", header: t("families"), cell: (row) => row.styleFamilies.join(", ") },
+    {
+      id: "families",
+      header: t("families"),
+      cell: (row) =>
+        row.styleFamilies.map((f) => (tStyles.has(`families.${f}`) ? tStyles(`families.${f}`) : f)).join(", "),
+    },
     {
       id: "status",
       header: t("status"),
@@ -244,7 +258,9 @@ export function StudioTemplatesDesk() {
           submitLabel={t("save")}
           onClose={() => setDraft(null)}
           onSubmit={async () => {
-            if (!draft.code.trim() || !draft.nameTh.trim() || !draft.nameEn.trim()) throw new FormError(t("incomplete"));
+            if (!draft.code.trim() || !draft.nameTh.trim() || !draft.nameEn.trim())
+              throw new FormError(t("incomplete"));
+            if (!STUDIO_CODE.test(draft.code.trim())) throw new FormError(t("codeInvalid"));
             if (!layout) throw new FormError(t("layoutInvalid"));
             if (draft.useCases.length === 0) throw new FormError(t("useCaseRequired"));
             const body: Schemas["StudioTemplateInputDto"] = {
@@ -252,10 +268,7 @@ export function StudioTemplatesDesk() {
               nameTh: draft.nameTh.trim(),
               nameEn: draft.nameEn.trim(),
               useCases: draft.useCases,
-              styleFamilies: draft.styleFamilies
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean),
+              styleFamilies: draft.styleFamilies,
               layoutSchemaVersion: LAYOUT_SCHEMA_VERSION,
               layout: layout as unknown as Record<string, unknown>,
               thumbnailFileId: draft.thumbnailFileId || null,
@@ -280,11 +293,12 @@ export function StudioTemplatesDesk() {
                   if (tpl)
                     setDraft({
                       ...empty,
-                      code: tpl.code,
+                      // Library codes are written upper-case; the catalogue keeps codes lower-case.
+                      code: tpl.code.toLowerCase(),
                       nameTh: tpl.nameTh,
                       nameEn: tpl.nameEn,
                       useCases: tpl.useCases as UseCase[],
-                      styleFamilies: tpl.styleFamilies.join(", "),
+                      styleFamilies: tpl.styleFamilies.filter((f) => !families.data || families.data.includes(f)),
                       layout: JSON.stringify(tpl.layout, null, 2),
                     });
                 }}
@@ -292,15 +306,15 @@ export function StudioTemplatesDesk() {
               />
             </Field>
           ) : null}
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Field label={t("code")} required>
-              <Input
-                value={draft.code}
-                className="font-mono"
-                disabled={Boolean(draft.id)}
-                onChange={(e) => setDraft({ ...draft, code: e.target.value })}
-              />
-            </Field>
+          <Field label={t("code")} hint={t("codeHint")} required>
+            <Input
+              value={draft.code}
+              className="font-mono"
+              disabled={Boolean(draft.id)}
+              onChange={(e) => setDraft({ ...draft, code: e.target.value })}
+            />
+          </Field>
+          <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("nameTh")} required>
               <Input value={draft.nameTh} onChange={(e) => setDraft({ ...draft, nameTh: e.target.value })} />
             </Field>
@@ -326,10 +340,33 @@ export function StudioTemplatesDesk() {
               ))}
             </div>
           </fieldset>
-          <Field label={t("families")} hint={t("familiesHint")}>
-            <Input value={draft.styleFamilies} onChange={(e) => setDraft({ ...draft, styleFamilies: e.target.value })} />
-          </Field>
-          <Field label={t("layout")} hint={t("layoutHint")} required error={draft.layout && !layout ? t("layoutInvalid") : undefined}>
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-sm font-medium">{t("families")}</legend>
+            <p className="text-muted text-xs">{t("familiesHint")}</p>
+            <div className="grid gap-2 sm:grid-cols-4">
+              {(families.data ?? draft.styleFamilies).map((family) => (
+                <Checkbox
+                  key={family}
+                  label={tStyles.has(`families.${family}`) ? tStyles(`families.${family}`) : family}
+                  checked={draft.styleFamilies.includes(family)}
+                  onCheckedChange={(checked) =>
+                    setDraft({
+                      ...draft,
+                      styleFamilies: checked
+                        ? [...draft.styleFamilies, family]
+                        : draft.styleFamilies.filter((x) => x !== family),
+                    })
+                  }
+                />
+              ))}
+            </div>
+          </fieldset>
+          <Field
+            label={t("layout")}
+            hint={t("layoutHint")}
+            required
+            error={draft.layout && !layout ? t("layoutInvalid") : undefined}
+          >
             <Textarea
               rows={10}
               className="font-mono text-xs"
@@ -339,7 +376,10 @@ export function StudioTemplatesDesk() {
           </Field>
           {layout ? <LayoutMap layout={layout} label={t("mapLabel")} /> : null}
           <Field label={t("thumbnail")}>
-            <FileField value={draft.thumbnailFileId} onChange={(value) => setDraft({ ...draft, thumbnailFileId: String(value ?? "") })} />
+            <FileField
+              value={draft.thumbnailFileId}
+              onChange={(value) => setDraft({ ...draft, thumbnailFileId: String(value ?? "") })}
+            />
           </Field>
         </FormDialog>
       ) : null}

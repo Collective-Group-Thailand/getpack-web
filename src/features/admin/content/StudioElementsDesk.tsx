@@ -17,6 +17,7 @@ import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, FormDialog, FormError, problemMessage, QueryError, useCan } from "../console";
+import { STUDIO_CODE } from "./codes";
 
 type Element = Schemas["StudioElementDto"];
 type Kind = Schemas["StudioElementKind"];
@@ -90,7 +91,12 @@ export function StudioElementsDesk() {
     {
       id: "right",
       header: t("requiresRight"),
-      cell: (row) => (row.requiresRight ? <Badge tone="warning" size="sm">{t("yes")}</Badge> : null),
+      cell: (row) =>
+        row.requiresRight ? (
+          <Badge tone="warning" size="sm">
+            {t("yes")}
+          </Badge>
+        ) : null,
     },
     {
       id: "status",
@@ -146,7 +152,16 @@ export function StudioElementsDesk() {
           <Button
             iconStart="plus"
             onClick={() =>
-              setDraft({ code: "", nameTh: "", nameEn: "", kind: "shape", path: "", tags: [], requiresRight: false, tagsText: "" })
+              setDraft({
+                code: "",
+                nameTh: "",
+                nameEn: "",
+                kind: "shape",
+                path: "",
+                tags: [],
+                requiresRight: false,
+                tagsText: "",
+              })
             }
           >
             {t("create")}
@@ -174,6 +189,7 @@ export function StudioElementsDesk() {
           onSubmit={async () => {
             if (!draft.code.trim() || !draft.nameTh.trim() || !draft.nameEn.trim() || !draft.path.trim())
               throw new FormError(t("incomplete"));
+            if (!STUDIO_CODE.test(draft.code.trim())) throw new FormError(t("codeInvalid"));
             const { tagsText, ...body } = draft;
             await adminBrowserApis().contract.POST("/v1/admin/studio-elements", {
               body: {
@@ -191,8 +207,12 @@ export function StudioElementsDesk() {
           }}
         >
           <div className="grid gap-3 sm:grid-cols-3">
-            <Field label={t("code")} required>
-              <Input value={draft.code} className="font-mono" onChange={(e) => setDraft({ ...draft, code: e.target.value })} />
+            <Field label={t("code")} hint={t("codeHint")} required>
+              <Input
+                value={draft.code}
+                className="font-mono"
+                onChange={(e) => setDraft({ ...draft, code: e.target.value })}
+              />
             </Field>
             <Field label={t("nameTh")} required>
               <Input value={draft.nameTh} onChange={(e) => setDraft({ ...draft, nameTh: e.target.value })} />
@@ -209,7 +229,12 @@ export function StudioElementsDesk() {
             />
           </Field>
           <Field label={t("path")} hint={t("pathHint")} required>
-            <Textarea rows={4} className="font-mono text-xs" value={draft.path} onChange={(e) => setDraft({ ...draft, path: e.target.value })} />
+            <Textarea
+              rows={4}
+              className="font-mono text-xs"
+              value={draft.path}
+              onChange={(e) => setDraft({ ...draft, path: e.target.value })}
+            />
           </Field>
           {draft.path.trim() ? <PathPreview d={draft.path} label={t("preview")} /> : null}
           <Field label={t("tags")} hint={t("tagsHint")}>

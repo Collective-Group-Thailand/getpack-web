@@ -19,14 +19,13 @@ import { Pagination } from "@/ui/components/Pagination";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, ConfirmAction, FormDialog, FormError, problemMessage, QueryError, useCan } from "../console";
+import { CANNED_TAG, tagsFrom } from "./codes";
 
 type Canned = Schemas["CannedResponseDto"];
 /** `key` is minted when the dialog opens, so a retried create replays rather than repeats. */
 type Draft = { id: string | null; key: string; title: string; bodyTh: string; bodyEn: string; tags: string };
 
 const EMPTY: Omit<Draft, "key"> = { id: null, title: "", bodyTh: "", bodyEn: "", tags: "" };
-const tagsOf = (text: string) =>
-  [...new Set(text.split(/[,\n]/).map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
 
 /**
  * Canned responses for customer service (D-300): the Thai and English texts an agent drops into a
@@ -185,7 +184,7 @@ export function CannedResponsesDesk() {
           <Input
             value={tag}
             onChange={(e) => {
-              setTag(e.target.value.trim().toLowerCase());
+              setTag(e.target.value.toLowerCase().replace(/[\s-]+/g, "_"));
               setPage(1);
             }}
           />
@@ -256,9 +255,10 @@ export function CannedResponsesDesk() {
               title: draft.title.trim(),
               bodyTh: draft.bodyTh.trim(),
               bodyEn: draft.bodyEn.trim(),
-              tags: tagsOf(draft.tags),
+              tags: tagsFrom(draft.tags),
             };
             if (!body.title || !body.bodyTh || !body.bodyEn) throw new FormError(t("required"));
+            if (!body.tags.every((tag) => CANNED_TAG.test(tag))) throw new FormError(t("tagsInvalid"));
             if (draft.id) {
               await adminBrowserApis().contract.PUT("/v1/admin/canned-responses/{cannedResponseId}", {
                 params: { path: { cannedResponseId: draft.id } },
@@ -275,7 +275,11 @@ export function CannedResponsesDesk() {
           }}
         >
           <Field label={t("titleLabel")} required>
-            <Input value={draft.title} maxLength={120} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+            <Input
+              value={draft.title}
+              maxLength={120}
+              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            />
           </Field>
           <Field label={t("bodyTh")} required>
             <Textarea rows={4} value={draft.bodyTh} onChange={(e) => setDraft({ ...draft, bodyTh: e.target.value })} />

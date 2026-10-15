@@ -58,7 +58,7 @@
       "pharmacy": "Pharmacy and supplements"
     },
     "families": "Box families",
-    "familiesHint": "Codes of the box families this template fits, comma-separated.",
+    "familiesHint": "The library's box families this template fits.",
     "approvedAt": "Approved",
     "actions": "Actions",
     "create": "Add template",
@@ -93,7 +93,9 @@
     "createdBy": "Created by {name}",
     "approvedBy": "Approved by {name}",
     "empty": "No templates with this status",
-    "emptyHint": "Add templates from the library so customers can start designing faster."
+    "emptyHint": "Add templates from the library so customers can start designing faster.",
+    "codeHint": "Lower-case letters, digits, - and _, e.g. pk-tpl-coffee-classic",
+    "codeInvalid": "Codes use lower-case letters, digits, - and _ (2–64 long)."
   },
   "elements": {
     "title": "Shapes, icons and marks",
@@ -133,7 +135,9 @@
     "retire": "Retire",
     "retired": "Retired",
     "failed": "That didn't work",
-    "empty": "No elements match these filters"
+    "empty": "No elements match these filters",
+    "codeHint": "Lower-case letters, digits, - and _, e.g. recycle-loop",
+    "codeInvalid": "Codes use lower-case letters, digits, - and _ (2–64 long)."
   },
   "reviews": {
     "title": "Reviews",
@@ -172,7 +176,7 @@
     "title": "Rich menus",
     "intro": "Register a rich menu created in LINE by key. One menu is active per audience.",
     "key": "Key",
-    "keyHint": "Lowercase letters, digits, - and _, 2–40 long. Reuse a key to change its menu.",
+    "keyHint": "A lower-case letter, then lower-case letters, digits or _, e.g. member_main. Reuse a key to change its menu.",
     "audience": "Audience",
     "audiences": {
       "guest": "Followers",
@@ -187,7 +191,7 @@
     "create": "Add rich menu",
     "edit": "Edit",
     "editTitle": "Edit rich menu {key}",
-    "incomplete": "Check the key and fill in the rich menu ID.",
+    "incomplete": "The key takes lower-case letters, digits and _; fill in the rich menu ID.",
     "save": "Save",
     "saved": "Rich menu saved",
     "empty": "No rich menus yet"
@@ -280,7 +284,7 @@
     "bodyTh": "Thai text",
     "bodyEn": "English text",
     "tags": "Tags",
-    "tagsHint": "Comma-separated, e.g. production, shipping",
+    "tagsHint": "Comma-separated; lower-case letters, digits and _ (spaces and dashes become _), e.g. production, lead_time",
     "tag": "Tag",
     "search": "Search",
     "searchPlaceholder": "Title or text",
@@ -304,6 +308,7 @@
     "archivedToast": "Response archived",
     "restoredToast": "Response restored",
     "failed": "That didn't work",
-    "empty": "No canned responses found"
+    "empty": "No canned responses found",
+    "tagsInvalid": "Tags use lower-case letters, digits and _, up to 30 long."
   }
 }
