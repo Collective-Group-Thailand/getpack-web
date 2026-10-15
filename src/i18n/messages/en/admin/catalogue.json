@@ -145,7 +145,10 @@
     "leadTimeDays": "Lead time (days)",
     "quoteTh": "Customer quote",
     "photoFileId": "Photo",
-    "consentFileId": "Customer consent"
+    "consentFileId": "Customer consent",
+    "variable": "Variable",
+    "determinant": "Read by",
+    "bandTableId": "Band table"
   },
   "hints": {
     "code": "The key used by Excel import; must be unique",
@@ -262,6 +265,14 @@
       "draft": "Draft",
       "approved": "Approved",
       "withdrawn": "Withdrawn"
+    },
+    "GeometryDeterminant": {
+      "w": "Width (W)",
+      "l": "Length (L)",
+      "d": "Depth (D)",
+      "x": "X",
+      "c": "C",
+      "w_over_l": "W ÷ L"
     }
   },
   "tables": {
@@ -440,6 +451,14 @@
     "home-cases": {
       "title": "Customer stories",
       "description": "Real customer work on the home page; each needs the customer's consent and an approval. The home shows the section once three are approved"
+    },
+    "geometry-band-tables": {
+      "title": "Geometry band tables",
+      "description": "Allowances by box dimension, read by the folding and corrugate calculators; a change applies to the next quote."
+    },
+    "geometry-conditions": {
+      "title": "Geometry conditions",
+      "description": "A band table read by one box dimension; patterns use conditions in their slots."
     }
   },
   "sectionTitles": {
@@ -779,5 +798,163 @@
     "needsConsent": "Attach the customer's consent first",
     "failed": "That did not work"
   },
-  "listHint": "Separate each with a comma (,)"
+  "listHint": "Separate each with a comma (,)",
+  "relations": {
+    "more": "More",
+    "moreFor": "More for this row",
+    "saved": "Saved",
+    "failed": "That didn't work",
+    "save": "Save",
+    "saveCount": "Save ({count})",
+    "close": "Close",
+    "search": "Search",
+    "clear": "Clear",
+    "none": "Nothing found",
+    "remove": "Remove",
+    "add": "Add line",
+    "loading": "Still loading the current data",
+    "images": {
+      "menu": "Product images",
+      "title": "Images of {name}",
+      "intro": "Shown to customers once the scan reports them clean. Removing an image keeps the stored file (retention policy).",
+      "open": "Open",
+      "remove": "Remove",
+      "none": "No images yet",
+      "uploading": "Uploading…",
+      "drop": "Drop PNG / JPEG / WebP images or",
+      "browse": "choose them",
+      "tooLarge": "{name} is over 20 MB",
+      "wrongType": "{name} is not PNG, JPEG or WebP"
+    },
+    "options": {
+      "menu": "Customer options",
+      "title": "Options of {name}",
+      "intro": "Materials, finishes, coatings, ink colours, die-cuts, assemblies, print types and patterns the customer may pick, one default per kind. Saving replaces the whole list.",
+      "kind": "Kind",
+      "kindCount": "{kind} ({count})",
+      "isDefault": "Default",
+      "makeDefault": "Make default",
+      "kinds": {
+        "material": "Materials",
+        "finish": "Finishes",
+        "coating": "Coatings",
+        "ink_colour": "Ink colours",
+        "diecut": "Die-cuts",
+        "assembly": "Assemblies",
+        "print_type": "Print types",
+        "pattern": "Patterns"
+      }
+    },
+    "patterns": {
+      "menu": "Product patterns",
+      "title": "Patterns of {name}",
+      "intro": "In display order; factors are indicative until the calculator fixes them.",
+      "pattern": "Pattern",
+      "choose": "Choose a pattern",
+      "duplicate": "A pattern is listed twice",
+      "factorNw": "Factor NW",
+      "factorNl": "Factor NL",
+      "factorNd": "Factor ND"
+    },
+    "reference": {
+      "menu": "Starting-price configuration",
+      "title": "Starting price of {name}",
+      "intro": "The calculator configuration (one quantity) the product card's “from” price is quoted at; checked against the product type's calculator and recomputed at once.",
+      "configuration": "Configuration (JSON)",
+      "hint": "As the storefront price request of this product type",
+      "save": "Save configuration",
+      "clear": "Remove configuration",
+      "clearLabel": "Remove the configuration (the card shows no starting price)",
+      "invalid": "The JSON must be a readable object."
+    },
+    "attributes": {
+      "menu": "Stock attributes",
+      "title": "Attributes of {name}",
+      "intro": "One value per attribute, from that attribute's values.",
+      "unset": "Not set",
+      "names": {
+        "material": "Material",
+        "type": "Type",
+        "sub_type": "Sub-type",
+        "shape": "Shape",
+        "shoulder": "Shoulder",
+        "neck": "Neck",
+        "colour": "Colour",
+        "size_text": "Size",
+        "cap_type": "Cap"
+      }
+    },
+    "colours": {
+      "menu": "Palette",
+      "title": "Palette of {name}",
+      "intro": "Colours as #RRGGBB, each once, in display order.",
+      "invalid": "Colours are #RRGGBB.",
+      "duplicate": "A colour is listed twice.",
+      "pick": "Pick colour {n}",
+      "hex": "Colour code {n}",
+      "add": "Add colour"
+    },
+    "fonts": {
+      "menu": "Template fonts",
+      "title": "Fonts of {name}",
+      "intro": "The fonts this template may use; saving replaces the whole list."
+    },
+    "setDesign": {
+      "menu": "Use a design",
+      "title": "Use a design for {name}",
+      "intro": "The current version of a staff-authored design becomes what customers start from.",
+      "use": "Use this design",
+      "designId": "Design id",
+      "hint": "The id (UUID) of a design the team authored",
+      "invalid": "Not a valid design id."
+    },
+    "flutes": {
+      "menu": "Flute types",
+      "title": "Flute types of {name}",
+      "intro": "The flutes this pattern matches; saving replaces the whole list."
+    },
+    "geometry": {
+      "menu": "Pattern geometry",
+      "title": "Geometry of {name}",
+      "introFolding": "The condition each slot (dw dl nd nl nw aux_f aux_f10) of the pattern and its parts reads, and the die-cut blank at each standard size.",
+      "introCorrugate": "The conditions of slots i k m (read by W) and j (read by W ÷ L).",
+      "slots": "Condition slots",
+      "slot": "Slot",
+      "part": "Part",
+      "wholePattern": "Whole pattern",
+      "seq": "Order",
+      "condition": "Condition",
+      "chooseCondition": "Choose a condition",
+      "addSlot": "Add slot",
+      "blanks": "Standard blanks",
+      "standardSize": "Standard size",
+      "chooseSize": "Choose a size",
+      "dw": "Blank width (DW)",
+      "dl": "Blank length (DL)",
+      "addBlank": "Add size",
+      "blankInvalid": "Choose the size and give DW and DL above 0.",
+      "blankDuplicate": "A standard size is listed twice."
+    },
+    "categories": {
+      "menu": "Article categories",
+      "title": "Categories of {name}",
+      "intro": "Saving replaces the article's categories."
+    },
+    "products": {
+      "menu": "Products showing this FAQ",
+      "title": "Products showing “{name}”",
+      "intro": "The FAQ shows on the chosen product pages; saving replaces the whole list."
+    },
+    "bands": {
+      "menu": "Bands",
+      "title": "Bands of {name}",
+      "intro": "Bounds inclusive (lower ≤ value ≤ upper), never overlapping, read in order; applies to the next quote.",
+      "lower": "Lower",
+      "upper": "Upper",
+      "value": "Allowance",
+      "invalid": "Fill in every number.",
+      "order": "The upper bound must not be below the lower.",
+      "overlap": "Bands overlap."
+    }
+  }
 }

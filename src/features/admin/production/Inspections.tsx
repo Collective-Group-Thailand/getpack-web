@@ -13,16 +13,20 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
-import { NumberInput, Textarea } from "@/ui/components/Input";
+import { Input, NumberInput, Textarea } from "@/ui/components/Input";
+import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
 import {
   adminBrowserApis,
   ConfirmAction,
+  FormDialog,
+  FormError,
   problemMessage,
   ResourceList,
   StatusChip,
   useCan,
+  useStaffDirectory,
   type InitialPage,
 } from "../console";
 import { useProductTypes } from "../console/useProductTypes";
@@ -53,6 +57,8 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
   const [recording, setRecording] = useState<{ row: Inspection; key: string } | null>(null);
   const [found, setFound] = useState({ critical: "0", major: "0", minor: "0" });
   const [notes, setNotes] = useState("");
+  const [scheduling, setScheduling] = useState<{ row: Inspection; at: string; inspectorId: string } | null>(null);
+  const inspectors = useStaffDirectory({ q: "", permission: "inspections.perform", limit: 50 });
 
   const columns: DataTableColumn<Inspection>[] = [
     {
@@ -140,17 +146,24 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
             header: <span className="sr-only">{t("record")}</span>,
             cell: (row: Inspection) =>
               ["planned", "in_progress"].includes(row.status) ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    setFound({ critical: "0", major: "0", minor: "0" });
-                    setNotes("");
-                    setRecording({ row, key: newIdempotencyKey() });
-                  }}
-                >
-                  {t("recordFor", { job: row.jobNo })}
-                </Button>
+                <span className="flex flex-wrap gap-1">
+                  {row.status === "planned" ? (
+                    <Button size="sm" variant="ghost" onClick={() => setScheduling({ row, at: "", inspectorId: "" })}>
+                      {t("schedule")}
+                    </Button>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setFound({ critical: "0", major: "0", minor: "0" });
+                      setNotes("");
+                      setRecording({ row, key: newIdempotencyKey() });
+                    }}
+                  >
+                    {t("recordFor", { job: row.jobNo })}
+                  </Button>
+                </span>
               ) : null,
           },
         ]
@@ -159,6 +172,42 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
 
   return (
     <>
+      {scheduling ? (
+        <FormDialog
+          title={t("scheduleTitle", { job: scheduling.row.jobNo })}
+          description={t("scheduleBody", { factory: scheduling.row.factoryCode })}
+          submitLabel={t("schedule")}
+          onClose={() => setScheduling(null)}
+          onSubmit={async () => {
+            if (!scheduling.at) throw new FormError(t("scheduleWhen"));
+            await adminBrowserApis().contract.POST("/v1/admin/inspections/{inspectionId}/actions/schedule", {
+              params: { path: { inspectionId: scheduling.row.id } },
+              body: {
+                scheduledAt: `${scheduling.at}:00+07:00`,
+                ...(scheduling.inspectorId ? { inspectorUserId: scheduling.inspectorId } : {}),
+              },
+            });
+            toast.success(t("scheduled"));
+            void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "inspection") });
+          }}
+        >
+          <Field label={t("scheduledAt")} required>
+            <Input
+              type="datetime-local"
+              value={scheduling.at}
+              onChange={(e) => setScheduling({ ...scheduling, at: e.target.value })}
+            />
+          </Field>
+          <Field label={t("inspector")} hint={t("inspectorHint")}>
+            <Select
+              value={scheduling.inspectorId || undefined}
+              placeholder={t("me")}
+              onValueChange={(inspectorId) => setScheduling({ ...scheduling, inspectorId })}
+              options={(inspectors.data ?? []).map((person) => ({ value: person.id, label: person.displayName }))}
+            />
+          </Field>
+        </FormDialog>
+      ) : null}
       <ResourceList
         resource={inspectionsList}
         columns={columns}

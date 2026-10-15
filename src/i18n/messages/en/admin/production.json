@@ -3,7 +3,8 @@
     "label": "Production sections",
     "board": "Production board",
     "inspections": "QC inspections",
-    "scorecards": "Scorecards"
+    "scorecards": "Scorecards",
+    "tooling": "Tooling"
   },
   "board": {
     "title": "Production board",
@@ -89,7 +90,16 @@
     "failed": "Failed",
     "recordFailed": "Could not record",
     "empty": "No inspections",
-    "aql": "AQL critical {critical} · major {major} · minor {minor}"
+    "aql": "AQL critical {critical} · major {major} · minor {minor}",
+    "schedule": "Schedule",
+    "scheduleTitle": "Schedule the inspection of {job}",
+    "scheduleBody": "Who inspects at {factory}, and when.",
+    "scheduleWhen": "Choose when.",
+    "scheduled": "Inspection scheduled",
+    "scheduledAt": "When",
+    "inspector": "Inspector",
+    "inspectorHint": "Empty means you",
+    "me": "Me"
   },
   "scorecards": {
     "title": "Factory scorecards",
@@ -108,6 +118,96 @@
     "caption": "Scorecards of {code}",
     "byMonth": "Every factory in one month",
     "month": "Month",
-    "monthCaption": "All factories' scorecards {month}"
+    "monthCaption": "All factories' scorecards {month}",
+    "recompute": "Recompute",
+    "recomputed": "Month recomputed",
+    "recomputeFailed": "Could not recompute"
+  },
+  "job": {
+    "onHold": "On hold",
+    "verbs": {
+      "hold": "Put on hold",
+      "resume": "Resume",
+      "reassign": "Move to another factory"
+    },
+    "issues": "Factory issues ({open} open)",
+    "issueStatus": {
+      "open": "Open",
+      "resolved": "Resolved"
+    },
+    "kinds": {
+      "material_shortage": "Material shortage",
+      "machine_down": "Machine down",
+      "artwork_question": "Artwork question",
+      "quantity": "Quantity",
+      "quality": "Quality",
+      "delay": "Delay",
+      "other": "Other"
+    },
+    "resolve": "Answer and close",
+    "photos": "Photos",
+    "loading": "Loading…",
+    "noIssues": "No issues raised",
+    "qcChecks": "Factory QC checks",
+    "qcResult": {
+      "pass": "Pass",
+      "fail": "Fail",
+      "conditional": "Conditional"
+    },
+    "firstPass": "First pass",
+    "checked": "{checked} checked · {defective} defective",
+    "defects": "{count} defects",
+    "noQc": "No QC checks yet",
+    "dialogs": {
+      "hold": {
+        "title": "Put {jobNo} on hold",
+        "body": "Milestones stop until it resumes; the factory sees the reason.",
+        "done": "Put on hold"
+      },
+      "resume": {
+        "title": "Resume {jobNo}",
+        "body": "Back to accepted or in progress.",
+        "done": "Resumed"
+      },
+      "reassign": {
+        "title": "Move {jobNo} to another factory",
+        "body": "For a released (not yet accepted) or rejected job. The new factory makes it at its own buy price; the customer price never changes, and only if the margin stays at or above the floor.",
+        "done": "Moved to another factory"
+      }
+    },
+    "reasonRequired": "Give a reason of at least 3 characters.",
+    "chooseOther": "Choose another factory.",
+    "toFactory": "To factory",
+    "chooseFactory": "Choose a factory",
+    "holdReason": "Reason (the factory sees it)",
+    "reassignNote": "Why it moves",
+    "resolveTitle": "Close an issue on {jobNo}",
+    "noteRequired": "Write what was decided, at least 3 characters.",
+    "resolved": "Issue closed",
+    "resolutionNote": "What was decided",
+    "resolutionHint": "The factory sees this."
+  },
+  "tooling": {
+    "title": "Tooling",
+    "description": "Plates and die blocks a delivered order paid for, kept at the factory that made them and reusable there until their date.",
+    "kind": "Kind",
+    "kinds": {
+      "plates": "Plates",
+      "die_block": "Die block"
+    },
+    "factory": "Factory",
+    "source": "Paid by order",
+    "lastUsed": "Last used",
+    "reusableUntil": "Reusable until",
+    "artwork": "Artwork",
+    "status": "Status",
+    "statuses": {
+      "active": "Usable",
+      "unusable": "Unusable"
+    },
+    "remakes": "{count} remakes, latest {amount}",
+    "all": "All",
+    "empty": "No tooling yet",
+    "emptyHint": "Items appear once an order that paid for plates or a die block is delivered."
   }
 }

@@ -23,6 +23,7 @@ import { adminBrowserApis, QueryError, StatusChip } from "../console";
 import { useProductTypes } from "../console/useProductTypes";
 import { stageColumns } from "./board";
 import { useFactoryOptions } from "./factories";
+import { JobPanel } from "./JobPanel";
 
 /** The most jobs one page of `admin.production.list` holds. */
 const PER_PAGE = 100;
@@ -186,7 +187,7 @@ export function ProductionBoard() {
                             ) : null}
                             {total > 0 ? (
                               <div
-                                className="bg-border h-1 overflow-hidden rounded-control"
+                                className="bg-border rounded-control h-1 overflow-hidden"
                                 role="progressbar"
                                 aria-label={t("progress")}
                                 aria-valuemin={0}
@@ -194,7 +195,7 @@ export function ProductionBoard() {
                                 aria-valuenow={done}
                               >
                                 <div
-                                  className={cn("h-full rounded-control", job.atRisk ? "bg-danger" : "bg-primary")}
+                                  className={cn("rounded-control h-full", job.atRisk ? "bg-danger" : "bg-primary")}
                                   style={{ width: `${(done / total) * 100}%` }}
                                 />
                               </div>
@@ -290,6 +291,7 @@ export function ProductionBoard() {
                 </p>
               </section>
             ) : null}
+            <JobPanel job={openedJob} />
             <Button asChild variant="secondary" iconEnd="arrow-right">
               <Link href={`/orders/${openedJob.orderId}?tab=production`}>{t("openOrder")}</Link>
             </Button>

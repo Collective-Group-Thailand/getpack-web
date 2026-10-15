@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.63.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.64.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -32387,7 +32387,7 @@ export interface components {
         AddImageDto: {
             /**
              * Format: uuid
-             * @description Uploaded file (purpose `evidence` or `document`)
+             * @description Uploaded file (purpose `image`, `evidence` or `document`)
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c009
              */
             fileId: string;
@@ -56025,7 +56025,7 @@ export interface components {
          * @description Decides retention, accepted types and size limit
          * @enum {string}
          */
-        FilePurpose: "artwork" | "proof" | "slip" | "evidence" | "document" | "import" | "avatar" | "design_asset" | "dieline";
+        FilePurpose: "artwork" | "proof" | "slip" | "evidence" | "document" | "import" | "avatar" | "image" | "design_asset" | "dieline";
         /** @enum {string} */
         FileRetentionClass: "transient" | "standard" | "customer_content" | "financial_record";
         /**

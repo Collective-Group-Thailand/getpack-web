@@ -13,6 +13,7 @@ export function ProductionNav() {
         { href: "/production", label: t("board"), exact: true },
         { href: "/production/inspections", label: t("inspections") },
         { href: "/production/scorecards", label: t("scorecards"), permission: "partners.read" },
+        { href: "/production/tooling", label: t("tooling") },
       ]}
     />
   );
