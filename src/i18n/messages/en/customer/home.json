@@ -203,6 +203,14 @@
       "art350": "Art card 350g",
       "corrE": "E-flute"
     },
-    "retry": "We can't price this choice right now — try another, or carry on designing and see the price next."
+    "retry": "We can't price this choice right now — try another, or carry on designing and see the price next.",
+    "view": {
+      "label": "View",
+      "3d": "3D",
+      "flat": "Dieline",
+      "rotate": "Drag to turn"
+    },
+    "dielineLabel": "Dieline of the {shape}, {size} cm",
+    "dielineUnavailable": "This size cannot be drawn flat here — open the studio for the full view"
   }
 }

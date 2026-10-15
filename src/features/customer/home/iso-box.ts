@@ -20,18 +20,27 @@ const GREEN: Rgb = [15, 95, 78];
 const PAPER = "#f6f3ee";
 const BRAND = "#0f5f4e";
 
+export interface IsoFace {
+  d: string;
+  fill: string;
+}
+
 export interface IsoBox {
-  top: string;
-  left: string;
-  right: string;
+  /** The side faces the viewer sees, back to front, then the top. */
+  faces: IsoFace[];
+  /** Outlines of every drawn face, for the hairline over them. */
+  outlines: string[];
   seam: string;
-  fills: { top: string; left: string; right: string };
   logo: { block: string; lines: string; fill: string } | null;
   shadow: { cx: number; cy: number; rx: number; ry: number };
 }
 
 const COS = Math.cos(Math.PI / 6);
 const SIN = Math.sin(Math.PI / 6);
+/** The viewer looks from +x, +y (the isometric camera): a face is seen when its normal leans that way. */
+const VIEW: readonly [number, number] = [Math.SQRT1_2, Math.SQRT1_2];
+/** Light from the viewer's upper left: how much each side face is darkened, by its normal. */
+const LIGHT: readonly [number, number] = [-0.2, 1];
 
 /** Lighter (`f` > 0) or darker (`f` < 0) shade of a base colour. */
 function shade(base: Rgb, f: number): string {
@@ -40,40 +49,83 @@ function shade(base: Rgb, f: number): string {
 }
 
 /**
- * The box for a size in any unit (only the proportions matter), fitted inside 300 × 250 of the
- * viewBox and centred on its origin.
+ * The box for a size in any unit (only the proportions matter), centred on the origin of a
+ * `-175 -150 350 300` viewBox and turned `yaw` degrees about its vertical axis (the panel lets the
+ * customer drag it round). At 0° it is the board's isometric box: the front (logo) face lower left.
  */
-export function isoBox(size: { w: number; d: number; h: number }, shape: IsoShape, tint: Rgb, print: IsoPrint): IsoBox {
-  const k = Math.min(300 / ((size.w + size.d) * COS), 250 / (size.h + (size.w + size.d) * SIN));
+export function isoBox(
+  size: { w: number; d: number; h: number },
+  shape: IsoShape,
+  tint: Rgb,
+  print: IsoPrint,
+  yaw = 0,
+): IsoBox {
+  // Fitted at 0°, and never wider than the viewBox at any angle (the plan's diagonal turns through it).
+  const k = Math.min(
+    300 / ((size.w + size.d) * COS),
+    250 / (size.h + (size.w + size.d) * SIN),
+    340 / (Math.sqrt(2 * (size.w ** 2 + size.d ** 2)) * COS),
+  );
   const [W, D, H] = [size.w * k, size.d * k, size.h * k];
-  const ox = ((D - W) * COS) / 2;
-  const oy = (H - (W + D) * SIN) / 2;
-  const at = (x: number, y: number, z: number): [string, string] => [
-    (x * COS - y * COS + ox).toFixed(1),
-    (x * SIN + y * SIN - z + oy).toFixed(1),
-  ];
+  const a = (yaw * Math.PI) / 180;
+  const [ca, sa] = [Math.cos(a), Math.sin(a)];
+  const turn = (x: number, y: number): [number, number] => [x * ca - y * sa, x * sa + y * ca];
+  const oy = H / 2;
+  /** A point of the box, x and y from its centre, z up from its base. */
+  const at = (x: number, y: number, z: number): [string, string] => {
+    const [rx, ry] = turn(x, y);
+    return [((rx - ry) * COS).toFixed(1), ((rx + ry) * SIN - z + oy).toFixed(1)];
+  };
   const path = (points: [string, string][]) => `M${points.map((p) => p.join(" ")).join(" L")} Z`;
-  const line = (a: [string, string], b: [string, string]) => `M${a.join(" ")} L${b.join(" ")}`;
-
-  let seam: string;
-  if (shape === "mailer") seam = line(at(0, D / 2, H), at(W, D / 2, H));
-  else if (shape === "lid") {
-    // The lid's rim, a little over a third down the sides.
-    const rim = H * 0.62;
-    seam = `${line(at(0, D, rim), at(W, D, rim))} L${at(W, 0, rim).join(" ")}`;
-  } else seam = line(at(0, D * 0.82, H), at(W, D * 0.82, H));
+  const line = (p: [string, string], q: [string, string]) => `M${p.join(" ")} L${q.join(" ")}`;
+  const [hw, hd] = [W / 2, D / 2];
 
   const base = print === "full" ? GREEN : tint;
-  const centre = at(W / 2, D / 2, 0);
+
+  // The four sides: corners along the base (start → end, anticlockwise from above) and the normal.
+  const sides = [
+    { id: "front", from: [-hw, hd], to: [hw, hd], normal: [0, 1] },
+    { id: "right", from: [hw, hd], to: [hw, -hd], normal: [1, 0] },
+    { id: "back", from: [hw, -hd], to: [-hw, -hd], normal: [0, -1] },
+    { id: "left", from: [-hw, -hd], to: [-hw, hd], normal: [-1, 0] },
+  ] as const;
+  const visible = sides
+    .map((side) => {
+      const n = turn(side.normal[0], side.normal[1]);
+      return { ...side, n, facing: n[0] * VIEW[0] + n[1] * VIEW[1] };
+    })
+    .filter((side) => side.facing > 1e-6)
+    .sort((p, q) => p.facing - q.facing);
+  const faceOf = (side: (typeof visible)[number]) =>
+    path([
+      at(side.from[0], side.from[1], H),
+      at(side.to[0], side.to[1], H),
+      at(side.to[0], side.to[1], 0),
+      at(side.from[0], side.from[1], 0),
+    ]);
+  const lit = (n: [number, number]) => -0.14 - 0.12 * (1 - (n[0] * LIGHT[0] + n[1] * LIGHT[1]) / Math.hypot(...LIGHT));
+  const top = path([at(-hw, -hd, H), at(hw, -hd, H), at(hw, hd, H), at(-hw, hd, H)]);
+  const faces: IsoFace[] = [
+    ...visible.map((side) => ({ d: faceOf(side), fill: shade(base, lit(side.n)) })),
+    { d: top, fill: shade(base, 0.18) },
+  ];
+
+  let seam: string;
+  if (shape === "mailer") seam = line(at(-hw, 0, H), at(hw, 0, H));
+  else if (shape === "lid") {
+    // The lid's rim, a little over a third down every side the viewer sees.
+    const rim = H * 0.62;
+    seam = visible.map((side) => line(at(side.from[0], side.from[1], rim), at(side.to[0], side.to[1], rim))).join(" ");
+  } else seam = line(at(-hw, D * 0.32, H), at(hw, D * 0.32, H));
 
   let logo: IsoBox["logo"] = null;
-  if (print !== "none") {
-    // A wordmark-like block and two lines, centred on the front face.
+  if (print !== "none" && visible.some((side) => side.id === "front")) {
+    // A wordmark-like block and two lines, centred on the front face (only while it faces the viewer).
     const lh = Math.min(W * 0.22, H * 0.62);
     const lw = lh / 0.42;
     const u0 = (W - lw) / 2;
     const v0 = (H - lh) / 2;
-    const front = (u: number, v: number) => at(u, D, H - v);
+    const front = (u: number, v: number) => at(-hw + u, hd, H - v);
     logo = {
       block: path([
         front(u0, v0),
@@ -89,18 +141,17 @@ export function isoBox(size: { w: number; d: number; h: number }, shape: IsoShap
     };
   }
 
+  const reach = Math.hypot(W, D) / 2;
   return {
-    top: path([at(0, 0, H), at(W, 0, H), at(W, D, H), at(0, D, H)]),
-    left: path([at(0, D, H), at(W, D, H), at(W, D, 0), at(0, D, 0)]),
-    right: path([at(W, 0, H), at(W, 0, 0), at(W, D, 0), at(W, D, H)]),
+    faces,
+    outlines: faces.map((face) => face.d),
     seam,
-    fills: { top: shade(base, 0.18), left: shade(base, -0.14), right: shade(base, -0.26) },
     logo,
     shadow: {
-      cx: Number(centre[0]),
-      cy: Number(centre[1]) + 8,
-      rx: Number(((W + D) * 0.5).toFixed(1)),
-      ry: Number(((W + D) * 0.17).toFixed(1)),
+      cx: 0,
+      cy: Number((oy + 8).toFixed(1)),
+      rx: Number((reach * 2 * COS * 0.55).toFixed(1)),
+      ry: Number((reach * 2 * SIN * 0.4).toFixed(1)),
     },
   };
 }

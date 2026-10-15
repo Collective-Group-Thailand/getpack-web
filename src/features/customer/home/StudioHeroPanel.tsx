@@ -1,8 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 
 import { useDebounced } from "@/features/customer/configurator/pricing";
 import { useFormat } from "@/features/shared/format/useFormat";
@@ -23,6 +24,12 @@ const PRINTS = ["none", "one", "full"] as const;
 const PRICE_DELAY_MS = 250;
 /** The drawing when there is no catalogue to show: the board's first size, 18 × 12 × 5 cm. */
 const NO_SIZE = { id: "", lengthMm: 180, widthMm: 120, heightMm: 50 };
+/** Degrees the box turns per pixel dragged, and per arrow-key press. */
+const DEG_PER_PX = 0.6;
+const DEG_PER_KEY = 15;
+
+// The flat view needs the dieline engine: it loads on the first switch to it, not with the page.
+const HeroDieline = dynamic(() => import("./HeroDieline"), { ssr: false });
 
 /**
  * The hero's working mini studio (Phase 4 §4.3, the "Main" board): shape, size, board, print and
@@ -41,6 +48,9 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
   const format = useFormat();
   const ids = useId();
   const [selection, setSelection] = useState<HeroSelection | null>(initial?.selection ?? null);
+  const [view, setView] = useState<"3d" | "flat">("3d");
+  const [yaw, setYaw] = useState(0);
+  const drag = useRef<{ x: number; yaw: number } | null>(null);
   const settled = useDebounced(selection, PRICE_DELAY_MS);
   const current = shapes.find((shape) => shape.id === selection?.shape) ?? null;
   const fresh = settled !== null && initial !== null && sameSelection(settled, initial.selection);
@@ -77,6 +87,7 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
     current?.id ?? "mailer",
     MATERIAL_TINT[board?.id ?? "kraft350"],
     selection?.print ?? "one",
+    yaw,
   );
 
   const studioQuery = new URLSearchParams({
@@ -127,29 +138,74 @@ export function StudioHeroPanel({ shapes, initial }: { shapes: HeroShape[]; init
 
       <div className="grid md:grid-cols-2">
         <div className="pk-line-grid bg-bg relative grid h-60 place-items-center md:h-auto md:min-h-[420px]">
-          <svg
-            viewBox="-175 -150 350 300"
-            className="h-auto max-h-full w-[94%] md:max-h-[390px]"
-            role="img"
-            aria-label={t("previewLabel", { shape: shapeName, size: sizeName })}
-          >
-            <ellipse {...box.shadow} fill="rgb(60 40 20 / 0.16)" />
-            <path d={box.left} fill={box.fills.left} />
-            <path d={box.right} fill={box.fills.right} />
-            <path d={box.top} fill={box.fills.top} />
-            <path d={box.seam} fill="none" stroke="rgb(70 45 20 / 0.5)" strokeWidth={1.4} />
-            {box.logo ? (
-              <>
-                <path d={box.logo.block} fill={box.logo.fill} />
-                <path d={box.logo.lines} fill="none" stroke={box.logo.fill} strokeWidth={1.2} />
-              </>
-            ) : null}
-            <g fill="none" stroke="rgb(60 40 20 / 0.3)" strokeWidth={1}>
-              <path d={box.left} />
-              <path d={box.right} />
-              <path d={box.top} />
-            </g>
-          </svg>
+          {view === "3d" ? (
+            <svg
+              viewBox="-175 -150 350 300"
+              className="h-auto max-h-full w-[94%] cursor-grab touch-pan-y select-none active:cursor-grabbing md:max-h-[390px]"
+              role="img"
+              aria-label={t("previewLabel", { shape: shapeName, size: sizeName })}
+              tabIndex={0}
+              onPointerDown={(event) => {
+                drag.current = { x: event.clientX, yaw };
+                event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onPointerMove={(event) => {
+                if (drag.current) setYaw(drag.current.yaw - (event.clientX - drag.current.x) * DEG_PER_PX);
+              }}
+              onPointerUp={() => (drag.current = null)}
+              onPointerCancel={() => (drag.current = null)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                  event.preventDefault();
+                  setYaw((value) => value + (event.key === "ArrowLeft" ? DEG_PER_KEY : -DEG_PER_KEY));
+                }
+              }}
+            >
+              <defs>
+                <filter id={`${ids}-soft`} x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="8" />
+                </filter>
+              </defs>
+              <ellipse {...box.shadow} fill="rgb(60 40 20 / 0.28)" filter={`url(#${ids}-soft)`} />
+              {box.faces.map((face, index) => (
+                <path key={index} d={face.d} fill={face.fill} />
+              ))}
+              <path d={box.seam} fill="none" stroke="rgb(70 45 20 / 0.5)" strokeWidth={1.4} />
+              {box.logo ? (
+                <>
+                  <path d={box.logo.block} fill={box.logo.fill} />
+                  <path d={box.logo.lines} fill="none" stroke={box.logo.fill} strokeWidth={1.2} />
+                </>
+              ) : null}
+              <g fill="none" stroke="rgb(60 40 20 / 0.3)" strokeWidth={1}>
+                {box.outlines.map((d, index) => (
+                  <path key={index} d={d} />
+                ))}
+              </g>
+            </svg>
+          ) : current?.styleId ? (
+            <HeroDieline
+              styleId={current.styleId}
+              size={size}
+              corrugated={board?.id === "corrE"}
+              label={t("dielineLabel", { shape: shapeName, size: sizeName })}
+              fallback={t("dielineUnavailable")}
+            />
+          ) : (
+            <p className="text-muted max-w-[18em] text-center text-[13px]">{t("dielineUnavailable")}</p>
+          )}
+          <div role="group" aria-label={t("view.label")} className="absolute start-3.5 top-3 flex gap-1.5">
+            {(["3d", "flat"] as const).map((id) => (
+              <Chip key={id} small pressed={view === id} onClick={() => setView(id)}>
+                {t(`view.${id}`)}
+              </Chip>
+            ))}
+          </div>
+          {view === "3d" ? (
+            <p aria-hidden="true" className="text-muted absolute end-3.5 bottom-3 text-[13px]">
+              {t("view.rotate")}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex min-w-0 flex-col px-4.5 pt-3.5 pb-4.5">
@@ -287,12 +343,15 @@ function Row({ label, first = false, children }: { label: string; first?: boolea
 function Chip({
   pressed,
   disabled = false,
+  small = false,
   title,
   onClick,
   children,
 }: {
   pressed: boolean;
   disabled?: boolean;
+  /** The view switch over the drawing: a step smaller than the option chips. */
+  small?: boolean;
   title?: string;
   onClick: () => void;
   children: React.ReactNode;
@@ -306,7 +365,8 @@ function Chip({
       onClick={onClick}
       className={cn(
         // A preset label is at most 14 characters (home.test.ts), so a chip never outgrows the panel.
-        "rounded-control bg-surface inline-flex h-8 max-w-full items-center truncate border px-2.5 text-[13px] whitespace-nowrap",
+        "rounded-control bg-surface inline-flex max-w-full items-center truncate border px-2.5 whitespace-nowrap",
+        small ? "h-7 text-xs" : "h-8 text-[13px]",
         "focus-visible:ring-focus-ring duration-fast transition-colors outline-none focus-visible:ring-2",
         "disabled:cursor-not-allowed disabled:opacity-45",
         pressed ? "border-fg text-fg font-semibold" : "border-border text-muted hover:border-subtle",
