@@ -241,6 +241,9 @@ function build(kind: Kind, period: Period): Built {
         gl: sales.gl - purchases.gl,
       };
     }
+    case "pnd1":
+      // Sales agents' commission (D-421); the mock has no agents, so the form is always empty.
+      return whtIssuedReport(period, null, []);
     case "pnd3":
     case "pnd53":
       return whtIssuedReport(period, kind, kind === "pnd3" ? gl.wht_pnd3 : gl.wht_pnd53);

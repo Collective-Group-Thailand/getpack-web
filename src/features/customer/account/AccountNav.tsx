@@ -11,7 +11,13 @@ import { cn } from "@/ui/lib/cn";
 /** What the member's company roles open (`CompanyDto.can`) — only the parts this nav reads. */
 export interface AccountCompany {
   name: string;
-  can: { approveOrders: boolean; viewFinance: boolean; manageMembers: boolean; manageSettings: boolean; order: boolean };
+  can: {
+    approveOrders: boolean;
+    viewFinance: boolean;
+    manageMembers: boolean;
+    manageSettings: boolean;
+    order: boolean;
+  };
   /** Orders waiting for this member's decision, when they approve. */
   pendingApprovals: number;
 }
@@ -64,7 +70,9 @@ function groupsFor(company: AccountCompany | null): Group[] {
           ? [{ key: "approvals", href: "/business/approvals", icon: "check" as const, badge: company.pendingApprovals }]
           : []),
         { key: "companyOrders", href: "/business", icon: "building", exact: true },
-        ...(can.order ? [{ key: "reorder", href: "/business/reorder", icon: "refresh" as const, ns: "business" as const }] : []),
+        ...(can.order
+          ? [{ key: "reorder", href: "/business/reorder", icon: "refresh" as const, ns: "business" as const }]
+          : []),
         ...(can.viewFinance
           ? [{ key: "credit", href: "/business/credit", icon: "wallet" as const, ns: "business" as const }]
           : []),
@@ -82,6 +90,7 @@ function groupsFor(company: AccountCompany | null): Group[] {
       { key: "points", href: "/account/points", icon: "star" },
       { key: "wallet", href: "/account/wallet", icon: "ticket" },
       { key: "referral", href: "/account/referral", icon: "gift" },
+      { key: "agent", href: "/account/agent", icon: "handshake" },
       { key: "notifications", href: "/account/notifications", icon: "bell" },
       { key: "privacy", href: "/account/privacy", icon: "shield" },
     ],
@@ -144,13 +153,13 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
       {groups.map((group) => {
         const holdsCurrent = group.items.some(isCurrent);
         const title =
-          group.key === "company" && company ? t("groups.companyNamed", { name: company.name }) : t(`groups.${group.key}`);
+          group.key === "company" && company
+            ? t("groups.companyNamed", { name: company.name })
+            : t(`groups.${group.key}`);
         return (
           <div key={group.key} className="mt-2 lg:mt-4">
             {/* Wide screens: a heading over the group. */}
-            <p className="text-muted hidden px-3 pb-1 text-xs font-semibold lg:flex">
-              {t(`groups.${group.key}`)}
-            </p>
+            <p className="text-muted hidden px-3 pb-1 text-xs font-semibold lg:flex">{t(`groups.${group.key}`)}</p>
             <ul className="hidden flex-col gap-0.5 lg:flex">{group.items.map(link)}</ul>
             {/* A phone: the same group, folded unless it holds this page. */}
             <details open={holdsCurrent} className="bg-surface border-border rounded-xl border lg:hidden">

@@ -112,6 +112,21 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   remembered on the device) and a menu search appears (`/` jumps to it, Enter opens the first match). The finance
   desks list uses the same marking. Every admin dropdown is a `SearchableSelect` (search box from six options),
   which now also keeps its own choice when used with `defaultValue` alone.
+- **Round 5 — sales agent programme** (packio-api v0.65.0, D-416 – D-423): employees and freelancers who sell for
+  Packio to customers, companies and factories. Storefront: `/a/{code}` keeps the agent's code (`pk_agent`, 90
+  days) and the storefront claims it once the visitor is signed in; `/account/agent` shows the programme and the
+  application (identity file, payout account, the agreement), and for an agent their code, link, QR, money by
+  status and plan, with customers (names of link-sourced people masked), leads (registered with the prospect's
+  consent), commissions and statements with the 50 ทวิ. Admin `/agents` (menu under ขายและบริการลูกค้า): agents and
+  adding a sales employee, applications (checks, documents, approve onto a plan or reject), the agent page (totals,
+  profile, plan, recent lines; plan change under If-Match; suspend / reactivate / end), linked customers (link by
+  hand, unlink), leads (release), referred factories, commissions (adjust with an Idempotency-Key, release or cancel
+  held lines), statements (generate a month, approve with the number typed under If-Match + Idempotency-Key, void,
+  payroll CSV, mark paid) and plans (create, propose a version, approve or reject by someone else, retire). List
+  keys are snake_case so saved views accept them. Tried in a browser against packio-api: apply → approve → two new
+  customers linked through the link → a lead → an adjustment → a month's statement generated and approved (vendor
+  bill) → a plan proposal its author cannot approve. Payout, certificate and employee payroll are covered by the
+  API's e2e. Commission figures and the flat 3 % ภ.ง.ด.1 rate await business and CPA sign-off.
 
 ---
 

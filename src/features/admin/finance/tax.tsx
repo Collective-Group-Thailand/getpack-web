@@ -45,12 +45,13 @@ export const TAX_KINDS = [
   "sales_tax",
   "purchase_tax",
   "pp30",
+  "pnd1",
   "pnd3",
   "pnd53",
   "wht_issued_register",
   "wht_received_register",
 ] as const satisfies readonly Kind[];
-const PAYABLE: readonly Kind[] = ["pp30", "pnd3", "pnd53"];
+const PAYABLE: readonly Kind[] = ["pp30", "pnd1", "pnd3", "pnd53"];
 
 const bangkokToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 const thisMonth = () => bangkokToday().slice(0, 7);
@@ -264,6 +265,7 @@ const COLUMNS: Record<Kind, Column[]> = {
     { key: "gl", kind: "money" },
     { key: "documents", kind: "number" },
   ],
+  pnd1: [],
   pnd3: [],
   pnd53: [],
   wht_issued_register: [],
@@ -292,6 +294,7 @@ const WHT_ISSUED: Column[] = [
   { key: "paidAmount", kind: "money" },
   { key: "whtAmount", kind: "money" },
 ];
+COLUMNS.pnd1 = WHT_ISSUED;
 COLUMNS.pnd3 = WHT_ISSUED;
 COLUMNS.pnd53 = WHT_ISSUED;
 COLUMNS.wht_issued_register = WHT_ISSUED;
@@ -301,6 +304,7 @@ const TOTALS: Record<Kind, string[]> = {
   sales_tax: ["base", "vat"],
   purchase_tax: ["base", "vat"],
   pp30: ["outputBase", "outputVat", "inputBase", "inputVat", "netPayable", "creditCarriedForward"],
+  pnd1: ["whtBase", "whtAmount"],
   pnd3: ["whtBase", "whtAmount"],
   pnd53: ["whtBase", "whtAmount"],
   wht_issued_register: ["whtBase", "whtAmount"],
@@ -443,7 +447,9 @@ export function TaxReportDetail({ reportId }: { reportId: string }) {
             ) : null}
             {data.fileReady ? (
               <Button variant="secondary" iconStart="download" onClick={() => void exportCsv()}>
-                {data.kind === "pnd3" || data.kind === "pnd53" ? t("exportAttachment") : t("export")}
+                {data.kind === "pnd1" || data.kind === "pnd3" || data.kind === "pnd53"
+                  ? t("exportAttachment")
+                  : t("export")}
               </Button>
             ) : null}
             {canManage && data.status === "final" ? (

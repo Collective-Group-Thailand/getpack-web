@@ -971,5 +971,54 @@
     "active": "Active",
     "disposed": "Disposed",
     "written_off": "Written off"
+  },
+  "agent": {
+    "active": "Active",
+    "suspended": "Suspended",
+    "ended": "Ended"
+  },
+  "agentApplication": {
+    "submitted": "Awaiting review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn"
+  },
+  "agentLink": {
+    "active": "Linked",
+    "ended": "Ended"
+  },
+  "agentLead": {
+    "registered": "Protected",
+    "converted": "Converted",
+    "expired": "Protection ended",
+    "rejected": "Not accepted",
+    "withdrawn": "Withdrawn"
+  },
+  "agentCommission": {
+    "pending": "Pending",
+    "held": "Held for review",
+    "earned": "Earned",
+    "statemented": "On a statement",
+    "paid": "Paid",
+    "cancelled": "Cancelled"
+  },
+  "agentStatement": {
+    "draft": "Draft",
+    "approved": "Approved",
+    "exported": "Sent to payroll",
+    "paid": "Paid",
+    "voided": "Voided"
+  },
+  "agentPlanVersion": {
+    "draft": "Awaiting approval",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn"
+  },
+  "agentFactoryLink": {
+    "pending": "Qualifying",
+    "qualified": "Qualified",
+    "expired": "Expired",
+    "ended": "Ended"
   }
 }
