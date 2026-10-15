@@ -106,7 +106,7 @@ export function FinanceNav() {
                 href={item.href}
                 aria-current={isActive(item, pathname) ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap",
+                  "inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-base font-medium whitespace-nowrap",
                   isActive(item, pathname) ? "border-primary text-fg" : "text-muted hover:text-fg border-transparent",
                 )}
               >
@@ -119,25 +119,34 @@ export function FinanceNav() {
       <div className="hidden flex-col gap-5 py-6 ps-4 lg:flex">
         {groups.map((group) => (
           <div key={group.group}>
-            <p className="text-muted mb-1 px-3 text-xs font-medium">{t(`groups.${group.group}`)}</p>
+            <p className="text-muted mb-1 px-3 text-sm font-semibold">{t(`groups.${group.group}`)}</p>
             <ul className="flex flex-col gap-0.5">
-              {group.items.map((item) => (
-                <li key={item.key}>
-                  <Link
-                    href={item.href}
-                    aria-current={isActive(item, pathname) ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-2 text-sm",
-                      isActive(item, pathname)
-                        ? "bg-primary-subtle text-primary-subtle-fg font-medium"
-                        : "text-muted hover:bg-surface-subtle hover:text-fg",
-                    )}
-                  >
-                    <Icon name={item.icon} size={16} aria-hidden />
-                    {t(`items.${item.key}`)}
-                  </Link>
-                </li>
-              ))}
+              {group.items.map((item) => {
+                const current = isActive(item, pathname);
+                return (
+                  <li key={item.key}>
+                    <Link
+                      href={item.href}
+                      aria-current={current ? "page" : undefined}
+                      // The main menu's marking (and the factory app's): a teal edge and teal words on a tint.
+                      className={cn(
+                        "flex min-h-9 items-center gap-2.5 rounded-e-lg border-s-[3px] px-3 text-base",
+                        current
+                          ? "border-primary bg-primary-subtle text-primary-subtle-fg font-semibold"
+                          : "text-fg hover:bg-surface border-transparent font-medium",
+                      )}
+                    >
+                      <Icon
+                        name={item.icon}
+                        size={18}
+                        className={current ? "text-primary" : "text-muted"}
+                        aria-hidden
+                      />
+                      {t(`items.${item.key}`)}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

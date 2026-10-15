@@ -13,7 +13,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, FormDialog, FormError, NextActionBar, useCan } from "../console";
@@ -206,7 +206,7 @@ export function JobPanel({ job }: { job: Job }) {
         >
           {dialog.verb === "reassign" ? (
             <Field label={t("toFactory")} required>
-              <Select
+              <SearchableSelect
                 value={factoryId || undefined}
                 placeholder={t("chooseFactory")}
                 onValueChange={setFactoryId}

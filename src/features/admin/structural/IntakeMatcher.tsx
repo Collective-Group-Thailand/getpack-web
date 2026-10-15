@@ -21,7 +21,7 @@ import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 /** What a match sends: the recipe and the deviation report (`MatchStyleIntakeDto`). */
 export type MatchResult = Schemas["MatchStyleIntakeDto"];
@@ -149,7 +149,7 @@ export function IntakeMatcher({
 
       <div className="grid gap-3 md:grid-cols-2">
         <Field label={t("recipe")}>
-          <Select
+          <SearchableSelect
             value={recipeId}
             onValueChange={(next) => {
               setRecipeId(next);
@@ -159,7 +159,7 @@ export function IntakeMatcher({
           />
         </Field>
         <Field label={t("board")}>
-          <Select value={boardId} onValueChange={setBoardId} options={boardOptions} />
+          <SearchableSelect value={boardId} onValueChange={setBoardId} options={boardOptions} />
         </Field>
         {sizeParams.map((p) => (
           <Field key={p.key} label={t("size", { name: p.label.th, unit: p.kind === "length" ? "mm" : "" })}>

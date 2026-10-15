@@ -23,7 +23,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
 
@@ -824,7 +824,7 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
             />
           </Field>
           <Field label={t("term")} hint={t("termHint")}>
-            <Select
+            <SearchableSelect
               value={draft.termDays || undefined}
               placeholder={t("chooseTerm")}
               onValueChange={(termDays) => setDraft({ ...draft, termDays })}

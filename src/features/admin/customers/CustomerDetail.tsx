@@ -17,7 +17,7 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Tabs } from "@/ui/components/Tabs";
 
 import { adminBrowserApis, QueryError, Section, StatusChip, useCan } from "../console";
@@ -352,14 +352,13 @@ function Points({ customerId }: { customerId: string }) {
         </dl>
       ) : null}
       <Field label={t("entryFilter")} className="w-60">
-        <Select
+        <SearchableSelect
           value={entryType ?? ANY}
           onValueChange={(next) => setEntryType(next === ANY ? null : (next as PointsEntry["entryType"]))}
           options={[
             { value: ANY, label: tFilters("any") },
             ...ENTRY_TYPES.map((value) => ({ value, label: t(`types.${value}`) })),
           ]}
-          className="h-9 text-sm"
         />
       </Field>
       <DataTable

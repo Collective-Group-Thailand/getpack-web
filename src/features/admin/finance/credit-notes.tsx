@@ -19,7 +19,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { SearchInput } from "@/ui/components/SearchInput";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Stepper, type StepStatus } from "@/ui/components/Stepper";
 import { toast } from "@/ui/components/Toast";
 
@@ -246,7 +246,7 @@ export function CreditNoteWizard({ orderId }: { orderId: string | null }) {
         </Field>
         {kind ? (
           <Field label={t("reason")} hint={t("reasonHint")}>
-            <Select
+            <SearchableSelect
               value={reasonCode || "default"}
               onValueChange={(value) => setReasonCode(value === "default" ? "" : value)}
               options={[

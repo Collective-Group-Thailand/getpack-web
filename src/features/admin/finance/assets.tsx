@@ -22,7 +22,7 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { useCan } from "../console/actor";
@@ -246,7 +246,7 @@ function RegisterAsset({ onClose }: { onClose: () => void }) {
       />
       <p className="text-muted text-sm">{t(`sourceNotes.${form.source}`)}</p>
       <Field label={t("category")} required requiredLabel={tCommon("state.required")}>
-        <Select
+        <SearchableSelect
           value={form.categoryId || undefined}
           onValueChange={(categoryId) => setForm({ ...form, categoryId })}
           placeholder={t("pickCategory")}
@@ -299,7 +299,7 @@ function RegisterAsset({ onClose }: { onClose: () => void }) {
         </Field>
       ) : (
         <Field label={t("bill")} hint={t("billHint")} error={errors.vendorInvoiceId}>
-          <Select
+          <SearchableSelect
             value={form.vendorInvoiceId || undefined}
             onValueChange={(vendorInvoiceId) => setForm({ ...form, vendorInvoiceId })}
             placeholder={withAssetLines.length ? t("pickBill") : t("noBills")}
@@ -313,7 +313,7 @@ function RegisterAsset({ onClose }: { onClose: () => void }) {
       )}
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("costCentre")}>
-          <Select
+          <SearchableSelect
             value={form.costCentreCode || "none"}
             onValueChange={(value) => setForm({ ...form, costCentreCode: value === "none" ? "" : value })}
             options={[
@@ -565,7 +565,7 @@ export function DepreciationView() {
         actions={
           <div className="flex flex-wrap items-end gap-2">
             <Field label={t("month")} className="w-44">
-              <Select
+              <SearchableSelect
                 value={month}
                 onValueChange={setMonth}
                 options={(months.length ? months : [month]).map((value) => ({

@@ -20,7 +20,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Sheet } from "@/ui/components/Sheet";
 import { toast } from "@/ui/components/Toast";
 
@@ -369,7 +369,7 @@ function RequestRefund({ payment, onClose }: { payment: Payment; onClose: () => 
           <Input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
         </Field>
         <Field label={t("channel")} required requiredLabel={tCommon("state.required")}>
-          <Select<Schemas["RefundChannel"]>
+          <SearchableSelect<Schemas["RefundChannel"]>
             value={channel}
             onValueChange={setChannel}
             options={(["original_gateway", "bank_transfer", "store_credit"] as const).map((value) => ({

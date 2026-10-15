@@ -12,7 +12,7 @@ import { STALE_TIME } from "@/lib/query/defaults";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, NumberInput } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, ConfirmAction, NextActionBar, problemMessage } from "../console";
@@ -253,7 +253,7 @@ function CancelDialog({
       }}
     >
       <Field label={t("cancel.reasonCode")} required className="mt-4">
-        <Select
+        <SearchableSelect
           value={reasonCode || undefined}
           onValueChange={setReasonCode}
           placeholder={t("cancel.chooseReason")}
@@ -335,7 +335,7 @@ function RecordSlipDialog({
     >
       <div className="mt-4 space-y-3">
         <Field label={t("instalment")}>
-          <Select
+          <SearchableSelect
             value={instalmentId}
             onValueChange={setInstalmentId}
             options={open.map((instalment) => ({

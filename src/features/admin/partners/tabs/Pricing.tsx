@@ -15,7 +15,7 @@ import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { StatusChip, useCan, useProductTypes } from "../../console";
@@ -148,7 +148,7 @@ export function Pricing({ factory }: { factory: Factory }) {
               {viewing && viewing === list.current?.id ? (
                 <div className="mt-3 max-w-xs">
                   <Field label={t("component")}>
-                    <Select
+                    <SearchableSelect
                       value={component}
                       onValueChange={(value) => setComponent(value as Schemas["PriceComponent"])}
                       options={(components.data ?? []).map((item) => ({
