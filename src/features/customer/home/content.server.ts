@@ -19,7 +19,8 @@ import { fillEmptySlots, type LocalManifestAsset, photosFromManifest } from "./l
  * inks and quantities) is the catalogue's, never the CMS's (`studio-hero.server.ts`):
  *
  * - `home-photos` — every photo on the page, each with its alt text and a caption that describes
- *   the object only: `{ hero, mosaic: [5], process: [sample, packing], quality, templates: { <style code>: photo } }`.
+ *   the object only: `{ hero, mosaic: [5], process: [sample, packing], quality, templates: { <style code>: photo },
+ *   categories: { <product category code>: photo } }`.
  *   A block whose photos are missing is left out (the mosaic needs all five).
  * - `customer-cases` — customer stories: `{ cases: [{ approved, image, brand, province, item, quantity, days, quote }] }`.
  *   The section shows only when at least three are approved; never a placeholder.
@@ -40,6 +41,8 @@ export interface HomePhotos {
   process: { sample: HomePhoto | null; packing: HomePhoto | null };
   quality: HomePhoto | null;
   templates: Map<string, HomePhoto>;
+  /** The "what we make" row's photos, by product category code; a category without one keeps its drawing. */
+  categories: Map<string, HomePhoto>;
 }
 
 export interface CustomerCase {
@@ -117,18 +120,22 @@ async function localPhotos(locale: string): Promise<HomePhotos> {
 export function photosOf(locale: string, config: Record<string, unknown> | null): HomePhotos {
   const mosaic = Array.isArray(config?.mosaic) ? config.mosaic.map((item) => photo(locale, item)) : [];
   const process = record(config?.process);
-  const templates = new Map<string, HomePhoto>();
-  for (const [code, value] of Object.entries(record(config?.templates) ?? {})) {
-    const found = photo(locale, value);
-    if (found) templates.set(code, found);
-  }
+  const photosBy = (value: unknown) => {
+    const map = new Map<string, HomePhoto>();
+    for (const [code, entry] of Object.entries(record(value) ?? {})) {
+      const found = photo(locale, entry);
+      if (found) map.set(code, found);
+    }
+    return map;
+  };
   return {
     hero: photo(locale, config?.hero),
     // Five or nothing: the board's grid is one tall picture and four beside it.
     mosaic: mosaic.length >= 5 && mosaic.slice(0, 5).every(Boolean) ? (mosaic.slice(0, 5) as HomePhoto[]) : null,
     process: { sample: photo(locale, process?.sample), packing: photo(locale, process?.packing) },
     quality: photo(locale, config?.quality),
-    templates,
+    templates: photosBy(config?.templates),
+    categories: photosBy(config?.categories),
   };
 }
 
