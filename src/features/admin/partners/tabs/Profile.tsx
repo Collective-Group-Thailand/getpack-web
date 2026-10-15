@@ -10,7 +10,7 @@ import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
@@ -290,7 +290,7 @@ export function Profile({ factory }: { factory: Factory }) {
           }}
         >
           <Field label={t("addressKind")}>
-            <Select
+            <SearchableSelect
               value={address.kind}
               onValueChange={(kind) => setAddress({ ...address, kind: kind as Address["kind"] })}
               options={(["registered", "plant", "pickup"] as const).map((value) => ({

@@ -91,6 +91,11 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
           />
         }
         sidebar={<AdminSidebar items={screens} collapsed={collapsed} actor={actor} />}
+        // As the factory app (product owner, 2026-10-13): the menu is a white panel beside the
+        // page, and the console reads at the shared 15 px body (type scale and control heights:
+        // base.css, the partner/admin block).
+        sidebarClassName="bg-surface"
+        className="text-base"
       >
         <ActorProvider actor={actor}>{children}</ActorProvider>
       </AppShell>
@@ -126,6 +131,7 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
         shortcuts={[
           { keys: [modKey, KEYCAP.k], description: t("palette.title") },
           { keys: [KEYCAP.question], description: t("shortcuts") },
+          { keys: [KEYCAP.slash], description: t("menuSearchKey") },
           { keys: [KEYCAP.esc], description: t("shortcutEscape") },
         ]}
       />

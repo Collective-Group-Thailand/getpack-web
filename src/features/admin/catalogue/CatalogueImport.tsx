@@ -17,7 +17,7 @@ import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { ConfirmAction, download, problemMessage, QueryError, useCan } from "../console";
@@ -106,7 +106,7 @@ export function CatalogueImport({ initialKind }: { initialKind: Kind | null }) {
         </CardHeader>
         <div className="grid gap-4 sm:grid-cols-[minmax(0,20rem)_auto] sm:items-end">
           <Field label={t("kind")}>
-            <Select
+            <SearchableSelect
               value={kind ?? undefined}
               onValueChange={(value) => {
                 setKind(value as Kind);

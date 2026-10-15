@@ -12,7 +12,7 @@ import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
@@ -116,7 +116,7 @@ export function LineMenusDesk() {
             />
           </Field>
           <Field label={t("audience")} required>
-            <Select
+            <SearchableSelect
               value={draft.audience}
               onValueChange={(value) => setDraft({ ...draft, audience: value as Audience })}
               options={(["guest", "member"] as const).map((a) => ({ value: a, label: t(`audiences.${a}`) }))}

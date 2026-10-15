@@ -17,7 +17,7 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import {
@@ -408,7 +408,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           }}
         >
           <Field label={t("liability")}>
-            <Select
+            <SearchableSelect
               value={liability}
               onValueChange={(value) => setLiability(value as typeof liability)}
               options={LIABILITIES.map((value) => ({ value, label: tClaims(`liabilities.${value}`) }))}
@@ -462,7 +462,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           }}
         >
           <Field label={t("resolutionAction")}>
-            <Select
+            <SearchableSelect
               value={resolution || undefined}
               onValueChange={(value) => setResolution(value as Resolution)}
               options={resolutions.map((value) => ({ value, label: t(`resolutionActions.${value}`) }))}

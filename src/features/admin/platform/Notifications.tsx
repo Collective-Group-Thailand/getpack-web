@@ -16,7 +16,7 @@ import { Dialog } from "@/ui/components/Dialog";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Sheet } from "@/ui/components/Sheet";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
@@ -171,7 +171,7 @@ function TemplateSheet({ template, onClose }: { template: Template; onClose: () 
       <div className="space-y-5">
         <div className="flex flex-wrap items-end gap-3">
           <Field label={t("locale")}>
-            <Select
+            <SearchableSelect
               value={locale}
               onValueChange={(next) => {
                 setLocale(next);
@@ -183,7 +183,7 @@ function TemplateSheet({ template, onClose }: { template: Template; onClose: () 
             />
           </Field>
           <Field label={t("version")}>
-            <Select
+            <SearchableSelect
               value={chosen ? String(chosen.versionNo) : undefined}
               onValueChange={(next) => {
                 setVersionNo(Number(next));

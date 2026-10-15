@@ -20,7 +20,7 @@ import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { StatusBadge } from "@/ui/components/StatusBadge";
 import { toast } from "@/ui/components/Toast";
 
@@ -334,7 +334,7 @@ function GrantRole({
       <div className="space-y-4">
         {grant.error ? <Callout tone="danger" title={problemMessage(grant.error, t("failed"))} /> : null}
         <Field label={t("role")} required requiredLabel={tCommon("state.required")}>
-          <Select
+          <SearchableSelect
             value={roleKey || undefined}
             onValueChange={(value) => {
               setRoleKey(value);

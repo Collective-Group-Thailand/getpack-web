@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { SearchInput } from "@/ui/components/SearchInput";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 /** A filter a list offers. Its value lives in the URL under `id`. */
 export type FilterDef =
@@ -31,20 +31,13 @@ export function FilterControl({
   return (
     <Field label={filter.label} className="min-w-40">
       {filter.kind === "select" ? (
-        <Select
+        <SearchableSelect
           value={value ?? ANY}
           onValueChange={(next) => onChange(next === ANY ? null : next)}
           options={[{ value: ANY, label: t("any") }, ...filter.options]}
-          className="h-9 text-sm"
         />
       ) : filter.kind === "date" ? (
-        <Input
-          type="date"
-          inputSize="sm"
-          className="h-9"
-          value={value ?? ""}
-          onChange={(event) => onChange(event.target.value || null)}
-        />
+        <Input type="date" value={value ?? ""} onChange={(event) => onChange(event.target.value || null)} />
       ) : (
         <TextFilter value={value ?? ""} onChange={onChange} placeholder={filter.placeholder} />
       )}
@@ -62,15 +55,7 @@ function TextFilter({
   placeholder?: string;
 }) {
   const [text, setText] = useDebouncedValue(value, (next) => onChange(next || null));
-  return (
-    <Input
-      inputSize="sm"
-      className="h-9"
-      value={text}
-      placeholder={placeholder}
-      onChange={(event) => setText(event.target.value)}
-    />
-  );
+  return <Input value={text} placeholder={placeholder} onChange={(event) => setText(event.target.value)} />;
 }
 
 /**
@@ -119,8 +104,6 @@ export function ListSearch({
         clearLabel={t("clearSearch")}
         // With no hint of its own, the box says what it searches — never an empty field.
         placeholder={placeholder ?? label}
-        inputSize="sm"
-        className="[&_input]:h-9"
       />
     </Field>
   );

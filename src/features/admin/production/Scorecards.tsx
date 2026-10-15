@@ -12,7 +12,7 @@ import { STALE_TIME } from "@/lib/query/defaults";
 import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, problemMessage, QueryError, useCan } from "../console";
@@ -153,7 +153,7 @@ export function Scorecards() {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <Field label={t("factory")} className="w-full max-w-sm">
-          <Select
+          <SearchableSelect
             value={factoryId ?? undefined}
             onValueChange={(value) => go({ factoryId: value })}
             options={(factories.data ?? []).map((item) => ({
@@ -179,7 +179,7 @@ export function Scorecards() {
         <h2 className="text-lg font-semibold">{t("byMonth")}</h2>
         {cards.data?.length ? (
           <Field label={t("month")} className="w-48">
-            <Select
+            <SearchableSelect
               value={month ?? undefined}
               onValueChange={(value) => go({ month: value })}
               options={cards.data.map((card) => ({ value: card.month, label: card.month }))}

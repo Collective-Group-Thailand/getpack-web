@@ -17,7 +17,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { Pagination } from "@/ui/components/Pagination";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 
 import { adminBrowserApis } from "../console/api";
@@ -541,7 +541,7 @@ export function ProfitAndLossView() {
         <div className="flex flex-wrap items-end gap-3">
           <MonthRange from={params.from!} to={params.to!} onChange={set} />
           <Field label={t("by")} className="w-48">
-            <Select
+            <SearchableSelect
               value={dimension}
               onValueChange={(by) => set({ by })}
               options={DIMENSIONS.map((value) => ({ value, label: t(`dimensions.${value}`) }))}

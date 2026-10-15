@@ -17,7 +17,7 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, FormDialog, problemMessage, QueryError, Section, StatusChip } from "../console";
@@ -262,7 +262,12 @@ export function SampleDetail({ sampleId }: { sampleId: string }) {
           }}
         >
           <Field label={t("serviceItem")}>
-            <Select value={item} onValueChange={setItem} options={itemOptions} placeholder={t("chooseItem")} />
+            <SearchableSelect
+              value={item}
+              onValueChange={setItem}
+              options={itemOptions}
+              placeholder={t("chooseItem")}
+            />
           </Field>
           <Field label={t("amount")} hint={t("amountHint")}>
             <Input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value.trim())} />
@@ -312,7 +317,12 @@ export function SampleDetail({ sampleId }: { sampleId: string }) {
           }}
         >
           <Field label={t("serviceItem")}>
-            <Select value={item} onValueChange={setItem} options={itemOptions} placeholder={t("chooseItem")} />
+            <SearchableSelect
+              value={item}
+              onValueChange={setItem}
+              options={itemOptions}
+              placeholder={t("chooseItem")}
+            />
           </Field>
           <Field label={t("amount")} hint={t("amountHint")}>
             <Input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value.trim())} />

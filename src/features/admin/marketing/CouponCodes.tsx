@@ -16,7 +16,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import {
@@ -163,7 +163,7 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
       <div className="mb-3 grid gap-3 sm:grid-cols-2">
         {(batches.data ?? []).length > 1 ? (
           <Field label={t("filterBatch")}>
-            <Select
+            <SearchableSelect
               value={batchId || "all"}
               onValueChange={(value) => setBatchId(value === "all" ? "" : value)}
               options={[
@@ -174,7 +174,7 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
           </Field>
         ) : null}
         <Field label={t("filterStatus")}>
-          <Select
+          <SearchableSelect
             value={status || "all"}
             onValueChange={(value) => setStatus(value === "all" ? "" : (value as Schemas["CouponStatus"]))}
             options={[

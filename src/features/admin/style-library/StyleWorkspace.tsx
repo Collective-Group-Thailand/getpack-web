@@ -20,7 +20,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { Pagination } from "@/ui/components/Pagination";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
@@ -477,7 +477,7 @@ function Curation({ style, etag, onChanged }: { style: AdminStyleDetail; etag: s
             />
           </Field>
           <Field label={t("productType")} hint={t("productTypeHint")}>
-            <Select
+            <SearchableSelect
               value={values.productTypeCode || undefined}
               disabled={!canCurate}
               placeholder={t("productTypeNone")}
@@ -539,7 +539,7 @@ function Curation({ style, etag, onChanged }: { style: AdminStyleDetail; etag: s
         {canCurate ? (
           <div className="mt-3 flex flex-wrap items-end gap-2">
             <Field label={t("synonymLocale")} className="w-28">
-              <Select
+              <SearchableSelect
                 value={synonym.locale}
                 onValueChange={(value) => setSynonym((s) => ({ ...s, locale: value as Synonym["locale"] }))}
                 options={[
@@ -657,7 +657,7 @@ function Variants({
     <div className="flex flex-col gap-3 pt-4">
       <div className="flex flex-wrap items-end gap-3">
         <Field label={t("reason")} className="min-w-56">
-          <Select
+          <SearchableSelect
             value={reason}
             onValueChange={(value) => {
               setReason(value as PublishReason | "all");

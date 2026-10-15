@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { NumberInput } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 
 import { Button } from "@/ui/components/Button";
@@ -51,7 +51,7 @@ function Choice({
   const NONE = "__none__";
   return (
     <Field label={label} required={required} requiredLabel={tCommon("state.required")}>
-      <Select
+      <SearchableSelect
         value={value ?? (allowNone ? NONE : undefined)}
         onValueChange={(next) => onChange(next === NONE ? undefined : next)}
         placeholder={t("choose")}

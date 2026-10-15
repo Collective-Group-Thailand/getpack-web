@@ -104,7 +104,14 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   upload as purpose `image` (standard retention); signed files stay `document`, fonts `design_asset`. Tried in a
   browser against packio-api with real object storage: hours and a closure, a proposal, items, an address, a board
   sheet with its file, hold / resume, a product image, options, bands.
-  record (≥ 10 years); an image purpose with standard retention belongs in round 4 (catalogue extras).
+- **The factory app's look in the back office** (product owner, 2026-10-13): the admin zone takes the partner
+  type scale (12 / 13 / 15 / 17 / 20 / 24 px; page title 20 px, was 30), one control height (44 px on a phone,
+  40 px from a tablet; filter bars no longer 36 px) and 16 / 15 px fields (`base.css`, one block for both zones).
+  The menu is a white panel with the current page marked by a teal edge and teal words on a tint, 15 px rows with
+  muted icons, 13 px group labels; past 14 entries the groups fold (overview and the current group open, choices
+  remembered on the device) and a menu search appears (`/` jumps to it, Enter opens the first match). The finance
+  desks list uses the same marking. Every admin dropdown is a `SearchableSelect` (search box from six options),
+  which now also keeps its own choice when used with `defaultValue` alone.
 
 ---
 
@@ -3153,8 +3160,8 @@ call is the contract's, and the mocks stand in for it.
   categories are saved as the contract's separate replaceable list, under the article's new ETag.
 - **References render as names** (a material's family, a finish's group) from one page of up to
   100 rows per referenced table; a reference outside that page still renders, as its id.
-- **Catalogue and CMS images upload with purpose `document`.** The contract's `FilePurpose` has
-  no image/content purpose (see open questions).
+- ~~**Catalogue and CMS images upload with purpose `document`.**~~ Resolved 2026-10-15: pictures
+  upload as purpose `image` (packio-api v0.64.0, admin round 4).
 - **The mock's seven calculator types remain `instant`** (2.3's assumption), so the quote-mode
   refusal is demonstrated on the RFQ-only categories.
 

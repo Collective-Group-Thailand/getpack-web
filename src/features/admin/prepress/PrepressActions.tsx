@@ -8,7 +8,7 @@ import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 import { checklistRows, requestNewFileMessage } from "@/features/shared/artwork/PreflightChecklist";
 
@@ -183,7 +183,7 @@ export function PrepressActionDialogs({
         >
           <div className="mt-4 space-y-3">
             <Field label={t("proof.submission")} required>
-              <Select
+              <SearchableSelect
                 value={submissionId || undefined}
                 onValueChange={setSubmissionId}
                 placeholder={t("proof.chooseSubmission")}

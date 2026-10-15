@@ -11,7 +11,7 @@ import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import {
@@ -99,7 +99,7 @@ export function DecideOnBehalf({ proof, orderId }: { proof: Proof; orderId: stri
             ]}
           />
           <Field label={t("channel")} required>
-            <Select
+            <SearchableSelect
               value={channel}
               onValueChange={(value) => setChannel(value as Channel)}
               options={CHANNELS.map((c) => ({ value: c, label: t(`channels.${c}`) }))}

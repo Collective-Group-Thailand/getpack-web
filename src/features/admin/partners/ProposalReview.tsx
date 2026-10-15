@@ -20,7 +20,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
@@ -520,7 +520,7 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
           <div className="mt-4 flex flex-col gap-3 rounded-md border p-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label={t("component")}>
-                <Select
+                <SearchableSelect
                   value={newLine.component || undefined}
                   placeholder={t("chooseComponent")}
                   onValueChange={(component) => setNewLine({ ...newLine, component, values: {} })}
@@ -531,7 +531,7 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
                 />
               </Field>
               <Field label={t("lineAction")}>
-                <Select
+                <SearchableSelect
                   value={newLine.action}
                   onValueChange={(action) =>
                     setNewLine({ ...newLine, action: action as Schemas["ProposalLineAction"] })
