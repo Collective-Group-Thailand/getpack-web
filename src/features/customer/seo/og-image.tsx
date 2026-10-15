@@ -37,7 +37,7 @@ export interface OgCard {
  */
 const INK = "#1A1D21";
 const MUTED = "#4F5660";
-const PAPER = "#F3F4F6";
+const PAPER = "#F6F3EE";
 const SURFACE = "#FFFFFF";
 const PRIMARY = "#0F5F4E";
 const KRAFT = "#DCCDB3";

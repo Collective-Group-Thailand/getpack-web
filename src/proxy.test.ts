@@ -132,6 +132,7 @@ describe("root assets", () => {
 describe("storefront media", () => {
   it("serves /media/* unprefixed on the customer host only", async () => {
     expect(rewriteTarget(await proxy(request("packio.co.th", "/media/home/wrap.jpg")))).toBeNull();
+    expect(rewriteTarget(await proxy(request("packio.co.th", "/brands/google.svg")))).toBeNull();
     expect(rewriteTarget(await proxy(request("admin.packio.co.th", "/media/home/wrap.jpg")))).not.toBeNull();
   });
 });

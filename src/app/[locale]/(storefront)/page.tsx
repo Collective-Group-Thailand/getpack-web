@@ -100,7 +100,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         factories={factories}
         claimDays={guarantee?.claimWindowDays ?? null}
       />
-      <ProductRows categories={categories} locale={locale} />
+      <ProductRows categories={categories} photos={content.photos.categories} locale={locale} />
       <HomeFaq groups={faqs} locale={locale} hours={channels?.hours ?? null} />
       <HomeContact channels={channels} />
     </>
