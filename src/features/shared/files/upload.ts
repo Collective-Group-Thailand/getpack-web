@@ -113,13 +113,24 @@ export async function uploadFile(
  * refused with `file.not_ready` until the worker marks it `clean`. Polls the file every half
  * second, up to `timeoutMs`; an infected file throws, so the caller never retries over it.
  */
+/** Why a scan wait ended without a usable file; `timeout` is worth a retry, the others are not. */
+export class ScanError extends Error {
+  constructor(
+    readonly kind: "timeout" | "infected" | "failed",
+    readonly fileId: string,
+  ) {
+    super(kind === "timeout" ? `file ${fileId} was not scanned in time` : `file ${fileId} is ${kind}`);
+    this.name = "ScanError";
+  }
+}
+
 export async function waitUntilScanned(
   zone: Zone,
   fileId: string,
   options: { timeoutMs?: number; signal?: AbortSignal } = {},
 ): Promise<UploadedFile> {
   const api = browserApi();
-  const deadline = Date.now() + (options.timeoutMs ?? 60_000);
+  const deadline = Date.now() + (options.timeoutMs ?? 90_000);
   const read = async () => {
     const path = { params: { path: { fileId } } };
     const { data } =
@@ -136,8 +147,9 @@ export async function waitUntilScanned(
     const file = await read();
     // `skipped` is a deployment with no scanner: the file is as ready as it will ever be.
     if (file.scanStatus === "clean" || file.scanStatus === "skipped") return file;
-    if (file.scanStatus !== "pending") throw new Error(`file ${fileId} is ${file.scanStatus}`);
-    if (Date.now() >= deadline) throw new Error(`file ${fileId} was not scanned in time`);
+    if (file.scanStatus !== "pending")
+      throw new ScanError(file.scanStatus === "infected" ? "infected" : "failed", fileId);
+    if (Date.now() >= deadline) throw new ScanError("timeout", fileId);
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 }

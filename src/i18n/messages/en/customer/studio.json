@@ -256,7 +256,9 @@
     "approvalLink": "Link for approvers",
     "toCheckout": "Checkout / send for approval",
     "needsQuantity": "Enter a quantity in the price bar to see this design's price",
-    "networkFailed": "The print files could not be sent. Check your connection and try again."
+    "networkFailed": "The print files could not be sent. Check your connection and try again.",
+    "scanPending": "The print files are still being checked. Wait a moment and try again.",
+    "scanRejected": "The print files failed the safety check. Save the design again and retry."
   },
   "locked": "Version {versionNo} is ordered ({orderCode}) — editing makes a new version",
   "share": {
