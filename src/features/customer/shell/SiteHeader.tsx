@@ -194,7 +194,7 @@ export async function SiteHeader() {
                 </ul>
               </section>
             </MobileProductsMenu>
-            <Brand href="/" className="text-xl lg:text-[1.375rem]" />
+            <Brand href="/" height={40} priority />
           </div>
 
           <nav aria-label={t("nav.primary")} className="hidden items-center justify-center gap-6 lg:flex xl:gap-9">
