@@ -62,7 +62,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
 import { Tooltip, TooltipProvider } from "@/ui/components/Tooltip";
-import { BrandMark } from "@/ui/brand";
+import { BrandLogo } from "@/ui/brand";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -737,7 +737,7 @@ export default function Editor({
         <div className="bg-canvas text-fg flex h-dvh flex-col">
           <header className="bg-neutral text-neutral-fg flex h-14 shrink-0 items-center gap-2 px-3">
             <NextLink href={nav.home} aria-label={tCommon("nav.home")} className="flex shrink-0 items-center gap-2">
-              <BrandMark size={30} />
+              <BrandLogo height={30} />
             </NextLink>
 
             <input
