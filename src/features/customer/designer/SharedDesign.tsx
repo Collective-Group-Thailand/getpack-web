@@ -7,7 +7,7 @@ import { faceNames } from "@/features/designer/lib/faceNames";
 import type { DesignContent } from "@/features/designer/types";
 import { formatDateTime } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
-import { BrandMark } from "@/ui/brand";
+import { BrandLogo } from "@/ui/brand";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 
@@ -47,7 +47,7 @@ export async function SharedDesign({ shared, token }: { shared: SharedDesignData
     <div className="bg-canvas text-fg flex min-h-dvh flex-col">
       <header className="bg-neutral text-neutral-fg flex h-14 items-center gap-3 px-4">
         <Link href="/" aria-label={t("home")}>
-          <BrandMark size={30} />
+          <BrandLogo height={30} />
         </Link>
         <span className="text-sm">{t(`badges.${shared.scope}`)}</span>
       </header>

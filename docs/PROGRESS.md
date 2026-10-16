@@ -151,6 +151,20 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
   payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
 
+## Logo — 2026-10-16
+
+- The product owner's logo (the **getpack** wordmark on a green oval) replaces the drawn mark and the brand name
+  text everywhere the brand shows: storefront header (40 px) and footer (44), admin and partner bars (32), the
+  designer and shared-design bars (30), the sign-in panels (44) and the admin / partner not-found pages (40).
+  `public/brand/getpack-logo.png` is the supplied PNG with its white background removed (flood-filled from the
+  edges, anti-aliased rim kept as green with partial alpha — no white halo on the dark theme; the cream letters
+  inside the oval untouched). `BrandLogo` / `Brand` in `src/ui/brand/Brand.tsx`; plain `<img>` like the rest of
+  the app's static images (the dev image optimiser refused it through the zone proxy), passed through the proxy
+  on every host (`ROOT_ASSETS`, test added). The favicon keeps the square g in the logo's green and cream.
+- Checked in the browser at 2× / 3×: light and dark storefront, mobile header, admin and partner bars, staff
+  sign-in. Typecheck, lint, 1218 unit tests.
+- Waiting on the brand kit: the vector logo (swap `LOGO.src`), favicon set, print/PDF variants.
+
 ## Rebrand: Packio → getpack (D-425) — 2026-10-16
 
 - The brand is the lower-case wordmark **getpack** in both locales (Thai copy keeps the Latin name), the domain

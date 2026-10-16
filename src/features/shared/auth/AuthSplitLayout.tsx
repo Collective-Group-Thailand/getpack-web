@@ -1,5 +1,4 @@
-import { BrandMark } from "@/ui/brand";
-import { BRAND_NAME } from "@/ui/brand";
+import { BrandLogo } from "@/ui/brand";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -91,13 +90,9 @@ export function AuthSplitLayout({
 
 function BrandLockup() {
   return (
-    <span className="inline-flex items-center gap-2.5 text-2xl font-bold tracking-tight">
-      {/* On a light ring, so the mark reads on the teal panel as well as on the dark one. */}
-      <span className="bg-surface rounded-control inline-flex p-0.5">
-        <BrandMark size={32} />
-      </span>
-      {BRAND_NAME}
-    </span>
+    // On the green panel the oval melts into it and the cream wordmark stands alone; on the dark
+    // panel the whole oval shows. Either way the logo is used as supplied.
+    <BrandLogo height={44} />
   );
 }
 

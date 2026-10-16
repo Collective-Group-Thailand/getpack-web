@@ -55,12 +55,16 @@ Usage rules (D-180, linted where a rule can see them):
 
 ## Logo
 
-`src/ui/brand/Brand.tsx` — a lower-case "g" whose bowl carries a crease line, drawn for this repo. It
-takes its fill from the `primary` token, so it follows a palette change.
+The logo is the **getpack** wordmark on a green oval — `public/brand/getpack-logo.png` (478 × 240, transparent
+outside the oval), supplied by the product owner on 2026-10-16. Its green is `primary-600` `#0F5F4E`, its letters
+`paper-50` `#F6F3EE`. `src/ui/brand/Brand.tsx`: `BrandLogo` (the image, `alt` = `BRAND_NAME`, height in px, width
+2:1) and `Brand` (the logo as the link home). Sizes in use: storefront header 40, admin and partner bars 32, the
+designer bars 30, the footer 44, sign-in panel 44. The proxy serves the file
+on every host (`ROOT_ASSETS`).
 
-No third-party logo, template or asset appears anywhere in `src/ui` (CLAUDE.md). When the
-brand kit supplies real marks, replace `BrandMark` and add the horizontal lockup, the favicon
-set and the print/PDF variants beside it.
+The favicon / app icon (`src/app/icon.svg`) is the square companion mark: a lower-case g with the crease line, in the
+logo's green and cream. Still to come from the brand kit: the vector logo (swap `LOGO.src` for the SVG), the
+favicon set and the print/PDF variants.
 
 ## Typography
 
