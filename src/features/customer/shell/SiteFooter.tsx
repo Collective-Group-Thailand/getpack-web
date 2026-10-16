@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import { serverRequests } from "@/lib/api/requests/server";
-import { BRAND_COMPANY, BRAND_NAME, BrandMark } from "@/ui/brand";
+import { BRAND_COMPANY, BRAND_NAME, BrandLogo } from "@/ui/brand";
 import { Icon } from "@/ui/icons";
 
 import { emptyContent } from "./content.server";
@@ -80,10 +80,7 @@ export async function SiteFooter() {
     <footer className="max-w-nav mx-auto mt-16 w-full px-5 pb-10 md:px-8 xl:px-12">
       <div className="border-border grid gap-10 border-t pt-9 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-12">
         <div>
-          <p className="flex items-center gap-2.5 text-xl font-bold tracking-[-0.02em]">
-            <BrandMark size={28} />
-            {BRAND_NAME}
-          </p>
+          <BrandLogo height={44} />
           <p className="text-muted mt-2.5 max-w-[26em] text-[13px] leading-relaxed">
             {t("tagline")} {t("by", { company: BRAND_COMPANY })}
           </p>

@@ -14,7 +14,7 @@ export default async function NotFoundPage() {
 
   return (
     <main id="main" className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center gap-8 px-4 py-16">
-      <Brand href="/" className="self-center" />
+      <Brand href="/" height={40} className="self-center" />
       <EmptyState
         className="border-none"
         titleAs="h1"
