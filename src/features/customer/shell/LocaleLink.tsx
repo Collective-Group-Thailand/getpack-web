@@ -1,9 +1,9 @@
 "use client";
 
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { LocaleTrigger } from "./LocaleTrigger";
