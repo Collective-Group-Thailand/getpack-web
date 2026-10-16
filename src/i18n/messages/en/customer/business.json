@@ -9,7 +9,9 @@
     "branches": "Branches",
     "assets": "Brand assets",
     "settings": "Settings",
-    "api": "API access"
+    "api": "API access",
+    "menuOpen": "Company menu",
+    "menuCurrent": "This page: {page}"
   },
   "landing": {
     "metaTitle": "getpack for business",
@@ -70,7 +72,7 @@
     },
     "meta": "Company {code} · your roles: {roles}",
     "appliedTitle": "Application sent",
-    "applied": "Finance will review the documents and let you know by e-mail and LINE.",
+    "applied": "Finance will review the documents and let you know through your notification channels.",
     "notices": {
       "due_soon": {
         "title": "Payment due soon",
@@ -118,7 +120,11 @@
     "spendNone": "No data yet",
     "inReview": "Our finance team is reviewing your documents, usually within 1–2 business days. Meanwhile you can order and pay in advance.",
     "spendRange": "Orders {from} – {to}",
-    "spendNet": "Before VAT"
+    "spendNet": "Before VAT",
+    "creditNone": "Credit",
+    "requestCredit": "Request a credit line",
+    "spendEmpty": "No company orders yet",
+    "spendEmptyBody": "Once members order on the company's behalf, the totals — by month, member, branch and product type — appear here"
   },
   "apply": {
     "title": "Open a company account",
@@ -222,7 +228,15 @@
       "name": "Please enter a name",
       "phone": "That mobile number doesn't look right",
       "roles": "Choose at least one role"
-    }
+    },
+    "tableCaption": "Company members",
+    "columns": {
+      "name": "Name",
+      "roles": "Roles",
+      "joined": "Joined",
+      "actions": "Actions"
+    },
+    "notJoined": "Not joined yet"
   },
   "branches": {
     "title": "Branches",
@@ -392,7 +406,7 @@
       "days61to90": "61–90 days overdue",
       "over90": "Over 90 days overdue"
     },
-    "noStatements": "No statements yet.",
+    "noStatements": "No statements yet — one is issued at the end of every month with credit orders",
     "period": "Period {period}",
     "statementMeta": "Invoiced {invoiced} · paid {paid} · balance {balance} · due {due}",
     "statementStatus": {
@@ -408,7 +422,8 @@
     "note": "Note to Finance (optional)",
     "owedTitle": "Owed as of {date}",
     "nextDueTerm": "Next due",
-    "openFile": "Open file"
+    "openFile": "Open file",
+    "nothingOwed": "Nothing is owed"
   },
   "reorder": {
     "title": "Bulk reorder",

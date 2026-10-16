@@ -1,7 +1,7 @@
 {
   "title": "Checkout",
   "backToCart": "Back to the cart",
-  "cartNotReady": "Something in the cart needs attention first — go back to the cart.",
+  "cartNotReady": "A line's price has expired and needs confirming — go back to the cart first.",
   "requiredMark": "required",
   "failed": "We could not place the order. Your details are still here — please try again.",
   "previewFailed": "We could not work out the price. Please try again.",
@@ -62,7 +62,7 @@
   "summary": {
     "title": "Order summary",
     "discount": "Discounts",
-    "shipping": "Extra delivery",
+    "shipping": "Delivery",
     "vat": "VAT",
     "withholding": "Withholding tax",
     "withholdingHint": "Deducted when you pay, with a 50 Tawi certificate",

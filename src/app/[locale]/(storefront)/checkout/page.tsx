@@ -32,7 +32,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         {t("backToCart")}
       </Link>
       <h1 className="text-title mt-2 leading-tight">{t("title")}</h1>
-      {cart.items.some((item) => lineBlockers(item).length > 0) ? (
+      {/* Only what checkout cannot fix itself: a line waiting on a re-price. Addresses are step 1 here. */}
+      {cart.items.some((item) => lineBlockers(item).includes("reprice")) ? (
         <Callout tone="warning" className="mt-4">
           {t("cartNotReady")}
         </Callout>

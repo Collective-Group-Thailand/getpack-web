@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { categoryGroup, compareDecimal, orderCategories, readFilters, readSort } from "./ordering";
+import { categoryGroup, compareDecimal, orderCards, orderCategories, readFilters, readSort } from "./ordering";
 
 const type = (quoteMode: "instant" | "rfq") => ({ quoteMode }) as never;
 
@@ -34,5 +34,18 @@ describe("catalogue ordering (UX audit, /products)", () => {
     expect(readFilters("instant,bogus,fast")).toEqual(["instant", "fast"]);
     expect(readSort("price")).toBe("price");
     expect(readSort("cheapest")).toBe("recommended");
+  });
+});
+
+describe("cards of a page (customer walkthrough 2026-10-16)", () => {
+  it("puts instant-price cards first, quotation cards next, services last, keeping the API's order within a group", () => {
+    const cards = [
+      { slug: "plates", availability: "rfq", productTypeCode: "service" },
+      { slug: "serum", availability: "rfq", productTypeCode: "folding_carton" },
+      { slug: "postal", availability: "instant", productTypeCode: "corrugated" },
+      { slug: "mockup", availability: "rfq", productTypeCode: "service" },
+      { slug: "mailer", availability: "partial", productTypeCode: "corrugated" },
+    ] as const;
+    expect(orderCards(cards).map((card) => card.slug)).toEqual(["postal", "mailer", "serum", "plates", "mockup"]);
   });
 });
