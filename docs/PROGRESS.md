@@ -151,6 +151,22 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
   payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
 
+## Rebrand: Packio → getpack (D-425) — 2026-10-16
+
+- The brand is the lower-case wordmark **getpack** in both locales (Thai copy keeps the Latin name), the domain
+  **getpack.co** (`www.`, `admin.`, `partner.`). Every message, metadata, `llms.txt`, manifest, mocks, tests and
+  docs renamed; identifiers follow the code's casing; the engine is `@getpack/dieline`; cookies, headers and storage
+  keys `getpack.*` / `x-getpack-*` (pre-launch, so nothing is carried over: a browser's locally kept designs,
+  brand kit and preferences under the old `packio.*` keys are not read any more). The mark is a
+  lower-case g carrying the crease line (`src/ui/brand/Brand.tsx`, `src/app/icon.svg`).
+- Contract adopted: getpack-api **v0.67.0** (breaking: renamed enum values `factory_to_getpack`,
+  `getpack_to_factory`, `getpack`, `getpack_job`, `getpack_statement`, fields such as `readByGetpackAt`).
+- Checked: typecheck, lint, 1218 unit tests (one barcode test counted the old 8-character sample), dieline package
+  tests (2 `baseline` failures already on main), storefront th/en, about, admin and partner zones in the browser
+  against a copy of the UAT database migrated by `20261209000001_rebrand_getpack` — no "Packio" left on screen.
+- Not changed: the PNG design boards in `docs/ui/boards` (pictures of the old mark), DNS, mail sender and LINE OA
+  names, the GitHub repositories' names (`contract.lock.json` already points at `collective-group-th/getpack-api`).
+
 ---
 
 ## Customer web UX + SEO/AEO/GEO pass — 2026-10-14/15
