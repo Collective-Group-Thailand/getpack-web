@@ -7,7 +7,8 @@
     "label": "Approval views",
     "inbox": "Waiting for me",
     "all": "All requests",
-    "delegations": "Delegations"
+    "delegations": "Delegations",
+    "matrix": "Approval matrix"
   },
   "inboxEmptyTitle": "Nothing is waiting for you",
   "inboxEmptyBody": "New requests that need your decision appear here.",
@@ -91,7 +92,13 @@
     "document_series_change": "Document series change",
     "company_order_approval": "Company order approval",
     "referral_review": "Referral review",
-    "recurring_journal": "Recurring journal"
+    "recurring_journal": "Recurring journal",
+    "approval_policy_change": "Approval matrix change",
+    "customer_shipping_rate_change": "Customer shipping rate change",
+    "factory_payout_policy_change": "Factory payout policy change",
+    "factory_tolerance_change": "Factory tolerance change",
+    "guarantee_policy_change": "Guarantee policy change",
+    "style_library_change": "Style library change"
   },
   "fields": {
     "quoteCode": "Quotation",
@@ -175,5 +182,72 @@
     "select": "Select {name}",
     "done": "Approved {count, plural, one {# request} other {# requests}}",
     "someFailed": "{count, plural, one {# request} other {# requests}} could not be approved"
+  },
+  "matrix": {
+    "body": "Who approves what, step by step. A change is a new version another Superadmin approves; the version in force is never edited.",
+    "empty": "No approval policies yet",
+    "approver": "{role} approves ({quorum})",
+    "always": "always",
+    "sla": "within {minutes} min ({calendar})",
+    "escalate": "then escalates to {role}",
+    "scopes": {
+      "platform": "Platform-wide",
+      "subject_factory": "Of the factory concerned",
+      "subject_company": "Of the company concerned",
+      "subject_entity": "Of the entity concerned"
+    },
+    "calendars": {
+      "business": "business hours",
+      "calendar": "calendar time"
+    },
+    "versionLine": "version {no} from {date}",
+    "by": "proposed by {name}",
+    "pending": "Version {no} waits for approval",
+    "hideHistory": "Hide versions",
+    "showHistory": "All versions",
+    "oneAtATime": "A proposal is already waiting",
+    "propose": "Propose a version",
+    "inForce": "In force",
+    "noneInForce": "No version in force",
+    "upcoming": "Approved, waiting for its date",
+    "proposal": "Proposal",
+    "openApproval": "Open the approval",
+    "history": "All versions",
+    "versionNo": "Version {no}"
+  },
+  "propose": {
+    "title": "Propose a version of {policy}",
+    "body": "Enter every step in order. Another Superadmin approves it; once approved it applies from its date. The expiry rule carries over from the version in force.",
+    "submit": "Send to a Superadmin",
+    "errors": {
+      "none": "Add at least one step.",
+      "name": "Name step {n}.",
+      "role": "Choose the approver of step {n}.",
+      "quorum": "Step {n} needs 1–5 approvers.",
+      "sla": "Step {n}'s time is in minutes.",
+      "condition": "Step {n}'s condition must be a JSON object.",
+      "backDated": "The effective date cannot be in the past.",
+      "reason": "Give a reason (3 characters or more)."
+    },
+    "done": "Proposal sent — a Superadmin approves it",
+    "name": "Step {n} name",
+    "role": "Step {n} approver",
+    "choose": "Choose a role…",
+    "up": "Move step {n} up",
+    "down": "Move step {n} down",
+    "remove": "Remove step {n}",
+    "scope": "Step {n} scope",
+    "quorum": "Step {n} approvers",
+    "slaMinutes": "Step {n} time (minutes)",
+    "slaHint": "Leave empty for no deadline",
+    "calendar": "Step {n} clock",
+    "escalate": "Escalate step {n} to",
+    "noEscalation": "No escalation",
+    "condition": "Step {n} condition",
+    "conditionHint": "A JSON object with field, op (lte, gte, eq …) and value, or several joined by all / any; empty = always",
+    "add": "Add step",
+    "effectiveFrom": "Effective from",
+    "effectiveHint": "Approved after this date, it applies from the approval",
+    "reason": "Reason"
   }
 }

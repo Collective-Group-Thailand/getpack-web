@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PAYMENT_STATUS, REFUND_STATUS, SLIP_STATUS } from "@/domain/status";
 import { isZeroMoney, moneyText } from "@/domain/money";
@@ -114,6 +114,12 @@ export function PaymentsList({ initial }: { initial: InitialPage<Payment> | null
           kind: "select",
           options: METHODS.map((value) => ({ value, label: t(`methods.${value}`) })),
         },
+        {
+          id: "unidentified",
+          label: t("unidentifiedFilter"),
+          kind: "select",
+          options: [{ value: "true", label: t("unidentifiedOnly") }],
+        },
       ]}
       empty={{ title: t("empty") }}
     />
@@ -179,11 +185,14 @@ export function PaymentDetail({ paymentId }: { paymentId: string }) {
           </>
         }
         actions={
-          canRefund && refundable ? (
-            <Button variant="secondary" iconStart="reset" onClick={() => setRefunding(true)}>
-              {t("requestRefund")}
-            </Button>
-          ) : null
+          <>
+            {data.groupId === null && data.status === "succeeded" ? <AllocatePaymentButton payment={data} /> : null}
+            {canRefund && refundable ? (
+              <Button variant="secondary" iconStart="reset" onClick={() => setRefunding(true)}>
+                {t("requestRefund")}
+              </Button>
+            ) : null}
+          </>
         }
       />
 
@@ -621,3 +630,93 @@ function RefundSheet({ refundId, onClose }: { refundId: string; onClose: () => v
 }
 
 export { RefundRows };
+
+/**
+ * Finance attaches money that matched no order group — an SCB receipt whose reference was wrong —
+ * to the group it pays (D-061): the cash goes to the group's open instalments, oldest first
+ * (ADR-0008), and anything left over is recorded as overpaid.
+ */
+function AllocatePaymentButton({ payment }: { payment: Payment }) {
+  const t = useTranslations("finance.payments.allocate");
+  const format = useFormat();
+  const queryClient = useQueryClient();
+  const canAllocate = useCan("payments.allocate");
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [groupId, setGroupId] = useState("");
+  const [typed, setTyped] = useState("");
+  // The search trails the typing by a beat, so each keystroke is not a request.
+  useEffect(() => {
+    const timer = setTimeout(() => setTyped(q.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [q]);
+  const groups = useQuery({
+    enabled: open && typed.length >= 3,
+    queryKey: queryKeys.list("admin", "order_group", { q: typed }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/order-groups", {
+          params: { query: { q: typed, perPage: 10 } },
+        })
+      ).data!,
+  });
+  if (!canAllocate) return null;
+  const payable = (groups.data?.data ?? []).filter((group) =>
+    ["waiting_payment", "in_progress"].includes(group.status),
+  );
+  const chosen = payable.find((group) => group.id === groupId);
+  return (
+    <>
+      <Button iconStart="link" onClick={() => setOpen(true)}>
+        {t("open")}
+      </Button>
+      <ConfirmAction
+        open={open}
+        onOpenChange={setOpen}
+        title={t("title", { reference: payment.referenceCode })}
+        description={t("body", { amount: format.thb(payment.cashAmount) })}
+        confirmLabel={t("confirm")}
+        confirmationPhrase={chosen?.groupCode}
+        onConfirm={async ({ idempotencyKey }) => {
+          if (!chosen) {
+            toast.error(t("choose"));
+            throw new Error("no group");
+          }
+          try {
+            await adminBrowserApis().contract.POST("/v1/admin/payments/{paymentId}/actions/allocate", {
+              params: { path: { paymentId: payment.id }, header: { "Idempotency-Key": idempotencyKey } },
+              body: { groupId: chosen.id },
+            });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "payment") });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "order_group") });
+            toast.success(t("done", { code: chosen.groupCode }));
+          } catch (error) {
+            toast.error(problemMessage(error, t("failed")));
+            throw error;
+          }
+        }}
+      >
+        <div className="mt-4 flex flex-col gap-3">
+          <Field label={t("search")} hint={t("searchHint")}>
+            <Input value={q} onChange={(event) => setQ(event.target.value)} />
+          </Field>
+          {payable.length ? (
+            <Field label={t("group")}>
+              <SearchableSelect
+                value={groupId || undefined}
+                placeholder={t("choose")}
+                onValueChange={setGroupId}
+                options={payable.map((group) => ({
+                  value: group.id,
+                  label: `${group.groupCode} · ${group.customer.displayName} · ${format.thb(group.totals.grossAmount)}`,
+                }))}
+              />
+            </Field>
+          ) : typed.length >= 3 && groups.isSuccess ? (
+            <p className="text-muted text-sm">{t("noGroups")}</p>
+          ) : null}
+        </div>
+      </ConfirmAction>
+    </>
+  );
+}

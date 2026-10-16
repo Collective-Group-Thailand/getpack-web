@@ -27,6 +27,7 @@ import { toast } from "@/ui/components/Toast";
 import { adminBrowserApis, problemMessage, QueryError, StatusChip, useCan, useProductTypes } from "../console";
 import { useGeoName, usePostcodeAreas } from "../customers/geo";
 import { isPublished, type CalculatorKey } from "./calculators";
+import { CartCodes, CartItemReprice, PreviewPanel, ScheduleChoice } from "./CheckoutExtras";
 
 type DesignOption = Schemas["DesignOption"];
 type MockupOption = Schemas["MockupOption"];
@@ -70,6 +71,8 @@ export function CreateOrder({
   const [memoOpen, setMemoOpen] = useState(false);
   const [aboveLimit, setAboveLimit] = useState(false);
   const [addingAddress, setAddingAddress] = useState(false);
+  const [schedule, setSchedule] = useState<{ templateKey: string; reason: string } | null>(null);
+  const [preview, setPreview] = useState<Schemas["CheckoutPreviewDto"] | null>(null);
 
   const quote = useQuery({
     queryKey: queryKeys.detail("admin", "quote", quoteId),
@@ -151,10 +154,31 @@ export function CreateOrder({
     onSettled: () => void queryClient.invalidateQueries({ queryKey: cartKey }),
   });
 
-  /** The option in the cart with these destinations — added once, then kept for a retry. */
+  /**
+   * The option in the cart with these destinations — added once, then kept for a retry; when the
+   * split changed since, the item's destinations are replaced (`admin.cart.setDestinations`).
+   */
   async function ensureInCart() {
     const current = cart.data!;
-    if (current.cart.items.some((item) => item.quoteOptionId === option!.id)) return;
+    const existing = current.cart.items.find((item) => item.quoteOptionId === option!.id);
+    if (existing) {
+      const wanted = destinations
+        .map(([addressId, value]) => `${addressId}:${value}`)
+        .sort()
+        .join(",");
+      const have = existing.destinations
+        .map((destination) => `${destination.addressId}:${destination.quantity}`)
+        .sort()
+        .join(",");
+      if (wanted !== have) {
+        await adminBrowserApis().contract.PUT("/v1/admin/customers/{customerId}/cart/items/{itemId}/destinations", {
+          params: { path: { ...path, itemId: existing.id }, header: { "If-Match": current.etag ?? "" } },
+          body: { destinations: destinations.map(([addressId, value]) => ({ addressId, quantity: value })) },
+        });
+        await queryClient.invalidateQueries({ queryKey: cartKey });
+      }
+      return;
+    }
     await adminBrowserApis().contract.POST("/v1/admin/customers/{customerId}/cart/items", {
       params: { path, header: { "If-Match": current.etag ?? "" } },
       body: {
@@ -168,21 +192,41 @@ export function CreateOrder({
     await queryClient.invalidateQueries({ queryKey: cartKey });
   }
 
+  /** What checkout and its preview are sent: the same body, so the preview is what will be charged. */
+  function checkoutBody() {
+    const approved = memo?.status === "approved";
+    return {
+      taxProfileId: taxProfileId === "none" ? null : taxProfileId,
+      ...(poNumber ? { poNumber } : {}),
+      ccEmails: ccList,
+      ...(remarks ? { csRemarks: remarks } : {}),
+      ...(approved && memo ? { discountMemoId: memo.id } : discount ? { csDiscountPct: discount } : {}),
+      ...(schedule ? { paymentSchedule: { templateKey: schedule.templateKey, reason: schedule.reason.trim() } } : {}),
+    };
+  }
+
+  const check = useMutation({
+    mutationFn: async () => {
+      await ensureInCart();
+      return (
+        await adminBrowserApis().contract.POST("/v1/admin/customers/{customerId}/checkout/actions/preview", {
+          params: { path },
+          body: checkoutBody(),
+        })
+      ).data!;
+    },
+    onSuccess: setPreview,
+    onError: (error) => toast.error(problemMessage(error, t("previewFailed"))),
+  });
+
   const place = useMutation({
     mutationFn: async () => {
       await ensureInCart();
-      const approved = memo?.status === "approved";
       return (
         await adminBrowserApis().contract.POST("/v1/admin/customers/{customerId}/checkout", {
           // A new key per attempt: a retry after a refusal sends a different body.
           params: { path, header: { "Idempotency-Key": newIdempotencyKey() } },
-          body: {
-            taxProfileId: taxProfileId === "none" ? null : taxProfileId,
-            ...(poNumber ? { poNumber } : {}),
-            ccEmails: ccList,
-            ...(remarks ? { csRemarks: remarks } : {}),
-            ...(approved ? { discountMemoId: memo.id } : discount ? { csDiscountPct: discount } : {}),
-          },
+          body: checkoutBody(),
         })
       ).data!;
     },
@@ -220,6 +264,7 @@ export function CreateOrder({
     others.length === 0 &&
     discountValid &&
     (!memo || memo.status === "approved") &&
+    (!schedule || schedule.reason.trim().length >= 3) &&
     ccList.every((email) => /^\S+@\S+\.\S+$/.test(email));
 
   return (
@@ -238,6 +283,12 @@ export function CreateOrder({
                   <span>
                     {format.number(item.quantity)} · {format.thb(item.productGrossAmount)}
                   </span>
+                  <CartItemReprice
+                    customerId={customerId}
+                    item={item}
+                    etag={cart.data.etag}
+                    onChanged={() => void queryClient.invalidateQueries({ queryKey: cartKey })}
+                  />
                   <Button
                     size="sm"
                     variant="secondary"
@@ -360,6 +411,22 @@ export function CreateOrder({
             <Field label={t("remarks")} hint={t("remarksHint")}>
               <Textarea rows={3} value={remarks} onChange={(event) => setRemarks(event.target.value)} />
             </Field>
+            <CartCodes
+              customerId={customerId}
+              cart={cart.data.cart}
+              etag={cart.data.etag}
+              onChanged={() => {
+                setPreview(null);
+                void queryClient.invalidateQueries({ queryKey: cartKey });
+              }}
+            />
+            <ScheduleChoice
+              value={schedule}
+              onChange={(next) => {
+                setPreview(null);
+                setSchedule(next);
+              }}
+            />
             <Field
               label={t("discount")}
               hint={limitPct ? t("discountHintLimit", { pct: format.percent(limitPct) }) : t("discountHint")}
@@ -442,6 +509,16 @@ export function CreateOrder({
         ) : null}
         <Button
           className="mt-4 w-full"
+          variant="secondary"
+          iconStart="calculator"
+          loading={check.isPending}
+          disabled={!ready}
+          onClick={() => check.mutate()}
+        >
+          {t("preview")}
+        </Button>
+        <Button
+          className="mt-2 w-full"
           iconStart="cart"
           loading={place.isPending}
           disabled={!ready}
@@ -450,6 +527,11 @@ export function CreateOrder({
           {t("place")}
         </Button>
         <p className="text-muted mt-2 text-xs">{t("placeHint")}</p>
+        {preview ? (
+          <div className="mt-4">
+            <PreviewPanel preview={preview} />
+          </div>
+        ) : null}
       </Card>
 
       {memoOpen ? (

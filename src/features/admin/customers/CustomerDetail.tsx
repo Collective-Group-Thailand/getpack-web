@@ -22,6 +22,7 @@ import { Tabs } from "@/ui/components/Tabs";
 
 import { adminBrowserApis, QueryError, Section, StatusChip, useCan } from "../console";
 import { PartyOrders } from "../orders";
+import { AdjustPointsButton, EditAddressButton } from "./CustomerActions";
 import { useGeoName } from "./geo";
 import type { Customer, CustomerConsent, CustomerTab, Loyalty, PointsEntry, Referral } from "./resources";
 
@@ -195,6 +196,9 @@ function Profile({ customer, loyalty }: { customer: Customer; loyalty: Loyalty |
                     .join(" ")}
                 </p>
               </div>
+              <span className="ms-auto">
+                <EditAddressButton customerId={customer.id} address={address} />
+              </span>
             </li>
           ))}
         </ul>
@@ -351,16 +355,19 @@ function Points({ customerId }: { customerId: string }) {
           </div>
         </dl>
       ) : null}
-      <Field label={t("entryFilter")} className="w-60">
-        <SearchableSelect
-          value={entryType ?? ANY}
-          onValueChange={(next) => setEntryType(next === ANY ? null : (next as PointsEntry["entryType"]))}
-          options={[
-            { value: ANY, label: tFilters("any") },
-            ...ENTRY_TYPES.map((value) => ({ value, label: t(`types.${value}`) })),
-          ]}
-        />
-      </Field>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <Field label={t("entryFilter")} className="w-60">
+          <SearchableSelect
+            value={entryType ?? ANY}
+            onValueChange={(next) => setEntryType(next === ANY ? null : (next as PointsEntry["entryType"]))}
+            options={[
+              { value: ANY, label: tFilters("any") },
+              ...ENTRY_TYPES.map((value) => ({ value, label: t(`types.${value}`) })),
+            ]}
+          />
+        </Field>
+        <AdjustPointsButton customerId={customerId} available={balance?.availablePoints ?? 0} />
+      </div>
       <DataTable
         caption={t("ledger")}
         columns={columns}

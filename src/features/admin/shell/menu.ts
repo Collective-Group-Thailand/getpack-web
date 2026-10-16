@@ -43,6 +43,7 @@ const MENU_ICONS: Record<string, IconName> = {
   inbox: "inbox",
   assistant: "sparkles",
   discount_memos: "percent",
+  pricing: "tag",
   prepress: "image",
   production: "factory",
   shipments: "truck",
@@ -50,6 +51,7 @@ const MENU_ICONS: Record<string, IconName> = {
   claims: "flag",
   partners: "handshake",
   catalogue: "box",
+  advisor: "scale",
   style_library: "layers",
   structural_requests: "ruler",
   style_intakes: "upload",
@@ -83,9 +85,15 @@ const MENU_ICONS: Record<string, IconName> = {
  */
 export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[] = [
   { key: "overview", entries: ["dashboard", "approvals"] },
-  { key: "sales", entries: ["orders", "inbox", "cs_calculators", "quotations", "rfq", "discount_memos", "agents"] },
+  {
+    key: "sales",
+    entries: ["orders", "inbox", "cs_calculators", "quotations", "rfq", "discount_memos", "pricing", "agents"],
+  },
   { key: "operations", entries: ["prepress", "production", "shipments", "shipping_setup", "claims", "samples"] },
-  { key: "supply", entries: ["partners", "catalogue", "style_library", "structural_requests", "style_intakes"] },
+  {
+    key: "supply",
+    entries: ["partners", "catalogue", "advisor", "style_library", "structural_requests", "style_intakes"],
+  },
   { key: "growth", entries: ["marketing", "cms", "studio_catalog", "reviews", "line", "customers", "companies"] },
   { key: "insights", entries: ["analytics", "assistant", "reports", "finance"] },
   {

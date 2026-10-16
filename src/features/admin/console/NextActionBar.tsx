@@ -46,8 +46,7 @@ export function NextActionBar({ actions, supported, labelOf, onAction }: NextAct
   const performable = actions.filter((action) => supported.has(actionVerb(action.key)));
   // A destructive action never leads, even alone (UX audit, order detail: cancel lives in "⋯").
   const constructive = performable.filter((action) => nextActionMeta(action.key).tone !== "danger");
-  const lead =
-    constructive.find((action) => !action.disabledReason) ?? primaryAction(constructive) ?? undefined;
+  const lead = constructive.find((action) => !action.disabledReason) ?? primaryAction(constructive) ?? undefined;
   const rest = actions.filter((action) => action !== lead);
 
   const label = (action: NextAction) => labelOf?.(actionVerb(action.key)) ?? t(nextActionMeta(action.key).labelKey);

@@ -179,6 +179,21 @@
       "docGross": "Total",
       "refunds": "Refunds",
       "requestRefund": "Request a refund"
+    },
+    "unidentifiedFilter": "Unidentified money",
+    "unidentifiedOnly": "Matching no order group",
+    "allocate": {
+      "open": "Attach to an order group",
+      "title": "Attach {reference} to an order group",
+      "body": "The {amount} cash pays the chosen group's open instalments, oldest first; anything over is recorded as overpaid.",
+      "confirm": "Attach",
+      "choose": "Choose an order group",
+      "done": "Attached to {code}",
+      "failed": "Could not attach the payment",
+      "search": "Find the order group",
+      "searchHint": "Group code, order code or customer code (3 characters or more)",
+      "group": "Order group awaiting payment",
+      "noGroups": "No order group awaiting payment found"
     }
   },
   "refunds": {

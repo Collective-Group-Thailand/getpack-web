@@ -1,5 +1,5 @@
 import { defineStatusMap } from "./types";
-import type { CallOffReleaseStatus, CallOffStatus } from "./contract";
+import type { ReorderSuggestionStatus, CallOffReleaseStatus, CallOffStatus } from "./contract";
 
 /** A call-off agreement (U2.F5, D-290): asked → the factory accepts or declines → used until expiry. */
 export const CALL_OFF_STATUS = defineStatusMap<CallOffStatus>({
@@ -15,4 +15,11 @@ export const CALL_OFF_RELEASE_STATUS = defineStatusMap<CallOffReleaseStatus>({
   quoted: { tone: "info", icon: "receipt", labelKey: "callOffRelease.quoted" },
   ordered: { tone: "success", icon: "package", labelKey: "callOffRelease.ordered" },
   lapsed: { tone: "neutral", icon: "clock", labelKey: "callOffRelease.lapsed" },
+});
+
+/** A reorder suggestion CS works (D-288): open until someone contacts the customer or sets it aside. */
+export const REORDER_SUGGESTION_STATUS = defineStatusMap<ReorderSuggestionStatus>({
+  open: { tone: "info", icon: "refresh", labelKey: "reorderSuggestion.open" },
+  contacted: { tone: "success", icon: "phone", labelKey: "reorderSuggestion.contacted" },
+  dismissed: { tone: "neutral", icon: "archive", labelKey: "reorderSuggestion.dismissed" },
 });

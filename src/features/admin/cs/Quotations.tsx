@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -19,6 +19,7 @@ import { cn } from "@/ui/lib/cn";
 
 import {
   adminBrowserApis,
+  ConfirmAction,
   problemMessage,
   QueryError,
   ResourceList,
@@ -31,6 +32,7 @@ import {
 import { useFileDownload } from "../logistics/files";
 import { memosList, quotationsList, type DiscountMemo, type Quotation } from "../orders/resources";
 import { useQuotePdf } from "./pdf";
+import { QuoteActions, QuoteLevers } from "./QuoteActions";
 
 const CHANNELS = ["web", "cs", "line", "b2b"] as const;
 
@@ -217,9 +219,12 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
           until: format.date(data.validUntil),
         })}
         actions={
-          <Button variant="secondary" iconStart="download" loading={pdf.isPending} onClick={() => pdf.mutate()}>
-            {t("exportPdf")}
-          </Button>
+          <>
+            <QuoteActions quote={data} />
+            <Button variant="secondary" iconStart="download" loading={pdf.isPending} onClick={() => pdf.mutate()}>
+              {t("exportPdf")}
+            </Button>
+          </>
         }
       />
       <Card padding="lg">
@@ -264,6 +269,7 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
         </Card>
       ) : null}
       <DataTable caption={t("options")} showCaption columns={columns} rows={data.options} getRowId={(row) => row.id} />
+      <QuoteLevers quote={data} />
     </div>
   );
 }
@@ -280,6 +286,8 @@ export function MemosList({ initial }: { initial: InitialPage<DiscountMemo> | nu
   const format = useFormat();
   const actor = useActor();
   const file = useFileDownload();
+  const queryClient = useQueryClient();
+  const [withdrawing, setWithdrawing] = useState<DiscountMemo | null>(null);
   const columns: DataTableColumn<DiscountMemo>[] = [
     { id: "customer", header: t("columns.customer"), cell: (row) => row.customer?.displayName ?? "—" },
     { id: "orderValue", header: t("columns.orderValue"), numeric: true, cell: (row) => format.thb(row.orderValue) },
@@ -334,48 +342,81 @@ export function MemosList({ initial }: { initial: InitialPage<DiscountMemo> | nu
     {
       id: "approval",
       header: <span className="sr-only">{t("columns.approval")}</span>,
-      cell: (row) =>
-        row.approvalId ? (
-          <Link href={`/approvals/${row.approvalId}`} className="text-primary text-sm hover:underline">
-            {t("openApproval")}
-          </Link>
-        ) : null,
+      cell: (row) => (
+        <div className="flex flex-col items-start gap-1">
+          {row.approvalId ? (
+            <Link href={`/approvals/${row.approvalId}`} className="text-primary text-sm hover:underline">
+              {t("openApproval")}
+            </Link>
+          ) : null}
+          {row.status === "pending_approval" && row.requestedBy.id === actor.id ? (
+            <Button size="sm" variant="ghost" onClick={() => setWithdrawing(row)}>
+              {t("withdraw")}
+            </Button>
+          ) : null}
+        </div>
+      ),
     },
   ];
   return (
-    <ResourceList
-      resource={memosList}
-      columns={columns}
-      caption={t("title")}
-      initial={initial}
-      searchLabel={t("search")}
-      filters={[
-        {
-          id: "status",
-          label: t("columns.status"),
-          kind: "select",
-          options: Object.entries(MEMO_STATUS).map(([value, meta]) => ({ value, label: tStatus(meta.labelKey) })),
-        },
-        {
-          id: "requestedBy",
-          label: t("columns.requestedBy"),
-          kind: "select",
-          options: [{ value: actor.id, label: t("mine") }],
-        },
-      ]}
-      rowTone={(row) => (row.belowMarginFloor ? "danger" : undefined)}
-      // A memo is asked for while CS builds an order for a customer (its discount step), so the
-      // way to make one starts there (UX audit: the page had no way to create one).
-      empty={{
-        title: t("empty"),
-        description: t("emptyBody"),
-        action: (
-          <Button asChild iconStart="plus">
-            <Link href="/cs">{t("create")}</Link>
-          </Button>
-        ),
-      }}
-    />
+    <>
+      <ResourceList
+        resource={memosList}
+        columns={columns}
+        caption={t("title")}
+        initial={initial}
+        searchLabel={t("search")}
+        filters={[
+          {
+            id: "status",
+            label: t("columns.status"),
+            kind: "select",
+            options: Object.entries(MEMO_STATUS).map(([value, meta]) => ({ value, label: tStatus(meta.labelKey) })),
+          },
+          {
+            id: "requestedBy",
+            label: t("columns.requestedBy"),
+            kind: "select",
+            options: [{ value: actor.id, label: t("mine") }],
+          },
+        ]}
+        rowTone={(row) => (row.belowMarginFloor ? "danger" : undefined)}
+        // A memo is asked for while CS builds an order for a customer (its discount step), so the
+        // way to make one starts there (UX audit: the page had no way to create one).
+        empty={{
+          title: t("empty"),
+          description: t("emptyBody"),
+          action: (
+            <Button asChild iconStart="plus">
+              <Link href="/cs">{t("create")}</Link>
+            </Button>
+          ),
+        }}
+      />
+      <ConfirmAction
+        open={Boolean(withdrawing)}
+        onOpenChange={(open) => (open ? undefined : setWithdrawing(null))}
+        title={t("withdrawTitle")}
+        description={t("withdrawBody", {
+          customer: withdrawing?.customer?.displayName ?? "—",
+          pct: withdrawing ? format.percent(withdrawing.requestedPct) : "",
+        })}
+        confirmLabel={t("withdraw")}
+        tone="destructive"
+        onConfirm={async () => {
+          try {
+            await adminBrowserApis().contract.POST("/v1/admin/discount-memos/{memoId}/actions/withdraw", {
+              params: { path: { memoId: withdrawing!.id } },
+            });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "discount_memo") });
+            toast.success(t("withdrawn"));
+          } catch (error) {
+            toast.error(problemMessage(error, t("withdrawFailed")));
+            throw error;
+          }
+        }}
+      />
+    </>
   );
 }
 

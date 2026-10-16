@@ -246,5 +246,66 @@
     "passed": "ผ่าน",
     "failed": "ไม่ผ่าน",
     "back": "← ผู้ช่วย AI"
+  },
+  "studio": {
+    "title": "ฟันเนลสตูดิโอเทียบเป้า",
+    "note": "เซสชันที่ยินยอมให้เก็บข้อมูลในแต่ละขั้นของสตูดิโอ และตัวชี้วัดเทียบเป้าหมาย เป็นตัวเลขรวมเท่านั้น",
+    "choosePeriod": "เลือกช่วงเวลาก่อน",
+    "steps": {
+      "studio_started": "เริ่มออกแบบ",
+      "studio_box_confirmed": "ยืนยันกล่อง",
+      "studio_first_artwork": "ใส่งานกราฟิกแรก",
+      "studio_checks_clean": "ตรวจผ่าน",
+      "studio_add_to_cart": "ใส่ตะกร้า",
+      "studio_ordered": "สั่งซื้อ"
+    },
+    "fromPrevious": "{pct} จากขั้นก่อน",
+    "metrics": {
+      "medianMinutesToCart": "เวลากลางถึงใส่ตะกร้าครั้งแรก",
+      "artworkToCartPct": "มีงานกราฟิก → ใส่ตะกร้า",
+      "preflightPassPct": "ไฟล์พิมพ์ผ่านการตรวจ",
+      "priceParityPct": "คิดเงินตรงราคาสตูดิโอ"
+    },
+    "minutes": "{minutes} นาที",
+    "target": "เป้า {target}",
+    "met": "ถึงเป้า",
+    "missed": "ต่ำกว่าเป้า",
+    "basis": "จาก {count} รายการ"
+  },
+  "journeyExport": {
+    "label": "ส่งออกขั้นตอนการใช้งาน",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV",
+    "done": "ส่งออก {rows} แถวแล้ว",
+    "truncated": "ส่งออก {rows} แถว (ถูกตัดตามขนาดสูงสุด)",
+    "failed": "ส่งออกไม่สำเร็จ"
+  },
+  "rollups": {
+    "title": "การประมวลผลรายวัน",
+    "backfill": "คำนวณช่วงนี้ใหม่",
+    "backfillTitle": "คำนวณตัวเลขช่วงนี้ใหม่",
+    "backfillBody": "สร้างตัวเลขทุกชุดของทุกวันตั้งแต่ {from} ถึง {to} ใหม่ (ไม่เกิน 366 วัน) ระบบเริ่มภายในหนึ่งนาที",
+    "queued": "เข้าคิว {count} งาน",
+    "failed": "สั่งคำนวณไม่สำเร็จ",
+    "empty": "ไม่มีการประมวลผลในช่วงนี้",
+    "columns": {
+      "date": "วันที่",
+      "job": "ชุดข้อมูล",
+      "status": "สถานะ",
+      "rows": "แถว",
+      "attempts": "ครั้งที่ลอง",
+      "finished": "เสร็จเมื่อ",
+      "error": "ข้อผิดพลาด"
+    },
+    "statuses": {
+      "queued": "รอคิว",
+      "running": "กำลังทำ",
+      "succeeded": "สำเร็จ",
+      "failed": "ไม่สำเร็จ"
+    },
+    "summary": "สำเร็จ {succeeded} · ไม่สำเร็จ {failed} · รอ {waiting}",
+    "showAll": "ดูทั้งหมด ({count})",
+    "showAttention": "ดูเฉพาะที่ต้องดูแล",
+    "allGood": "ทุกงานในช่วงนี้สำเร็จแล้ว"
   }
 }

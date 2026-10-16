@@ -24,7 +24,7 @@ export const MENU_CATALOGUE: readonly {
   /** One permission, or any of several (the finance workspace opens for each of its desks). */
   permission: StaffPermission | readonly StaffPermission[] | null;
 }[] = [
-  // packio-api src/modules/iam/menu.catalog.ts (v0.61.0), verbatim.
+  // packio-api src/modules/iam/menu.catalog.ts (v0.66.0), verbatim.
   { key: "dashboard", path: "/admin", permission: null },
   { key: "orders", path: "/admin/orders", permission: "orders.read" },
   { key: "cs_calculators", path: "/admin/cs", permission: "quotes.calculate" },
@@ -41,6 +41,7 @@ export const MENU_CATALOGUE: readonly {
   { key: "claims", path: "/admin/claims", permission: "claims.read" },
   { key: "partners", path: "/admin/partners", permission: "partners.read" },
   { key: "catalogue", path: "/admin/catalogue", permission: "catalog.read" },
+  { key: "advisor", path: "/admin/advisor", permission: "advisory.read" },
   { key: "style_library", path: "/admin/style-library", permission: "styles.read" },
   {
     key: "structural_requests",
@@ -62,6 +63,12 @@ export const MENU_CATALOGUE: readonly {
   { key: "customers", path: "/admin/customers", permission: "customers.read" },
   { key: "companies", path: "/admin/companies", permission: "companies.read" },
   { key: "discount_memos", path: "/admin/discount-memos", permission: "discount_memos.read" },
+  {
+    key: "pricing",
+    path: "/admin/pricing",
+    permission: ["margin.read", "payment_schedule_templates.manage", "guarantee_policies.read"],
+  },
+  { key: "agents", path: "/admin/agents", permission: "agents.read" },
   {
     key: "finance",
     path: "/admin/finance",

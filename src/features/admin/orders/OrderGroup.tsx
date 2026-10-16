@@ -17,6 +17,7 @@ import { Callout } from "@/ui/components/Callout";
 
 import { adminBrowserApis, QueryError, StatusChip, useProductTypes } from "../console";
 import { useGroupSchedule } from "./data";
+import { GroupActions } from "./OrderExtras";
 
 /**
  * One checkout (B3.1): its orders — one per configuration — and its payment schedule. The group
@@ -49,6 +50,7 @@ export function OrderGroup({ groupId }: { groupId: string }) {
         }
         title={<span className="font-mono">{data.groupCode}</span>}
         meta={<StatusChip map={ORDER_GROUP_STATUS} value={data.status} size="md" />}
+        actions={<GroupActions group={data} />}
         description={t("headline", {
           customer: data.customer.displayName,
           amount: format.thb(data.totals.grossAmount),

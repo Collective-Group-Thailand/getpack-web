@@ -353,3 +353,6 @@ export type AgentPlanVersionStatus = Schemas["AgentPlanVersionStatus"];
 
 /** A factory brought in by an agent (D-419). **Source: contract** (v0.65.0). */
 export type AgentFactoryLinkStatus = Schemas["AgentFactoryLinkStatus"];
+
+/** A reorder suggestion in the CS queue (D-288). **Source: contract** (v0.66.0). */
+export type ReorderSuggestionStatus = Schemas["ReorderSuggestionStatus"];

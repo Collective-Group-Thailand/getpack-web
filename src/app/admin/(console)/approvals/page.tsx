@@ -22,7 +22,8 @@ export default async function ApprovalsPage({ searchParams }: Props) {
   const actor = await requireActor("admin");
   const canAct = actor?.permissions.includes("approvals.act") ?? false;
   const requested = typeof params.tab === "string" ? params.tab : undefined;
-  const tab: ApprovalsTab = requested === "all" || requested === "delegations" ? requested : canAct ? "inbox" : "all";
+  const tab: ApprovalsTab =
+    requested === "all" || requested === "delegations" || requested === "matrix" ? requested : canAct ? "inbox" : "all";
 
   const [initialInbox, initialAll] = await Promise.all([
     tab === "inbox" ? fetchInbox() : null,

@@ -82,5 +82,124 @@
     "aov": "Average order",
     "repeat": "Repeat customers",
     "sparkline": "Paid orders per day this month"
+  },
+  "nav": {
+    "label": "Report sections",
+    "reports": "Reports",
+    "schedules": "Schedules",
+    "files": "Files"
+  },
+  "schedules": {
+    "title": "Report schedules",
+    "description": "Reports sent to the team on a cycle; recipients are notified and download the file in Packio",
+    "body": "Times are Bangkok time and periods count from the run. A schedule is not edited: switch it off and make a new one.",
+    "create": {
+      "title": "Schedule a report",
+      "body": "Recipients must be staff who may read and export the report.",
+      "submit": "Save",
+      "needReport": "Choose a report",
+      "needName": "Name it",
+      "badTime": "The time is HH:MM",
+      "needRecipients": "Add at least one recipient",
+      "needFilter": "Choose {filter}",
+      "done": "Report scheduled",
+      "report": "Report",
+      "choose": "Choose…",
+      "name": "Name",
+      "nameHint": "e.g. AR aging, every Monday",
+      "frequency": "Frequency",
+      "frequencies": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "dayOfWeek": "Day",
+      "dayOfMonth": "Day of month",
+      "dayOfMonthHint": "1–28",
+      "runAt": "Time",
+      "runAtHint": "Bangkok time",
+      "format": "File",
+      "period": "Period",
+      "periodHint": "Counted from the run",
+      "any": "Any",
+      "filters": {
+        "channel": "Channel",
+        "productTypeId": "Product type",
+        "factoryId": "Factory",
+        "status": "Status",
+        "provider": "Provider"
+      },
+      "recipients": "Recipients",
+      "recipientsHint": "Search a staff name, then add",
+      "removeRecipient": "Remove {name}"
+    },
+    "empty": "No report schedules yet",
+    "emptyHint": "Schedule the reports the team opens regularly, e.g. AR aging every Monday.",
+    "columns": {
+      "name": "Report",
+      "when": "When",
+      "next": "Next run",
+      "last": "Last run",
+      "recipients": "Recipients",
+      "actions": "Actions"
+    },
+    "off": "Off",
+    "runNow": "Run now",
+    "activate": "Switch on",
+    "deactivate": "Switch off",
+    "failed": "Could not do that",
+    "done": {
+      "run": "Queued — recipients are told when the file is ready",
+      "activate": "Schedule switched on",
+      "deactivate": "Schedule switched off"
+    },
+    "scheduled": "Scheduled",
+    "when": {
+      "daily": "Daily at {at}",
+      "weekly": "{day}s at {at}",
+      "monthly": "Day {day} at {at}"
+    },
+    "weekdays": {
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday",
+      "7": "Sunday"
+    },
+    "periods": {
+      "previous_day": "Previous day",
+      "previous_week": "Previous week",
+      "previous_month": "Previous month",
+      "month_to_date": "Month to date",
+      "year_to_date": "Year to date"
+    },
+    "new": "Schedule a report"
+  },
+  "files": {
+    "title": "Report files",
+    "description": "Exports and the files of scheduled reports",
+    "body": "The newest 100 files of reports you may read; download links work for 5 minutes.",
+    "filter": "Report",
+    "all": "All reports",
+    "empty": "No files yet",
+    "failed": "Could not download",
+    "asOf": "as of {date}",
+    "manual": "Exported",
+    "columns": {
+      "report": "Report",
+      "status": "Status",
+      "queued": "Requested",
+      "rows": "Rows",
+      "source": "Source",
+      "download": "Download"
+    },
+    "statuses": {
+      "queued": "Queued",
+      "running": "Running",
+      "succeeded": "Ready",
+      "failed": "Failed"
+    }
   }
 }

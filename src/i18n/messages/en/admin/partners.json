@@ -975,5 +975,13 @@
     "effectiveHint": "Empty means now",
     "sheetHint": "PDF or image",
     "note": "Note"
+  },
+  "proposalEvidence": {
+    "title": "Evidence the factory attached",
+    "none": "No evidence attached",
+    "count": "{count} files",
+    "recompute": "Recompute suggestions",
+    "recomputed": "Suggestions recomputed",
+    "failed": "Could not recompute"
   }
 }

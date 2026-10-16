@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.65.0). */
+/** Documented problem codes per operation, from contract/openapi.json (packio-api 0.66.0). */
 
 export interface OperationProblems {
   method: string;
@@ -424,6 +424,7 @@ export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {
   "admin.customers.get": {"method":"GET","path":"/v1/admin/customers/{customerId}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.customers.listAddresses": {"method":"GET","path":"/v1/admin/customers/{customerId}/addresses","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.customers.createAddress": {"method":"POST","path":"/v1/admin/customers/{customerId}/addresses","problems":{"http.bad_request":400,"http.malformed_json":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
+  "admin.customers.getAddress": {"method":"GET","path":"/v1/admin/customers/{customerId}/addresses/{addressId}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.customers.updateAddress": {"method":"PATCH","path":"/v1/admin/customers/{customerId}/addresses/{addressId}","problems":{"http.bad_request":400,"http.malformed_json":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"concurrency.stale":412,"validation.failed":422,"concurrency.precondition_required":428,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.cart.get": {"method":"GET","path":"/v1/admin/customers/{customerId}/cart","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.cart.applyCode": {"method":"POST","path":"/v1/admin/customers/{customerId}/cart/codes","problems":{"http.bad_request":400,"http.malformed_json":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"concurrency.stale":412,"promotions.code_invalid":422,"validation.failed":422,"concurrency.precondition_required":428,"http.too_many_requests":429,"promotions.too_many_attempts":429,"internal.unexpected":500}},

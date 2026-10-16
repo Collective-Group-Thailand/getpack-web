@@ -1,0 +1,147 @@
+{
+  "outcomes": {
+    "recommended": "Recommended",
+    "no_board_meets_load": "No board meets the load"
+  },
+  "list": {
+    "title": "Structure Advisor",
+    "description": "The log of corrugated board recommendations by load — customers' and staff runs",
+    "columns": {
+      "when": "When",
+      "productType": "Product type",
+      "outcome": "Outcome",
+      "board": "Recommended board",
+      "who": "Who",
+      "chosen": "Customer chose",
+      "quotes": "Quotes"
+    },
+    "staff": "Staff",
+    "customer": "Customer",
+    "anonymous": "Visitor",
+    "search": "Search recommendations",
+    "searchPlaceholder": "Search",
+    "run": "Run the advisor",
+    "empty": "No recommendations yet",
+    "emptyHint": "Recommendations appear when customers use the advisor in the box designer or staff run it."
+  },
+  "run": {
+    "title": "Run the Structure Advisor",
+    "body": "Runs as customers would, also while the flag is off, and is logged as a staff run.",
+    "submit": "Evaluate",
+    "needType": "Choose a product type",
+    "badConfiguration": "The configuration must be a JSON object",
+    "needWeight": "Give the product weight in grams (above 0)",
+    "needCounts": "Units per box and layers are whole numbers",
+    "badPostcode": "A postcode is 5 digits",
+    "done": "Evaluated",
+    "productType": "Product type",
+    "productTypeHint": "Corrugated boxes only",
+    "choose": "Choose…",
+    "configuration": "Configuration (JSON)",
+    "configurationHint": "As on a quotation: patternId, materialId, l, w, d, quantities …",
+    "postcode": "Delivery postcode",
+    "postcodeHint": "For lead time and price (optional)"
+  },
+  "load": {
+    "productWeightG": "Product weight each",
+    "unitsPerBox": "Units per box",
+    "stackLayers": "Layers stacked",
+    "fragility": "Fragility",
+    "humidity": "Humidity",
+    "storage": "Storage",
+    "transportMode": "Transport",
+    "pallet": "Pallet",
+    "overhang": "Overhangs the pallet",
+    "fragilities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "humidities": {
+      "dry": "Dry",
+      "normal": "Normal",
+      "humid": "Humid",
+      "very_humid": "Very humid"
+    },
+    "storages": {
+      "up_to_10_days": "Up to 10 days",
+      "up_to_30_days": "Up to 30 days",
+      "up_to_90_days": "Up to 90 days",
+      "over_90_days": "Over 90 days"
+    },
+    "transports": {
+      "pickup": "Pickup",
+      "parcel_domestic": "Domestic parcel",
+      "pallet_domestic": "Domestic pallet",
+      "sea_export": "Sea export"
+    },
+    "pallets": {
+      "none": "No pallet",
+      "column": "Column",
+      "interlocked": "Interlocked"
+    }
+  },
+  "reasons": {
+    "box_weight": "Box weight with product",
+    "top_load": "Top load",
+    "factor": "Factor",
+    "combined_factor": "Combined factor",
+    "required_bct": "Required BCT",
+    "no_top_load": "No top load",
+    "cheapest_passing": "Cheapest that passes",
+    "no_instant_price": "No instant price",
+    "estimated_bct_low": "Estimated BCT (low)",
+    "estimated_bct_high": "Estimated BCT (high)",
+    "margin": "Margin"
+  },
+  "detail": {
+    "pageTitle": "Structure recommendation",
+    "breadcrumb": "Structure Advisor location",
+    "log": "Structure Advisor",
+    "title": "Recommendation for {type}",
+    "meta": "Channel {channel} · engine {engine} · rule set v{rules}",
+    "replay": "Replay from the log",
+    "runAgain": "Run again with these",
+    "replayFailed": "Could not replay",
+    "identical": "Identical to the log (engine {engine})",
+    "different": "Differs from the log (engine {engine})",
+    "warnings": "Warnings",
+    "warningCodes": {
+      "no_board_meets_load": "No board meets the load",
+      "thin_margin": "Thin margin",
+      "below_requirement": "Below the requirement"
+    },
+    "load": "Load and use",
+    "requirement": "What it must hold",
+    "perimeter": "Inside perimeter",
+    "boxWeight": "Box weight with product",
+    "layers": "Layers",
+    "loadN": "Load on the bottom box",
+    "combinedFactor": "Combined factor",
+    "requiredBct": "Required BCT",
+    "options": "Boards evaluated",
+    "board": "Board",
+    "bct": "BCT low / required",
+    "margin": "Margin",
+    "unitPrice": "Unit price",
+    "leadTime": "Lead time",
+    "source": "Board data from",
+    "recommended": "Recommended",
+    "chosen": "Chosen",
+    "fails": "Fails",
+    "bctValue": "{low} / {required} N",
+    "rfq": "Quote on request",
+    "days": "{days} days",
+    "excluded": "Boards left out for missing data",
+    "context": "Context",
+    "who": "Who",
+    "staffRun": "Staff run",
+    "customerRun": "Customer",
+    "anonymousRun": "Visitor not signed in",
+    "postcode": "Delivery postcode",
+    "choices": "Times chosen",
+    "quotes": "Quotes that followed",
+    "quoteN": "Quote {n}",
+    "configuration": "Configuration used (JSON)"
+  }
+}

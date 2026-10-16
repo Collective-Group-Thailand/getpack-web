@@ -246,5 +246,66 @@
     "passed": "Passed",
     "failed": "Failed",
     "back": "← AI assistant"
+  },
+  "studio": {
+    "title": "Studio funnel against targets",
+    "note": "Consented sessions at each studio step and the measures beside their targets; aggregates only.",
+    "choosePeriod": "Choose a period first",
+    "steps": {
+      "studio_started": "Started",
+      "studio_box_confirmed": "Box confirmed",
+      "studio_first_artwork": "First artwork",
+      "studio_checks_clean": "Checks clean",
+      "studio_add_to_cart": "Added to cart",
+      "studio_ordered": "Ordered"
+    },
+    "fromPrevious": "{pct} from the previous step",
+    "metrics": {
+      "medianMinutesToCart": "Median minutes to first add-to-cart",
+      "artworkToCartPct": "Artwork → cart",
+      "preflightPassPct": "Print files passing preflight",
+      "priceParityPct": "Charged exactly the studio price"
+    },
+    "minutes": "{minutes} min",
+    "target": "Target {target}",
+    "met": "Met",
+    "missed": "Below target",
+    "basis": "of {count}"
+  },
+  "journeyExport": {
+    "label": "Export journey steps",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV",
+    "done": "{rows} rows exported",
+    "truncated": "{rows} rows exported (cut at the maximum)",
+    "failed": "Could not export"
+  },
+  "rollups": {
+    "title": "Nightly rollups",
+    "backfill": "Rebuild this range",
+    "backfillTitle": "Rebuild the figures of this range",
+    "backfillBody": "Rebuilds every fact of every day from {from} to {to} (at most 366 days); the worker starts within a minute.",
+    "queued": "{count} jobs queued",
+    "failed": "Could not queue the rebuild",
+    "empty": "No rollups in this range",
+    "columns": {
+      "date": "Date",
+      "job": "Fact",
+      "status": "Status",
+      "rows": "Rows",
+      "attempts": "Attempts",
+      "finished": "Finished",
+      "error": "Error"
+    },
+    "statuses": {
+      "queued": "Queued",
+      "running": "Running",
+      "succeeded": "Succeeded",
+      "failed": "Failed"
+    },
+    "summary": "{succeeded} succeeded · {failed} failed · {waiting} waiting",
+    "showAll": "Show all ({count})",
+    "showAttention": "Show what needs attention",
+    "allGood": "Every job in this range succeeded"
   }
 }

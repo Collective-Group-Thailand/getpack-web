@@ -370,7 +370,11 @@
     "filterStatus": "สถานะ",
     "allStatuses": "ทุกสถานะ",
     "disableReason": "เหตุผลที่ปิดโค้ด",
-    "disableReasonHint": "เช่น โค้ดหลุดสู่สาธารณะ บันทึกไว้ในประวัติ"
+    "disableReasonHint": "เช่น โค้ดหลุดสู่สาธารณะ บันทึกไว้ในประวัติ",
+    "exportAll": "ส่งออกรหัสทั้งหมด (CSV)",
+    "exportBatch": "ส่งออกรหัสชุดนี้ (CSV)",
+    "exported": "ส่งออก {count} รหัสแล้ว ลิงก์ใช้ได้ 5 นาที",
+    "exportFailed": "ส่งออกไม่สำเร็จ"
   },
   "referrals": {
     "title": "เพื่อนแนะนำ",
@@ -398,7 +402,23 @@
     "noOrder": "ยังไม่สั่งซื้อ",
     "points": "{points} แต้ม",
     "review": "ตรวจ",
-    "reviewFor": "ตรวจรายการ {code}"
+    "reviewFor": "ตรวจรายการ {code}",
+    "details": "รายละเอียด",
+    "detail": {
+      "title": "การแนะนำเพื่อน {code}",
+      "referrer": "ผู้แนะนำ",
+      "referee": "เพื่อนที่ถูกแนะนำ",
+      "status": "สถานะ",
+      "reward": "รางวัล",
+      "points": "{points} คะแนน",
+      "attributedAt": "ผูกเมื่อ",
+      "qualifiedAt": "ผ่านเงื่อนไขเมื่อ",
+      "rewardedAt": "ให้รางวัลเมื่อ",
+      "decidedAt": "ตัดสินเมื่อ",
+      "firstOrder": "คำสั่งซื้อแรก",
+      "claimWindow": "ระยะแจ้งเคลมสิ้นสุด",
+      "flags": "ข้อสังเกตด้านความเสี่ยง"
+    }
   },
   "loyalty": {
     "title": "แต้มสะสมและเพื่อนแนะนำ",

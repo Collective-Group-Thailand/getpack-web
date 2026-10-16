@@ -18,6 +18,7 @@ import { toast } from "@/ui/components/Toast";
 import { adminBrowserApis, ConfirmAction, NextActionBar, problemMessage } from "../console";
 import { SlipReview } from "../finance/slips";
 import { useGroupSchedule, type QueuedSlip } from "./data";
+import { RepriceOrderDialog } from "./OrderExtras";
 import type { CancelReason, Order, OrderGroup } from "./resources";
 
 /**
@@ -26,13 +27,14 @@ import type { CancelReason, Order, OrderGroup } from "./resources";
  * Payments tab opens those from the instalment and the slip they act on.
  */
 export type OrderActionKey =
-  "approve_slip" | "reject_slip" | "start_production" | "cancel" | "send_payment_reminder" | "record_slip";
+  "approve_slip" | "reject_slip" | "start_production" | "cancel" | "send_payment_reminder" | "record_slip" | "reprice";
 
 /**
- * The order actions this screen performs. packio-api also offers `submit_artwork`, `add_mockup`
- * and `reprice` (D-051, D-074); the desk has no flow for them yet, so they show disabled with why.
+ * The order actions this screen performs. packio-api also offers `submit_artwork` (the prepress
+ * desk's) and `add_mockup` (deprecated by D-254 — a sample is ordered from the samples desk); they
+ * show disabled with why.
  */
-const SUPPORTED = new Set<string>(["start_production", "cancel"]);
+const SUPPORTED = new Set<string>(["start_production", "cancel", "reprice"]);
 
 /** The order's actions exactly as the API offered them (`AdminOrderDto.nextActions`) — see `NextActionBar`. */
 export function OrderActionBar({
@@ -177,6 +179,8 @@ export function OrderActionDialogs({
           }}
         />
       );
+    case "reprice":
+      return <RepriceOrderDialog order={order} group={group} onClose={onClose} />;
     case "record_slip":
       return group && schedule.data ? (
         <RecordSlipDialog

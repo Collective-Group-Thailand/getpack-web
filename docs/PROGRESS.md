@@ -127,6 +127,29 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   customers linked through the link → a lead → an adjustment → a month's statement generated and approved (vendor
   bill) → a plan proposal its author cannot approve. Payout, certificate and employee payroll are covered by the
   API's e2e. Commission figures and the flat 3 % ภ.ง.ด.1 rate await business and CPA sign-off.
+- **Round 6 — sales and finance remainder** (packio-api v0.66.0, D-424): every remaining sales and finance
+  `admin.*` operation has its screen. `/pricing` (menu `pricing`): Packio's sell-margin tables (create, draft a
+  version from the one in force with a line editor that marks overlapping bands as the database would, approve),
+  payment schedule templates (new versions: instalments adding up to 100 %, the selection rule as fields, a setting
+  reference kept as `setting:<key>`) and the guarantee policy (propose the remedy matrix to C-Level, withdraw).
+  `/approvals?tab=matrix` (propose a policy version, approved by another Superadmin), `/production/routes`
+  (milestone routes and versions), `/advisor` (menu `advisor`: the Structure Advisor's log, replay, a staff run).
+  Orders: edit & re-price from a live quotation (the order's own `reprice` action), promised vs actual on the
+  production tab, the spec sheet on the documents tab, opening a claim for the customer once delivered; on the
+  group, cancel, move to another customer, replace the payment schedule; `/orders/reorders` and
+  `/orders/call-offs`. Quotations: share (the storefront link), stop sharing, re-price an expired one, the levers
+  the customer saw. CS order: coupon codes, the checkout preview (the same body as checkout), another payment
+  schedule with a reason, re-pricing a cart item whose lock passed, destinations replaced when the split changed.
+  Customers: edit an address (read for its ETag — `admin.customers.getAddress`, added), adjust points; company
+  discount memos; withdrawing one's own memo; attaching an unidentified receipt to an order group (payments
+  filter "unidentified"); coupon export; referral details; `/reports/schedules` and `/reports/files`; analytics
+  studio funnel, journey export and nightly rollups (only what needs attention, backfill); inbox response times;
+  a price proposal's evidence and recomputed suggestions. Tried in a browser against packio-api: margin draft →
+  approve, schedule version, guarantee propose → withdraw, matrix proposal, route version, advisor run → replay
+  identical, quotation share → stop, CS order with a refused code and the preview → placed → re-priced from a
+  second quotation → schedule replaced → group cancelled, address edit, points, report scheduled → run → file
+  ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
+  payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
 
 ---
 

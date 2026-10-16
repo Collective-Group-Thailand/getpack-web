@@ -13,6 +13,7 @@ import { Tabs } from "@/ui/components/Tabs";
 import { QueryError, StatusChip, useCan } from "../console";
 import { useGroupSlips, useOrder, useOrderGroup, type QueuedSlip } from "./data";
 import { OrderActionBar, OrderActionDialogs, type OrderActionKey } from "./OrderActions";
+import { ClaimOpenRow, OrderProgress, SpecSheetCard } from "./OrderExtras";
 import { OrderRail } from "./OrderRail";
 import {
   ArtworkTab,
@@ -90,10 +91,37 @@ export function OrderDetail({ orderId, initial, tab }: { orderId: string; initia
       ),
     },
     { value: "artwork", label: t("tabs.artwork"), content: <ArtworkTab order={order} /> },
-    { value: "production", label: t("tabs.production"), content: <ProductionTab order={order} /> },
+    {
+      value: "production",
+      label: t("tabs.production"),
+      content: (
+        <div className="flex flex-col gap-4">
+          <OrderProgress order={order} />
+          <ProductionTab order={order} />
+        </div>
+      ),
+    },
     { value: "shipments", label: t("tabs.shipments"), content: <ShipmentsTab order={order} /> },
-    { value: "documents", label: t("tabs.documents"), content: <DocumentsTab order={order} /> },
-    { value: "claims", label: t("tabs.claims"), content: <ClaimsTab order={order} /> },
+    {
+      value: "documents",
+      label: t("tabs.documents"),
+      content: (
+        <div className="flex flex-col gap-4">
+          <SpecSheetCard order={order} />
+          <DocumentsTab order={order} />
+        </div>
+      ),
+    },
+    {
+      value: "claims",
+      label: t("tabs.claims"),
+      content: (
+        <div className="flex flex-col gap-4">
+          <ClaimOpenRow order={order} />
+          <ClaimsTab order={order} />
+        </div>
+      ),
+    },
   ];
 
   return (

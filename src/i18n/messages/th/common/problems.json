@@ -583,5 +583,9 @@
   },
   "structural_requests": {
     "invalid_transition": "คำขอนี้อยู่ในขั้นที่ทำรายการนี้ไม่ได้"
+  },
+  "guarantee": {
+    "version_pending": "มีฉบับรออนุมัติอยู่แล้ว",
+    "version_not_proposed": "ฉบับนี้ไม่ได้รออนุมัติแล้ว"
   }
 }

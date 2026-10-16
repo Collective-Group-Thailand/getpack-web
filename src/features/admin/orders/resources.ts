@@ -92,3 +92,38 @@ export const memosList = defineList<DiscountMemo>({
   getRowName: (row) => row.customer?.displayName ?? row.id.slice(0, 8),
   defaults: { filterKeys: ["status", "customerId", "requestedBy"], sort: "createdAt", order: "desc" },
 });
+
+/** Call-off agreements (D-290) and the reorder suggestion queue (D-288), beside the orders. */
+export type CallOff = Schemas["CallOffAgreementDto"];
+export type Suggestion = Schemas["AdminReorderSuggestionDto"];
+
+export const CALL_OFF_STATUSES = [
+  "pending_factory",
+  "active",
+  "declined",
+  "cancelled",
+  "expired",
+] as const satisfies readonly Schemas["CallOffStatus"][];
+export const SUGGESTION_STATUSES = [
+  "open",
+  "contacted",
+  "dismissed",
+] as const satisfies readonly Schemas["ReorderSuggestionStatus"][];
+
+export const callOffsList = defineList<CallOff>({
+  key: "call_off",
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/call-off-agreements", { params: { query: query as never } })).data!,
+  getRowId: (row) => row.id,
+  getRowName: (row) => row.quoteCode ?? row.id,
+  defaults: { filterKeys: ["status"] },
+});
+
+export const reorderSuggestionsList = defineList<Suggestion>({
+  key: "reorder_suggestion",
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/reorder-suggestions", { params: { query: query as never } })).data!,
+  getRowId: (row) => row.id,
+  getRowName: (row) => row.lastOrder.orderCode,
+  defaults: { filterKeys: ["status", "dueBy"] },
+});
