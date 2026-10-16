@@ -75,7 +75,7 @@
   "decisionRecord": "By {name} on {date}",
   "hash": "File fingerprint {hash}…",
   "fileProof": "This proof is the file {name}",
-  "fileDownload": "Get the proof link",
+  "fileDownload": "Download the proof",
   "fileOpen": "Open the proof",
   "loadingPage": "Loading the proof…",
   "approveIntro": "Check the text, the artwork against the dieline, the colours and the size before you approve.",

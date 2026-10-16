@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { listMyRfqs } from "@/features/customer/rfq/api.server";
 import { listBaskets } from "@/features/customer/rfq/basket/api.server";
 import { RFQ_BASKET_STATUS } from "@/domain/status";
@@ -84,29 +85,45 @@ export default async function Page() {
           }
         />
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
-          {list.map((rfq) => (
-            <li key={rfq.id} className="bg-surface border-border rounded-xl border">
-              <Link
-                href={`/account/rfqs/${rfq.id}`}
-                className="hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl p-4"
-              >
-                <div className="min-w-0">
-                  <p className="font-semibold">
-                    {rfq.productTypeName} <span className="text-muted font-mono text-sm">{rfq.rfqCode}</span>
-                  </p>
-                  <p className="text-muted text-sm">
-                    {t("row", {
-                      quantities: rfq.quantities.map((quantity) => format.number(quantity)).join(", "),
-                      date: format.date(rfq.submittedAt),
-                    })}
-                  </p>
-                </div>
-                <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <PortalTable
+          className="mt-6"
+          caption={t("table.caption")}
+          columns={[
+            { key: "request", label: t("table.request"), className: "md:w-[40%]" },
+            { key: "quantities", label: t("table.quantities"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "submitted", label: t("table.submitted") },
+            { key: "status", label: t("table.status") },
+            { key: "actions", label: t("table.actions"), srOnly: true, className: "text-end" },
+          ]}
+          rows={list.map((rfq) => ({
+            id: rfq.id,
+            phoneSubtitle: <span className="font-mono">{rfq.rfqCode}</span>,
+            cells: {
+              request: (
+                <span className="block min-w-0">
+                  <Link
+                    href={`/account/rfqs/${rfq.id}`}
+                    className="text-fg block font-semibold underline-offset-4 hover:underline"
+                  >
+                    {rfq.productTypeName}
+                  </Link>
+                  <span className="text-muted hidden font-mono text-xs font-normal md:block">{rfq.rfqCode}</span>
+                </span>
+              ),
+              quantities: rfq.quantities.map((quantity) => format.number(quantity)).join(", "),
+              submitted: format.date(rfq.submittedAt),
+              status: <StatusChip map={RFQ_STATUS} value={rfq.status} />,
+              actions: (
+                <Button asChild size="sm" variant="secondary">
+                  <Link href={`/account/rfqs/${rfq.id}`}>
+                    {t("table.view")}
+                    <span className="sr-only"> {rfq.rfqCode}</span>
+                  </Link>
+                </Button>
+              ),
+            },
+          }))}
+        />
       )}
     </div>
   );

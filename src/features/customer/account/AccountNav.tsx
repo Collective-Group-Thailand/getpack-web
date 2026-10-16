@@ -101,8 +101,8 @@ function groupsFor(company: AccountCompany | null): Group[] {
 /**
  * The account's sections in four groups — คำสั่งซื้อ · งานของฉัน · บริษัทของฉัน (only for a company
  * member, round 2 B2) · บัญชี — under the overview, with sign-out last (B9). A column on wide
- * screens; on a phone each group folds (the one holding this page open) instead of seventeen
- * chips in a sideways scroll. Same links, same order, on both (WCAG 3.2.3).
+ * screens; on a phone one closed fold naming this page, with every section inside it. Same
+ * links, same order, on both (WCAG 3.2.3).
  */
 export function AccountNav({ company = null }: { company?: AccountCompany | null }) {
   const t = useTranslations("account.nav");
@@ -140,45 +140,69 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
     );
   };
 
+  const overview: Item = { key: "overview", href: "/account", icon: "dashboard", exact: true };
+  const currentItem = [overview, ...groups.flatMap((group) => group.items)].find(isCurrent) ?? null;
+  const labelOf = (item: Item) => (item.ns === "business" ? tBusiness(item.key) : t(item.key));
+  const groupTitle = (group: Group) =>
+    group.key === "company" && company ? t("groups.companyNamed", { name: company.name }) : t(`groups.${group.key}`);
+  const badges = groups.flatMap((group) => group.items).reduce((sum, item) => sum + (item.badge ?? 0), 0);
+
   return (
     <nav
       aria-label={t("label")}
       // Its own panel on a wide screen, so it reads as the account's menu rather than as text
-      // floating at the page's edge; on a phone each group is already a bordered fold.
+      // floating at the page's edge.
       className="lg:border-border lg:bg-surface lg:rounded-card lg:sticky lg:top-20 lg:self-start lg:border lg:p-3"
     >
-      <ul className="flex flex-col gap-1">
-        {link({ key: "overview", href: "/account", icon: "dashboard", exact: true })}
-      </ul>
-      {groups.map((group) => {
-        const holdsCurrent = group.items.some(isCurrent);
-        const title =
-          group.key === "company" && company
-            ? t("groups.companyNamed", { name: company.name })
-            : t(`groups.${group.key}`);
-        return (
-          <div key={group.key} className="mt-2 lg:mt-4">
-            {/* Wide screens: a heading over the group. */}
-            <p className="text-muted hidden px-3 pb-1 text-xs font-semibold lg:flex">{t(`groups.${group.key}`)}</p>
-            <ul className="hidden flex-col gap-0.5 lg:flex">{group.items.map(link)}</ul>
-            {/* A phone: the same group, folded unless it holds this page. */}
-            <details open={holdsCurrent} className="bg-surface border-border rounded-xl border lg:hidden">
-              <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
-                <span className="min-w-0 flex-1 truncate">{title}</span>
-                {group.items.some((item) => item.badge) ? (
-                  <span className="bg-warning-subtle text-warning-subtle-fg rounded-control px-2 text-xs font-semibold">
-                    {group.items.reduce((sum, item) => sum + (item.badge ?? 0), 0)}
-                  </span>
-                ) : null}
-                <Icon name="chevron-down" size={16} aria-hidden="true" className="text-muted" />
-              </summary>
-              <ul className="flex flex-col gap-0.5 px-1 pb-2">{group.items.map(link)}</ul>
-            </details>
+      {/*
+        A phone: one fold, closed, naming this page — the page's own content starts right under
+        it. Opened, every section with its links, in the same order as the wide screen's column
+        (WCAG 3.2.3). Before, four folded groups and the open one stood above every page, and
+        "คำสั่งซื้อของฉัน" began below the fold (customer walkthrough 2026-10-16).
+      */}
+      <details className="bg-surface border-border rounded-xl border lg:hidden">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-3 text-sm [&::-webkit-details-marker]:hidden">
+          <Icon name="menu" size={18} aria-hidden="true" className="text-muted" />
+          <span className="min-w-0 flex-1 truncate">
+            <span className="font-semibold">{t("menuOpen")}</span>
+            {currentItem ? (
+              <span className="text-muted"> · {t("menuCurrent", { page: labelOf(currentItem) })}</span>
+            ) : null}
+          </span>
+          {badges ? (
+            <span className="bg-warning-subtle text-warning-subtle-fg rounded-control px-2 text-xs font-semibold">
+              {badges}
+              <span className="sr-only"> {t("waiting")}</span>
+            </span>
+          ) : null}
+          <Icon name="chevron-down" size={16} aria-hidden="true" className="text-muted" />
+        </summary>
+        <div className="border-border border-t px-2 pt-2 pb-3">
+          <ul className="flex flex-col gap-0.5">{link(overview)}</ul>
+          {groups.map((group) => (
+            <div key={group.key} className="mt-3">
+              <p className="text-muted px-3 pb-1 text-xs font-semibold">{groupTitle(group)}</p>
+              <ul className="flex flex-col gap-0.5">{group.items.map(link)}</ul>
+            </div>
+          ))}
+          <div className="border-border mt-3 border-t pt-2">
+            <SignOutButton zone="customer" variant="ghost" />
           </div>
-        );
-      })}
-      <div className="border-border mt-4 border-t pt-3">
-        <SignOutButton zone="customer" variant="ghost" />
+        </div>
+      </details>
+
+      {/* Wide screens: the column. */}
+      <div className="hidden lg:block">
+        <ul className="flex flex-col gap-1">{link(overview)}</ul>
+        {groups.map((group) => (
+          <div key={group.key} className="mt-4">
+            <p className="text-muted px-3 pb-1 text-xs font-semibold">{groupTitle(group)}</p>
+            <ul className="flex flex-col gap-0.5">{group.items.map(link)}</ul>
+          </div>
+        ))}
+        <div className="border-border mt-4 border-t pt-3">
+          <SignOutButton zone="customer" variant="ghost" />
+        </div>
       </div>
     </nav>
   );

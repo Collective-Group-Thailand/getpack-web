@@ -281,7 +281,8 @@
     "decided": "Decided",
     "sentTitle": "Sent to your approver ({request})",
     "sent": "We'll let you know once it's decided.",
-    "empty": "Nothing here.",
+    "empty": "No approval requests",
+    "emptyBody": "Company orders above a buyer's limit wait here; we notify you when one arrives",
     "title": "{request} · {amount}",
     "meta": "By {name} on {date} · threshold {threshold}",
     "status": {
@@ -399,7 +400,7 @@
       "paid": "Paid",
       "overdue": "Overdue"
     },
-    "download": "Get download link",
+    "download": "Download",
     "open": "Open",
     "blockedShort": "The company has overdue amounts; you can order and pay in advance as usual",
     "statementMetaShort": "Invoiced {invoiced} · paid {paid} · outstanding {balance}",

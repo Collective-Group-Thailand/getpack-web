@@ -12,6 +12,8 @@ import type { Schemas } from "@/lib/api/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
@@ -98,7 +100,17 @@ export function ApprovalsList({
     }
   }
 
-  if (approvals.length === 0) return <p className="text-muted">{t("empty")}</p>;
+  if (approvals.length === 0) {
+    return (
+      <EmptyState
+        className="mt-6"
+        icon="check"
+        title={t("empty")}
+        description={t("emptyBody")}
+        action={<NextStep to="orders" href="/business" />}
+      />
+    );
+  }
 
   const waiting = approvals.filter((approval) => approval.status === "pending");
   const history = approvals.filter((approval) => approval.status !== "pending");
@@ -117,7 +129,7 @@ export function ApprovalsList({
                   tabIndex={isFocus ? -1 : undefined}
                   aria-labelledby={`approval-${approval.id}`}
                   className={cn(
-                    "border-border bg-surface overflow-hidden rounded-card border border-s-4 border-s-warning outline-none",
+                    "border-border bg-surface rounded-card border-s-warning overflow-hidden border border-s-4 outline-none",
                     isFocus && "ring-primary ring-2",
                   )}
                 >
@@ -215,7 +227,7 @@ export function ApprovalsList({
           <h2 id="approvals-history" className="font-semibold">
             {t("history")}
           </h2>
-          <ul className="border-border bg-surface divide-border divide-y rounded-card border">
+          <ul className="border-border bg-surface divide-border rounded-card divide-y border">
             {history.map((approval) => (
               <li key={approval.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
                 <div className="min-w-0">

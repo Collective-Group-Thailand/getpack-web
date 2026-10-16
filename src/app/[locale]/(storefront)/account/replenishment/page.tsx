@@ -35,7 +35,6 @@ export default async function Page() {
           ))}
         </ul>
       )}
-      <p className="text-muted mt-6 text-xs">{t("remindNote")}</p>
     </div>
   );
 }

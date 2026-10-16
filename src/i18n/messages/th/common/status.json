@@ -1025,5 +1025,18 @@
     "open": "รอติดต่อ",
     "contacted": "ติดต่อแล้ว",
     "dismissed": "พักไว้"
+  },
+  "customer": {
+    "proof": {
+      "pendingCustomer": "รอคุณตรวจแบบตัวอย่าง",
+      "approved": "อนุมัติแบบตัวอย่างแล้ว",
+      "changesRequested": "คุณขอให้แก้ไขแบบตัวอย่าง"
+    },
+    "rfq": {
+      "accepted": "คุณรับราคาแล้ว"
+    },
+    "rfqQuote": {
+      "accepted": "คุณตอบรับแล้ว"
+    }
   }
 }

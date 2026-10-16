@@ -45,7 +45,7 @@
     "submit": "Send for checking",
     "notYet": "Wait for every file to finish uploading",
     "checksIntro": "Every file is checked automatically (size, bleed, resolution, colour mode); what needs fixing shows below.",
-    "templateDownload": "Get the dieline link",
+    "templateDownload": "Download the dieline",
     "templateOpen": "Open the dieline",
     "templateFailed": "Couldn't get the dieline link. Please try again.",
     "hintNoRules": "PDF, AI, PSD, PNG or JPG, up to {count} files at a time",

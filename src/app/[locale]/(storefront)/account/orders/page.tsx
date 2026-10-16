@@ -5,6 +5,7 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { listMyOrders, type OrderView } from "@/features/customer/orders/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { latestDocuments } from "@/features/customer/repeat/api.server";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
@@ -52,7 +53,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
         <h2 id="orders-documents" className="text-lg font-semibold">
           {tHome("documents")}
         </h2>
-        <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-card border">
+        <ul className="border-border bg-surface divide-border rounded-card mt-3 divide-y border">
           {documents.map((doc) => (
             <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
               <div className="flex min-w-0 items-center gap-3">
@@ -116,68 +117,99 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
           }
         />
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
-          {rows.map(({ group, order, actions }) => (
-            <li key={order.id}>
-              <article
-                aria-labelledby={`order-${order.id}`}
-                className="border-border bg-surface hover:border-border-strong flex gap-4 rounded-card border p-4 transition-colors sm:p-5"
-              >
-                <ProductThumb
-                  family={productFamilyOf(order.summary.productTypeCode)}
-                  className="hidden size-18 rounded-xl sm:flex"
-                />
-                <div className="flex min-w-0 flex-1 flex-col gap-3">
-                  <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-                    <div className="min-w-0">
-                      <h2 id={`order-${order.id}`} className="font-semibold">
-                        <Link href={`/account/orders/${order.id}`} className="underline-offset-4 hover:underline">
-                          {productNameOf(locale, order.summary)}
-                        </Link>
-                      </h2>
-                      <p className="text-muted mt-0.5 text-[13px]">
+        <PortalTable
+          className="mt-6"
+          caption={t("table.caption")}
+          columns={[
+            { key: "order", label: t("table.order"), className: "md:min-w-[12rem]" },
+            { key: "placed", label: t("table.placed") },
+            { key: "status", label: t("table.status") },
+            { key: "delivery", label: t("table.delivery"), className: "md:min-w-[7.5rem]" },
+            { key: "total", label: t("table.total"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "actions", label: t("table.actions"), srOnly: true, className: "text-end" },
+          ]}
+          rows={rows.map(({ group, order, actions }) => {
+            const inTransit = order.status !== "completed" && order.status !== "cancelled";
+            return {
+              id: order.id,
+              phoneSubtitle: (
+                <>
+                  <span className="font-mono">{order.orderCode}</span> ·{" "}
+                  {t("table.qty", {
+                    quantity: format.number(order.quantityOrdered),
+                    unit: tCatalog(`stock.units.${order.summary.unit}`),
+                  })}
+                </>
+              ),
+              cells: {
+                order: (
+                  <span className="flex items-start gap-3">
+                    <ProductThumb
+                      family={productFamilyOf(order.summary.productTypeCode)}
+                      className="hidden size-11 shrink-0 rounded-lg lg:flex"
+                    />
+                    <span className="min-w-0">
+                      <Link
+                        href={`/account/orders/${order.id}`}
+                        className="text-fg block font-semibold underline-offset-4 hover:underline"
+                      >
+                        {productNameOf(locale, order.summary)}
+                      </Link>
+                      <span className="text-muted hidden text-xs font-normal md:block">
                         <span className="font-mono">{order.orderCode}</span> ·{" "}
-                        {t("row", {
+                        {t("table.qty", {
                           quantity: format.number(order.quantityOrdered),
                           unit: tCatalog(`stock.units.${order.summary.unit}`),
-                          date: format.date(group.placedAt),
                         })}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5">
-                      <p className="serif text-xl tabular-nums">{format.thb(order.totals.grossAmount)}</p>
-                      <div className="flex flex-wrap justify-end gap-1">
-                        <StatusChip map={ORDER_STATUS} value={order.status} />
-                        <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} />
-                      </div>
-                    </div>
-                  </div>
-                  {order.promisedShipDate && order.status !== "completed" && order.status !== "cancelled" ? (
-                    <p className="text-muted flex items-center gap-2 text-sm">
-                      <Icon name="truck" size={16} aria-hidden="true" />
-                      {t("shipBy", { date: format.date(order.promisedShipDate) })}
-                      {order.estimatedDeliveryDate
-                        ? ` · ${t("arrivesBy", { date: format.date(order.estimatedDeliveryDate) })}`
-                        : null}
-                    </p>
-                  ) : null}
-                  {actions.length > 0 || group.status === "waiting_payment" ? (
-                    <div className="border-border flex flex-wrap items-center gap-2 border-t pt-3">
-                      {group.status === "waiting_payment" ? (
-                        <Button asChild size="sm" iconStart="credit-card">
-                          <Link href={`/account/orders/${order.id}#instalments`}>{t("payDue")}</Link>
-                        </Button>
+                      </span>
+                    </span>
+                  </span>
+                ),
+                placed: format.date(group.placedAt),
+                status: (
+                  <span className="flex flex-wrap justify-end gap-1 md:flex-col md:items-start md:justify-start">
+                    <StatusChip map={ORDER_STATUS} value={order.status} />
+                    <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} />
+                  </span>
+                ),
+                delivery:
+                  inTransit && order.promisedShipDate ? (
+                    <span className="block">
+                      {format.date(order.promisedShipDate)}
+                      {order.estimatedDeliveryDate ? (
+                        <span className="text-muted block text-xs">
+                          {t("arrivesBy", { date: format.date(order.estimatedDeliveryDate) })}
+                        </span>
                       ) : null}
-                      {actions.length > 0 ? (
-                        <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={actions} />
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
+                    </span>
+                  ) : (
+                    <span className="text-muted">{t("table.noDate")}</span>
+                  ),
+                total: <span className="font-semibold">{format.thb(order.totals.grossAmount)}</span>,
+                actions: (
+                  <span className="flex flex-wrap justify-end gap-2 md:justify-end">
+                    {group.status === "waiting_payment" ? (
+                      <Button asChild size="sm" iconStart="credit-card">
+                        <Link href={`/account/orders/${order.id}#instalments`}>{t("payDue")}</Link>
+                      </Button>
+                    ) : null}
+                    {actions.length > 0 ? (
+                      <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={actions} />
+                    ) : null}
+                    {group.status !== "waiting_payment" && actions.length === 0 ? (
+                      <Button asChild size="sm" variant="secondary">
+                        <Link href={`/account/orders/${order.id}`}>
+                          {t("table.view")}
+                          <span className="sr-only"> {order.orderCode}</span>
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </span>
+                ),
+              },
+            };
+          })}
+        />
       )}
 
       {documentsSection}

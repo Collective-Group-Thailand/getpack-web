@@ -131,7 +131,15 @@ export default async function Page() {
             </Callout>
           ) : null}
           {programme.agreement ? (
-            <ApplyForm agreement={programme.agreement} defaultName={me.displayName} />
+            // The form behind one step: most customers come to read the offer, not to fill in a
+            // bank account (customer walkthrough 2026-10-16). A rejected applicant sees it open.
+            <details open={programme.state === "rejected"} className="group">
+              <summary className="bg-primary text-primary-fg rounded-control inline-flex min-h-11 cursor-pointer list-none items-center gap-2 px-5 text-sm font-semibold group-open:hidden [&::-webkit-details-marker]:hidden">
+                {t("applyOpen")}
+              </summary>
+              <p className="text-muted mt-2 text-sm group-open:hidden">{t("applyOpenHint")}</p>
+              <ApplyForm agreement={programme.agreement} defaultName={me.displayName} />
+            </details>
           ) : (
             <Callout tone="info">{t("noAgreement")}</Callout>
           )}

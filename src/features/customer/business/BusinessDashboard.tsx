@@ -160,7 +160,14 @@ export async function BusinessDashboard({
           <div className="grid gap-6 lg:grid-cols-2">
             {(
               [
-                ["byMonth", spend.byMonth.map((row) => ({ label: row.month, amount: row.grossAmount }))],
+                [
+                  "byMonth",
+                  spend.byMonth.map((row) => ({
+                    // `2026-10` as the reader's month: ต.ค. 2569.
+                    label: format.date(`${row.month}-01`, { style: "month" }),
+                    amount: row.grossAmount,
+                  })),
+                ],
                 ["byMember", spend.byMember.map((row) => ({ label: row.user.displayName, amount: row.grossAmount }))],
                 [
                   "byBranch",
