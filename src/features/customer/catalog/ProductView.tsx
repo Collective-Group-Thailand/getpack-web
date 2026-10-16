@@ -208,7 +208,13 @@ export async function ProductView({
               {instant ? (
                 <Link href={configureHref(product.slug)}>{t("product.configure")}</Link>
               ) : (
-                <Link href={rfqHref(category?.code ?? product.productTypeCode)}>{t("product.requestQuote")}</Link>
+                // `?from=` carries the product, so the request names it (breadcrumb, the team's context) and
+                // the customer does not describe the serum box again (customer walkthrough 2026-10-16).
+                <Link
+                  href={`${rfqHref(category?.code ?? product.productTypeCode)}?from=${encodeURIComponent(product.slug)}`}
+                >
+                  {t("product.requestQuote")}
+                </Link>
               )}
             </Button>
             <div className="mt-2.5 grid grid-cols-2 gap-2.5">
@@ -374,7 +380,7 @@ export async function ProductView({
             <li key={other.code}>
               <Link
                 href={`/products?productType=${encodeURIComponent(other.code)}`}
-                className="border-border hover:border-primary inline-flex rounded-control border px-3 py-1.5 text-sm"
+                className="border-border hover:border-primary rounded-control inline-flex border px-3 py-1.5 text-sm"
               >
                 {pick(locale, other.nameTh, other.nameEn)}
               </Link>

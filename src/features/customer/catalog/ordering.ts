@@ -21,6 +21,17 @@ export function orderCategories<T extends Pick<CatalogueCategory, "code" | "type
   return [...tree].sort((a, b) => RANK[categoryGroup(a)] - RANK[categoryGroup(b)]);
 }
 
+/** A card's group: a service type (design, mock-up, plates) last, else by its availability. */
+export function cardGroup(card: Pick<ProductCard, "availability" | "productTypeCode">): CategoryGroup {
+  if (SERVICE.test(card.productTypeCode)) return "service";
+  return card.availability === "rfq" ? "rfq" : "instant";
+}
+
+/** The cards of one page in the buyer's order — instant, quotation, services — stable within a group. */
+export function orderCards<T extends Pick<ProductCard, "availability" | "productTypeCode">>(cards: readonly T[]): T[] {
+  return [...cards].sort((a, b) => RANK[cardGroup(a)] - RANK[cardGroup(b)]);
+}
+
 /** The category page's filter chips (UX audit, `/products/[category]`). */
 export const CARD_FILTERS = ["instant", "rfq", "moq100", "fast", "promo"] as const;
 export type CardFilter = (typeof CARD_FILTERS)[number];

@@ -249,6 +249,14 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
   );
 }
 
+/** "scb_savings" → "ธนาคารไทยพาณิชย์ · ออมทรัพย์"; an unknown code shows nothing rather than the code. */
+function bankLine(accountType: string, label: (key: string) => string | null): string | null {
+  const [bank, ...rest] = accountType.toLowerCase().split(/[_-]/);
+  const bankName = bank ? label(`receiverBanks.${bank}`) : null;
+  const typeName = rest.length > 0 ? label(`receiverAccountTypes.${rest.join("_")}`) : null;
+  return bankName ? (typeName ? `${bankName} · ${typeName}` : bankName) : null;
+}
+
 function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => void }) {
   const t = useTranslations("payment.slip");
   const format = useFormat();
@@ -291,21 +299,29 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
   }
 
   return (
-    <section aria-labelledby="pay-transfer" className="bg-surface border-border flex flex-col gap-4 rounded-2xl border p-6">
+    <section
+      aria-labelledby="pay-transfer"
+      className="bg-surface border-border flex flex-col gap-4 rounded-2xl border p-6"
+    >
       <h2 id="pay-transfer" className="font-semibold">
         {t("title")}
       </h2>
       {payment.receiverAccounts.length > 0 ? (
         <dl className="bg-bg-subtle flex flex-col gap-2 rounded-lg p-3 text-sm">
-          {payment.receiverAccounts.map((account) => (
-            <div key={account.accountNumber}>
-              <dt className="text-muted text-xs">{t("transferTo")}</dt>
-              <dd className="font-medium">
-                <span className="font-mono tabular-nums">{account.accountNumber}</span>
-                {account.accountName ? <span className="block">{account.accountName}</span> : null}
-              </dd>
-            </div>
-          ))}
+          {payment.receiverAccounts.map((account) => {
+            // `scb_savings` → the bank and the account type a customer transfers to.
+            const bank = bankLine(account.accountType, (key) => (t.has(key) ? t(key) : null));
+            return (
+              <div key={account.accountNumber}>
+                <dt className="text-muted text-xs">{t("transferTo")}</dt>
+                <dd className="font-medium">
+                  {bank ? <span className="block">{bank}</span> : null}
+                  <span className="font-mono tabular-nums">{account.accountNumber}</span>
+                  {account.accountName ? <span className="block">{account.accountName}</span> : null}
+                </dd>
+              </div>
+            );
+          })}
         </dl>
       ) : (
         <p className="text-muted text-sm">{t("accountElsewhere")}</p>

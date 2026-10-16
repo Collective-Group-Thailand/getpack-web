@@ -138,6 +138,10 @@
       "body": "Requested on {date} · above your ordering limit, so your company's approver decides first — then you can pay straight away"
     },
     "todo": "What to do now",
+    "todoDone": "This order is complete — reorder or report a problem here",
+    "todoOptional": "What you can do now",
+    "timelineEarlier": "Show earlier entries ({count})",
+    "timelineEarlierHide": "Hide earlier entries",
     "todoPay": "Payment due: {label}",
     "todoPurpose": {
       "production": "Production starts once it is paid",

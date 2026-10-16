@@ -42,7 +42,27 @@
     "incomplete": "Attach the slip and give the amount and time",
     "failed": "We could not send the slip. Please try again.",
     "send": "Send slip",
-    "transferTo": "Transfer to"
+    "transferTo": "Transfer to",
+    "receiverBanks": {
+      "scb": "Siam Commercial Bank",
+      "kbank": "Kasikornbank",
+      "bbl": "Bangkok Bank",
+      "ktb": "Krungthai Bank",
+      "bay": "Bank of Ayudhya (Krungsri)",
+      "ttb": "TMBThanachart Bank",
+      "tmb": "TMBThanachart Bank",
+      "gsb": "Government Savings Bank",
+      "uob": "UOB Thailand",
+      "cimb": "CIMB Thai",
+      "kkp": "Kiatnakin Phatra Bank",
+      "lhb": "Land and Houses Bank",
+      "tisco": "TISCO Bank",
+      "baac": "BAAC"
+    },
+    "receiverAccountTypes": {
+      "savings": "Savings",
+      "current": "Current"
+    }
   },
   "failure": {
     "declined": "Your bank or card issuer declined it. Try another method, or contact your bank.",
@@ -52,5 +72,8 @@
   "payingFor": "Paying for",
   "orderLine": "{quantity} pcs · {code}",
   "groupTotal": "Order total",
-  "afterPaying": "Once paid, our team checks your file at once and sends a proof for you to approve before production"
+  "afterPaying": "Once paid, our team checks your file at once and sends a proof for you to approve before production",
+  "payLater": "Not able to pay right now? The order is saved — come back to it from",
+  "payLaterExpires": "by {date}, or it is cancelled automatically",
+  "payLaterLink": "My orders"
 }

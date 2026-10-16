@@ -132,7 +132,14 @@ export default async function Page({
           <div className="border-border bg-surface rounded-card flex flex-wrap items-center justify-between gap-4 border border-s-4 border-s-[var(--color-accent)] px-5 py-4.5">
             <div className="min-w-0">
               <p className="font-semibold">
-                {payable ? t("detail.todoPay", { label: payable.label }) : t("detail.todo")}
+                {payable
+                  ? t("detail.todoPay", { label: payable.label })
+                  : order.status === "completed"
+                    ? t("detail.todoDone")
+                    : // A delivered order's actions (claim, reorder) are options, not a duty.
+                      receipt.deliveredAt
+                      ? t("detail.todoOptional")
+                      : t("detail.todo")}
               </p>
               {due ? (
                 <p className="text-muted mt-1 text-sm">
@@ -217,10 +224,8 @@ export default async function Page({
             <h2 id="order-timeline" className="text-base font-bold">
               {t("detail.timeline")}
             </h2>
-            <Timeline
-              className="mt-4"
-              label={t("detail.timeline")}
-              items={detail.timeline
+            {(() => {
+              const items = detail.timeline
                 .flatMap((entry) => {
                   // An entry the storefront has no words for is left out, never a bare date (round 2, B13).
                   const title = timelineTitle(t, locale, entry);
@@ -236,8 +241,29 @@ export default async function Page({
                     entry.photoFileIds.length > 0
                       ? t("detail.photos", { count: entry.photoFileIds.length })
                       : undefined,
-                }))}
-            />
+                }));
+              // A finished order has twenty-odd entries: the latest few stay in view, the rest fold
+              // above them (customer walkthrough 2026-10-16).
+              const RECENT = 6;
+              const earlier = items.length > RECENT + 2 ? items.slice(0, items.length - RECENT) : [];
+              const recent = earlier.length > 0 ? items.slice(items.length - RECENT) : items;
+              return (
+                <>
+                  {earlier.length > 0 ? (
+                    <details className="group mt-4">
+                      <summary className="text-primary cursor-pointer list-none text-sm underline-offset-4 hover:underline [&::-webkit-details-marker]:hidden">
+                        <span className="group-open:hidden">
+                          {t("detail.timelineEarlier", { count: earlier.length })}
+                        </span>
+                        <span className="hidden group-open:inline">{t("detail.timelineEarlierHide")}</span>
+                      </summary>
+                      <Timeline className="mt-4" label={t("detail.timeline")} items={earlier} />
+                    </details>
+                  ) : null}
+                  <Timeline className="mt-4" label={t("detail.timeline")} items={recent} />
+                </>
+              );
+            })()}
           </section>
 
           {instalments.length > 0 ? (

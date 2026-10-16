@@ -76,20 +76,25 @@ export default async function Page() {
           <h2 id="credit-aging" className="text-lg font-semibold">
             {t("owedTitle", { date: format.date(receivables.asOf) })}
           </h2>
-          <DescriptionList
-            className="mt-3"
-            items={[
-              { term: t("open"), description: format.thb(receivables.openAmount) },
-              { term: t("aging.current"), description: format.thb(receivables.aging.current) },
-              { term: t("aging.days1to30"), description: format.thb(receivables.aging.d1_30) },
-              { term: t("aging.days31to60"), description: format.thb(receivables.aging.d31_60) },
-              { term: t("aging.days61to90"), description: format.thb(receivables.aging.d61_90) },
-              { term: t("aging.over90"), description: format.thb(receivables.aging.over_90) },
-              ...(receivables.nextDueAt
-                ? [{ term: t("nextDueTerm"), description: format.dateTime(receivables.nextDueAt) }]
-                : []),
-            ]}
-          />
+          {receivables.openAmount === "0.00" ? (
+            // Nothing open: one sentence, not six ages of ฿0.00.
+            <p className="text-muted mt-3">{t("nothingOwed")}</p>
+          ) : (
+            <DescriptionList
+              className="mt-3"
+              items={[
+                { term: t("open"), description: format.thb(receivables.openAmount) },
+                { term: t("aging.current"), description: format.thb(receivables.aging.current) },
+                { term: t("aging.days1to30"), description: format.thb(receivables.aging.d1_30) },
+                { term: t("aging.days31to60"), description: format.thb(receivables.aging.d31_60) },
+                { term: t("aging.days61to90"), description: format.thb(receivables.aging.d61_90) },
+                { term: t("aging.over90"), description: format.thb(receivables.aging.over_90) },
+                ...(receivables.nextDueAt
+                  ? [{ term: t("nextDueTerm"), description: format.dateTime(receivables.nextDueAt) }]
+                  : []),
+              ]}
+            />
+          )}
         </section>
       ) : null}
 

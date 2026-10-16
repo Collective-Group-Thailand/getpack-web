@@ -42,7 +42,8 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
     line2: "",
     signatory: "",
     position: "",
-    phone: initialPhone,
+    // The account's phone is E.164 (`+66812345678`); the field takes the local form.
+    phone: initialPhone.replace(/^\+66/, "0"),
   });
   const [postcode, setPostcode] = useState("");
   const [area, setArea] = useState<ChosenArea | null>(null);
@@ -147,6 +148,10 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
     <div className="flex flex-col gap-2">
       <p className="text-sm font-medium" id={`doc-${docType}`}>
         {t(`documents.${docType}`)}
+        <span className="text-danger ms-1">
+          <span aria-hidden>*</span>
+          <span className="sr-only">{t("required")}</span>
+        </span>
       </p>
       <p className="text-muted text-xs">{t(`documentHints.${docType}`)}</p>
       <FileDropzone
