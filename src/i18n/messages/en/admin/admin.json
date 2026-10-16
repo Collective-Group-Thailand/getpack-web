@@ -70,7 +70,9 @@
     "reviews": "Customer reviews",
     "line": "LINE",
     "privacy": "Privacy and agreements",
-    "shipping_setup": "Shipping set-up"
+    "shipping_setup": "Shipping set-up",
+    "pricing": "Pricing and policies",
+    "advisor": "Structure Advisor"
   },
   "palette": {
     "screens": "Screens",

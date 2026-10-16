@@ -583,5 +583,9 @@
   },
   "structural_requests": {
     "invalid_transition": "This request is at a step where that cannot be done"
+  },
+  "guarantee": {
+    "version_pending": "A version already waits for approval",
+    "version_not_proposed": "This version is no longer waiting for approval"
   }
 }

@@ -14,6 +14,7 @@ export function ProductionNav() {
         { href: "/production/inspections", label: t("inspections") },
         { href: "/production/scorecards", label: t("scorecards"), permission: "partners.read" },
         { href: "/production/tooling", label: t("tooling") },
+        { href: "/production/routes", label: t("routes") },
       ]}
     />
   );

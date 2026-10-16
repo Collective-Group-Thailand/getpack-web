@@ -39,10 +39,11 @@ import {
   useStaffDirectory,
   type InitialPage,
 } from "../console";
+import { ApprovalMatrix } from "./ApprovalMatrix";
 import { CRITICAL_FLAGS, currentStep, decisionBlocker, POLICY_ICONS, type Approval } from "./presentation";
 import { approvalsList, POLICIES } from "./resources";
 
-export type ApprovalsTab = "inbox" | "all" | "delegations";
+export type ApprovalsTab = "inbox" | "all" | "delegations" | "matrix";
 
 export function ApprovalsWorkspace({
   tab,
@@ -59,6 +60,7 @@ export function ApprovalsWorkspace({
     ...(canAct ? [{ value: "inbox" as const, label: t("tabs.inbox"), href: "/approvals" }] : []),
     { value: "all", label: t("tabs.all"), href: canAct ? "/approvals?tab=all" : "/approvals" },
     { value: "delegations", label: t("tabs.delegations"), href: "/approvals?tab=delegations" },
+    { value: "matrix", label: t("tabs.matrix"), href: "/approvals?tab=matrix" },
   ];
   const active = tab === "inbox" && !canAct ? "all" : tab;
 
@@ -83,6 +85,8 @@ export function ApprovalsWorkspace({
         <Inbox initial={initialInbox} />
       ) : active === "all" ? (
         <AllRequests initial={initialAll} />
+      ) : active === "matrix" ? (
+        <ApprovalMatrix />
       ) : (
         <Delegations />
       )}

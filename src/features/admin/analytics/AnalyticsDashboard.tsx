@@ -22,6 +22,7 @@ import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, download, pollUntil, problemMessage, QueryError, Section, useCan } from "../console";
 import { JourneyFunnels } from "./JourneyFunnels";
+import { RollupRuns, StudioFunnel } from "./AnalyticsExtras";
 import { periodOf, previousPeriod, type Period, type Range } from "./period";
 
 // Recharts is heavy: it loads with this page only, after the figures it draws.
@@ -328,6 +329,8 @@ export function AnalyticsDashboard() {
       </div>
 
       <JourneyFunnels period={period} />
+
+      <StudioFunnel period={period} />
 
       <Section
         title={t("demand.title")}
@@ -658,6 +661,7 @@ export function AnalyticsDashboard() {
           density="compact"
         />
       </Section>
+      <RollupRuns period={period} />
     </div>
   );
 }

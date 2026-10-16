@@ -1020,5 +1020,10 @@
     "qualified": "Qualified",
     "expired": "Expired",
     "ended": "Ended"
+  },
+  "reorderSuggestion": {
+    "open": "Open",
+    "contacted": "Contacted",
+    "dismissed": "Set aside"
   }
 }

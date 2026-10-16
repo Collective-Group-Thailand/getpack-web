@@ -140,7 +140,7 @@ export function Dashboard({ initial }: { initial: Dashboard | null }) {
                   <Link
                     href={browserPath(queue.path)}
                     className={cn(
-                      "group border-border bg-surface rounded-card focus-visible:ring-focus-ring flex h-full flex-col gap-2 border border-s-4 p-5 transition-shadow outline-none hover:shadow-lift focus-visible:ring-2",
+                      "group border-border bg-surface rounded-card focus-visible:ring-focus-ring hover:shadow-lift flex h-full flex-col gap-2 border border-s-4 p-5 transition-shadow outline-none focus-visible:ring-2",
                       late ? "border-s-danger" : soon(queue) ? "border-s-warning" : "border-s-primary",
                     )}
                   >
@@ -152,7 +152,11 @@ export function Dashboard({ initial }: { initial: Dashboard | null }) {
                     <span
                       className={cn(
                         "text-sm",
-                        late ? "text-danger-subtle-fg font-medium" : soon(queue) ? "text-warning-subtle-fg" : "text-muted",
+                        late
+                          ? "text-danger-subtle-fg font-medium"
+                          : soon(queue)
+                            ? "text-warning-subtle-fg"
+                            : "text-muted",
                       )}
                     >
                       {late ? (
@@ -191,7 +195,9 @@ export function Dashboard({ initial }: { initial: Dashboard | null }) {
                     <span
                       className={cn(
                         "tabular-nums",
-                        queue.overdueCount > 0 ? "text-danger-subtle-fg font-semibold" : queue.count === 0 && "text-muted",
+                        queue.overdueCount > 0
+                          ? "text-danger-subtle-fg font-semibold"
+                          : queue.count === 0 && "text-muted",
                       )}
                     >
                       {format.number(queue.count)}

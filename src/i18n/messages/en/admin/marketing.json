@@ -370,7 +370,11 @@
     "filterStatus": "Status",
     "allStatuses": "All statuses",
     "disableReason": "Why the code is disabled",
-    "disableReasonHint": "E.g. the code leaked; recorded in the audit log"
+    "disableReasonHint": "E.g. the code leaked; recorded in the audit log",
+    "exportAll": "Export all codes (CSV)",
+    "exportBatch": "Export this batch (CSV)",
+    "exported": "{count} codes exported — the link works for 5 minutes",
+    "exportFailed": "Could not export"
   },
   "referrals": {
     "title": "Referrals",
@@ -398,7 +402,23 @@
     "noOrder": "No order yet",
     "points": "{points} pts",
     "review": "Review",
-    "reviewFor": "Review {code}"
+    "reviewFor": "Review {code}",
+    "details": "Details",
+    "detail": {
+      "title": "Referral {code}",
+      "referrer": "Referrer",
+      "referee": "Referred friend",
+      "status": "Status",
+      "reward": "Reward",
+      "points": "{points} points",
+      "attributedAt": "Attributed",
+      "qualifiedAt": "Qualified",
+      "rewardedAt": "Rewarded",
+      "decidedAt": "Decided",
+      "firstOrder": "First order",
+      "claimWindow": "Claim window ends",
+      "flags": "Fraud flags"
+    }
   },
   "loyalty": {
     "title": "Loyalty and referral rules",

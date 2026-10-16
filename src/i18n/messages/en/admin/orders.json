@@ -377,7 +377,10 @@
       "start_production": "Start production",
       "cancel": "Cancel order",
       "send_payment_reminder": "Send payment reminder",
-      "record_slip": "Upload slip for customer"
+      "record_slip": "Upload slip for customer",
+      "reprice": "Edit & re-price",
+      "add_mockup": "Add a mockup",
+      "submit_artwork": "Submit artwork"
     },
     "startProduction": {
       "title": "Start production manually?",
@@ -590,5 +593,195 @@
     "link": "Samples",
     "postcode": "Delivery postcode",
     "postcodeHint": "Freight is priced to it on the customer rate card"
+  },
+  "progress": {
+    "title": "Promised vs actual",
+    "onTime": "Shipped on time",
+    "late": "Shipped later than promised",
+    "promised": "Promised to ship {date}",
+    "noPromise": "No ship date promised yet",
+    "estimatedDelivery": "expected at the customer {date}",
+    "facts": {
+      "artworkApprovedAt": "Artwork approved",
+      "paidForProductionAt": "Paid for production",
+      "productionStartedAt": "Production started",
+      "shippedAt": "Shipped",
+      "deliveredAt": "Delivered",
+      "completedAt": "Completed"
+    },
+    "notYet": "Not yet",
+    "done": "done {at}",
+    "due": "due {at}"
+  },
+  "specSheet": {
+    "title": "Packaging spec sheet",
+    "download": {
+      "th": "Thai",
+      "en": "English"
+    },
+    "body": "A PDF from the order's frozen data: sizes, material, printing, tolerances, packing, the approved artwork and a QR to the order.",
+    "notReady": "Available once the artwork or the sample is approved.",
+    "failed": "The spec sheet is not available yet"
+  },
+  "openClaim": {
+    "open": "Open a claim for the customer",
+    "hint": "Did the customer report a problem by phone or LINE? Open the claim for them; the claim window does not apply.",
+    "title": "Open a claim on {code}",
+    "body": "Record a claim the customer made by phone or LINE, with photos if you have them.",
+    "submit": "Open claim",
+    "needDescription": "Describe the problem (5 characters or more)",
+    "badQuantity": "The quantity is a whole number",
+    "badAmount": "The amount is a number",
+    "done": "Claim {no} opened",
+    "type": "Problem",
+    "types": {
+      "damaged": "Damaged",
+      "wrong_spec": "Wrong spec",
+      "print_defect": "Print defect",
+      "quantity_short": "Quantity short",
+      "late": "Late",
+      "other": "Other"
+    },
+    "resolution": "Customer asks for",
+    "resolutions": {
+      "reprint": "Reprint",
+      "partial_refund": "Partial refund",
+      "full_refund": "Full refund",
+      "credit": "Credit for next time",
+      "goodwill": "Goodwill"
+    },
+    "quantity": "Quantity affected",
+    "quantityHint": "Optional",
+    "amount": "Amount claimed",
+    "amountHint": "Optional",
+    "baht": "THB",
+    "shipment": "Shipment",
+    "anyShipment": "Not specified",
+    "description": "Description",
+    "descriptionHint": "What the customer said: which pieces, how many",
+    "productPhotos": "Product photos",
+    "cartonPhotos": "Carton photos",
+    "drop": "Drop photos here",
+    "photosChosen": "{count} photos chosen",
+    "browse": "Choose photos",
+    "tooLarge": "{name} is over 20 MB",
+    "wrongType": "{name} is not an image",
+    "notDelivered": "A claim can be opened once the goods are delivered"
+  },
+  "reprice": {
+    "title": "Edit & re-price {code}",
+    "body": "Was {amount}. Save the change as a quotation of the same customer and product type first, then choose it here; shipping is re-priced per destination and unpaid instalments rebalance.",
+    "submit": "Use the new price",
+    "needQuote": "Choose a quotation and quantity",
+    "needReason": "Give a reason (3 characters or more)",
+    "done": "Order re-priced",
+    "noCustomer": "This order's customer was not found",
+    "noQuotes": "No quotation to use yet",
+    "noQuotesBody": "Price the change in the CS calculators and save it for this customer, then come back.",
+    "quote": "Quotation",
+    "choose": "Choose…",
+    "noCode": "no number yet",
+    "option": "Quantity",
+    "optionLabel": "{quantity} pcs · {amount}",
+    "reason": "Reason",
+    "reasonHint": "The customer and the audit log see why the price changed"
+  },
+  "groupActions": {
+    "restate": "Order group {code} of {customer}, {amount}.",
+    "failed": "Could not do that",
+    "cancel": {
+      "open": "Cancel the group",
+      "title": "Cancel the order group",
+      "body": "Every order not yet in production is cancelled; a paid group raises the refund and credit note.",
+      "confirm": "Cancel group",
+      "note": "Note (optional)",
+      "chooseReason": "Choose a cancellation reason",
+      "reasonCode": "Reason",
+      "done": "Order group cancelled"
+    },
+    "move": {
+      "open": "Move to another customer",
+      "title": "Move the group to another customer",
+      "body": "Only while nothing is paid. The tax-invoice buyer is cleared (choose it again); delivery addresses stay as they were.",
+      "confirm": "Move",
+      "choose": "Choose the customer",
+      "customer": "Customer",
+      "done": "Moved to {customer}"
+    },
+    "schedule": {
+      "open": "Change payment schedule",
+      "title": "Change the payment schedule",
+      "body": "Only while nothing is paid. Open instalments are cancelled and the chosen template's written.",
+      "confirm": "Change schedule",
+      "choose": "Choose a template",
+      "template": "Template",
+      "reason": "Reason",
+      "done": "Payment schedule changed"
+    }
+  },
+  "nav": {
+    "label": "Order sections",
+    "orders": "Orders",
+    "reorders": "Reorder suggestions",
+    "callOffs": "Call-off agreements"
+  },
+  "callOffs": {
+    "title": "Call-off agreements",
+    "description": "A customer locks a unit price for a committed quantity and releases it as orders until expiry; what is not released lapses without charge.",
+    "columns": {
+      "quote": "Quotation",
+      "status": "Status",
+      "factory": "Factory",
+      "quantity": "Released / committed",
+      "price": "Unit price",
+      "expires": "Expires",
+      "releases": "Releases"
+    },
+    "noCode": "no number yet",
+    "quantities": "{released} / {committed} {unit}",
+    "buy": "buy {price}",
+    "releaseNo": "Release {n}",
+    "noReleases": "None yet",
+    "statusesLabel": "Agreement status",
+    "all": "All",
+    "search": "Search agreements",
+    "searchPlaceholder": "Quotation number",
+    "empty": "No call-off agreements yet",
+    "emptyHint": "Customers ask for one from a saved quotation."
+  },
+  "reorders": {
+    "title": "Reorder suggestions",
+    "description": "Customers who order one specification again and again: when they will likely need it next, and when to call before that.",
+    "columns": {
+      "who": "Customer",
+      "status": "Status",
+      "suggestedOn": "Contact by",
+      "nextNeed": "Likely needed",
+      "quantity": "Suggested quantity",
+      "lastOrder": "Last order",
+      "contact": "Contact",
+      "actions": "Actions"
+    },
+    "pattern": "{orders} orders · every {days} days · {lead}-day lead time",
+    "contactedBy": "{name} called {at}",
+    "reminded": "Customer reminded {at}",
+    "contact": "Record contact",
+    "dismiss": "Set aside",
+    "statusesLabel": "Status",
+    "openTab": "To contact",
+    "search": "Search",
+    "searchPlaceholder": "Customer name or order code",
+    "dueBy": "Contact by",
+    "empty": "No customers to contact",
+    "emptyHint": "Recomputed nightly from repeated orders of one specification.",
+    "contactTitle": "Record contact with {who}",
+    "contactBody": "Suggested {quantity} pcs, likely needed {date}.",
+    "note": "What was agreed",
+    "noteHint": "e.g. ordering next week, or still has stock",
+    "contacted": "Contact recorded",
+    "dismissTitle": "Set {who} aside",
+    "dismissBody": "Hidden from the queue until the customer orders this specification again.",
+    "dismissed": "Set aside",
+    "failed": "Could not do that"
   }
 }

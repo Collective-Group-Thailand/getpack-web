@@ -59,7 +59,7 @@ export const paymentsList = defineList<Payment>({
     (await contract.GET("/v1/admin/payments", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.referenceCode,
-  defaults: { filterKeys: ["status", "method"], sort: "createdAt", order: "desc" },
+  defaults: { filterKeys: ["status", "method", "unidentified"], sort: "createdAt", order: "desc" },
 });
 
 export const documentsList = defineList<CustomerDocument>({

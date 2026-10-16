@@ -1020,5 +1020,10 @@
     "qualified": "ผ่านเงื่อนไข",
     "expired": "หมดเวลา",
     "ended": "สิ้นสุดแล้ว"
+  },
+  "reorderSuggestion": {
+    "open": "รอติดต่อ",
+    "contacted": "ติดต่อแล้ว",
+    "dismissed": "พักไว้"
   }
 }

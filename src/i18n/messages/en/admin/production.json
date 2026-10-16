@@ -4,7 +4,8 @@
     "board": "Production board",
     "inspections": "QC inspections",
     "scorecards": "Scorecards",
-    "tooling": "Tooling"
+    "tooling": "Tooling",
+    "routes": "Milestone routes"
   },
   "board": {
     "title": "Production board",
@@ -209,5 +210,75 @@
     "all": "All",
     "empty": "No tooling yet",
     "emptyHint": "Items appear once an order that paid for plates or a die block is delivered."
+  },
+  "routes": {
+    "title": "Milestone routes",
+    "description": "The steps a factory reports on each job, per product type and variant",
+    "body": "Jobs already released keep their version; a new one applies to jobs released from its date.",
+    "create": "New route",
+    "empty": "No milestone routes yet",
+    "current": "Version {no} from {date} · {reason}",
+    "noneInForce": "No version in force",
+    "publish": "Publish a version",
+    "later": "Version {no} from {date} · {steps} steps",
+    "steps": "Steps",
+    "step": "Step",
+    "customerSees": "Customer sees",
+    "evidence": "Evidence",
+    "share": "Share of time",
+    "tracksQuantity": "Counts quantity",
+    "hidden": "Not shown",
+    "even": "Even",
+    "evidenceKinds": {
+      "none": "None",
+      "photo": "Photo",
+      "qc_form": "QC form",
+      "photo_and_qc_form": "Photo and QC form"
+    },
+    "createDialog": {
+      "title": "New milestone route",
+      "body": "One route per product type and variant; publish its first version with steps next.",
+      "submit": "Create route",
+      "needType": "Choose a product type",
+      "needVariant": "The variant is lower-case letters, digits or _, starting with a letter",
+      "needName": "Name the route",
+      "done": "Route created — publish its first version",
+      "productType": "Product type",
+      "choose": "Choose…",
+      "variant": "Variant",
+      "variantHint": "e.g. offset or digital",
+      "name": "Name"
+    },
+    "publishDialog": {
+      "title": "New version of {name}",
+      "body": "Enter every step in order; a step with a customer label shows on the order tracker.",
+      "submit": "Publish",
+      "errors": {
+        "none": "Add at least one step.",
+        "key": "Step {n}'s key is lower-case letters, digits or _, and unique.",
+        "name": "Name step {n} in Thai and English.",
+        "share": "Step {n}'s share is a number.",
+        "backDated": "The effective date cannot be in the past.",
+        "reason": "Give a reason (3 characters or more)."
+      },
+      "done": "Version published",
+      "key": "Step {n} key",
+      "nameTh": "Step {n} name (Thai)",
+      "nameEn": "Step {n} name (English)",
+      "up": "Move step {n} up",
+      "down": "Move step {n} down",
+      "remove": "Remove step {n}",
+      "customerTh": "Step {n} customer label (Thai)",
+      "customerEn": "Step {n} customer label (English)",
+      "customerHint": "Leave empty to hide it from customers",
+      "evidence": "Step {n} evidence",
+      "share": "Step {n} share of time",
+      "shareHint": "Leave empty to spread evenly",
+      "tracksQuantity": "Step {n} counts pieces",
+      "add": "Add step",
+      "effectiveFrom": "Effective from",
+      "effectiveHint": "Today means a minute from now",
+      "reason": "Reason"
+    }
   }
 }

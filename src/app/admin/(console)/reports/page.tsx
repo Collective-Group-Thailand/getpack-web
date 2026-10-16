@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
 import { ReportsKpis } from "@/features/admin/reports/ReportsKpis";
-import { ReportsIndex } from "@/features/admin/reports";
+import { ReportsIndex, ReportsNav } from "@/features/admin/reports";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,6 +15,7 @@ export default async function ReportsPage() {
   return (
     <ConsolePage>
       <PageHeader title={t("title")} description={t("description")} />
+      <ReportsNav />
       <ReportsKpis />
       <ReportsIndex />
     </ConsolePage>

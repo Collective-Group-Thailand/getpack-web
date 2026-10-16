@@ -276,7 +276,9 @@
     "openApproval": "Open the approval",
     "refreshMemo": "Check again",
     "discountHintLimit": "CS may give up to {pct} on its own; checked when the order is placed",
-    "quoteNoCode": "Quotation (no number yet)"
+    "quoteNoCode": "Quotation (no number yet)",
+    "preview": "Check the total",
+    "previewFailed": "Could not check the total"
   },
   "address": {
     "title": "Add a delivery address",
@@ -358,7 +360,12 @@
     "empty": "No discount memos",
     "mine": "Mine",
     "emptyBody": "A discount memo is raised while CS builds an order for a customer, at its discount step; it then goes to the approver for that discount band",
-    "create": "Raise a discount memo"
+    "create": "Raise a discount memo",
+    "withdraw": "Withdraw",
+    "withdrawTitle": "Withdraw the discount memo",
+    "withdrawBody": "Withdraw the {pct} discount request for {customer}; its approval closes.",
+    "withdrawn": "Memo withdrawn",
+    "withdrawFailed": "Could not withdraw the memo"
   },
   "inbox": {
     "title": "Customer inbox",
@@ -411,6 +418,109 @@
     "replyChannel": "Replies go to",
     "canned": "Canned response",
     "assignToMe": "Take this",
-    "close": "Close conversation"
+    "close": "Close conversation",
+    "stats": {
+      "label": "Response times",
+      "period": "Period",
+      "periods": {
+        "1": "Today",
+        "7": "7 days",
+        "30": "30 days"
+      },
+      "opened": "Opened",
+      "closed": "{count} closed",
+      "firstResponse": "First response (median)",
+      "p90": "90% within {value}",
+      "withinTarget": "Answered on time",
+      "answered": "of {count}",
+      "resolution": "Resolution (median)",
+      "overdue": "Overdue now",
+      "minutes": "{minutes} min"
+    }
+  },
+  "quoteActions": {
+    "share": "Share with the customer",
+    "shareAgain": "New link",
+    "unshare": "Stop sharing",
+    "reprice": "Re-price",
+    "failed": "Could not do that",
+    "shareTitle": "Share the quotation",
+    "shareBody": "Issues the QT number and a link the customer can open until {until}.",
+    "shareAgainBody": "Makes a new link; the previous one stops working at once.",
+    "unshareTitle": "Stop sharing the quotation",
+    "unshareBody": "The link the customer has stops working at once; the quotation stays saved.",
+    "unshared": "No longer shared",
+    "repriceTitle": "Re-price the quotation",
+    "repriceBody": "A new quotation at today's prices for the same customer; {code} becomes superseded.",
+    "repriced": "New quotation created",
+    "linkTitle": "Quotation link",
+    "linkBody": "Send this link to the customer; it works until {until}.",
+    "close": "Close",
+    "copy": "Copy link",
+    "copied": "Copied"
+  },
+  "levers": {
+    "title": "Levers the customer saw",
+    "target": "Customer's target {price} per unit",
+    "meetsTarget": "Meets target",
+    "notAsked": "The customer has not asked for them",
+    "none": "Nothing cheaper",
+    "notInstant": "This product has no instant price, so no levers",
+    "kinds": {
+      "quantity": "More quantity",
+      "material": "Another material",
+      "back_print": "No back print",
+      "special_finish": "No special finish",
+      "coating": "No coating",
+      "assembly": "No assembly"
+    },
+    "saving": "saves up to {pct}",
+    "taken": "Taken",
+    "computedAt": "Computed {at}"
+  },
+  "checkout": {
+    "codes": {
+      "label": "Coupon code",
+      "hint": "Checked at once; the discount shows in the total check",
+      "apply": "Apply",
+      "failed": "Could not apply the code",
+      "validated": "Valid",
+      "rejected": "Not valid",
+      "remove": "Remove code {code}"
+    },
+    "reprice": {
+      "reprice": "Re-price",
+      "repriced": "Re-priced — accept the new price",
+      "failed": "Could not do that",
+      "difference": "Was {from} → now {to}",
+      "accept": "Accept new price",
+      "accepted": "New price taken"
+    },
+    "schedule": {
+      "label": "Payment schedule",
+      "hint": "Let the system choose, or pick another template (with permission)",
+      "auto": "System's choice",
+      "reason": "Why change the schedule"
+    },
+    "preview": {
+      "title": "What checkout charges",
+      "net": "Product and shipping (before VAT)",
+      "shipping": "of which shipping",
+      "discount": "Discount",
+      "vat": "VAT",
+      "gross": "Total",
+      "wht": "Withholding",
+      "cash": "Customer transfers",
+      "discountLine": "{source}: {amount}",
+      "capped": "capped by {amount}",
+      "companyApproval": "This order needs the company's approver first",
+      "notices": {
+        "promotion_applied": "Promotion {name}: −{amount}",
+        "promotion_capped": "The {code} discount is capped to keep the margin",
+        "promotion_rejected": "Code {code} does not apply: {reason}",
+        "promotion_payment_method_required": "This promotion needs payment by {methods}"
+      },
+      "minus": "−{amount}"
+    }
   }
 }

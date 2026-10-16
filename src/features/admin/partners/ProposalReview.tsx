@@ -25,6 +25,7 @@ import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
 import { ConfirmAction, problemMessage, QueryError, StatusChip, useCan, useProductTypes } from "../console";
+import { ProposalEvidence, RecomputeSuggestions } from "./ProposalEvidence";
 import { adminBrowserApis } from "../console/api";
 
 type Proposal = Schemas["PriceProposalDto"];
@@ -371,14 +372,19 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
         </Card>
       ) : null}
 
+      <ProposalEvidence proposalId={proposalId} />
+
       <Card padding="lg">
         <CardHeader className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle>{t("lines")}</CardTitle>
-          {editable ? (
-            <Button size="sm" variant="secondary" iconStart="plus" onClick={() => setEditing(true)}>
-              {t("addLine")}
-            </Button>
-          ) : null}
+          <div className="flex flex-wrap gap-2">
+            <RecomputeSuggestions proposalId={proposalId} />
+            {editable ? (
+              <Button size="sm" variant="secondary" iconStart="plus" onClick={() => setEditing(true)}>
+                {t("addLine")}
+              </Button>
+            ) : null}
+          </div>
         </CardHeader>
         {!canSuggest ? <p className="text-muted mb-3 text-xs">{t("noSuggestions")}</p> : null}
         {item.lines.length === 0 ? <p className="text-muted text-sm">{t("noLines")}</p> : null}

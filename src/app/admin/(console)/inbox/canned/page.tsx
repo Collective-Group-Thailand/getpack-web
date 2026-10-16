@@ -18,7 +18,10 @@ export default async function Page() {
     <ConsolePage width="full" className="max-w-[96rem]">
       <PageHeader
         breadcrumbs={
-          <Breadcrumbs label={tContent("breadcrumb")} items={[{ label: t("inbox"), href: "/inbox" }, { label: t("title") }]} />
+          <Breadcrumbs
+            label={tContent("breadcrumb")}
+            items={[{ label: t("inbox"), href: "/inbox" }, { label: t("title") }]}
+          />
         }
         title={t("title")}
         description={t("description")}

@@ -7,6 +7,7 @@ import { InboxList } from "@/features/admin/inbox/InboxList";
 import { inboxList } from "@/features/admin/inbox/resources";
 import Link from "next/link";
 
+import { InboxStats } from "@/features/admin/inbox/InboxStats";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { Button } from "@/ui/components/Button";
 
@@ -35,6 +36,7 @@ export default async function InboxPage({ searchParams }: Props) {
           </Button>
         }
       />
+      <InboxStats />
       <InboxList initial={initial} />
     </ConsolePage>
   );

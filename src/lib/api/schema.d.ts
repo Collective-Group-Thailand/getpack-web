@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.65.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.66.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -7059,7 +7059,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Get one of a customer's addresses
+         * @description With its `ETag`, which `admin.customers.updateAddress` needs as `If-Match` (D-142, D-424).
+         *
+         *     Implements: D-142, D-174, D-092.
+         */
+        get: operations["admin.customers.getAddress"];
         put?: never;
         post?: never;
         delete?: never;
@@ -134810,6 +134816,124 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customers.getAddress": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                addressId: string;
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Address */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c0002",
+                     *       "isDefault": true,
+                     *       "kind": "delivery",
+                     *       "label": "สำนักงาน",
+                     *       "lat": 13.7563,
+                     *       "line1": "99/9 ถนนตัวอย่าง",
+                     *       "line2": "อาคารทดสอบ ชั้น 9",
+                     *       "lng": 100.5018,
+                     *       "phone": "+66810001234",
+                     *       "postcode": "10110",
+                     *       "province": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c0004",
+                     *         "nameEn": "Bangkok",
+                     *         "nameTh": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recipientName": "สมชาย ทดสอบ",
+                     *       "subdistrict": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c0005",
+                     *         "nameEn": "Sample",
+                     *         "nameTh": "แขวงตัวอย่าง"
+                     *       },
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AddressDto"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */

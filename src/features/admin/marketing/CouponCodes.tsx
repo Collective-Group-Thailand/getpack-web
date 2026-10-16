@@ -22,6 +22,7 @@ import { toast } from "@/ui/components/Toast";
 import {
   adminBrowserApis,
   ConfirmAction,
+  download,
   FormDialog,
   FormError,
   problemMessage,
@@ -79,6 +80,24 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
         })
       ).data!,
   });
+  const canExport = useCan("promotions.manage");
+  const [exporting, setExporting] = useState(false);
+  // Codes are bearer values: the export is audited and served by a 5-minute signed URL (D-053, D-033).
+  const exportCodes = async () => {
+    setExporting(true);
+    try {
+      const { data } = await adminBrowserApis().contract.POST("/v1/admin/promotions/{promotionId}/coupons/exports", {
+        params: { path: { promotionId: promotion.id } },
+        body: batchId ? { batchId } : {},
+      });
+      download(data!.url);
+      toast.success(t("exported", { count: data!.codes }));
+    } catch (error) {
+      toast.error(problemMessage(error, t("exportFailed")));
+    } finally {
+      setExporting(false);
+    }
+  };
   const batchLabel = (id: string | null) => {
     const batch = (batches.data ?? []).find((item) => item.id === id);
     return batch ? t("batchLabel", { kind: t(`kinds.${batch.kind}`), date: format.date(batch.generatedAt) }) : "–";
@@ -132,22 +151,35 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
       title={t("title")}
       description={t("note")}
       actions={
-        canGenerate ? (
-          <Button
-            size="sm"
-            variant="secondary"
-            iconStart="plus"
-            onClick={() => {
-              setKind(batches.data?.length ? "bulk_unique" : "single");
-              setCode("");
-              setCount("100");
-              setPrefix("");
-              setGenerating({ key: newIdempotencyKey() });
-            }}
-          >
-            {t("generate")}
-          </Button>
-        ) : null
+        <div className="flex flex-wrap gap-2">
+          {canExport && (batches.data ?? []).length > 0 ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              iconStart="download"
+              loading={exporting}
+              onClick={() => void exportCodes()}
+            >
+              {batchId ? t("exportBatch") : t("exportAll")}
+            </Button>
+          ) : null}
+          {canGenerate ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              iconStart="plus"
+              onClick={() => {
+                setKind(batches.data?.length ? "bulk_unique" : "single");
+                setCode("");
+                setCount("100");
+                setPrefix("");
+                setGenerating({ key: newIdempotencyKey() });
+              }}
+            >
+              {t("generate")}
+            </Button>
+          ) : null}
+        </div>
       }
     >
       {(batches.data ?? []).length > 0 ? (

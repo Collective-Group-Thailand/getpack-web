@@ -40,6 +40,7 @@ import {
   useActor,
   useCan,
 } from "../console";
+import { CompanyMemoButton } from "./CompanyMemo";
 import { PartyOrders } from "../orders";
 import { companyActions, type CompanyAction } from "./actions";
 import type {
@@ -230,7 +231,11 @@ function Overview({ company }: { company: Company }) {
   const { receivables, discount } = company;
   return (
     <div className="flex flex-col gap-4">
-      <Section title={t("receivables")} description={t("receivablesNote")}>
+      <Section
+        title={t("receivables")}
+        description={t("receivablesNote")}
+        actions={<CompanyMemoButton companyId={company.id} companyName={company.tradeName ?? company.legalName} />}
+      >
         <dl className="grid gap-3 sm:grid-cols-4">
           <div className="rounded-md border p-3">
             <dt className="text-muted text-xs">{t("open")}</dt>

@@ -240,5 +240,22 @@
     "pdf": "PDF",
     "pdfOf": "Download the {month} statement PDF",
     "pdfFailed": "Could not open the PDF"
+  },
+  "memo": {
+    "open": "Request a company discount",
+    "title": "Company discount",
+    "body": "Once approved through the approval matrix it applies to every order of {company}, never below the margin floor.",
+    "submit": "Send for approval",
+    "badPct": "A percentage above 0 and below 100",
+    "needReason": "Give a reason (5 characters or more)",
+    "done": "Discount requested — follow it in discount memos",
+    "pct": "Discount",
+    "reason": "Reason",
+    "reasonHint": "e.g. yearly volume or a competitor's price",
+    "chosen": "{count} files attached",
+    "drop": "Attach evidence (optional)",
+    "browse": "Choose files",
+    "tooLarge": "{name} is over 20 MB",
+    "wrongType": "{name} must be an image or a PDF"
   }
 }

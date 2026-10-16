@@ -16,6 +16,7 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
 
 import { QueryError, Section } from "../console";
+import { JourneyExport } from "./AnalyticsExtras";
 import type { Period } from "./period";
 
 const Chart = dynamic(() => import("@/ui/components/Chart").then((module) => module.Chart), {
@@ -57,15 +58,18 @@ export function JourneyFunnels({ period }: { period: Period | null }) {
       title={t("title")}
       description={t("note")}
       actions={
-        <SearchableSelect
-          aria-label={t("journey")}
-          value={journey}
-          onValueChange={(value) => setJourney(value as Journey)}
-          options={(data?.journeys ?? []).map((entry) => ({
-            value: entry.journey,
-            label: `${entry.task} · ${journeyName(entry.journey)}`,
-          }))}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <JourneyExport period={period} />
+          <SearchableSelect
+            aria-label={t("journey")}
+            value={journey}
+            onValueChange={(value) => setJourney(value as Journey)}
+            options={(data?.journeys ?? []).map((entry) => ({
+              value: entry.journey,
+              label: `${entry.task} · ${journeyName(entry.journey)}`,
+            }))}
+          />
+        </div>
       }
     >
       {report.isError ? <QueryError error={report.error} onRetry={() => void report.refetch()} /> : null}

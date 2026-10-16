@@ -166,5 +166,41 @@
     },
     "when": "Recorded",
     "outdatedVersion": "Version {no} is newer"
+  },
+  "editAddress": {
+    "open": "Edit",
+    "title": "Edit address {label}",
+    "body": "Orders already placed keep the address as it was.",
+    "submit": "Save",
+    "incomplete": "Fill in the name, recipient and address",
+    "badPhone": "A phone number starts with 0 and has 9–10 digits",
+    "badPostcode": "Check the postcode and choose the subdistrict",
+    "done": "Address saved",
+    "label": "Address name",
+    "recipient": "Recipient",
+    "phone": "Phone",
+    "postcode": "Postcode",
+    "line1": "Address",
+    "line2": "Address (cont.)",
+    "subdistrict": "Subdistrict / district / province",
+    "choose": "Choose…",
+    "isDefault": "Make it the default"
+  },
+  "adjustPoints": {
+    "open": "Adjust points",
+    "title": "Adjust points",
+    "body": "{available} points available now. The adjustment is recorded as a finance action.",
+    "submit": "Adjust",
+    "badPoints": "Give a whole number of points above 0",
+    "tooMany": "At most {available} points can be removed",
+    "needReason": "Give a reason (5 characters or more)",
+    "added": "{points} points added",
+    "removed": "{points} points removed",
+    "direction": "Adjustment",
+    "add": "Add points",
+    "remove": "Remove points",
+    "points": "Points",
+    "reason": "Reason",
+    "reasonHint": "The customer sees this in their points history"
   }
 }
