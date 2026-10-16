@@ -1,7 +1,7 @@
 /**
  * A style family's flat outline, small (Phase 4 template cards: 64 × 46 in its white tile, or large
  * in a card's well when there is no photo). Cut lines solid, folds dashed, in the print-mark
- * colours the studio uses — Packio's own drawings, decorative (`aria-hidden`).
+ * colours the studio uses — getpack's own drawings, decorative (`aria-hidden`).
  */
 const CUT = "var(--color-print-cut)";
 const FOLD = "var(--color-print-fold)";

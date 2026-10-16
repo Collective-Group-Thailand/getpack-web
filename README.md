@@ -1,17 +1,17 @@
-# packio-web
+# getpack-web
 
-**Packio — Your Packaging Production Partner** · operated by Collective Group (Thailand)
+**getpack — Your Packaging Production Partner** · operated by Collective Group (Thailand)
 
-The single Next.js 16 application behind Packio. One codebase and one deployment serve
+The single Next.js 16 application behind getpack. One codebase and one deployment serve
 three zones, told apart by **host**, each with its own root layout, cookies and CSP:
 
 | Zone     | Host           | Local dev                | Audience                                                         |
 | -------- | -------------- | ------------------------ | ---------------------------------------------------------------- |
 | customer | `PUBLIC_HOST`  | `localhost:3000`         | storefront, instant quote, box designer, cart, account, tracking |
-| admin    | `ADMIN_HOST`   | `admin.localhost:3000`   | back-office for every Packio staff role                          |
+| admin    | `ADMIN_HOST`   | `admin.localhost:3000`   | back-office for every getpack staff role                         |
 | partner  | `PARTNER_HOST` | `partner.localhost:3000` | mobile-first PWA for partner factories                           |
 
-The backend is a separate repository, `packio-api` (NestJS). **This app never touches a
+The backend is a separate repository, `getpack-api` (NestJS). **This app never touches a
 database and never computes money, lead times or business dates** — it renders what the
 API returns. Business rules live in `docs/decisions.md` as numbered decisions (`D-###`).
 
@@ -26,15 +26,15 @@ pnpm install
 pnpm dev           # http://localhost:3000
 ```
 
-| Command                                        | What it does                                                            |
-| ---------------------------------------------- | ----------------------------------------------------------------------- |
-| `pnpm dev`                                     | Next dev server (all three hosts once F1 lands the zones)               |
-| `pnpm build` / `pnpm start`                    | production build and server                                             |
-| `pnpm lint` · `pnpm typecheck` · `pnpm format` | ESLint flat config, `tsc --noEmit`, Prettier                            |
-| `pnpm test`                                    | unit tests: the app (`test:app`) and `@packio/dieline` (`test:dieline`) |
-| `pnpm e2e`                                     | Playwright, on its own port (`E2E_PORT`, default 3100)                  |
-| `pnpm gen:api`                                 | regenerate `src/lib/api/schema.d.ts` from the backend contract (F1)     |
-| `pnpm changeset`                               | describe a release of `@packio/dieline`                                 |
+| Command                                        | What it does                                                             |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| `pnpm dev`                                     | Next dev server (all three hosts once F1 lands the zones)                |
+| `pnpm build` / `pnpm start`                    | production build and server                                              |
+| `pnpm lint` · `pnpm typecheck` · `pnpm format` | ESLint flat config, `tsc --noEmit`, Prettier                             |
+| `pnpm test`                                    | unit tests: the app (`test:app`) and `@getpack/dieline` (`test:dieline`) |
+| `pnpm e2e`                                     | Playwright, on its own port (`E2E_PORT`, default 3100)                   |
+| `pnpm gen:api`                                 | regenerate `src/lib/api/schema.d.ts` from the backend contract (F1)      |
+| `pnpm changeset`                               | describe a release of `@getpack/dieline`                                 |
 
 ## Layout
 
@@ -47,7 +47,7 @@ src/
   domain/             status labels, tones and icons keyed by the API's enums (F1)
   i18n/               next-intl config, th/en messages, THB and Buddhist-era formatters
   lib/api/            generated API types and the typed clients (F1)
-packages/dieline/     @packio/dieline — framework-free box geometry, published
+packages/dieline/     @getpack/dieline — framework-free box geometry, published
 docs/                 decisions, ADRs, the contract, workstream prompts, PROGRESS
 ```
 

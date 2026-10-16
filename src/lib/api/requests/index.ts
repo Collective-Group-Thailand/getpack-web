@@ -1,5 +1,5 @@
 /**
- * Contract requests — endpoints the frontend needs that `packio-api` has not shipped yet.
+ * Contract requests — endpoints the frontend needs that `getpack-api` has not shipped yet.
  * See `./define.ts` for what this layer is and how an entry retires itself.
  *
  * `browserRequests` and `serverRequests` are imported by path, for the same reason

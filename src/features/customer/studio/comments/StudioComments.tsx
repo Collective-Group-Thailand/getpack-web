@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import type { Dieline } from "@packio/dieline";
+import type { Dieline } from "@getpack/dieline";
 
 import { faceAnchor, flatAnchor, sheetPoint, type CommentAnchor } from "@/features/designer/comments/anchors";
 import type { PickedPlace } from "@/features/designer/comments/pins";

@@ -7,8 +7,8 @@ import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 
 /**
- * A claim's clock (U2.F4, D-263): who must act now — Packio, the customer (information asked for;
- * Packio's clock stops), the factory, or nobody — the time Packio answers and decides by, overdue
+ * A claim's clock (U2.F4, D-263): who must act now — getpack, the customer (information asked for;
+ * getpack's clock stops), the factory, or nobody — the time getpack answers and decides by, overdue
  * when the API says so, and every step so far. The guarantee version it follows links to the page.
  */
 export async function ClaimTimeline({ timeline }: { timeline: Schemas["ClaimTimelineDto"] }) {

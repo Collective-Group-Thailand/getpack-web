@@ -297,7 +297,7 @@ export const orderDetail = orderSummary
     cancelledAt: dateTime().nullable(),
     cancelReason: z.string().nullable(),
     /**
-     * Unused: each surface computes its own from packio-api's rules — the admin desk in
+     * Unused: each surface computes its own from getpack-api's rules — the admin desk in
      * `./orders.ts` (`ADMIN_ORDER_ACTIONS`), the storefront in `../store/order-dto.ts`.
      */
     nextActions: z.array(nextAction()).optional(),

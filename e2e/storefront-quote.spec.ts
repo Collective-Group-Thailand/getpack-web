@@ -111,7 +111,7 @@ test.describe("the configurator", () => {
     await page.getByLabel("โค้ดส่วนลด").fill("corrugate5");
     await page.getByRole("button", { name: "ตรวจสอบ" }).click();
     await expect(page.getByText("โค้ดนี้ใช้กับสินค้านี้ไม่ได้")).toBeVisible();
-    await page.getByLabel("โค้ดส่วนลด").fill("PACKIO10");
+    await page.getByLabel("โค้ดส่วนลด").fill("GETPACK10");
     await page.getByRole("button", { name: "ตรวจสอบ" }).click();
     await expect(page.getByText("ลด 10% ค่าสินค้า")).toBeVisible();
   });

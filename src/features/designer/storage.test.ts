@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { designRepo } from "./storage";
 import type { SavedDesign } from "./types";
 
-const KEY = "packio.designs.v1";
+const KEY = "getpack.designs.v1";
 const LEGACY_KEY = "boxstudio.designs.v1";
 
 const content = { elements: [], pattern: { kind: "none" as const, color: "#000000", background: "#ffffff", size: 12 } };

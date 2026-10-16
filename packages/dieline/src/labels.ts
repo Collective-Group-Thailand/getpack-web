@@ -2,7 +2,7 @@ import type { Localized } from "./types";
 
 /**
  * Face names. The engine returns keys only (`Face.label`); these are the words for them, so the
- * designer, the configurator and the drawing service in packio-api all say the same thing.
+ * designer, the configurator and the drawing service in getpack-api all say the same thing.
  * Thai is the prepress wording used on Thai shop floors; English follows ECMA/FEFCO usage.
  */
 export const FACE_LABELS = {

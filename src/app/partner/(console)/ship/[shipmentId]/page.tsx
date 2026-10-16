@@ -33,12 +33,12 @@ const linkClass =
 
 /**
  * One trip (`partner.shipments.get`): the recipient (D-142), its cartons, labels and packing list
- * once packed, dispatch with the factory's own fleet or a request for Packio's carrier (D-013,
+ * once packed, dispatch with the factory's own fleet or a request for getpack's carrier (D-013,
  * D-114), the road's own steps, and the proof of delivery the factory must capture — photos,
  * receiver, signature, delivered pieces per destination — with the order's tolerance result once
  * all of it is delivered. What the factory may do is the trip's own `nextActions`.
  *
- * CONTRACT-GAP partner.shipments — the partner's trip does not say whether Packio accepted its
+ * CONTRACT-GAP partner.shipments — the partner's trip does not say whether getpack accepted its
  * POD (the review state is the desk's, D-229), so the screen does not show it.
  */
 export default async function ShipmentPage({ params }: Props) {

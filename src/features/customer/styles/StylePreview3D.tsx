@@ -11,8 +11,8 @@ import {
   REFERENCE_MATERIALS,
   styleFromRecipe,
   variantsOf,
-} from "@packio/dieline";
-import { ALL_RECIPES } from "@packio/dieline/library";
+} from "@getpack/dieline";
+import { ALL_RECIPES } from "@getpack/dieline/library";
 
 import Preview3D from "@/features/designer/components/Preview3D";
 
@@ -20,7 +20,7 @@ import { keyOf } from "./variants";
 
 /**
  * The chosen variant in 3D (U3.5 §2), drawn by the engine from the recipe of the style's base whose
- * variant has exactly these options — the same recipe packio-api draws it from — at the first of
+ * variant has exactly these options — the same recipe getpack-api draws it from — at the first of
  * its starting sizes the variant is valid at, on the reference board of its category. Loaded only
  * when asked for (`next/dynamic`): the engine and three.js stay out of the page's first load.
  */

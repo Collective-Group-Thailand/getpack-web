@@ -59,7 +59,7 @@ export function sendReport(endpoint: string, report: WebVitalReport): boolean {
     method: "POST",
     body,
     keepalive: true,
-    headers: { "content-type": "application/json", "x-packio-csrf": "1" },
+    headers: { "content-type": "application/json", "x-getpack-csrf": "1" },
   }).catch(() => {
     // Telemetry must never surface as an error to the person using the page.
   });

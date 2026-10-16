@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Dielines the factory offers to Packio's library (U3.6, D-272): the form, under the intake terms
+ * Dielines the factory offers to getpack's library (U3.6, D-272): the form, under the intake terms
  * in force (none set: offers are closed), and what it has offered with Prepress's decision.
  */
 export default async function StyleIntakesPage() {

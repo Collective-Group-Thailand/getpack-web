@@ -1,4 +1,4 @@
-import { allFaces, faceBounds, flattenContour, pointInPolygon, type Dieline, type Pt } from "@packio/dieline";
+import { allFaces, faceBounds, flattenContour, pointInPolygon, type Dieline, type Pt } from "@getpack/dieline";
 
 import type { CommentAnchor } from "./anchor";
 

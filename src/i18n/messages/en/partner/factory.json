@@ -299,7 +299,7 @@
   },
   "planning": {
     "title": "Production planning",
-    "body": "Production orders from Packio jobs and your own, what is short, and the work on each machine",
+    "body": "Production orders from getpack jobs and your own, what is short, and the work on each machine",
     "newOrder": "Plan production",
     "recipes": "Recipes",
     "floor": "Shop floor",
@@ -320,9 +320,9 @@
       "all": "All"
     },
     "searchLabel": "Search production orders",
-    "searchPlaceholder": "Number, title, Packio job",
+    "searchPlaceholder": "Number, title, getpack job",
     "empty": "No production orders in this view",
-    "emptyBody": "Accepted Packio jobs become orders on their own; use \"Plan production\" for your own",
+    "emptyBody": "Accepted getpack jobs become orders on their own; use \"Plan production\" for your own",
     "table": {
       "no": "No.",
       "title": "Job",
@@ -335,13 +335,13 @@
       "load": "Load"
     },
     "sources": {
-      "packio_job": "Packio job",
+      "getpack_job": "getpack job",
       "stock": "For stock",
       "sales_order": "For a customer order"
     },
     "origins": {
       "recipe": "From the recipe",
-      "packio_spec": "From the Packio spec",
+      "getpack_spec": "From the getpack spec",
       "manual": "By hand"
     },
     "late": "Late",
@@ -351,8 +351,8 @@
     "hours": "{h} h",
     "detail": {
       "product": "Product",
-      "packioProduct": "The Packio job's product",
-      "job": "Packio job",
+      "getpackProduct": "The getpack job's product",
+      "job": "getpack job",
       "recipe": "Recipe",
       "start": "Start",
       "priority": "Priority",
@@ -396,7 +396,7 @@
   "orders": {
     "form": {
       "newTitle": "Plan production",
-      "newBody": "For your own work; accepted Packio jobs become production orders automatically",
+      "newBody": "For your own work; accepted getpack jobs become production orders automatically",
       "source": "Make for",
       "sources": {
         "stock": "Stock",
@@ -474,7 +474,7 @@
       "minutes": "Planned minutes",
       "removeOperation": "Remove step",
       "addOperation": "Add a step",
-      "packioSteps": "A Packio job's steps follow the job — not changed here",
+      "getpackSteps": "A getpack job's steps follow the job — not changed here",
       "note": "Note",
       "save": "Save changes",
       "saved": "Changes saved",

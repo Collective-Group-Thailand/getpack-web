@@ -1,4 +1,4 @@
-# ADR-0007 — `@packio/dieline`: ownership and publishing
+# ADR-0007 — `@getpack/dieline`: ownership and publishing
 
 **Status:** Accepted (2026-09-22) · extracted in F0 Session 0.1, grown in F4 Part A
 
@@ -6,7 +6,7 @@
 
 Box geometry — the flat layout, the cut and crease lines, the safe zones, the true-size
 SVG — is needed in three places: the customer configurator and online designer in this
-app, the drawing service in `packio-api` (B4.1), and the tests of both. In the BoxStudio
+app, the drawing service in `getpack-api` (B4.1), and the tests of both. In the BoxStudio
 app it sat in `src/lib` next to Konva and React code, so it could not be used anywhere
 else and nothing stopped a DOM call creeping in.
 
@@ -31,7 +31,7 @@ repository**, and this repository owns it (D-002).
 
 ## Consequences
 
-- `packio-api`'s drawing service consumes a versioned package instead of copying formulas,
+- `getpack-api`'s drawing service consumes a versioned package instead of copying formulas,
   so a geometry fix reaches production in one place. A breaking geometry change is a major
   version and a coordinated bump, not a silent behaviour difference between quote and
   production file.

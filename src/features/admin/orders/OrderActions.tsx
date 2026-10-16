@@ -23,14 +23,14 @@ import type { CancelReason, Order, OrderGroup } from "./resources";
 
 /**
  * What the order screen can open: the order's own actions (`nextActions`) and the group's payment
- * operations, which packio-api offers no action list for (no order-group actions, U-B0.3) — the
+ * operations, which getpack-api offers no action list for (no order-group actions, U-B0.3) — the
  * Payments tab opens those from the instalment and the slip they act on.
  */
 export type OrderActionKey =
   "approve_slip" | "reject_slip" | "start_production" | "cancel" | "send_payment_reminder" | "record_slip" | "reprice";
 
 /**
- * The order actions this screen performs. packio-api also offers `submit_artwork` (the prepress
+ * The order actions this screen performs. getpack-api also offers `submit_artwork` (the prepress
  * desk's) and `add_mockup` (deprecated by D-254 — a sample is ordered from the samples desk); they
  * show disabled with why.
  */
@@ -167,7 +167,7 @@ export function OrderActionDialogs({
           confirmLabel={t("remind.confirm")}
           onConfirm={async ({ idempotencyKey }) => {
             try {
-              // packio-api reminds of the group's first unpaid due instalment, once an hour at most.
+              // getpack-api reminds of the group's first unpaid due instalment, once an hour at most.
               await adminBrowserApis().contract.POST("/v1/admin/orders/{orderId}/actions/send-payment-reminder", {
                 params: { path: { orderId }, header: { "Idempotency-Key": idempotencyKey } },
               });

@@ -14,7 +14,7 @@ import {
 } from "./support";
 
 /**
- * Provisions what packio-api's dev seed lacks, through the API, before the integration specs:
+ * Provisions what getpack-api's dev seed lacks, through the API, before the integration specs:
  *
  * - a user per D-140 factory role at F9001: the owner is created by a Partner Manager
  *   (`admin.factories.createOwnerAccount`, D-171) and creates the others (`partner.factoryUsers.create`);

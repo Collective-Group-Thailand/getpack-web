@@ -1,4 +1,4 @@
-import type { MaterialSpec } from "@packio/dieline";
+import type { MaterialSpec } from "@getpack/dieline";
 
 import type { Schemas } from "@/lib/api/types";
 

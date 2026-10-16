@@ -27,7 +27,7 @@ import type {
   ErpWhtCertificateStatus,
 } from "./contract";
 
-/** A factory's own purchase order, Packio Factory ERP (D-325). */
+/** A factory's own purchase order, getpack Factory ERP (D-325). */
 export const ERP_PURCHASE_ORDER_STATUS = defineStatusMap<ErpPurchaseOrderStatus>({
   draft: { tone: "neutral", icon: "edit", labelKey: "erpPurchaseOrder.draft" },
   issued: { tone: "info", icon: "send", labelKey: "erpPurchaseOrder.issued" },

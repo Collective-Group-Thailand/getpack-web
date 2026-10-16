@@ -16,7 +16,7 @@ import { applyBrand } from "../../templates/layout";
 import { useDesigner } from "../DesignerContext";
 import { CompanyBrandKits } from "./CompanyBrandKits";
 
-const KEY = "packio.brandkit";
+const KEY = "getpack.brandkit";
 
 export interface BrandKit {
   colours: string[];

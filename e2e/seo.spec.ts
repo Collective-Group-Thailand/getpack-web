@@ -69,8 +69,8 @@ test.describe("page metadata", () => {
     const parsed = JSON.parse((await jsonLd.first().textContent()) ?? "{}");
 
     expect(parsed["@type"]).toBe("Organization");
-    expect(parsed.name).toBe("Packio");
-    // D-010/D-092: Packio is the brand, Collective Group (Thailand) issues the documents.
+    expect(parsed.name).toBe("getpack");
+    // D-010/D-092: getpack is the brand, Collective Group (Thailand) issues the documents.
     expect(parsed.legalName).toBe("Collective Group (Thailand)");
     // Unbacked claims are worse than none (design-system.md §5).
     expect(parsed.aggregateRating).toBeUndefined();

@@ -13,7 +13,7 @@ RuleTester.describe = describe;
 RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
-new RuleTester().run("packio/no-money-arithmetic", rule as unknown as Rule.RuleModule, {
+new RuleTester().run("getpack/no-money-arithmetic", rule as unknown as Rule.RuleModule, {
   valid: [
     "format.thb(step.unitPrice)",
     "const label = `฿${step.grossAmount}`",

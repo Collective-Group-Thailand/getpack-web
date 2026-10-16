@@ -16,7 +16,7 @@ export const OPEN_PROPOSAL: readonly Proposal["status"][] = ["draft", "submitted
 /**
  * Everything the price screens read for one factory, once per render: its price lists, its
  * configuration (mode and tiers), the component definitions, its references and its proposals.
- * Nothing here can hold another factory's price or a Packio suggestion (D-044) — the partner
+ * Nothing here can hold another factory's price or a getpack suggestion (D-044) — the partner
  * DTOs have no field for one.
  */
 export const loadPrices = cache(async (factoryId: string) => {

@@ -15,7 +15,7 @@ import { Section } from "../parts";
 import type { Factory } from "../resources";
 
 /**
- * Packio support's read of a factory's own ERP (D-381): only while the owner's time-boxed grant is active, read
+ * getpack support's read of a factory's own ERP (D-381): only while the owner's time-boxed grant is active, read
  * only — the dashboard and the ERP settings. Every read is audited and listed to the owner, so nothing loads until
  * staff ask for it.
  */

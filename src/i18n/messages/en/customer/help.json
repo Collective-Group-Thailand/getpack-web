@@ -202,10 +202,10 @@
     "name": "Name",
     "guestPhone": "Mobile number",
     "handoffPageBody": "The team sees which page you came from. Chat in LINE, or ask us to call you back.",
-    "chatTitle": "Talk to the Packio team",
+    "chatTitle": "Talk to the getpack team",
     "chatIntro": "Customer service helps you choose a box, answers questions about prices and follows up on your orders.",
     "inAppTitle": "Talk to the team on the web",
-    "inAppBody": "Send the Packio team a message, photo or file and read the answer under Messages in your account.",
+    "inAppBody": "Send the getpack team a message, photo or file and read the answer under Messages in your account.",
     "inAppAction": "Open messages"
   },
   "glossary": {

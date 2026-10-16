@@ -1,4 +1,4 @@
-import { allFaces, dielineLines, svgPathData } from "@packio/dieline";
+import { allFaces, dielineLines, svgPathData } from "@getpack/dieline";
 
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import { boardColour } from "@/features/designer/catalog";
@@ -170,7 +170,7 @@ export interface DesignViewerProps {
 
 /**
  * A design, read-only, as an SVG of the flat dieline with its artwork clipped to the panels —
- * the same geometry (`@packio/dieline`) and coordinates (millimetres) the editor's canvas uses,
+ * the same geometry (`@getpack/dieline`) and coordinates (millimetres) the editor's canvas uses,
  * without the editor. For the back office's "open a design read-only" (F2 2.4); patterns other
  * than a solid fill show their background colour only, so this is a preview, not the proof.
  */

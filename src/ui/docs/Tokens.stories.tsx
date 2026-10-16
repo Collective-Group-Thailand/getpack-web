@@ -66,7 +66,7 @@ export const ArtDirection: Story = {
     docs: {
       description: {
         story:
-          "The Packio palette, design language v3 (Phase 4); replaced " +
+          "The getpack palette, design language v3 (Phase 4); replaced " +
           "wholesale when a brand kit arrives (tokens only). Dark primary-700 is shown as " +
           "proposed — it fails AA, so dark hover uses a lighter step (see PROGRESS).",
       },
@@ -255,7 +255,7 @@ export const Typography: Story = {
         <div key={size} className="flex items-baseline gap-4">
           <code className="w-16 shrink-0 text-xs text-muted">{size}</code>
           <p style={{ fontSize: `var(--text-${size})` }}>
-            กล่องบรรจุภัณฑ์ Packio — 1,234.56 ฿
+            กล่องบรรจุภัณฑ์ getpack — 1,234.56 ฿
           </p>
         </div>
       ))}

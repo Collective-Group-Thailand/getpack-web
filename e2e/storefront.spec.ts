@@ -231,7 +231,7 @@ test.describe("signing in", () => {
     await expect(sheet.getByRole("checkbox", { name: "รับข่าวสารและโปรโมชันทาง LINE" })).not.toBeChecked();
     await expectNoViolations(page);
 
-    await sheet.getByRole("checkbox", { name: "ข้อกำหนดการใช้บริการ Packio" }).click();
+    await sheet.getByRole("checkbox", { name: "ข้อกำหนดการใช้บริการ getpack" }).click();
     await sheet.getByRole("checkbox", { name: "ประกาศความเป็นส่วนตัว" }).click();
     await accept.click();
 

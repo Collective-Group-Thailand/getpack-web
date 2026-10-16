@@ -36,7 +36,7 @@ describe("partner sign-in", () => {
       await createApiClient({ baseUrl: "http://api.mock", accessToken: data!.accessToken }).GET("/v1/partner/me")
     ).data!;
     expect(me.roles).toEqual(["factory_operator"]);
-    // packio-api's factory-scope grants for the role (`pnpm gen:rbac`, triage `partner.permissions`).
+    // getpack-api's factory-scope grants for the role (`pnpm gen:rbac`, triage `partner.permissions`).
     expect([...me.permissions].sort()).toEqual([...FACTORY_ROLE_GRANTS.factory_operator!].sort());
     // `partner.me.get` names the factory (U-B0.3, `partner.factory-name`).
     expect(me.factories).toEqual([
@@ -131,7 +131,7 @@ describe("an applicant completing its application (F005)", () => {
 });
 
 describe("assisted onboarding and a rate card (F006)", () => {
-  it("signs off what Packio entered, once", async () => {
+  it("signs off what getpack entered, once", async () => {
     const api = partner("assisted");
     const steps = (
       await api.GET("/v1/partner/factories/{factoryId}/onboarding-steps", { params: { path: { factoryId: F006 } } })
@@ -148,7 +148,7 @@ describe("assisted onboarding and a rate card (F006)", () => {
     const api = partner("assisted");
     const list = (
       await api.GET("/v1/partner/factories/{factoryId}/price-proposals", {
-        params: { path: { factoryId: F006 }, query: { direction: "packio_to_factory" } },
+        params: { path: { factoryId: F006 }, query: { direction: "getpack_to_factory" } },
       })
     ).data!.data;
     const card = list.find((item) => item.status === "submitted")!;
@@ -214,7 +214,7 @@ describe("a factory price-list proposal (F001)", () => {
     });
     const queue = (
       await staff("partner_manager").GET("/v1/admin/price-proposals", {
-        params: { query: { direction: "factory_to_packio", status: "submitted" } },
+        params: { query: { direction: "factory_to_getpack", status: "submitted" } },
       })
     ).data!.data;
     expect(queue.map((item) => item.id)).toContain(draft!.id);
@@ -284,7 +284,7 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
           await api.POST("/v1/partner/production-jobs/{jobId}/qc-checks", {
             params: { path: jobPath, header: key(300) },
             body: {
-              checklistVersion: "packio-web-v1",
+              checklistVersion: "getpack-web-v1",
               checklist: { colour: "pass", registration: "pass", diecut: "pass", count: "pass", clean: "pass" },
               result: "pass",
               defects: [],
@@ -292,7 +292,7 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
             },
           })
         ).data!;
-        expect(check).toMatchObject({ result: "pass", isFirstPass: true, checklistVersion: "packio-web-v1" });
+        expect(check).toMatchObject({ result: "pass", isFirstPass: true, checklistVersion: "getpack-web-v1" });
       }
       const quantities = milestone.tracksQuantity
         ? { quantityIn: released.quantityOrdered, quantityOut: released.quantityOrdered, quantityScrap: 0 }

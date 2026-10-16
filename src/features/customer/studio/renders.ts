@@ -1,7 +1,7 @@
 "use client";
 
 import type Konva from "konva";
-import { mirrorDieline, type Dieline } from "@packio/dieline";
+import { mirrorDieline, type Dieline } from "@getpack/dieline";
 
 import { uploadFile } from "@/features/shared/files/upload";
 import { FINISH_SEPARATIONS, finishesIn, finishMask } from "@/features/designer/lib/finishes";
@@ -15,7 +15,7 @@ const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() 
 const mm = (value: number) => Math.round(value * 100) / 100 || 0;
 
 /**
- * The studio's renders of a version for its print file (D-280, ADR-0013): packio-api assembles the
+ * The studio's renders of a version for its print file (D-280, ADR-0013): getpack-api assembles the
  * print PDF from the engine's vector die and **these** — the artwork the studio itself drew, at
  * 300 dpi with the bleed, in tiles (`kind: tile`), per printed side (the inside on the sheet as seen
  * from inside), and each finish as its own mask (`kind: finish_mask`, the separation's name). There

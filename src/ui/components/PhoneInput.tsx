@@ -15,7 +15,7 @@ export interface PhoneInputProps {
   className?: string;
 }
 
-/** The dialling code shown beside the field. Thailand only, until Packio sells abroad. */
+/** The dialling code shown beside the field. Thailand only, until getpack sells abroad. */
 export const TH_DIALLING_CODE = "+66";
 
 /**
@@ -40,7 +40,7 @@ export function formatThaiMobile(digits: string): string {
 
 /**
  * Whether `digits` is a whole Thai mobile number: ten digits from `0`, or nine typed without the
- * leading zero after the `+66` prefix (`8x`, `9x`, `6x`) — packio-api normalises both to E.164.
+ * leading zero after the `+66` prefix (`8x`, `9x`, `6x`) — getpack-api normalises both to E.164.
  */
 export function isThaiMobile(digits: string): boolean {
   return /^0[689]\d{8}$/.test(digits) || /^[689]\d{8}$/.test(digits);

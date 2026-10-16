@@ -66,7 +66,7 @@ const ROOT_ASSETS = new Set([
  * They must be passed through *before* next-intl, or `/robots.txt` is negotiated into
  * `/th/robots.txt` and a crawler gets a 404 — the kind of failure nobody notices until the
  * site is not in the index. On a zone that is `noindex` they do not exist at all: answering
- * them on `admin.packio.co.th` would publish the shape of the back office to anyone who
+ * them on `admin.getpack.co` would publish the shape of the back office to anyone who
  * asked.
  */
 const CRAWLER_FILES = new Set(["/robots.txt", "/sitemap.xml", "/llms.txt"]);

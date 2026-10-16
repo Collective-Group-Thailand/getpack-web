@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * The factory's own prices (D-040, D-042, D-043): which ownership mode it is in, each price list
  * with its tier and the version in force, and anything waiting for the factory — a rate card to
- * answer, prices Packio entered to sign off, counters to take or leave. Never another factory's
+ * answer, prices getpack entered to sign off, counters to take or leave. Never another factory's
  * price, a suggestion or a benchmark (D-044).
  */
 export default async function PricesPage() {
@@ -38,10 +38,10 @@ export default async function PricesPage() {
     );
 
   const rateCards = prices.proposals.filter(
-    (item) => item.direction === "packio_to_factory" && ["submitted", "under_review"].includes(item.status),
+    (item) => item.direction === "getpack_to_factory" && ["submitted", "under_review"].includes(item.status),
   );
   const countered = prices.proposals.filter(
-    (item) => item.direction === "factory_to_packio" && item.status === "countered",
+    (item) => item.direction === "factory_to_getpack" && item.status === "countered",
   );
   const toSignOff = prices.lists.data.flatMap((list) =>
     list.upcoming
@@ -231,7 +231,7 @@ export default async function PricesPage() {
             rowKey={(item) => item.id}
             rowHref={(item) => `/prices/proposals/${item.id}`}
             rowTone={(item) =>
-              item.direction === "packio_to_factory" && ["submitted", "under_review"].includes(item.status)
+              item.direction === "getpack_to_factory" && ["submitted", "under_review"].includes(item.status)
                 ? "warning"
                 : undefined
             }

@@ -6,7 +6,7 @@ import { acceptCookies, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated } from "./helpers/session";
 
 /**
- * F3 3.7 end to end: Packio for business, LINE LIFF and help.
+ * F3 3.7 end to end: getpack for business, LINE LIFF and help.
  *
  * A founder signs a company up with its KYC documents; a company buyer's order over the
  * threshold waits for the approver, who places it (D-123); the admin invites a member and
@@ -34,7 +34,7 @@ const dock = (page: Page) => page.getByRole("complementary", { name: "ราค�
 
 test.describe.configure({ mode: "serial" });
 
-test.describe("Packio for business", () => {
+test.describe("getpack for business", () => {
   test("a visitor reads what a company account adds", async ({ page }) => {
     await acceptCookies(page);
     await gotoHydrated(page, `${HOSTS.customer}/business`);
@@ -150,7 +150,7 @@ test.describe("Packio for business", () => {
     await expect(page.getByRole("link", { name: /^เปิดไฟล์/ }).first()).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/business/members`);
-    // An invitation goes to an existing Packio account, by phone (store.companies.inviteMember).
+    // An invitation goes to an existing getpack account, by phone (store.companies.inviteMember).
     await page.getByLabel(/^เบอร์มือถือ/).fill(PHONES.founder);
     await page.getByRole("checkbox", { name: /^ฝ่ายบัญชี/ }).click();
     await page.getByRole("button", { name: "ส่งคำเชิญ" }).click();
@@ -174,7 +174,7 @@ test.describe("LINE LIFF (D-151)", () => {
   test("orders, an order's stages and points in LINE's frame", async ({ page }) => {
     await signInAsCustomer(page, "/liff");
     await expect(page.getByRole("heading", { level: 1, name: /^สวัสดี/ })).toBeVisible();
-    const tabs = page.getByRole("navigation", { name: "เมนู Packio ใน LINE" });
+    const tabs = page.getByRole("navigation", { name: "เมนู getpack ใน LINE" });
     await expect(tabs.getByRole("link", { name: "หน้าแรก" })).toHaveAttribute("aria-current", "page");
     await expect(page.getByRole("contentinfo")).toHaveCount(0);
     await expectNoViolations(page);
@@ -187,7 +187,7 @@ test.describe("LINE LIFF (D-151)", () => {
     await tabs.getByRole("link", { name: "คะแนน" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "คะแนนสะสม" })).toBeVisible();
     await tabs.getByRole("link", { name: "แชท" }).click();
-    await expect(page.getByRole("link", { name: "เปิดแชทกับ Packio" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "เปิดแชทกับ getpack" })).toHaveAttribute(
       "href",
       /line\.me\/R\/oaMessage/,
     );

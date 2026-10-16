@@ -4,13 +4,13 @@
 
 ## Context
 
-`@packio/dieline` had 30 hand-written styles (F4 Part B). They already shared constructions — a
+`@getpack/dieline` had 30 hand-written styles (F4 Part B). They already shared constructions — a
 four-panel tube with pluggable closures, a cross tray with wall extras — but every style was a
 TypeScript file that wired them together, computed its own compensation and coded its own rules.
 The style library programme (`docs/design-tool/style-library-program.md`) needs 105 base
 structures and ≈ 960 structural variants, each validated, folded, priced and makeable. At one
 file per style that is a code release per variant, rules no solver can read, and nothing
-packio-api's catalogue (U3.B1) can import.
+getpack-api's catalogue (U3.B1) can import.
 
 Options:
 

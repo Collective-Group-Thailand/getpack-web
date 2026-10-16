@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { allFaces, getStyle } from "@packio/dieline";
+import { allFaces, getStyle } from "@getpack/dieline";
 import { useShallow } from "zustand/react/shallow";
 
 import { formatNumber } from "@/i18n/format";

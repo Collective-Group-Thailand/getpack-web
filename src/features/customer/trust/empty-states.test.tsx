@@ -15,7 +15,7 @@ import storefront from "@/i18n/messages/th/customer/storefront.json";
 vi.mock("server-only", () => ({}));
 // The pages' structured data reads the request's origin (`publicOrigin`): a fixed one outside a request.
 vi.mock("next/headers", () => ({
-  headers: async () => new Headers({ host: "packio.test", "x-forwarded-proto": "https" }),
+  headers: async () => new Headers({ host: "getpack.test", "x-forwarded-proto": "https" }),
   cookies: async () => ({ get: () => undefined, getAll: () => [] }),
 }));
 vi.mock("next-intl/server", () => ({

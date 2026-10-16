@@ -13,7 +13,7 @@
  * waiting for acceptance, one due within hours (D-074) — and the second's order is split across
  * two delivery addresses (D-110), so a flow can accept, produce and ship to both.
  *
- * Rules mirrored from packio-api (`milestones.service.ts` at v0.6.0): milestones in route order;
+ * Rules mirrored from getpack-api (`milestones.service.ts` at v0.6.0): milestones in route order;
  * a repeated `clientRef`, or a step another device already moved, answers `applied: false` with
  * the current job (server wins); out + scrap of a tracked step never exceed what came in; photos
  * and a passing QC form where the step's evidence asks for them; QC needs a photo.
@@ -139,7 +139,7 @@ function seed() {
       // A scorecard participant's T11 job (`../uat.ts`): released this morning, not yet accepted.
       extra.releasedAt = bangkokIso(-HOUR * 2);
       extra.acceptedAt = null;
-      extra.history = [{ at: extra.releasedAt, text: "Packio ส่งงานให้โรงงาน", actor: null }];
+      extra.history = [{ at: extra.releasedAt, text: "getpack ส่งงานให้โรงงาน", actor: null }];
       continue;
     }
     extra.releasedAt = bangkokIso(-DAY * (job.status === "completed" ? 30 : 7));
@@ -180,7 +180,7 @@ function seed() {
       extra.steps.clear();
       extra.acceptedAt = null;
       extra.releasedAt = bangkokIso(index === 0 ? -HOUR * 4 : -HOUR * 21);
-      extra.history = [{ at: extra.releasedAt, text: "Packio ส่งงานให้โรงงาน", actor: null }];
+      extra.history = [{ at: extra.releasedAt, text: "getpack ส่งงานให้โรงงาน", actor: null }];
       if (index === 1 && order.destinations.length === 1) {
         // Split across two addresses (D-110): head office and a branch.
         const [first] = order.destinations;
@@ -202,7 +202,7 @@ seed();
 
 /* ------------------------------------------------------------------------------- views */
 
-/** The buy side of an order (the factory's own price, D-042) — never Packio's sell price. */
+/** The buy side of an order (the factory's own price, D-042) — never getpack's sell price. */
 export const buyAmountOf = (order: MockOrder) => (Math.round(Number(order.netAmount) * 70) / 100).toFixed(2);
 
 /** "กล่องฝาเสียบ (RSC)" — the product type, and the first spec line where it adds something. */
@@ -302,7 +302,7 @@ export function quantitiesOf(job: Job): { good: number | null; scrap: number | n
   };
 }
 
-/** Packio's inspection of the job, as far as the factory sees it (D-076). */
+/** getpack's inspection of the job, as far as the factory sees it (D-076). */
 export function inspectionOf(job: Pick<Job, "id">): Schemas["JobInspectionDto"] | null {
   const found = inspections.find((item) => item.job.id === job.id);
   return found
@@ -613,7 +613,7 @@ export const jobHandlers = [
     }),
   ),
 
-  // partner.production.reject: with a reason; Packio reassigns or escalates (D-012, D-101).
+  // partner.production.reject: with a reason; getpack reassigns or escalates (D-012, D-101).
   http.post("*/v1/partner/production-jobs/:jobId/actions/reject", ({ request, params }) =>
     once(request, `job-reject:${String(params.jobId)}`, async () => {
       const found = jobFor(request, params.jobId, perm.respond);
@@ -778,7 +778,7 @@ export const jobHandlers = [
     return found instanceof Response ? found : HttpResponse.json(found.extra.qcChecks);
   }),
 
-  // partner.production.raiseIssue (D-232): the kinds are named; Packio sees it on the board.
+  // partner.production.raiseIssue (D-232): the kinds are named; getpack sees it on the board.
   http.post("*/v1/partner/production-jobs/:jobId/issues", async ({ request, params }) => {
     const act = async () => {
       const found = jobFor(request, params.jobId, perm.issues);

@@ -1,9 +1,9 @@
 import type { HomePhoto, HomePhotos } from "./content.server";
 
 /**
- * The dev-only home-photo fallback (`HOME_PHOTOS_LOCAL_MANIFEST=1`): local stacks run packio-api with
+ * The dev-only home-photo fallback (`HOME_PHOTOS_LOCAL_MANIFEST=1`): local stacks run getpack-api with
  * fake, in-memory file storage, so the CMS cannot serve photos there. The same media manifest
- * packio-api's `pnpm cms:home-photos` uploads in UAT and production names each photo's place by
+ * getpack-api's `pnpm cms:home-photos` uploads in UAT and production names each photo's place by
  * `position`; this maps those positions to `/media/home/*` and fills only the slots the CMS left empty.
  * The production build refuses these files (`build-checks/no-untracked-third-party-assets.mjs`) and the
  * env schema refuses the flag in production.
@@ -32,7 +32,7 @@ function photo(locale: string, base: string, asset: LocalManifestAsset): HomePho
   return { src: `${base}/${encodeURIComponent(asset.file)}`, alt, caption };
 }
 
-/** The manifest's photos in the page's shape (positions as in packio-api's `home-photos.ts`). */
+/** The manifest's photos in the page's shape (positions as in getpack-api's `home-photos.ts`). */
 export function photosFromManifest(locale: string, assets: LocalManifestAsset[], base = "/media/home"): HomePhotos {
   const photos: HomePhotos = {
     hero: null,

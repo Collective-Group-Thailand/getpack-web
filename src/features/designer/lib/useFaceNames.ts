@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import type { Dieline } from "@packio/dieline";
+import type { Dieline } from "@getpack/dieline";
 
 import { faceNames } from "./faceNames";
 

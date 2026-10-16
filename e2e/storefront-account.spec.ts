@@ -214,7 +214,7 @@ test.describe("the account", () => {
   test("the wallet lists the promotion codes a customer holds", async ({ page }) => {
     await signInAsCustomer(page, "/account/wallet");
     const codes = page.getByRole("region", { name: "โค้ดของฉัน" });
-    await expect(codes.getByText("PACKIO10")).toBeVisible();
+    await expect(codes.getByText("GETPACK10")).toBeVisible();
     await expect(codes.getByText(/ลด 10%/).first()).toBeVisible();
   });
 

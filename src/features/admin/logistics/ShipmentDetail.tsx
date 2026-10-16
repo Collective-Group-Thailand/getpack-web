@@ -537,7 +537,7 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
           onSubmit={async () => {
             if (!carrier) throw new FormError(t("needCarrier"));
             try {
-              // The carrier's price at booking is Packio's cost (D-114).
+              // The carrier's price at booking is getpack's cost (D-114).
               const { data, response } = await adminBrowserApis().contract.POST(
                 "/v1/admin/shipments/{shipmentId}/actions/book-carrier",
                 {

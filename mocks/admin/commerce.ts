@@ -726,7 +726,7 @@ for (const order of orders) {
   if (!customer.lastOrderAt || customer.lastOrderAt < order.createdAt) customer.lastOrderAt = order.createdAt;
 }
 
-/** What each of packio-api's order queues holds (`admin.orderOperations.queue`), applied to the mock's rows. */
+/** What each of getpack-api's order queues holds (`admin.orderOperations.queue`), applied to the mock's rows. */
 export const QUEUES: Record<string, (order: Order) => boolean> = {
   waiting_payment: (order) => order.status === "waiting_payment",
   artwork_review: (order) =>

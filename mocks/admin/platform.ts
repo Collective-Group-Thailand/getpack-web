@@ -1,10 +1,10 @@
 /**
- * Stateful mocks for the admin endpoints packio-api B1.3 **published**: users and role grants,
+ * Stateful mocks for the admin endpoints getpack-api B1.3 **published**: users and role grants,
  * roles, approvals and delegations, the audit log, settings, feature flags, notification
  * templates and routes, the outbox, and files.
  *
  * Typed by `Schemas` — these stand in for the contract, not for a request. Reference data is
- * the backend's own seed, copied into `./fixtures` from packio-api (`prisma/seed/data/*.ts`,
+ * the backend's own seed, copied into `./fixtures` from getpack-api (`prisma/seed/data/*.ts`,
  * `src/modules/iam/{roles,permissions}.catalog.ts`, 2026-09-25) so the screens meet real
  * setting keys, approval policies, roles and SoD rules. Problem codes are the ones the contract
  * documents for each operation. People and amounts are obviously fake.
@@ -48,7 +48,7 @@ export const SENSITIVE_PERMISSIONS = new Set([
 ]);
 export const PERMISSION_DESCRIPTIONS = Object.fromEntries(permissionCatalogue.map((p) => [p.key, p.description]));
 
-/** The SoD rules as `admin.sodRules.list` returns them (packio-api `SodRulesController`, v0.6.0). */
+/** The SoD rules as `admin.sodRules.list` returns them (getpack-api `SodRulesController`, v0.6.0). */
 export const SOD_RULES: Schemas["SodRuleDto"][] = sodRuleSeeds.map((rule, index) => ({
   id: mockId("sod", index + 1),
   key: rule.key,
@@ -98,7 +98,7 @@ const users: User[] = [
   {
     id: mockId("user", 101),
     displayName: "พนักงานที่พักงาน (ข้อมูลจำลอง)",
-    email: "on.leave.staff@packio.invalid",
+    email: "on.leave.staff@getpack.invalid",
     phone: null,
     kind: "staff",
     status: "suspended",
@@ -1137,7 +1137,7 @@ export const platformHandlers = [
         fileId: id,
         uploadUrl: `/bff/v1/${String(params.surface)}/files/${id}/mock-upload`,
         // The BFF refuses a non-GET without its CSRF header, and a real S3 URL would not want it.
-        headers: { "content-type": body.mimeType, "x-packio-csrf": "1" },
+        headers: { "content-type": body.mimeType, "x-getpack-csrf": "1" },
         expiresAt: bangkokIso(15),
         multipart: null,
       } satisfies Schemas["PresignedUploadDto"],

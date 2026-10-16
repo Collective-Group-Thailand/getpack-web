@@ -33,7 +33,7 @@ describe("the variant picker", () => {
     expect(variantOf(variants, change(reverse, axes[1], "euro_slot"))?.code).toBe("C");
   });
 
-  it("treats a multi-select axis as a set, keyed like packio-api", () => {
+  it("treats a multi-select axis as a set, keyed like getpack-api", () => {
     const pouch: Axis = { axis: "pouch_feat", multiSelect: true, values: ["zipper", "window"] };
     const list = [
       v("P0", { pouch_feat: [] }),

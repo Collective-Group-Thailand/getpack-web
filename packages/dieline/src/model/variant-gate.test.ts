@@ -59,7 +59,7 @@ describe("variant gate", () => {
   });
 });
 
-/** Variants that share a base must not repeat a key: packio-api picks the one recipe whose variants match. */
+/** Variants that share a base must not repeat a key: getpack-api picks the one recipe whose variants match. */
 describe("variant keys per base", () => {
   it("are unique across the recipes of one base", () => {
     const seen = new Map<string, string>();

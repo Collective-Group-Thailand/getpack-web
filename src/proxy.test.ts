@@ -9,9 +9,9 @@ let proxy: (request: NextRequest) => Promise<Response>;
 beforeAll(async () => {
   // The hosts come from the environment, and `src/lib/env/server.ts` validates once on
   // first import — so they have to be in place before the proxy is loaded.
-  process.env.PUBLIC_HOST = "packio.co.th";
-  process.env.ADMIN_HOST = "admin.packio.co.th";
-  process.env.PARTNER_HOST = "partner.packio.co.th";
+  process.env.PUBLIC_HOST = "getpack.co";
+  process.env.ADMIN_HOST = "admin.getpack.co";
+  process.env.PARTNER_HOST = "partner.getpack.co";
   proxy = (await import("./proxy")).default;
 });
 
@@ -22,27 +22,27 @@ function request(host: string, path = "/", headers: Record<string, string> = {})
 /** Where the proxy told Next to send the request, or `null` when it did not rewrite. */
 function rewriteTarget(response: Response): string | null {
   const value = response.headers.get("x-middleware-rewrite");
-  return value ? new URL(value, "https://packio.co.th").pathname : null;
+  return value ? new URL(value, "https://getpack.co").pathname : null;
 }
 
 describe("host → zone", () => {
   it("rewrites the admin host onto the /admin segment", async () => {
-    expect(rewriteTarget(await proxy(request("admin.packio.co.th", "/orders")))).toBe("/admin/orders");
-    expect(rewriteTarget(await proxy(request("admin.packio.co.th", "/")))).toBe("/admin");
+    expect(rewriteTarget(await proxy(request("admin.getpack.co", "/orders")))).toBe("/admin/orders");
+    expect(rewriteTarget(await proxy(request("admin.getpack.co", "/")))).toBe("/admin");
   });
 
   it("rewrites the partner host onto the /partner segment, including its BFF", async () => {
-    expect(rewriteTarget(await proxy(request("partner.packio.co.th", "/jobs/7")))).toBe("/partner/jobs/7");
-    expect(rewriteTarget(await proxy(request("partner.packio.co.th", "/bff/v1/partner/me")))).toBe(
+    expect(rewriteTarget(await proxy(request("partner.getpack.co", "/jobs/7")))).toBe("/partner/jobs/7");
+    expect(rewriteTarget(await proxy(request("partner.getpack.co", "/bff/v1/partner/me")))).toBe(
       "/partner/bff/v1/partner/me",
     );
   });
 
   it("prefixes the customer host with the locale and leaves its BFF alone", async () => {
-    expect(rewriteTarget(await proxy(request("packio.co.th", "/design/new")))).toBe("/th/design/new");
-    expect(rewriteTarget(await proxy(request("packio.co.th", "/en/design/new")))).toBeNull();
+    expect(rewriteTarget(await proxy(request("getpack.co", "/design/new")))).toBe("/th/design/new");
+    expect(rewriteTarget(await proxy(request("getpack.co", "/en/design/new")))).toBeNull();
     // The BFF is a route handler outside `[locale]`; a locale prefix would 404 it.
-    expect(rewriteTarget(await proxy(request("packio.co.th", "/bff/v1/store/cart")))).toBeNull();
+    expect(rewriteTarget(await proxy(request("getpack.co", "/bff/v1/store/cart")))).toBeNull();
   });
 
   it("refuses a host no zone claims, rather than picking a default", async () => {
@@ -50,21 +50,21 @@ describe("host → zone", () => {
   });
 
   it("tells every zone which one it is", async () => {
-    const response = await proxy(request("admin.packio.co.th", "/orders"));
+    const response = await proxy(request("admin.getpack.co", "/orders"));
     expect(response.headers.get(`x-middleware-request-${ZONE_HEADER}`)).toBe("admin");
   });
 });
 
 describe("cross-zone paths", () => {
   it.each([
-    ["packio.co.th", "/admin"],
-    ["packio.co.th", "/admin/orders"],
-    ["packio.co.th", "/partner/jobs"],
-    ["packio.co.th", "/admin/bff/v1/admin/orders"],
+    ["getpack.co", "/admin"],
+    ["getpack.co", "/admin/orders"],
+    ["getpack.co", "/partner/jobs"],
+    ["getpack.co", "/admin/bff/v1/admin/orders"],
     // The real URL of an admin screen is /orders on the admin host; /admin/orders there is
     // the internal path leaking, and is refused just the same.
-    ["admin.packio.co.th", "/admin/orders"],
-    ["partner.packio.co.th", "/admin"],
+    ["admin.getpack.co", "/admin/orders"],
+    ["partner.getpack.co", "/admin"],
   ])("answers 404 for %s%s", async (host, path) => {
     const response = await proxy(request(host, path));
 
@@ -78,8 +78,8 @@ describe("cross-zone paths", () => {
 
 describe("security headers", () => {
   it("stamps a fresh nonce on every request, in the response and on the way in", async () => {
-    const first = await proxy(request("packio.co.th"));
-    const second = await proxy(request("packio.co.th"));
+    const first = await proxy(request("getpack.co"));
+    const second = await proxy(request("getpack.co"));
 
     const nonceOf = (response: Response) =>
       response.headers.get("content-security-policy")?.match(/'nonce-([^']+)'/)?.[1];
@@ -92,29 +92,29 @@ describe("security headers", () => {
   });
 
   it("marks admin and partner noindex and leaves the storefront indexable", async () => {
-    expect((await proxy(request("admin.packio.co.th"))).headers.get("x-robots-tag")).toBe("noindex, nofollow");
-    expect((await proxy(request("partner.packio.co.th"))).headers.get("x-robots-tag")).toBe("noindex, nofollow");
-    expect((await proxy(request("packio.co.th"))).headers.get("x-robots-tag")).toBeNull();
+    expect((await proxy(request("admin.getpack.co"))).headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    expect((await proxy(request("partner.getpack.co"))).headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    expect((await proxy(request("getpack.co"))).headers.get("x-robots-tag")).toBeNull();
   });
 
   it("allows the camera on the partner host only", async () => {
     const policy = async (host: string) => (await proxy(request(host))).headers.get("permissions-policy") ?? "";
 
-    expect(await policy("partner.packio.co.th")).toContain("camera=(self)");
-    expect(await policy("admin.packio.co.th")).toContain("camera=()");
-    expect(await policy("packio.co.th")).toContain("camera=()");
+    expect(await policy("partner.getpack.co")).toContain("camera=(self)");
+    expect(await policy("admin.getpack.co")).toContain("camera=()");
+    expect(await policy("getpack.co")).toContain("camera=()");
   });
 
   it("sends HSTS over TLS and not over plain http", async () => {
-    const secure = await proxy(request("packio.co.th"));
+    const secure = await proxy(request("getpack.co"));
     expect(secure.headers.get("strict-transport-security")).toMatch(/max-age=\d+/);
 
-    const local = new NextRequest("http://packio.co.th/", { headers: { host: "packio.co.th" } });
+    const local = new NextRequest("http://getpack.co/", { headers: { host: "getpack.co" } });
     expect((await proxy(local)).headers.get("strict-transport-security")).toBeNull();
   });
 
   it("replaces a client-supplied nonce or zone header instead of trusting it", async () => {
-    const response = await proxy(request("packio.co.th", "/", { "x-nonce": "attacker", [ZONE_HEADER]: "admin" }));
+    const response = await proxy(request("getpack.co", "/", { "x-nonce": "attacker", [ZONE_HEADER]: "admin" }));
 
     expect(response.headers.get("x-middleware-request-x-nonce")).not.toBe("attacker");
     expect(response.headers.get(`x-middleware-request-${ZONE_HEADER}`)).toBe("customer");
@@ -123,7 +123,7 @@ describe("security headers", () => {
 
 describe("root assets", () => {
   it("serves them unprefixed on every host — they belong to no zone", async () => {
-    for (const host of ["packio.co.th", "admin.packio.co.th", "partner.packio.co.th"]) {
+    for (const host of ["getpack.co", "admin.getpack.co", "partner.getpack.co"]) {
       expect(rewriteTarget(await proxy(request(host, "/icon.svg")))).toBeNull();
     }
   });
@@ -131,9 +131,9 @@ describe("root assets", () => {
 
 describe("storefront media", () => {
   it("serves /media/* unprefixed on the customer host only", async () => {
-    expect(rewriteTarget(await proxy(request("packio.co.th", "/media/home/wrap.jpg")))).toBeNull();
-    expect(rewriteTarget(await proxy(request("packio.co.th", "/brands/google.svg")))).toBeNull();
-    expect(rewriteTarget(await proxy(request("admin.packio.co.th", "/media/home/wrap.jpg")))).not.toBeNull();
+    expect(rewriteTarget(await proxy(request("getpack.co", "/media/home/wrap.jpg")))).toBeNull();
+    expect(rewriteTarget(await proxy(request("getpack.co", "/brands/google.svg")))).toBeNull();
+    expect(rewriteTarget(await proxy(request("admin.getpack.co", "/media/home/wrap.jpg")))).not.toBeNull();
   });
 });
 
@@ -142,15 +142,15 @@ describe("crawler files", () => {
     // Unprefixed matters: passed to next-intl these become `/th/robots.txt`, and a crawler
     // gets a 404 — the kind of failure nobody notices until the site is not in the index.
     for (const path of ["/robots.txt", "/sitemap.xml", "/llms.txt"]) {
-      const response = await proxy(request("packio.co.th", path));
+      const response = await proxy(request("getpack.co", path));
       expect(response.status).toBe(200);
       expect(rewriteTarget(response)).toBeNull();
     }
   });
 
   it("does not answer them at all on a zone that is noindex", async () => {
-    // Answering on admin.packio.co.th would publish the shape of the back office to anyone.
-    for (const host of ["admin.packio.co.th", "partner.packio.co.th"]) {
+    // Answering on admin.getpack.co would publish the shape of the back office to anyone.
+    for (const host of ["admin.getpack.co", "partner.getpack.co"]) {
       for (const path of ["/robots.txt", "/sitemap.xml", "/llms.txt"]) {
         expect((await proxy(request(host, path))).status, `${host}${path}`).toBe(404);
       }
@@ -159,12 +159,12 @@ describe("crawler files", () => {
 });
 
 describe("mock scenarios (?mock=, U-F0.1)", () => {
-  const HEADER = "x-middleware-request-x-packio-mock-scenario";
+  const HEADER = "x-middleware-request-x-getpack-mock-scenario";
 
   it("do nothing off the mock — neither the query nor a header sent from outside gets through", async () => {
     const response = await proxy(
-      request("admin.packio.co.th", "/ops?mock=admin.ops.signals:auth.forbidden", {
-        "x-packio-mock-scenario": "admin.ops.signals:auth.forbidden",
+      request("admin.getpack.co", "/ops?mock=admin.ops.signals:auth.forbidden", {
+        "x-getpack-mock-scenario": "admin.ops.signals:auth.forbidden",
       }),
     );
     expect(response.headers.get(HEADER)).toBeNull();
@@ -174,11 +174,11 @@ describe("mock scenarios (?mock=, U-F0.1)", () => {
   it("stamp the scenario and remember it under API_MOCKS=1, and forget it on ?mock=off", async () => {
     process.env.API_MOCKS = "1";
     try {
-      const set = await proxy(request("admin.packio.co.th", "/ops?mock=admin.ops.signals:auth.forbidden"));
+      const set = await proxy(request("admin.getpack.co", "/ops?mock=admin.ops.signals:auth.forbidden"));
       expect(set.headers.get(HEADER)).toBe("admin.ops.signals:auth.forbidden");
       expect(set.headers.get("set-cookie")).toContain("pk_mock_scenario=admin.ops.signals");
 
-      const off = await proxy(request("admin.packio.co.th", "/ops?mock=off", { cookie: "pk_mock_scenario=x.y:z" }));
+      const off = await proxy(request("admin.getpack.co", "/ops?mock=off", { cookie: "pk_mock_scenario=x.y:z" }));
       expect(off.headers.get(HEADER)).toBeNull();
       expect(off.headers.get("set-cookie")).toMatch(/pk_mock_scenario=;/);
     } finally {

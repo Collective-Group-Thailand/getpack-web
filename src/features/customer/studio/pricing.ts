@@ -35,7 +35,7 @@ export async function studioQuote(
  *
  * The query is keyed by the **spec** (the box fields and calculator configuration that version
  * holds, canonical JSON) and the quantity — so a version that only moved artwork is never priced
- * again, and going back to a spec already priced is answered from the cache. packio-api caches by
+ * again, and going back to a spec already priced is answered from the cache. getpack-api caches by
  * the same spec's `specHash` (D-277). Each request is debounced, and cancelled when it goes stale
  * (its signal is handed to `fetch`). The hash of the price on screen travels as `previousSpecHash`,
  * so the answer explains what changed.

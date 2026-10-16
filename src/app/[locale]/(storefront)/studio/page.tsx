@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const RECENT = 3;
 
 /**
- * `/studio` — Packio Studio's front door (Phase 4 §4.4, the "StudioStart" board). The editor itself
+ * `/studio` — getpack Studio's front door (Phase 4 §4.4, the "StudioStart" board). The editor itself
  * stays at `/studio/new` and `/studio/<design id>`. Leaving the studio never ends the session: the
  * BFF refreshes one token at a time (round 2, B4), and nothing here or in the editor signs out.
  */

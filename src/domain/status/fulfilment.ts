@@ -29,7 +29,7 @@ export const SUBMISSION_STATUS = defineStatusMap<SubmissionStatus>({
   rejected: { tone: "danger", icon: "ban", labelKey: "submission.rejected" },
 });
 
-/** Drawing a dieline with `@packio/dieline` (B4.1). */
+/** Drawing a dieline with `@getpack/dieline` (B4.1). */
 export const DRAWING_STATUS = defineStatusMap<DrawingStatus>({
   queued: { tone: "neutral", icon: "clock", labelKey: "drawing.queued" },
   running: { tone: "info", icon: "refresh", labelKey: "drawing.running" },
@@ -66,7 +66,7 @@ export const MILESTONE_STATUS = defineStatusMap<MilestoneStatus>({
   skipped: { tone: "neutral", icon: "minus", labelKey: "milestone.skipped" },
 });
 
-/** A Packio QC inspection, chosen by risk-based sampling (D-076). */
+/** A getpack QC inspection, chosen by risk-based sampling (D-076). */
 export const INSPECTION_STATUS = defineStatusMap<InspectionStatus>({
   planned: { tone: "neutral", icon: "calendar", labelKey: "inspection.planned" },
   in_progress: { tone: "primary", icon: "eye", labelKey: "inspection.inProgress" },
@@ -82,7 +82,7 @@ export const QC_RESULT = defineStatusMap<QcResult>({
   fail: { tone: "danger", icon: "ban", labelKey: "qcResult.fail" },
 });
 
-/** An issue a factory raised on a job; Packio sees it on the production board. */
+/** An issue a factory raised on a job; getpack sees it on the production board. */
 export const JOB_ISSUE_STATUS = defineStatusMap<JobIssueStatus>({
   open: { tone: "warning", icon: "flag", labelKey: "jobIssue.open" },
   resolved: { tone: "success", icon: "check", labelKey: "jobIssue.resolved" },

@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const pick = (locale: string, th: string, en: string | null) => (locale === "en" && en ? en : th);
 
 /**
- * The partner knowledge base (U2.F7): Packio's own guides for factories — the QC photo standard,
+ * The partner knowledge base (U2.F7): getpack's own guides for factories — the QC photo standard,
  * packing, labels — searchable and by category, rendered from the API (`partner.knowledgeBase.*`).
  * Screens link into it where the guide applies (the QC step to its photo standard).
  */

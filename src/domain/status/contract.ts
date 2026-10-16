@@ -7,7 +7,7 @@
  *
  * - **contract** — the enum is a named component in `contract/openapi.json` already, so the
  *   type *is* `Schemas["…"]` and the compiler checks the map against the real vocabulary.
- * - **schema** — packio-api's approved `docs/schema-design.md` §4 (the enum catalogue, approved
+ * - **schema** — getpack-api's approved `docs/schema-design.md` §4 (the enum catalogue, approved
  *   2026-09-23), where every value is listed and "each becomes a named OpenAPI component
  *   (PascalCase) when it appears in the contract. Values are only ever added." The endpoint
  *   that will carry it has not shipped, so the union is copied here verbatim — and when it
@@ -100,7 +100,7 @@ export type PreflightStatus = Schemas["PreflightStatus"];
 /** One version of the artwork a customer submitted, before and after prepress looked at it (B4.1). **Source: contract** (U-F0.3). */
 export type SubmissionStatus = Schemas["SubmissionStatus"];
 
-/** Drawing a dieline with `@packio/dieline`; `engine_unavailable` until the engine is deployed (B4.1). **Source: contract** (U-F0.3). */
+/** Drawing a dieline with `@getpack/dieline`; `engine_unavailable` until the engine is deployed (B4.1). **Source: contract** (U-F0.3). */
 export type DrawingStatus = Schemas["DrawingStatus"];
 
 /** A hired design job: 3 free revision rounds, then paid (D-071). **Source: contract** (U-F0.3). */
@@ -124,7 +124,7 @@ export type JobStatus = "released" | "accepted" | "rejected" | "in_progress" | "
 /** One stage of a job's route (D-075). **Source: schema** (`milestone_status`). */
 export type MilestoneStatus = "pending" | "in_progress" | "completed" | "skipped";
 
-/** A Packio QC inspection, chosen by risk-based sampling (D-076). **Source: schema** (`inspection_status`). */
+/** A getpack QC inspection, chosen by risk-based sampling (D-076). **Source: schema** (`inspection_status`). */
 export type InspectionStatus = "planned" | "in_progress" | "passed" | "failed" | "waived";
 
 /** A delivery — by the factory's own fleet with mandatory POD, or a fallback carrier (D-013, D-114). **Source: schema** (`shipment_status`). */
@@ -231,7 +231,7 @@ export type BillingStatementStatus = Schemas["BillingStatementStatus"];
 /** The factory's own tax invoice against a statement, as the factory sees it. **Source: contract** (U-B0.3). */
 export type VendorInvoiceStatus = Schemas["VendorInvoiceStatus"];
 
-/** Whether Packio can claim the input VAT of a factory bill. **Source: contract** (B5.3). */
+/** Whether getpack can claim the input VAT of a factory bill. **Source: contract** (B5.3). */
 export type InputVatStatus = Schemas["InputVatStatus"];
 
 /** One payout to a factory in a payout run. **Source: contract** (B5.3). */
@@ -250,7 +250,7 @@ export type WhtCertificateStatus = Schemas["WhtCertStatus"];
 export type CreditNoteRequestStatus = Schemas["CreditNoteRequestStatus"];
 
 /**
- * What became of a notification packio-api sent: a payment reminder (D-122) or a customer document
+ * What became of a notification getpack-api sent: a payment reminder (D-122) or a customer document
  * sent again (D-143). **Source: contract** (`NotificationStatus`, U-B0.3).
  */
 export type DunningStatus = Schemas["NotificationStatus"];
@@ -297,7 +297,7 @@ export type CloseStatus = Schemas["CloseStatus"];
 /** One step of the close: a blocking check fails, it is done, or a Finance Manager waives it (§7). **Source: contract** (B5.6). */
 export type CloseTaskStatus = Schemas["CloseTaskStatus"];
 
-/** A factory's own purchase order in Packio Factory (D-325). **Source: contract** (packio-api v0.44.0). */
+/** A factory's own purchase order in getpack Factory (D-325). **Source: contract** (getpack-api v0.44.0). */
 export type ErpPurchaseOrderStatus = Schemas["ErpPurchaseOrderStatus"];
 export type ErpPurchaseRequestStatus = Schemas["ErpPurchaseRequestStatus"];
 export type ErpSupplierInvoiceStatus = Schemas["ErpSupplierInvoiceStatus"];
@@ -310,7 +310,7 @@ export type ErpSupplierApproval = Schemas["ErpSupplierApproval"];
 export type ErpMachineState = Schemas["ErpMachineState"];
 export type ErpDocExpiry = Schemas["ErpDocExpiry"];
 
-/** Packio Factory ERP E4 (D-359 – D-371). **Source: contract** (packio-api v0.47.0). */
+/** getpack Factory ERP E4 (D-359 – D-371). **Source: contract** (getpack-api v0.47.0). */
 export type ErpLeadStage = Schemas["ErpLeadStage"];
 export type ErpOpportunityStage = Schemas["ErpOpportunityStage"];
 export type ErpQuotationStatus = Schemas["ErpQuotationStatus"];
@@ -321,12 +321,12 @@ export type ErpIssuedStatus = Schemas["ErpIssuedStatus"];
 export type ErpReceiptStatus = Schemas["ErpReceiptStatus"];
 export type ErpWhtCertificateStatus = Schemas["ErpWhtCertificateStatus"];
 
-/** Packio Factory ERP E5 (D-372 – D-383). **Source: contract** (packio-api v0.48.0). */
+/** getpack Factory ERP E5 (D-372 – D-383). **Source: contract** (getpack-api v0.48.0). */
 export type ErpCheckResult = Schemas["ErpCheckResult"];
 export type ErpNcrStatus = Schemas["ErpNcrStatus"];
 export type DefectSeverity = Schemas["DefectSeverity"];
 
-/** Packio Factory ERP E6 (D-385 – D-396). **Source: contract** (packio-api v0.49.0). */
+/** getpack Factory ERP E6 (D-385 – D-396). **Source: contract** (getpack-api v0.49.0). */
 export type ErpGlBankLineStatus = Schemas["ErpGlBankLineStatus"];
 export type ErpGlAssetStatus = Schemas["ErpGlAssetStatus"];
 

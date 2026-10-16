@@ -12,7 +12,7 @@
     "api": "API access"
   },
   "landing": {
-    "metaTitle": "Packio for business",
+    "metaTitle": "getpack for business",
     "title": "Order packaging as a company — the whole team, every branch",
     "intro": "One company account for your team: set an approver, add PO numbers, tax invoices per branch, and apply for credit terms.",
     "apply": "Open a company account",
@@ -476,7 +476,7 @@
   },
   "api": {
     "title": "API access",
-    "intro": "Let your company's systems place orders and fetch documents from Packio",
+    "intro": "Let your company's systems place orders and fetch documents from getpack",
     "adminOnly": "Only a Company Admin can manage API keys",
     "issueTitle": "Create a key",
     "name": "Key name",

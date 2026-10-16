@@ -1,6 +1,6 @@
 /**
  * The expression language of style recipes: sizes, constraints and closed sizes written as data
- * (`"width + a.panel"`, `"tuckDepth < depth - 5"`) so a recipe stays JSON that packio-api, a
+ * (`"width + a.panel"`, `"tuckDepth < depth - 5"`) so a recipe stays JSON that getpack-api, a
  * solver and a reviewer can all read. Hand-written parser, no `eval` / `Function` (CSP-safe).
  *
  *   expr     := cond

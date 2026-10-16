@@ -6,7 +6,7 @@ import { MOCK_BUYER_PHONE, MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpe
 import { addHeading, openRail } from "./helpers/designer";
 
 /**
- * U4.7, collaboration in Packio 3D Studio against the mock API: a comment pinned on the flat sheet,
+ * U4.7, collaboration in getpack 3D Studio against the mock API: a comment pinned on the flat sheet,
  * resolved; a comment link opened by someone else (signed in) who pins a comment of their own; an
  * edit link that saves a new version of the owner's design through its token.
  */

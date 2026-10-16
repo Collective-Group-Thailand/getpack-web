@@ -7,7 +7,7 @@ import { addHeading } from "./helpers/designer";
 import { gotoHydrated } from "./helpers/session";
 
 /**
- * U4.1, Packio 3D Studio against the mock API: from a style card into the studio, the price dock
+ * U4.1, getpack 3D Studio against the mock API: from a style card into the studio, the price dock
  * pricing the saved version (`store.studio.quote`), a quantity change re-priced with its reason,
  * the five steps reversible with the canvas kept, and axe on everything that is not the canvas.
  * As the mock's `designer` persona, so nothing here shares state with the other suites.

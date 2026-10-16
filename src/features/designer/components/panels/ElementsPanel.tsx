@@ -32,13 +32,13 @@ type StudioElement = Schemas["StoreStudioElementDto"];
 const SYMBOLOGIES: Symbology[] = ["qr", "ean13", "ean8", "upca", "code128"];
 
 /**
- * Shapes, Packio's own elements, codes and data blocks (U4.4).
+ * Shapes, getpack's own elements, codes and data blocks (U4.4).
  *
  * - **Elements** come from the studio catalogue (`store.studio.listElements`): shapes, icons and
- *   packaging marks drawn by Packio; a mark with legal meaning is placed only after the customer
+ *   packaging marks drawn by getpack; a mark with legal meaning is placed only after the customer
  *   declares the right to use it (`declareRight`, D-282) — the placed shape remembers its element.
  * - **Codes**: QR (with its error-correction level), EAN-13, EAN-8, UPC-A and Code 128, drawn here
- *   with their quiet zones and checked by packio-api's one validation service (check digit,
+ *   with their quiet zones and checked by getpack-api's one validation service (check digit,
  *   character set, payload length, the GS1 minimum width, D-283); the symbol is placed at least as
  *   wide as that minimum.
  * - **Data blocks**: ingredients, nutrition and the manufacturer, typed as facts and set as text with
@@ -135,7 +135,7 @@ function StudioElements() {
   if (list.length === 0) return null;
   return (
     <section className="space-y-2">
-      <h3 className="text-sm font-semibold">{t("packio")}</h3>
+      <h3 className="text-sm font-semibold">{t("getpack")}</h3>
       {(["shape", "icon", "mark"] as const).map((kind) => {
         const ofKind = list.filter((e) => e.kind === kind);
         if (ofKind.length === 0) return null;
@@ -204,7 +204,7 @@ function Codes() {
   const [level, setLevel] = useState<QrLevel>("M");
   const [value, setValue] = useState("");
   const local = value.length > 0 && (kind === "qr" ? qrMatrix(value) !== null : barModules(kind, value) !== null);
-  // packio-api's validation service is the authority (D-283); the local encoder draws the symbol.
+  // getpack-api's validation service is the authority (D-283); the local encoder draws the symbol.
   const request = value ? JSON.stringify({ symbology: kind, value, ...(kind === "qr" ? { level } : {}) }) : null;
   const settled = useDebounced(request, 350);
   const check = useQuery({

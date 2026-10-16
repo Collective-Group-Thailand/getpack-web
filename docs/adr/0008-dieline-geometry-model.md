@@ -1,16 +1,16 @@
-# ADR-0008 — `@packio/dieline` geometry model v2: edges with roles, pieces, a style registry
+# ADR-0008 — `@getpack/dieline` geometry model v2: edges with roles, pieces, a style registry
 
 **Status:** Accepted (2026-09-27) · F4 Part A
 
 ## Context
 
 The BoxStudio engine described a face as a convex polygon of points plus the indices of its
-fold edges. That was enough for three rectangular styles and nothing else Packio sells: pillow
+fold edges. That was enough for three rectangular styles and nothing else getpack sells: pillow
 boxes and rounded tucks need arcs, windows and hang holes need holes, crash-lock bottoms need
 glue areas, tear strips need perforations, lid-and-base boxes are two blanks, and the factory
 needs to know which line is a cut, a crease or a half-cut. The convex inset used for safe
 zones folded over itself on any concave face. Three `switch` cases in one file could not grow
-into the Locopack catalogue (F4 Part B) and the drawing service (packio-api B4.1) needs the same
+into the Locopack catalogue (F4 Part B) and the drawing service (getpack-api B4.1) needs the same
 geometry the customer designed on.
 
 ## Decision
@@ -45,7 +45,7 @@ geometry the customer designed on.
 
 ## Consequences
 
-- A major version (1.0.0). The app moved in the same change; packio-api consumes 1.x.
+- A major version (1.0.0). The app moved in the same change; getpack-api consumes 1.x.
 - New styles cost one file and zero test code: the quality gate iterates the registry
   (every style × preset × reference material: closed loops, no overlaps, dimensions, validation,
   SVG/DXF snapshots, closed fold).

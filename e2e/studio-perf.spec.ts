@@ -18,7 +18,7 @@ const OBJECTS = 150;
 test("orbiting a 150-object design in 3D under a 4× CPU throttle", async ({ page, context }) => {
   test.slow();
   await signInAsCustomer(page, "/account", MOCK_DESIGNER_PHONE);
-  const headers = { "x-packio-csrf": "1", origin: HOSTS.customer, "content-type": "application/json" };
+  const headers = { "x-getpack-csrf": "1", origin: HOSTS.customer, "content-type": "application/json" };
   const catalog = await (
     await page.request.get(`${HOSTS.customer}/bff/v1/store/designer/catalog?product=tuck-end-box`)
   ).json();

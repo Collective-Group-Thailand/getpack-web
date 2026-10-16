@@ -1,8 +1,8 @@
 # Partner zone — UX & journey programme
 
-Asked for by the product owner on 2026-10-14: improve the UX/UI and the journeys of **every partner menu** (Packio
+Asked for by the product owner on 2026-10-14: improve the UX/UI and the journeys of **every partner menu** (getpack
 and the factory ERP), menu by menu, walking each as its real user, until the system is complete. Decisions are
-delegated; API-side decisions are recorded in packio-api `docs/decisions.md` (D-399 onwards).
+delegated; API-side decisions are recorded in getpack-api `docs/decisions.md` (D-399 onwards).
 
 How a menu is walked: sign in as the role that lives in it (UAT users `factory-<role>@uat.example.invalid`), on a
 1280 px office screen and a 390 px phone, with rehearsal data from `pnpm uat:populate`; do the job end to end; note
@@ -15,7 +15,7 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | 3 | Planning and the floor: planning, schedule, maintenance, machines, people, capacity, hours | **done** (web `feat/ux-round3-plan`) |
 | 4 | Quality: checks, NCRs, templates | **done** (web `feat/ux-round4-quality`) |
 | 5 | Sales: CRM, quotations, sales orders, deliveries | **done** (web `feat/ux-round5-sales`) |
-| 6 | Finance: invoices, receivables, tax, payables, Packio billing and payouts, prices, shipping rates | **done** (web `feat/ux-round6-finance`, API v0.52.0) |
+| 6 | Finance: invoices, receivables, tax, payables, getpack billing and payouts, prices, shipping rates | **done** (web `feat/ux-round6-finance`, API v0.52.0) |
 | 7 | The books: ledger, journals, reports, accounts, assets, bank | **done** (web `feat/ux-round7-books`) |
 | 8 | Insight: dashboard, costs, profit, OEE | **done** (web `feat/ux-round8-insight`, API v0.53.0) |
 | 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | **done** (web `feat/ux-round9-factory`) |
@@ -26,17 +26,17 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 
 | # | Finding (as the user) | Fix |
 |---|---|---|
-| 1.1 | Today showed only Packio work; the ERP's approvals and deadlines were nowhere — the owner had to open every menu to find what waited for him. | ERP inbox (API D-399) merged with the Packio tasks in four sections — *waiting for your approval*, *overdue*, *today*, *coming up* — with a summary strip that jumps to each; each row opens the document or its list. |
-| 1.2 | A Packio job offer with a 24-hour clock was only a row in the queue at the bottom. | Each offer is a task at the top ("รับงาน Packio … ตอบรับหรือปฏิเสธภายใน …"); the Packio counters and queue sit under their own heading. |
+| 1.1 | Today showed only getpack work; the ERP's approvals and deadlines were nowhere — the owner had to open every menu to find what waited for him. | ERP inbox (API D-399) merged with the getpack tasks in four sections — *waiting for your approval*, *overdue*, *today*, *coming up* — with a summary strip that jumps to each; each row opens the document or its list. |
+| 1.2 | A getpack job offer with a 24-hour clock was only a row in the queue at the bottom. | Each offer is a task at the top ("รับงาน getpack … ตอบรับหรือปฏิเสธภายใน …"); the getpack counters and queue sit under their own heading. |
 | 1.3 | The owner's sidebar had ~50 items in nine groups — a long scroll to find anything. | Groups fold (the day's work and the current group stay open; choices remembered on the device), and a menu search (press `/`, Enter opens the first match). |
 | 1.4 | View tabs (alerts' kinds, jobs' views) ran off the right edge on a desktop. | Tabs wrap on wider screens; a phone still scrolls them sideways. |
 | 1.5 | A mock-up job read "กล่อง 1 ชิ้น" with a 500-piece delivery under it — nothing said it was a mock-up. | Job kind badge (mock-up / re-production) in the job list and on the job, and a note explaining the quantity. |
-| 1.6 | A Packio job and the production order made from it were two worlds: the job did not say whether materials were ready or where to plan it. | "ในระบบโรงงาน" card on the job: its MO, status, materials ready / missing, progress, due day, link. |
+| 1.6 | A getpack job and the production order made from it were two worlds: the job did not say whether materials were ready or where to plan it. | "ในระบบโรงงาน" card on the job: its MO, status, materials ready / missing, progress, due day, link. |
 | 1.7 | The floor offered *start* on every step of every order at once (step 100 "ready to ship" before step 30). | One card per order with the step to do now (running or paused first); later steps folded under it in order. Zero planned minutes are no longer shown. |
-| 1.8 | Production orders from Packio jobs showed `partnerErp.common.units.piece` (unit `piece` unknown to the ERP). | API maps Packio's `piece` to `pcs` (D-400) and migrates old rows; screens fall back to the raw unit rather than a key. |
+| 1.8 | Production orders from getpack jobs showed `partnerErp.common.units.piece` (unit `piece` unknown to the ERP). | API maps getpack's `piece` to `pcs` (D-400) and migrates old rows; screens fall back to the raw unit rather than a key. |
 | 1.9 | Countdowns ("รับงานภายใน 23 ชม. 34 นาที") broke hydration when the minute turned between server and browser. | The timer text is allowed to differ at hydration. |
 | 1.10 | The kiosk lived inside the office shell — a tablet by the machine showed the sidebar and dimmed after a minute. | A full-screen switch next to the kiosk's actions, and the screen is kept awake while the kiosk is open (Wake Lock). |
-| 1.11 | A claim said "Packio wants an answer" with no deadline; its references were plain text. | The answer-by time (and an overdue warning) from the claim's SLA; the job reference opens the job; the claimed amount is shown. |
+| 1.11 | A claim said "getpack wants an answer" with no deadline; its references were plain text. | The answer-by time (and an overdue warning) from the claim's SLA; the job reference opens the job; the claimed amount is shown. |
 
 Already good and kept: the job page (accept with the countdown, spec and approved artwork before saying yes, steps
 with one next action), the shipment page (labels → dispatch → proof of delivery), the samples evidence form, the QC
@@ -65,9 +65,9 @@ tiles and low-stock view, purchase requests → orders, RFQ comparison, the supp
 
 | # | Finding (as the user) | Fix |
 |---|---|---|
-| 3.1 | A production order could not be changed at all from the screens — the API allowed it (`erp_mo.edit`) but there was no page: a wrong due date, priority or material meant cancelling and starting again. | **Edit production order**: title, start, due, priority (0–9, the floor sorts by it) and note while open; quantity, materials and steps while still planned (a Packio job's steps follow the job). Opened from the order's actions. |
+| 3.1 | A production order could not be changed at all from the screens — the API allowed it (`erp_mo.edit`) but there was no page: a wrong due date, priority or material meant cancelling and starting again. | **Edit production order**: title, start, due, priority (0–9, the floor sorts by it) and note while open; quantity, materials and steps while still planned (a getpack job's steps follow the job). Opened from the order's actions. |
 | 3.2 | The order page offered start / finish on every step at once. | Buttons on the step to do now (and running, paused, done ones); later steps fold "บันทึกขั้นนี้ก่อนลำดับ"; zero planned minutes are not shown. |
-| 3.3 | Weekly capacity was read-only for the factory, though its planner may change a week (API `factory_capacity.manage`) — an overhaul or a holiday could not be entered. | "ปรับสัปดาห์นี้" in each week's cell: capacity and reason; Packio books new jobs against it. |
+| 3.3 | Weekly capacity was read-only for the factory, though its planner may change a week (API `factory_capacity.manage`) — an overhaul or a holiday could not be entered. | "ปรับสัปดาห์นี้" in each week's cell: capacity and reason; getpack books new jobs against it. |
 
 Already good and kept: the planning overview and MRP shortages, the machine schedule with auto-plan, drag and lock, the
 maintenance orders and plans, machine pages with their kiosk and breakdown buttons, shifts / skills / work log, hours
@@ -101,17 +101,17 @@ sales-order pages (credit limit, reservations, delivered / invoiced per line, PD
 
 ## Round 6 — finance
 
-**Walked as** the accountant (month end: invoices, receipts, payables, Packio statements and payouts, tax) and the owner
-(confirming a Packio statement, prices and shipping rates).
+**Walked as** the accountant (month end: invoices, receipts, payables, getpack statements and payouts, tax) and the owner
+(confirming a getpack statement, prices and shipping rates).
 
 | # | Finding (as the user) | Fix |
 |---|---|---|
-| 6.1 | A document said nothing about what it put in the books — to see the entry of an invoice, a receipt, a goods receipt or a Packio payout the accountant searched the journals by number. | "บันทึกบัญชีแล้ว": every posted document (Packio statement and payout, sales invoice and note, receipt, supplier invoice and payment, goods receipt, delivery note, production order) lists its journal entries — number, rule, debit / credit lines — each opening the entry (`PostedEntries`, ledger readers only). |
-| 6.2 | The sales VAT register left out the factory's sale to Packio: its VAT was in the ledger and in the PP30 check, but not in the report the accountant files from. | API D-401: Packio statements the factory confirmed in the month are rows of the sales register ("ใบกำกับภาษีถึง Packio"), numbered by the factory's tax invoice once recorded; the PP30 summary and the export include them; the note says so. |
-| 6.3 | Register lines were text — checking one meant finding the document elsewhere. | Each line opens its document (invoice, note, supplier invoice, Packio statement); document numbers do not break. |
+| 6.1 | A document said nothing about what it put in the books — to see the entry of an invoice, a receipt, a goods receipt or a getpack payout the accountant searched the journals by number. | "บันทึกบัญชีแล้ว": every posted document (getpack statement and payout, sales invoice and note, receipt, supplier invoice and payment, goods receipt, delivery note, production order) lists its journal entries — number, rule, debit / credit lines — each opening the entry (`PostedEntries`, ledger readers only). |
+| 6.2 | The sales VAT register left out the factory's sale to getpack: its VAT was in the ledger and in the PP30 check, but not in the report the accountant files from. | API D-401: getpack statements the factory confirmed in the month are rows of the sales register ("ใบกำกับภาษีถึง getpack"), numbered by the factory's tax invoice once recorded; the PP30 summary and the export include them; the note says so. |
+| 6.3 | Register lines were text — checking one meant finding the document elsewhere. | Each line opens its document (invoice, note, supplier invoice, getpack statement); document numbers do not break. |
 | 6.4 | The tax month had only a month picker; PP30 is filed for last month. | "‹ เดือนก่อน / เดือนถัดไป ›" beside the picker on every tax view. |
 | 6.5 | Negative amounts read "฿-100.00". | "-฿100.00" everywhere (the sign before the symbol, as Intl writes it). |
-| 6.6 | A confirmed Packio statement without the factory's tax invoice looked done, though Packio pays only once it is attached. | Billing summary (to check and confirm / confirmed, tax invoice to attach / disputed, with amounts); such rows are marked "ต้องแนบใบกำกับภาษี". |
+| 6.6 | A confirmed getpack statement without the factory's tax invoice looked done, though getpack pays only once it is attached. | Billing summary (to check and confirm / confirmed, tax invoice to attach / disputed, with amounts); such rows are marked "ต้องแนบใบกำกับภาษี". |
 | 6.7 | Payouts and shipping rates are menus of their own but opened with a "back to billing / prices" link. | The back links are gone on top-level menus. |
 
 Already good and kept: invoices from deliveries or orders with the tax-invoice switch, receivables aging and receipts
@@ -140,12 +140,12 @@ stock value vs. ledger, the chart with rule editor, bank import with auto-match 
 
 ## Round 8 — insight
 
-**Walked as** the owner (how is the month going, what does a Packio job earn, how are the machines doing).
+**Walked as** the owner (how is the month going, what does a getpack job earn, how are the machines doing).
 
 | # | Finding (as the user) | Fix |
 |---|---|---|
-| 8.1 | The dashboard's "sales this month" counted only the factory's own invoices (฿8,350) while Packio — most of the work — had paid ฿239,951 that month; the owner could not see his main income. | "งานจาก Packio" first on the dashboard (API D-402): revenue from statements confirmed this month, statements to confirm (with the amount), confirmed ones still needing the tax invoice; the own-sales tile is named as such. |
-| 8.2 | Gross profit was by customer, item and sales order only — a Packio job's margin could not be seen. | "งาน Packio" view (the default): each job finished in the month, the purchase order's net over the production order's cost, opening the job's cost sheet. |
+| 8.1 | The dashboard's "sales this month" counted only the factory's own invoices (฿8,350) while getpack — most of the work — had paid ฿239,951 that month; the owner could not see his main income. | "งานจาก getpack" first on the dashboard (API D-402): revenue from statements confirmed this month, statements to confirm (with the amount), confirmed ones still needing the tax invoice; the own-sales tile is named as such. |
+| 8.2 | Gross profit was by customer, item and sales order only — a getpack job's margin could not be seen. | "งาน getpack" view (the default): each job finished in the month, the purchase order's net over the production order's cost, opening the job's cost sheet. |
 | 8.3 | A job with nothing issued and no machine time showed a 100 % margin. | Marked "ยังไม่มีต้นทุน" (no %), and the total warns how many jobs have no cost yet. |
 | 8.4 | OEE showed 0 % on a day a machine ran without a shift (1,440 / 0 minutes), dragging the week down. | API D-403: time run beyond the planned time extends it — availability 100 %, not 0 %; the factory OEE weighs machines by that time. |
 | 8.5 | Production order numbers broke over two lines on the cost report. | Kept on one line. |
@@ -155,31 +155,31 @@ per unit), machine rates, OEE per machine and day with pause reasons.
 
 ## Round 9 — the factory
 
-**Walked as** the owner after go-live (settings and people, what the factory agreed with Packio, requests, documents,
+**Walked as** the owner after go-live (settings and people, what the factory agreed with getpack, requests, documents,
 the handbook, support access, the phone's full menu).
 
 | # | Finding (as the user) | Fix |
 |---|---|---|
-| 9.1 | After go-live the company details, payout account, capabilities, zones and agreements were only reachable through the onboarding address — the menu no longer shows onboarding. | Settings opens with "ข้อมูลโรงงานกับ Packio": eight cards (company, documents, payout account, capabilities, weekly capacity, delivery zones, payout terms, agreements) to read them and ask for a change. |
+| 9.1 | After go-live the company details, payout account, capabilities, zones and agreements were only reachable through the onboarding address — the menu no longer shows onboarding. | Settings opens with "ข้อมูลโรงงานกับ getpack": eight cards (company, documents, payout account, capabilities, weekly capacity, delivery zones, payout terms, agreements) to read them and ask for a change. |
 | 9.2 | The External auditor / CPA role showed as `factory_auditor` in the users list. | Named like every other role. |
 | 9.3 | A request about anything ("เรื่องอื่น") still asked for a product type and prefixed it to the message. | The product type is asked only for topics about one (capability, capacity, tolerance, tier, pricing). |
 | 9.4 | On a phone, "เพิ่มเติม" listed ~50 menus with no way to find one. | A search box on top filters by name, description and group. |
-| 9.5 | Style intakes said "not open" with nowhere to go. | A link to tell Packio the factory has designs to offer (requests). |
+| 9.5 | Style intakes said "not open" with nowhere to go. | A link to tell getpack the factory has designs to offer (requests). |
 | 9.6 | Support access, a menu of its own, opened with a "back to settings" link. | Removed. |
 
 Already good and kept: users and roles with deactivate, working hours and closures, ERP settings, notification
-channels per topic, the label printer per device, performance against Packio's KPIs, documents with folders, versions
+channels per topic, the label printer per device, performance against getpack's KPIs, documents with folders, versions
 and expiry, the handbook with categories, the support grant with its log, the alerts list.
 
 ## Summary
 
 Nine rounds, every partner menu walked as its user at 1280 px and 390 px: no page scrolls sideways, no page or console
-errors beyond the test browser's caret style. API releases v0.51.0 (inbox, units), v0.52.0 (Packio statements in the
-VAT register), v0.53.0 (Packio work in the owner's numbers, OEE overtime).
+errors beyond the test browser's caret style. API releases v0.51.0 (inbox, units), v0.52.0 (getpack statements in the
+VAT register), v0.53.0 (getpack work in the owner's numbers, OEE overtime).
 
 ## Owner decisions (2026-10-14)
 
-- Tax point of Packio revenue: the day the factory confirms the billing statement (D-397 / D-401 confirmed).
+- Tax point of getpack revenue: the day the factory confirms the billing statement (D-397 / D-401 confirmed).
 - Dieline intake: opened with the standard terms v1 (API D-404); "เสนอแบบไดคัท" now accepts offers. Legal may publish
   a revised version in Admin → Settings (`styles.intake_terms`).
 - UAT rehearsal: the books open with the opening stock and catch up the documents already there (API D-405), so the

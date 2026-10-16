@@ -1,7 +1,7 @@
 "use client";
 
 import type Konva from "konva";
-import { dielineToPdf, type Dieline, type PdfFinish, type PdfImage } from "@packio/dieline";
+import { dielineToPdf, type Dieline, type PdfFinish, type PdfImage } from "@getpack/dieline";
 
 import { withFlatWorld } from "./lib/capture";
 import { deflate, FINISH_SEPARATIONS, finishesIn, finishMask, maskBits } from "./lib/finishes";

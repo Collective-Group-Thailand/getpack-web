@@ -81,7 +81,7 @@ test("T12 download the dieline for a size, for Illustrator", async ({ page, jour
     ]);
   });
 
-  // The file's D-302 layers are packio-api's output, checked on the real API
+  // The file's D-302 layers are getpack-api's output, checked on the real API
   // (`e2e/integration/downloads.spec.ts`); the mock serves a placeholder PDF.
   await j.done(async () => {
     expect(file!.suggestedFilename()).toMatch(/^PK-TE-01-.*-70x40x150\.pdf$/);

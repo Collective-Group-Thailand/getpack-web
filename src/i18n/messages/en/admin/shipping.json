@@ -10,7 +10,7 @@
     },
     "carriers": {
       "title": "Carriers",
-      "description": "The factory's own fleet by default, and the fallback carriers Packio books where a factory cannot serve a zone."
+      "description": "The factory's own fleet by default, and the fallback carriers getpack books where a factory cannot serve a zone."
     },
     "calendar": {
       "title": "Business calendar",
@@ -216,7 +216,7 @@
   },
   "carriers": {
     "fleetIntro": "The factory's own fleet, the default way goods travel. What factories are paid is set on each factory's shipping payout tab.",
-    "fallbackIntro": "A fallback carrier Packio books where a factory cannot serve a zone, on Packio's account.",
+    "fallbackIntro": "A fallback carrier getpack books where a factory cannot serve a zone, on getpack's account.",
     "on": "Enabled",
     "off": "Disabled",
     "enable": "Enable",
@@ -245,13 +245,13 @@
     "addIntro": "Only the Secrets Manager reference is kept — never passwords or keys. The previous active account of the same environment is closed.",
     "label": "Account label",
     "secretRef": "Secrets Manager secret id",
-    "secretRefHint": "e.g. packio/carriers/flash/production (a JSON of the credentials)",
+    "secretRefHint": "e.g. getpack/carriers/flash/production (a JSON of the credentials)",
     "sandboxLabel": "Sandbox account",
     "incomplete": "Fill in the label and the secret id.",
     "save": "Save",
     "accountAdded": "Account added",
     "testTitle": "Ask {name} for a quote",
-    "testIntro": "A real quote on Packio's account, to check the account works.",
+    "testIntro": "A real quote on getpack's account, to check the account works.",
     "fromPostcode": "From postcode",
     "toPostcode": "To postcode",
     "lat": "Latitude",

@@ -8,7 +8,7 @@ const now = new Date("2026-10-01T10:15:00+07:00");
 const id = "0192f3a0-7c1e-7d2a-9b1f-000000610001";
 
 describe("the analytics ingest mapping (store.analytics.ingest)", () => {
-  it("sends only packio-api's names, with the ids every event needs", () => {
+  it("sends only getpack-api's names, with the ids every event needs", () => {
     const names = new Set(
       FUNNEL_EVENTS.map((name) => toIngestEvent(name, { quantity: 500, orderGroupId: id }, visitor, now, id)).flatMap(
         (event) => (event ? [event.name] : []),
@@ -69,7 +69,7 @@ describe("the analytics ingest mapping (store.analytics.ingest)", () => {
     expect(toIngestEvent("studio_add_to_cart", {}, visitor, now, id)).toBeNull();
   });
 
-  it("drops an event that lacks what packio-api requires, rather than send it wrong", () => {
+  it("drops an event that lacks what getpack-api requires, rather than send it wrong", () => {
     expect(toIngestEvent("quote_shown", { quoteMode: "instant" }, visitor, now, id)).toBeNull();
     expect(toIngestEvent("cart_item_added", {}, visitor, now, id)).toBeNull();
     expect(toIngestEvent("order_placed", {}, visitor, now, id)).toBeNull();

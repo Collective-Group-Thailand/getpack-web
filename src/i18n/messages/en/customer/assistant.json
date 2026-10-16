@@ -1,10 +1,10 @@
 {
   "open": "Ask the AI assistant",
-  "title": "Packio assistant",
+  "title": "getpack assistant",
   "close": "Close",
   "aiLabel": "AI",
   "aiTitle": "This assistant is an AI",
-  "aiBody": "It answers only from Packio's own data — box styles, starting prices, your orders, the glossary and help articles. It never guesses a price, a date or a policy, and conversations are not used to train models.",
+  "aiBody": "It answers only from getpack's own data — box styles, starting prices, your orders, the glossary and help articles. It never guesses a price, a date or a policy, and conversations are not used to train models.",
   "retention": "Conversations are kept {days} days, then deleted. You can turn keeping off below.",
   "retentionPolicy": "Conversations are kept under our privacy policy. You can turn keeping off below.",
   "optOut": "Don't keep this conversation",

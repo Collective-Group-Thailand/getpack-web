@@ -15,7 +15,7 @@ export type DrawingJob = Schemas["DrawingJobDto"];
 export type DesignService = Schemas["DesignServiceDto"];
 export type DesignDocument = Schemas["DesignDocumentDto"];
 
-/** packio-api's prepress queues (`admin.artwork.queue`), in the desk's order; the first is the default. */
+/** getpack-api's prepress queues (`admin.artwork.queue`), in the desk's order; the first is the default. */
 export const PREPRESS_QUEUES = [
   "submissions",
   "changes_requested",

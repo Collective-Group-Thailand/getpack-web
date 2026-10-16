@@ -39,13 +39,13 @@ type Resolution = Schemas["ClaimAction"];
 type Step = "review" | "request_info" | "send_to_factory" | "approve" | "reject" | "close";
 
 const STEPS = new Set<string>(["review", "request_info", "send_to_factory", "approve", "reject", "close"]);
-/** Every verb of `claim.*` this screen performs (packio-api's `ADMIN_CLAIM_ACTIONS`). */
+/** Every verb of `claim.*` this screen performs (getpack-api's `ADMIN_CLAIM_ACTIONS`). */
 const SUPPORTED = new Set<string>([...STEPS, "override_liability", "resolve"]);
 const LIABILITIES = [
   "factory",
   "customer",
   "carrier",
-  "packio",
+  "getpack",
   "undetermined",
 ] as const satisfies readonly Schemas["ClaimLiability"][];
 /** The resolutions D-083 allows for a liability (`claims.action_not_allowed` refuses the rest). */
@@ -53,7 +53,7 @@ const RESOLUTIONS: Record<Schemas["ClaimLiability"], Resolution[]> = {
   factory: ["reproduction_job", "refund", "credit_note", "factory_deduction"],
   carrier: ["refund", "credit_note", "carrier_recovery"],
   customer: ["refund", "credit_note", "store_credit"],
-  packio: ["refund", "credit_note", "store_credit"],
+  getpack: ["refund", "credit_note", "store_credit"],
   undetermined: ["refund", "credit_note", "store_credit"],
 };
 const WITH_AMOUNT = new Set<Resolution>([

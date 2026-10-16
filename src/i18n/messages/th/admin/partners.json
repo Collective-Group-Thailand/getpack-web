@@ -93,7 +93,7 @@
     "trialJobs": "งานทดลอง {count} งาน",
     "modes": {
       "self_service": "สมัครเอง",
-      "assisted": "Packio ช่วยกรอกข้อมูล"
+      "assisted": "getpack ช่วยกรอกข้อมูล"
     },
     "juristic": {
       "company": "บริษัทจำกัด",
@@ -118,7 +118,7 @@
     "hints": {
       "taxId": "13 หลัก",
       "branchCode": "5 หลัก สำนักงานใหญ่คือ 00000",
-      "onboardingMode": "Packio ช่วยกรอก: โรงงานยืนยันแต่ละขั้นตอนภายหลัง",
+      "onboardingMode": "getpack ช่วยกรอก: โรงงานยืนยันแต่ละขั้นตอนภายหลัง",
       "lineGroupId": "ไม่บังคับ"
     }
   },
@@ -128,7 +128,7 @@
     "partners": "พาร์ตเนอร์",
     "modes": {
       "self_service": "สมัครเอง",
-      "assisted": "Packio ช่วยกรอกข้อมูล"
+      "assisted": "getpack ช่วยกรอกข้อมูล"
     },
     "onboarding": "ความคืบหน้าการรับเข้า",
     "steps": "{done} จาก {total} ขั้นตอน",
@@ -206,7 +206,7 @@
   },
   "onboarding": {
     "title": "ขั้นตอนการรับเข้า",
-    "assistedNote": "Packio กรอกข้อมูลแทนโรงงาน โรงงานต้องยืนยันแต่ละขั้นตอนในส่วนพาร์ตเนอร์",
+    "assistedNote": "getpack กรอกข้อมูลแทนโรงงาน โรงงานต้องยืนยันแต่ละขั้นตอนในส่วนพาร์ตเนอร์",
     "selfNote": "โรงงานกรอกข้อมูลเอง ทีมพาร์ตเนอร์ตรวจและอนุมัติ",
     "step": "ขั้นตอน",
     "status": "สถานะ",
@@ -467,10 +467,10 @@
   },
   "terms": {
     "arrangement": "รูปแบบการตั้งราคา",
-    "arrangementNote": "โรงงานตั้งราคาเอง หรือรับอัตราที่ Packio กำหนด",
+    "arrangementNote": "โรงงานตั้งราคาเอง หรือรับอัตราที่ getpack กำหนด",
     "modes": {
       "factory_price_list": "โรงงานตั้งราคาเอง",
-      "platform_rate_card": "Packio กำหนดอัตรา"
+      "platform_rate_card": "getpack กำหนดอัตรา"
     },
     "ownershipMode": "รูปแบบ",
     "participations": "ระดับการเข้าร่วมรายประเภท",
@@ -573,8 +573,8 @@
     "upcoming": "มีฉบับรอมีผล {count} ฉบับ",
     "origins": {
       "factory_proposal": "โรงงานเสนอ",
-      "platform_rate_card": "อัตรา Packio",
-      "assisted_entry": "Packio กรอกแทน",
+      "platform_rate_card": "อัตรา getpack",
+      "assisted_entry": "getpack กรอกแทน",
       "import": "นำเข้า"
     },
     "showLines": "ดูรายการ ({count})",
@@ -594,8 +594,8 @@
     "proposalName": "{type} · มีผล {date}",
     "direction": "ทิศทาง",
     "directions": {
-      "factory_to_packio": "โรงงานเสนอราคา",
-      "packio_to_factory": "Packio เสนออัตรา"
+      "factory_to_getpack": "โรงงานเสนอราคา",
+      "getpack_to_factory": "getpack เสนออัตรา"
     },
     "status": "สถานะ",
     "lines": "รายการ",
@@ -604,12 +604,12 @@
   },
   "proposals": {
     "title": "ข้อเสนอราคา",
-    "description": "ข้อเสนอราคาจากโรงงาน และอัตราที่ Packio ส่งให้โรงงานยอมรับ",
+    "description": "ข้อเสนอราคาจากโรงงาน และอัตราที่ getpack ส่งให้โรงงานยอมรับ",
     "directionsLabel": "ทิศทาง",
     "all": "ทั้งหมด",
     "directions": {
-      "factory_to_packio": "โรงงานเสนอราคา",
-      "packio_to_factory": "Packio เสนออัตรา"
+      "factory_to_getpack": "โรงงานเสนอราคา",
+      "getpack_to_factory": "getpack เสนออัตรา"
     },
     "columns": {
       "proposal": "ข้อเสนอ",
@@ -629,8 +629,8 @@
     "partners": "พาร์ตเนอร์",
     "proposals": "ข้อเสนอราคา",
     "directions": {
-      "factory_to_packio": "โรงงานเสนอราคา",
-      "packio_to_factory": "Packio เสนออัตรา"
+      "factory_to_getpack": "โรงงานเสนอราคา",
+      "getpack_to_factory": "getpack เสนออัตรา"
     },
     "factory": "โรงงาน",
     "productType": "ประเภทสินค้า",

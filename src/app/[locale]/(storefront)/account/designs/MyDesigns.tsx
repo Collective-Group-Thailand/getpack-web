@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { nanoid } from "nanoid";
 
-import { getStyle } from "@packio/dieline";
+import { getStyle } from "@getpack/dieline";
 import { storeDesigns, type StoreDesign } from "@/features/designer/data/api";
 import { useFileUrl } from "@/features/customer/files/files";
 import { sizeOf } from "@/features/designer/document";

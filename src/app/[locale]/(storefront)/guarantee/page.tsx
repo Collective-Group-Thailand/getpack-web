@@ -21,9 +21,9 @@ const TYPES: Schemas["ClaimType"][] = ["damaged", "wrong_spec", "print_defect", 
 const SEVERITIES: Schemas["ClaimSeverity"][] = ["minor", "major", "critical"];
 
 /**
- * The guarantee (U2.F4, D-260–D-263): the remedies matrix exactly as packio-api publishes it — for
- * each kind of problem and its severity, what Packio does — with the time to report a claim and the
- * business days Packio answers and decides in. Nothing here is written by hand: a version change on
+ * The guarantee (U2.F4, D-260–D-263): the remedies matrix exactly as getpack-api publishes it — for
+ * each kind of problem and its severity, what getpack does — with the time to report a claim and the
+ * business days getpack answers and decides in. Nothing here is written by hand: a version change on
  * the API changes the page.
  */
 export default async function GuaranteePage({ params }: { params: Promise<{ locale: string }> }) {

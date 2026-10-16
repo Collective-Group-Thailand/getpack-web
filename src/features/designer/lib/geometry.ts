@@ -1,4 +1,4 @@
-import type { Pt } from "@packio/dieline";
+import type { Pt } from "@getpack/dieline";
 
 import type { DesignElement } from "../types";
 

@@ -41,7 +41,7 @@ const invalid = (path: string, code: string, message: string) =>
 
 /* ------------------------------------------------------------------------------- claims */
 
-/** packio-api `src/modules/claims/claim-actions.ts` (v0.6.0), the factory's rule. */
+/** getpack-api `src/modules/claims/claim-actions.ts` (v0.6.0), the factory's rule. */
 const PARTNER_CLAIM_ACTIONS: ActionRule<ReturnType<typeof claimFactsOf>>[] = [
   { key: "claim.respond", permissions: ["factory_claims.respond"], when: (c) => c.status === "factory_review" },
 ];
@@ -178,7 +178,7 @@ function changeable(user: UserRow | undefined, who: PartnerPersona): Response | 
   if (!user) return problem(404, "http.not_found", "ไม่พบผู้ใช้นี้");
   if (user.id === who.id) return problem(403, "iam.self_grant", "เปลี่ยนสิทธิ์ของตัวเองไม่ได้");
   if (user.active && user.roles.includes("factory_owner"))
-    return problem(422, "factory_users.role_not_allowed", "เจ้าของโรงงานจัดการโดยทีมพาร์ตเนอร์ของ Packio");
+    return problem(422, "factory_users.role_not_allowed", "เจ้าของโรงงานจัดการโดยทีมพาร์ตเนอร์ของ getpack");
   return null;
 }
 
@@ -343,7 +343,7 @@ export const accountHandlers = [
     const user = usersOf(ok.store.factory.id).find((item) => item.id === params.userId);
     const refused = changeable(user, ok.who);
     if (refused) return refused;
-    // Setting roles also reactivates a deactivated user (packio-api `FactoryUsersService.setRoles`).
+    // Setting roles also reactivates a deactivated user (getpack-api `FactoryUsersService.setRoles`).
     changes.set(user!.id, { roles: [...new Set(roles)], active: true });
     return HttpResponse.json(
       toUserDto(

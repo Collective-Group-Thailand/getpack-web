@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { findFace, type Dieline } from "@packio/dieline";
+import { findFace, type Dieline } from "@getpack/dieline";
 
 import { formatNumber } from "@/i18n/format";
 import { Button } from "@/ui/components/Button";

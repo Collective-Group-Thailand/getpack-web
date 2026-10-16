@@ -1,11 +1,11 @@
 /**
- * Mocks for the back-office building blocks packio-api published in U-B0.3 (`v0.6.0`): saved
+ * Mocks for the back-office building blocks getpack-api published in U-B0.3 (`v0.6.0`): saved
  * views (`admin.savedViews.*`), search (`admin.search.find`), the dashboard
  * (`admin.dashboard.get`), the staff directory (`admin.staffDirectory.list`) and the
  * segregation-of-duties rules (`admin.sodRules.list`).
  *
- * Typed by the contract (`./finance/support`), so a mock that drifts from what packio-api
- * published stops compiling. Behaviour follows packio-api's controllers at v0.6.0
+ * Typed by the contract (`./finance/support`), so a mock that drifts from what getpack-api
+ * published stops compiling. Behaviour follows getpack-api's controllers at v0.6.0
  * (`src/modules/iam/admin/{saved-views,search,directory}.controller.ts`,
  * `src/modules/ops/dashboard.service.ts`).
  */
@@ -26,7 +26,7 @@ type Queue = Schemas["DashboardQueueDto"];
 /**
  * What ⌘K can find. Each domain's mocks add their records here, so search covers whatever the
  * mock API holds without this file knowing every domain. `permission` is the read permission
- * packio-api checks for the result's type.
+ * getpack-api checks for the result's type.
  */
 export const searchIndex: (SearchResult & { permission: string; keywords?: string })[] = [];
 
@@ -48,7 +48,7 @@ indexForSearch(
 /* ---------------------------------------------------------------------------- queues */
 
 /**
- * packio-api's dashboard (`DashboardService` at v0.6.0): the 21 work queues, each shown to whoever
+ * getpack-api's dashboard (`DashboardService` at v0.6.0): the 21 work queues, each shown to whoever
  * holds its working permission, in this order, at this zone-relative path.
  */
 export const DASHBOARD_QUEUES: readonly { key: string; path: string; permission: string }[] = [
@@ -81,9 +81,9 @@ export const DASHBOARD_QUEUES: readonly { key: string; path: string; permission:
 
 /**
  * The domain mocks' own queues, which hold the live counts. Each registers what it can count; the
- * dashboard takes the count of a packio-api queue from the provider with the same key and reports 0
+ * dashboard takes the count of a getpack-api queue from the provider with the same key and reports 0
  * for a queue no mock counts yet. A provider whose key is not
- * one of packio-api's 21 feeds nothing: the API never sends it.
+ * one of getpack-api's 21 feeds nothing: the API never sends it.
  */
 export const queueRegistry: { permission: string; queue: (persona: StaffPersona) => Queue | null }[] = [];
 
@@ -147,7 +147,7 @@ export const consoleHandlers = [
     const visible = savedViews
       .filter((view) => view.resource === query.resource && (view.shared || view.owner.id === persona.id))
       .sort((a, b) => a.name.localeCompare(b.name, "th"))
-      // Mine first, then colleagues' shared views (packio-api's order).
+      // Mine first, then colleagues' shared views (getpack-api's order).
       .sort((a, b) => Number(a.owner.id !== persona.id) - Number(b.owner.id !== persona.id));
     return paginate(visible, query);
   }),

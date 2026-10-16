@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
-import { DEFAULT_BLEED_MM } from "@packio/dieline";
+import { DEFAULT_BLEED_MM } from "@getpack/dieline";
 
 import type { Configurator } from "@/features/customer/configurator/model";
 import { activeStage } from "@/features/designer/active-stage";

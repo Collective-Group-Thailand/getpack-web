@@ -17,7 +17,7 @@ export interface ChecksPanelProps {
   issues: DesignIssue[];
   /** Applies a finding's safe fix (the editor knows the sheet's geometry and the rules). */
   onFix?: (issue: DesignIssue) => void;
-  /** Whether a warning has been accepted for this version (stored by packio-api, D-278). */
+  /** Whether a warning has been accepted for this version (stored by getpack-api, D-278). */
   acknowledged?: (issue: DesignIssue) => boolean;
   onAcknowledge?: (issue: DesignIssue) => void;
   /** Where a finding is explained (U5.2 §4) — the customer's help pages; none on the staff side. */

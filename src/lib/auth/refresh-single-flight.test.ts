@@ -16,7 +16,7 @@ const rotated = {
 
 afterEach(() => {
   post.mockReset();
-  delete (globalThis as { __packioRefreshFlights?: unknown }).__packioRefreshFlights;
+  delete (globalThis as { __getpackRefreshFlights?: unknown }).__getpackRefreshFlights;
 });
 
 describe("refreshSession, single flight (round 2, B4)", () => {

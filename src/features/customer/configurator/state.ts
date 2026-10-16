@@ -462,7 +462,7 @@ export function seedFromDesign(
   }
   if (material || inks) {
     const base = initialState(configurator);
-    // The home hero (`ink`) prices its board and outside inks and nothing else (packio-api's
+    // The home hero (`ink`) prices its board and outside inks and nothing else (getpack-api's
     // `heroCalculateBody`), so an optional default the hero does not send — an inside print, a
     // coating — starts unanswered here, or `/configure` would price more than the hero showed.
     const defaults =

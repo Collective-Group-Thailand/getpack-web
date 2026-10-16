@@ -1,11 +1,11 @@
 /**
  * One mock staff account per D-140 role, so every role's menu and actions can be exercised.
  *
- * Each persona holds exactly what packio-api grants its role — `mocks/generated/rbac.ts`, from
- * packio-api's `docs/rbac.md` (`pnpm gen:rbac`). Backend names win (triage `admin.permissions`,
+ * Each persona holds exactly what getpack-api grants its role — `mocks/generated/rbac.ts`, from
+ * getpack-api's `docs/rbac.md` (`pnpm gen:rbac`). Backend names win (triage `admin.permissions`,
  * U-F0.3): a screen gated on a permission the real role lacks is hidden in the mock too.
  *
- * The menu is packio-api's (`src/modules/iam/menu.catalog.ts` at v0.6.0) verbatim, business
+ * The menu is getpack-api's (`src/modules/iam/menu.catalog.ts` at v0.6.0) verbatim, business
  * entries and the `finance` any-of gate included (U-B0.3, `admin.menu-entries`). The real API
  * sends the menu, so nothing here decides what production shows.
  */
@@ -16,7 +16,7 @@ export const MOCK_PASSWORD = "mock-password";
 
 /**
  * The menu the mock API builds: an entry appears when the persona holds its permission. Paths
- * are host-absolute (`/admin/...`), as packio-api spells them; the order is packio-api's.
+ * are host-absolute (`/admin/...`), as getpack-api spells them; the order is getpack-api's.
  */
 export const MENU_CATALOGUE: readonly {
   key: string;
@@ -24,7 +24,7 @@ export const MENU_CATALOGUE: readonly {
   /** One permission, or any of several (the finance workspace opens for each of its desks). */
   permission: StaffPermission | readonly StaffPermission[] | null;
 }[] = [
-  // packio-api src/modules/iam/menu.catalog.ts (v0.66.0), verbatim.
+  // getpack-api src/modules/iam/menu.catalog.ts (v0.66.0), verbatim.
   { key: "dashboard", path: "/admin", permission: null },
   { key: "orders", path: "/admin/orders", permission: "orders.read" },
   { key: "cs_calculators", path: "/admin/cs", permission: "quotes.calculate" },
@@ -117,7 +117,7 @@ function persona(key: string, n: number, displayName: string, roles: string[]): 
   return {
     key,
     id: `00000000-0000-4000-8000-0000000051${n.toString(16).padStart(2, "0")}`,
-    email: key === "cs" ? "somchai.staff@packio.invalid" : `${key.replace(/_/g, ".")}.staff@packio.invalid`,
+    email: key === "cs" ? "somchai.staff@getpack.invalid" : `${key.replace(/_/g, ".")}.staff@getpack.invalid`,
     displayName,
     roles,
     permissions: [...new Set(roles.flatMap((role) => STAFF_ROLE_GRANTS[role] ?? []))],
@@ -139,7 +139,7 @@ export const PERSONAS: readonly StaffPersona[] = [
   persona("marketing", 12, "ฝ่ายการตลาด ตัวอย่าง (ข้อมูลจำลอง)", ["marketing"]),
   persona("partner_manager", 13, "ผู้จัดการพันธมิตร ตัวอย่าง (ข้อมูลจำลอง)", ["partner_manager"]),
   persona("auditor", 14, "ผู้ตรวจสอบบัญชี ตัวอย่าง (ข้อมูลจำลอง)", ["auditor"]),
-  // D-222: the Data Protection Officer, the fifteenth staff role (packio-api v0.4.0).
+  // D-222: the Data Protection Officer, the fifteenth staff role (getpack-api v0.4.0).
   persona("dpo", 15, "เจ้าหน้าที่คุ้มครองข้อมูล ตัวอย่าง (ข้อมูลจำลอง)", ["dpo"]),
 ];
 

@@ -9,7 +9,7 @@ import { StatusBadge } from "@/ui/components/StatusBadge";
 export type OpsSignal = Schemas["OpsSignalDto"];
 
 /**
- * The launch-monitoring signals (`admin.ops.signals`, packio-api B6.3, D-113), in the API's order.
+ * The launch-monitoring signals (`admin.ops.signals`, getpack-api B6.3, D-113), in the API's order.
  *
  * Read-only on purpose: thresholds are the `ops.alert_thresholds` setting and the alerts are
  * raised by the API's worker, so this screen only shows where each signal stands. A `null`

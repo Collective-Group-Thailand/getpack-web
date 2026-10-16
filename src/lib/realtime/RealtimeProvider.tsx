@@ -17,7 +17,7 @@ import { backoffMs, readSse } from "./sse";
  * local checkout and every environment without a realtime backend simply have no connection,
  * and the app works the way it does without one, by fetching.
  *
- * The handshake is packio-api B1.3's (contract §6): `POST /v1/{surface}/realtime/auth` returns
+ * The handshake is getpack-api B1.3's (contract §6): `POST /v1/{surface}/realtime/auth` returns
  * a 60-second channel token and the stream path; the stream is then read through the BFF, so
  * the httpOnly session cookie authorises it and the allow-list applies. Every (re)connection
  * asks for a new token — see `./sse.ts` for why this is `fetch` and not `EventSource`.

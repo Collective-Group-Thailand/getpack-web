@@ -1,7 +1,7 @@
 {
   "meta": {
     "listTitle": "Box and packaging style library",
-    "listDescription": "Browse over 100 box, bag, pouch, label and tag structures — style codes, the sizes each can be made in and starting prices — and order them from Packio",
+    "listDescription": "Browse over 100 box, bag, pouch, label and tag structures — style codes, the sizes each can be made in and starting prices — and order them from getpack",
     "detailTitle": "{name} ({code})",
     "detailDescription": "{name}, style code {code} — {count, plural, one {# variant} other {# variants}}: its structural options, the sizes it can be made in and prices",
     "compareTitle": "Compare styles"
@@ -418,7 +418,7 @@
     "done": "{file} downloaded",
     "drawn": "Drawn at inside sizes {l} × {w} × {h} mm",
     "remaining": "{count, plural, one {# more download} other {# more downloads}} today",
-    "nudge": "Packio can make this box at the same sizes",
+    "nudge": "getpack can make this box at the same sizes",
     "order": "See prices and order",
     "layersTitle": "What the layers in the file mean",
     "layers": {
@@ -456,7 +456,7 @@
   },
   "request": {
     "ctaTitle": "Can't find the box you need?",
-    "ctaBody": "Tell us what goes in it, how it is used and roughly its size; Packio's structural designers will design it. If a fee applies, it is quoted first.",
+    "ctaBody": "Tell us what goes in it, how it is used and roughly its size; getpack's structural designers will design it. If a fee applies, it is quoted first.",
     "cta": "Ask for a structural design",
     "listTitle": "Structural design requests",
     "listIntro": "Boxes you asked our designers for, and how each is going",
@@ -727,7 +727,7 @@
   },
   "topicPage": {
     "metaTitle": "{title} — {count, plural, one {# style} other {# styles}} to design",
-    "metaDescription": "{title}: {about} {count, plural, one {# variant} other {# variants}} to choose from, every one yours to design in the 3D Studio and order from Packio.",
+    "metaDescription": "{title}: {about} {count, plural, one {# variant} other {# variants}} to choose from, every one yours to design in the 3D Studio and order from getpack.",
     "variants": "{count, plural, one {# variant} other {# variants}} {title}",
     "seeStyle": "Every option of the {name}",
     "otherStyles": "Other styles {phrase}",

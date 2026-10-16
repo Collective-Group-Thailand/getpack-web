@@ -7,11 +7,11 @@
 ---
 
 ## Why
-U2–U4 make Packio **more complete** than the competitor. U5 makes it **measurably easier and more modern**: every key journey has a step budget, a first-run path, zero dead ends, fast perceived performance, polished interaction details, and a release gate based on real users (`competitive-scorecard.md`).
+U2–U4 make getpack **more complete** than the competitor. U5 makes it **measurably easier and more modern**: every key journey has a step budget, a first-run path, zero dead ends, fast perceived performance, polished interaction details, and a release gate based on real users (`competitive-scorecard.md`).
 
 ## U5.0 — Baseline and instrumentation (no UI changes)
 1. Write the moderator guide, consent text (PDPA) and task cards (th) from the scorecard; add `docs/ux/scorecard-results/` template.
-2. Implement the Playwright **step counters** for T1–T12 on Packio (mock where the flow is not built yet, marked `pending`), wired into CI as non-blocking until U5.8.
+2. Implement the Playwright **step counters** for T1–T12 on getpack (mock where the flow is not built yet, marked `pending`), wired into CI as non-blocking until U5.8.
 3. Funnel events and dashboards (studio, configurator, checkout, claims, reorder), session replay with PII masking behind consent.
 4. Output: the list of journeys that currently exceed their step budget → input for U5.1.
 
@@ -28,7 +28,7 @@ U2–U4 make Packio **more complete** than the competitor. U5 makes it **measura
 4. Help centre deep links from every checks/validation message.
 
 ## U5.3 — Messaging (parity gap #15, #40)
-1. In-app conversation per order, per design and a general support thread (customer ↔ Packio CS; never directly with a factory): text, images, files, quick replies, typing/read state, notifications via outbox (in-app, LINE, email per preference).
+1. In-app conversation per order, per design and a general support thread (customer ↔ getpack CS; never directly with a factory): text, images, files, quick replies, typing/read state, notifications via outbox (in-app, LINE, email per preference).
 2. Context cards in the thread (design thumbnail, quote, order status) so CS never asks "เลขออร์เดอร์อะไรครับ".
 3. Staff inbox in the admin zone (extend the CS chat screens already built; do not build a second inbox): assignment, SLA timers, canned responses, internal notes, link to order/design; LINE OA messages from the same customer merged into the same thread when the account is linked.
 
@@ -36,7 +36,7 @@ U2–U4 make Packio **more complete** than the competitor. U5 makes it **measura
 1. **Multi-item RFQ basket** for RFQ-only types: add several configured items, one submission, one response thread, quotes per item that convert into cart lines.
 2. Dieline downloads: PDF named and layered for designers ("Illustrator-compatible PDF" with `CutContour`, `Crease`, `Bleed`, `Safe` layers), plus DXF and SVG; the download dialog shows a 3-line guide for opening it correctly.
 
-## U5.5 — Packio Assistant (optional, behind a flag, honest AI)
+## U5.5 — getpack Assistant (optional, behind a flag, honest AI)
 1. Chat panel (Thai-first) available on catalogue, configurator, studio and account. It uses **tools** on the API only: style search, Structure Advisor, quote, order status, glossary, help articles, hand-off to CS. It never states a price, date, strength or policy that did not come from a tool response in the same turn, and shows the source card for each fact.
 2. Can fill the configurator on the user's behalf ("กล่องไปรษณีย์ใส่แก้วกาแฟ 2 ใบ ส่งต่างจังหวัด") and shows exactly what it changed, with undo.
 3. Evaluation set of ≥ 100 Thai questions with expected tool calls and answers; CI fails below the agreed pass rate; red-team cases (price manipulation, other customers' data, off-topic).
@@ -54,7 +54,7 @@ U2–U4 make Packio **more complete** than the competitor. U5 makes it **measura
 4. Design QA checklist in the PR template (one primary action, all states designed, tokens only, Thai copy reviewed, a11y checked, step budget unchanged) + Storybook visual review for every new component state.
 
 ## U5.8 — Release gate
-1. Run the scorecard round on Packio (UAT with production-like data) and compare with the U5.0 baseline.
+1. Run the scorecard round on getpack (UAT with production-like data) and compare with the U5.0 baseline.
 2. Fix blocking failures, re-test affected tasks.
 3. Make the step counters blocking in CI.
 4. Publish `docs/ux/scorecard-results/<date>.md` with evidence; launch only journeys that pass.

@@ -14,7 +14,7 @@ import {
   type HingeMap,
   type MaterialSpec,
   type Pt,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 import { IconButton } from "@/ui/components/IconButton";
 import { cn } from "@/ui/lib/cn";

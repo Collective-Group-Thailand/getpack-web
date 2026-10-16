@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { findFace, type Dieline } from "@packio/dieline";
+import { findFace, type Dieline } from "@getpack/dieline";
 
 import { IconButton } from "@/ui/components/IconButton";
 import { Kbd, KEYCAP } from "@/ui/components/Kbd";

@@ -1,4 +1,4 @@
-# RUN ORDER — U1 → U5 (packio-web)
+# RUN ORDER — U1 → U5 (getpack-web)
 
 > Pack รวม U1 (v3) + U2–U5 · decision ใหม่ต่อจาก D-181 (เริ่ม D-182) · `decisions.md`, `accounting-design.md`, `api-conventions.md` ต้องเหมือนกันทั้งสอง repo
 > ไฟล์นี้คือลำดับเดียวที่ต้องใช้ · อ่านก่อนเริ่มทุก session · ถ้ามีหัวข้อซ้ำกันระหว่าง prompt ให้ยึดตาราง "Precedence" ด้านล่าง
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | 0 | U-F2 art direction tokens (no backend needed) | `U1-update-2026-09-29.md` | — | everything |
 | 0 | U5.0 baseline & instrumentation (run the competitor baseline **now**) | `U5-ux-excellence.md` | — | everything |
-| 1 | U-F0.1 → U-F0.5 integration with the real contract | `U1-update-2026-09-29.md` | packio-api tag | — |
+| 1 | U-F0.1 → U-F0.5 integration with the real contract | `U1-update-2026-09-29.md` | getpack-api tag | — |
 | 2 | U3.1 → U3.3 module system, solver, auto-3D (engine only) | `U3-style-library.md` | U-F0.1 | U-F0.2–0.5 |
 | 3 | U2.F1 configurator v2 | `U2-benchmark-2026-09-29.md` | API U2.1–U2.3 | U3.4 wave 1 |
 | 4 | U3.4 wave 1 → U3.5 library UX | `U3-style-library.md` | API U3.B1–U3.B3 | U2.F1 |

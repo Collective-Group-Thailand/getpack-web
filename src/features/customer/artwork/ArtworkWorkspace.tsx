@@ -1,6 +1,6 @@
 "use client";
 
-import { resolveStyleId } from "@packio/dieline";
+import { resolveStyleId } from "@getpack/dieline";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";

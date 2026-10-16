@@ -105,8 +105,8 @@ export function browserBffUrl(zone: Zone, upstreamPath: string): string {
   return `${BROWSER_BFF_PATH}${ZONE_CONFIG[zone].apiPrefix}${upstreamPath}`;
 }
 
-/** The `x-packio-zone` request header the proxy stamps so server code can read the zone. */
-export const ZONE_HEADER = "x-packio-zone";
+/** The `x-getpack-zone` request header the proxy stamps so server code can read the zone. */
+export const ZONE_HEADER = "x-getpack-zone";
 
 /**
  * The path as the browser asked for it, stamped by the proxy before any rewrite.
@@ -116,4 +116,4 @@ export const ZONE_HEADER = "x-packio-zone";
  * layout guard needs the browser's spelling to build a `returnTo` someone can actually be
  * sent back to.
  */
-export const PATH_HEADER = "x-packio-path";
+export const PATH_HEADER = "x-getpack-path";

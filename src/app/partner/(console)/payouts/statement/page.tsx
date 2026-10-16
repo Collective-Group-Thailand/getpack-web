@@ -18,8 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
 const isDay = (value: string | undefined) => (value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined);
 
 /**
- * The factory's account with Packio between two dates (`partner.payables.statementOfAccount`): goods
- * received raise what Packio owes, payouts and deductions lower it, with the running balance and the
+ * The factory's account with getpack between two dates (`partner.payables.statementOfAccount`): goods
+ * received raise what getpack owes, payouts and deductions lower it, with the running balance and the
  * period's totals as the API gives them.
  */
 export default async function StatementOfAccountPage({ searchParams }: Props) {

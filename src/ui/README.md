@@ -1,4 +1,4 @@
-# `src/ui` — the Packio design system
+# `src/ui` — the getpack design system
 
 Everything visual that more than one screen uses: tokens, the Tailwind v4 theme, fonts, icons,
 components and the theme switch. Zones compose `src/ui`; they never restyle a primitive locally

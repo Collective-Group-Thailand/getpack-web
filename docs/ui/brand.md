@@ -1,4 +1,4 @@
-# Brand configuration — Packio
+# Brand configuration — getpack
 
 > Referenced by ADR-0003 and `docs/prompts/design-system.md` §2. Brand values are
 > **configuration**, not copy scattered through the app.
@@ -7,7 +7,7 @@
 
 | Value | Where it lives |
 |---|---|
-| Name — **Packio** | `BRAND_NAME`, `src/ui/brand/config.ts` |
+| Name — **getpack** | `BRAND_NAME`, `src/ui/brand/config.ts` |
 | Tagline (en) — *Your Packaging Production Partner* | `BRAND_TAGLINE` |
 | Tagline (th) — *พาร์ตเนอร์งานผลิตบรรจุภัณฑ์ของคุณ* | `common.brand.tagline` in `src/i18n` |
 | Operator — Collective Group (Thailand) | `BRAND_COMPANY` |
@@ -16,7 +16,7 @@
 
 ## Colour — the D-180 art direction, until the brand kit arrives
 
-The palette is the **Packio art direction** (D-180, values Proposed), taken verbatim from
+The palette is the **getpack art direction** (D-180, values Proposed), taken verbatim from
 `docs/prompts/design-system.md` §Art direction: warm paper and kraft neutrals, warm ink text,
 one deep teal-green for actions and links, and amber for promotions only. When a real brand kit
 arrives, it replaces these **values only**. Screens name semantic tokens (`primary`, `accent`,
@@ -55,7 +55,7 @@ Usage rules (D-180, linted where a rule can see them):
 
 ## Logo
 
-`src/ui/brand/Brand.tsx` — a "P" whose bowl carries a crease line, drawn for this repo. It
+`src/ui/brand/Brand.tsx` — a lower-case "g" whose bowl carries a crease line, drawn for this repo. It
 takes its fill from the `primary` token, so it follows a palette change.
 
 No third-party logo, template or asset appears anywhere in `src/ui` (CLAUDE.md). When the

@@ -21,7 +21,7 @@ import { toast } from "@/ui/components/Toast";
 /* ------------------------------------------------------------- assisted-entry sign-off */
 
 /**
- * A price list Packio entered for the factory (the D-100 note) applies only once the factory
+ * A price list getpack entered for the factory (the D-100 note) applies only once the factory
  * signs it off, from the later of its planned date and now. One key per intent.
  */
 export function VersionSignOff({ versionId, label }: { versionId: string; label: string }) {
@@ -81,7 +81,7 @@ export function CreateProposal({ productTypeId, typeName }: { productTypeId: str
     event.preventDefault();
     const next: typeof error = {};
     if (!from || from <= bangkokToday()) next.from = t("fromFuture");
-    // The reason helps Packio decide but is optional to the API: never a wall before editing.
+    // The reason helps getpack decide but is optional to the API: never a wall before editing.
     setError(next);
     if (Object.keys(next).length) return;
     setBusy(true);
@@ -222,7 +222,7 @@ export function WithdrawProposal({ proposalId, typeName }: { proposalId: string;
 /* ------------------------------------------------------------------- counter answers */
 
 /**
- * Packio countered some lines (D-040): the factory takes each counter — it becomes the line's
+ * getpack countered some lines (D-040): the factory takes each counter — it becomes the line's
  * value — or withdraws that line. Nothing is sent until every counter has an answer.
  */
 export function CounterAnswers({ proposalId, lines }: { proposalId: string; lines: { id: string; label: string }[] }) {

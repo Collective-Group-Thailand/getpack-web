@@ -6,7 +6,7 @@ import {
   pointInPolygon,
   type Dieline,
   type Pt,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 import type { DesignContent, DesignElement } from "../types";
 import { elementCorners, localSize, type Box } from "./geometry";

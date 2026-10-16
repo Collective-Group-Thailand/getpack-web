@@ -13,7 +13,7 @@
  * between two sessions, as the moderator guide asks.
  *
  * Every name is invented and marked "(ข้อมูลจำลอง)", like the rest of the mock; the products are
- * Packio's own catalogue rows. The same records, for the round on the real UAT backend, are the
+ * getpack's own catalogue rows. The same records, for the round on the real UAT backend, are the
  * contract request `api.uat-scorecard-seed`.
  */
 

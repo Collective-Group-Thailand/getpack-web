@@ -26,7 +26,7 @@ type Status = Schemas["ToolingStatus"];
  * The tooling register (D-205, D-289): printing plates and die blocks a delivered order paid for,
  * kept at the factory that made them — plates bound to the specification and approved artwork, a
  * die block to the specification — reusable at that factory until last use plus the reuse period;
- * a remake Packio absorbed is listed under its item.
+ * a remake getpack absorbed is listed under its item.
  */
 export function Tooling() {
   const t = useTranslations("production.tooling");

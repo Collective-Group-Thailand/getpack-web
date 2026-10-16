@@ -4,7 +4,7 @@ export type PriceComponentDef = Schemas["PriceComponentDto"];
 export type PriceReference = { column: string; id: string; code: string | null; name: string };
 
 /**
- * The price column that holds a catalogue's ids (packio-api's price-component registry,
+ * The price column that holds a catalogue's ids (getpack-api's price-component registry,
  * `src/modules/pricing/calculators/{folding,corrugate}/price-components.ts` at v0.6.0).
  *
  * CONTRACT-GAP partner.price-column-ref — `CatalogueReferenceDto` names its catalogue table and

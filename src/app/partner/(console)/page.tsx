@@ -18,7 +18,7 @@ import { inboxHref, inboxIcon } from "@/features/partner/today/inbox";
 /**
  * The partner zone's landing screen: what is waiting for this factory today.
  *
- * While the factory is onboarding that is its progress and the steps Packio entered for it to
+ * While the factory is onboarding that is its progress and the steps getpack entered for it to
  * sign off; for every factory, the price items waiting for an answer (a rate card, prices to sign
  * off, counters). From trial on, the floor comes first: counters (to accept and overdue, due
  * today, at risk, on hold, inspections planned), alerts and the queue in the order to work it
@@ -130,7 +130,7 @@ export default async function PartnerHomePage() {
       body: t("tasks.signOffBody"),
     });
   for (const item of prices?.proposals ?? []) {
-    if (item.direction === "packio_to_factory" && ["submitted", "under_review"].includes(item.status))
+    if (item.direction === "getpack_to_factory" && ["submitted", "under_review"].includes(item.status))
       tasks.push({
         key: item.id,
         section: "approve",
@@ -139,7 +139,7 @@ export default async function PartnerHomePage() {
         title: t("tasks.rateCard", { type: prices!.typeName(item.productTypeId) }),
         body: t("tasks.rateCardBody", { count: item.lineCounts.pending }),
       });
-    if (item.direction === "factory_to_packio" && item.status === "countered")
+    if (item.direction === "factory_to_getpack" && item.status === "countered")
       tasks.push({
         key: item.id,
         section: "approve",
@@ -204,7 +204,7 @@ export default async function PartnerHomePage() {
     });
 
   const ti = await getTranslations("partnerToday.inbox");
-  // A Packio job waiting for the factory's yes is a decision with a clock (D-074): first in the list.
+  // A getpack job waiting for the factory's yes is a decision with a clock (D-074): first in the list.
   if (canAt(context, "factory_jobs.respond"))
     for (const job of (floor?.data?.queue ?? []).filter((item) => item.status === "released"))
       if (!tasks.some((task) => task.key === `acceptance_overdue-${job.id}`))
@@ -306,7 +306,7 @@ export default async function PartnerHomePage() {
 
       {floor?.data ? (
         <>
-          <h2 className="mt-2 text-lg font-semibold">{ti("packioWork")}</h2>
+          <h2 className="mt-2 text-lg font-semibold">{ti("getpackWork")}</h2>
           {(() => {
             const counters = [
               ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.awaitingAcceptance],

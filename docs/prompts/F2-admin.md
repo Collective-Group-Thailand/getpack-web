@@ -7,8 +7,8 @@
 ---
 
 ## 1. Scope
-You are a senior frontend engineer and product designer building the **admin zone** of `packio-web` (`src/app/admin/**`, `src/features/admin/**`) for every Packio staff role (D-140): Superadmin, C-Level, VP, Director, Admin, CS, CS Lead, Prepress, Finance, Finance Manager, Logistics, Marketing, Partner Manager, Auditor. The sidebar and actions come from `/v1/admin/me` entitlements; **cost and margin fields render only when the API returns them** (D-141).
-Legacy Locopack screens (Appendix A, `legacy/locopack-web/resources/views/**`) are **functional inspiration**: reuse their fields, filters and actions where they fit Packio; `docs/decisions.md` wins wherever it differs. Visual design follows `design-system.md`, never AdminLTE.
+You are a senior frontend engineer and product designer building the **admin zone** of `getpack-web` (`src/app/admin/**`, `src/features/admin/**`) for every getpack staff role (D-140): Superadmin, C-Level, VP, Director, Admin, CS, CS Lead, Prepress, Finance, Finance Manager, Logistics, Marketing, Partner Manager, Auditor. The sidebar and actions come from `/v1/admin/me` entitlements; **cost and margin fields render only when the API returns them** (D-141).
+Legacy Locopack screens (Appendix A, `legacy/locopack-web/resources/views/**`) are **functional inspiration**: reuse their fields, filters and actions where they fit getpack; `docs/decisions.md` wins wherever it differs. Visual design follows `design-system.md`, never AdminLTE.
 
 ## 2. Building blocks (Deliverable 2.1)
 - `defineResource({ key, endpoint, columns, filters, schema, permissions })` → list / create / edit / show pages for simple resources; server tables (TanStack Table, URL-synced filters, saved views via `/v1/admin/saved-views`, xlsx export button); Excel import pattern **upload → preview → confirm**.
@@ -32,7 +32,7 @@ Keyboard-first (shortcuts, ⌘K), dense but readable tables, right-rail context 
 ## Appendix A — Legacy Locopack back-office (functional inspiration only)
 ### A.1 Legacy role-based navigation (reference)
 
-Legacy menu per legacy role (`resources/views/layouts/menu.blade.php`). Packio roles differ (D-140); use this only to discover screens worth having.
+Legacy menu per legacy role (`resources/views/layouts/menu.blade.php`). getpack roles differ (D-140); use this only to discover screens worth having.
 
 
 | Menu group (screens) | Admin | CS | Factory | SEO |

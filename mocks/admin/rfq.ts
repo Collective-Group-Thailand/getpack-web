@@ -1,5 +1,5 @@
 /**
- * The RFQ desk, mocked at packio-api's published paths (`admin.rfqs.*`, contract v0.6.0) with
+ * The RFQ desk, mocked at getpack-api's published paths (`admin.rfqs.*`, contract v0.6.0) with
  * `StaffRfqDto` — list, detail with its ETag, thread, start-review, assign / unassign,
  * request-info, decline, candidate factories, consultations and reminders, the quotation draft,
  * its replacement under If-Match, discard, send and the acceptance CS records — and the
@@ -10,7 +10,7 @@
  * a suggested sell price derived from it with a flat mark-up standing in for the sell-margin
  * table (the published RFQ does not carry it), and computes line amounts in whole satang —
  * standing in for the backend, the only place money is computed. Cost and margin leave per D-141,
- * decided per actor on the way out, and `nextActions` follow packio-api's rule table
+ * decided per actor on the way out, and `nextActions` follow getpack-api's rule table
  * (`src/modules/rfq/rfq-actions.ts` at v0.6.0) filtered by the reader's permissions.
  */
 
@@ -662,7 +662,7 @@ const acceptable = (rfq: Rfq) =>
   rfq.quotes.some((quote) => quote.status === "sent" && Date.parse(validityOf(quote)) > Date.now());
 
 /**
- * packio-api's `ADMIN_RFQ_ACTIONS` (`src/modules/rfq/rfq-actions.ts` at v0.6.0), in its order.
+ * getpack-api's `ADMIN_RFQ_ACTIONS` (`src/modules/rfq/rfq-actions.ts` at v0.6.0), in its order.
  * Every rule needs `rfqs.manage`; `when` returns a string to offer the action disabled with it.
  */
 const ADMIN_RFQ_RULES: { key: string; irreversible?: boolean; when: (rfq: Rfq) => boolean | string }[] = [
@@ -856,7 +856,7 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
     })),
     messages: (messages.get(rfq.id) ?? []).map((message) => ({
       id: message.id,
-      author: message.authorKind === "staff" ? ("packio" as const) : ("customer" as const),
+      author: message.authorKind === "staff" ? ("getpack" as const) : ("customer" as const),
       authorUser: message.author ?? customer,
       visibility: message.visibility,
       body: message.body,
@@ -876,7 +876,7 @@ const QUEUES: Record<string, (rfq: Rfq, who: StaffPersona | undefined) => boolea
   awaiting_factory: (rfq) => rfq.consultations.some((item) => item.status === "requested"),
 };
 
-// packio-api's one RFQ dashboard queue: submitted RFQs still waiting for a first response.
+// getpack-api's one RFQ dashboard queue: submitted RFQs still waiting for a first response.
 for (const queue of ["new"] as const) {
   registerQueue("rfqs.read", (who) => {
     const rows = rfqs.filter((rfq) => QUEUES[queue]!(rfq, who));
@@ -1062,7 +1062,7 @@ function candidatesOf(rfq: Rfq): Schemas["CandidateFactoryDto"][] {
   });
 }
 
-/** Reminders sent, by consultation: once an hour at most (packio-api's anti-spam bound). */
+/** Reminders sent, by consultation: once an hour at most (getpack-api's anti-spam bound). */
 const reminded = new Map<string, number>();
 
 /* ------------------------------------------------------------ the customer's side (mocks/store) */

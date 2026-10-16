@@ -15,7 +15,7 @@ import { RadioCards } from "@/ui/components/RadioCards";
 
 /**
  * "ขอตัวอย่างก่อนสั่งผลิต" on a saved quotation (U2.F3, D-253): printed or plain, how many, a note for
- * CS. Packio's CS quotes it (price, freight, lead time) and the customer buys it like a quotation.
+ * CS. getpack's CS quotes it (price, freight, lead time) and the customer buys it like a quotation.
  */
 export function RequestSample({ quoteId, label }: { quoteId: string; label: string }) {
   const t = useTranslations("myOrders.samples.request");

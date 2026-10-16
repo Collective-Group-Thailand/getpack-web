@@ -1,9 +1,9 @@
-# ADR-0013 — An order's print file is assembled by packio-api from the studio's renders
+# ADR-0013 — An order's print file is assembled by getpack-api from the studio's renders
 
 **Status:** Accepted (2026-10-05) · U4.6 · supersedes [ADR-0009](0009-print-pdf-in-the-browser.md) for orders
 
 The U4 prompt names this "ADR-0012"; that number was already taken by the style asset pipeline
-(U3.3), so it is 0013. packio-api records the same decision as its own ADR-0011 (D-280).
+(U3.3), so it is 0013. getpack-api records the same decision as its own ADR-0011 (D-280).
 
 ## Context
 
@@ -31,7 +31,7 @@ implementation of the canvas, Thai shaping).
   (`store.studio.addRender`: kind, side, separation, placement in mm).
 - `store.studio.order` (Idempotency-Key = design, version, option) answers **202** with a print job;
   the studio polls the job, showing progress, and continues to the cart or checkout with a client
-  navigation once it succeeds. packio-api's worker places the tiles under the engine's vector die,
+  navigation once it succeeds. getpack-api's worker places the tiles under the engine's vector die,
   adds each finish as its named separation page, runs preflight and the rules, makes the proof
   (PDF + 3D snapshot) and attaches all to the cart line's artwork submission.
 - The cart line carries the pinned version (`designDocumentId`, `designVersionNo`); placing the
@@ -39,7 +39,7 @@ implementation of the canvas, Thai shaping).
   studio says so — and the order page and the proof screen link to the locked version.
 - **ADR-0009 stays for the customer's own download** ("ดาวน์โหลด PDF" in the designer): the
   browser-made file is a convenience, never what is printed for an order.
-- Where packio-api cannot assemble (`studio.print_unavailable`), the studio says so and offers the
+- Where getpack-api cannot assemble (`studio.print_unavailable`), the studio says so and offers the
   existing route — upload a file with the order (F3 artwork) — instead of a half-made order.
 
 ## Consequences

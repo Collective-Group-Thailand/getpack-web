@@ -55,7 +55,7 @@ export const MODULES: ModuleDef[] = [
 const BY_ID = new Map(MODULES.map((m) => [m.id, m]));
 
 /**
- * Adds modules after load — the style library's (`@packio/dieline/library`), kept out of the main
+ * Adds modules after load — the style library's (`@getpack/dieline/library`), kept out of the main
  * entry with the recipes that use them (U3.4). A module declared `planned` is replaced.
  */
 export function registerModules(defs: readonly ModuleDef[]): void {

@@ -1,16 +1,16 @@
 /**
- * Imports packio-api's triage of our contract requests (U1 U-F0.1 step 2).
+ * Imports getpack-api's triage of our contract requests (U1 U-F0.1 step 2).
  *
  *   pnpm gen:triage        read the triage, write src/lib/api/requests/triage.ts and
  *                          rewrite the Status cell of every open row in docs/contract-requests.md
  *
- * packio-api owns the contract (api-conventions §1), so it decides what happens to each request:
+ * getpack-api owns the contract (api-conventions §1), so it decides what happens to each request:
  * published as asked, published in another shape (with a mapping the frontend applies), built in
  * one of its U-B0 groups, or rejected. It writes that down once, in
  * `docs/contract-requests-triage.md`; this script turns the per-operation verdicts into data the
  * registry tests and the requests document can use, so a verdict is never copied by hand.
  *
- * The triage moves as packio-api ships each group — re-run this after every `--adopt`. It reads
+ * The triage moves as getpack-api ships each group — re-run this after every `--adopt`. It reads
  * the triage at the tag `contract.lock.json` pins, from the sibling checkout, so it is not part of
  * CI; the tests in `registry.test.ts` hold the generated file, the markdown, the registry and the
  * contract to each other offline.
@@ -43,7 +43,7 @@ interface OperationTriage {
 interface RequestTriage {
   verdict: RequestVerdict;
   group: Group;
-  /** The packio-api release that shipped the group's work on this request (`## U-B0.x shipped`). */
+  /** The getpack-api release that shipped the group's work on this request (`## U-B0.x shipped`). */
   shippedIn?: string;
 }
 
@@ -165,7 +165,7 @@ function namedOperations(cell: string): string[] {
 /**
  * Built operations whose row names the published operation in prose, at another method or path
  * than the request asked for. Each must be one of the operationIds its own shipped row names
- * (checked below), so this table can only pick between what packio-api wrote, never add to it.
+ * (checked below), so this table can only pick between what getpack-api wrote, never add to it.
  */
 const NAMED_IN_PROSE: Readonly<Record<string, string>> = {
   // "`store.companies.changeMemberRoles` (PUT …/roles …)" — a role change is a PUT on its own resource.
@@ -325,7 +325,7 @@ interface Lock {
 
 /**
  * The triage at the release the lock pins, so verdicts and the vendored contract always describe
- * the same packio-api: its working tree moves on past the tag. `TRIAGE_SOURCE` reads a file instead.
+ * the same getpack-api: its working tree moves on past the tag. `TRIAGE_SOURCE` reads a file instead.
  */
 function readTriage(lock: Lock): { markdown: string; commit: string } {
   const override = process.env.TRIAGE_SOURCE;
@@ -354,7 +354,7 @@ function render(
   operations: Record<string, OperationTriage>,
   requests: Record<string, RequestTriage>,
 ): string {
-  const against = /`(packio-web@[0-9a-f]+)`/.exec(markdown)?.[1] ?? "unknown";
+  const against = /`(getpack-web@[0-9a-f]+)`/.exec(markdown)?.[1] ?? "unknown";
   const sorted = <T>(record: Record<string, T>) =>
     Object.keys(record)
       .sort()
@@ -363,12 +363,12 @@ function render(
   return [
     "/**",
     " * GENERATED FILE — do not edit.",
-    " * Source: packio-api docs/contract-requests-triage.md · Regenerate: pnpm gen:triage",
+    " * Source: getpack-api docs/contract-requests-triage.md · Regenerate: pnpm gen:triage",
     " *",
-    ' * packio-api\'s verdict on every contract request, per frontend operation (`"<METHOD> <path>"`,',
+    ' * getpack-api\'s verdict on every contract request, per frontend operation (`"<METHOD> <path>"`,',
     " * the registry's spelling) and per request id. `published_differently` means the operation",
     " * exists and the screen applies the triage's mapping when it migrates; `gaps` counts what",
-    " * packio-api adds to it, additively, in `group`. `implement` is built there in `group`;",
+    " * getpack-api adds to it, additively, in `group`. `implement` is built there in `group`;",
     " * `deferred` waits on a decision. `shippedIn` names the release that shipped the group's work.",
     " */",
     "",
@@ -405,7 +405,7 @@ function render(
 }
 
 /** Canonical status prefixes; `registry.test.ts` checks each open row starts with its own. */
-const AWAITING_TRIAGE = "Open — awaiting packio-api triage";
+const AWAITING_TRIAGE = "Open — awaiting getpack-api triage";
 
 function code(values: Iterable<string>): string {
   return [...new Set(values)].map((value) => `\`${value}\``).join(", ");
@@ -423,7 +423,7 @@ function statusFor(id: string, operations: Record<string, OperationTriage>, requ
       ? ""
       : request.shippedIn
         ? `; ${gaps} additive gap${gaps === 1 ? "" : "s"} shipped in ${request.shippedIn}`
-        : `; ${gaps} additive gap${gaps === 1 ? "" : "s"} in packio-api ${request.group}`;
+        : `; ${gaps} additive gap${gaps === 1 ? "" : "s"} in getpack-api ${request.group}`;
   const shippedNote = request.shippedIn && !gapNote ? `; shipped in ${request.shippedIn}` : "";
   const ids = (list: typeof own) => code(list.map(([, operation]) => operation.operationId ?? "?"));
 
@@ -433,16 +433,16 @@ function statusFor(id: string, operations: Record<string, OperationTriage>, requ
     case "published_differently":
       return `Published differently (see mapping) — as ${ids([...published, ...different]) || "the operations named in the triage"}${gapNote}${shippedNote}`;
     case "implement":
-      return `Open — packio-api ${request.group}`;
+      return `Open — getpack-api ${request.group}`;
     case "deferred":
-      return `Deferred by decision (see packio-api triage, ${request.shippedIn})`;
+      return `Deferred by decision (see getpack-api triage, ${request.shippedIn})`;
     case "reject":
-      return "Rejected (see packio-api triage)";
+      return "Rejected (see getpack-api triage)";
     case "mixed": {
       const parts = [
         published.length ? `published as ${ids(published)}` : "",
         different.length ? `published differently (see mapping) as ${ids(different)}${gapNote}` : "",
-        open.length ? `open — packio-api ${request.group}: ${code(open.map(([key]) => key))}` : "",
+        open.length ? `open — getpack-api ${request.group}: ${code(open.map(([key]) => key))}` : "",
       ].filter(Boolean);
       return `Mixed — ${parts.join("; ")}`;
     }
@@ -453,7 +453,7 @@ function statusFor(id: string, operations: Record<string, OperationTriage>, requ
 function webNote(cell: string): string {
   const kept = / · web: (.*)$/.exec(cell);
   if (kept) return kept[1]!;
-  if (/^(Published|Mixed|Rejected|Deferred|Open — packio-api|Open — awaiting packio-api)/.test(cell)) return "";
+  if (/^(Published|Mixed|Rejected|Deferred|Open — getpack-api|Open — awaiting getpack-api)/.test(cell)) return "";
   return cell.replace(/^Open(?: — |, )?/, "").trim();
 }
 

@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { STYLES } from "@packio/dieline";
+import { STYLES } from "@getpack/dieline";
 import { DesignThumb } from "@/features/customer/account/DesignThumb";
 import type { DesignerCatalog } from "@/features/designer/data/api";
 import type { DesignSpec } from "@/features/designer/types";

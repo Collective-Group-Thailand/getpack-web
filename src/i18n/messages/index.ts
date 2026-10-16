@@ -137,7 +137,7 @@ export const ZONE_NAMESPACES = {
     "studio",
     "pages",
     "agent",
-    // Packio Assistant's copy rides in the client messages only in a build that has it (U5.5, D-218).
+    // getpack Assistant's copy rides in the client messages only in a build that has it (U5.5, D-218).
     ...(ASSISTANT_BUILT_IN ? (["assistant"] as const) : []),
   ],
   admin: [

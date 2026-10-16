@@ -2,7 +2,7 @@ import type { Localized } from "../../types";
 
 /* The words for the axes the style library's waves add (U3.4) — pending review (D-212). */
 
-/** A pouch's features, one phrase each; a multi-select axis value is the sorted set joined by `+` (packio-api). */
+/** A pouch's features, one phrase each; a multi-select axis value is the sorted set joined by `+` (getpack-api). */
 const POUCH_FEATURES: Record<string, Localized> = {
   hang_hole: { th: "รูแขวน", en: "hang hole" },
   tear_notch: { th: "รอยบากฉีก", en: "tear notch" },

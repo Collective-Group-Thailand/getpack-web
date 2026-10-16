@@ -1,6 +1,6 @@
 /**
  * Proof wording on text the API writes (Phase 4 §4.5): problem details, notification titles and
- * bodies, labels from settings. Until packio-api adopts `docs/ui/glossary.md`
+ * bodies, labels from settings. Until getpack-api adopts `docs/ui/glossary.md`
  * (docs/contract-requests.md, "Proof wording in the contract"), this maps its words to the
  * glossary's at the point they reach a screen — so nobody sees the old term, whichever zone.
  *

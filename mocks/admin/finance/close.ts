@@ -1,5 +1,5 @@
 /**
- * Period close, financial reports and audit support (packio-api B5.6, published; accounting-design
+ * Period close, financial reports and audit support (getpack-api B5.6, published; accounting-design
  * §6–§8): the month's close checklist with its nine steps, owners, evidence and blocking checks,
  * which gates the ledger's close and lock; the trial balance, GL detail, balance sheet, profit
  * and loss by dimension and indirect cash flow, each with its integrity check; and the auditor's
@@ -7,7 +7,7 @@
  *
  * Every figure is a sum over the same posted journals the other finance mocks write, so a zero
  * difference is a property of the data (the month simulation in the e2e relies on it). The
- * roll-forwards of 2330 / 2130 and the §7 step 8 comparison outside a checklist are packio-api's
+ * roll-forwards of 2330 / 2130 and the §7 step 8 comparison outside a checklist are getpack-api's
  * U-B0.3 operations (`admin.financialReports.accountRollForward`, `.subledgerReconciliation`).
  */
 
@@ -335,7 +335,7 @@ const view = ({ submittedById: _submittedById, ...dto }: Checklist & { submitted
   periodStatus: periodOfMonth(dto.period)?.status ?? dto.periodStatus,
 });
 
-// The ledger asks before it closes or locks a month (packio-api `PERIOD_CLOSE_GATE`).
+// The ledger asks before it closes or locks a month (getpack-api `PERIOD_CLOSE_GATE`).
 registerCloseGate((period, to) => {
   const month = period.startDate.slice(0, 7);
   const checklist = checklists.get(month);
@@ -679,7 +679,7 @@ export function accountRollForward(accountCode: string, from: string, to: string
           opening += amount;
           continue;
         }
-        // packio-api names a journal without a posting rule `manual`.
+        // getpack-api names a journal without a posting rule `manual`.
         const rule = journal.postingRule ?? "manual";
         const entry = rules.get(rule) ?? { increases: 0, decreases: 0 };
         if (amount >= 0) {
@@ -754,7 +754,7 @@ function population(month: string, kind: Schemas["AuditPopulation"]): SampleItem
   }
 }
 
-/** mulberry32, as packio-api draws: the same seed gives the same sample. */
+/** mulberry32, as getpack-api draws: the same seed gives the same sample. */
 function prng(seed: number) {
   let a = seed >>> 0;
   return () => {
@@ -1005,7 +1005,7 @@ function pbcPack(month: string, by: string): string {
         period: month,
         generatedAt: bangkokIso(),
         generatedBy: by,
-        note: "Prepared by client — Packio ledger export (mock)",
+        note: "Prepared by client — getpack ledger export (mock)",
       },
     ]),
     sheet("TrialBalance", trialBalance(month, month).accounts as unknown as Record<string, unknown>[]),

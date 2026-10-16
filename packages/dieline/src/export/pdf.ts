@@ -142,7 +142,9 @@ export function dielineToPdf(d: Dieline, opts: PdfOptions = {}): Uint8Array {
       new TextEncoder().encode("\nendstream"),
     ]),
   );
-  const info = add(`<< /Producer (Packio @packio/dieline) /Title ${pdfText(opts.title ?? `Dieline ${d.styleId}`)} >>`);
+  const info = add(
+    `<< /Producer (getpack @getpack/dieline) /Title ${pdfText(opts.title ?? `Dieline ${d.styleId}`)} >>`,
+  );
 
   // Finishes: a separation, a layer, the stencil, a page and its content each.
   const finishes = (opts.finishes ?? []).map((f) => {

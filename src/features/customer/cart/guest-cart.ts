@@ -9,7 +9,7 @@ import type { saveQuote } from "../configurator/pricing";
 /**
  * A guest's cart, kept in this browser until they sign in (UX audit Flow 1, bug #3).
  *
- * packio-api's cart is a customer's (`store.cart.*`), and so is the saved quotation a cart line
+ * getpack-api's cart is a customer's (`store.cart.*`), and so is the saved quotation a cart line
  * points at (D-051). A guest can still price a box, though, and the storefront promises they can
  * do it without an account — so the configurator keeps what they chose here, the cart shows it,
  * and checkout asks them to sign in, after which `useGuestCartMerge` saves each line as a quotation

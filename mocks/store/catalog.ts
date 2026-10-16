@@ -1,5 +1,5 @@
 /**
- * The storefront's catalogue (packio-api's public `/v1/store/catalog/*` reads), mocked from the
+ * The storefront's catalogue (getpack-api's public `/v1/store/catalog/*` reads), mocked from the
  * same rows the back office edits (`../admin/catalogue.ts`): what is active or published in admin
  * is what the shop shows, in the store DTOs' shapes, typed by `Schemas` — the categories, price
  * hints, product FAQs and the sitemap (U-B0.1) among them.

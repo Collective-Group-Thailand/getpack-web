@@ -179,7 +179,7 @@ export function SettingsList({ initial }: { initial: Setting[] | null }) {
   );
 }
 
-/** `datetime-local` text for "now", in Bangkok wall-clock time — Packio's only clock. */
+/** `datetime-local` text for "now", in Bangkok wall-clock time — getpack's only clock. */
 function bangkokNowInput(): string {
   return new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 16);
 }

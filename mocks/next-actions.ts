@@ -1,5 +1,5 @@
 /**
- * packio-api's `nextActions` builder (`src/common/next-actions/next-actions.ts` at v0.6.0), for the
+ * getpack-api's `nextActions` builder (`src/common/next-actions/next-actions.ts` at v0.6.0), for the
  * mocks: a rule offers one action when its permissions are all held and its `when` — the endpoint's
  * own state check — is `true`; a string offers it disabled with that reason (a message key).
  *

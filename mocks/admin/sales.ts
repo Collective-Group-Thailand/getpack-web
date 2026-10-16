@@ -6,7 +6,7 @@
  *
  * The calculators read the catalogue mock's own rows and price with the storefront mock's engine
  * (`../store/quotes.ts` `boxStepsOf`), so the same spec costs the same on both sides — obviously fake
- * figures standing in for packio-api's ported calculators. The other five calculators are not
+ * figures standing in for getpack-api's ported calculators. The other five calculators are not
  * published; nothing here answers for them. Memos go through the approvals mock like everything
  * else, so a memo raised here appears in a Director's inbox.
  */
@@ -614,7 +614,7 @@ export const salesHandlers = [
     if (!allowed(request, "quotes.read")) return forbidden();
     const quote = quotations.find((candidate) => candidate.id === params.quoteId);
     if (!quote) return notFound("ใบเสนอราคา");
-    const text = `ใบเสนอราคา ${quote.quoteCode}\nบริษัท Collective Group (Thailand) — Packio (ข้อมูลจำลอง)`;
+    const text = `ใบเสนอราคา ${quote.quoteCode}\nบริษัท Collective Group (Thailand) — getpack (ข้อมูลจำลอง)`;
     const body: Schemas["QuotePdfDto"] =
       quote.pdfStatus === "ready"
         ? {

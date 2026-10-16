@@ -19,7 +19,7 @@ import { toast } from "@/ui/components/Toast";
 const BASE_CODE = /^PK-[A-Z]{2}-\d{2,3}$/;
 
 /**
- * Offering a dieline to Packio's library (U3.6, D-272): the DXF or PDF, a title, the library style
+ * Offering a dieline to getpack's library (U3.6, D-272): the DXF or PDF, a title, the library style
  * it is closest to (if the factory knows), a note — under the intake terms in force, which the
  * factory reads and accepts here; the version accepted goes with the offer (provenance).
  */

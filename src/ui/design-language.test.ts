@@ -108,7 +108,7 @@ describe("design language v3", () => {
 /*
  * Acceptance, re-scoped in the Phase 4 review: zero in UI copy, i18n and the enum→label mapping —
  * what a user can read. API-written text (problem details, notifications, settings labels) is
- * mapped at display by `src/i18n/terms.ts` until packio-api adopts the glossary; docs may quote
+ * mapped at display by `src/i18n/terms.ts` until getpack-api adopts the glossary; docs may quote
  * the old word (the docs/ui header note does).
  */
 describe("Proof terminology (Phase 4 §4.5)", () => {
@@ -145,7 +145,7 @@ describe("photos come from the CMS (Phase 4 §4.6)", { timeout: 60_000 }, () => 
       ].join("\n"),
       { filePath: join(root, "src/features/customer/home/x.ts"), warnIgnored: false },
     );
-    const stock = (result?.messages ?? []).filter((message) => message.ruleId === "packio-photos/no-stock-photos");
+    const stock = (result?.messages ?? []).filter((message) => message.ruleId === "getpack-photos/no-stock-photos");
     expect(stock).toHaveLength(2);
   });
 

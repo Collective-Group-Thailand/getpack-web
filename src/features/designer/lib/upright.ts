@@ -1,4 +1,4 @@
-import { applyMat4, foldDieline, lift, type Dieline, type HingeMap } from "@packio/dieline";
+import { applyMat4, foldDieline, lift, type Dieline, type HingeMap } from "@getpack/dieline";
 
 /**
  * How far to turn each face so it reads upright on the finished box — the rotation the canvas

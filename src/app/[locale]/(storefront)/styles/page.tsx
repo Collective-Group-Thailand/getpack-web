@@ -303,7 +303,7 @@ export default async function StylesPage({
               signInHref={signInHref}
             />
           )}
-          {/* "ไม่เจอแบบที่ต้องการ" (U3.6, D-273): a structure the library lacks, asked of Packio's designers. */}
+          {/* "ไม่เจอแบบที่ต้องการ" (U3.6, D-273): a structure the library lacks, asked of getpack's designers. */}
           <Callout className="mt-8" icon="ruler" title={t("request.ctaTitle")}>
             <p>{t("request.ctaBody")}</p>
             <Button asChild variant="secondary" className="mt-3">

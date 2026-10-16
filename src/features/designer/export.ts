@@ -1,6 +1,6 @@
 "use client";
 import type Konva from "konva";
-import { dielineToDxf, dielineToPdf, dielineToSvg, PX_PER_MM } from "@packio/dieline";
+import { dielineToDxf, dielineToPdf, dielineToSvg, PX_PER_MM } from "@getpack/dieline";
 import { withFlatWorld } from "./lib/capture";
 import type { Dieline } from "./types";
 

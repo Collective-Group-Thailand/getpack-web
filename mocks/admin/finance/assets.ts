@@ -1,5 +1,5 @@
 /**
- * Fixed assets (packio-api B5.5, published; D-150): categories whose accounts and useful life
+ * Fixed assets (getpack-api B5.5, published; D-150): categories whose accounts and useful life
  * are snapshotted on each asset, the register (from a vendor bill already capitalised by P25, or
  * manual — FA01 against an account Finance names), straight-line depreciation by month (FA02,
  * one run per month into an open month; accumulated = round(depreciable × months ÷ life), so the

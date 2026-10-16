@@ -6,8 +6,8 @@ import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { openRail } from "./helpers/designer";
 
 /**
- * U4.4, ③ design content in Packio 3D Studio against the mock API: a Packio template re-flowed onto
- * the box and restyled with "ใช้แบรนด์ของฉัน", Packio's elements (a mark with legal meaning only
+ * U4.4, ③ design content in getpack 3D Studio against the mock API: a getpack template re-flowed onto
+ * the box and restyled with "ใช้แบรนด์ของฉัน", getpack's elements (a mark with legal meaning only
  * after the right is declared), a barcode checked by the validation service, a nutrition block,
  * a finish as its own layer and a gradient background — read back from the saved document.
  */
@@ -54,13 +54,13 @@ async function saved(page: Page, id: string): Promise<Saved["document"]["content
 
 test.describe.configure({ mode: "serial" });
 
-test("a Packio template re-flows onto the box, then takes my brand", async ({ page }) => {
+test("a getpack template re-flows onto the box, then takes my brand", async ({ page }) => {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   const id = STUDIO.exec(page.url())![1]!;
 
   await openRail(page, "แม่แบบ");
-  const templates = page.getByRole("region", { name: "แม่แบบของ Packio" });
+  const templates = page.getByRole("region", { name: "แม่แบบของ getpack" });
   await templates.getByRole("combobox", { name: "ใช้กับสินค้า" }).click();
   await page.getByRole("option", { name: "กาแฟ" }).click();
   await expect(templates.getByRole("list").getByRole("listitem")).toHaveCount(3);
@@ -83,7 +83,7 @@ test("a Packio template re-flows onto the box, then takes my brand", async ({ pa
   expect(content.elements.find((e) => e.name === "headline")!.fill).toBe("#123abc");
 });
 
-test("Packio elements, a validated barcode, a nutrition block, a finish layer and a gradient", async ({ page }) => {
+test("getpack elements, a validated barcode, a nutrition block, a finish layer and a gradient", async ({ page }) => {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   const id = STUDIO.exec(page.url())![1]!;
@@ -146,7 +146,7 @@ test("the company's brand kit: the Company Admin keeps it, one click restyles th
   const id = STUDIO.exec(page.url())![1]!;
 
   await openRail(page, "แม่แบบ");
-  await page.getByRole("region", { name: "แม่แบบของ Packio" }).getByRole("button", { name: "ขนม · แถบสี" }).click();
+  await page.getByRole("region", { name: "แม่แบบของ getpack" }).getByRole("button", { name: "ขนม · แถบสี" }).click();
 
   await openRail(page, "แบรนด์");
   const kits = page.getByRole("region", { name: /^ชุดแบรนด์ของ / });

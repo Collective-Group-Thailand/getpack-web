@@ -24,7 +24,7 @@ type Step = Schemas["OnboardingStepDto"];
 
 /**
  * The thirteen onboarding steps (D-011, D-041): where each stands, and — in assisted onboarding
- * (D-100, D-171) — which Packio entered on the factory's behalf and whether the factory has
+ * (D-100, D-171) — which getpack entered on the factory's behalf and whether the factory has
  * signed that off yet.
  */
 export function Onboarding({ factory }: { factory: Factory }) {

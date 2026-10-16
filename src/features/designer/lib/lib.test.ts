@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getStyle, hingeMapOf, REFERENCE_MATERIALS, resolveValues } from "@packio/dieline";
+import { getStyle, hingeMapOf, REFERENCE_MATERIALS, resolveValues } from "@getpack/dieline";
 
 import { MOCK_STUDIO_RULES } from "../../../../mocks/store/studio";
 import type { DesignElement, ShapeElement, TextElement } from "../types";
@@ -48,7 +48,7 @@ describe("codes", () => {
   });
 
   it("encodes a QR code with its quiet zone, Thai text included", () => {
-    const m = qrMatrix("https://packio.example/สวัสดี")!;
+    const m = qrMatrix("https://getpack.example/สวัสดี")!;
     expect(m.size).toBeGreaterThan(21 + 2 * QR_QUIET_MODULES - 1);
     expect(m.dark(0, 0)).toBe(false);
     expect(m.dark(QR_QUIET_MODULES, QR_QUIET_MODULES)).toBe(true); // a finder pattern corner

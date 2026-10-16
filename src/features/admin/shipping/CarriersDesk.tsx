@@ -46,8 +46,8 @@ type Test = {
 const coordinate = (text: string) => (text.trim() && Number.isFinite(Number(text)) ? Number(text) : null);
 
 /**
- * How goods travel (D-013, D-114): the factory's own fleet by default, and the carriers Packio books
- * when a factory cannot serve a zone. Each carrier runs on Packio's account — only a reference to the
+ * How goods travel (D-013, D-114): the factory's own fleet by default, and the carriers getpack books
+ * when a factory cannot serve a zone. Each carrier runs on getpack's account — only a reference to the
  * secret is kept here, never the credentials (D-005) — and is asked for quotes only when enabled.
  */
 export function CarriersDesk() {

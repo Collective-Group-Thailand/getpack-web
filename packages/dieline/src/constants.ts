@@ -3,7 +3,7 @@
  *
  * Each value says where it comes from: the legacy Locopack calculators (`calculate_conditions`,
  * `PatternArea.php`, `CalculatorCorrugate.php` — see docs/design-tool/style-mapping.md), common
- * carton practice, or a Packio assumption still awaiting prepress confirmation (marked ⚠).
+ * carton practice, or a getpack assumption still awaiting prepress confirmation (marked ⚠).
  * Everything is millimetres unless named otherwise.
  */
 import type { MaterialSpec } from "./types";

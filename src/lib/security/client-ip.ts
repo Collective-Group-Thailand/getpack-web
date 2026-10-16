@@ -1,10 +1,10 @@
 /**
- * The visitor's IP address, for the API's per-IP throttles (packio-api B6.3, `SECURITY.md` §7 #1).
+ * The visitor's IP address, for the API's per-IP throttles (getpack-api B6.3, `SECURITY.md` §7 #1).
  *
- * Every browser call reaches packio-api from this app — through the BFF, a Server Component or a
+ * Every browser call reaches getpack-api from this app — through the BFF, a Server Component or a
  * Server Action — so without help the API's general, OTP, sign-in and coupon-code throttles see
  * one address, ours, and would throttle every visitor together. This app therefore tells the API
- * who the visitor is, in `X-Forwarded-For`, and packio-api's `TRUST_PROXY` counts this app as
+ * who the visitor is, in `X-Forwarded-For`, and getpack-api's `TRUST_PROXY` counts this app as
  * one more hop.
  *
  * What is *not* done is passing the browser's `X-Forwarded-For` along. Anyone can send that

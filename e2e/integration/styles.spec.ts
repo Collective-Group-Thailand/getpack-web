@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { HOSTS } from "../../playwright.config";
 
 /**
- * U3.5 on the real packio-api (`v0.41.0`): the library reads `store.styles.list` and a style's page
+ * U3.5 on the real getpack-api (`v0.41.0`): the library reads `store.styles.list` and a style's page
  * `store.styles.get`. The dev seed publishes no style yet — publishing waits for approved recipes,
  * names and a partner able to make them (D-243) — so the library answers with its empty state and
  * an unknown code is a 404; the shapes are the published DTOs either way.

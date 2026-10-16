@@ -1,5 +1,5 @@
 ---
-"@packio/dieline": minor
+"@getpack/dieline": minor
 ---
 
 Styles are composable recipes (ADR-0011): JSON recipes over body, closure, feature and piece-set

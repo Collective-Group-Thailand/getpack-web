@@ -1,9 +1,9 @@
 /**
- * The published partner surface (packio-api B2.2) — the factory's own profile, onboarding,
+ * The published partner surface (getpack-api B2.2) — the factory's own profile, onboarding,
  * compliance, configuration, price lists, price proposals and shipping rate card — mocked over
  * **the same rows the back office reviews** (`mocks/admin/partners.ts`). An application the owner
  * submits here lands in the Partner team's pipeline; a proposal submitted here is in the admin
- * proposals queue; a line Packio counters there is answered here. Typed by `Schemas`.
+ * proposals queue; a line getpack counters there is answered here. Typed by `Schemas`.
  *
  * Every handler goes through `own()` (./support.ts): other factories are 404 (D-044), roles are
  * checked against rbac.md's factory matrix. Nothing here returns a suggestion, benchmark or
@@ -157,9 +157,9 @@ const dimensionsOf = (component: Schemas["PriceComponent"]) =>
 
 const OPEN: Proposal["status"][] = ["draft", "submitted", "under_review", "countered"];
 
-/** Packio's drafts are never shown to a factory (B2.2 "Packio drafts are not visible"). */
+/** getpack's drafts are never shown to a factory (B2.2 "getpack drafts are not visible"). */
 const visibleTo = (factoryId: string) => (item: Proposal) =>
-  item.factoryId === factoryId && !(item.direction === "packio_to_factory" && item.status === "draft");
+  item.factoryId === factoryId && !(item.direction === "getpack_to_factory" && item.status === "draft");
 
 function settle(item: Proposal, store: Store) {
   item.lineCounts = counts(item.lines);
@@ -179,14 +179,14 @@ function apply(item: Proposal, store: Store) {
     id: nextId("plv"),
     versionNo,
     status: "approved",
-    origin: item.direction === "packio_to_factory" ? "platform_rate_card" : "factory_proposal",
+    origin: item.direction === "getpack_to_factory" ? "platform_rate_card" : "factory_proposal",
     effectiveFrom,
     reason: item.comment ?? "",
     basedOnVersionNo: list.current?.versionNo ?? null,
     proposalId: item.id,
     contentSha256: lineKeyOf(item.id, { versionNo }),
     lineCount: (list.current?.lineCount ?? 0) + item.lines.filter((l) => l.action === "add").length,
-    factoryAcceptedAt: item.direction === "packio_to_factory" ? now() : null,
+    factoryAcceptedAt: item.direction === "getpack_to_factory" ? now() : null,
     factorySignedOffAt: null,
     createdAt: now(),
   };
@@ -425,7 +425,7 @@ export const factoryHandlers: HttpHandler[] = [
   http.get("*/v1/partner/factories/:factoryId/bank-accounts", ({ request, params }) => {
     const ok = own(request, params.factoryId);
     if (ok instanceof Response) return ok;
-    // The verification call stays with Packio Finance (B2.2): null on this surface.
+    // The verification call stays with getpack Finance (B2.2): null on this surface.
     return HttpResponse.json([...ok.store.banks].reverse().map((bank) => ({ ...bank, verification: null })));
   }),
   http.post("*/v1/partner/factories/:factoryId/bank-accounts", async ({ request, params }) => {
@@ -533,7 +533,7 @@ export const factoryHandlers: HttpHandler[] = [
   http.get("*/v1/partner/factories/:factoryId/price-lists", ({ request, params }) => {
     const ok = own(request, params.factoryId, "factory_prices.read");
     if (ok instanceof Response) return ok;
-    // Packio's drafts are never shown; a version pending the factory is.
+    // getpack's drafts are never shown; a version pending the factory is.
     return HttpResponse.json(
       ok.store.priceLists.map((list) => ({
         ...list,
@@ -606,7 +606,7 @@ export const factoryHandlers: HttpHandler[] = [
     const list = store.priceLists.find((item) => item.productTypeId === body.productTypeId);
     if (!type || !list) return invalid("productTypeId", "โรงงานไม่มีรายการราคาของประเภทนี้");
     if (store.config.pricingArrangement.current?.ownershipMode !== "factory_price_list")
-      return problem(409, "price.mode_rate_card", "โรงงานใช้อัตราของ Packio — ตอบรับหรือขอแก้อัตราแทนการเสนอราคา");
+      return problem(409, "price.mode_rate_card", "โรงงานใช้อัตราของ getpack — ตอบรับหรือขอแก้อัตราแทนการเสนอราคา");
     const tier = store.config.participations.find((item) => item.productTypeId === type.id)?.current?.tier;
     if (tier !== "A" && tier !== "B")
       return problem(409, "price.tier_quote_only", "ประเภทนี้เป็นแบบเสนอราคาตามคำขอ (C) ยังไม่มีรายการราคา");
@@ -618,7 +618,7 @@ export const factoryHandlers: HttpHandler[] = [
       200 + proposals.length,
       store.factory.id,
       type.code,
-      "factory_to_packio",
+      "factory_to_getpack",
       "draft",
       [],
       body.comment ?? "",
@@ -640,7 +640,7 @@ export const factoryHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const item = proposals.filter(visibleTo(ok.store.factory.id)).find((c) => c.id === params.proposalId);
     if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-    if (item.direction !== "factory_to_packio" || item.status !== "draft")
+    if (item.direction !== "factory_to_getpack" || item.status !== "draft")
       return problem(409, "price.proposal_not_editable", "แก้ไขรายการได้เฉพาะฉบับร่าง");
     const { lines } = (await request.json()) as Schemas["ReplaceProposalLinesDto"];
     const list = ok.store.priceLists.find((candidate) => candidate.id === item.priceListId);
@@ -683,7 +683,7 @@ export const factoryHandlers: HttpHandler[] = [
       if (ok instanceof Response) return ok;
       const item = proposals.filter(visibleTo(ok.store.factory.id)).find((c) => c.id === params.proposalId);
       if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-      if (item.direction !== "factory_to_packio" || item.status !== "draft" || item.lines.length === 0)
+      if (item.direction !== "factory_to_getpack" || item.status !== "draft" || item.lines.length === 0)
         return problem(409, "price.proposal_not_submittable", "ส่งได้เฉพาะฉบับร่างที่มีรายการ");
       const opened = openApproval({
         policy: "price_proposal",
@@ -705,7 +705,7 @@ export const factoryHandlers: HttpHandler[] = [
       if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
       const { reason } = (await request.json()) as Schemas["ReasonBodyDto"];
       if (!reason || reason.trim().length < 3) return invalid("reason", "อย่างน้อย 3 ตัวอักษร", "ต้องระบุเหตุผล");
-      if (item.direction !== "factory_to_packio" || !OPEN.includes(item.status))
+      if (item.direction !== "factory_to_getpack" || !OPEN.includes(item.status))
         return problem(409, "price.proposal_not_withdrawable", "ถอนได้เฉพาะข้อเสนอของโรงงานที่ยังเปิดอยู่");
       Object.assign(item, { status: "withdrawn", comment: `${item.comment ?? ""}`.trim() || reason });
       return HttpResponse.json(item);
@@ -717,7 +717,7 @@ export const factoryHandlers: HttpHandler[] = [
       if (ok instanceof Response) return ok;
       const item = proposals.filter(visibleTo(ok.store.factory.id)).find((c) => c.id === params.proposalId);
       if (!item) return problem(404, "http.not_found", "ไม่พบอัตรานี้");
-      if (item.direction !== "packio_to_factory" || !["submitted", "under_review"].includes(item.status))
+      if (item.direction !== "getpack_to_factory" || !["submitted", "under_review"].includes(item.status))
         return problem(409, "price.rate_card_not_open", "อัตรานี้ตอบไปแล้ว หรือยังไม่ได้ส่งถึงโรงงาน");
       const body = (await request.json()) as Schemas["RespondToRateCardDto"];
       if (!body.lines) {
@@ -729,7 +729,7 @@ export const factoryHandlers: HttpHandler[] = [
           const target = item.lines.find((candidate) => candidate.id === answer.lineId);
           if (!target) return invalid(`lines[${index}].lineId`, "ไม่พบบรรทัดนี้");
           // CONTRACT-DEFECT: `response` is typed as its own DTO in the contract (enum name
-          // collision); packio-api's source declares it `accept | counter`.
+          // collision); getpack-api's source declares it `accept | counter`.
           const response = answer.response as unknown as "accept" | "counter";
           if (response === "counter" && !answer.counterValues)
             return invalid(`lines[${index}].counterValues`, "ต้องระบุอัตราที่ขอแทน");
@@ -759,8 +759,8 @@ export const factoryHandlers: HttpHandler[] = [
       if (ok instanceof Response) return ok;
       const item = proposals.filter(visibleTo(ok.store.factory.id)).find((c) => c.id === params.proposalId);
       if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-      if (item.direction !== "factory_to_packio" || item.status !== "countered")
-        return problem(409, "price.no_counters", "ไม่มีราคาที่ Packio เสนอกลับให้ตอบ");
+      if (item.direction !== "factory_to_getpack" || item.status !== "countered")
+        return problem(409, "price.no_counters", "ไม่มีราคาที่ getpack เสนอกลับให้ตอบ");
       const body = (await request.json()) as Schemas["AnswerCountersDto"];
       for (const [index, answer] of body.lines.entries()) {
         const target = item.lines.find(

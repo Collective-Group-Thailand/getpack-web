@@ -5,7 +5,7 @@ import { FACTORY_ROLES, readState, signInFactory } from "./support";
 
 /**
  * F9001's users — one per D-140 factory role, provisioned by the setup project — sign in to the
- * partner zone, and each screen they reach renders from packio-api rather than an error.
+ * partner zone, and each screen they reach renders from getpack-api rather than an error.
  */
 
 for (const role of FACTORY_ROLES) {

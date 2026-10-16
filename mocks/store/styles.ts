@@ -3,7 +3,7 @@
  * programme's master file (`docs/design-tool/style-library-master.json`): every base is published,
  * 122 styles and 986 variants, so the library is measured at the size it launches at (U3.5 §4).
  *
- * A wave-1 base publishes the variants the engine draws (`@packio/dieline/library`) — what the API
+ * A wave-1 base publishes the variants the engine draws (`@getpack/dieline/library`) — what the API
  * does once its recipes are approved (D-243); a later-wave base publishes its axes' combinations
  * up to its master count. Use cases are the master's (D-410); prices, lead times and partner counts
  * are the mock's own fake figures; the shapes are the published DTOs.
@@ -11,8 +11,8 @@
 
 import { http, HttpResponse, type HttpHandler } from "msw";
 
-import { variantsOf } from "@packio/dieline";
-import { ALL_RECIPES } from "@packio/dieline/library";
+import { variantsOf } from "@getpack/dieline";
+import { ALL_RECIPES } from "@getpack/dieline/library";
 
 import type { Schemas } from "@/lib/api/types";
 
@@ -23,7 +23,7 @@ import { customerOf } from "./customers";
 type Card = Schemas["StyleCardDto"];
 type Detail = Schemas["StyleDetailDto"];
 type Row = (typeof master.styles)[number];
-/** The master's product types as packio-api maps them (`PRODUCT_TYPE_OF`, D-407). */
+/** The master's product types as getpack-api maps them (`PRODUCT_TYPE_OF`, D-407). */
 const PRODUCT_TYPE_OF: Record<string, string> = {
   folding: "folding_carton",
   corrugate: "corrugated",

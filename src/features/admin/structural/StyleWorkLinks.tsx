@@ -5,7 +5,7 @@ import { can, getActor } from "@/lib/auth/actor";
 import { Button } from "@/ui/components/Button";
 
 /**
- * The way into structural design requests and factory dieline offers (U3.6): packio-api's menu has
+ * The way into structural design requests and factory dieline offers (U3.6): getpack-api's menu has
  * no entries for them yet (CONTRACT-REQUEST admin.menu-styles), so the catalogue, prepress and
  * orders pages link them for whoever holds the permission.
  */

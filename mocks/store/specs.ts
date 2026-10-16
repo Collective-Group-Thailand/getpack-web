@@ -1,5 +1,5 @@
 /**
- * `store.specs.convertDimensions` (U2.1, D-182), mocked the way packio-api converts: a crease at
+ * `store.specs.convertDimensions` (U2.1, D-182), mocked the way getpack-api converts: a crease at
  * mid-thickness, so a closed box is inside + 1·t over the creases (depth + 2·t) and inside + 2·t
  * outside; a tray's depth takes one caliper; a flat product has its finished size only. The
  * calipers are the catalogue rows' (`materials.caliperMm`) and, for the corrugated mock's flutes,
@@ -67,7 +67,7 @@ export class BasisError extends Error {
   }
 }
 
-/** Every basis of the family from the size on one (millimetres, 0.01), as packio-api answers it. */
+/** Every basis of the family from the size on one (millimetres, 0.01), as getpack-api answers it. */
 export function convert(size: Size, basis: Basis, family: Family, caliperMm: number | null) {
   const bases = basesOf(family);
   if (!bases.includes(basis)) throw new BasisError("specs.basis_not_accepted");

@@ -375,7 +375,7 @@ export function GoodsReceiptsList({ initial }: { initial: InitialPage<GoodsRecei
   );
 }
 
-/** The billing statements Packio generates from PO + POD for the factory to confirm (D-090). */
+/** The billing statements getpack generates from PO + POD for the factory to confirm (D-090). */
 export function BillingStatementsList({ initial }: { initial: InitialPage<BillingStatement> | null }) {
   const t = useTranslations("finance.payables.statements");
   const tStatus = useTranslations("status");
@@ -440,7 +440,7 @@ export function BillingStatementsList({ initial }: { initial: InitialPage<Billin
   );
 }
 
-/** The verbs of `billing_statement.*` Finance performs here (packio-api `ADMIN_STATEMENT_ACTIONS`). */
+/** The verbs of `billing_statement.*` Finance performs here (getpack-api `ADMIN_STATEMENT_ACTIONS`). */
 const STATEMENT_VERBS: ReadonlySet<string> = new Set(["capture_tax_invoice", "validate_tax_invoice"]);
 
 /**

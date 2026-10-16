@@ -1,11 +1,11 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: packio-api docs/contract-requests-triage.md · Regenerate: pnpm gen:triage
+ * Source: getpack-api docs/contract-requests-triage.md · Regenerate: pnpm gen:triage
  *
- * packio-api's verdict on every contract request, per frontend operation (`"<METHOD> <path>"`,
+ * getpack-api's verdict on every contract request, per frontend operation (`"<METHOD> <path>"`,
  * the registry's spelling) and per request id. `published_differently` means the operation
  * exists and the screen applies the triage's mapping when it migrates; `gaps` counts what
- * packio-api adds to it, additively, in `group`. `implement` is built there in `group`;
+ * getpack-api adds to it, additively, in `group`. `implement` is built there in `group`;
  * `deferred` waits on a decision. `shippedIn` names the release that shipped the group's work.
  */
 
@@ -28,7 +28,7 @@ export interface RequestTriage {
   shippedIn?: string;
 }
 
-export const TRIAGE_SOURCE = {"commit":"69e1351","triagedAgainst":"packio-web@f225d30","contract":"v0.66.0"} as const;
+export const TRIAGE_SOURCE = {"commit":"69e1351","triagedAgainst":"getpack-web@f225d30","contract":"v0.66.0"} as const;
 
 export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "DELETE /v1/admin/rfqs/{rfqId}/quotes/{quoteId}": {"request":"admin.rfq-quotes","verdict":"published_differently","group":"U-B0.2","operationId":"admin.rfqs.discardQuotation","publishedAs":"POST /v1/admin/rfq-quotations/{rfqQuoteId}/actions/discard","gaps":0},

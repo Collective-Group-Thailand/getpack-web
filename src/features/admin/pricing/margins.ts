@@ -1,5 +1,5 @@
 /**
- * Packio's sell-margin lines (D-063) as an editable table, checked the way packio-api's
+ * getpack's sell-margin lines (D-063) as an editable table, checked the way getpack-api's
  * constraints check them (`ck_sell_margin_lines__*`, `ex_sell_margin_lines__no_overlap`): runs are
  * inclusive bands, buy prices half-open bands, exactly one of a percentage (below 100) or an
  * amount, and no two lines of the same colour count and difficulty level may cover one point.
@@ -121,7 +121,7 @@ function pricesOverlap(a: EditableMarginLine, b: EditableMarginLine) {
 const orNull = (value: string) => (value.trim() ? value.trim() : null);
 const intOrNull = (value: string) => (value.trim() ? Number(value.trim()) : null);
 
-/** The lines as packio-api takes them. Call only when `checkMarginLines` found nothing. */
+/** The lines as getpack-api takes them. Call only when `checkMarginLines` found nothing. */
 export function toApiLines(lines: readonly EditableMarginLine[]): MarginLine[] {
   return lines.map((line) => ({
     qtyMin: intOrNull(line.qtyMin),

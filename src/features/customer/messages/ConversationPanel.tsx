@@ -17,9 +17,9 @@ import { uploadAttachment, usePostMessage, useThreadMessages } from "./hooks";
 import { storeCardHref } from "./paths";
 
 /**
- * One of my conversations with Packio (U5.3, D-300): the messages, a reply box with photos and
- * files, the quick asks people make most, and where Packio's answers go — here, or my LINE when it
- * is linked. Packio's staff appear as the team; a message of mine says when Packio has read it.
+ * One of my conversations with getpack (U5.3, D-300): the messages, a reply box with photos and
+ * files, the quick asks people make most, and where getpack's answers go — here, or my LINE when it
+ * is linked. getpack's staff appear as the team; a message of mine says when getpack has read it.
  */
 export function ConversationPanel({
   thread,

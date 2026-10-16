@@ -36,7 +36,7 @@
 ### P4
 > **สถานการณ์:** กระดาษสำหรับงานเดียวกันหมดสต็อก ของจะเข้าอีก 2 วัน
 >
-> **งาน:** แจ้ง Packio ให้รู้เรื่องนี้
+> **งาน:** แจ้ง getpack ให้รู้เรื่องนี้
 
 ### P5
 > **สถานการณ์:** ของของการจัดส่ง UATSH-2610-00001 แพ็กเสร็จแล้ว โรงงานจะส่งด้วยรถตัวเอง
@@ -49,15 +49,15 @@
 > **งาน:** ตอบเคลมนี้
 
 ### P7
-> **งาน:** มีใบวางบิลที่ Packio ส่งมาให้ตรวจ ดูว่ายอดรวมเท่าไร ถ้าถูกต้องให้ยืนยัน
+> **งาน:** มีใบวางบิลที่ getpack ส่งมาให้ตรวจ ดูว่ายอดรวมเท่าไร ถ้าถูกต้องให้ยืนยัน
 
 ### P8
-> **งาน:** งาน UATJOB-2610-00008 Packio จะจ่ายยอดคงเหลือเมื่อไร และตอนนี้หักเงินประกันไว้เท่าไร
+> **งาน:** งาน UATJOB-2610-00008 getpack จะจ่ายยอดคงเหลือเมื่อไร และตอนนี้หักเงินประกันไว้เท่าไร
 
 ### P9
 > **สถานการณ์:** ราคากระดาษกล่องแข็งขึ้น
 >
-> **งาน:** ขอขึ้นราคาวัสดุ "กระดาษกล่องแป้งหลังเทา (Duplex) 350 แกรม" เป็น 32 บาท/กก. แล้วส่งให้ Packio
+> **งาน:** ขอขึ้นราคาวัสดุ "กระดาษกล่องแป้งหลังเทา (Duplex) 350 แกรม" เป็น 32 บาท/กก. แล้วส่งให้ getpack
 
 ### P10
 > **งาน:** ตั้งแต่สัปดาห์หน้า โรงงานหยุดวันเสาร์ แก้ในระบบให้ถูก
@@ -72,7 +72,7 @@
 | P2 | Today | job accepted; said the ship-by date and the amount | finds the accept card summary or scrolls to the PO; hesitates at "รับงาน" | ≤ 90 s, no wrong job |
 | P3 | Today | step completed with 1,000 / 0 | finds the job (search? list? QR?); understands "รับเข้า / ดี / เสีย" | ≤ 2 min |
 | P4 | job page | issue raised, kind = material | looks for the issue form; the word "ปัญหา" | ≤ 90 s |
-| P5 | Today | labels opened; dispatch confirmed | understands steps 1 → 2; own truck vs Packio carrier | ≤ 2 min |
+| P5 | Today | labels opened; dispatch confirmed | understands steps 1 → 2; own truck vs getpack carrier | ≤ 2 min |
 | P6 | Today | dispute sent with a reason | reads what "ยอมรับ / ไม่ยอมรับ" lead to; finds photo upload | ≤ 2 min |
 | P7 | Today | statement confirmed; said the total | VAT vs before-VAT confusion; "ใบกำกับภาษีของโรงงาน" | ≤ 2 min |
 | P8 | Today | said the balance date and the retention amount | opens "คำในหน้านี้หมายถึงอะไร"? confuses advance / balance / retention | ≤ 2 min |

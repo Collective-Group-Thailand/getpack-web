@@ -1,7 +1,7 @@
-# Design system & UX standards — `src/ui` (all zones of packio-web)
+# Design system & UX standards — `src/ui` (all zones of getpack-web)
 
 > มาตรฐานนี้ใช้กับทุก zone (customer, admin, partner) · foundation สร้างใน F0 Session 0.2 ส่วน component ที่เหลือสร้างเมื่อ F1–F5 ต้องใช้ครั้งแรก — ไฟล์นี้คือ **มาตรฐานอ้างอิง**
-> เป้าหมาย: Packio ที่ทันสมัย เร็ว ใช้ง่าย เข้าถึงได้ทุกคน และหน้าตาเป็นของเราเอง (ไม่ลอกเว็บเดิมหรือคู่แข่ง)
+> เป้าหมาย: getpack ที่ทันสมัย เร็ว ใช้ง่าย เข้าถึงได้ทุกคน และหน้าตาเป็นของเราเอง (ไม่ลอกเว็บเดิมหรือคู่แข่ง)
 
 ---
 
@@ -19,7 +19,7 @@ You are a principal product designer and design-system engineer. Maintain **`src
 
 ## 2. Brand & tokens (`src/ui/tokens`)
 - Tokens defined once in TypeScript → generated CSS variables (`--color-*`, `--radius-*`, `--space-*`, `--shadow-*`, `--motion-*`) → Tailwind v4 `@theme` preset. Three token tiers: **primitive** (palette), **semantic** (`bg`, `bg-subtle`, `surface`, `border`, `text`, `text-muted`, `primary`, `primary-fg`, `success`, `warning`, `danger`, `info`, `focus-ring`), **component** (e.g. `button-primary-bg`).
-- Brand values are configuration: `BRAND_NAME=Packio`, tagline "Your Packaging Production Partner", company "Collective Group (Thailand)", logo SVGs and primary/secondary hues (placeholder hues until the brand kit is supplied — see `docs/ui/brand.md`). Do not use third-party logos.
+- Brand values are configuration: `BRAND_NAME=getpack`, tagline "Your Packaging Production Partner", company "Collective Group (Thailand)", logo SVGs and primary/secondary hues (placeholder hues until the brand kit is supplied — see `docs/ui/brand.md`). Do not use third-party logos.
 - **Colour**: accessible palette generated in OKLCH with contrast validation script (text ≥ 4.5:1, large text/UI ≥ 3:1) run in CI. Light + dark themes (`prefers-color-scheme` + user toggle, stored in cookie); admin zone defaults to light, dark available; partner zone high-contrast option.
 - **Status colours** are semantic and shared (`src/domain/status` maps order/payment/graphic/job/shipment/claim statuses → tone + icon + Thai/English label). Never rely on colour alone — always icon + text.
 - **Typography**: Thai + Latin open-licence families, self-hosted via `next/font/local` (no runtime Google Fonts): UI — IBM Plex Sans Thai or Noto Sans Thai (pick one in an ADR after testing Thai vowel/tone-mark rendering and numerals); display — Anuphan or the same family in heavier weights; mono — IBM Plex Mono / JetBrains Mono for codes. Type scale (fluid `clamp`) 12/14/16/18/20/24/30/36/48; Thai line-height ≥ 1.6 for body; tabular numbers for money and quantities.
@@ -33,7 +33,7 @@ Built on Radix primitives / shadcn patterns, fully typed, themable, documented i
 - **Navigation**: AppShell (sidebar collapsible, topbar, mobile bottom nav), Breadcrumbs, Tabs, SegmentedControl, Pagination, CommandPalette (⌘K), MegaMenu, Stepper (horizontal/vertical, with status).
 - **Overlays**: Dialog, AlertDialog (destructive confirmations that restate the target, e.g. order code + amount), Sheet/Drawer (side & bottom sheet), Popover, DropdownMenu, ContextMenu, Toast (sonner) with undo action, HoverCard.
 - **Data display**: DataTable (TanStack: server pagination/sort/filter, column visibility, pinning, resizing, row selection & bulk actions, saved views, density toggle, sticky header, virtualisation, CSV/XLSX export hook, empty/error/loading states), DescriptionList, Stat/KPI card, Timeline (events with actor, time, evidence thumbnails, promised vs actual), ActivityFeed, Kanban board (virtualised, drag with keyboard support), Gantt/timeline lane, Calendar, Charts (line, bar, stacked, donut, sparkline — Recharts wrapper, tokenised, accessible data table fallback), PriceSummary (lines, VAT, one-off costs, total, per-piece), PriceBreakTable (highlight best value), OrderStatusHeader, ProgressTracker (order → production → shipping), FileCard / Gallery / Lightbox, PdfViewer (pdf.js, zoom, page thumbnails, annotation layer), ImageCompare slider, QRCode, Barcode, EmptyState (illustration slot + action), ErrorState, Banner/Callout, Rating (NPS).
-- **Commerce/packaging specific**: ProductCard, MaterialSwatch, DimensionInput (L×W×H with visual diagram), BoxPreview2D (from `@packio/dieline`), BoxPreview3D (lazy), QuoteDock (sticky desktop panel / mobile bottom sheet), CartLine, CheckoutSection, PaymentMethodPicker (QR countdown, card, banking, installment, slip upload, credit term), ProofViewer (versions, annotations, checklist, approve CTA), ClaimForm, TrackingCard (carrier steps).
+- **Commerce/packaging specific**: ProductCard, MaterialSwatch, DimensionInput (L×W×H with visual diagram), BoxPreview2D (from `@getpack/dieline`), BoxPreview3D (lazy), QuoteDock (sticky desktop panel / mobile bottom sheet), CartLine, CheckoutSection, PaymentMethodPicker (QR countdown, card, banking, installment, slip upload, credit term), ProofViewer (versions, annotations, checklist, approve CTA), ClaimForm, TrackingCard (carrier steps).
 - **Partner/shop-floor**: BigActionButton, StageStepper (touch), CameraCapture (multi-shot, compress), ScanButton (QR), OfflineIndicator & SyncQueue badge, LabelPrintLayout (100×150 mm), JobTraveller print layout.
 
 Each component: props documented, keyboard map, ARIA pattern, RTL-safe (future), dark-mode story, interaction tests (Storybook test runner + axe), visual snapshot.
@@ -89,7 +89,7 @@ Techniques: RSC by default, client components only where interactive, route-leve
 6. Migrate the designer shell, setup dialog and My designs onto `src/ui` without functional regressions (F0 Session 0.2; smoke e2e stays green).
 7. `docs/PROGRESS.md` update + ADRs (font choice, component base, theming approach).
 
-## Art direction — Packio (D-180)
+## Art direction — getpack (D-180)
 
 > ทิศทางนี้มาจากการวิเคราะห์เว็บอ้างอิงที่ผู้ใช้ให้มา (ร้านบรรจุภัณฑ์บน Shopify) — เรารับ **โครง เลย์เอาต์ และจังหวะการใช้งาน** มา แต่ **ห้ามลอกดีไซน์ ภาพ ฟอนต์ สี หรือข้อความ** ของเว็บนั้น (ธีมและภาพมีลิขสิทธิ์)
 
@@ -119,4 +119,4 @@ Rules: **one primary accent** — teal is for actions, amber only for promotions
 - Decorative section dividers (the reference uses wavy edges): allowed as a **flat SVG shape in `--c-paper-100`**, max one per two sections, `aria-hidden`, never text over it.
 
 ### Imagery
-Real Packio product and factory photography in a Thai context; products on white or paper backgrounds with a soft contact shadow; flat-lay for material/finish comparisons; process shots for the production timeline. Dielines and structure diagrams are line art (ink) with kraft fills. **Never** stock photos that imply customers or staff we do not have, and never imagery lifted from another site. Every image: `next/image`, explicit dimensions, AVIF/WebP, descriptive Thai alt text.
+Real getpack product and factory photography in a Thai context; products on white or paper backgrounds with a soft contact shadow; flat-lay for material/finish comparisons; process shots for the production timeline. Dielines and structure diagrams are line art (ink) with kraft fills. **Never** stock photos that imply customers or staff we do not have, and never imagery lifted from another site. Every image: `next/image`, explicit dimensions, AVIF/WebP, descriptive Thai alt text.

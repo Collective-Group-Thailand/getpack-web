@@ -64,7 +64,7 @@ export const AXIS_PHRASES: Record<string, Record<string, Localized | null>> = {
   },
 };
 
-/** Phrases for the axes the style library adds (`@packio/dieline/library`), registered on load. */
+/** Phrases for the axes the style library adds (`@getpack/dieline/library`), registered on load. */
 export function registerAxisPhrases(phrases: Readonly<Record<string, Record<string, Localized | null>>>): void {
   for (const [axis, values] of Object.entries(phrases)) AXIS_PHRASES[axis] = { ...values, ...AXIS_PHRASES[axis] };
 }

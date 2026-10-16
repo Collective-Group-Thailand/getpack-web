@@ -106,7 +106,7 @@
   "stock": {
     "title": "Stock",
     "body": "Everything in the factory's stores — paper, ink, spare parts and more. Balances and values update with every receipt and issue",
-    "privacy": "This is the factory's own data; Packio cannot see it",
+    "privacy": "This is the factory's own data; getpack cannot see it",
     "stats": {
       "items": "Items",
       "low": "Low, reorder",
@@ -446,7 +446,7 @@
   },
   "partners": {
     "title": "Trading partners",
-    "body": "Suppliers the factory buys from and customers it sells to itself — the factory's own data; Packio cannot see it",
+    "body": "Suppliers the factory buys from and customers it sells to itself — the factory's own data; getpack cannot see it",
     "new": "Add a partner",
     "views": {
       "label": "Partner views",

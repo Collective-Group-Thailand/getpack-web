@@ -7,7 +7,7 @@ import { accessToken } from "../../../mocks/support";
 import { createApiClient } from "./client";
 
 /**
- * The Packio Factory ERP E4 mock (packio-api v0.47, D-359 – D-371) keeps what the screens show: a quotation sent
+ * The getpack Factory ERP E4 mock (getpack-api v0.47, D-359 – D-371) keeps what the screens show: a quotation sent
  * with a link the customer accepts, the order, a delivery note, the invoice and its receipt — and who may do what.
  */
 
@@ -22,7 +22,7 @@ const anon = () => createApiClient({ baseUrl: "http://api.mock" });
 const path = { factoryId: F001 };
 const key = (n: number) => ({ "Idempotency-Key": `00000000-0000-4000-8000-0000000e4${String(n).padStart(3, "0")}` });
 
-describe("Packio Factory ERP E4 mock", () => {
+describe("getpack Factory ERP E4 mock", () => {
   it("runs a sale from quotation to cash (D-360 – D-365)", async () => {
     const customer = (
       await api("owner").GET("/v1/partner/factories/{factoryId}/erp/partners", {

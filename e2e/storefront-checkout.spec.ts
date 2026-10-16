@@ -51,7 +51,7 @@ async function emptyCart(page: Page) {
 /** Stands in for the QR gateway's webhook (a mock-only endpoint, reached through the BFF). */
 async function settle(page: Page, paymentId: string) {
   const response = await page.request.post(`${HOSTS.customer}/bff/v1/store/mock-gateway/payments/${paymentId}/settle`, {
-    headers: { "x-packio-csrf": "1", origin: HOSTS.customer },
+    headers: { "x-getpack-csrf": "1", origin: HOSTS.customer },
   });
   expect(response.ok()).toBe(true);
 }
@@ -96,9 +96,9 @@ test.describe("cart and checkout", () => {
 
     // A code is applied to the cart (store.cart.applyCode); the preview says what it took off.
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-    await page.getByLabel("โค้ดส่วนลด").fill("packio10");
+    await page.getByLabel("โค้ดส่วนลด").fill("getpack10");
     await page.getByRole("button", { name: "ใช้โค้ด" }).click();
-    await expect(page.getByText(/ใช้โค้ด PACKIO10 แล้ว/)).toBeVisible();
+    await expect(page.getByText(/ใช้โค้ด GETPACK10 แล้ว/)).toBeVisible();
     await expect(summary).toContainText("ส่วนลด");
 
     await page.getByLabel(/^คะแนนที่ใช้/).fill("10");
@@ -248,7 +248,7 @@ test.describe("cart and checkout", () => {
     // Another tab removes a line after this page was priced.
     const cart = await (await page.request.get(`${HOSTS.customer}/bff/v1/store/cart`)).json();
     const removed = await page.request.delete(`${HOSTS.customer}/bff/v1/store/cart/items/${cart.items[0].id}`, {
-      headers: { "x-packio-csrf": "1", origin: HOSTS.customer },
+      headers: { "x-getpack-csrf": "1", origin: HOSTS.customer },
     });
     expect(removed.ok()).toBe(true);
 

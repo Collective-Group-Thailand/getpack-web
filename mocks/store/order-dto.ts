@@ -6,7 +6,7 @@
  * The order names no group (CONTRACT-GAP store.order-group-ref). Since v0.4.0 it carries its
  * product and spec lines (`summary`), the receipt stamps, the tolerance outcome, the delivery
  * estimate and — on the storefront — the customer's `nextActions`, computed from the same facts as
- * packio-api's `STORE_ORDER_ACTIONS` (`src/modules/orders/order-actions.ts` at v0.6.0).
+ * getpack-api's `STORE_ORDER_ACTIONS` (`src/modules/orders/order-actions.ts` at v0.6.0).
  */
 
 import type { Schemas } from "@/lib/api/types";
@@ -140,7 +140,7 @@ function toleranceOf(order: MockOrder): Schemas["OrderToleranceOutcomeDto"] | nu
 const PRE_PRODUCTION = ["waiting_payment", "paid_for_production", "artwork_approved"];
 const OWN_ARTWORK = ["own_file", "online_designer"];
 
-/** packio-api's `STORE_ORDER_ACTIONS` over the row's facts (D-070, D-073, D-081, D-082, D-153). */
+/** getpack-api's `STORE_ORDER_ACTIONS` over the row's facts (D-070, D-073, D-081, D-082, D-153). */
 export function storeOrderActions(order: MockOrder): Schemas["NextActionDto"][] {
   const dto = toOrderDto(order);
   const takesArtwork = PRE_PRODUCTION.includes(dto.status) && dto.artworkStatus !== "approved";

@@ -130,7 +130,7 @@ test.describe("a job from acceptance to delivery (F001)", () => {
       await page.getByRole("textbox", { name: "ชื่อผู้รับ", exact: true }).last().fill("ผู้รับ ทดสอบ");
       if (round === 0) await expectAxeClean(page);
       await page.getByRole("button", { name: /^บันทึกการส่งมอบ/ }).click();
-      await toast(page, "บันทึกการส่งมอบแล้ว รอ Packio ตรวจ");
+      await toast(page, "บันทึกการส่งมอบแล้ว รอ getpack ตรวจ");
       // The order's tolerance result comes once every trip of it is delivered (D-021, D-080).
       if (round === 1) await expect(page.getByText("ส่งครบตามจำนวน")).toBeVisible();
     }

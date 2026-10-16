@@ -36,7 +36,7 @@
   },
   "promotions": {
     "title": "Promo codes & promotions",
-    "hint": "Enter a code from Packio or a campaign — the discount shows in the summary right away",
+    "hint": "Enter a code from getpack or a campaign — the discount shows in the summary right away",
     "code": "Promo code",
     "apply": "Apply",
     "remove": "Remove code {code}",

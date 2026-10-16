@@ -91,7 +91,7 @@ export function DeferredThemeMenu({
 }
 
 /**
- * Packio Assistant's button (U5.5), in this module so the header gains no client boundary of its
+ * getpack Assistant's button (U5.5), in this module so the header gains no client boundary of its
  * own. Without `NEXT_PUBLIC_ASSISTANT=1` the constant is false at build time and the launcher, its
  * import and its copy are dropped from the bundle (D-218: off at launch).
  */

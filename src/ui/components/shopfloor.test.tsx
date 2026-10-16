@@ -54,7 +54,7 @@ describe("StageStepper", () => {
 
 describe("QRCode", () => {
   it("draws the code as one named SVG path with a quiet zone", () => {
-    render(<QRCode value="https://packio.invalid/track/S-2569-00801-01" label="QR ติดตามกล่องที่ 1" />);
+    render(<QRCode value="https://getpack.invalid/track/S-2569-00801-01" label="QR ติดตามกล่องที่ 1" />);
     const svg = screen.getByRole("img", { name: "QR ติดตามกล่องที่ 1" });
     const [, , side] = svg.getAttribute("viewBox")!.split(" ").map(Number);
     // Version 3 at level M for this URL: 29 modules + 4 of quiet zone on each side.

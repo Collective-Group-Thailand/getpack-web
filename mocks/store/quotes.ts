@@ -20,7 +20,7 @@
  * calculator and must never be read as a price.
  */
 
-import { resolveStyleId } from "@packio/dieline";
+import { resolveStyleId } from "@getpack/dieline";
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type { z } from "zod";
 
@@ -51,7 +51,7 @@ export const QUOTE_VALIDITY_DAYS = 15;
 
 /*
  * The mock's own view of a product's configurator: what F3 3.2 first asked for (typed groups per
- * calculator input, print presets, swatches and explainers), richer than what packio-api
+ * calculator input, print presets, swatches and explainers), richer than what getpack-api
  * publishes. The fake price below reads it; the configurator endpoint converts it to the
  * published `StoreConfiguratorDto` (`toStoreConfiguratorDto`), dropping what the contract has no
  * place for, so the storefront sees exactly what the real API can say.
@@ -228,7 +228,7 @@ function materials(kind: "paper" | "board"): Option[] {
     );
 }
 
-/** The process set is one ink laid four times, as packio-api's engine takes it; black is a spot ink. */
+/** The process set is one ink laid four times, as getpack-api's engine takes it; black is a spot ink. */
 function processColours() {
   const inks = live(catalogueRows("inkColours"));
   const process = String(inks.find((row) => row.colourKind === "process")?.id ?? "");
@@ -321,7 +321,7 @@ function patternsOf(product: Row, kind: SizeKind): Pattern[] {
         id: String(pattern.id),
         code: String(pattern.code),
         name: String(pattern.name),
-        // The catalogue's key resolved to a style `@packio/dieline` draws (`rte` → reverse tuck end).
+        // The catalogue's key resolved to a style `@getpack/dieline` draws (`rte` → reverse tuck end).
         dielineKey: resolveStyleId(String(pattern.dielineKey ?? "")),
         imageUrl: null,
         // A multi-part pattern lists every part (a telescope body and lid), each priced; none = one part.
@@ -744,7 +744,7 @@ function checkSize(configurator: Configurator, patternId: string | undefined, l:
   return null;
 }
 
-/** The size the mock prices: a box's inside size (D-182, converted as packio-api does), else as entered. */
+/** The size the mock prices: a box's inside size (D-182, converted as getpack-api does), else as entered. */
 function pricedSize(
   productTypeCode: string,
   raw: Record<string, unknown>,
@@ -1000,7 +1000,7 @@ export const PROMOTIONS: Record<
   string,
   { title: string; titleEn: string; pct: number; types?: string[]; cap?: number }
 > = {
-  PACKIO10: { title: "ลด 10% ค่าสินค้า", titleEn: "10% off the product", pct: 10 },
+  GETPACK10: { title: "ลด 10% ค่าสินค้า", titleEn: "10% off the product", pct: 10 },
   FIRSTBOX: {
     title: "ลูกค้าใหม่ ลด 15% (สูงสุด ฿500)",
     titleEn: "New customers: 15% off (up to ฿500)",
@@ -1072,7 +1072,7 @@ function specsOf(inputs: Inputs, raw: Record<string, unknown>, en: boolean): Sto
   const specs: StoreQuote["specs"] = [];
   const pattern = configurator.size.patterns.find((entry) => entry.id === raw.patternId);
   if (pattern) specs.push({ label: en ? "Style" : "รูปแบบ", value: pattern.name });
-  // D-184: the style code rides on every summary (packio-api `line-summary.ts`).
+  // D-184: the style code rides on every summary (getpack-api `line-summary.ts`).
   if (pattern?.styleCode) specs.push({ label: en ? "Style code" : "รหัสแบบ", value: pattern.styleCode });
   if (configurator.size.kind !== "none") {
     const size = inputs.dimensions?.entered ?? { l: inputs.l, w: inputs.w, d: inputs.d };
@@ -1112,7 +1112,7 @@ const BASIS_EN: Record<Basis, string> = {
 
 /**
  * D-247: the gap of each instant quantity to the target (unit price incl. VAT excl. shipping, as
- * packio-api compares it). The mock's own arithmetic on its own fake prices.
+ * getpack-api compares it). The mock's own arithmetic on its own fake prices.
  */
 export function gapOf(unitPrice: string, target: string): { gapPerUnit: string; gapPct: string; meetsTarget: boolean } {
   const unit = Math.round(Number(unitPrice) * 100);
@@ -1585,16 +1585,16 @@ export const storeQuoteHandlers: HttpHandler[] = [
     const held: Schemas["PromotionOfferDto"][] =
       customer.ownerIndex === null
         ? [offerOf("FIRSTBOX", "usable", en)]
-        : [offerOf("PACKIO10", "usable", en), offerOf("CORRUGATE5", "usable", en)];
+        : [offerOf("GETPACK10", "usable", en), offerOf("CORRUGATE5", "usable", en)];
     return HttpResponse.json(held);
   }),
 
   // store.support.getChannels (D-221): the CS Lead's setting, obviously fake.
   http.get("*/v1/store/support-channels", ({ request }) =>
     HttpResponse.json({
-      lineOaId: "@packio.mock",
+      lineOaId: "@getpack.mock",
       phone: "02-000-0000",
-      email: "support@packio.invalid",
+      email: "support@getpack.invalid",
       hours: english(request) ? "Mon–Sat 09:00–18:00 (mock data)" : "จันทร์–เสาร์ 09:00–18:00 (ข้อมูลจำลอง)",
     } satisfies Schemas["StoreSupportChannelsDto"]),
   ),

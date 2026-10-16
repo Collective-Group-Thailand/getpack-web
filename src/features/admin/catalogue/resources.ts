@@ -10,7 +10,7 @@ export function listFor(def: TableDef): ListResource<CatalogueRow> {
   const cached = lists.get(def.key);
   if (cached) return cached;
   const list = defineList<CatalogueRow>({
-    // `catalog_material`, the realtime prefix packio-api publishes (`catalog.material.updated`).
+    // `catalog_material`, the realtime prefix getpack-api publishes (`catalog.material.updated`).
     key: `catalog_${def.key.replace(/-/g, "_")}`,
     fetch: ({ contract }, query) => listRows(contract, def.path, query),
     getRowId: (row) => row.id,

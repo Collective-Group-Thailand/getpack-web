@@ -298,7 +298,7 @@ export function Configurator({
     const band = quantityBand(priced.quantity);
     if (shownFor.current === band) return;
     shownFor.current = band;
-    // Once per band, so typing a quantity does not send a quote per keystroke; packio-api takes the
+    // Once per band, so typing a quantity does not send a quote per keystroke; getpack-api takes the
     // exact quantity and bands it itself.
     track("quote_shown", {
       route: "/configure/[slug]",
@@ -330,7 +330,7 @@ export function Configurator({
       }
       if (step === "delivery")
         return state.postcode === "" ? "upcoming" : POSTCODE.test(state.postcode) ? "complete" : "error";
-      // A product without a default quantity (packio-api's may have none) starts with this step open.
+      // A product without a default quantity (getpack-api's may have none) starts with this step open.
       if (step === "quantity")
         return state.target !== "" && !TARGET.test(state.target)
           ? "error"
@@ -616,7 +616,7 @@ export function Configurator({
   );
 }
 
-const GUEST_UNIT_KEY = "packio.displayUnit";
+const GUEST_UNIT_KEY = "getpack.displayUnit";
 
 /** A guest's display unit in this browser: remembers `next` when given, returns what is kept. */
 function guestUnit(next?: LengthUnit): LengthUnit | null {

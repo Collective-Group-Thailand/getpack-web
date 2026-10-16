@@ -1,6 +1,6 @@
-# Prompt pack v3 — packio-web (frontend)
+# Prompt pack v3 — getpack-web (frontend)
 
-**Packio — Your Packaging Production Partner** · Collective Group (Thailand)
+**getpack — Your Packaging Production Partner** · Collective Group (Thailand)
 
 ## ลำดับการรัน และข้อความ kickoff (วางใน Plan Mode ทีละ session แล้ว `/clear` ก่อน session ถัดไป)
 คำนำหน้ามาตรฐาน (ใช้ทุก session): `Read CLAUDE.md, docs/prompts/00-master-plan.md, docs/decisions.md and docs/prompts/design-system.md.`
@@ -16,8 +16,8 @@
 | F5.1–5.3 | `Then read docs/contract/api-conventions.md and docs/prompts/F5-partner.md. Do session 5.N only. Plan first.` |
 | F6.1–6.4 | `Then read docs/contract/api-conventions.md, docs/accounting-design.md and docs/prompts/F6-finance.md. Do Deliverable 6.N only. Plan first.` |
 
-หลัง F1 เสร็จ F2–F6 รันขนานกันได้ใน git worktree แยก (`git worktree add ../packio-web-f3 -b feat/f3`) ใช้ MSW mock จนกว่า backend ของส่วนนั้นเสร็จ
-แนะนำให้ทำ F4 Part A (engine + publish `@packio/dieline`) เร็ว เพราะ configurator 3D (F3.2) และ drawing service ของ backend (B4.1) ต้องใช้
+หลัง F1 เสร็จ F2–F6 รันขนานกันได้ใน git worktree แยก (`git worktree add ../getpack-web-f3 -b feat/f3`) ใช้ MSW mock จนกว่า backend ของส่วนนั้นเสร็จ
+แนะนำให้ทำ F4 Part A (engine + publish `@getpack/dieline`) เร็ว เพราะ configurator 3D (F3.2) และ drawing service ของ backend (B4.1) ต้องใช้
 
 ## ประสานงานกับ backend
 - backend commit contract ใหม่ → bump `contract.lock.json` → `pnpm gen:api` → แก้ type error ที่เกิดขึ้น

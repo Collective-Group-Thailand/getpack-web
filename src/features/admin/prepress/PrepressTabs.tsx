@@ -381,7 +381,7 @@ function Annotations({ proof: listed }: { proof: Proof }) {
 
 /**
  * The proof versions, newest first, with who decided each (`decidedByName`: the customer, or
- * Packio for a decision taken on their behalf). CONTRACT-GAP admin.prepress-proofs — a proof does
+ * getpack for a decision taken on their behalf). CONTRACT-GAP admin.prepress-proofs — a proof does
  * not say who prepared it.
  */
 export function ProofsTab({

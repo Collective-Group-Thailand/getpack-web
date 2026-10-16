@@ -129,7 +129,7 @@ export const CartonLabels: Story = {
           <p>99 ถนนตัวอย่าง แขวงตัวอย่าง กรุงเทพฯ 10110</p>
           <div className="mt-auto self-center">
             <QRCode
-              value={`https://packio.invalid/track/S-2569-00801-0${n}`}
+              value={`https://getpack.invalid/track/S-2569-00801-0${n}`}
               size="40mm"
               label={`QR ติดตามกล่องที่ ${n}`}
             />

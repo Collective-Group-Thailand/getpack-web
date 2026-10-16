@@ -3,7 +3,7 @@
  * Component) looks a type up here before rendering.
  *
  * Only folding (B2.3) and corrugate (U-B6, contract v0.3.0) are published as CS calculators. The
- * other five arrive from packio-api U-B6 one by one; until then the desk shows their types as
+ * other five arrive from getpack-api U-B6 one by one; until then the desk shows their types as
  * RFQ-only, never a price of its own (U1 §U-F0.2–0.4).
  */
 
@@ -11,7 +11,7 @@ import type { IconName } from "@/ui/icons";
 
 export type CalculatorKey = "folding" | "corrugate" | "label" | "tag_sleeve" | "pouch" | "standard_product" | "service";
 
-/** The calculators packio-api publishes for CS (`admin.csFolding.*`, `admin.csCorrugate.*`). */
+/** The calculators getpack-api publishes for CS (`admin.csFolding.*`, `admin.csCorrugate.*`). */
 export const PUBLISHED_CALCULATORS = ["folding", "corrugate"] as const;
 export type PublishedCalculator = (typeof PUBLISHED_CALCULATORS)[number];
 

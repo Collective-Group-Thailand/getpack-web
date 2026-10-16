@@ -1,6 +1,6 @@
 /**
  * Payment schedule templates (D-020) as an editable form: instalments that add up to 100 %, and
- * the selection rule packio-api understands (`orderValue`, `customerTypes`, `productTypeCodes`,
+ * the selection rule getpack-api understands (`orderValue`, `customerTypes`, `productTypeCodes`,
  * `creditApproved` — `schedule-math.ts`). An order-value bound is an amount or a setting's value
  * (`{ setting: "payments.schedule_split_threshold" }`), written here as `setting:<key>`.
  */

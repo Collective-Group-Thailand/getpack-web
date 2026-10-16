@@ -20,7 +20,7 @@ import {
 import { PREPRESS_QUEUES, prepressList, type PrepressQueueItem } from "./resources";
 
 /**
- * The prepress desk (F2 2.4): packio-api's three queues — files to review (preflighted, oldest
+ * The prepress desk (F2 2.4): getpack-api's three queues — files to review (preflighted, oldest
  * first), proofs the customer sent back, proofs with the customer — each row with the prepress SLA
  * the API computes on the business calendar (D-175). Proofs with the customer wait on the customer,
  * so they carry no due time and never tint the row.

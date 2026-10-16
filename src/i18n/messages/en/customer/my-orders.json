@@ -57,7 +57,7 @@
     "shipments": "Delivery",
     "shipmentTo": "{quantity} {unit} to {name} ({province})",
     "carrier": {
-      "factory_fleet": "Packio delivery",
+      "factory_fleet": "getpack delivery",
       "flash_express": "Flash Express",
       "deliveree": "Deliveree"
     },
@@ -71,7 +71,7 @@
     "designOptions": {
       "own_file": "Your own file",
       "online_designer": "Designed online",
-      "hired_design": "Packio designer",
+      "hired_design": "getpack designer",
       "free_design": "Free design"
     },
     "toleranceTerms": "Accepted quantity variance",

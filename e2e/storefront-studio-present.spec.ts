@@ -5,7 +5,7 @@ import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { addHeading } from "./helpers/designer";
 
 /**
- * U4.7, versions and presentation in Packio 3D Studio against the mock API: two named versions
+ * U4.7, versions and presentation in getpack 3D Studio against the mock API: two named versions
  * compared side by side and overlaid; presentation on our own scenes with the lid opened, a PNG and
  * a recorded turn; and the box at its real size in the AR view (on a desktop: the model, its size and
  * the files to open on a phone).

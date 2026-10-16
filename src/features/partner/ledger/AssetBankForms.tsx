@@ -372,7 +372,7 @@ function parseRows(text: string): { rows: { txnDate: string; amount: string; des
   return { rows, bad: null };
 }
 
-/** D-394: import a statement — a CSV file (Packio's bank-file format) or pasted rows. */
+/** D-394: import a statement — a CSV file (getpack's bank-file format) or pasted rows. */
 export function ImportStatement({ bank }: { bank: Bank }) {
   const t = useTranslations("partnerLedger.bank");
   const tc = useTranslations("partnerLedger.common");

@@ -3,9 +3,9 @@ import type { Schemas } from "@/lib/api/types";
 import type { AnalyticsProperties, FunnelEvent } from "./events";
 
 /**
- * The app's funnel vocabulary onto packio-api's ingest (`store.analytics.ingest`, contract
+ * The app's funnel vocabulary onto getpack-api's ingest (`store.analytics.ingest`, contract
  * v0.6.0, triage `analytics.events`): a batch of `AnalyticsEventDto` in five names, each with a
- * closed property schema (packio-api `modules/analytics/event-schemas.ts`). Backend names win.
+ * closed property schema (getpack-api `modules/analytics/event-schemas.ts`). Backend names win.
  *
  * - page_view, product_viewed → `page_view` (pageType from the route pattern);
  * - configurator_opened / configuration_changed → `configurator_step`;
@@ -14,7 +14,7 @@ import type { AnalyticsProperties, FunnelEvent } from "./events";
  * - checkout_started → `checkout_step started`; order_placed → `checkout_step placed` with its group.
  *
  * The rest — quote_abandoned, rfq_submitted, order_paid, the studio, claim and reorder journey steps
- * — are not sent: packio-api derives RFQs, orders, payments and abandonment from its own facts,
+ * — are not sent: getpack-api derives RFQs, orders, payments and abandonment from its own facts,
  * and the journey funnels wait for U5.B6 (`admin.analytics-journeys`, D-219). An event whose
  * required property the call site did not give is dropped rather than sent wrong.
  */
@@ -29,7 +29,7 @@ export interface Visitor {
 type PageType =
   "home" | "category" | "product" | "configurator" | "cart" | "checkout" | "account" | "content" | "other";
 
-/** The page type packio-api reports by, from a route pattern (`/products/[key]`). */
+/** The page type getpack-api reports by, from a route pattern (`/products/[key]`). */
 export function pageTypeOf(route: string | undefined): PageType {
   if (!route) return "other";
   const path = route.replace(/^\/en(?=\/|$)/, "") || "/";
@@ -99,7 +99,7 @@ function studioProperties(props: AnalyticsProperties): Record<string, string> {
   };
 }
 
-/** One ingest event, or `null` when packio-api takes no such event (or it lacks what it requires). */
+/** One ingest event, or `null` when getpack-api takes no such event (or it lacks what it requires). */
 export function toIngestEvent(
   name: FunnelEvent,
   props: AnalyticsProperties,

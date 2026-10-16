@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerInsight.support"))("title") };
 }
 
-/** D-381: the owner lets Packio support read the ERP's dashboard and settings for a few days, and sees each read. */
+/** D-381: the owner lets getpack support read the ERP's dashboard and settings for a few days, and sees each read. */
 export default async function SupportAccessPage() {
   const [t, context] = await Promise.all([getTranslations("partnerInsight.support"), factoryContext()]);
   const { contract } = await partnerServerApis();

@@ -1,10 +1,10 @@
 /**
- * Imports packio-api's role grants for the admin and partner mocks (U1 U-F0.3 / U-F0.4, triage
+ * Imports getpack-api's role grants for the admin and partner mocks (U1 U-F0.3 / U-F0.4, triage
  * `admin.permissions` and `partner.permissions`).
  *
- *   pnpm gen:rbac          read packio-api's docs/rbac.md at the pinned tag, write mocks/generated/rbac.ts
+ *   pnpm gen:rbac          read getpack-api's docs/rbac.md at the pinned tag, write mocks/generated/rbac.ts
  *
- * packio-api's `docs/rbac.md` is generated from its role and permission catalogues and checked
+ * getpack-api's `docs/rbac.md` is generated from its role and permission catalogues and checked
  * against them by its own test, so it is the one place that says which permissions each D-140
  * staff role and D-140 factory role holds. The mock personas take their permissions from here rather
  * than from names the frontend proposed in F2 / F5: backend names win (triage, `admin.permissions`,
@@ -103,9 +103,9 @@ function render(
   const list = (keys: readonly string[]) => keys.map((key) => `    "${key}",`).join("\n");
   return `/**
  * GENERATED FILE — do not edit.
- * Source: packio-api docs/rbac.md at ${tag} (staff and factory tables) · Regenerate: pnpm gen:rbac
+ * Source: getpack-api docs/rbac.md at ${tag} (staff and factory tables) · Regenerate: pnpm gen:rbac
  *
- * The permissions each D-140 staff role and factory role holds in packio-api, verbatim. The mock
+ * The permissions each D-140 staff role and factory role holds in getpack-api, verbatim. The mock
  * personas are built from these (\`mocks/personas.ts\`, \`mocks/partner/personas.ts\`).
  */
 
@@ -141,7 +141,7 @@ ${factory.roles.map((role) => `  ${role}: [\n${list([...factory.grants[role]!].s
 
 function main(): void {
   const source = readRbac();
-  const staff = parse(source.markdown, "Packio staff");
+  const staff = parse(source.markdown, "getpack staff");
   const factory = parse(source.markdown, "Partner factory");
   writeFileSync(OUT, render(source, staff, factory));
   const count = (table: ReturnType<typeof parse>) =>

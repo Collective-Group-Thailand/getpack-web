@@ -3,7 +3,7 @@
  *
  * LINE's documented deep link `https://line.me/R/oaMessage/{basic id}/?{text}` opens a chat with
  * the Official Account and pre-fills the message; the customer still presses send. The account
- * id is Packio's own (D-005), read from `store.support-channels`, never hard-coded.
+ * id is getpack's own (D-005), read from `store.support-channels`, never hard-coded.
  */
 
 /** LINE caps a pre-filled message; keep well inside it so the link always opens. */

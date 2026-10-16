@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { OG_SIZE, renderOgCard } from "@/features/customer/seo/og-image";
 import { BRAND_TAGLINE } from "@/ui/brand";
 
-export const alt = "Packio";
+export const alt = "getpack";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
