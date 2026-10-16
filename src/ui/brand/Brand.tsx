@@ -55,7 +55,8 @@ export function Brand({
   className?: string;
 }) {
   return (
-    <Link href={href} className={`flex shrink-0 items-center ${className ?? ""}`}>
+    // `className` may set the display (`hidden lg:flex`), so the default `flex` is only a default.
+    <Link href={href} className={`shrink-0 items-center ${className ?? "flex"}`}>
       <BrandLogo height={height} priority={priority} />
     </Link>
   );

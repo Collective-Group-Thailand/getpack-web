@@ -80,7 +80,11 @@ export async function SiteHeader() {
         </p>
       ) : null}
       <header className="z-sticky border-border bg-bg sticky top-0 border-b">
-        <div className="max-w-nav mx-auto flex h-14 items-center gap-1 px-3 md:h-16 md:px-5 lg:grid lg:h-19 lg:grid-cols-[auto_1fr_auto] lg:gap-6 lg:px-6 xl:gap-12 xl:px-12">
+        {/*
+          A phone: menu · logo in the middle · search and cart (owner, 2026-10-16). Wide screens: logo
+          at the start, the primary nav in the middle, the actions at the end.
+        */}
+        <div className="max-w-nav mx-auto grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 md:h-16 md:px-5 lg:h-19 lg:grid-cols-[auto_1fr_auto] lg:gap-6 lg:px-6 xl:gap-12 xl:px-12">
           <div className="flex items-center gap-1">
             <MobileProductsMenu
               label={t("nav.menu")}
@@ -194,18 +198,21 @@ export async function SiteHeader() {
                 </ul>
               </section>
             </MobileProductsMenu>
-            <Brand href="/" height={40} priority />
+            <Brand href="/" height={40} priority className="hidden lg:flex" />
           </div>
 
-          <nav aria-label={t("nav.primary")} className="hidden items-center justify-center gap-6 lg:flex xl:gap-9">
-            {links.map(([href, label]) => (
-              <Link key={href} href={href} className={navLink}>
-                {label}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex items-center justify-center">
+            <Brand href="/" height={36} priority className="lg:hidden" />
+            <nav aria-label={t("nav.primary")} className="hidden items-center justify-center gap-6 lg:flex xl:gap-9">
+              {links.map(([href, label]) => (
+                <Link key={href} href={href} className={navLink}>
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          <div className="ms-auto flex items-center gap-1 lg:ms-0 xl:gap-2">
+          <div className="flex items-center justify-end gap-1 xl:gap-2">
             <HeaderSearch label={tCommon("actions.search")} />
             <CartButton signedIn={signedIn} label={t("nav.cart")} />
             <span className="hidden md:contents">
