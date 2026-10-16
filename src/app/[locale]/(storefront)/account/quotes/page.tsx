@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { getSavedQuotes } from "@/features/customer/account/api.server";
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { configureHref } from "@/features/customer/catalog/paths";
 import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
@@ -45,59 +46,74 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           }
         />
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
-          {quotes.map((quote) => {
+        <PortalTable
+          className="mt-6"
+          caption={t("table.caption")}
+          columns={[
+            { key: "product", label: t("table.product"), className: "md:min-w-[13rem]" },
+            { key: "quantity", label: t("table.quantity"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "price", label: t("table.price"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "validUntil", label: t("table.validUntil") },
+            { key: "status", label: t("table.status") },
+            { key: "actions", label: t("table.actions"), srOnly: true, className: "text-end" },
+          ]}
+          rows={quotes.map((quote) => {
             const option = quote.options[0];
-            return (
-              <li
-                key={quote.id}
-                className="border-border bg-surface flex flex-wrap items-center justify-between gap-3 rounded-card border p-4 sm:p-5"
-              >
-                <div className="min-w-0">
-                  <p className="font-semibold">{productNameOf(locale, quote.summary)}</p>
-                  {quote.summary.specs.length > 0 ? (
-                    <p className="text-muted text-sm">
-                      {specLinesOf(locale, quote.summary)
-                        .map((line) => `${line.term} ${line.description}`)
-                        .join(" · ")}
-                    </p>
-                  ) : null}
-                  {option ? (
-                    <p className="text-muted text-sm">
-                      {t(quote.quoteCode ? "row" : "rowNoCode", {
-                        code: quote.quoteCode ?? "",
-                        quantity: format.number(option.quantity),
-                        amount: format.thb(option.grossAmount),
-                      })}
-                    </p>
-                  ) : null}
-                  <p className="text-muted text-xs">{t("validUntil", { date: format.date(quote.validUntil) })}</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusChip map={QUOTE_STATUS} value={quote.status} />
-                  {quote.status === "saved" ? (
-                    <RequestSample quoteId={quote.id} label={quote.quoteCode ?? productNameOf(locale, quote.summary)} />
-                  ) : null}
-                  {quote.status === "saved" && option ? (
-                    <RequestCallOff
-                      quoteId={quote.id}
-                      optionId={option.id}
-                      label={quote.quoteCode ?? productNameOf(locale, quote.summary)}
-                    />
-                  ) : null}
-                  {quote.summary.product && quote.source === "instant" ? (
-                    <Button asChild size="sm" variant="secondary">
-                      <Link href={`${configureHref(quote.summary.product.slug)}?quote=${quote.id}`}>
-                        {t("reopen")}
-                        <span className="sr-only"> {quote.quoteCode ?? productNameOf(locale, quote.summary)}</span>
-                      </Link>
-                    </Button>
-                  ) : null}
-                </div>
-              </li>
-            );
+            const name = productNameOf(locale, quote.summary);
+            const label = quote.quoteCode ?? name;
+            const specs = specLinesOf(locale, quote.summary)
+              .map((line) => `${line.term} ${line.description}`)
+              .join(" · ");
+            return {
+              id: quote.id,
+              phoneSubtitle: quote.quoteCode ? <span className="font-mono">{quote.quoteCode}</span> : null,
+              cells: {
+                product: (
+                  <span className="block min-w-0">
+                    <span className="block font-semibold">{name}</span>
+                    {quote.quoteCode ? (
+                      <span className="text-muted hidden font-mono text-xs font-normal md:block">
+                        {quote.quoteCode}
+                      </span>
+                    ) : null}
+                    {specs ? (
+                      <span className="text-muted mt-0.5 line-clamp-2 text-xs font-normal" title={specs}>
+                        {specs}
+                      </span>
+                    ) : null}
+                  </span>
+                ),
+                quantity: option ? format.number(option.quantity) : <span className="text-muted">—</span>,
+                price: option ? (
+                  <span className="block">
+                    <span className="font-semibold">{format.thb(option.grossAmount)}</span>
+                    <span className="text-muted block text-xs">{t("inclVat")}</span>
+                  </span>
+                ) : (
+                  <span className="text-muted">—</span>
+                ),
+                validUntil: format.date(quote.validUntil),
+                status: <StatusChip map={QUOTE_STATUS} value={quote.status} />,
+                actions: (
+                  <span className="flex flex-wrap justify-end gap-2">
+                    {quote.status === "saved" ? <RequestSample quoteId={quote.id} label={label} /> : null}
+                    {quote.status === "saved" && option ? (
+                      <RequestCallOff quoteId={quote.id} optionId={option.id} label={label} />
+                    ) : null}
+                    {quote.summary.product && quote.source === "instant" ? (
+                      <Button asChild size="sm" variant="secondary">
+                        <Link href={`${configureHref(quote.summary.product.slug)}?quote=${quote.id}`}>
+                          {t("reopen")}
+                          <span className="sr-only"> {label}</span>
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </span>
+                ),
+              },
+            };
           })}
-        </ul>
+        />
       )}
     </div>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { pick } from "@/features/customer/catalog/localize";
 import { listCallOffs } from "@/features/customer/repeat/api.server";
 import { getFormat } from "@/features/shared/format/server";
@@ -42,33 +43,56 @@ export default async function Page() {
           }
         />
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
-          {agreements.map((a) => (
-            <li key={a.id} className="bg-surface border-border rounded-xl border">
-              <Link
-                href={`/account/call-offs/${a.id}`}
-                className="hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl p-4"
-              >
-                <div className="min-w-0">
-                  <p className="font-semibold">
-                    {pick(locale, a.productType.nameTh, a.productType.nameEn)}
-                    {a.quoteCode ? <span className="text-muted ms-2 font-mono text-sm">{a.quoteCode}</span> : null}
-                  </p>
-                  <p className="text-muted text-sm">
-                    {t("row", {
-                      released: format.number(a.releasedQuantity),
-                      committed: format.number(a.committedQuantity),
-                      left: format.number(a.remainingQuantity),
-                      unit: a.unit,
-                    })}
-                    {a.expiresAt ? ` · ${t("until", { date: format.date(a.expiresAt) })}` : ""}
-                  </p>
-                </div>
-                <StatusChip map={CALL_OFF_STATUS} value={a.status} size="md" />
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <PortalTable
+          className="mt-6"
+          caption={t("table.caption")}
+          columns={[
+            { key: "product", label: t("table.product"), className: "md:w-[34%]" },
+            { key: "progress", label: t("table.progress"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "remaining", label: t("table.remaining"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "until", label: t("table.until") },
+            { key: "status", label: t("table.status") },
+            { key: "actions", label: t("table.actions"), srOnly: true, className: "text-end" },
+          ]}
+          rows={agreements.map((a) => {
+            const name = pick(locale, a.productType.nameTh, a.productType.nameEn);
+            return {
+              id: a.id,
+              phoneSubtitle: a.quoteCode ? <span className="font-mono">{a.quoteCode}</span> : null,
+              cells: {
+                product: (
+                  <span className="block min-w-0">
+                    <Link
+                      href={`/account/call-offs/${a.id}`}
+                      className="text-fg block font-semibold underline-offset-4 hover:underline"
+                    >
+                      {name}
+                    </Link>
+                    {a.quoteCode ? (
+                      <span className="text-muted hidden font-mono text-xs font-normal md:block">{a.quoteCode}</span>
+                    ) : null}
+                  </span>
+                ),
+                progress: `${format.number(a.releasedQuantity)} / ${format.number(a.committedQuantity)} ${a.unit}`,
+                remaining: `${format.number(a.remainingQuantity)} ${a.unit}`,
+                until: a.expiresAt ? (
+                  format.date(a.expiresAt)
+                ) : (
+                  <span className="text-muted">{t("table.noExpiry")}</span>
+                ),
+                status: <StatusChip map={CALL_OFF_STATUS} value={a.status} />,
+                actions: (
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href={`/account/call-offs/${a.id}`}>
+                      {t("table.view")}
+                      <span className="sr-only"> {a.quoteCode ?? name}</span>
+                    </Link>
+                  </Button>
+                ),
+              },
+            };
+          })}
+        />
       )}
     </div>
   );

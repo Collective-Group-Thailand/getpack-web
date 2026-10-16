@@ -78,7 +78,10 @@ export default async function Page() {
         </section>
       ) : null}
 
-      <section aria-labelledby="new-message" className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
+      <section
+        aria-labelledby="new-message"
+        className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4"
+      >
         <h2 id="new-message" className="font-semibold">
           {support ? t("continueSupport") : t("newSupport")}
         </h2>

@@ -40,7 +40,10 @@ export default async function Page() {
         <h1 className="text-title leading-tight">{t("title")}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
-      <section aria-labelledby="referral-code" className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-5">
+      <section
+        aria-labelledby="referral-code"
+        className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-5"
+      >
         <h2 id="referral-code" className="text-muted text-sm font-medium">
           {t("yourCode")}
         </h2>

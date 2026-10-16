@@ -523,7 +523,16 @@
     "cancelTitle": "Cancel this request?",
     "cancelBody": "The team stops working on this design; to want it again you would send a new request",
     "keep": "Keep it",
-    "cancelled": "Request cancelled"
+    "cancelled": "Request cancelled",
+    "table": {
+      "caption": "Structural design requests",
+      "request": "Request",
+      "type": "Product type",
+      "sent": "Sent",
+      "status": "Status",
+      "actions": "Actions",
+      "view": "View details"
+    }
   },
   "studioLibrary": {
     "title": "{count} box styles in the studio",

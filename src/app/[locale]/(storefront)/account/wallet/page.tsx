@@ -90,7 +90,10 @@ export default async function Page() {
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {codes.map((offer) => (
-              <li key={offer.code} className="bg-surface border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
+              <li
+                key={offer.code}
+                className="bg-surface border-border flex flex-col gap-1 rounded-lg border p-3 text-sm"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-mono font-semibold">{offer.code}</span>
                   <StatusChip map={PROMOTION_OFFER_STATUS} value={offer.status} />

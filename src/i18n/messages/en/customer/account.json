@@ -82,7 +82,9 @@
       "companyNamed": "My company · {name}",
       "account": "Account"
     },
-    "agent": "Sales agent"
+    "agent": "Sales agent",
+    "menuOpen": "Account menu",
+    "menuCurrent": "This page: {page}"
   },
   "home": {
     "title": "My account",
@@ -125,7 +127,17 @@
     "validUntil": "Price holds until {date}",
     "row": "{code} · quantity {quantity} · {amount}",
     "rowNoCode": "Quantity {quantity} · {amount}",
-    "reopen": "Reopen"
+    "reopen": "Reopen",
+    "table": {
+      "caption": "Saved quotations",
+      "product": "Product",
+      "quantity": "Quantity",
+      "price": "Total price",
+      "validUntil": "Price held until",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "inclVat": "incl. VAT"
   },
   "book": {
     "title": "Addresses and tax invoices",
@@ -290,7 +302,7 @@
   "wallet": {
     "title": "Store credit",
     "intro": "Credit you can spend on your next order",
-    "credit": "Store credit",
+    "credit": "Balance",
     "balance": "Credit balance",
     "creditHint": "Use it as a payment method next time",
     "sources": {
@@ -338,8 +350,7 @@
     "reorder": "Reorder",
     "dismiss": "Don't remind me",
     "dismissed": "We won't remind you about this",
-    "failed": "Could not do that — try again",
-    "remindNote": "Snoozing a suggestion and reminder settings come in a later version"
+    "failed": "Could not do that — try again"
   },
   "callOffs": {
     "title": "Call-offs",
@@ -384,6 +395,17 @@
       "monthsValue": "{count, plural, one {# month} other {# months}}",
       "send": "Send the request",
       "failed": "Could not send the request"
+    },
+    "table": {
+      "caption": "Call-off agreements",
+      "product": "Product",
+      "progress": "Released / committed",
+      "remaining": "Remaining",
+      "until": "Valid until",
+      "status": "Status",
+      "actions": "Actions",
+      "view": "View details",
+      "noExpiry": "No end date"
     }
   },
   "launchpad": {
