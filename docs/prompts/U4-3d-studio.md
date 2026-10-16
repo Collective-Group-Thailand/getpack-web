@@ -1,4 +1,4 @@
-# U4 — Packio 3D Studio: design → check → price → order (frontend)
+# U4 — getpack 3D Studio: design → check → price → order (frontend)
 
 > อ่าน `CLAUDE.md`, `docs/prompts/00-master-plan.md`, `docs/decisions.md`, `docs/prompts/design-system.md`, `docs/design-tool/architecture.md`, **`docs/design-tool/studio-spec.md`** ก่อนทุก session
 > ลำดับ: หลัง U-F0 (integration) และ U3.1–U3.3 (module system, solver, auto-3D) · ทำทีละ session U4.1 → U4.8
@@ -8,7 +8,7 @@
 ---
 
 ## Goal
-Turn the designer into **Packio 3D Studio** as specified in `studio-spec.md`: one route (`/[locale]/studio/[designId]`) with five reversible steps, a price dock that always shows the real price, face-aware 3D editing, continuous print checks, and ordering without leaving the page. Success metrics in spec §1 are instrumented from U4.1.
+Turn the designer into **getpack 3D Studio** as specified in `studio-spec.md`: one route (`/[locale]/studio/[designId]`) with five reversible steps, a price dock that always shows the real price, face-aware 3D editing, continuous print checks, and ordering without leaving the page. Success metrics in spec §1 are instrumented from U4.1.
 
 ## U4.1 — Studio shell, step bar, price dock, instrumentation
 1. Route + layout per spec §2/§3 (desktop split view, tablet, mobile), step bar (เลือกกล่อง · ขนาดและวัสดุ · ออกแบบ · ตรวจงาน · สั่งผลิต), all steps reversible with state preserved.

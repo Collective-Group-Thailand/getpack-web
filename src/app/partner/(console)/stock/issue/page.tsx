@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerErp.move"))("issueTitle") };
 }
 
-/** Stock task "issue" (Packio Factory ERP E1; D-321, D-324). */
+/** Stock task "issue" (getpack Factory ERP E1; D-321, D-324). */
 export default async function StockIssuePage({ searchParams }: { searchParams: Promise<{ item?: string }> }) {
   const [{ item }, t, tStock, locale, context] = await Promise.all([
     searchParams,

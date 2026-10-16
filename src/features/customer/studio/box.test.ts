@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getStyle, SPEC_VERSION } from "@packio/dieline";
+import { getStyle, SPEC_VERSION } from "@getpack/dieline";
 
 import { handlers } from "../../../../mocks/handlers";
 import type { Configurator } from "@/features/customer/configurator/model";

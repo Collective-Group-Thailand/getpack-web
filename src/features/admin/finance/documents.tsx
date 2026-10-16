@@ -41,7 +41,7 @@ import { invalidateMoney } from "./slips";
 
 /**
  * The customer document registers (accounting-design §4), issued by Collective Group (Thailand)
- * under the Packio brand (D-010, D-092): tax invoice / receipts, invoices, receipts, credit and
+ * under the getpack brand (D-010, D-092): tax invoice / receipts, invoices, receipts, credit and
  * debit notes. Numbers are gapless per series; a voided document keeps its number and its reason.
  * Quotations (QT) are their own register on the sales side.
  */

@@ -1,6 +1,6 @@
 /**
  * The assistant's availability for the storefront (U5.5): whether the signed-in customer can start
- * a session now. packio-api decides it (`assistant.enabled`, the D-306 gate, D-305 limits) but has no
+ * a session now. getpack-api decides it (`assistant.enabled`, the D-306 gate, D-305 limits) but has no
  * store read of it at v0.41.0 — the only way to learn it is to start a session and be refused, which
  * would show a launcher that then says "not available". Signed-in only.
  */

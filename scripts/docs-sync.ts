@@ -1,14 +1,14 @@
 /**
- * Keeps the documents both repositories share identical to packio-api's — never copied by hand
- * (packio-api Phase 4 review, 2026-10-08).
+ * Keeps the documents both repositories share identical to getpack-api's — never copied by hand
+ * (getpack-api Phase 4 review, 2026-10-08).
  *
- *   pnpm docs:sync                 take them at the packio-api tag this app is pinned to (contract.lock.json)
- *   pnpm docs:sync --tag vX.Y.Z    take them at another tagged packio-api release
+ *   pnpm docs:sync                 take them at the getpack-api tag this app is pinned to (contract.lock.json)
+ *   pnpm docs:sync --tag vX.Y.Z    take them at another tagged getpack-api release
  *   pnpm docs:sync --check         fail if a synced document was edited here or the lock is stale (CI, offline)
  *
  * The backend owns these documents (api-conventions §1, decisions.md header). They are read from a
  * tagged release — `git show <tag>:<path>` in the sibling checkout named by contract.lock.json's
- * `localSource` (override with PACKIO_API_DIR) — never from packio-api's working tree, which runs
+ * `localSource` (override with GETPACK_API_DIR) — never from getpack-api's working tree, which runs
  * ahead of its last release. Each file gets a one-line banner; `docs/shared-docs.lock.json` records
  * the tag, the commit and the sha256 of the bytes taken, so `--check` needs no sibling checkout.
  */
@@ -36,11 +36,11 @@ interface DocsLock {
 const sha256 = (text: string) => createHash("sha256").update(text).digest("hex");
 
 const banner = (tag: string) =>
-  `<!-- Synced from packio-api ${tag} by \`pnpm docs:sync\` — do not edit here; change it in packio-api. -->\n`;
+  `<!-- Synced from getpack-api ${tag} by \`pnpm docs:sync\` — do not edit here; change it in getpack-api. -->\n`;
 
 /** The document without the banner line this script adds. */
 function body(text: string): string {
-  return text.startsWith("<!-- Synced from packio-api ") ? text.slice(text.indexOf("\n") + 1) : text;
+  return text.startsWith("<!-- Synced from getpack-api ") ? text.slice(text.indexOf("\n") + 1) : text;
 }
 
 function fail(message: string): never {
@@ -49,7 +49,7 @@ function fail(message: string): never {
 }
 
 function apiCheckout(): string {
-  if (process.env.PACKIO_API_DIR) return resolve(process.env.PACKIO_API_DIR);
+  if (process.env.GETPACK_API_DIR) return resolve(process.env.GETPACK_API_DIR);
   const lock = JSON.parse(readFileSync(CONTRACT_LOCK, "utf8")) as { localSource: string };
   // localSource is `<checkout>/contract/openapi.json`.
   return resolve(ROOT, dirname(dirname(lock.localSource)));
@@ -64,8 +64,8 @@ function check(): void {
     if (!text.startsWith(banner(lock.tag)) || sha256(body(text)) !== lock.files[path]) stale.push(path);
   }
   if (stale.length > 0)
-    fail(`${stale.join(", ")} differ from packio-api ${lock.tag} — edit them in packio-api, then \`pnpm docs:sync\``);
-  console.log(`docs:sync: ${SHARED.length} shared documents match packio-api ${lock.tag}`);
+    fail(`${stale.join(", ")} differ from getpack-api ${lock.tag} — edit them in getpack-api, then \`pnpm docs:sync\``);
+  console.log(`docs:sync: ${SHARED.length} shared documents match getpack-api ${lock.tag}`);
 }
 
 function sync(tagArg: string | undefined): void {
@@ -78,7 +78,7 @@ function sync(tagArg: string | undefined): void {
   try {
     commit = git("rev-list", "-n", "1", tag).trim();
   } catch {
-    fail(`tag ${tag} not found in ${api} — fetch packio-api's tags or set PACKIO_API_DIR`);
+    fail(`tag ${tag} not found in ${api} — fetch getpack-api's tags or set GETPACK_API_DIR`);
   }
   const files: Record<string, string> = {};
   for (const path of SHARED) {
@@ -88,13 +88,13 @@ function sync(tagArg: string | undefined): void {
   }
   const lock: DocsLock = {
     $comment:
-      "Shared with packio-api, which owns them. Written by `pnpm docs:sync`; `pnpm docs:sync --check` fails on hand edits.",
+      "Shared with getpack-api, which owns them. Written by `pnpm docs:sync`; `pnpm docs:sync --check` fails on hand edits.",
     tag,
     commit,
     files,
   };
   writeFileSync(DOCS_LOCK, `${JSON.stringify(lock, null, 2)}\n`);
-  console.log(`docs:sync: ${SHARED.join(", ")} ← packio-api ${tag} (${commit.slice(0, 7)})`);
+  console.log(`docs:sync: ${SHARED.join(", ")} ← getpack-api ${tag} (${commit.slice(0, 7)})`);
 }
 
 const args = process.argv.slice(2);

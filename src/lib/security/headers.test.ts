@@ -110,11 +110,11 @@ describe("contentSecurityPolicy", () => {
   it("allows the configured origins to be reached and nothing else", () => {
     const csp = contentSecurityPolicy("admin", {
       ...options,
-      origins: { asset: "https://cdn.packio.co.th", sentry: "https://o1.ingest.sentry.io" },
+      origins: { asset: "https://cdn.getpack.co", sentry: "https://o1.ingest.sentry.io" },
     });
 
-    expect(csp).toContain("connect-src 'self' https://cdn.packio.co.th https://o1.ingest.sentry.io");
-    expect(csp).toContain("img-src 'self' data: blob: https://cdn.packio.co.th");
+    expect(csp).toContain("connect-src 'self' https://cdn.getpack.co https://o1.ingest.sentry.io");
+    expect(csp).toContain("img-src 'self' data: blob: https://cdn.getpack.co");
   });
 });
 
@@ -127,7 +127,7 @@ describe("the studio's AR model", () => {
 });
 
 describe("sign-in origins", () => {
-  const withSignIn = { ...options, origins: { firebaseAuthDomain: "packio.firebaseapp.com", line: true } };
+  const withSignIn = { ...options, origins: { firebaseAuthDomain: "getpack.firebaseapp.com", line: true } };
 
   it("admits Firebase and LINE on the storefront when they are configured", () => {
     const directives = cspDirectives("customer", withSignIn);
@@ -136,13 +136,13 @@ describe("sign-in origins", () => {
       expect.arrayContaining([
         "https://identitytoolkit.googleapis.com",
         "https://securetoken.googleapis.com",
-        "https://packio.firebaseapp.com",
+        "https://getpack.firebaseapp.com",
         "https://api.line.me",
       ]),
     );
     // The provider's consent screen renders in an iframe on the auth domain.
     expect(directives["frame-src"]).toEqual(
-      expect.arrayContaining(["https://packio.firebaseapp.com", "https://access.line.me"]),
+      expect.arrayContaining(["https://getpack.firebaseapp.com", "https://access.line.me"]),
     );
   });
 
@@ -161,9 +161,9 @@ describe("sign-in origins", () => {
   });
 
   it("lets staff and factory screens frame a stored PDF from the asset origin, not the storefront", () => {
-    const withAsset = { ...options, origins: { asset: "https://cdn.packio.co.th" } };
+    const withAsset = { ...options, origins: { asset: "https://cdn.getpack.co" } };
     for (const zone of ["admin", "partner"] as const) {
-      expect(cspDirectives(zone, withAsset)["frame-src"]).toEqual(["'self'", "https://cdn.packio.co.th"]);
+      expect(cspDirectives(zone, withAsset)["frame-src"]).toEqual(["'self'", "https://cdn.getpack.co"]);
     }
     expect(cspDirectives("customer", withAsset)["frame-src"]).toEqual(["'self'"]);
   });

@@ -777,7 +777,7 @@ export function placeChecked(customer: MockCustomer, input: Input, priced: Price
 /** A requested checkout's input, from the published body and what the cart holds (its codes). */
 function inputOf(customer: MockCustomer, body: Schemas["CheckoutDto"]): Input {
   return {
-    contact: { name: customer.displayName, phone: customer.phone, email: customer.email ?? "seed@packio.invalid" },
+    contact: { name: customer.displayName, phone: customer.phone, email: customer.email ?? "seed@getpack.invalid" },
     delivery: { mode: "per_item" },
     taxProfileId: body.taxProfileId ?? null,
     couponCodes: (cartCodes.get(customer.persona) ?? [])
@@ -1183,7 +1183,7 @@ export const storeCheckoutHandlers = [
     if (!customer) return unauthenticated();
     if (!request.headers.get("idempotency-key"))
       return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
-    // packio-api takes a UUID and nothing else (api-conventions §3); the mock refused nothing and
+    // getpack-api takes a UUID and nothing else (api-conventions §3); the mock refused nothing and
     // let the storefront's "<key>:pay" through to UAT (round 2, B1).
     if (!UUID.test(request.headers.get("idempotency-key")!))
       return problem(400, "validation.failed", "Idempotency-Key ต้องเป็น uuid");
@@ -1206,7 +1206,7 @@ export const storeCheckoutHandlers = [
       return problem(422, "payments.method_unavailable", "วิธีชำระเงินนี้ใช้ไม่ได้");
     paymentSeq += 1;
     const id = mockId("wpy", paymentSeq);
-    // packio-api returns 2C2P to the storefront's /payments/{id}/return (`payments.service.ts`).
+    // getpack-api returns 2C2P to the storefront's /payments/{id}/return (`payments.service.ts`).
     const returnUrl = `/payments/${id}/return`;
     const payment: StoredPayment = {
       id,

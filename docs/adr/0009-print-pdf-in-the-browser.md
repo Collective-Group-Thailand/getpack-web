@@ -11,7 +11,7 @@ API from the stored design document.
 
 - **API rendering** needs a server-side renderer for the designer's scene (Konva shapes, text in
   Thai with shaping, patterns, images) — a second implementation of the canvas that would have to
-  match the editor pixel for pixel, and a service packio-api does not have (B4.1 draws dielines,
+  match the editor pixel for pixel, and a service getpack-api does not have (B4.1 draws dielines,
   not artwork).
 - **jsPDF in the browser** (what BoxStudio used) has no Separation colour spaces and no optional
   content groups, so the die cannot be a spot layer; its text support does not shape Thai.
@@ -23,7 +23,7 @@ API from the stored design document.
   is captured at **300 dpi** in JPEG tiles of at most 4096 px a side (inside every supported
   browser's canvas limit, iOS Safari's ~16.7 MP included), and switches back.
 - The tiles go under the engine's own vector die in **`dielineToPdf`**: a hand-written PDF 1.6
-  writer in `@packio/dieline` with each die layer a Separation spot colour (`CutContour`, `Crease`,
+  writer in `@getpack/dieline` with each die layer a Separation spot colour (`CutContour`, `Crease`,
   `Perforation`, `HalfCut`, `Glue`) with overprint, inside an optional-content layer of the same
   name, TrimBox = the dieline, BleedBox = + bleed. The bleed is the settings' value from the
   designer catalogue (`rules.bleedMm`), 3 mm by default.
@@ -36,7 +36,7 @@ API from the stored design document.
 ## Consequences
 
 - One rendering path: what the customer designed is what is printed; nothing to keep in sync.
-- The die is exact vector geometry from the same engine packio-api's drawing service uses.
+- The die is exact vector geometry from the same engine getpack-api's drawing service uses.
 - Text below ~6 pt is only as crisp as 300 dpi allows. ⚠ Prepress to confirm 300 dpi is enough for
   small text, or ask for a higher `rules.minDpi` — the renderer takes the dpi as a parameter.
 - Colour is RGB JPEG; the D-070 preflight warns on RGB rather than blocking, and the proof shows the

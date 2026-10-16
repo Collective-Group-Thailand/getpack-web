@@ -1,6 +1,6 @@
 /**
  * The order desk's vocabulary, shared by the other request files and the mock fixture models; the
- * values are packio-api's (§4 catalogue). The order desk itself is published (`admin.orders.*`,
+ * values are getpack-api's (§4 catalogue). The order desk itself is published (`admin.orders.*`,
  * `admin.orderOperations.*`): its last requests (cancel reasons, payment reminders) went in
  * U-F0.4, so this file holds no request of its own.
  */
@@ -180,5 +180,5 @@ export const preflightFinding = z
   })
   .meta({ id: "PreflightFindingDto" });
 
-/** Who carries it: the factory itself (D-013), or a Packio-booked fallback (D-114). */
+/** Who carries it: the factory itself (D-013), or a getpack-booked fallback (D-114). */
 export const carrierCode = z.enum(["factory_fleet", "flash_express", "deliveree"]).meta({ id: "CarrierCode" });

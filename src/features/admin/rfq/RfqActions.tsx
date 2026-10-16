@@ -20,7 +20,7 @@ import { adminBrowserApis, AssignDialog, ConfirmAction, NextActionBar, problemMe
 import { useCandidateFactories, useSettleRfq, useUnmetDemandReasons } from "./data";
 import { draftOf, sentOf, type Rfq } from "./resources";
 
-/** The verbs of packio-api's RFQ actions (`rfq.<verb>`) this screen performs. */
+/** The verbs of getpack-api's RFQ actions (`rfq.<verb>`) this screen performs. */
 export type RfqActionKey =
   | "start_review"
   | "assign"

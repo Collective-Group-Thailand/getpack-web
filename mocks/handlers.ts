@@ -95,7 +95,7 @@ export const handlers = [
   // Realtime: the stream is deliberately not mocked — `NEXT_PUBLIC_REALTIME_DRIVER` is unset in
   // development and in the e2e run, so nothing opens one.
 
-  // store.analytics.ingest — the D-102 funnel, checked for packio-api's shape (a batch of up to
+  // store.analytics.ingest — the D-102 funnel, checked for getpack-api's shape (a batch of up to
   // 50, five names, the ids every event needs) and discarded. Anything else is the 422 the real
   // API answers, so a sender drifting from the contract fails here rather than in production.
   http.post("*/v1/store/analytics/events", async ({ request }) => {

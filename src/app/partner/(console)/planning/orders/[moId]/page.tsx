@@ -89,7 +89,7 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
                   {mo.item.name}
                 </Link>
               ) : (
-                t("detail.packioProduct")
+                t("detail.getpackProduct")
               ),
             },
             {
@@ -219,7 +219,7 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
                     ) : null}
                   </div>
                   <span className="flex flex-wrap items-center gap-1">
-                    {op.milestone ? <Badge tone="info">{tOps("packioStep")}</Badge> : null}
+                    {op.milestone ? <Badge tone="info">{tOps("getpackStep")}</Badge> : null}
                     <StatusChip map={ERP_OPERATION_STATUS} value={op.status} />
                   </span>
                 </div>

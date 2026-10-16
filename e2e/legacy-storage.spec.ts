@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * A design saved before the Packio rebrand must still open (F0.1 acceptance, kept green
+ * A design saved before the getpack rebrand must still open (F0.1 acceptance, kept green
  * through the F0.2 migration onto src/ui). The legacy key is read once and copied across.
  */
 test("opens a design saved under the pre-rebrand BoxStudio key", async ({ page }) => {
@@ -33,6 +33,6 @@ test("opens a design saved under the pre-rebrand BoxStudio key", async ({ page }
   await expect(page.getByRole("dialog", { name: "ตั้งค่ากล่อง" })).toBeHidden();
 
   // And it was adopted under the new key rather than only read from the old one.
-  const adopted = await page.evaluate(() => window.localStorage.getItem("packio.designs.v1"));
+  const adopted = await page.evaluate(() => window.localStorage.getItem("getpack.designs.v1"));
   expect(adopted).toContain("กล่องเก่าจาก BoxStudio");
 });

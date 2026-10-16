@@ -5,7 +5,7 @@ import { STALE_TIME } from "@/lib/query/defaults";
 
 import { defineList } from "../console/resource";
 
-/** One RFQ as packio-api publishes it (`admin.rfqs.get`): messages, consultations and quotations inline. */
+/** One RFQ as getpack-api publishes it (`admin.rfqs.get`): messages, consultations and quotations inline. */
 export type Rfq = Schemas["StaffRfqDto"];
 export type RfqQuote = Schemas["StaffRfqQuotationDto"];
 export type RfqQuoteLine = Schemas["StaffRfqQuoteLineDto"];

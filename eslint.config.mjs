@@ -247,15 +247,15 @@ const eslintConfig = [
     // The storefront formats prices and strengths and never computes them (CLAUDE.md; U2.F1 §7).
     files: ["src/features/customer/**/*.{ts,tsx}", "src/features/shared/**/*.{ts,tsx}"],
     ignores: ["**/*.test.{ts,tsx}", "**/*.stories.tsx"],
-    plugins: { packio: { rules: { "no-money-arithmetic": noMoneyArithmetic } } },
-    rules: { "packio/no-money-arithmetic": "error" },
+    plugins: { getpack: { rules: { "no-money-arithmetic": noMoneyArithmetic } } },
+    rules: { "getpack/no-money-arithmetic": "error" },
   },
 
   {
     // Photos come from the CMS, never a stock library (Phase 4 §4.6) — in every zone and in the mocks.
     files: ["src/**/*.{ts,tsx}", "mocks/**/*.ts"],
-    plugins: { "packio-photos": { rules: { "no-stock-photos": noStockPhotos } } },
-    rules: { "packio-photos/no-stock-photos": "error" },
+    plugins: { "getpack-photos": { rules: { "no-stock-photos": noStockPhotos } } },
+    rules: { "getpack-photos/no-stock-photos": "error" },
   },
 
   zoneBoundary("customer", ["admin", "partner"]),
@@ -263,7 +263,7 @@ const eslintConfig = [
   zoneBoundary("partner", ["customer", "admin"]),
 
   {
-    // `@packio/dieline` is published on its own (ADR-0007): box geometry that knows nothing
+    // `@getpack/dieline` is published on its own (ADR-0007): box geometry that knows nothing
     // about this app. An import from `src/` would make it unpublishable.
     files: ["packages/*/src/**"],
     rules: {

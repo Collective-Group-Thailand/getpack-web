@@ -9,7 +9,7 @@ import { accessToken } from "../../../mocks/support";
 import { createApiClient } from "./client";
 
 /**
- * The console mocks behave like packio-api's U-B0.3 building blocks (v0.6.0): the menu, the
+ * The console mocks behave like getpack-api's U-B0.3 building blocks (v0.6.0): the menu, the
  * dashboard's queues, saved views, search, the staff directory and the SoD rules.
  */
 
@@ -21,7 +21,7 @@ const staff = (persona: string) =>
   createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("staff", persona) });
 
 describe("the menu", () => {
-  it("is packio-api's catalogue, business entries and the finance any-of gate included", async () => {
+  it("is getpack-api's catalogue, business entries and the finance any-of gate included", async () => {
     const { data: me } = await staff("finance").GET("/v1/admin/me");
     expect(me!.menu.map((entry) => entry.key)).toContain("finance");
     expect(me!.menu).toEqual(menuFor(personaByKey("finance")!));
@@ -32,7 +32,7 @@ describe("the menu", () => {
 });
 
 describe("the dashboard", () => {
-  it("sends only packio-api's queues the role may work, in packio-api's order", async () => {
+  it("sends only getpack-api's queues the role may work, in getpack-api's order", async () => {
     const known = DASHBOARD_QUEUES.map((queue) => queue.key);
     const { data: cs } = await staff("cs").GET("/v1/admin/dashboard");
     const { data: finance } = await staff("finance").GET("/v1/admin/dashboard");

@@ -6,7 +6,7 @@ import { signInAsStaff } from "./helpers/session";
 /**
  * Notification centre, service worker and PWA manifest (F1 1.3 §6, D-143).
  *
- * These run against the MSW mock of the feed packio-api B1.3 published — what is being asserted
+ * These run against the MSW mock of the feed getpack-api B1.3 published — what is being asserted
  * is this app's half: the count reaches the accessible name, the worker is served from a scope
  * that can actually receive a push, and the manifest differs per zone.
  */
@@ -64,7 +64,7 @@ test.describe("service worker and manifest", () => {
     const customer = await (await request.get(`${HOSTS.customer}/manifest.webmanifest`)).json();
     // Installing a shortcut to the shop is not the point; the storefront is a website.
     expect(customer.display).toBe("browser");
-    expect(customer.name).toBe("Packio");
+    expect(customer.name).toBe("getpack");
   });
 
   test("nothing asks for notification permission on page load", async ({ page }) => {

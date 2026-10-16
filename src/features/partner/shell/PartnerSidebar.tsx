@@ -11,7 +11,7 @@ import { cn } from "@/ui/lib/cn";
 import { currentHref } from "./nav";
 import type { SidebarGroup } from "./sidebar";
 
-const STORE = "packio.partner.sidebar.open";
+const STORE = "getpack.partner.sidebar.open";
 const listeners = new Set<() => void>();
 const subscribe = (listener: () => void) => {
   listeners.add(listener);

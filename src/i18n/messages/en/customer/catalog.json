@@ -1,8 +1,8 @@
 {
   "meta": {
     "productsTitle": "Products and packaging",
-    "productsDescription": "Choose your packaging, see starting prices and production times, and order online with Packio",
-    "categoryDescription": "{name}: products, starting prices and production times. Order online with Packio"
+    "productsDescription": "Choose your packaging, see starting prices and production times, and order online with getpack",
+    "categoryDescription": "{name}: products, starting prices and production times. Order online with getpack"
   },
   "breadcrumbs": {
     "label": "Breadcrumb",
@@ -92,7 +92,7 @@
       "pattern": "Style"
     },
     "priceBasisSpecs": "Priced at: {specs}",
-    "guarantee": "Packio guarantees the work — see what we do if something goes wrong",
+    "guarantee": "getpack guarantees the work — see what we do if something goes wrong",
     "rfqSla": "The team answers a quote request in about {hours} business hours",
     "toleranceNote": "The quantity delivered may be slightly under or over, within the print industry's standard tolerance.",
     "toleranceLink": "See the tolerances in the guarantee",
@@ -142,7 +142,7 @@
     "rfqTitle": "Can't find what you need?",
     "rfqBody": "Send the spec and get a quotation within a business day",
     "rfqCta": "Request a quote",
-    "description": "{types} {mode, select, instant {— prices and lead times shown on every item} rfq {— send the spec, get a quotation within a business day} other {— services from Packio's design team}}"
+    "description": "{types} {mode, select, instant {— prices and lead times shown on every item} rfq {— send the spec, get a quotation within a business day} other {— services from getpack's design team}}"
   },
   "menu": {
     "toggle": "Product categories",
@@ -150,7 +150,7 @@
   },
   "articles": {
     "title": "Articles",
-    "description": "Packaging know-how from Packio: materials, design and ordering",
+    "description": "Packaging know-how from getpack: materials, design and ordering",
     "heading": "Articles and guides",
     "intro": "What is worth knowing before you order packaging",
     "categories": "Article categories",
@@ -165,7 +165,7 @@
   },
   "faq": {
     "title": "Frequently asked questions",
-    "description": "Answers about ordering, prices, production time, payment and delivery with Packio",
+    "description": "Answers about ordering, prices, production time, payment and delivery with getpack",
     "heading": "Frequently asked questions",
     "intro": "Can't find your answer? Ask our team on LINE",
     "other": "Other questions",
@@ -175,7 +175,7 @@
   },
   "search": {
     "title": "Search",
-    "metaDescription": "Search Packio's products, articles and FAQs",
+    "metaDescription": "Search getpack's products, articles and FAQs",
     "open": "Search",
     "placeholder": "Search products, articles or an order code",
     "label": "Search",

@@ -4,7 +4,7 @@
  * published `admin.inspections.*` (U-F0.3). The production board reads `admin.production.list`,
  * served by `./orders.ts` from the same commerce jobs.
  *
- * Suggestions follow packio-api's pricing service: a material line is suggested from its index
+ * Suggestions follow getpack-api's pricing service: a material line is suggested from its index
  * series (then → now ratio), a process rate from the factory's own history, a new line from
  * peers (never naming them), a margin line has no method. The deviation is
  * (proposed − suggested) ÷ suggested × 100 on the primary column, computed here in the mock's
@@ -246,7 +246,7 @@ function boardJobs(): Job[] {
 }
 
 const INSPECTOR = PERSONAS.find((persona) => persona.key === "partner_manager")!;
-/** Packio's inspections; the partner zone shows a factory the notices on its own jobs. */
+/** getpack's inspections; the partner zone shows a factory the notices on its own jobs. */
 export const inspections: Inspection[] = boardJobs()
   .slice(0, 4)
   .map((job, index): Inspection => {

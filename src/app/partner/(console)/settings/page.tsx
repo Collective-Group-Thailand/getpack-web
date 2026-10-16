@@ -21,7 +21,7 @@ import { Card } from "@/ui/components/Card";
 import { Icon } from "@/ui/icons";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 
-/** What the factory agreed with Packio, kept on its onboarding steps — read here after go-live, changed by request. */
+/** What the factory agreed with getpack, kept on its onboarding steps — read here after go-live, changed by request. */
 const PROFILE_STEPS = ["application", "kyc", "bank_account", "capability", "capacity", "delivery_zones", "payout_policy", "agreement"] as const;
 
 export async function generateMetadata(): Promise<Metadata> {

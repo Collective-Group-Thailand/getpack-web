@@ -10,7 +10,7 @@ import type { Order } from "../orders/resources";
 import type { DesignService, Proof } from "./resources";
 
 /*
- * The prepress workspace, composed (U-F0.3): packio-api publishes no workspace aggregate, so the
+ * The prepress workspace, composed (U-F0.3): getpack-api publishes no workspace aggregate, so the
  * page reads the order (`admin.orders.get`) and each of its artwork resources. The keys sit under
  * the order's, so the order screen's artwork tab and this page share one cache, and one
  * invalidation of the order refreshes both.

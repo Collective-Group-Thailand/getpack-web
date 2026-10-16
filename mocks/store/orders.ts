@@ -138,7 +138,7 @@ export function toProgress(order: MockOrder): Schemas["OrderProgressDto"] {
 }
 
 const CARRIER: Record<MockOrder["shipments"][number]["carrier"], Schemas["StoreCarrier"]> = {
-  factory_fleet: "packio",
+  factory_fleet: "getpack",
   flash_express: "flash_express",
   deliveree: "deliveree",
 };

@@ -46,7 +46,7 @@ export type OrdersInitial =
  * be bookmarked or sent — and its count and overdue state come from the dashboard summary, so
  * the badge and the list agree with the home page.
  *
- * The queues are packio-api's (`admin.orderOperations.queue`); slips waiting for review are the
+ * The queues are getpack-api's (`admin.orderOperations.queue`); slips waiting for review are the
  * Finance slip queue, not an order queue. The last tab is every order (`admin.orders.list`), with
  * the desk's filters and the richer row: customer and factory, quantity, the group's next
  * instalment and a slip waiting for Finance with its review deadline. A queue row is lean, and no
@@ -75,7 +75,7 @@ export function OrdersList({ initial }: { initial: OrdersInitial }) {
 }
 
 /**
- * Reminds the customers of the chosen orders (`admin.orders.sendPaymentReminders`; packio-api
+ * Reminds the customers of the chosen orders (`admin.orders.sendPaymentReminders`; getpack-api
  * sends one per group per hour and lists the ones it refused). One key per selection, so pressing
  * again for the same rows after a timeout replays the request rather than reminding twice.
  */

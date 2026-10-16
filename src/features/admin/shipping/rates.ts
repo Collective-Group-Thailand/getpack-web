@@ -99,7 +99,7 @@ const overlaps = (aMin: number, aMax: number | null, bMin: number, bMax: number 
   (bMax === null || aMin < bMax) && (aMax === null || bMin < aMax);
 
 /**
- * The checks packio-api makes, made first so a long card is fixed in place: every field readable,
+ * The checks getpack-api makes, made first so a long card is fixed in place: every field readable,
  * each band's max above its min, and no two lines of the same zone (and postcode) whose weight and
  * volume bands both overlap.
  */

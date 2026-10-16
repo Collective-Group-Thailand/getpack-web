@@ -205,7 +205,7 @@
       },
       "hired_design": {
         "label": "Hire a designer",
-        "description": "Send a brief and a Packio designer does it, with 3 free revisions"
+        "description": "Send a brief and a getpack designer does it, with 3 free revisions"
       },
       "free_design": {
         "label": "Free design",

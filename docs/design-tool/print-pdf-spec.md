@@ -1,7 +1,7 @@
-# Packio print file — specification for factories
+# getpack print file — specification for factories
 
 What a factory receives when a customer sends an online-designer design to print (F4 Part C,
-ADR-0009). One file per order line, attached to the order's artwork and checked by Packio
+ADR-0009). One file per order line, attached to the order's artwork and checked by getpack
 prepress before it reaches you.
 
 ## The file at a glance
@@ -10,11 +10,11 @@ prepress before it reaches you.
 |---|---|
 | Format | PDF 1.6, one page |
 | Units | Page drawn in millimetres (1 mm = 2.8346 pt) |
-| Page boxes | **TrimBox** = the flat dieline's bounding box · **BleedBox** = TrimBox + bleed on every side (3 mm by default; the value is a Packio setting) · **MediaBox** = BleedBox + 7 mm |
+| Page boxes | **TrimBox** = the flat dieline's bounding box · **BleedBox** = TrimBox + bleed on every side (3 mm by default; the value is a getpack setting) · **MediaBox** = BleedBox + 7 mm |
 | Artwork | RGB (`DeviceRGB`) JPEG images at **300 dpi** effective, tiled (≤ 4096 px a side), on an optional-content layer named **`Artwork`** |
 | Die | Vector lines above the artwork, each line type on its own **spot colour** *and* its own optional-content layer of the same name; overprint on |
 | Fonts | None — text is rendered with the artwork (see *Text*) |
-| Producer | `Packio @packio/dieline` · Title = the design's name |
+| Producer | `getpack @getpack/dieline` · Title = the design's name |
 
 ## Die layers
 
@@ -32,15 +32,15 @@ separations, leaves the artwork untouched. **Do not print the spot layers.** The
 die-maker and the plate-maker's reference.
 
 Arcs (round corners, pillow curves, hang holes) are drawn as Bézier curves in the PDF; the DXF
-from the same design keeps them as true arcs. Ask Packio prepress for the DXF if your CAD needs
-it — both come from the same geometry (`@packio/dieline`).
+from the same design keeps them as true arcs. Ask getpack prepress for the DXF if your CAD needs
+it — both come from the same geometry (`@getpack/dieline`).
 
 ## Orientation and the printed side
 
 - The PDF shows the **printed (outside) side**, as it lies on the press sheet before die-cutting.
 - Creases fold **away** from the viewer: the box forms behind the page.
 - The PDF carries no grain arrow. When a style sets a grain direction it is drawn on the `NOTES`
-  layer of the dieline SVG — ask Packio prepress for it.
+  layer of the dieline SVG — ask getpack prepress for it.
 
 ## Artwork
 
@@ -51,13 +51,13 @@ it — both come from the same geometry (`@packio/dieline`).
 - **Colour is RGB.** Convert to your press profile in your RIP. Vivid screen colours the customer
   picked may print duller; the designer warns them and the proof is the colour authority.
 - The unprinted board is white in the file (the substrate is not printed). The board's own colour
-  appears only in Packio's previews.
+  appears only in getpack's previews.
 
 ## Text
 
 Text is part of the 300 dpi artwork, not live type — so no font can be missing or substituted, and
 Thai shaping is exactly as designed. The designer keeps text at least 2.1 mm tall (about 6 pt) and
-inside the safe zone (3 mm from cuts and folds by default, a Packio setting), and warns on text
+inside the safe zone (3 mm from cuts and folds by default, a getpack setting), and warns on text
 crossing a fold or sitting on a glue flap. If a job needs vector text (very fine type, foil,
 embossing), prepress will ask the customer for a vector file instead.
 
@@ -68,12 +68,12 @@ the artwork at 300 dpi. They include their quiet zones (QR: 4 modules; EAN-13: 1
 7 right). The designer warns below a 0.4 mm QR module and below 29.83 mm EAN-13 width (80 %
 magnification). **Test-scan the proof.**
 
-## What Packio has already checked
+## What getpack has already checked
 
-Before the file reaches you, Packio's preflight (D-070) has checked the page boxes, bleed,
+Before the file reaches you, getpack's preflight (D-070) has checked the page boxes, bleed,
 resolution and die layers, and the customer has passed the designer's live checks (safe zone,
 folds, glue areas, small text, thin lines, resolution, codes).
 
 ## Questions
 
-Ask Packio prepress, quoting the order code and the file's title.
+Ask getpack prepress, quoting the order code and the file's title.

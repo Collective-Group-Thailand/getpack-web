@@ -19,7 +19,7 @@ export interface SectionDividerProps {
  * - one flat fill in the band colour — no gradient, no shadow, no stroke;
  * - always `aria-hidden`: it carries no meaning, so a screen reader must not announce it.
  *
- * The shape is drawn for Packio. Its height scales with the width, so it never crowds a phone.
+ * The shape is drawn for getpack. Its height scales with the width, so it never crowds a phone.
  */
 export function SectionDivider({ direction = "into", className }: SectionDividerProps) {
   return (

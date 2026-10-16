@@ -334,7 +334,7 @@ export const ICONS = {
   archive: Archive,
   play: Play,
   scan: ScanLine,
-  // Packio Factory ERP E2.1 / E3 (maintenance, schedule, kiosk, documents, approved suppliers)
+  // getpack Factory ERP E2.1 / E3 (maintenance, schedule, kiosk, documents, approved suppliers)
   wrench: Wrench,
   gantt: ChartGantt,
   tablet: Tablet,

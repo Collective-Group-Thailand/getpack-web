@@ -18,7 +18,7 @@ import {
   PX_PER_MM,
   SPEC_VERSION,
   type ParamValues,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 import { setActiveStage } from "@/features/designer/active-stage";
 import { boardColour, fallbackMaterial, materialsFor, withMaterial } from "@/features/designer/catalog";
 import { storeDesigns, type DesignerCatalog } from "@/features/designer/data/api";

@@ -77,12 +77,12 @@ describe("Button", () => {
       // A plain <a> rather than next/link: this is about Slot merging, and the real
       // next/link case is exercised end to end in the e2e suite.
       <Button asChild iconStart="save" iconEnd="chevron-right">
-        <a href="https://packio.example/design">เริ่มออกแบบ</a>
+        <a href="https://getpack.example/design">เริ่มออกแบบ</a>
       </Button>,
     );
 
     const link = screen.getByRole("link", { name: "เริ่มออกแบบ" });
-    expect(link).toHaveAttribute("href", "https://packio.example/design");
+    expect(link).toHaveAttribute("href", "https://getpack.example/design");
     expect(link.querySelectorAll("svg")).toHaveLength(2);
     // The rendered element is the child's, so no nested button appears.
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
@@ -91,9 +91,9 @@ describe("Button", () => {
   it("slots onto a child that arrives as a lazy reference from a server component", () => {
     // Regression: Radix Slot unwraps one lazy level only, so a nested one threw
     // "Slot failed to slot onto its `Slottable`" and took down every page with the header.
-    render(<Button asChild>{rscLazy(rscLazy(<a href="https://packio.example/products">สินค้า</a>))}</Button>);
+    render(<Button asChild>{rscLazy(rscLazy(<a href="https://getpack.example/products">สินค้า</a>))}</Button>);
 
-    expect(screen.getByRole("link", { name: "สินค้า" })).toHaveAttribute("href", "https://packio.example/products");
+    expect(screen.getByRole("link", { name: "สินค้า" })).toHaveAttribute("href", "https://getpack.example/products");
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
@@ -117,12 +117,12 @@ describe("IconButton", () => {
     // <svg> instead and the link — href and all — silently disappeared.
     render(
       <IconButton asChild name="cart" label="ตะกร้า">
-        {rscLazy(<a href="https://packio.example/cart" />)}
+        {rscLazy(<a href="https://getpack.example/cart" />)}
       </IconButton>,
     );
 
     const link = screen.getByRole("link", { name: "ตะกร้า" });
-    expect(link).toHaveAttribute("href", "https://packio.example/cart");
+    expect(link).toHaveAttribute("href", "https://getpack.example/cart");
     expect(link.querySelector("svg")).toBeInTheDocument();
   });
 });

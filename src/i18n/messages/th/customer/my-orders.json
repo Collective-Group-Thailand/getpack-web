@@ -57,7 +57,7 @@
     "shipments": "การจัดส่ง",
     "shipmentTo": "{quantity} {unit} ถึง {name} ({province})",
     "carrier": {
-      "factory_fleet": "รถขนส่งของ Packio",
+      "factory_fleet": "รถขนส่งของ getpack",
       "flash_express": "Flash Express",
       "deliveree": "Deliveree"
     },

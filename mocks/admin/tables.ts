@@ -1,5 +1,5 @@
 /**
- * A stateful mock for one published CRUD table (packio-api B2.1's catalogue, CMS and geography):
+ * A stateful mock for one published CRUD table (getpack-api B2.1's catalogue, CMS and geography):
  * list with the standard query, create, read with an `ETag`, and `PATCH` guarded by `If-Match`
  * — `428` without it, `412` when it is stale — exactly the contract's rules. Rows are archived
  * through `status`, never deleted, unless the contract gives the table a `DELETE`.

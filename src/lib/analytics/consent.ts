@@ -10,7 +10,7 @@
  *
  * What is *not* gated: the first-party funnel events this app posts to its own API. Those are
  * necessary to operate the service and are covered by legitimate interest; they carry no
- * advertising identifier and never leave Packio. GTM and GA4 are third-party processing and
+ * advertising identifier and never leave getpack. GTM and GA4 are third-party processing and
  * are gated. (Legal counsel should confirm the split before launch — noted in PROGRESS.)
  */
 

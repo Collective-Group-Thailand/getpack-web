@@ -1,5 +1,5 @@
 /**
- * `@packio/dieline` — Packio's box geometry engine. Framework-free: runs in the browser and in
+ * `@getpack/dieline` — getpack's box geometry engine. Framework-free: runs in the browser and in
  * Node. See README.md for the public API and docs/design-tool/ for the architecture.
  */
 export type {

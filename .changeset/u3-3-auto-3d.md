@@ -1,5 +1,5 @@
 ---
-"@packio/dieline": minor
+"@getpack/dieline": minor
 ---
 
 Automatic 3D, virtual fold test and assets (U3.3): `foldModel` (board thickness), `modelBounds`,

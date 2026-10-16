@@ -1,5 +1,5 @@
 /**
- * Packio 3D Studio collaboration (U4.7, D-285) against the customer's designs (`./designs.ts`):
+ * getpack 3D Studio collaboration (U4.7, D-285) against the customer's designs (`./designs.ts`):
  * - share links with a scope (view / comment / edit), many per design, expiring and revocable; the
  *   token is answered once;
  * - comment threads anchored to a face (`faceId` + u, v) or a point on the flat (mm), replies,

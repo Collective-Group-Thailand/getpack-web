@@ -1,5 +1,5 @@
 /**
- * What a production job and a shipment offer next (`nextActions`, U-B0.3), mirroring packio-api's
+ * What a production job and a shipment offer next (`nextActions`, U-B0.3), mirroring getpack-api's
  * rule tables at v0.6.0 — `src/modules/production/job-actions.ts`, `src/modules/logistics/
  * shipment-actions.ts` and the evaluator in `src/common/next-actions/next-actions.ts`: a rule is
  * offered when the reader holds all its permissions and its state check passes; a string verdict

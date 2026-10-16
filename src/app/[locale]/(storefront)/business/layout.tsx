@@ -5,7 +5,7 @@ import { BusinessNav } from "@/features/customer/business/BusinessNav";
 import { readAccessToken } from "@/lib/auth/session";
 
 /**
- * Packio for business's frame (F3 3.7): the company's sections beside each page once the visitor
+ * getpack for business's frame (F3 3.7): the company's sections beside each page once the visitor
  * is a member; the landing and sign-up otherwise. Pages guard themselves.
  */
 export default async function BusinessLayout({ children }: { children: React.ReactNode }) {

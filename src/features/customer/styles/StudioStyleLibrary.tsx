@@ -1,4 +1,4 @@
-import { STYLES, type BoxCategory } from "@packio/dieline";
+import { STYLES, type BoxCategory } from "@getpack/dieline";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { studioHref } from "@/features/customer/studio/paths";
@@ -18,7 +18,7 @@ const FAMILY: Record<BoxCategory, ProductFamily> = {
 const ORDER: BoxCategory[] = ["folding_carton", "corrugated", "tray_lid", "specialty", "flat"];
 
 /**
- * The studio's own box styles (`@packio/dieline`), shown when the API's style library has nothing
+ * The studio's own box styles (`@getpack/dieline`), shown when the API's style library has nothing
  * published yet (UX audit: "/styles แสดง 0 แบบ ทั้งที่ studio มีแบบกล่องหลายสิบแบบ"). The API lists
  * only styles that are publishable — a verified recipe and a factory able to make it (D-243) — so
  * an empty library is honest about ordering, but the studio can still draw every one of these.

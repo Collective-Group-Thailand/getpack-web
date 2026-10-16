@@ -7,7 +7,7 @@ import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 /**
- * Building blocks of the Packio Factory ERP screens (E1), server-safe: the big task tiles an owner
+ * Building blocks of the getpack Factory ERP screens (E1), server-safe: the big task tiles an owner
  * starts from, a plain GET search box that keeps the current view, and page links.
  */
 

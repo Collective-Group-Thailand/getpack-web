@@ -2,7 +2,7 @@
  * `src/domain/status` — how a status looks and reads, for every zone.
  *
  * `./contract.ts` holds the vocabularies and where each one comes from — that is the file to
- * edit when `packio-api` publishes an enum, and the only one.
+ * edit when `getpack-api` publishes an enum, and the only one.
  *
  * Nothing here imports from a feature or an app route: a status means the same thing in the
  * customer's order page, the admin queue and the partner job card.

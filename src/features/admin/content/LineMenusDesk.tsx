@@ -24,7 +24,7 @@ type Audience = Schemas["RichMenuAudience"];
 
 /**
  * The LINE official account's rich menus (D-151): the menu shown to a guest and to a member who
- * has linked their account, each the id of a menu made in LINE's own manager. Packio switches
+ * has linked their account, each the id of a menu made in LINE's own manager. getpack switches
  * between them as people link; this is where the ids are kept.
  */
 export function LineMenusDesk() {

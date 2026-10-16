@@ -41,11 +41,11 @@ export async function generateMetadata(): Promise<Metadata> {
  * One job on the shop floor (F5 5.2) on `partner.production.*`: accept or reject within the window
  * (D-074), then the milestones in order with the one next action open, QC with photos (D-076),
  * the spec, the approved artwork only (opened by its signed URL), the factory's own PO, recipients
- * by name, address and phone only (D-142), Packio's inspection and the issues. What the factory
+ * by name, address and phone only (D-142), getpack's inspection and the issues. What the factory
  * may do comes from the job's own `nextActions`; every write re-renders from the server's state.
  *
  * CONTRACT-GAP partner.jobs — the published job has no activity history, and the factory's view
- * of Packio's inspection has no reasons or notes; neither is shown.
+ * of getpack's inspection has no reasons or notes; neither is shown.
  */
 export default async function JobPage({ params }: Props) {
   const { jobId } = await params;
@@ -104,7 +104,7 @@ export default async function JobPage({ params }: Props) {
             async () =>
               (
                 await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders", {
-                  params: { path: { factoryId: context.factoryId }, query: { q: job.jobNo, source: "packio_job", perPage: 5 } },
+                  params: { path: { factoryId: context.factoryId }, query: { q: job.jobNo, source: "getpack_job", perPage: 5 } },
                 })
               ).data!.data.find((order) => order.title.startsWith(job.jobNo)) ?? null,
           )

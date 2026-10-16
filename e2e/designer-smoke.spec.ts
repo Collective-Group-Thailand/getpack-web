@@ -7,7 +7,7 @@ import { addHeading } from "./helpers/designer";
  * home -> new design -> set the box up -> add text -> save -> My designs -> reopen -> export the dieline SVG.
  *
  * It is deliberately written against what the user sees (roles and Thai labels), so it keeps
- * working while F0.1 moves the code into @packio/dieline, src/features/designer and the
+ * working while F0.1 moves the code into @getpack/dieline, src/features/designer and the
  * locale-scoped routes.
  */
 

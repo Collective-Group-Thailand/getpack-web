@@ -1,12 +1,12 @@
 "use client";
 
-import { getStyle, REFERENCE_MATERIALS } from "@packio/dieline";
+import { getStyle, REFERENCE_MATERIALS } from "@getpack/dieline";
 
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 
 /**
  * The hero panel's flat view: the selected shape's own dieline at the selected size, drawn by
- * `@packio/dieline` (the studio's engine), so "แผ่นคลี่" is the blank the factory cuts. Loaded only
+ * `@getpack/dieline` (the studio's engine), so "แผ่นคลี่" is the blank the factory cuts. Loaded only
  * when the customer switches to it, so the home page does not ship the engine up front. A size the
  * style cannot draw shows `fallback` rather than failing the panel.
  */

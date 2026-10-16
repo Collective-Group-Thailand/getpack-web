@@ -14,7 +14,7 @@ import type { BffProblemCode } from "./codes";
  */
 export function bffProblem(status: number, code: BffProblemCode, detail: string, requestId: string): NextResponse {
   const problem: ProblemDetails = {
-    type: `https://errors.packio/${code}`,
+    type: `https://errors.getpack/${code}`,
     title: code,
     status,
     code,

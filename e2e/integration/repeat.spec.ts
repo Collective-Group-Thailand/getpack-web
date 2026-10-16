@@ -4,9 +4,9 @@ import { HOSTS } from "../../playwright.config";
 import { DEV_INSTANT_PRODUCT, runId, signInCustomer } from "./support";
 
 /**
- * U2.F5 on the real packio-api (`v0.41.0`): a new customer's dashboard and replenishment render (no
+ * U2.F5 on the real getpack-api (`v0.41.0`): a new customer's dashboard and replenishment render (no
  * history, no suggestion), and a call-off asked for on a saved quotation reaches the factory
- * (`pending_factory`), or packio-api says why not.
+ * (`pending_factory`), or getpack-api says why not.
  */
 test("dashboard, replenishment and a call-off request, on the real API", async ({ context, page }) => {
   test.slow();

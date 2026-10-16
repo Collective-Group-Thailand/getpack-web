@@ -5,7 +5,7 @@ import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
 
 /**
- * F2 2.1 — the back-office foundation, against the MSW mock of packio-api B1.3 plus the F2
+ * F2 2.1 — the back-office foundation, against the MSW mock of getpack-api B1.3 plus the F2
  * contract requests.
  *
  * The mock keeps state for the whole run and tests run in parallel, so every test that changes
@@ -50,7 +50,7 @@ test.describe("the menu follows the entitlements", () => {
   });
 });
 
-test.describe("ops monitor (packio-api B6.3)", () => {
+test.describe("ops monitor (getpack-api B6.3)", () => {
   test("an admin opens the signals from the menu; a CS agent has no entry", async ({ page, browser }) => {
     await signInAsStaff(page, "admin");
     await page
@@ -88,7 +88,7 @@ test.describe("?mock= scenarios (U-F0.1)", () => {
 
 test.describe("dashboard", () => {
   test("opens on the queues this person may work", async ({ page }) => {
-    // packio-api's queues (admin.dashboard.get), each behind its working permission.
+    // getpack-api's queues (admin.dashboard.get), each behind its working permission.
     await signInAsStaff(page, "finance");
     await expect(page.getByRole("heading", { level: 1, name: /^สวัสดี/ })).toBeVisible();
     // Today's queues lead; the rest are a compact list, empty ones folded behind "แสดง" (UX audit).

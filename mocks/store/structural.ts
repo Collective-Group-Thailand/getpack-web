@@ -37,9 +37,9 @@ const TERMS: Schemas["IntakeTermsDto"] = {
   version: 1,
   effectiveFrom: "2026-10-01",
   textTh:
-    "ร่างเงื่อนไขการรับแบบไดคัท (ข้อมูลจำลอง): โรงงานยืนยันว่ามีสิทธิ์ในแบบที่ส่ง และอนุญาตให้ Packio นำโครงสร้างไปใช้ในคลังแบบ โดยยังคงบันทึกที่มาของแบบไว้",
+    "ร่างเงื่อนไขการรับแบบไดคัท (ข้อมูลจำลอง): โรงงานยืนยันว่ามีสิทธิ์ในแบบที่ส่ง และอนุญาตให้ getpack นำโครงสร้างไปใช้ในคลังแบบ โดยยังคงบันทึกที่มาของแบบไว้",
   textEn:
-    "Draft dieline intake terms (mock data): the factory confirms it holds the rights to the structure it sends and allows Packio to use it in the style library, its origin recorded.",
+    "Draft dieline intake terms (mock data): the factory confirms it holds the rights to the structure it sends and allows getpack to use it in the style library, its origin recorded.",
 };
 
 const attached = (id: string): Schemas["AttachedFileDto"] => {

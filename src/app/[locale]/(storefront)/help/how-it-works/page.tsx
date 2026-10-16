@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * How ordering works (SEO/AEO pass): the six steps as a `HowTo`, the questions as `FAQPage`, and
- * the answer paragraph first — the page an answer engine quotes for "how do I order from Packio".
+ * the answer paragraph first — the page an answer engine quotes for "how do I order from getpack".
  */
 export default async function HowItWorksPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

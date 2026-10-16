@@ -33,8 +33,8 @@ import {
   variantsOf,
   type Image,
   type StyleRecipe,
-} from "@packio/dieline";
-import { ALL_RECIPES } from "@packio/dieline/library";
+} from "@getpack/dieline";
+import { ALL_RECIPES } from "@getpack/dieline/library";
 
 const PACKAGE = new URL("../packages/dieline/", import.meta.url).pathname;
 const MANIFEST = join(PACKAGE, "generated", "manifest.json");

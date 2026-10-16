@@ -1,5 +1,5 @@
 /**
- * The general ledger (packio-api B5.1, published): journals with their lines, manual / recurring /
+ * The general ledger (getpack-api B5.1, published): journals with their lines, manual / recurring /
  * reversing entries under maker-checker (§8, D-169), the chart of accounts and its changes, cost
  * centres, the posting rules with their versions and a preview, and the fiscal periods
  * `open → soft_closed → closed → locked` (§1.4).
@@ -612,7 +612,7 @@ const recurring: Schemas["RecurringJournalDto"][] = [
 ];
 
 /**
- * The monthly job (packio-api `ledger.jobs`): every active definition whose run date has come
+ * The monthly job (getpack-api `ledger.jobs`): every active definition whose run date has come
  * posts once, with its reversal on the first day of the next month when it auto-reverses.
  */
 export function runRecurring(until = today()) {
@@ -669,7 +669,7 @@ const TRANSITIONS: Record<string, { from: Period["status"]; to: Period["status"]
 
 /**
  * Closing or locking is gated by the month's close checklist (§7) — the close module registers
- * the gate, as `PERIOD_CLOSE_GATE` does in packio-api; the ledger alone does not depend on it.
+ * the gate, as `PERIOD_CLOSE_GATE` does in getpack-api; the ledger alone does not depend on it.
  */
 let closeGate: ((period: Period, to: Period["status"]) => Response | null) | null = null;
 export function registerCloseGate(gate: typeof closeGate) {

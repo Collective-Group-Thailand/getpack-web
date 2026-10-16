@@ -5,7 +5,7 @@ kept, and the files it makes. Decisions are in ADR-0007 (engine ownership), ADR-
 model), ADR-0009 (print file), ADR-0010 (3D preview), ADR-0011 (composable style recipes) and ADR-0012 (asset pipeline, thickness).
 
 ```
-@packio/dieline  (packages/dieline — framework-free, browser + Node, published for packio-api)
+@getpack/dieline  (packages/dieline — framework-free, browser + Node, published for getpack-api)
   recipes/*       30 StyleRecipe JSON files (ADR-0011) + params.json / sets.json; parseRecipe,
                   buildFromRecipe, styleFromRecipe → the BoxStyleDef registry (styles/index.ts)
   modules/*       body · closure · feature · pieceSet modules: params, constraints, processes,
@@ -81,22 +81,22 @@ lives in `?step=`. For a signed-in design each version is saved with its **box**
 **spec** (D-275, `studio/spec.ts` → `BoxFields`), built from the product's configurator exactly as
 the configurator would — so `store.studio.quote` prices the box on screen and refuses nothing as a
 mismatch. A save that changes neither the box nor the title is a JSON Patch (`patchDocument`,
-D-276); anything else is a PUT. The dock keys its query by the saved box + quantity (packio-api
+D-276); anything else is a PUT. The dock keys its query by the saved box + quantity (getpack-api
 caches by the same spec's `specHash`) and sends the shown `specHash` back as `previousSpecHash`, so
 the API says why the price moved. A guest's dock prices the same configuration with
 `store.quotes.calculate`.
 
 ## Checks, live
 
-`lib/checks.ts` (U4.5) runs **packio-api's rule catalogue** (D-278: `store.studio.getRules`, the
+`lib/checks.ts` (U4.5) runs **getpack-api's rule catalogue** (D-278: `store.studio.getRules`, the
 vendored `contract/studio-rules.json` until it answers or in the back office): the same rule ids,
 severities (block / warn / info) and thresholds — a rule with unset thresholds is off, a rule names
-the print methods and material classes it applies to. The rules packio-api evaluates on the document
+the print methods and material classes it applies to. The rules getpack-api evaluates on the document
 are computed exactly as its `evaluateDocument` (units, rounding), held to it by
 `checks-rules.test.ts` (against the mock's port) and `e2e/integration/checks.spec.ts` (against the
 real API); the rest need the die (`lib/useIssues.ts` gives the safe zones, folds, glue areas and
 outlines, once per box; the inside against the mirrored die). Safe one-click fixes are in
-`lib/fixes.ts`. Warnings are accepted per version: packio-api keeps the ones it finds
+`lib/fixes.ts`. Warnings are accepted per version: getpack-api keeps the ones it finds
 (`acknowledgeCheck`); the studio-only ones are kept in the document (`content.acknowledged`).
 Soft proof: the material class's simplified transform (`studio.soft_proof_profiles`, D-279) as a CSS
 filter and a multiply overlay on the stage, labelled "preview, not a contract proof".

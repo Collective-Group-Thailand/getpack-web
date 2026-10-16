@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("content.pages.reviews"))("title") };
 }
 
-/** D-412: customer reviews — moderation and Packio's replies (D-265). */
+/** D-412: customer reviews — moderation and getpack's replies (D-265). */
 export default async function Page() {
   const t = await getTranslations("content.pages.reviews");
   return (

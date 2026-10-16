@@ -5,7 +5,7 @@ import { api, signInStaff, staffToken, type StaffRole } from "./support";
 
 /**
  * Every D-140 staff role the dev seed creates signs in through the real form, and its sidebar is
- * packio-api's menu for it (`admin.me.get` → `menu[]`): each entry the API grants is a link in
+ * getpack-api's menu for it (`admin.me.get` → `menu[]`): each entry the API grants is a link in
  * the shell, and nothing the API withholds is.
  */
 
@@ -33,7 +33,7 @@ interface Me {
 }
 
 for (const role of ROLES) {
-  test(`${role} signs in and sees the menu packio-api grants`, async ({ page }) => {
+  test(`${role} signs in and sees the menu getpack-api grants`, async ({ page }) => {
     const me = await api<Me>("GET", "/v1/admin/me", { token: await staffToken(role) });
     expect(me.roles).toContain(role);
 

@@ -4,7 +4,7 @@ Since U3.1 a style is a **recipe**: a JSON file in `packages/dieline/src/recipes
 names the **modules** it is made of and sets their sizes, plus the parameters, defaults, presets
 and names a customer sees (ADR-0011). `styleFromRecipe` turns it into the `BoxStyleDef` the
 registry exposes, so the designer's setup dialog, the configurator, the drawing service in
-packio-api and the tests read it as before. The geometry model is ADR-0008; this is the how-to.
+getpack-api and the tests read it as before. The geometry model is ADR-0008; this is the how-to.
 
 Most new styles are a new recipe over existing modules. A **new construction** — a closure, a
 feature or a body nobody has drawn yet — is a new module first (§3), then its recipes.
@@ -154,7 +154,7 @@ expressions with `ctx.num()`. Register it in `modules/index.ts`. A module listed
 
 - **Register the recipe**: import it in `recipes/index.ts` and add it to `RECIPES` (the order is
   the pickers' order within a category).
-- **Run the matrix**: `pnpm --filter @packio/dieline test`. Every recipe passes `parseRecipe`;
+- **Run the matrix**: `pnpm --filter @getpack/dieline test`. Every recipe passes `parseRecipe`;
   `styles.test.ts` builds every style × preset × allowed reference material and asserts closed cut
   loops (≤ 0.01 mm), free edges cut, no overlapping faces, no dangling cuts (`checkDieline`), the
   sheet anchored at the origin, every face and piece labelled in both languages, `validate()`
@@ -163,13 +163,13 @@ expressions with `ctx.num()`. Register it in `modules/index.ts`. A module listed
 - **The baseline**: `fixtures/baseline/<style>.json` pins every build, fold and validation. A new
   recipe writes its file on the first run; a changed one fails until it is accepted with
   `vitest -u` **and** the difference is explained in PROGRESS (prepress signs off a geometry change).
-- **Accept the fixtures**: `pnpm --filter @packio/dieline fixtures` writes the SVG/DXF snapshots;
-  review them like code — they are what packio-api's golden comparison reads.
+- **Accept the fixtures**: `pnpm --filter @getpack/dieline fixtures` writes the SVG/DXF snapshots;
+  review them like code — they are what getpack-api's golden comparison reads.
 - **Assets**: `pnpm styles:render` re-renders every variant's dieline SVG and 2D/3D thumbnails
   into `packages/dieline/generated/` and rewrites `generated/manifest.json` — commit the manifest
   (CI's `styles:render:check` fails when it is stale). `pnpm style:thumbnails` still redraws the
   docs contact sheet in `docs/design-tool/styles/`.
-- **Changeset**: a new style is a `minor` change of `@packio/dieline` (`pnpm changeset`).
+- **Changeset**: a new style is a `minor` change of `@getpack/dieline` (`pnpm changeset`).
 
 ## 5. Common mistakes
 

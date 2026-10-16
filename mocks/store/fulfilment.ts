@@ -81,7 +81,7 @@ const isDelivered = (order: MockOrder) =>
 
 /**
  * A desk row as the customer sees it (`StoreClaimDto`): what they filed, what the team asked for
- * and decided, what was done, and what they may do now (packio-api's `STORE_CLAIM_ACTIONS`).
+ * and decided, what was done, and what they may do now (getpack-api's `STORE_CLAIM_ACTIONS`).
  * Liability, the factory and internal notes stay behind; there is no free thread (D-225).
  */
 function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
@@ -443,7 +443,7 @@ export const storeFulfilmentHandlers = [
 
   // store.claims.getTimeline (U2.F4, D-263): what happened, who must act now and by when. The mock
   // derives it from the claim's status: a day to respond, three to decide (the guarantee's example),
-  // the clock stopped while Packio waits for the customer.
+  // the clock stopped while getpack waits for the customer.
   http.get("*/v1/store/claims/:claimId/timeline", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
@@ -479,7 +479,7 @@ export const storeFulfilmentHandlers = [
           ? "factory"
           : decided
             ? "none"
-            : "packio";
+            : "getpack";
     const responseDueAt = at(24);
     const decisionDueAt = decided || row.status === "need_info" ? null : at(72);
     const now = Date.now();

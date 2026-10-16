@@ -38,7 +38,7 @@ export function formatValues(values: Record<string, unknown> | null | undefined)
 /**
  * The factory's prices (D-040, D-042, D-044): each product type's price list with the version in
  * force and any scheduled, its lines for roles allowed to see cost (D-141), and its proposals. A
- * platform-rate-card factory gets its rate cards from Packio: a new one starts here as a draft.
+ * platform-rate-card factory gets its rate cards from getpack: a new one starts here as a draft.
  */
 export function Pricing({ factory }: { factory: Factory }) {
   const t = useTranslations("partners.pricing");

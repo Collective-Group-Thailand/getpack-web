@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BRAND_NAME } from "./config";
 
 /**
- * Packio's own mark: a P whose bowl carries a crease line, drawn for this repo. No
+ * getpack's own mark: a lower-case g whose bowl carries a crease line, drawn for this repo. No
  * third-party logo, template or asset appears anywhere in src/ui (CLAUDE.md).
  *
  * The fill is the semantic `primary` token, so the mark follows the theme and a brand-hue
@@ -14,8 +14,9 @@ export function BrandMark({ size = 28, className }: { size?: number; className?:
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden className={className}>
       <rect width="32" height="32" rx="9" className="fill-primary" />
       <g fill="none" className="stroke-primary-fg" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11.5 24V8h6a4.5 4.5 0 0 1 0 9h-6" />
-        <path d="M11.5 12.5h6" opacity="0.45" />
+        <path d="M20.5 12.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
+        <path d="M20.5 8v12.5a4 4 0 0 1-4 4H13" />
+        <path d="M11.5 12.5h9" opacity="0.45" />
       </g>
     </svg>
   );

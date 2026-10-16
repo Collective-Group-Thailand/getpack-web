@@ -12,7 +12,7 @@ export type Variant = StyleDetail["variants"][number];
 /** One value per axis; a multi-select axis (pouch features) holds a set. */
 export type Selection = Record<string, string | string[]>;
 
-/** A value as a comparable key: a set is sorted and joined by `+`, the empty set is `none` (packio-api). */
+/** A value as a comparable key: a set is sorted and joined by `+`, the empty set is `none` (getpack-api). */
 export const keyOf = (value: unknown): string =>
   Array.isArray(value) ? [...value].map(String).sort().join("+") || "none" : String(value);
 

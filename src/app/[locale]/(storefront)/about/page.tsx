@@ -19,8 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Who Packio is (SEO/GEO pass): the entity statement first — brand, operator, what it does,
- * where — so a search or answer engine can describe Packio in one sentence and attribute it to
+ * Who getpack is (SEO/GEO pass): the entity statement first — brand, operator, what it does,
+ * where — so a search or answer engine can describe getpack in one sentence and attribute it to
  * Collective Group (Thailand); then the longer story, and the company facts as a list.
  */
 export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {

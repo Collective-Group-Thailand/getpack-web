@@ -1,5 +1,5 @@
 /**
- * The homepage Studio hero (D-310) and the public config (D-309), as packio-api v0.43.1 publishes
+ * The homepage Studio hero (D-310) and the public config (D-309), as getpack-api v0.43.1 publishes
  * them: the presets read against the mock catalogue's configurators, and a preview priced by the
  * mock's own `store.quotes.calculate` (`inputsOf` / `stepOf`) on the body `/configure` builds for
  * the same choices — every part of a multi-part box — so the mock adds no price of its own. The
@@ -57,7 +57,7 @@ interface Offer {
   prints: { id: Print; inkIds: string[] }[];
 }
 
-/** Per shape, only what its product prices instantly — as packio-api drops the rest on read. */
+/** Per shape, only what its product prices instantly — as getpack-api drops the rest on read. */
 function offers(): Offer[] {
   return PRESETS.shapes.flatMap(({ id, productSlug }): Offer[] => {
     const configurator = configuratorOfSlug(productSlug);
@@ -198,7 +198,7 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
   supportReplyMinutes: null,
   templateCount: 105,
   factoryCount: null,
-  contact: { phone: "020000000", lineOaId: "@packio-mock", email: "support@example.invalid" },
+  contact: { phone: "020000000", lineOaId: "@getpack-mock", email: "support@example.invalid" },
 });
 
 export const heroHandlers = [

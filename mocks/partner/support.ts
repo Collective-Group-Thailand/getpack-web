@@ -4,7 +4,7 @@
  * - no token → 401; a staff or customer token → 403 `auth.wrong_audience` (api-conventions §2);
  * - **another factory's id → 404**, never 403: a factory is not told that another factory exists
  *   (D-044, the IDOR rule B4's e2e names);
- * - a permission the factory role lacks → 403 (packio-api `docs/rbac.md`, factory scope).
+ * - a permission the factory role lacks → 403 (getpack-api `docs/rbac.md`, factory scope).
  *
  * And the idempotency replay the real API promises (api-conventions §3): the same
  * `Idempotency-Key` within the process returns the first answer instead of acting twice.

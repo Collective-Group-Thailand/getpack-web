@@ -7,7 +7,7 @@
  *                          pin a newer **tagged** contract, then regenerate (U1 U-F0.1)
  *
  * Three files are written, all committed:
- *   src/lib/api/schema.d.ts      from contract/openapi.json — what packio-api has agreed to
+ *   src/lib/api/schema.d.ts      from contract/openapi.json — what getpack-api has agreed to
  *   mocks/generated/handlers.ts  MSW handlers built from the contract's own examples
  *   mocks/generated/examples.ts  the list endpoints' example rows, for stateful mocks to seed from
  *   mocks/generated/problems.ts  every operation's documented problem codes, for error-path mocks
@@ -15,12 +15,12 @@
  *   docs/contract-requests.openapi.json  the frontend's contract requests, for the backend
  *
  * Why a vendored copy of the contract rather than fetching it here: CI has no sibling
- * checkout of packio-api and no credentials for a private release asset, so the drift gate
+ * checkout of getpack-api and no credentials for a private release asset, so the drift gate
  * has to be reproducible offline. `--adopt` is the one command that reaches outside this
  * repo, and it rewrites contract/openapi.json and contract.lock.json together, so bumping
  * the pinned contract stays a reviewable act rather than a side effect of running a build.
  *
- * Only a tagged release can be adopted. packio-api's working tree runs ahead of its last tag
+ * Only a tagged release can be adopted. getpack-api's working tree runs ahead of its last tag
  * (the next group's work lands there first), so copying it would pin a contract nobody has
  * released. `--adopt --tag` reads the document at the tag — `git show <tag>:contract/openapi.json`
  * in the sibling checkout, or a downloaded release asset passed as API_CONTRACT_SOURCE — and
@@ -52,7 +52,7 @@ const OUT_REQUESTS = resolve(ROOT, "docs/contract-requests.openapi.json");
 interface ContractLock {
   $comment?: string;
   version: string;
-  /** The packio-api release tag the vendored document was taken from. */
+  /** The getpack-api release tag the vendored document was taken from. */
   tag?: string;
   /** The commit that tag points at, when adopted from a checkout. */
   commit?: string;
@@ -160,7 +160,7 @@ function handlersFor(document: OpenApiDocument, origin: string): string[] {
 }
 
 function buildHandlers(contract: OpenApiDocument, lock: ContractLock): string {
-  const real = handlersFor(contract, `contract/openapi.json (packio-api ${lock.version})`);
+  const real = handlersFor(contract, `contract/openapi.json (getpack-api ${lock.version})`);
 
   return [
     banner("contract/openapi.json"),
@@ -198,7 +198,7 @@ function buildExamples(contract: OpenApiDocument, lock: ContractLock): string {
   return [
     banner("contract/openapi.json"),
     "",
-    `/** List-endpoint example rows from contract/openapi.json (packio-api ${lock.version}), keyed by path. */`,
+    `/** List-endpoint example rows from contract/openapi.json (getpack-api ${lock.version}), keyed by path. */`,
     "export const LIST_EXAMPLES: Record<string, readonly unknown[]> = {",
     ...entries,
     "};",
@@ -263,7 +263,7 @@ function buildProblems(contract: OpenApiDocument, lock: ContractLock): string {
   return [
     banner("contract/openapi.json"),
     "",
-    `/** Documented problem codes per operation, from contract/openapi.json (packio-api ${lock.version}). */`,
+    `/** Documented problem codes per operation, from contract/openapi.json (getpack-api ${lock.version}). */`,
     "",
     "export interface OperationProblems {",
     "  method: string;",
@@ -321,7 +321,7 @@ function buildProblemCodes(contract: OpenApiDocument, lock: ContractLock): strin
   return [
     banner("contract/openapi.json"),
     "",
-    `/** Problem codes each surface documents, from contract/openapi.json (packio-api ${lock.version}). */`,
+    `/** Problem codes each surface documents, from contract/openapi.json (getpack-api ${lock.version}). */`,
     "export const SURFACE_PROBLEM_CODES = {",
     ...Object.entries(surfaces).map(([surface, codes]) => `  ${surface}: ${JSON.stringify([...codes].sort())},`),
     "} as const satisfies Record<string, readonly string[]>;",
@@ -376,7 +376,7 @@ function releaseAsset(source: string, tag: string): string {
 
 /**
  * Reads the contract at a release tag: a downloaded asset when API_CONTRACT_SOURCE names one,
- * otherwise the tagged blob in the packio-api checkout that holds `localSource`.
+ * otherwise the tagged blob in the getpack-api checkout that holds `localSource`.
  */
 function readTagged(lock: ContractLock, tag: string): { contents: string; commit?: string } {
   const asset = process.env.API_CONTRACT_SOURCE;
@@ -390,7 +390,7 @@ function readTagged(lock: ContractLock, tag: string): { contents: string; commit
 
   // Every git call runs in the directory that holds `localSource` and names the file as
   // `./<name>`, git's cwd-relative spelling, so the checkout's path never has to be compared
-  // with ours (it can differ in case on macOS, where `packio-api` is `Packio-API` on disk).
+  // with ours (it can differ in case on macOS, where `getpack-api` is `Getpack-API` on disk).
   const file = resolve(ROOT, lock.localSource);
   const directory = dirname(file);
   let commit: string;
@@ -398,14 +398,14 @@ function readTagged(lock: ContractLock, tag: string): { contents: string; commit
     git(directory, "rev-parse", "--git-dir");
   } catch {
     fail(
-      `No packio-api checkout at ${lock.localSource}.\n` +
+      `No getpack-api checkout at ${lock.localSource}.\n` +
         `Download ${releaseAsset(lock.source, tag)} and pass it as API_CONTRACT_SOURCE instead.`,
     );
   }
   try {
     commit = git(directory, "rev-list", "-n", "1", `refs/tags/${tag}`).trim();
   } catch {
-    fail(`packio-api has no tag ${tag}. Only a tagged release can be adopted.`);
+    fail(`getpack-api has no tag ${tag}. Only a tagged release can be adopted.`);
   }
   return { contents: git(directory, "show", `${commit}:./${basename(file)}`), commit };
 }
@@ -413,7 +413,7 @@ function readTagged(lock: ContractLock, tag: string): { contents: string; commit
 /** Copies the contract of a tagged release in and re-pins the lock to it. */
 function adopt(lock: ContractLock, tag: string | undefined): ContractLock {
   if (!tag || !/^v\d+\.\d+\.\d+$/.test(tag)) {
-    fail("pnpm gen:api --adopt needs --tag vX.Y.Z: only a tagged packio-api release can be pinned.");
+    fail("pnpm gen:api --adopt needs --tag vX.Y.Z: only a tagged getpack-api release can be pinned.");
   }
 
   const { contents, commit } = readTagged(lock, tag);
@@ -485,7 +485,7 @@ async function main(): Promise<void> {
   }
   verifyLock(lock, vendored);
 
-  const schema = await typesFor(VENDORED, `contract/openapi.json (packio-api ${lock.version})`);
+  const schema = await typesFor(VENDORED, `contract/openapi.json (getpack-api ${lock.version})`);
   const document = readJson<OpenApiDocument>(VENDORED);
   const handlers = buildHandlers(document, lock);
   const examples = buildExamples(document, lock);

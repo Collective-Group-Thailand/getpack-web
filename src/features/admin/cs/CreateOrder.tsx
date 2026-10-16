@@ -34,7 +34,7 @@ type MockupOption = Schemas["MockupOption"];
 type Memo = Schemas["DiscountMemoDto"];
 
 /**
- * CS places an order for a customer (F2 2.2) the way packio-api publishes it (`admin.cart.*`,
+ * CS places an order for a customer (F2 2.2) the way getpack-api publishes it (`admin.cart.*`,
  * `admin.checkout.place`): the quotation's option goes into the customer's cart with its
  * destinations, and the cart is checked out. A discount is given at checkout — up to the CS limit
  * on CS's own, above it through a discount memo that prices the cart (D-052, D-162). The limit is

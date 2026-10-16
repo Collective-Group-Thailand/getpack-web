@@ -1,9 +1,9 @@
-# Style mapping — Locopack patterns → `@packio/dieline` styles
+# Style mapping — Locopack patterns → `@getpack/dieline` styles
 
-F4 Part B. Packio migrates nothing from Locopack (D-005); this table uses the legacy pattern
-catalogue as a **reference** so that Packio admins can create the live catalogue from styles the
+F4 Part B. getpack migrates nothing from Locopack (D-005); this table uses the legacy pattern
+catalogue as a **reference** so that getpack admins can create the live catalogue from styles the
 engine can draw. Admins set a catalogue pattern's `dielineKey` to a style id below (or one of its
-aliases); the configurator, the designer and the drawing service (packio-api B4.1) all resolve it
+aliases); the configurator, the designer and the drawing service (getpack-api B4.1) all resolve it
 with `resolveStyleId()`.
 
 Sources (all read-only, `legacy/locopack-web`): migrations for `pattern`, `sub_patterns`,
@@ -24,7 +24,7 @@ place that would have needed it is marked ⚠ and listed under assumptions.
 
 ## 1. Legacy size variables
 
-| Variable | Meaning in Locopack | Where it is defined | Packio parameter |
+| Variable | Meaning in Locopack | Where it is defined | getpack parameter |
 | --- | --- | --- | --- |
 | `l`, `w`, `h` / `d` | Length, width, height (depth) — labelled ยาว / กว้าง / สูง (มม.) | `folding/cs-v2.vue:40-58`; `pattern.min_l…max_h` | `length`, `width`, `height` (inside, mm) |
 | `b` | **Pouch:** bottom gusset including seal (ขนาดก้นซองรวมรอยซีล). **Folding pid 16:** the lock-bottom tongue, 3 / 5 / 10 mm by width. **Condition #7:** a flap allowance by width (≤ 120 → 20, else 30) | migration `2023_01_10_165715:17`; `PatternArea.php:536-564`; `calculate_conditions` | `pouch.bottom`; `snap-lock-bottom.lockTongue` |
@@ -47,7 +47,7 @@ place that would have needed it is marked ⚠ and listed under assumptions.
 (default on), `l_must_more_than_h`, `w_must_more_than_h` ("0.95 × w ≥ h", LOC-1586) and `fix_size`
 (size chosen from `pattern_rel_standard_sizes` only). None of the values are in the repository.
 
-In Packio there are two layers, and the stricter wins:
+In getpack there are two layers, and the stricter wins:
 
 1. **The engine's limits** — each style's `params[].min/max` is what its geometry can draw (e.g. a
    tuck end 20–400 × 15–300 × 20–450 mm) plus geometric rules in `validate()` (tuck deeper than the
@@ -65,7 +65,7 @@ Status: ✅ drawn by the engine · ≈ drawn by the nearest style, construction 
 
 ### Folding carton (legacy packaging type 1)
 
-| Legacy | Name (2019 dump / newer JSON) | Drawing key | Packio style | | Notes |
+| Legacy | Name (2019 dump / newer JSON) | Drawing key | getpack style | | Notes |
 | --- | --- | --- | --- | --- | --- |
 | pid 1 · mapping 1 | แบบเปิดฝาบน (กล่องฝาเปิดบน) | `folding-truck-end-box` | [`tuck-end`](styles/tuck-end.png) | ✅ | Blank `f + (w−1) + (d+1) + (w−1) + f` × `(w−1) + l + w + l + g`: lid w−1, depth d+1, one side panel w−1 — the same shape as the engine's compensation (lid and closing panel reduced, depth + 2t). Mapping 1 switched to pid 16 when w ≥ 60 and l ≥ 60 (`Converter.php:174-183`) |
 | pid 16 · mapping 94 | แบบเปิดฝาบน/ฝาล่างขัดล็อก | `folding-truck-end-snap-lock-bottom` | [`snap-lock-bottom`](styles/snap-lock-bottom.png) | ≈ | Tongue `b` 3 / 5 / 10 by width kept as `lockTongue`. ⚠ Locking shapes simplified |
@@ -89,7 +89,7 @@ Status: ✅ drawn by the engine · ≈ drawn by the nearest style, construction 
 
 ### Corrugated (legacy packaging type 3)
 
-| Legacy | Name | Drawing key | Packio style | | Notes |
+| Legacy | Name | Drawing key | getpack style | | Notes |
 | --- | --- | --- | --- | --- | --- |
 | pid 19 · mapping 30 | ฝาชน (RSC) | `corrugate-rsc`, `corrugate-rsc-3d` | [`rsc`](styles/rsc.png) | ✅ | FEFCO 0201. Blank `g + 2(L+a) + 2(W+a) − 3` × `2·floor(W/2) + 2c + D + dd`: the engine uses the flute's `col_a / col_c / col_dd` when the catalogue carries them. Legacy also switched pid 19 to "die-cut" (`pattern_type 2`) outside `find_pattern_type` limits — a production-method choice, not a geometry one |
 | pid 39 · mapping 73 (70) | ฝาซ้อน (full overlap) | `corrugate-rsc-full-overlap` | [`fol`](styles/fol.png) | ✅ | FEFCO 0203; `Flap = W + c` |
@@ -110,7 +110,7 @@ Status: ✅ drawn by the engine · ≈ drawn by the nearest style, construction 
 
 ### Labels, tags & sleeves, pouches (legacy packaging types 2, 5, 6)
 
-| Legacy | Name | Drawing key | Packio style | | Notes |
+| Legacy | Name | Drawing key | getpack style | | Notes |
 | --- | --- | --- | --- | --- | --- |
 | pid 18 · mapping 25, 59 | สติกเกอร์สี่เหลี่ยม | `square` | [`flat-rect`](styles/flat-rect.png) / [`flat-rounded-rect`](styles/flat-rounded-rect.png) | ✅ | |
 | mapping 24 | สติกเกอร์วงกลม (sent as a diameter) | `circle` | [`flat-circle`](styles/flat-circle.png) | ✅ | |
@@ -118,7 +118,7 @@ Status: ✅ drawn by the engine · ≈ drawn by the nearest style, construction 
 | pid 33 · mapping 57 | ป้ายกระดาษ Tag ตัดมุม | `tag-cut` | [`hang-tag`](styles/hang-tag.png) `corners: chamfer` | ✅ | Sizes S 40×60, M 40×80, L 50×100, XL 60×120 (`tag-sleeve.csv`) as presets; `r` = 5, hole `dim` 3 / 6 |
 | pid 34 · mapping 58 | ป้ายกระดาษ Tag มุมมน | `tag-curve` | `hang-tag` `corners: rounded` | ✅ | |
 | pid 35 | แผ่นพิมพ์กระดาษ | — | `flat-rect` | ✅ | |
-| pid 36 · mapping 60 | ปลอกแก้ว | — | [`cup-sleeve`](styles/cup-sleeve.png) | ≈ | Legacy sizes A 7.5×26, O 8.5×26 cm read as a flat band; Packio unrolls the cup's frustum from its two diameters. ⚠ Confirm the legacy product was a tapered sleeve |
+| pid 36 · mapping 60 | ปลอกแก้ว | — | [`cup-sleeve`](styles/cup-sleeve.png) | ≈ | Legacy sizes A 7.5×26, O 8.5×26 cm read as a flat band; getpack unrolls the cup's frustum from its two diameters. ⚠ Confirm the legacy product was a tapered sleeve |
 | mapping 66 | สายคาด | `strap` | [`band`](styles/band.png) | ✅ | |
 | pid 37 | ทั่วไป non-overlap (`dl = l + g`) | — | `band` | ≈ | A strip with a glue allowance |
 | pid 40 · mapping 76 | 3 side seal | `pouch-3-seal` | [`pouch`](styles/pouch.png) `three_side` | ✅ | Blank `2l × w` (legacy adds the factory tolerance `t`, which is the factory's, not the template's) |
@@ -129,7 +129,7 @@ Status: ✅ drawn by the engine · ≈ drawn by the nearest style, construction 
 
 ### Reference set coverage (F4 Part B list)
 
-| Reference style | Packio style |
+| Reference style | getpack style |
 | --- | --- |
 | Straight tuck end · reverse tuck end | `tuck-end` · `reverse-tuck-end` |
 | Tuck top + snap-lock (1-2-3) · + crash-lock (auto) bottom | `snap-lock-bottom` · `crash-lock-bottom` |
@@ -159,7 +159,7 @@ modules. `base` is the master-file row (`style-library-master.json`) the style i
 and `variant` the axis values it stands for — informational; the public code and its immutability
 are the API's (D-184). `pouch` draws several master rows (stand-up, three-side, centre-seal,
 side-gusset pouches) through `pouchType`, so it names none. Regenerate this table when a recipe changes. Since U3.4 the wave recipes live in the
-`@packio/dieline/library` entry (`Entry` = library), registered on demand with `registerLibrary()`;
+`@getpack/dieline/library` entry (`Entry` = library), registered on demand with `registerLibrary()`;
 a core style the waves extend keeps its pre-wave form in the main entry and its extended form in the
 library, which replaces it by id (`main, extended in library`); `ALL_RECIPES` is the library's view. `Varies along` lists the master axes a recipe varies (values in brackets);
 every combination is one variant (`variantsOf`).
@@ -261,9 +261,9 @@ every combination is one variant (`variantsOf`).
 
 All 41 wave-1 bases have engine recipes; **468 of the master's 578 variants are drawn** (folding
 carton 257 / 365, inserts 11 / 11, corrugated 116 / 116, flexible 48 / 48, labels 12 / 12, tags and
-sleeves 24 / 26). A variant that cannot be made is not drawn — packio-api leaves it `no_recipe`
+sleeves 24 / 26). A variant that cannot be made is not drawn — getpack-api leaves it `no_recipe`
 (D-243) and the library never shows it. In the library `hang-tag` (the F4 chamfered tag) no longer names
-PK-TG-01: its shape is not a master `shape_flat`, and packio-api reads an axis a recipe does not
+PK-TG-01: its shape is not a master `shape_flat`, and getpack-api reads an axis a recipe does not
 name as any value — the `tag-*` recipes draw PK-TG-01 (the main entry's `hang-tag` still names it). Every drawn variant passes the variant
 gate (`model/variant-gate.test.ts`): a clean blank at the first preset it is valid at, and — when it
 folds — the thick model closes to its outer size ± 1 mm with no collision.
@@ -498,7 +498,7 @@ shows no 3D preview and the designer is not offered.
 
 **105 of 105 bases, 894 of 894 variants drawn.** The master file's `excluded_combinations` leave out 66 of the 960
 combinations no factory can build (straight tuck + hang tab 45; top windows where the top is open or not a face 13;
-seal / airplane tops on polygon cartons 8). Every remaining variant passes the variant and fold gates, and packio-api's
+seal / airplane tops on polygon cartons 8). Every remaining variant passes the variant and fold gates, and getpack-api's
 strict `drawableBy` with the real engine (`v0.57.0`).
 
 | Base | Added | Recipes / modules |

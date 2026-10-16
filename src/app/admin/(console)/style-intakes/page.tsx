@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("catalogue.intakes"))("title") };
 }
 
-/** U3.6. packio-api's menu has no entry yet: reached from the catalogue (CONTRACT-REQUEST admin.menu-styles). */
+/** U3.6. getpack-api's menu has no entry yet: reached from the catalogue (CONTRACT-REQUEST admin.menu-styles). */
 export default async function Page() {
   const t = await getTranslations("catalogue.intakes");
   return (

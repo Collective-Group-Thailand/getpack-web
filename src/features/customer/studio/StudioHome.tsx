@@ -14,7 +14,7 @@ import { cn } from "@/ui/lib/cn";
 const UNDERLINE = "border-b border-current pb-px font-medium";
 
 /**
- * Packio Studio's front door, to the V4 "StudioStart" board (Phase 4 §4.4): the question, four
+ * getpack Studio's front door, to the V4 "StudioStart" board (Phase 4 §4.4): the question, four
  * ways in — choose a template · I have the product · I have a file · reorder — each with its own
  * picture, the templates people start from most (the style library's own "popular" order) and the
  * customer's latest designs with where each stands. A server page: nothing here needs a script.

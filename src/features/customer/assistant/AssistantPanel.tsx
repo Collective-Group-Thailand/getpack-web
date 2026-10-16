@@ -40,7 +40,7 @@ export const TOOL_SOURCE: Record<Tool, string> = {
 const UNAVAILABLE = new Set(["assistant.disabled", "assistant.not_configured"]);
 
 /**
- * Packio Assistant (U5.5, D-304–D-306): Thai-first, labelled as AI, answering only from packio-api's
+ * getpack Assistant (U5.5, D-304–D-306): Thai-first, labelled as AI, answering only from getpack-api's
  * seven tools. Each answer names the tools it came from, each linked to the page where the same
  * facts can be checked; an answer the API blocked (`blocked_unsupported_fact`), refused or handed to
  * the team says so and offers a person. Logging can be switched off for the session (D-305).

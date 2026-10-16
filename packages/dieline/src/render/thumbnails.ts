@@ -16,7 +16,7 @@ import { Raster, type Image, type Rgb } from "./raster";
 
 export type BoardTone = "kraft" | "white";
 
-/** Neutral boards and Packio's warm paper background (D-180), as RGB. */
+/** Neutral boards and getpack's warm paper background (D-180), as RGB. */
 export const TONES: Record<BoardTone, Rgb> = { kraft: [186, 146, 99], white: [242, 239, 232] };
 const BACKGROUND: Rgb = [250, 247, 242];
 const INK: Rgb = [42, 38, 34];
@@ -24,7 +24,7 @@ const CREASE: Rgb = [140, 131, 120];
 const GLUE: Rgb = [214, 160, 64];
 
 /**
- * "Packio studio": a warm key light from the upper left front, a cool fill from the right, a little
+ * "getpack studio": a warm key light from the upper left front, a cool fill from the right, a little
  * rim from behind, and ambient. Values chosen for legible folds on plain board.
  */
 export const STUDIO_LIGHTS: { dir: Vec3; strength: number }[] = [

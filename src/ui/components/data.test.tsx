@@ -307,7 +307,7 @@ describe("CommandPalette with grouped results", () => {
         items={[
           { id: "s1", label: "ภาพรวม", group: "หน้าจอ", onSelect: () => {} },
           { id: "s2", label: "ผู้ใช้และสิทธิ์", group: "หน้าจอ", onSelect: () => {} },
-          { id: "u1", label: "สมชาย ตัวอย่าง", hint: "somchai@packio.invalid", group: "ผู้ใช้", onSelect: () => {} },
+          { id: "u1", label: "สมชาย ตัวอย่าง", hint: "somchai@getpack.invalid", group: "ผู้ใช้", onSelect: () => {} },
         ]}
       />,
     );

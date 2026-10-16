@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Request a quote: {name}",
-    "description": "Send the spec, quantities and files for {name}. The Packio team prices it and replies within the stated time."
+    "description": "Send the spec, quantities and files for {name}. The getpack team prices it and replies within the stated time."
   },
   "breadcrumb": "Request a quote",
   "heading": "Request a quote: {name}",
@@ -133,7 +133,7 @@
     "send": "Send",
     "failed": "We could not send the message. It is still here — please try again.",
     "you": "You",
-    "team": "Packio team",
+    "team": "getpack team",
     "openFile": "Open {name}",
     "fileFailed": "Could not open the file"
   },

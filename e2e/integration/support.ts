@@ -8,7 +8,7 @@ import { HOSTS } from "../../playwright.config";
 /**
  * The real-backend run's accounts and calls (U-F0.5, `docs/integration.md`).
  *
- * packio-api's dev seed (`prisma/seed/dev-seed.ts`) has one staff user per D-140 role —
+ * getpack-api's dev seed (`prisma/seed/dev-seed.ts`) has one staff user per D-140 role —
  * `<role-with-dashes>@example.invalid` with `DEV_SEED_PASSWORD` — one customer and the fake
  * factory F9001 with its price lists. What it lacks the setup project creates through the API:
  * F9001's users (the owner by a Partner Manager, the other roles by the owner) and customers,
@@ -17,7 +17,7 @@ import { HOSTS } from "../../playwright.config";
  */
 
 export const API = process.env.INTEGRATION_API_URL ?? "http://localhost:3400";
-export const SEED_PASSWORD = process.env.IT_SEED_PASSWORD ?? "packio-it-password";
+export const SEED_PASSWORD = process.env.IT_SEED_PASSWORD ?? "getpack-it-password";
 /** The dev seed's factory (`prisma/seed/dev-folding.ts`). */
 export const DEV_FACTORY_CODE = "F9001";
 /** The dev seed's corrugated test product, priced online once the stack is prepared. */
@@ -66,7 +66,7 @@ export class ApiCallError extends Error {
   }
 }
 
-/** One call to packio-api, for setup only — the specs themselves go through the app. */
+/** One call to getpack-api, for setup only — the specs themselves go through the app. */
 export async function api<T>(
   method: string,
   path: string,

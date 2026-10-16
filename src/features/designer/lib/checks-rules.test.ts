@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getStyle } from "@packio/dieline";
+import { getStyle } from "@getpack/dieline";
 
 import { evaluateDocumentLikeTheApi } from "../../../../mocks/store/studio";
 import VENDORED from "../../../../contract/studio-rules.json";
@@ -11,7 +11,7 @@ import { sheetOf } from "./useIssues";
 
 /**
  * U4.5 acceptance: a fixture design that triggers each rule of the catalogue, its safe fix leaving no
- * violation of that rule, and the client and the server (packio-api's evaluator, as the mock ports
+ * violation of that rule, and the client and the server (getpack-api's evaluator, as the mock ports
  * it) finding the same rule ids for the same document.
  */
 
@@ -42,7 +42,7 @@ const text = (id: string, x: number, y: number, fontSize = 5, fill = "#111111"):
     type: "text",
     x,
     y,
-    text: "Packio",
+    text: "getpack",
     fontSize,
     fontFamily: "Sarabun",
     fontStyle: "normal",
@@ -164,7 +164,7 @@ describe("print checks: one fixture per rule (U4.5)", () => {
     expect(seeded.map((r) => r.id)).not.toContain("spot_colour_count");
   });
 
-  it("names every rule of packio-api's catalogue", () => {
+  it("names every rule of getpack-api's catalogue", () => {
     expect([...RULE_IDS].sort()).toEqual((VENDORED.rules as PrintRule[]).map((r) => r.id).sort());
   });
 });

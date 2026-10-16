@@ -1,4 +1,4 @@
-# Packio: survey of new base structures (deduplicated against our 105)
+# getpack: survey of new base structures (deduplicated against our 105)
 
 Notes on method:
 - Kumopack's mockup workshop could not be scraped. It is a JavaScript-only single-page app, WebFetch only got "Loading…", and the proxy blocks curl. Its parent site kumopack.com lists 12 types, and we already cover all of them: RSC, FTD, RTE, mailer, pizza, die-cut fruit, document, drawer, folding, handle, roll-end tray and shoe box.

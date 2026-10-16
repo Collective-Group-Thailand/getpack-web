@@ -9,7 +9,7 @@ import type { IconName } from "@/ui/icons";
 
 export type Approval = Schemas["ApprovalRequestDto"];
 
-/** The policies packio-api seeds (`prisma/seed/data/approval-policies.ts`), with an icon each. */
+/** The policies getpack-api seeds (`prisma/seed/data/approval-policies.ts`), with an icon each. */
 export const POLICY_ICONS: Record<string, IconName> = {
   discount_memo: "percent",
   credit_limit: "credit-card",

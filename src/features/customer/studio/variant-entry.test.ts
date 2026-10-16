@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { isStyleId, variantsOf } from "@packio/dieline";
-import { ALL_RECIPES, registerLibrary } from "@packio/dieline/library";
+import { isStyleId, variantsOf } from "@getpack/dieline";
+import { ALL_RECIPES, registerLibrary } from "@getpack/dieline/library";
 
 import { seedOf } from "@/features/customer/designer/seed";
 import { variantRfqHref } from "@/features/customer/styles/paths";
@@ -10,7 +10,7 @@ import { studioHref } from "./paths";
 /** A library recipe (not in the main entry) with several variants: a crash-lock tuck end. */
 const recipe = ALL_RECIPES.find((r) => r.id === "ft-crash")!;
 const windowed = variantsOf(recipe).find((v) => v.axes.window === "front_window")!;
-const query = (href: string) => Object.fromEntries(new URL(href, "https://packio.test").searchParams);
+const query = (href: string) => Object.fromEntries(new URL(href, "https://getpack.test").searchParams);
 
 describe("a style page's variant in the studio (D-407)", () => {
   it("names the base, the variant and the engine variant in the link", () => {

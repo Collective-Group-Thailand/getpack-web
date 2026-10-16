@@ -4,7 +4,7 @@ import { HOSTS } from "../../playwright.config";
 import { runId, signInCustomer } from "./support";
 
 /**
- * U2.F2 on the real packio-api (`v0.41.0`): the free dieline of a published style variant at sizes
+ * U2.F2 on the real getpack-api (`v0.41.0`): the free dieline of a published style variant at sizes
  * inside its range, through the style page's panel — a file, or the engine flag's honest 501.
  */
 test("a free dieline from a style's page, on the real API", async ({ context, page }) => {

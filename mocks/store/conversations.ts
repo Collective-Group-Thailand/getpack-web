@@ -51,8 +51,8 @@ const CANNED: Schemas["CannedResponseDto"][] = [
   canned(
     1,
     "ทักทาย",
-    "สวัสดีค่ะ ทีม Packio ยินดีช่วยค่ะ ขอดูรายละเอียดสักครู่นะคะ",
-    "Hello, this is the Packio team — give us a moment to check the details.",
+    "สวัสดีค่ะ ทีม getpack ยินดีช่วยค่ะ ขอดูรายละเอียดสักครู่นะคะ",
+    "Hello, this is the getpack team — give us a moment to check the details.",
   ),
   canned(
     2,
@@ -162,7 +162,7 @@ export function storeThreadDto(thread: Thread): Schemas["StoreThreadDto"] {
     unread: unread(thread),
     replyChannel: thread.replyChannel,
     replyChannelChosen: thread.replyChannelChosen,
-    readByPackioAt: thread.staffReadAt,
+    readByGetpackAt: thread.staffReadAt,
   };
 }
 
@@ -366,7 +366,7 @@ export const storeConversationHandlers = [
     const thread = threadOfCustomer(customer, String(params.conversationId));
     if (!thread) return notFound();
     const now = bangkokIso();
-    // Reading moves my read position; Packio sees it as a read receipt on its own messages.
+    // Reading moves my read position; getpack sees it as a read receipt on its own messages.
     thread.customerReadAt = now;
     for (const m of thread.messages) if (m.direction === "outbound" && m.readAt === null) m.readAt = now;
     return HttpResponse.json(page(visible(thread), new URL(request.url)));

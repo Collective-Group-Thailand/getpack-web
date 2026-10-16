@@ -1,17 +1,17 @@
-# CLAUDE.md — packio-web
+# CLAUDE.md — getpack-web
 
-**Packio — Your Packaging Production Partner** · operated by Collective Group (Thailand) · a new system (legacy Locopack is a logic reference only, D-005)
-This repository is the **single Next.js 16 application** of Packio. It serves three zones from one codebase and one deployment:
+**getpack — Your Packaging Production Partner** · operated by Collective Group (Thailand) · a new system (legacy Locopack is a logic reference only, D-005)
+This repository is the **single Next.js 16 application** of getpack. It serves three zones from one codebase and one deployment:
 - **customer zone** (`PUBLIC_HOST`) — storefront, configurator & instant quote, online box designer, cart/checkout, account, tracking
-- **admin zone** (`ADMIN_HOST`) — back-office for every Packio staff role (D-140): CS, Prepress, Partner, Marketing, Finance & Accounting, Logistics, executives, auditors
+- **admin zone** (`ADMIN_HOST`) — back-office for every getpack staff role (D-140): CS, Prepress, Partner, Marketing, Finance & Accounting, Logistics, executives, auditors
 - **partner zone** (`PARTNER_HOST`) — mobile-first PWA for partner factories: onboarding, cost tables, jobs, QC, delivery, billing & payouts
 
-The backend is a separate repository (`packio-api`, NestJS). This app never talks to a database and never computes money, lead times or business dates — it renders what the API returns.
+The backend is a separate repository (`getpack-api`, NestJS). This app never talks to a database and never computes money, lead times or business dates — it renders what the API returns.
 
 ## Read before every task
 1. `docs/prompts/00-master-plan.md` — zones, structure, BFF/auth, contract sync, run order, Definition of Done.
 2. `docs/decisions.md` — business decisions (D-###); they override everything else.
-3. `docs/contract/api-conventions.md` — the API contract (identical copy in `packio-api`).
+3. `docs/contract/api-conventions.md` — the API contract (identical copy in `getpack-api`).
 4. `docs/prompts/design-system.md` — UX/UI standards (tokens, components, a11y, performance budgets).
 5. The workstream prompt you were asked to execute (`docs/prompts/F*.md`) — **only the deliverable you were given**.
 6. `docs/legacy/00-domain-context.md` and legacy views at `legacy/locopack-web/resources/**` (read-only) as functional inspiration only.
@@ -24,8 +24,8 @@ The backend is a separate repository (`packio-api`, NestJS). This app never talk
 - UI primitives come from `src/ui` only; extend `src/ui` instead of styling locally. All copy through `src/i18n` (th default, en). Status labels/tones/icons only from `src/domain/status`.
 - Money is a decimal string from the API; format with `formatTHB`, never do arithmetic on it. Dates from the API are rendered in `Asia/Bangkok` (Buddhist era where legacy used it).
 - Values that decisions mark as configurable are read from the API (settings), never hard-coded in the UI.
-- Never copy third-party designs, templates, text or assets (including the old Locopack UI or competitors). Brand = Packio tokens.
+- Never copy third-party designs, templates, text or assets (including the old Locopack UI or competitors). Brand = getpack tokens.
 - Plan Mode first for each deliverable; wait for approval. Small vertical slices, Conventional Commits, green CI per slice. When ambiguous: record the assumption in `docs/PROGRESS.md` and take the most conservative option.
 
 ## Commands
-`pnpm dev` (open http://localhost:3000, http://admin.localhost:3000, http://partner.localhost:3000) · `pnpm dev:mock` (MSW, no backend) · `pnpm gen:api` · `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm e2e` · `pnpm storybook` · `pnpm build` · `pnpm lhci` · `pnpm --filter @packio/dieline test`
+`pnpm dev` (open http://localhost:3000, http://admin.localhost:3000, http://partner.localhost:3000) · `pnpm dev:mock` (MSW, no backend) · `pnpm gen:api` · `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm e2e` · `pnpm storybook` · `pnpm build` · `pnpm lhci` · `pnpm --filter @getpack/dieline test`

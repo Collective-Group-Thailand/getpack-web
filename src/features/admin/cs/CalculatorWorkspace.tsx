@@ -37,7 +37,7 @@ type Quote = Schemas["AdminSavedQuoteDto"];
 const MAX_TIERS = 5;
 
 /**
- * The CS calculator (F2 2.2) on packio-api's published calculators (U-F0.3): folding and corrugate
+ * The CS calculator (F2 2.2) on getpack-api's published calculators (U-F0.3): folding and corrugate
  * price for real (`admin.csFolding.calculate`, `admin.csCorrugate.calculate`); every other type is
  * RFQ-only until its calculator ships (U-B6), and a type the catalogue marks `rfq` is RFQ-only too.
  * The API picks the factory and print type per quantity and prices it; the desk shows exactly what

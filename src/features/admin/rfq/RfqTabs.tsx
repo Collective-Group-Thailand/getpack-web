@@ -458,7 +458,7 @@ export function MessagesTab({ rfq }: { rfq: Rfq }) {
             className={cn(
               "rounded-md border p-3 text-sm",
               message.visibility === "internal" ? "border-warning bg-warning-subtle" : "border-border",
-              message.author === "packio" ? "sm:ms-12" : "sm:me-12",
+              message.author === "getpack" ? "sm:ms-12" : "sm:me-12",
             )}
           >
             <p className="text-muted flex flex-wrap items-center gap-2 text-xs">

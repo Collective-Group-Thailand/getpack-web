@@ -1,13 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { findFace, faceBounds, getStyle, type MaterialSpec, type ParamValues } from "@packio/dieline";
+import { findFace, faceBounds, getStyle, type MaterialSpec, type ParamValues } from "@getpack/dieline";
 
 import { HOSTS } from "../playwright.config";
 import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { addHeading } from "./helpers/designer";
 
 /**
- * U4.3, ③ Design core in Packio 3D Studio against the mock API: the split view (3D beside the flat
+ * U4.3, ③ Design core in getpack 3D Studio against the mock API: the split view (3D beside the flat
  * sheet), a face picked in 3D (the lid on top — "ฝา (บน)", the prompt's "ฝาบน") turning to the camera and taking the next text — which lands on the
  * matching flat panel within 0.5 mm (read back from the saved document and the engine) — picking
  * by clicking the model, and printing on the inside after its cost is shown. As the mock's

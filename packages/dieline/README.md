@@ -1,13 +1,13 @@
-# `@packio/dieline`
+# `@getpack/dieline`
 
-The box geometry engine behind Packio's configurator, online designer and the drawing service
-that sends factories their cutting dies (`packio-api` B4.1). It is **framework-free**: no React,
+The box geometry engine behind getpack's configurator, online designer and the drawing service
+that sends factories their cutting dies (`getpack-api` B4.1). It is **framework-free**: no React,
 no DOM, no Node-only API — the same code runs in the browser, in a Node service and in tests.
 Its one dependency, [`clipper2-ts`](https://github.com/countertype/clipper2-ts) (BSL-1.0), is
 pure TypeScript and is only reached by the offsetting and export functions.
 
 ```ts
-import { getStyle, dielineToSvg, dielineToDxf, dielineToPdf, validateStyle } from "@packio/dieline";
+import { getStyle, dielineToSvg, dielineToDxf, dielineToPdf, validateStyle } from "@getpack/dieline";
 
 const board = { caliperMm: 0.45, kind: "paperboard" } as const; // from the catalogue API
 const values = { length: 70, width: 40, height: 150, window: "rounded", windowWidth: 40 };
@@ -74,7 +74,7 @@ interface BoxStyleDef {
 
 Compensation rules and every rule-of-thumb constant live in `src/constants.ts` with their
 source (legacy calculator, common practice, or ⚠ awaiting prepress confirmation). The authoring
-guide with a worked example is `docs/design-tool/style-authoring.md` in packio-web.
+guide with a worked example is `docs/design-tool/style-authoring.md` in getpack-web.
 
 ## Recipes and modules
 
@@ -84,7 +84,7 @@ parameters, presets and names (ADR-0011). The registry above is built from them;
 `STYLES` or `getStyle` changed.
 
 ```ts
-import { buildFromRecipe, MODULES, parseRecipe, RECIPES } from "@packio/dieline";
+import { buildFromRecipe, MODULES, parseRecipe, RECIPES } from "@getpack/dieline";
 
 const recipe = parseRecipe(json); // RecipeError { code, path } when it is not usable
 const { dieline, hinges, limits } = buildFromRecipe(recipe, { length: 70, width: 40, height: 150 }, board);
@@ -110,7 +110,7 @@ schema, the material, every recipe and module rule, the geometry checks and the 
 actual }` — codes and numbers for the UI to translate.
 
 ```ts
-import { explain, fitsEnvelope, recipeProcesses, sizeRanges, validRanges } from "@packio/dieline";
+import { explain, fitsEnvelope, recipeProcesses, sizeRanges, validRanges } from "@getpack/dieline";
 
 explain(recipe, { length: 40, width: 80, height: 100 }, board);
 // [{ code: "handle.too_narrow", rule: "constraint", param: "length", expected: { min: 60 }, actual: 40.45, … }]
@@ -158,17 +158,17 @@ the variants and their generated, review-pending names.
 `FACE_LABELS` / `PIECE_LABELS` hold the Thai and English name for every label key.
 `REFERENCE_MATERIALS` are typical boards for tests and previews only — never a catalogue.
 
-## Golden fixtures for packio-api
+## Golden fixtures for getpack-api
 
 `patternFixtures()` draws every legacy Locopack pattern key the registry maps (`legacy.patternKeys`)
 with its style's first preset on the style's first reference material, and returns the key, the
-style, the full parameter values, the material, and the SVG and DXF. packio-api feeds the same
+style, the full parameter values, the material, and the SVG and DXF. getpack-api feeds the same
 values to the legacy drawing service and compares. The snapshots of that output ship in the
 package as `fixtures/patterns/<key>.svg` (plus every style × preset in `fixtures/svg` and
-`fixtures/dxf`); regenerate them with `pnpm --filter @packio/dieline fixtures` and review the diff.
+`fixtures/dxf`); regenerate them with `pnpm --filter @getpack/dieline fixtures` and review the diff.
 
 ```ts
-import { patternFixtures } from "@packio/dieline";
+import { patternFixtures } from "@getpack/dieline";
 
 for (const f of patternFixtures()) {
   // f.patternKey "pid:3" · f.styleId "sleeve" · f.values { length, width, height, … } · f.svg
@@ -191,7 +191,7 @@ for (const f of patternFixtures()) {
 
 Versioned with Changesets and published to GitHub Packages from `main`
 (`.github/workflows/release-dieline.yml`); semver, and a geometry change that moves any line is
-a **major**. packio-api pins the version it consumes. The package ships `dist/` and `fixtures/`
+a **major**. getpack-api pins the version it consumes. The package ships `dist/` and `fixtures/`
 — per-style SVG/DXF snapshots the drawing service's golden comparison uses. See
 `docs/adr/0007-dieline-package.md` for ownership and `docs/adr/0008-dieline-geometry-model.md`
 for why the model is shaped this way.

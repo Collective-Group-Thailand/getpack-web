@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * What Packio pays the factory for delivering with its own fleet (D-013): the card in force,
+ * What getpack pays the factory for delivering with its own fleet (D-013): the card in force,
  * the one scheduled, and one sent for the factory's answer (D-042). Drafts are never shown.
  */
 export default async function ShippingRatesPage() {
@@ -51,7 +51,7 @@ export default async function ShippingRatesPage() {
     card.data.open ? versionOf(card.data.open.id) : null,
     card.data.current ? versionOf(card.data.current.id) : null,
   ]);
-  // The zone as the factory reads it (packio-api v0.43.4); an API that predates the name sends only the code.
+  // The zone as the factory reads it (getpack-api v0.43.4); an API that predates the name sends only the code.
   const zoneOf = (rate: Schemas["FactoryRateDto"]) =>
     (locale === "en" ? rate.zoneNameEn : rate.zoneNameTh) || rate.zoneNameTh || rate.zoneCode;
   const zoneText = (rate: Schemas["FactoryRateDto"]) =>

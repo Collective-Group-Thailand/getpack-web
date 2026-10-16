@@ -4,7 +4,7 @@ import { HOSTS } from "../../playwright.config";
 import { expectHeroParity } from "../helpers/hero";
 
 /**
- * D-310 on the real packio-api (v0.43.1): the home hero's price for each shape the presets offer is
+ * D-310 on the real getpack-api (v0.43.1): the home hero's price for each shape the presets offer is
  * the price `/configure` shows for the same choices — the lid shape is a telescope box (PK-CT-02)
  * whose body and lid are both priced. Read-only and anonymous, so it needs none of the setup's
  * accounts (`--no-deps`). The tuck shape is checked when its folding product is priced online.

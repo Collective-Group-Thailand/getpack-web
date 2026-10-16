@@ -1,10 +1,10 @@
-import { allFaces, faceBounds, type Dieline, type Face } from "@packio/dieline";
+import { allFaces, faceBounds, type Dieline, type Face } from "@getpack/dieline";
 
 import type { DesignContent, DesignElement, NewElement, PatternSettings } from "../types";
 
 /**
- * Packio's studio templates (U4.4, D-216, D-282): a **constraint layout** the web owns
- * (`StudioTemplateDto.layout`, stored by packio-api as given, `layoutSchemaVersion` 1). A layout
+ * getpack's studio templates (U4.4, D-216, D-282): a **constraint layout** the web owns
+ * (`StudioTemplateDto.layout`, stored by getpack-api as given, `layoutSchemaVersion` 1). A layout
  * says *where on which face* each piece goes — never millimetres — so it re-flows onto any size of
  * any style: a slot names a face by its role (front, back, the sides, the top, or the main face of
  * a flat piece) and a box as fractions of that face's safe area; text is sized as a share of its
@@ -242,7 +242,7 @@ export function applyBrand(content: DesignContent, brand: BrandStyle): DesignCon
   return { ...content, elements };
 }
 
-/** A layout as packio-api returns it, or `null` when it is not one this build reads. */
+/** A layout as getpack-api returns it, or `null` when it is not one this build reads. */
 export function readLayout(schemaVersion: number, layout: unknown): TemplateLayout | null {
   if (schemaVersion !== LAYOUT_SCHEMA_VERSION || !layout || typeof layout !== "object") return null;
   const l = layout as Partial<TemplateLayout>;

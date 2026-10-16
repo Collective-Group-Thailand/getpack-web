@@ -36,7 +36,7 @@ export function NotificationBell({ zone }: { zone: Zone }) {
   const [open, setOpen] = useState(false);
 
   const { data, isPending } = useNotifications(zone);
-  // The API's words, in the glossary's (Proof wording, Phase 4 §4.5) until packio-api adopts it.
+  // The API's words, in the glossary's (Proof wording, Phase 4 §4.5) until getpack-api adopts it.
   const audience = zone === "customer" ? "customer" : "staff";
   const items = (data?.items ?? []).map((item) => ({
     ...item,

@@ -15,7 +15,7 @@ import { useQueues } from "../console/queues";
 import { groupSidebar, isCurrent, menuLabel, type SidebarItem } from "./menu";
 
 // Which groups the reader opened or closed, remembered on this device (as the factory app does).
-const STORE = "packio.admin.sidebar.open";
+const STORE = "getpack.admin.sidebar.open";
 const listeners = new Set<() => void>();
 const subscribe = (listener: () => void) => {
   listeners.add(listener);

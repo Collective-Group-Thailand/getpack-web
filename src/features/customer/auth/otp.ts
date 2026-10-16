@@ -5,7 +5,7 @@ export type { OtpChallenge };
 /**
  * How many digits the SMS code has.
  *
- * `OtpChallengeDto` does not carry it, so there is nothing to read. Six is what packio-api's
+ * `OtpChallengeDto` does not carry it, so there is nothing to read. Six is what getpack-api's
  * B1-foundation prompt specifies, and it is named once here rather than spelled into the
  * markup — `docs/contract-requests.md` asks for it on the challenge so the UI can stop
  * assuming.

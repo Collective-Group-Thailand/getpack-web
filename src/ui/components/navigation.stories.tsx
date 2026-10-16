@@ -48,7 +48,7 @@ export const WorkspaceShell: Story = {
               aria-expanded={!collapsed}
               onClick={() => setCollapsed((value) => !value)}
             />
-            <span className="font-display font-semibold">Packio</span>
+            <span className="font-display font-semibold">getpack</span>
             <Button variant="secondary" size="sm" className="text-muted mx-auto w-80 justify-start font-normal">
               <Icon name="search" size={16} />
               <span className="flex-1 text-start">ค้นหาคำสั่งซื้อ ลูกค้า โรงงาน</span>

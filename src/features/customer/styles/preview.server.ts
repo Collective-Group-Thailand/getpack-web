@@ -9,8 +9,8 @@ import {
   REFERENCE_MATERIALS,
   styleFromRecipe,
   variantsOf,
-} from "@packio/dieline";
-import { ALL_RECIPES } from "@packio/dieline/library";
+} from "@getpack/dieline";
+import { ALL_RECIPES } from "@getpack/dieline/library";
 
 import { keyOf } from "./variants";
 
@@ -19,8 +19,8 @@ const CACHE = 1500;
 const drawn = new Map<string, string | null>();
 
 /**
- * A variant's flat dieline as an SVG (D-410), drawn by `@packio/dieline` from the recipe that has
- * exactly its options — the one packio-api draws it from — on its category's reference board, at the
+ * A variant's flat dieline as an SVG (D-410), drawn by `@getpack/dieline` from the recipe that has
+ * exactly its options — the one getpack-api draws it from — on its category's reference board, at the
  * recipe's first starting size the engine accepts. It stands in for the API's rendered thumbnail on
  * the library's cards until that is rendered. `null` when the engine draws no such variant.
  */

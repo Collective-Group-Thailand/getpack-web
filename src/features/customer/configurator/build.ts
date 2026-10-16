@@ -50,7 +50,7 @@ const all = (state: ConfiguratorState, kind: GroupKind) => state.choices[kind] ?
 const optional = <K extends string, V>(key: K, value: V | undefined | null) =>
   (value === undefined || value === null ? {} : { [key]: value }) as Partial<Record<K, V>>;
 
-/** The design fee the calculator adds (DesignOptionsDto): Packio designs the artwork, or not. */
+/** The design fee the calculator adds (DesignOptionsDto): getpack designs the artwork, or not. */
 function designOf(state: ConfiguratorState) {
   return {
     graphic: state.designOption === "hired_design" || state.designOption === "free_design",

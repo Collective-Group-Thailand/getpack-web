@@ -112,7 +112,7 @@ describe("one conversation, both sides (D-300)", () => {
     ]);
     expect(theirs.every((message) => message.visibility === "customer")).toBe(true);
 
-    // Reading moved the customer's position: Packio sees its reply as read.
+    // Reading moved the customer's position: getpack sees its reply as read.
     const staffView = (
       await staff().GET("/v1/admin/conversations/{conversationId}/messages", {
         params: { path: { conversationId: id } },

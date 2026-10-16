@@ -20,7 +20,7 @@ import { toast } from "@/ui/components/Toast";
  * Releasing part of a call-off (U2.F5, D-290): a quantity ≥ the factory's minimum and ≤ what is
  * left becomes a quotation at the locked unit price in the cart — a normal order from there — and
  * cancelling an agreement (what is not released lapses without charge). Only for whoever may commit
- * money (`canOrder`); packio-api refuses anyone else anyway.
+ * money (`canOrder`); getpack-api refuses anyone else anyway.
  */
 export function CallOffActions({
   agreement,

@@ -2,7 +2,7 @@ import { defineConfig, devices, type ReporterDescription } from "@playwright/tes
 
 /**
  * Which backend the app under test talks to. `mock` (default): the in-process MSW mock API with
- * its fixtures (`API_MOCKS=1`). `real`: a packio-api at `INTEGRATION_API_URL`
+ * its fixtures (`API_MOCKS=1`). `real`: a getpack-api at `INTEGRATION_API_URL`
  * (`pnpm e2e:integration`, U-F0.5, `docs/integration.md`). An environment variable rather than
  * argv, because Playwright re-evaluates this file in every worker with different arguments.
  */
@@ -58,11 +58,11 @@ const zoneEnv = {
    * refusal path, and the id is obviously fake.
    */
   NEXT_PUBLIC_GTM_ID: "GTM-TEST0000",
-  // Packio Assistant built in (U5.5) so its panel is tested; production builds leave it out (D-218).
+  // getpack Assistant built in (U5.5) so its panel is tested; production builds leave it out (D-218).
   NEXT_PUBLIC_ASSISTANT: "1",
 };
 
-/** The same build against a real packio-api: no mock, the API the integration stack started. */
+/** The same build against a real getpack-api: no mock, the API the integration stack started. */
 const realEnv = {
   PUBLIC_HOST: `localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
@@ -93,7 +93,7 @@ export default defineConfig({
       origins: [
         {
           origin: baseURL,
-          localStorage: FIRST_RUN_KEYS.map((name) => ({ name: `packio.firstRun.${name}`, value: "1" })),
+          localStorage: FIRST_RUN_KEYS.map((name) => ({ name: `getpack.firstRun.${name}`, value: "1" })),
         },
       ],
     },
@@ -109,7 +109,7 @@ export default defineConfig({
   projects: REAL_BACKEND
     ? [
         /*
-         * The launch path on a real packio-api (U-F0.5). Its specs create their own data on the dev
+         * The launch path on a real getpack-api (U-F0.5). Its specs create their own data on the dev
          * seed; the setup project first provisions what the seed lacks (factory users, customers)
          * through the API, into `e2e/integration/.state/`. Only these exist in a real-backend run,
          * so a spec written against the mock's fixtures can never run against the real API.

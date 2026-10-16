@@ -45,30 +45,30 @@ export default async function DashboardPage() {
         ) : null
       }
     >
-      <PartnerSection title={t("packio")}>
+      <PartnerSection title={t("getpack")}>
         <StatStrip
-          label={t("packio")}
+          label={t("getpack")}
           items={[
             {
               key: "rev",
-              label: t("packioRevenue"),
-              value: format.thb(d.packio.confirmedNet),
-              hint: t("packioRevenueHint", { n: d.packio.confirmedStatements }),
+              label: t("getpackRevenue"),
+              value: format.thb(d.getpack.confirmedNet),
+              hint: t("getpackRevenueHint", { n: d.getpack.confirmedStatements }),
               href: "/insight/profit",
             },
             {
               key: "confirm",
-              label: t("packioToConfirm"),
-              value: format.number(d.packio.toConfirm),
-              hint: t("packioToConfirmHint", { amount: format.thb(d.packio.toConfirmGross) }),
-              tone: d.packio.toConfirm ? "warning" : "success",
+              label: t("getpackToConfirm"),
+              value: format.number(d.getpack.toConfirm),
+              hint: t("getpackToConfirmHint", { amount: format.thb(d.getpack.toConfirmGross) }),
+              tone: d.getpack.toConfirm ? "warning" : "success",
               href: "/billing",
             },
             {
               key: "invoice",
-              label: t("packioToInvoice"),
-              value: format.number(d.packio.toInvoice),
-              tone: d.packio.toInvoice ? "warning" : "success",
+              label: t("getpackToInvoice"),
+              value: format.number(d.getpack.toInvoice),
+              tone: d.getpack.toInvoice ? "warning" : "success",
               href: "/billing",
             },
           ]}

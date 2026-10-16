@@ -19,7 +19,7 @@
  *   designer   0856789012 — the tenth fake customer, whose orders were set up for the online
  *              designer: the account designs and send-to-print flow (F4 Part C) walks them.
  *
- * The consent purposes are packio-api's seeded identities (`prisma/seed/data/reference.ts`),
+ * The consent purposes are getpack-api's seeded identities (`prisma/seed/data/reference.ts`),
  * with obviously fake texts.
  */
 
@@ -60,7 +60,7 @@ export const CONSENT_PURPOSES = [
     required: true,
     labelTh: "ข้อกำหนดการใช้บริการ",
     labelEn: "Terms of service",
-    summary: "ข้อกำหนดการใช้บริการ Packio",
+    summary: "ข้อกำหนดการใช้บริการ getpack",
   },
   {
     purpose: "privacy_notice",
@@ -135,7 +135,7 @@ function fresh(persona: CustomerPersona): MockCustomer {
       persona,
       id: `00000000-0000-4000-8000-0000000a${String(participant + 1).padStart(4, "0")}`,
       displayName: row.name,
-      email: `${row.code.toLowerCase()}.uat@packio.invalid`,
+      email: `${row.code.toLowerCase()}.uat@getpack.invalid`,
       phone: row.phone,
       ownerIndex: 12 + participant,
       customerType: row.company ? "juristic" : "individual",
@@ -214,7 +214,7 @@ function fresh(persona: CustomerPersona): MockCustomer {
     persona,
     id: `00000000-0000-4000-8000-00000000000${account.n}`,
     displayName: account.name,
-    email: `${account.email}@packio.invalid`,
+    email: `${account.email}@getpack.invalid`,
     phone: account.phone,
     ownerIndex: account.ownerIndex,
     customerType: "individual",

@@ -1,5 +1,5 @@
 /**
- * Packio 3D Studio (U4.B*, contract v0.41.0): the studio's own operations over the customer's
+ * getpack 3D Studio (U4.B*, contract v0.41.0): the studio's own operations over the customer's
  * designs (`./designs.ts` keeps the rows and each version's box, D-275).
  *
  * - `store.studio.quote` (D-277): prices the version's spec through the same fake engine as
@@ -69,7 +69,7 @@ function configurationOf(box: StudioBox, quantities: number[]) {
 
 const same = (a: unknown, b: unknown) => canonicalJson(a) === canonicalJson(b);
 
-/** packio-api's `changeReasons`, as far as the mock's configurations go. */
+/** getpack-api's `changeReasons`, as far as the mock's configurations go. */
 function reasonsBetween(previous: Snapshot["input"], next: Snapshot["input"]): Reason[] {
   const a = previous.configuration;
   const b = next.configuration;
@@ -180,7 +180,7 @@ export const storeStudioHandlers = [
 ];
 
 /**
- * `store.studio.getRules` (D-278): packio-api's seeded catalogue (`contract/studio-rules.json`, vendored at the
+ * `store.studio.getRules` (D-278): getpack-api's seeded catalogue (`contract/studio-rules.json`, vendored at the
  * lock's tag) — except that the mock turns on the flexo spot-colour limit (`maxColours: 3`, the seed leaves it
  * off until Prepress sets it) and the minimum text size (6 pt), so the studio's flexo mode and the text check
  * can be exercised. Fake values, never a business decision.
@@ -219,7 +219,7 @@ storeStudioHandlers.push(http.get("*/v1/store/studio/rules", () => HttpResponse.
 
 const templateId = (index: number) => `00000000-0000-4000-8000-74706c${String(index).padStart(6, "0")}`;
 
-/** The studio's template set as packio-api serves it once Marketing has published it (D-216, D-282). */
+/** The studio's template set as getpack-api serves it once Marketing has published it (D-216, D-282). */
 const TEMPLATES: Schemas["StudioTemplateDto"][] = TEMPLATE_LIBRARY.map((t, index) => ({
   id: templateId(index + 1),
   code: t.code,
@@ -234,7 +234,7 @@ const TEMPLATES: Schemas["StudioTemplateDto"][] = TEMPLATE_LIBRARY.map((t, index
 }));
 
 /**
- * Packio-drawn elements in a 100 × 100 box (D-282): plain shapes, handling marks (this way up, keep
+ * getpack-drawn elements in a 100 × 100 box (D-282): plain shapes, handling marks (this way up, keep
  * dry, fragile, recyclable, food contact) and one mark with legal meaning that needs the company's
  * declared right before it can be placed. Fake, original drawings — never a real certification logo.
  */
@@ -376,7 +376,7 @@ function gs1Check(body: string): number {
   return (10 - (sum % 10)) % 10;
 }
 
-/** packio-api's `validateBarcode` (studio/barcodes.ts), as the mock answers it. */
+/** getpack-api's `validateBarcode` (studio/barcodes.ts), as the mock answers it. */
 storeStudioHandlers.push(
   http.post("*/v1/store/studio/barcodes/actions/validate", async ({ request }) => {
     const body = (await request.json()) as Schemas["ValidateBarcodeDto"];
@@ -413,7 +413,7 @@ storeStudioHandlers.push(
 type Finding = Schemas["CheckFindingDto"];
 
 /**
- * packio-api's `evaluateDocument` (studio/print-rules.ts) as the mock runs it: the rules evaluated on
+ * getpack-api's `evaluateDocument` (studio/print-rules.ts) as the mock runs it: the rules evaluated on
  * the document, with their thresholds, in the same units and rounding. Kept as a port so the web's
  * checks can be held to the same ids for the same document (`checks-parity.test.ts`).
  */

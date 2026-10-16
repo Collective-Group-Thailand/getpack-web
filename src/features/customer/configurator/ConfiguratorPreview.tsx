@@ -7,7 +7,7 @@ import { pick } from "@/features/customer/catalog/localize";
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { BoxPreview3D } from "@/features/designer/components/BoxPreview3D";
 import { ProductMockup2D, type MockupKind } from "@/features/designer/components/ProductMockup2D";
-import { resolveStyleId } from "@packio/dieline";
+import { resolveStyleId } from "@getpack/dieline";
 
 import type { BoxStyleId } from "@/features/designer/types";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -15,7 +15,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { optionsById, sizeKindOf } from "./model";
 import { patternOf, type Configurator, type ConfiguratorState } from "./state";
 
-/** The `@packio/dieline` style of the chosen pattern, when it draws one (aliases like `rte` resolved). */
+/** The `@getpack/dieline` style of the chosen pattern, when it draws one (aliases like `rte` resolved). */
 export function boxStyleOf(configurator: Configurator, state: ConfiguratorState): BoxStyleId | null {
   return resolveStyleId(patternOf(configurator, state)?.dielineKey);
 }

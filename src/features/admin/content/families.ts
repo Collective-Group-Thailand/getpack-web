@@ -8,7 +8,7 @@ import { adminBrowserApis } from "../console";
 
 /**
  * The style families the library holds — what a studio template may name in `styleFamilies`
- * (packio-api refuses any other, D-282). Read from the bases, every page.
+ * (getpack-api refuses any other, D-282). Read from the bases, every page.
  */
 export function useStyleFamilies() {
   return useQuery({

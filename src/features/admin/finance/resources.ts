@@ -1,6 +1,6 @@
 /**
  * The finance lists, in a plain module so Server Components can prefetch the first page with the
- * same fetcher the client refetches with. All of them are packio-api's published surface (B5,
+ * same fetcher the client refetches with. All of them are getpack-api's published surface (B5,
  * and U-B0.3 for the dunning log and the gateway settlements).
  */
 

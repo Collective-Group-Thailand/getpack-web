@@ -3,7 +3,7 @@
  *
  * The names are the same in every zone **on purpose**: each zone has its own host, the
  * `__Host-` prefix forbids a `Domain` attribute, and a host-only cookie therefore cannot
- * travel between `packio.co.th` and `admin.packio.co.th`. One name, three origins, no
+ * travel between `getpack.co` and `admin.getpack.co`. One name, three origins, no
  * sharing — rather than three names on one origin, which would share.
  */
 export const ACCESS_COOKIE = "__Host-pk_at";
@@ -28,7 +28,7 @@ export interface SessionCookieOptions {
 /**
  * No `domain`: host-only is the isolation. `SameSite=Lax` rather than `Strict` so a link
  * from an email or a LINE message into an order page still arrives signed in; the BFF's
- * `Origin` + `x-packio-csrf` check (1.2) is what defends the non-GET side.
+ * `Origin` + `x-getpack-csrf` check (1.2) is what defends the non-GET side.
  */
 export function sessionCookieOptions(isSecure: boolean): SessionCookieOptions {
   return { httpOnly: true, secure: isSecure, sameSite: "lax", path: "/" };

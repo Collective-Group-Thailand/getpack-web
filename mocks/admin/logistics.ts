@@ -273,7 +273,7 @@ export function claimDeductionAmountOf(item: Claim): string {
   return baht(total);
 }
 
-/** The fields of a claim its action guards read (packio-api `claims.service.ts`). */
+/** The fields of a claim its action guards read (getpack-api `claims.service.ts`). */
 interface ClaimFacts {
   status: string;
   liability: string;
@@ -283,7 +283,7 @@ interface ClaimFacts {
 const REVIEWABLE = ["submitted", "need_info", "factory_review"];
 const OVERRIDABLE = ["submitted", "under_review", "need_info", "factory_review"];
 
-/** packio-api `src/modules/claims/claim-actions.ts` (v0.6.0), the staff rules. */
+/** getpack-api `src/modules/claims/claim-actions.ts` (v0.6.0), the staff rules. */
 const ADMIN_CLAIM_ACTIONS: ActionRule<ClaimFacts>[] = [
   { key: "claim.review", permissions: ["claims.manage"], when: (c) => REVIEWABLE.includes(c.status) },
   { key: "claim.request_info", permissions: ["claims.manage"], when: (c) => c.status === "under_review" },
@@ -332,7 +332,7 @@ export function claimTrustFactsOf(status: Schemas["ClaimStatus"]) {
         ? "factory"
         : ["approved", "rejected", "resolved", "closed"].includes(status)
           ? "none"
-          : "packio";
+          : "getpack";
   return {
     remedy: null,
     severity: null,
@@ -523,7 +523,7 @@ export const logisticsHandlers = [
       ? HttpResponse.json(toAdminClaimDto(item, who), { headers: { ETag: etagOf(item as never) } })
       : noClaim();
   }),
-  // The endpoints' own state checks, as the rules above offer them (packio-api `claims.service.ts`).
+  // The endpoints' own state checks, as the rules above offer them (getpack-api `claims.service.ts`).
   step("review", REVIEWABLE as Claim["status"][], (item, who) => {
     item.status = "under_review";
     item.messages.push({ at: bangkokIso(), author: who.displayName, audience: "internal", body: "เริ่มตรวจสอบ" });

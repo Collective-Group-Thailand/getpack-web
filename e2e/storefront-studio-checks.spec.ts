@@ -6,8 +6,8 @@ import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { addHeading } from "./helpers/designer";
 
 /**
- * U4.5, ④ Check in Packio 3D Studio against the mock API: the live checks on the shared rule
- * catalogue, a finding fixed in one click, a warning accepted — packio-api stores the acceptance with
+ * U4.5, ④ Check in getpack 3D Studio against the mock API: the live checks on the shared rule
+ * catalogue, a finding fixed in one click, a warning accepted — getpack-api stores the acceptance with
  * the version (its run of the saved version says so) — and the soft proof with its label.
  */
 
@@ -54,13 +54,13 @@ test("a finding fixed in one click, a warning accepted with the version, and the
   await expect(small).toHaveCount(1);
   await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 
-  // The other accepted: packio-api evaluates this rule on the document and keeps the acceptance.
+  // The other accepted: getpack-api evaluates this rule on the document and keeps the acceptance.
   await expect(panel.getByRole("button", { name: "รับทราบ ใช้แบบนี้" })).toBeVisible({ timeout: 15_000 });
   await panel.getByRole("button", { name: "รับทราบ ใช้แบบนี้" }).first().click();
   await expect(panel.getByText("รับทราบแล้ว")).toBeVisible({ timeout: 15_000 });
   const run = await (
     await page.request.post(`${HOSTS.customer}/bff/v1/store/studio/${id}/checks`, {
-      headers: { "x-packio-csrf": "1", origin: HOSTS.customer, "content-type": "application/json" },
+      headers: { "x-getpack-csrf": "1", origin: HOSTS.customer, "content-type": "application/json" },
       data: {},
     })
   ).json();

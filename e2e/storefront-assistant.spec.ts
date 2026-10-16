@@ -6,7 +6,7 @@ import { MOCK_ARTIST_PHONE, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
 
 /**
- * U5.5, Packio Assistant against the mock API (the e2e build has `NEXT_PUBLIC_ASSISTANT=1`;
+ * U5.5, getpack Assistant against the mock API (the e2e build has `NEXT_PUBLIC_ASSISTANT=1`;
  * production builds leave it out, D-218): labelled as AI, answering only from tools with each
  * source named and linked, refusing manipulation, handing off to the team, logging opt-out — and
  * the evaluation gate for staff who manage it.
@@ -25,7 +25,7 @@ async function expectNoViolations(page: Page) {
 test("a customer asks the assistant: AI-labelled, sourced, and it refuses what it may not do", async ({ page }) => {
   await signInAsCustomer(page, "/products", MOCK_ARTIST_PHONE);
   await page.getByRole("button", { name: "ถามผู้ช่วย AI" }).click();
-  const panel = page.getByRole("dialog", { name: "ผู้ช่วย Packio" });
+  const panel = page.getByRole("dialog", { name: "ผู้ช่วย getpack" });
   await expect(panel.getByText("ผู้ช่วยนี้เป็น AI")).toBeVisible();
   await expect(panel.getByText(/เก็บไว้ 30 วันแล้วลบ/)).toBeVisible();
   await expectNoViolations(page);
@@ -46,10 +46,10 @@ test("a customer asks the assistant: AI-labelled, sourced, and it refuses what i
   await expectNoViolations(page);
 });
 
-test("when packio-api has it switched off, the panel says so and offers the team", async ({ page }) => {
+test("when getpack-api has it switched off, the panel says so and offers the team", async ({ page }) => {
   await signInAsCustomer(page, "/products?mock=store.assistant.startSession:assistant.disabled", MOCK_ARTIST_PHONE);
   await page.getByRole("button", { name: "ถามผู้ช่วย AI" }).click();
-  const panel = page.getByRole("dialog", { name: "ผู้ช่วย Packio" });
+  const panel = page.getByRole("dialog", { name: "ผู้ช่วย getpack" });
   await panel.getByRole("textbox", { name: "ถามผู้ช่วย" }).fill("สวัสดี");
   await panel.getByRole("button", { name: "ถาม", exact: true }).click();
   await expect(panel.getByText(/ผู้ช่วย AI ยังไม่เปิดให้ใช้/)).toBeVisible();
@@ -58,7 +58,7 @@ test("when packio-api has it switched off, the panel says so and offers the team
 
 test("a guest is asked to sign in first", async ({ page }) => {
   await gotoHydrated(page, `${HOSTS.customer}/products`);
-  const panel = page.getByRole("dialog", { name: "ผู้ช่วย Packio" });
+  const panel = page.getByRole("dialog", { name: "ผู้ช่วย getpack" });
   // The button is server-rendered; its lazy chunk may hydrate after the page does.
   await expect(async () => {
     await page.getByRole("button", { name: "ถามผู้ช่วย AI" }).click();

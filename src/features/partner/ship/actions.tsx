@@ -37,13 +37,13 @@ function useIntentKey() {
 
 /* ------------------------------------------------------------------------ new shipment */
 
-type Carrier = "fleet" | "packio";
+type Carrier = "fleet" | "getpack";
 
 /**
  * "สร้างการจัดส่ง" on a finished job's destination (D-110, round 2 B3): a sheet with the trip —
  * the quantity it takes (all that is left, or part of it for a split), its cartons and weight, and
  * who drives it. Creating it also packs it, so the carton labels exist when the sheet closes
- * (`partner.shipments.create` → `markReady`); "ให้ Packio จองขนส่ง" then asks for the fallback
+ * (`partner.shipments.create` → `markReady`); "ให้ getpack จองขนส่ง" then asks for the fallback
  * carrier (`requestCarrier`, D-013 / D-114). Each call keeps its own key across a retry, so a
  * second press after a half-done attempt never makes a second trip.
  */
@@ -110,10 +110,10 @@ export function CreateShipment({
         readyKey.done();
         trip = { ...trip, ready: true };
       }
-      if (carrier === "packio") {
+      if (carrier === "getpack") {
         await api.POST("/v1/partner/shipments/{shipmentId}/actions/request-carrier", {
           params: { path: { shipmentId: trip.id }, header: { "Idempotency-Key": carrierKey.get() } },
-          body: { reason: t("packioReason") },
+          body: { reason: t("getpackReason") },
         });
         carrierKey.done();
       }
@@ -202,7 +202,7 @@ export function CreateShipment({
                 onValueChange={setCarrier}
                 options={[
                   { value: "fleet", label: t("fleet"), description: t("fleetHint") },
-                  { value: "packio", label: t("packio"), description: t("packioHint") },
+                  { value: "getpack", label: t("getpack"), description: t("getpackHint") },
                 ]}
               />
             </fieldset>
@@ -285,7 +285,7 @@ export function DispatchShipment({
   );
 }
 
-/** The fleet cannot reach this address: the factory asks Packio for its fallback carrier (D-013, D-114). */
+/** The fleet cannot reach this address: the factory asks getpack for its fallback carrier (D-013, D-114). */
 export function RequestCarrier({ shipmentId, shipmentNo }: { shipmentId: string; shipmentNo: string }) {
   const t = useTranslations("partnerShip.carrier");
   const { run } = useFloorAction();

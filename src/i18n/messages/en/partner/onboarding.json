@@ -1,7 +1,7 @@
 {
-  "title": "Getting started with Packio",
-  "assistedIntro": "The Packio Partner team has entered some of this for you. Please check it and sign it off.",
-  "selfIntro": "Fill in each step; the Packio Partner team reviews it and gets back to you.",
+  "title": "Getting started with getpack",
+  "assistedIntro": "The getpack Partner team has entered some of this for you. Please check it and sign it off.",
+  "selfIntro": "Fill in each step; the getpack Partner team reviews it and gets back to you.",
   "inactive": "The factory is not taking jobs. Contact the Partner team with any questions.",
   "stagesLabel": "Path to activation",
   "stageState": {
@@ -25,14 +25,14 @@
     },
     "active": {
       "title": "Active",
-      "body": "Taking Packio jobs"
+      "body": "Taking getpack jobs"
     }
   },
   "progressLabel": "Onboarding progress",
   "progress": "{done} of {total} steps done",
   "signOffCallout": {
     "title": "{count, plural, one {# step waits} other {# steps wait}} for your sign-off",
-    "body": "Packio entered these for you. Open each one and sign it off when it is right."
+    "body": "getpack entered these for you. Open each one and sign it off when it is right."
   },
   "stepsTitle": "All steps",
   "steps": {
@@ -46,7 +46,7 @@
     },
     "bank_account": {
       "title": "Payout bank account",
-      "body": "The account Packio pays you into — changed only with two approvals"
+      "body": "The account getpack pays you into — changed only with two approvals"
     },
     "capability": {
       "title": "Production capability",
@@ -58,7 +58,7 @@
     },
     "delivery_zones": {
       "title": "Delivery zones",
-      "body": "Where your own fleet delivers, and what Packio pays for it"
+      "body": "Where your own fleet delivers, and what getpack pays for it"
     },
     "pricing_arrangement": {
       "title": "Pricing arrangement",
@@ -78,32 +78,32 @@
     },
     "site_visit": {
       "title": "Site visit",
-      "body": "Packio visits the factory at least once before activation"
+      "body": "getpack visits the factory at least once before activation"
     },
     "trial": {
       "title": "Trial production",
-      "body": "Your first jobs, each one inspected by Packio"
+      "body": "Your first jobs, each one inspected by getpack"
     },
     "activation": {
       "title": "Activation",
-      "body": "Taking Packio jobs as usual"
+      "body": "Taking getpack jobs as usual"
     }
   },
   "awaitingSignOff": "Awaiting your sign-off",
-  "enteredByPackio": "Entered by Packio",
+  "enteredByGetpack": "Entered by getpack",
   "back": "Back to all steps",
-  "packioNote": "Note from Packio",
-  "recordedByPackio": "The Packio Partner team records this. If it is wrong or has changed, send a request below.",
+  "getpackNote": "Note from getpack",
+  "recordedByGetpack": "The getpack Partner team records this. If it is wrong or has changed, send a request below.",
   "signOff": {
     "ownerOnly": "The factory owner signs this off.",
     "action": "Checked and correct — sign off",
     "title": "Sign off “{step}”",
-    "body": "You confirm that the “{step}” data Packio entered for your factory is correct. The sign-off is recorded in your name.",
+    "body": "You confirm that the “{step}” data getpack entered for your factory is correct. The sign-off is recorded in your name.",
     "confirm": "Sign off",
     "done": "“{step}” signed off",
     "failed": "Could not sign off",
     "calloutTitle": "This step waits for your sign-off",
-    "calloutBody": "Packio entered the data below for your factory. Check all of it and sign off when it is right; if it is not, send a change request instead.",
+    "calloutBody": "getpack entered the data below for your factory. Check all of it and sign off when it is right; if it is not, send a change request instead.",
     "signedAt": "Your factory signed this off on {date}"
   },
   "company": {
@@ -113,7 +113,7 @@
     "legalName": "Legal name",
     "legalNameRequired": "Enter the legal name",
     "tradeName": "Trade name",
-    "tradeNameHint": "The name Packio staff know you by",
+    "tradeNameHint": "The name getpack staff know you by",
     "juristicType": "Business type",
     "juristic": {
       "company": "Company",
@@ -127,7 +127,7 @@
     "branchCodeHint": "00000 is the head office",
     "branchCodeInvalid": "A branch code is 5 digits",
     "vatRegistered": "VAT registered",
-    "vatRegisteredHint": "This decides the tax invoices you issue to Packio",
+    "vatRegisteredHint": "This decides the tax invoices you issue to getpack",
     "vatRegisteredOn": "VAT registration date",
     "vatDateRequired": "Enter the registration date",
     "save": "Save company details",
@@ -186,7 +186,7 @@
     "sectionTitle": "Submit the application",
     "sectionBody": "Once the company, addresses, contacts and documents are in, send the application to the Partner team.",
     "action": "Submit application",
-    "title": "Send the application to Packio",
+    "title": "Send the application to getpack",
     "body": "Send {name}'s application to the Partner team. You can still edit the company details until the review ends.",
     "confirm": "Submit",
     "reason": "Submitted by the factory in the partner zone",
@@ -195,7 +195,7 @@
   },
   "kyc": {
     "title": "Documents sent",
-    "body": "Packio checks every document; an expired one must be sent again.",
+    "body": "getpack checks every document; an expired one must be sent again.",
     "types": {
       "company_certificate": "Company certificate",
       "vat_registration_pp20": "VAT registration (ภ.พ.20)",
@@ -224,7 +224,7 @@
     "expiresOn": "Expires on (if any)",
     "upload": "Send document",
     "uploading": "Uploading {pct}%",
-    "added": "Document sent — waiting for Packio to check it",
+    "added": "Document sent — waiting for getpack to check it",
     "failed": "Could not send the document"
   },
   "bank": {
@@ -235,9 +235,9 @@
     "proposedOn": "Requested on {date}",
     "empty": "No payout account yet",
     "changeTitle": "Add or change the payout account",
-    "changeBody": "A new account is confirmed by phone and approved twice by Packio Finance; until then Packio pays the current one.",
+    "changeBody": "A new account is confirmed by phone and approved twice by getpack Finance; until then getpack pays the current one.",
     "pendingTitle": "A new account is awaiting approval",
-    "pendingBody": "Packio Finance will call your primary contact before approving it.",
+    "pendingBody": "getpack Finance will call your primary contact before approving it.",
     "bankCode": "Bank code",
     "bankCodeHint": "3 digits, e.g. 014",
     "bankCodeInvalid": "A bank code is 3 digits",
@@ -249,7 +249,7 @@
     "branchName": "Branch",
     "propose": "Request the change",
     "confirmTitle": "Confirm the new payout account",
-    "confirmBody": "Ask Packio to pay into the bank {bank} account ending {last4} once approved. Type the last 4 digits to confirm.",
+    "confirmBody": "Ask getpack to pay into the bank {bank} account ending {last4} once approved. Type the last 4 digits to confirm.",
     "confirm": "Send request",
     "proposed": "Change requested — waiting for Finance to approve it",
     "failed": "Could not send the request",
@@ -288,11 +288,11 @@
   },
   "zones": {
     "title": "Where your fleet delivers",
-    "body": "Some zones take longer; Packio adds that to the date it gives the customer.",
+    "body": "Some zones take longer; getpack adds that to the date it gives the customer.",
     "servesExtra": "Delivers, +{days} days",
     "serves": "Delivers",
     "notServed": "Not served",
-    "shippingRates": "See what Packio pays for delivery",
+    "shippingRates": "See what getpack pays for delivery",
     "askTitle": "Ask to change delivery zones",
     "askPlaceholder": "E.g. we now deliver to the East"
   },
@@ -300,12 +300,12 @@
     "modeTitle": "Who owns the price table",
     "modes": {
       "platform_rate_card": {
-        "title": "Packio's rate card",
-        "body": "Packio sets the buy-price table; you accept it whole or line by line and can ask for other rates on some lines."
+        "title": "getpack's rate card",
+        "body": "getpack sets the buy-price table; you accept it whole or line by line and can ask for other rates on some lines."
       },
       "factory_price_list": {
         "title": "Your own price list",
-        "body": "You keep your own price table and propose changes; Packio reviews and approves them before they apply."
+        "body": "You keep your own price table and propose changes; getpack reviews and approves them before they apply."
       }
     },
     "modeNone": "No pricing arrangement agreed yet",
@@ -316,7 +316,7 @@
     "tiers": {
       "A": "Full price list — instant quotes and automatic job allocation",
       "B": "Prices for some specs, such as standard sizes — instant quotes there, quote requests outside",
-      "C": "Quote on request — no price table; Packio asks you for a price job by job"
+      "C": "Quote on request — no price table; getpack asks you for a price job by job"
     },
     "envelope": "Covers: {note}",
     "openPrices": "Open your prices",
@@ -329,15 +329,15 @@
     "body": "Customers see this tolerance when they are quoted; each job keeps it.",
     "default": "Factory default",
     "band": "Short by up to {shortage} · over by up to {overage}",
-    "platformDefault": "Packio's default applies",
+    "platformDefault": "getpack's default applies",
     "upcoming": "Short {shortage} · over {overage} from {date}",
     "rule": "Short within tolerance: paid for what was delivered. Over within tolerance: not paid extra. Outside it: a claim opens automatically.",
     "askTitle": "Ask for a different tolerance",
-    "askBody": "A factory-specific tolerance needs Packio's approval.",
+    "askBody": "A factory-specific tolerance needs getpack's approval.",
     "askPlaceholder": "E.g. rigid boxes lose more in forming — we ask for 8% short"
   },
   "payout": {
-    "title": "How Packio pays you",
+    "title": "How getpack pays you",
     "body": "As agreed in your contract. Contact the Partner team to change it.",
     "advance": "Advance",
     "advanceValue": "{pct} when {trigger}",
@@ -355,7 +355,7 @@
     "retentionValue": "{pct}, released {days} days after the claim window",
     "terms": "Payment terms",
     "since": "In force since",
-    "platformDefaults": "Packio's standard terms apply"
+    "platformDefaults": "getpack's standard terms apply"
   },
   "agreement": {
     "notPublished": "No version in force yet",
@@ -367,7 +367,7 @@
     "haveRead": "I have read {name}, version {version}",
     "accept": "Accept",
     "confirmTitle": "Accept {name}",
-    "confirmBody": "Accepting {name}, version {version}, binds the factory. Packio keeps your name, the time and the text as evidence.",
+    "confirmBody": "Accepting {name}, version {version}, binds the factory. getpack keeps your name, the time and the text as evidence.",
     "accepted": "{name} accepted",
     "failed": "Could not accept"
   },
@@ -378,13 +378,13 @@
     "requestsTitle": "Dates you offered",
     "preferred": "Offered: {dates}",
     "askTitle": "Book a visit",
-    "askBody": "Pick days the factory can host Packio; the team confirms one.",
+    "askBody": "Pick days the factory can host getpack; the team confirms one.",
     "askPlaceholder": "E.g. ask for Somchai at gate 2 from 9 am",
     "askSubmit": "Send the dates"
   },
   "trial": {
     "title": "Trial jobs",
-    "body": "During the trial Packio inspects every job; once they pass, the Partner team activates you.",
+    "body": "During the trial getpack inspects every job; once they pass, the Partner team activates you.",
     "completed": "{count, plural, one {# trial job} other {# trial jobs}} completed"
   },
   "activation": {

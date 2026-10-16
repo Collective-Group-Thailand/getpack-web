@@ -9,7 +9,7 @@ import { rail } from "./studio";
 const BOX = "/studio/new?product=tuck-end-box&style=tuck-end&l=70&w=40&h=150&step=design";
 
 /**
- * T3 "ทำให้ไฟล์พร้อมพิมพ์ (แก้ทุกปัญหาที่ระบบแจ้ง)" in Packio 3D Studio's ④ Check (U4.5). Judged by
+ * T3 "ทำให้ไฟล์พร้อมพิมพ์ (แก้ทุกปัญหาที่ระบบแจ้ง)" in getpack 3D Studio's ④ Check (U4.5). Judged by
  * unexplained warnings: an issue that offers neither a fix nor a way to learn why — a help link
  * (U5.2 §4) — `step-counting.md`.
  */

@@ -4,7 +4,7 @@ import { HOSTS } from "../../playwright.config";
 import { runId, signInCustomer, signInStaff } from "./support";
 
 /**
- * U5.1, U5.3, U5.4 on the real packio-api (`v0.41.0`, U5.B1–B3): a new customer's launchpad, a
+ * U5.1, U5.3, U5.4 on the real getpack-api (`v0.41.0`, U5.B1–B3): a new customer's launchpad, a
  * support message that reaches the CS inbox and is answered there, an RFQ basket of two items sent
  * as one submission, and a notification link that is not the customer's.
  */

@@ -40,8 +40,8 @@ export default async function Page({ params }: { params: Promise<{ conversationI
             : t("kinds.support")}
         </h1>
         <p className="text-muted mt-1 text-sm">
-          {thread.readByPackioAt
-            ? t("readByPackio", { at: format.dateTime(thread.readByPackioAt) })
+          {thread.readByGetpackAt
+            ? t("readByGetpack", { at: format.dateTime(thread.readByGetpackAt) })
             : t("responseTarget")}
           {subjectHref ? (
             <>

@@ -48,7 +48,7 @@ type Confirming = { kind: "send" | "withdraw" | "delete"; version: Summary };
 type Row = RateRow & { rate: Rate };
 
 /**
- * What Packio pays a factory to deliver with its own fleet (D-013, D-042): payout lines over the
+ * What getpack pays a factory to deliver with its own fleet (D-013, D-042): payout lines over the
  * `customer_default` zones, drafted here, sent to the factory, which accepts the card or counters
  * line by line; the version applies only once every line is accepted. Buy prices — the tab is for
  * D-141 roles, every read is audited (D-044); suggestions never reach the factory.

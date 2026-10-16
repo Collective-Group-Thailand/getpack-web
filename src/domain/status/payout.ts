@@ -32,7 +32,7 @@ export const PAYABLE_STATUS = defineStatusMap<PayableStatus>({
   cancelled: { tone: "neutral", icon: "ban", labelKey: "payable.cancelled" },
 });
 
-/** A billing statement Packio generates from PO + POD for the factory to confirm (D-090). */
+/** A billing statement getpack generates from PO + POD for the factory to confirm (D-090). */
 export const BILLING_STATEMENT_STATUS = defineStatusMap<BillingStatementStatus>({
   generated: { tone: "neutral", icon: "document", labelKey: "billingStatement.generated" },
   sent: { tone: "warning", icon: "send", labelKey: "billingStatement.sent" },

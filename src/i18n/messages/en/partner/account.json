@@ -1,7 +1,7 @@
 {
   "claims": {
     "title": "Claims",
-    "body": "Answer a claim when Packio asks",
+    "body": "Answer a claim when getpack asks",
     "awaitingYou": "Awaiting your answer",
     "types": {
       "damaged": "Damaged",
@@ -15,7 +15,7 @@
     "empty": "No claims",
     "metaTitle": "Claim",
     "back": "Back to claims",
-    "answerBody": "Accept it, or explain with evidence; Packio decides once you answer.",
+    "answerBody": "Accept it, or explain with evidence; getpack decides once you answer.",
     "reported": "Reported",
     "resolution": "Asked for",
     "resolutions": {
@@ -31,7 +31,7 @@
       "factory": "Factory",
       "customer": "Customer",
       "carrier": "Carrier",
-      "packio": "Packio",
+      "getpack": "getpack",
       "undetermined": "Not decided"
     },
     "submitted": "Submitted",
@@ -46,7 +46,7 @@
       "accepted": "You accepted the claim",
       "disputed": "You disputed the claim"
     },
-    "decision": "Packio's decision",
+    "decision": "getpack's decision",
     "deductions": "Deductions",
     "respondTitle": "Answer the claim",
     "respond": {
@@ -62,18 +62,18 @@
       "send": "Send answer",
       "acceptTitle": "Accept claim {no}",
       "disputeTitle": "Dispute claim {no}",
-      "acceptBody": "You accept {no} is your factory's; Packio may deduct it or ask for a reprint.",
-      "disputeBody": "Send your side of {no} for Packio to decide.",
+      "acceptBody": "You accept {no} is your factory's; getpack may deduct it or ask for a reprint.",
+      "disputeBody": "Send your side of {no} for getpack to decide.",
       "done": "Answer to {no} sent",
       "failed": "Could not send the answer",
       "notePlaceholder": "e.g. We will remake 40 boxes and ship by 20 Oct",
-      "acceptMeans": "You agree the factory is responsible — Packio will ask for a remake or deduct from your payout, as the customer asked",
-      "disputeMeans": "Tell Packio the factory is not at fault, with reasons and photos — Packio decides after reading it",
+      "acceptMeans": "You agree the factory is responsible — getpack will ask for a remake or deduct from your payout, as the customer asked",
+      "disputeMeans": "Tell getpack the factory is not at fault, with reasons and photos — getpack decides after reading it",
       "disputePlaceholder": "e.g. All boxes left dry and complete, photos at hand-over; damage likely in transit"
     },
-    "answerTitle": "Packio asks for your answer",
+    "answerTitle": "getpack asks for your answer",
     "received": "Received by the customer",
-    "infoRequest": "Packio asked for more information",
+    "infoRequest": "getpack asked for more information",
     "resolutionsTitle": "What was done",
     "actions": {
       "reproduction_job": "Reproduction",
@@ -103,14 +103,14 @@
       "deduction": "Deducted"
     },
     "answerBy": "Answer by {at}",
-    "answerOverdue": "Past the answer time ({at}) — Packio may decide without the factory's explanation",
+    "answerOverdue": "Past the answer time ({at}) — getpack may decide without the factory's explanation",
     "claimedAmount": "Amount claimed",
     "severity": "Severity",
     "openJob": "Open job {no}"
   },
   "performance": {
     "title": "Your performance",
-    "body": "The monthly numbers Packio allocates jobs by",
+    "body": "The monthly numbers getpack allocates jobs by",
     "chartTitle": "The last 6 months",
     "month": "Month",
     "pct": "{value}%",
@@ -181,7 +181,7 @@
     "create": "Add user",
     "createTitle": "Add a user",
     "createBody": "A new user can sign in at once with the first password you set; no invitation e-mail is sent.",
-    "ownerManaged": "Owners are managed by Packio's partner team",
+    "ownerManaged": "Owners are managed by getpack's partner team",
     "saveRoles": "Save roles",
     "editRoles": "Edit roles",
     "cancelEdit": "Cancel",
@@ -250,10 +250,10 @@
     "erp": "Stock and documents",
     "erpBody": "Warehouses, document numbers and stock rules",
     "erpLink": "Stock and document settings",
-    "support": "Packio support access",
-    "supportBody": "Let the Packio team read your ERP dashboard and settings for up to 7 days, and see who looked when",
+    "support": "getpack support access",
+    "supportBody": "Let the getpack team read your ERP dashboard and settings for up to 7 days, and see who looked when",
     "supportLink": "Manage support access",
-    "profile": "Your factory with Packio",
+    "profile": "Your factory with getpack",
     "profileBody": "Company details, documents, payout account, capabilities and agreements — view them here; ask the Partner team to change them"
   },
   "files": {
@@ -265,7 +265,7 @@
     "body": "The factory's hours set the acceptance deadlines and ship dates of new jobs",
     "weekTitle": "Weekly hours",
     "inForce": "In force since {date}",
-    "platformDefault": "Packio's standard hours apply for now",
+    "platformDefault": "getpack's standard hours apply for now",
     "upcoming": "The hours you set apply from {dates}; until then the current hours stay",
     "days": {
       "mon": "Monday",

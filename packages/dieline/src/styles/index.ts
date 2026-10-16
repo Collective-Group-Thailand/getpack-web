@@ -13,7 +13,7 @@ const REGISTERED: BoxStyleDef[] = [];
 
 /**
  * Adds styles to the registry after load — the style library's recipes
- * (`@packio/dieline/library`, `registerLibrary()`), kept out of the main entry so pages that draw
+ * (`@getpack/dieline/library`, `registerLibrary()`), kept out of the main entry so pages that draw
  * the core styles do not carry the whole library (U3.4). A style already known is left as it is.
  */
 export function registerStyles(defs: readonly BoxStyleDef[]): void {

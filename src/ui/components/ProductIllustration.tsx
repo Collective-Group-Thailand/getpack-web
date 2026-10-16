@@ -4,7 +4,7 @@ import { cn } from "../lib/cn";
  * Line-art product illustrations, one per packaging family, drawn on kraft (UX audit design
  * baseline: "ห้ามใช้ lucide Package เป็นรูปสินค้า — illustration ต่อ product type 13 แบบ").
  *
- * Packio's own drawings — simple isometric strokes in `currentColor` with a paper fill, so they
+ * getpack's own drawings — simple isometric strokes in `currentColor` with a paper fill, so they
  * follow the theme. They stand in for a product photo until the catalogue has one; a real image
  * always wins (`ProductCard`'s `image`).
  */
@@ -26,7 +26,7 @@ export type ProductFamily =
 /**
  * The family a catalogue code belongs to — a product-type, category or style code, matched on the
  * words it is built from (`corrugated`, `mailer_box`, `stand-up-pouch` …). Unknown codes draw a
- * folding carton, the commonest thing Packio makes.
+ * folding carton, the commonest thing getpack makes.
  */
 export function productFamilyOf(code: string | null | undefined): ProductFamily {
   const value = (code ?? "").toLowerCase();

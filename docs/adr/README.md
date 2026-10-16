@@ -1,4 +1,4 @@
-# ADRs — packio-web
+# ADRs — getpack-web
 | # | Title | Status |
 |---|---|---|
 | 0001 | Thai-first typography | Accepted (implemented in F0.2) |
@@ -7,10 +7,10 @@
 | 0004 | One app, three host-based zones | F0.1 |
 | 0005 | BFF, cookies & token handling | F0.1 |
 | 0006 | Contract consumption & mocks | F0.1 |
-| 0007 | `@packio/dieline` ownership & publishing | F0.1 |
-| 0008 | `@packio/dieline` geometry model v2 (edges with roles, pieces, style registry) | Accepted (F4 A) |
+| 0007 | `@getpack/dieline` ownership & publishing | F0.1 |
+| 0008 | `@getpack/dieline` geometry model v2 (edges with roles, pieces, style registry) | Accepted (F4 A) |
 | 0009 | The designer's print file is made in the browser, on the engine's PDF writer | Accepted (F4 C) |
 | 0010 | The designer's 3D preview is WebGL, folded by the engine, loaded on demand | Accepted (F4 D) |
 | 0011 | Composable style recipes (modules + JSON recipes + expression constraints) | Accepted (U3.1) |
 | 0012 | Style asset pipeline and the thickness model (engine rasteriser, manifest committed) | Accepted (U3.3) |
-| 0013 | An order's print file is assembled by packio-api from the studio's renders (supersedes 0009 for orders) | Accepted (U4.6) |
+| 0013 | An order's print file is assembled by getpack-api from the studio's renders (supersedes 0009 for orders) | Accepted (U4.6) |

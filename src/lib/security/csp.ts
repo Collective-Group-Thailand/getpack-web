@@ -38,7 +38,7 @@ export interface CspOrigins {
  *
  * The SDK talks to Identity Toolkit and exchanges a refresh token with Secure Token, and a
  * redirect or popup sign-in renders Google's own page inside the configured auth domain — so
- * that host has to be frameable from here. The ID token it returns is exchanged for a Packio
+ * that host has to be frameable from here. The ID token it returns is exchanged for a getpack
  * session by this app's server, never by the browser.
  */
 const FIREBASE_CONNECT = ["https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com"];

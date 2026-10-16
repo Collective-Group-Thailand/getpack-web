@@ -9,8 +9,8 @@ const doc = (elements: JsonValue[], extra: Record<string, JsonValue> = {}): Json
 
 describe("JSON Patch autosave (D-276)", () => {
   it("sends only what changed and round-trips", () => {
-    const before = doc([{ id: "a", x: 10, text: "Packio" }]);
-    const after = doc([{ id: "a", x: 12, text: "Packio" }]);
+    const before = doc([{ id: "a", x: 10, text: "getpack" }]);
+    const after = doc([{ id: "a", x: 12, text: "getpack" }]);
     const ops = diff(before, after);
     expect(ops).toEqual([{ op: "replace", path: "/content/elements/0/x", value: 12 }]);
     expect(apply(before, ops)).toEqual(after);

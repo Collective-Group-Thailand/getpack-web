@@ -65,7 +65,7 @@ export function sentryOptions({ dsn, environment, release, zone, isDev }: Sentry
     // anyone can answer. Server-side it comes from the header the proxy stamps, client-side
     // from the host — see `zoneFromHost`.
     initialScope: { tags: zone ? { zone } : {} },
-    // PDPA (D-144): Packio does not send IP addresses, cookies or request bodies to a
+    // PDPA (D-144): getpack does not send IP addresses, cookies or request bodies to a
     // third-party processor by default. A screen that needs more context attaches it
     // deliberately, and the request id is already in every error state for support.
     sendDefaultPii: false,
@@ -75,10 +75,10 @@ export function sentryOptions({ dsn, environment, release, zone, isDev }: Sentry
 /**
  * The zone a browser is in, from its own hostname.
  *
- * The client cannot read `x-packio-zone` — that is a request header the proxy stamps for
+ * The client cannot read `x-getpack-zone` — that is a request header the proxy stamps for
  * server code — and it cannot read `ADMIN_HOST` either, which is a server variable. What it
  * can see is the host it was served from, and the zone hosts are distinct by construction
- * (00-master-plan.md §2). Matching on the leftmost label covers `admin.packio.co.th` and
+ * (00-master-plan.md §2). Matching on the leftmost label covers `admin.getpack.co` and
  * `admin.localhost:3000` alike, without the client needing the configured values.
  */
 export function zoneFromHost(hostname: string): Zone {

@@ -35,10 +35,10 @@ storybook-static/
 /packages/dieline/generated/*
 !/packages/dieline/generated/manifest.json
 
-# U-F0.5: accounts the integration setup provisions on the local packio-api
+# U-F0.5: accounts the integration setup provisions on the local getpack-api
 e2e/integration/.state/
 lighthouse/.port-*.json
 
 # Interim third-party home photos (dev-only fallback, HOME_PHOTOS_LOCAL_MANIFEST): copied from
-# packio-api public/media/home, never committed — their per-asset source is unverified.
+# getpack-api public/media/home, never committed — their per-asset source is unverified.
 /public/media/home/

@@ -8,7 +8,7 @@
 ---
 
 ## Why this update
-`docs/benchmark/kumopack-2026-09-29.md` §4 lists what a live Thai competitor does that we do not, and where we can be clearly better. This prompt turns it into UI work. Each deliverable depends on the matching backend deliverable in `packio-api/docs/prompts/U2-benchmark-2026-09-29.md`; until that tag exists, build against MSW with a `CONTRACT-REQUEST` entry as usual — and never invent a money or structural calculation on the client.
+`docs/benchmark/kumopack-2026-09-29.md` §4 lists what a live Thai competitor does that we do not, and where we can be clearly better. This prompt turns it into UI work. Each deliverable depends on the matching backend deliverable in `getpack-api/docs/prompts/U2-benchmark-2026-09-29.md`; until that tag exists, build against MSW with a `CONTRACT-REQUEST` entry as usual — and never invent a money or structural calculation on the client.
 
 ---
 
@@ -23,7 +23,7 @@
 
 ## U2.F2 — Style library & free self-service artefacts (P2, needs API U2.6)
 > **Precedence:** the library page is superseded by `U3-style-library.md` U3.5. In U2.F2 implement only the **dieline download** and **spec sheet** UI if U3.5 has not done them yet.
-1. **Library page**: searchable, filterable (family, closure, use case, product type, printability, size range), card grid with 3D thumbnails from `@packio/dieline`, favourites, "ใช้แบบนี้" → configurator with values carried over.
+1. **Library page**: searchable, filterable (family, closure, use case, product type, printability, size range), card grid with 3D thumbnails from `@getpack/dieline`, favourites, "ใช้แบบนี้" → configurator with values carried over.
 2. **Free dieline download** (PDF / DXF / SVG) for any configured size, no plan gate, with a short explainer of what the layers mean; download starts the "you can order this" nudge, never a paywall.
 3. **Packaging spec sheet**: download button on approved orders and approved samples; preview before download.
 4. Acceptance: SEO for the library (indexable, structured data), performance budget with many cards (virtualised), e2e for download flows.

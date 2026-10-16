@@ -50,7 +50,7 @@ describe("sendReport", () => {
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(init.keepalive).toBe(true);
     // A POST through the BFF without this is refused (`bff.csrf_header_missing`).
-    expect((init.headers as Record<string, string>)["x-packio-csrf"]).toBe("1");
+    expect((init.headers as Record<string, string>)["x-getpack-csrf"]).toBe("1");
 
     vi.unstubAllGlobals();
   });

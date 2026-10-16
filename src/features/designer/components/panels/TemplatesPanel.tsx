@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { allFaces, faceBounds } from "@packio/dieline";
+import { allFaces, faceBounds } from "@getpack/dieline";
 
 import { browserApi } from "@/lib/api/browser";
 import { AlertDialog } from "@/ui/components/AlertDialog";

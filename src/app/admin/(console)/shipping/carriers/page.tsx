@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("shipping.pages.carriers"))("title") };
 }
 
-/** D-413: the factory fleet and the fallback carriers with Packio's accounts (D-114, D-005). */
+/** D-413: the factory fleet and the fallback carriers with getpack's accounts (D-114, D-005). */
 export default async function Page() {
   const t = await getTranslations("shipping.pages.carriers");
   return (

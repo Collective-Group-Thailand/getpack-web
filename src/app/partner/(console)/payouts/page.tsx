@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * When Packio pays the factory (D-022, D-164, `partner.payables.payoutSchedule`): per purchase order,
+ * When getpack pays the factory (D-022, D-164, `partner.payables.payoutSchedule`): per purchase order,
  * the terms the job snapshot — the advance on acceptance, the balance once the goods are received
  * after POD and the claim window, and the retention with its release — then the payouts made
  * (`partner.payables.payoutStatement`, a plain list), each with its remittance advice and 50 ทวิ, and

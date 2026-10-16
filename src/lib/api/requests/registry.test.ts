@@ -24,7 +24,7 @@ const entries = Object.entries(REQUESTS) as [RequestKey, (typeof REQUESTS)[Reque
 
 describe("the contract-request registry", () => {
   it("holds nothing the backend has already shipped", () => {
-    // The day packio-api publishes one of these, this fails and names it: delete the entry,
+    // The day getpack-api publishes one of these, this fails and names it: delete the entry,
     // call browserApi/serverApi instead, and let the type errors say what the real shape changed.
     const shipped = entries
       .map(([key]) => key.split(" ") as [string, string])
@@ -59,7 +59,7 @@ describe("the contract-request registry", () => {
   });
 
   /**
-   * A zone's requests are only what packio-api has not built — verdict `implement`, `deferred` by
+   * A zone's requests are only what getpack-api has not built — verdict `implement`, `deferred` by
    * a decision, or written after the triage — plus the published ones still on the migration list.
    * Anything else is called through serverApi/browserApi with the generated types.
    */
@@ -128,10 +128,10 @@ describe("the contract-request registry", () => {
   });
 });
 
-describe("packio-api's triage (U1 U-F0.1)", () => {
+describe("getpack-api's triage (U1 U-F0.1)", () => {
   it("has a verdict for every request, or lists it as awaiting triage", () => {
     // A request written after the triage goes into awaiting-triage.ts; one nobody listed is a
-    // request packio-api was never asked about.
+    // request getpack-api was never asked about.
     const unaccounted = entries
       .map(([key]) => key)
       .filter((key) => !OPERATION_TRIAGE[key] && !AWAITING_TRIAGE.includes(key));
@@ -161,7 +161,7 @@ describe("packio-api's triage (U1 U-F0.1)", () => {
     const prefix: Record<string, string> = {
       published: "Published as ",
       published_differently: "Published differently (see mapping)",
-      implement: "Open — packio-api ",
+      implement: "Open — getpack-api ",
       deferred: "Deferred by decision",
       mixed: "Mixed — ",
       reject: "Rejected",
@@ -173,14 +173,14 @@ describe("packio-api's triage (U1 U-F0.1)", () => {
         const triage = REQUEST_TRIAGE[id];
         const expected = triage
           ? prefix[triage.verdict]! + (triage.verdict === "implement" ? triage.group : "")
-          : "Open — awaiting packio-api triage";
+          : "Open — awaiting getpack-api triage";
         return !status.startsWith(expected);
       })
       .map(([id, status]) => `${id}: ${status.slice(0, 60)}`);
     expect(wrong).toEqual([]);
   });
 
-  it("hands packio-api only what it still has to build", () => {
+  it("hands getpack-api only what it still has to build", () => {
     const handedOver = Object.entries(requestsOpenApi.paths).flatMap(([path, item]) =>
       Object.keys(item)
         .filter((method) => ["get", "post", "put", "patch", "delete"].includes(method))
@@ -193,7 +193,7 @@ describe("packio-api's triage (U1 U-F0.1)", () => {
 
 /**
  * The client's own behaviour, against a fixture registry rather than the live one: the live
- * registry only shrinks as packio-api ships (U-F0.4 leaves almost nothing in it), and these
+ * registry only shrinks as getpack-api ships (U-F0.4 leaves almost nothing in it), and these
  * properties hold for any request.
  */
 const FIXTURE = {

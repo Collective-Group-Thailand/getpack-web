@@ -8,7 +8,7 @@
  * with commas; `?mock=off` ends it.
  *
  * How it travels: `src/proxy.ts` reads the query (or the cookie it set on an earlier page) and
- * stamps `x-packio-mock-scenario` on the request it hands to the render and to the BFF; the BFF,
+ * stamps `x-getpack-mock-scenario` on the request it hands to the render and to the BFF; the BFF,
  * `serverApi` and the auth actions copy it onto their call to the API, where `mocks/scenario.ts`
  * answers it. Every step checks `API_MOCKS=1` — outside the mock the header is stripped at the
  * proxy and never sent, so nothing here can reach a real backend.
@@ -16,7 +16,7 @@
 
 export const MOCK_SCENARIO_PARAM = "mock";
 export const MOCK_SCENARIO_COOKIE = "pk_mock_scenario";
-export const MOCK_SCENARIO_HEADER = "x-packio-mock-scenario";
+export const MOCK_SCENARIO_HEADER = "x-getpack-mock-scenario";
 
 export interface MockScenario {
   operationId: string;

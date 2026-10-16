@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { MOCK_SCENARIO_HEADER, mockScenarioOf, parseMockScenario, resolveMockScenario } from "./mock-scenario";
 
-const url = (query = "") => new URL(`https://packio.co.th/cart${query}`);
+const url = (query = "") => new URL(`https://getpack.co/cart${query}`);
 
 afterEach(() => {
   delete process.env.API_MOCKS;

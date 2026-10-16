@@ -21,7 +21,7 @@ import { CUSTOMER_SCHEME, readZones, useSchemes, type Zone } from "./zones";
 type ZoneDraft = { id: string | null; code: string; nameTh: string; nameEn: string };
 type Postcodes = { zone: Zone; text: string; etag: string };
 
-/** As packio-api validates them. */
+/** As getpack-api validates them. */
 const ZONE_CODE = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
 const SCHEME_CODE = /^[a-z][a-z0-9_:.-]*$/;
 

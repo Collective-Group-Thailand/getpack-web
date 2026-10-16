@@ -1,5 +1,5 @@
 /**
- * `@/ui` — the Packio design system (docs/prompts/design-system.md).
+ * `@/ui` — the getpack design system (docs/prompts/design-system.md).
  *
  * Zones import from here. Tokens, fonts and the theme have their own entry points
  * (`@/ui/tokens`, `@/ui/fonts`, `@/ui/theme`) because they are imported by build scripts

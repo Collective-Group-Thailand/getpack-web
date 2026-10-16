@@ -4,7 +4,7 @@ import { HOSTS } from "../../playwright.config";
 import { DEV_INSTANT_PRODUCT, runId, signInCustomer } from "./support";
 
 /**
- * U4.8 on the real packio-api (`v0.41.0`): "ให้ทีมออกแบบให้" from the studio's order step puts the
+ * U4.8 on the real getpack-api (`v0.41.0`): "ให้ทีมออกแบบให้" from the studio's order step puts the
  * saved version in the cart with the design service (`store.studio.requestDesignService`, D-286) and
  * the brief on the line (`designNote`).
  */

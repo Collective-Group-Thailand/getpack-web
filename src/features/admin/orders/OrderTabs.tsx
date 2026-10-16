@@ -420,7 +420,7 @@ const DUE_INSTALMENT = (status: string) => ["due", "overdue", "partially_paid"].
 /**
  * The group's payment schedule, its payments with their slips (`admin.payments.list?groupId`), and
  * the slips waiting for Finance. Reminding the customer and recording a slip they sent another way
- * act on the group's instalments, which packio-api offers no action list for (no order-group
+ * act on the group's instalments, which getpack-api offers no action list for (no order-group
  * actions, U-B0.3): they are offered while an instalment is open, to `orders.manage`, and the API
  * refuses what does not apply (`payments.nothing_due`, `payments.reminder_recent`).
  */

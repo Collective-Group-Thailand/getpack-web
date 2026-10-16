@@ -4,7 +4,7 @@ import { HOSTS } from "../../playwright.config";
 import { DEV_INSTANT_PRODUCT, runId, signInCustomer } from "./support";
 
 /**
- * U2.F1's acceptance journey on the real packio-api (contract v0.41.0): configure the dev seed's
+ * U2.F1's acceptance journey on the real getpack-api (contract v0.41.0): configure the dev seed's
  * corrugated carton on a chosen basis → ask the Structure Advisor (its flag switched on by
  * `prepare.ts`; the dev seed's rule set and F9001's board sheets) → take an alternative board →
  * set a target price → take one of the API's levers → add to the cart. Every figure on screen is

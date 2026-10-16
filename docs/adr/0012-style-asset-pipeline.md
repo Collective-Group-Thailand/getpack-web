@@ -31,10 +31,10 @@ Questions:
   with a collision check for faces passing through each other; D-182's basis conversion can read
   the same numbers.
 - **Thumbnails are rendered by the engine's own rasteriser** (`src/render/`): z-buffered,
-  flat-shaded triangles with our own three-light "Packio studio" preset on neutral kraft or white
+  flat-shaded triangles with our own three-light "getpack studio" preset on neutral kraft or white
   board, and the flat dieline with cuts, dashed creases and glue areas — supersampled 2×, PNG
   encoded by the script. No browser, no GPU: the same bytes on every run, so reproducibility is a
-  CI check (`pnpm styles:render:check`), and packio-api's drawing service can run it in Node
+  CI check (`pnpm styles:render:check`), and getpack-api's drawing service can run it in Node
   (U3.B5) instead of a headless GL worker.
 - **Files**: `pnpm styles:render` writes `packages/dieline/generated/<style>/<variant>/` (dieline
   SVG, 2D, 3D kraft, 3D white) and `generated/manifest.json` (variant key and axes, generated

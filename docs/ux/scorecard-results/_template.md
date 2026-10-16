@@ -1,4 +1,4 @@
-# Scorecard round — <competitor | Packio> — <YYYY-MM-DD>
+# Scorecard round — <competitor | getpack> — <YYYY-MM-DD>
 
 > Copy of `_template.md`. Rules: `../moderator-guide.md`. Counting: `../step-counting.md`.
 > Tasks and budgets: `../competitive-scorecard.md` §2. Delete this quote block when filled in.
@@ -7,14 +7,14 @@
 
 | Field | Value |
 |---|---|
-| Product | <competitor name + URLs used / Packio UAT environment> |
-| Build | <Packio commit or release tag · "n/a" for the competitor> |
+| Product | <competitor name + URLs used / getpack UAT environment> |
+| Build | <getpack commit or release tag · "n/a" for the competitor> |
 | Dates | <first session> – <last session> |
 | Moderator / note-taker | <names> |
 | Method | moderated remote, think-aloud, Thai (scorecard §1) |
 | Baseline compared with | <file of the competitor round · "this is the baseline"> |
 
-### Seed data (Packio rounds)
+### Seed data (getpack rounds)
 
 | Used for | Id / value |
 |---|---|
@@ -62,7 +62,7 @@ Completion **Y** / **P** / **N** / **NP** (not possible) · time in seconds · s
 |---|---|---|---|---|
 | P01 | | | | |
 
-## Gates (scorecard §3) — Packio rounds
+## Gates (scorecard §3) — getpack rounds
 
 | Measure | Gate | Result | Pass? |
 |---|---|---|---|
@@ -86,4 +86,4 @@ Completion **Y** / **P** / **N** / **NP** (not possible) · time in seconds · s
 |---|---|---|---|
 | | | | |
 
-Journeys launched after this round: <list · Packio release-gate round only>
+Journeys launched after this round: <list · getpack release-gate round only>

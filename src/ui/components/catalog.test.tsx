@@ -129,7 +129,7 @@ describe("RichTextView", () => {
     expect(screen.getByText("ลิงก์").closest("a")).toBeNull();
     expect(screen.getByRole("link", { name: "สินค้า" })).toHaveAttribute("href", "/products");
     expect(safeHref("//evil.example")).toBeNull();
-    expect(safeHref("mailto:hello@packio.invalid")).toBe("mailto:hello@packio.invalid");
+    expect(safeHref("mailto:hello@getpack.invalid")).toBe("mailto:hello@getpack.invalid");
   });
 
   it("renders nothing for something that is not a document", () => {

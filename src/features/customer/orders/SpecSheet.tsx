@@ -10,7 +10,7 @@ import { Callout } from "@/ui/components/Callout";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 
 /**
- * The order's packaging spec sheet (U2.F2, D-287): a PDF in Thai or English made by packio-api from
+ * The order's packaging spec sheet (U2.F2, D-287): a PDF in Thai or English made by getpack-api from
  * the order's frozen data once its artwork is approved. "Preview" opens it in the browser's own PDF
  * viewer (a signed file cannot be embedded under this app's CSP); "Download" saves it.
  */

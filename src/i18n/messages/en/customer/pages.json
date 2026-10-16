@@ -8,9 +8,9 @@
   },
   "howItWorks": {
     "title": "How ordering works",
-    "metaTitle": "How to order packaging from Packio — 6 steps from design to delivery",
-    "metaDescription": "Ordering boxes and packaging from Packio: pick a style, enter your size, see the price at once, design or upload artwork, prepress checks and proofs it, pay a deposit, then follow production to your door.",
-    "answer": "Ordering from Packio takes six steps: choose a box style and enter your size → see the price and delivery date at once → design in the studio or upload a file → prepress checks it and sends a proof to approve → pay the deposit to start production → follow production and delivery from your order page. Every step shows its status in your account.",
+    "metaTitle": "How to order packaging from getpack — 6 steps from design to delivery",
+    "metaDescription": "Ordering boxes and packaging from getpack: pick a style, enter your size, see the price at once, design or upload artwork, prepress checks and proofs it, pay a deposit, then follow production to your door.",
+    "answer": "Ordering from getpack takes six steps: choose a box style and enter your size → see the price and delivery date at once → design in the studio or upload a file → prepress checks it and sends a proof to approve → pay the deposit to start production → follow production and delivery from your order page. Every step shows its status in your account.",
     "intro": "No waiting for quotes, no files going back and forth by email — everything is on one page, and you always see where the job is.",
     "stepsTitle": "Six steps",
     "steps": [
@@ -26,7 +26,7 @@
       },
       {
         "title": "Design in the studio, or upload a file",
-        "body": "Place your logo, text and images on a 3D box. The studio checks resolution, safe zones and unprintable colours while you design. Or upload an existing PDF/AI and we check it the same way. If you would rather not design yourself, Packio's design team works from what you placed.",
+        "body": "Place your logo, text and images on a 3D box. The studio checks resolution, safe zones and unprintable colours while you design. Or upload an existing PDF/AI and we check it the same way. If you would rather not design yourself, getpack's design team works from what you placed.",
         "tip": "Share a link so your team can comment on the 3D box. Every version is kept and can be restored."
       },
       {
@@ -57,7 +57,7 @@
       },
       {
         "q": "I have no artwork — what now?",
-        "a": "Design it free in the studio, placing your logo, text and images on a 3D box, or let Packio's design team work from what you placed."
+        "a": "Design it free in the studio, placing your logo, text and images on a 3D box, or let getpack's design team work from what you placed."
       },
       {
         "q": "Can I get a sample first?",
@@ -78,19 +78,19 @@
     "ctaProducts": "Products and prices"
   },
   "about": {
-    "title": "About Packio",
-    "metaTitle": "About Packio — online packaging production platform by Collective Group (Thailand)",
-    "metaDescription": "Packio is an online platform for ordering boxes, bags, pouches and labels in Thailand, operated by Collective Group (Thailand). Design it yourself, see the price at once, prepress checks every job, and a vetted factory network produces it.",
-    "answer": "Packio is an online packaging production platform in Thailand, operated by Collective Group (Thailand). It lets small and mid-size brands design boxes, bags, pouches and labels themselves, see prices and delivery dates instantly, have every job checked by a prepress team, and have it produced by a network of partner factories that Packio vets and quality-controls.",
+    "title": "About getpack",
+    "metaTitle": "About getpack — online packaging production platform by Collective Group (Thailand)",
+    "metaDescription": "getpack is an online platform for ordering boxes, bags, pouches and labels in Thailand, operated by Collective Group (Thailand). Design it yourself, see the price at once, prepress checks every job, and a vetted factory network produces it.",
+    "answer": "getpack is an online packaging production platform in Thailand, operated by Collective Group (Thailand). It lets small and mid-size brands design boxes, bags, pouches and labels themselves, see prices and delivery dates instantly, have every job checked by a prepress team, and have it produced by a network of partner factories that getpack vets and quality-controls.",
     "lead": "We believe a small brand deserves a box that looks like a big one — without knowing a printer, waiting for quotes, or guessing how the job will turn out.",
     "sections": [
       {
         "title": "What we do",
-        "body": "Packio is one place from design to delivery: a library of box styles that can really be made, a design studio on a 3D box, prices that follow your spec at once, a prepress team that checks every file before print, and production and delivery tracking at every stage. Every tax invoice and document is issued by Collective Group (Thailand)."
+        "body": "getpack is one place from design to delivery: a library of box styles that can really be made, a design studio on a 3D box, prices that follow your spec at once, a prepress team that checks every file before print, and production and delivery tracking at every stage. Every tax invoice and document is issued by Collective Group (Thailand)."
       },
       {
         "title": "Where it is made",
-        "body": "We do not have one factory, but we control quality as if we did. Each kind of job goes to the partner factory best at it within a network we have vetted. Our people inspect and photograph every batch before the cartons are sealed, and Packio is the seller responsible to you for the job."
+        "body": "We do not have one factory, but we control quality as if we did. Each kind of job goes to the partner factory best at it within a network we have vetted. Our people inspect and photograph every batch before the cartons are sealed, and getpack is the seller responsible to you for the job."
       },
       {
         "title": "Why instant prices",
@@ -115,9 +115,9 @@
   },
   "partner": {
     "title": "Become a partner factory",
-    "metaTitle": "Become a Packio partner factory — print and packaging jobs ready to produce",
-    "metaDescription": "For printers and packaging factories that want steady work: Packio sends jobs with checked files and approved proofs, with a system for job intake, production planning, QC, shipping and on-time payment. Apply here.",
-    "answer": "Packio partner factories receive jobs whose artwork the customer has approved and whose deposit is paid, through Packio's system: print-ready files, clear specs, an agreed ship date, and payment on a set schedule. Packio is the seller to the customer; the factory focuses on production and quality.",
+    "metaTitle": "Become a getpack partner factory — print and packaging jobs ready to produce",
+    "metaDescription": "For printers and packaging factories that want steady work: getpack sends jobs with checked files and approved proofs, with a system for job intake, production planning, QC, shipping and on-time payment. Apply here.",
+    "answer": "getpack partner factories receive jobs whose artwork the customer has approved and whose deposit is paid, through getpack's system: print-ready files, clear specs, an agreed ship date, and payment on a set schedule. getpack is the seller to the customer; the factory focuses on production and quality.",
     "lead": "You produce; we find the customers, check the files and handle the paperwork — the job that reaches you is ready for the press.",
     "benefitsTitle": "What partners get",
     "benefits": [
@@ -150,7 +150,7 @@
       },
       {
         "title": "Set prices and start",
-        "body": "Set your rate table or use Packio's, open accounts for your team, and start taking jobs through the system."
+        "body": "Set your rate table or use getpack's, open accounts for your team, and start taking jobs through the system."
       }
     ],
     "ctaTitle": "Interested?",
@@ -161,11 +161,11 @@
   "legal": {
     "terms": {
       "title": "Terms of Service",
-      "metaDescription": "Terms and conditions for using Packio, operated by Collective Group (Thailand): ordering, prices, payment, proof approval, production, delivery, guarantee and claims.",
+      "metaDescription": "Terms and conditions for using getpack, operated by Collective Group (Thailand): ordering, prices, payment, proof approval, production, delivery, guarantee and claims.",
       "sections": [
         {
           "title": "1. The provider",
-          "body": "Packio is provided by Collective Group (Thailand) (\"the Company\", \"we\"). The Company is the seller and issues tax invoices to customers directly. Using the site or placing an order means you accept these terms."
+          "body": "getpack is provided by Collective Group (Thailand) (\"the Company\", \"we\"). The Company is the seller and issues tax invoices to customers directly. Using the site or placing an order means you accept these terms."
         },
         {
           "title": "2. Accounts",
@@ -201,7 +201,7 @@
         },
         {
           "title": "10. Intellectual property",
-          "body": "You keep ownership of designs, logos and content you create or upload, and grant the Company and its partner factories the right to use them to produce your order. Packio's box styles, design tools and software belong to the Company."
+          "body": "You keep ownership of designs, logos and content you create or upload, and grant the Company and its partner factories the right to use them to produce your order. getpack's box styles, design tools and software belong to the Company."
         },
         {
           "title": "11. Personal data",
@@ -219,11 +219,11 @@
     },
     "privacy": {
       "title": "Privacy Notice (PDPA)",
-      "metaDescription": "Packio's privacy notice under Thailand's Personal Data Protection Act B.E. 2562, by Collective Group (Thailand): what we collect, why, the legal basis, who we share it with, how long we keep it, and your rights.",
+      "metaDescription": "getpack's privacy notice under Thailand's Personal Data Protection Act B.E. 2562, by Collective Group (Thailand): what we collect, why, the legal basis, who we share it with, how long we keep it, and your rights.",
       "sections": [
         {
           "title": "1. Data controller",
-          "body": "Collective Group (Thailand), operator of Packio, is the controller of your personal data. Contact us about personal data through the contact page."
+          "body": "Collective Group (Thailand), operator of getpack, is the controller of your personal data. Contact us about personal data through the contact page."
         },
         {
           "title": "2. What we collect",
@@ -261,7 +261,7 @@
     },
     "cookies": {
       "title": "Cookie Policy",
-      "metaDescription": "Cookies used by the Packio website: essential cookies for sign-in and the cart, and analytics cookies enabled only with your consent, plus how to change your choice.",
+      "metaDescription": "Cookies used by the getpack website: essential cookies for sign-in and the cart, and analytics cookies enabled only with your consent, plus how to change your choice.",
       "sections": [
         {
           "title": "What cookies are",
@@ -300,7 +300,7 @@
     "faq": "FAQ",
     "faqBody": "Answers on ordering, prices, artwork, payment, delivery and claims",
     "guarantee": "Our guarantee",
-    "guaranteeBody": "What Packio guarantees on every order and how to report a problem on receipt",
+    "guaranteeBody": "What getpack guarantees on every order and how to report a problem on receipt",
     "contact": "Contact",
     "contactBody": "How to reach the team and business hours"
   }

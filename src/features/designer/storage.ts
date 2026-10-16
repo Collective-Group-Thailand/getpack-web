@@ -1,13 +1,13 @@
 import { readDesign } from "./document";
 import type { SavedDesign } from "./types";
 
-const KEY = "packio.designs.v1";
+const KEY = "getpack.designs.v1";
 
 /** Keys this store used before the rebrand, newest first. Read once, never written to. */
 const LEGACY_KEYS = ["boxstudio.designs.v1"];
 
 /**
- * Designs saved before the Packio rebrand still open: the first read after the rename
+ * Designs saved before the getpack rebrand still open: the first read after the rename
  * copies them across. The old entry is left where it is, so downgrading or opening an
  * older build does not lose anybody's work.
  */
@@ -84,7 +84,7 @@ export const designRepo = {
   },
 };
 
-const IMPORTED_KEY = "packio.designs.imported";
+const IMPORTED_KEY = "getpack.designs.imported";
 
 /** Local design ids already imported into the signed-in account (F4 C.1), so the offer shows once. */
 export function importedLocalIds(): string[] {

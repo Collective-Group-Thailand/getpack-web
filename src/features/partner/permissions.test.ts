@@ -9,8 +9,8 @@ import { SURFACE_PROBLEM_CODES } from "@/lib/api/problem-codes";
 
 /**
  * Backend names win (triage `partner.permissions`, U-F0.4): every factory permission the partner
- * zone or its mock names is one packio-api grants at factory scope, and every role holds exactly
- * packio-api's grants.
+ * zone or its mock names is one getpack-api grants at factory scope, and every role holds exactly
+ * getpack-api's grants.
  */
 
 const ROOT = process.cwd();
@@ -33,7 +33,7 @@ function factoryKeys(source: string): string[] {
 }
 
 describe("partner permissions", () => {
-  it("names only permissions packio-api grants at factory scope", () => {
+  it("names only permissions getpack-api grants at factory scope", () => {
     const unknown = ["src/features/partner", "src/app/partner", "mocks/partner"].flatMap((dir) =>
       files(dir).flatMap((file) =>
         factoryKeys(readFileSync(join(ROOT, file), "utf8"))
@@ -51,7 +51,7 @@ describe("partner permissions", () => {
     expect(inUi).toContain("factory_payables.read");
   });
 
-  it("gives every role exactly packio-api's grants, and every persona a known role", () => {
+  it("gives every role exactly getpack-api's grants, and every persona a known role", () => {
     expect(Object.keys(ROLE_PERMISSIONS).sort()).toEqual(Object.keys(FACTORY_ROLE_GRANTS).sort());
     for (const [role, grants] of Object.entries(ROLE_PERMISSIONS)) {
       expect([...grants].sort(), role).toEqual([...FACTORY_ROLE_GRANTS[role]!].sort());

@@ -1,4 +1,4 @@
-import { getStyle, REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS, type MaterialSpec } from "@packio/dieline";
+import { getStyle, REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS, type MaterialSpec } from "@getpack/dieline";
 
 import type { DesignerCatalog, DesignerMaterial, DesignerPattern } from "./data/api";
 import type { BoxDims, BoxStyleId, DesignSpec, PatternSettings } from "./types";

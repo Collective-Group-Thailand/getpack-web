@@ -4,7 +4,7 @@ import { t } from "../../styles/_shared";
 import type { Contour } from "../../types";
 import type { FeatureModule } from "../types";
 
-/* Features only the style library's recipes use (U3.4), registered by `@packio/dieline/library`. */
+/* Features only the style library's recipes use (U3.4), registered by `@getpack/dieline/library`. */
 
 /**
  * Vent holes (`vents`): `round` Ø 12 mm or `oblong` 30 × 10 mm, two in each end panel (tube) or

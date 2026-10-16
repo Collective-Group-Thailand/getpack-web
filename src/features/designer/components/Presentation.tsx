@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { Canvas } from "@react-three/fiber";
 import { useTranslations } from "next-intl";
 import type * as THREE from "three";
-import type { Dieline, HingeMap, MaterialSpec } from "@packio/dieline";
+import type { Dieline, HingeMap, MaterialSpec } from "@getpack/dieline";
 
 import { Button } from "@/ui/components/Button";
 import { Dialog } from "@/ui/components/Dialog";
@@ -17,7 +17,7 @@ import { Box, buildGeometry, Grab, INITIAL, LIGHTING, triangulated, type Lightin
 
 const ARView = dynamic(() => import("./ARView"), { ssr: false });
 
-/** Packio's own scenes (no stock environments): a backdrop, a floor tone and the lighting. */
+/** getpack's own scenes (no stock environments): a backdrop, a floor tone and the lighting. */
 export const SCENES = {
   studio: { background: "#f3f2ef", floor: "#e4e2dc", lighting: "studio" },
   kraft: { background: "#e8dcc4", floor: "#d6c29d", lighting: "warm" },
@@ -60,7 +60,7 @@ function recordingType(): { mime: string; ext: "mp4" | "webm" } | null {
 }
 
 /**
- * Presentation mode (U4.7, studio-spec §3): the box alone, full size, on one of Packio's own scenes,
+ * Presentation mode (U4.7, studio-spec §3): the box alone, full size, on one of getpack's own scenes,
  * turning on a turntable and opening and closing — saved as a PNG or recorded as a video (MP4 where
  * the browser can, WebM otherwise) — with the die line free to download and the box in AR at its
  * real size. With reduced motion the turntable starts off and the lid jumps.

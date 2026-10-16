@@ -29,7 +29,7 @@
     "destinations": "{name}: give an address for the whole quantity"
   },
   "checkout": "Check out",
-  "secureNote": "Every price is worked out by Packio and confirmed again before you pay.",
+  "secureNote": "Every price is worked out by getpack and confirmed again before you pay.",
   "failed": "That did not work. Please try again.",
   "destinations": {
     "line": "{quantity} → {name} ({province})",

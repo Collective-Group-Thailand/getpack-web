@@ -72,7 +72,7 @@ export interface StudioProps {
 }
 
 /**
- * Packio 3D Studio (U4.1, studio-spec §2): the F4 designer framed by five reversible steps on
+ * getpack 3D Studio (U4.1, studio-spec §2): the F4 designer framed by five reversible steps on
  * one URL, with the price dock from ② onwards. The editor stays mounted across the steps, so the
  * canvas, its history and the selection survive going back and forth; the step is kept in the
  * address (`?step=`) without a navigation.
@@ -537,7 +537,7 @@ function ChecksCleanWatch({ issues, onClean }: { issues: EditorChromeContext["is
 
 /**
  * ④ Check (studio-spec §2): the live findings with their fixes, the warnings accepted for this
- * version (packio-api's run of the saved version for the rules it evaluates too), and the way on.
+ * version (getpack-api's run of the saved version for the rules it evaluates too), and the way on.
  */
 function CheckStep({
   ctx,

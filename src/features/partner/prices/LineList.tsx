@@ -63,7 +63,7 @@ export async function lineLabeller(definitions: PriceComponentDef[], references:
 
 /**
  * The lines of a proposal or rate card: what is in force now, what is proposed (the columns that
- * change marked), Packio's counter where there is one, and the decision so far (D-040).
+ * change marked), getpack's counter where there is one, and the decision so far (D-040).
  */
 export async function LineList({
   lines,

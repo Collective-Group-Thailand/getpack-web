@@ -1,5 +1,5 @@
 ---
-"@packio/dieline": minor
+"@getpack/dieline": minor
 ---
 
 First extraction of the box geometry engine out of the app: `buildDieline` for RSC,

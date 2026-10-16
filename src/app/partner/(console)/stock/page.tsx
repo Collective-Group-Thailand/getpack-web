@@ -24,7 +24,7 @@ type View = (typeof VIEWS)[number];
 const PER_PAGE = 50;
 
 /**
- * The factory's stock (Packio Factory ERP E1, D-316 – D-327): what is on hand and what it is worth,
+ * The factory's stock (getpack Factory ERP E1, D-316 – D-327): what is on hand and what it is worth,
  * what to buy now, and every movement — with the day's stock tasks as big tiles. Factory-private (D-317).
  */
 export default async function StockPage({

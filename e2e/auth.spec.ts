@@ -6,7 +6,7 @@ import { accountButton, MOCK_OTP, MOCK_PARTNER, MOCK_STAFF, openAccountMenu, sig
 /**
  * These run against MSW (`API_MOCKS=1` in the web server's env), so they exercise the whole
  * chain this app owns — proxy, guard, Server Action, cookies, BFF, `/me` — without needing
- * packio-api. The credentials below are the mock's, defined in `mocks/handlers.ts`.
+ * getpack-api. The credentials below are the mock's, defined in `mocks/handlers.ts`.
  */
 const STAFF = MOCK_STAFF;
 const PARTNER = MOCK_PARTNER;

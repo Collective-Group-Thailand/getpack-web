@@ -154,7 +154,7 @@ export function RerunPreflight({ submission, orderId }: { submission: ArtworkSub
   );
 }
 
-/** Assigning a hired design to a Packio designer, or cancelling it with a reason (D-071). */
+/** Assigning a hired design to a getpack designer, or cancelling it with a reason (D-071). */
 export function DesignServiceActions({ service }: { service: DesignService }) {
   const t = useTranslations("prepress.onBehalf.design");
   const queryClient = useQueryClient();

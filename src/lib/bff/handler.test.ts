@@ -17,9 +17,9 @@ let refreshSession: ReturnType<typeof vi.fn>;
 beforeAll(async () => {
   // The env schema validates at module load, and `src/lib/env/server` is pulled in through
   // the handler — so the values have to exist before the first import, as in src/proxy.test.ts.
-  process.env.PUBLIC_HOST = "packio.test";
-  process.env.ADMIN_HOST = "admin.packio.test";
-  process.env.PARTNER_HOST = "partner.packio.test";
+  process.env.PUBLIC_HOST = "getpack.test";
+  process.env.ADMIN_HOST = "admin.getpack.test";
+  process.env.PARTNER_HOST = "partner.getpack.test";
   process.env.API_INTERNAL_URL = API;
   // One load balancer in front of the app, as in production.
   process.env.TRUSTED_PROXY_HOPS = "1";
@@ -35,8 +35,8 @@ function bffRequest(
   path: string,
   {
     method = "GET",
-    host = "admin.packio.test",
-    origin = "https://admin.packio.test",
+    host = "admin.getpack.test",
+    origin = "https://admin.getpack.test",
     csrf = true,
     cookies = {} as Record<string, string>,
     body,
@@ -53,7 +53,7 @@ function bffRequest(
 ): [NextRequest, { params: Promise<{ path?: string[] }> }] {
   const headers = new Headers({ host });
   if (origin) headers.set("origin", origin);
-  if (csrf) headers.set("x-packio-csrf", "1");
+  if (csrf) headers.set("x-getpack-csrf", "1");
   if (body !== undefined) headers.set("content-type", "application/json");
   const cookieHeader = Object.entries(cookies)
     .map(([name, value]) => `${name}=${value}`)
@@ -126,8 +126,8 @@ describe("upstream allow-list", () => {
     const response = await createBffHandler("customer")(
       ...bffRequest("/v1/auth/customer/otp/request", {
         method: "POST",
-        host: "packio.test",
-        origin: "https://packio.test",
+        host: "getpack.test",
+        origin: "https://getpack.test",
         body: JSON.stringify({ phone: "0812345678" }),
       }),
     );
@@ -226,19 +226,19 @@ describe("token handling", () => {
     const [request, context] = bffRequest("/v1/admin/orders", { method: "POST", body: "{}" });
     request.headers.set("idempotency-key", "key-1");
     request.headers.set("if-match", 'W/"7"');
-    request.headers.set("x-packio-debug", "1");
+    request.headers.set("x-getpack-debug", "1");
 
     await createBffHandler("admin")(request, context);
 
     const headers = fetchMock.mock.calls[0]![1].headers as Headers;
     expect(headers.get("idempotency-key")).toBe("key-1");
     expect(headers.get("if-match")).toBe('W/"7"');
-    expect(headers.has("x-packio-debug")).toBe(false);
+    expect(headers.has("x-getpack-debug")).toBe(false);
   });
 
   it("forwards the visitor's address from the trusted hop, never the chain the browser sent", async () => {
     // The first entry is whatever the client claimed; only the one our load balancer appended
-    // is the address that actually connected (packio-api B6.3: per-IP throttles).
+    // is the address that actually connected (getpack-api B6.3: per-IP throttles).
     const [request, context] = bffRequest("/v1/admin/orders");
     request.headers.set("x-forwarded-for", "198.51.100.7, 203.0.113.9");
 
@@ -249,16 +249,16 @@ describe("token handling", () => {
 
   it("passes a ?mock= scenario on only under API_MOCKS=1", async () => {
     const [plain, plainContext] = bffRequest("/v1/admin/ops/signals");
-    plain.headers.set("x-packio-mock-scenario", "admin.ops.signals:auth.forbidden");
+    plain.headers.set("x-getpack-mock-scenario", "admin.ops.signals:auth.forbidden");
     await createBffHandler("admin")(plain, plainContext);
-    expect((fetchMock.mock.calls[0]![1].headers as Headers).has("x-packio-mock-scenario")).toBe(false);
+    expect((fetchMock.mock.calls[0]![1].headers as Headers).has("x-getpack-mock-scenario")).toBe(false);
 
     process.env.API_MOCKS = "1";
     try {
       const [mocked, mockedContext] = bffRequest("/v1/admin/ops/signals");
-      mocked.headers.set("x-packio-mock-scenario", "admin.ops.signals:auth.forbidden");
+      mocked.headers.set("x-getpack-mock-scenario", "admin.ops.signals:auth.forbidden");
       await createBffHandler("admin")(mocked, mockedContext);
-      expect((fetchMock.mock.calls[1]![1].headers as Headers).get("x-packio-mock-scenario")).toBe(
+      expect((fetchMock.mock.calls[1]![1].headers as Headers).get("x-getpack-mock-scenario")).toBe(
         "admin.ops.signals:auth.forbidden",
       );
     } finally {

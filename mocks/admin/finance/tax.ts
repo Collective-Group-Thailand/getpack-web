@@ -1,5 +1,5 @@
 /**
- * Tax (packio-api B5.4, published): the sales and purchase tax reports built from the journal
+ * Tax (getpack-api B5.4, published): the sales and purchase tax reports built from the journal
  * lines the posting rules tagged, the ภ.พ.30 working paper (P27 when finalised, P27P when paid),
  * ภ.ง.ด.3 / 53 from the 50 ทวิ issued at payout with their attachment (P28 when remitted), the WHT
  * registers, and the tax calendar — plus the dated tax rates and the document series.
@@ -366,7 +366,7 @@ const addMonth = (month: string) => {
   return new Date(Date.UTC(year, m, 1)).toISOString().slice(0, 7);
 };
 
-/** The months whose returns have fallen due or will: last month's, due this month (packio-api `ensure`). */
+/** The months whose returns have fallen due or will: last month's, due this month (getpack-api `ensure`). */
 export const calendar: Schemas["TaxCalendarItemDto"][] = [];
 function ensureCalendar() {
   const setting = settingValue<Record<Form, { dayOfNextMonth: number }>>("tax.calendar");

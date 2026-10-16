@@ -5,7 +5,7 @@ import { routing } from "@/i18n/routing";
 import { alternateUrls, localePath } from "./urls";
 import { organizationSchema } from "./structured-data";
 
-const ORIGIN = "https://packio.co.th";
+const ORIGIN = "https://getpack.co";
 
 describe("localePath", () => {
   it("serves the default locale at the root, with no prefix", () => {
@@ -31,18 +31,18 @@ describe("alternateUrls", () => {
   it("makes each locale canonical to itself", () => {
     // A shared canonical would tell a crawler the English page is a duplicate of the Thai one
     // and drop it from the index.
-    expect(alternateUrls(ORIGIN, "/products", "th").canonical).toBe("https://packio.co.th/products");
-    expect(alternateUrls(ORIGIN, "/products", "en").canonical).toBe("https://packio.co.th/en/products");
+    expect(alternateUrls(ORIGIN, "/products", "th").canonical).toBe("https://getpack.co/products");
+    expect(alternateUrls(ORIGIN, "/products", "en").canonical).toBe("https://getpack.co/en/products");
   });
 
   it("lists every locale plus an x-default pointing at Thai", () => {
     const { languages } = alternateUrls(ORIGIN, "/help", "en");
 
     expect(languages).toEqual({
-      th: "https://packio.co.th/help",
-      en: "https://packio.co.th/en/help",
+      th: "https://getpack.co/help",
+      en: "https://getpack.co/en/help",
       // Thailand is where the customers are; the English pages exist for the minority.
-      "x-default": "https://packio.co.th/help",
+      "x-default": "https://getpack.co/help",
     });
   });
 
@@ -56,7 +56,7 @@ describe("organizationSchema", () => {
   it("names the brand and the legal entity separately (D-010, D-092)", () => {
     const schema = organizationSchema(ORIGIN);
 
-    expect(schema.name).toBe("Packio");
+    expect(schema.name).toBe("getpack");
     expect(schema.legalName).toBe("Collective Group (Thailand)");
     expect(schema.url).toBe(ORIGIN);
   });
@@ -86,7 +86,7 @@ describe("currentPathname", () => {
 
   it.each(cases)("reads %s as %s", async (header, expected) => {
     vi.resetModules();
-    vi.doMock("next/headers", () => ({ headers: async () => new Headers({ "x-packio-path": header }) }));
+    vi.doMock("next/headers", () => ({ headers: async () => new Headers({ "x-getpack-path": header }) }));
     const { currentPathname } = await import("./urls");
     expect(await currentPathname()).toBe(expected);
     vi.doUnmock("next/headers");

@@ -21,7 +21,7 @@ interface DesignStepProps {
   configurator: Configurator;
   state: ConfiguratorState;
   onChange: (patch: Partial<ConfiguratorState>) => void;
-  /** Whether the online designer can draw this product (a box style `@packio/dieline` knows). */
+  /** Whether the online designer can draw this product (a box style `@getpack/dieline` knows). */
   designerAvailable: boolean;
 }
 

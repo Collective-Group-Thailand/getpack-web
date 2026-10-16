@@ -1,5 +1,5 @@
 /**
- * Packio Factory ERP E1.1 + E2 (packio-api v0.45.0; D-333 – D-342) for `pnpm dev:mock` and the e2e, on top of the
+ * getpack Factory ERP E1.1 + E2 (getpack-api v0.45.0; D-333 – D-342) for `pnpm dev:mock` and the e2e, on top of the
  * E1 engine (`erp.ts`): supplier links and price history, purchase requests, supplier invoices and payments,
  * recipes, production orders, planning and MRP — the rules that change what a screen shows (permissions,
  * statuses and `nextActions`, the 3-way match, reservations as held quantities). A mock is a fake engine and
@@ -68,7 +68,7 @@ const STATS = {
   avgLeadDays: null,
 };
 
-/** E2.1 sourcing fields of a supplier link (packio-api v0.46.0, D-346 – D-351): pending, no breaks, no score yet. */
+/** E2.1 sourcing fields of a supplier link (getpack-api v0.46.0, D-346 – D-351): pending, no breaks, no score yet. */
 const SOURCING = {
   approval: "pending" as const,
   approvalNote: null,
@@ -966,7 +966,7 @@ export const erpE2Handlers = [
         if (!mo || !op) return notFound();
         if (!RUNNING.includes(mo.status)) return problem(409, "erp.invalid_status", `อยู่ในสถานะ ${mo.status}`);
         const b = await body<Schemas["ErpFinishOperationDto"] & Partial<Schemas["ErpPauseOperationDto"]>>(request);
-        // E3 (D-353): pause with a reason and resume; a step that mirrors a Packio milestone is never skipped.
+        // E3 (D-353): pause with a reason and resume; a step that mirrors a getpack milestone is never skipped.
         if (action === "skip" && op.milestone) return problem(409, "erp.invalid_status", "ขั้นตอนนี้ข้ามไม่ได้");
         if (action === "pause" && op.status !== "in_progress")
           return problem(409, "erp.invalid_status", "ยังไม่ได้เริ่ม");

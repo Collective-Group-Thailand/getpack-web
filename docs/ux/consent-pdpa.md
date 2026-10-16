@@ -12,14 +12,14 @@
 
 ### หนังสือแจ้งและขอความยินยอม — การทดสอบการใช้งานเว็บไซต์
 
-**ผู้ควบคุมข้อมูลส่วนบุคคล:** บริษัท [ชื่อจดทะเบียนของ Collective Group (Thailand)] เลขประจำตัวผู้เสียภาษี [เลข] ("บริษัท") ผู้ให้บริการ Packio
+**ผู้ควบคุมข้อมูลส่วนบุคคล:** บริษัท [ชื่อจดทะเบียนของ Collective Group (Thailand)] เลขประจำตัวผู้เสียภาษี [เลข] ("บริษัท") ผู้ให้บริการ getpack
 **ติดต่อเรื่องข้อมูลส่วนบุคคล:** [อีเมล / เบอร์โทรเจ้าหน้าที่คุ้มครองข้อมูลส่วนบุคคล]
 
 **1. เราขอให้คุณทำอะไร**
 ใช้เว็บไซต์สั่งทำบรรจุภัณฑ์ทำงานสั้น ๆ ตามบัตรงาน ประมาณ [75] นาที ทางออนไลน์หรือที่ [สถานที่] พร้อมพูดสิ่งที่คิดออกมา และตอบแบบสอบถามสั้น ๆ เว็บไซต์ที่ทดสอบอาจเป็นของบริษัทหรือของผู้ให้บริการรายอื่น เราทดสอบ **เว็บไซต์** ไม่ใช่ตัวคุณ
 
 **2. วัตถุประสงค์**
-เพื่อศึกษาว่าเว็บไซต์ใช้งานง่ายหรือยากตรงไหน และนำไปปรับปรุงบริการ Packio เท่านั้น ไม่ใช้เพื่อการตลาด ไม่ใช้ติดต่อขายสินค้า และ **ไม่ใช้ฝึกระบบปัญญาประดิษฐ์**
+เพื่อศึกษาว่าเว็บไซต์ใช้งานง่ายหรือยากตรงไหน และนำไปปรับปรุงบริการ getpack เท่านั้น ไม่ใช้เพื่อการตลาด ไม่ใช้ติดต่อขายสินค้า และ **ไม่ใช้ฝึกระบบปัญญาประดิษฐ์**
 
 **3. ข้อมูลที่เก็บ**
 - ข้อมูลคัดกรอง: ประเภทงานหรือธุรกิจ ประสบการณ์สั่งทำบรรจุภัณฑ์ อุปกรณ์ที่ใช้ การใช้เครื่องมือช่วยการเข้าถึง (ถ้าคุณแจ้ง)
@@ -56,12 +56,12 @@
 ### Notice and consent — website usability study
 
 **Data controller:** [registered name of Collective Group (Thailand)], tax id [number] ("the
-Company"), operator of Packio. **Privacy contact:** [DPO e-mail / phone].
+Company"), operator of getpack. **Privacy contact:** [DPO e-mail / phone].
 
 1. **What we ask of you** — use a packaging-ordering website to do short tasks from task cards,
    about [75] minutes, online or at [location], thinking aloud, and answer short questionnaires.
    The website may be the Company's or another provider's. We are testing the **website**, not you.
-2. **Purpose** — to learn where the website is easy or hard to use and to improve the Packio
+2. **Purpose** — to learn where the website is easy or hard to use and to improve the getpack
    service. Not for marketing, not for sales contact, and **not for training AI systems**.
 3. **Data collected** — screening answers (type of work or business, experience ordering
    packaging, device, use of assistive technology if you tell us); during the session: screen,

@@ -5,15 +5,15 @@
 
 ---
 
-You are a senior product engineer and UX lead building the **customer zone** of `packio-web` (`src/app/[locale]/**`, `src/features/customer/**`) for **Packio — Your Packaging Production Partner**. The seller shown on every document is **Collective Group (Thailand)** under the Packio brand (D-010, D-092). Customers never see factory names (D-050).
+You are a senior product engineer and UX lead building the **customer zone** of `getpack-web` (`src/app/[locale]/**`, `src/features/customer/**`) for **getpack — Your Packaging Production Partner**. The seller shown on every document is **Collective Group (Thailand)** under the getpack brand (D-010, D-092). Customers never see factory names (D-050).
 
 ## Ground rules
 - All data and every calculation come from `/v1/store/*` (customer BFF / `serverApi('customer')`). **The client never computes money, VAT, discounts, points, lead times or dates.**
-- Original Packio design (`design-system.md`); trust elements only from real data.
+- Original getpack design (`design-system.md`); trust elements only from real data.
 - `th` at `/`, `en` at `/en`; canonical + hreflang; ISR / `use cache` for catalogue & content, dynamic for account & checkout; analytics events for every funnel step (D-102) with consent mode.
 
 ## Page patterns (reference-informed, D-180, D-181)
-The layout patterns below come from analysing a packaging e-commerce site the business likes. Reuse the **structure and interaction**; the visual language is Packio's own (`design-system.md` §Art direction). Never copy that site's design, imagery or copy.
+The layout patterns below come from analysing a packaging e-commerce site the business likes. Reuse the **structure and interaction**; the visual language is getpack's own (`design-system.md` §Art direction). Never copy that site's design, imagery or copy.
 
 ### Header (all customer pages)
 Sticky, condensing on scroll: logo left · centred primary nav (หน้าแรก · สินค้า&บริการ (mega menu) · ออกแบบออนไลน์ · ราคา&ตัวอย่าง · บทความ · ติดต่อ) · right cluster (search, account, cart with count). Mega menu: 4–5 columns of packaging categories, each item showing a chip **"ราคาทันที"** or **"ขอใบเสนอราคา"** (D-043), plus a visual panel with one promoted category and a link to the full catalogue. Mobile: bottom nav + full-screen menu with the same chips. Announcement bar only when a real campaign is running (D-181).
@@ -23,8 +23,8 @@ Sticky, condensing on scroll: logo left · centred primary nav (หน้าแ�
 2. **เลือกประเภทบรรจุภัณฑ์** — card grid (carousel on mobile) per product type: photo, name, "เริ่มต้น ฿x/ชิ้น" where available, MOQ, lead-time range, and the instant/RFQ chip.
 3. **ขั้นตอนการสั่งผลิต** — 4 steps (ออกแบบหรืออัปโหลดไฟล์ → ได้ราคาและวันส่งทันที → อนุมัติไฟล์ปรู๊ฟ → ติดตามการผลิตจนส่งถึง) with one line each and an illustration; links to the help centre.
 4. **สินค้าพร้อมส่ง** — real stock products (standard products) in an e-commerce card row: image on paper plate, name, price/unit, stock and delivery estimate, add-to-cart.
-5. **ทำไมต้อง Packio** — 6 benefits in two columns around one photo: ราคาทันทีไม่ต้องรอ, ออกแบบออนไลน์ + ไดไลน์ให้ฟรี, MOQ ต่ำ, ติดตามการผลิตทุกขั้นตอน, เอกสารภาษีครบถ้วน, เคลมได้ภายใน 7 วัน. Content must be verifiable — no claim the business cannot back.
-6. **ผลงานและเสียงจากลูกค้า** — case cards and testimonials **only from real, permitted customers** (name + business type + photo with consent); if none exist yet, render the section empty-state variant (portfolio of Packio's own sample work) instead of inventing quotes.
+5. **ทำไมต้อง getpack** — 6 benefits in two columns around one photo: ราคาทันทีไม่ต้องรอ, ออกแบบออนไลน์ + ไดไลน์ให้ฟรี, MOQ ต่ำ, ติดตามการผลิตทุกขั้นตอน, เอกสารภาษีครบถ้วน, เคลมได้ภายใน 7 วัน. Content must be verifiable — no claim the business cannot back.
+6. **ผลงานและเสียงจากลูกค้า** — case cards and testimonials **only from real, permitted customers** (name + business type + photo with consent); if none exist yet, render the section empty-state variant (portfolio of getpack's own sample work) instead of inventing quotes.
 7. **บทความ** — 3 latest articles (packaging selection guides, print knowledge) for SEO.
 8. **ปิดท้าย** — newsletter (PDPA consent checkbox, coupon only if a real campaign exists), contact strip (4 items: ฝ่ายบริการลูกค้า/เวลาทำการ · โทร · LINE · ที่อยู่), dark footer (about, customer service, policies, categories, payment badges, socials) with **Collective Group (Thailand)** as the operating company and tax id (D-092).
 
@@ -44,7 +44,7 @@ Home, catalogue with filters, product pages (imagesets, specs, standard sizes, "
 
 ## Phase 3.2 — Configurator, 3D/2D preview, instant quote, RFQ
 - **Configurator** for the 7 instant types (D-100): adaptive stepper — size (standard or custom with pattern constraints and helpful errors; unit toggle display-only), material (swatches, explainers), printing, finishing, assembly, quantity tiers, delivery zipcode, promo code, design option (own file / online designer / hired design / free design where offered), mockup add-on (D-072).
-- **Preview** (D-152): 3D for box styles (folding, corrugated) using `@packio/dieline` + the F4 3D viewer, updating live; 2D product mockups for labels, pouches, tags and sleeves.
+- **Preview** (D-152): 3D for box styles (folding, corrugated) using `@getpack/dieline` + the F4 3D viewer, updating live; 2D product mockups for labels, pouches, tags and sleeves.
 - **Instant quote dock** (sticky / bottom sheet): debounced `POST /v1/store/quotes` with cancellation; per piece, delivery, total, VAT, one-off costs, lead time and estimated receive date (capacity-aware, from the API), quantity price breaks, **quantity tolerance ±% shown** (D-021), quote validity 15 days (D-051). Actions: add to cart, design now, download quotation PDF, save, share, ask CS (LINE deep link with summary).
 - **RFQ** for all other types (D-100): category-specific form (dimensions/spec fields, quantity tiers, target date, zipcode, files, notes), status page, receive and accept the quote → cart.
 

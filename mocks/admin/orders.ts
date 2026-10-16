@@ -60,7 +60,7 @@ function allowed(request: Request, permission: string): StaffPersona | null {
 
 const PRE_PRODUCTION = ["waiting_payment", "paid_for_production", "artwork_approved"];
 
-/** The facts packio-api's order action guards read (`OrderFacts`, `src/modules/orders/order-actions.ts`). */
+/** The facts getpack-api's order action guards read (`OrderFacts`, `src/modules/orders/order-actions.ts`). */
 function factsOf(order: MockOrder) {
   return {
     status: order.status,
@@ -83,7 +83,7 @@ type ActionRule = {
   when: (facts: ReturnType<typeof factsOf>) => boolean | string;
 };
 
-/** packio-api's `ADMIN_ORDER_ACTIONS` at v0.6.0, in its order (D-051, D-060, D-073, D-074). */
+/** getpack-api's `ADMIN_ORDER_ACTIONS` at v0.6.0, in its order (D-051, D-060, D-073, D-074). */
 const ADMIN_ORDER_ACTIONS: ActionRule[] = [
   {
     key: "order.start_production",
@@ -113,7 +113,7 @@ const ADMIN_ORDER_ACTIONS: ActionRule[] = [
   },
 ];
 
-/** What packio-api offers this reader on this order: the rule's own state check and its permissions. */
+/** What getpack-api offers this reader on this order: the rule's own state check and its permissions. */
 export function adminOrderActionsOf(order: MockOrder, who: StaffPersona | null): Schemas["NextActionDto"][] {
   const facts = factsOf(order);
   return ADMIN_ORDER_ACTIONS.flatMap((rule) => {
@@ -301,7 +301,7 @@ function toSchedule(order: MockOrder): Schemas["AdminPaymentScheduleDto"] {
 }
 
 function toTimelineEntry(entry: ReturnType<typeof timelineOf>[number]): Schemas["StaffTimelineEntryDto"] {
-  // A production step names itself; packio-api sends it as `production.milestone_reached`.
+  // A production step names itself; getpack-api sends it as `production.milestone_reached`.
   const milestone = entry.kind === "milestone.completed";
   return {
     id: entry.id,
@@ -376,7 +376,7 @@ function toListItem(order: MockOrder, who: StaffPersona | null): Schemas["AdminO
   };
 }
 
-/** packio-api's seeded `order_cancel_reasons` (D-060), as `admin.orders.listCancelReasons` answers them. */
+/** getpack-api's seeded `order_cancel_reasons` (D-060), as `admin.orders.listCancelReasons` answers them. */
 export const CANCEL_REASONS: Schemas["CancelReasonDto"][] = [
   {
     code: "customer_request",

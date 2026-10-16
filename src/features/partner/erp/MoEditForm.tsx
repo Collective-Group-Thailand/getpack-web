@@ -28,7 +28,7 @@ const NONE = "-";
 
 /**
  * Change a production order (D-340): its title, dates, priority and note at any time while it is open; while it is
- * still planned also the quantity, the materials and the steps (a Packio job's steps follow the job and stay).
+ * still planned also the quantity, the materials and the steps (a getpack job's steps follow the job and stay).
  */
 export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: string | null; items: Item[]; machines: Machine[] }) {
   const t = useTranslations("partnerFactory.orders.edit");
@@ -37,7 +37,7 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
   const router = useRouter();
   const { call, busy } = useErpCall();
   const planned = order.status === "planned";
-  const packio = order.source === "packio_job";
+  const getpack = order.source === "getpack_job";
   const [title, setTitle] = useState(order.title);
   const [quantity, setQuantity] = useState(String(Number(order.quantity)));
   const [dueOn, setDueOn] = useState(order.dueOn ?? "");
@@ -62,7 +62,7 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
     if (planned && (!QTY_PATTERN.test(plainNumber(quantity)) || isZero(plainNumber(quantity)))) return setError(tCommon("qtyPlaceholder"));
     if (planned && materials.some((m) => !m.itemId || !QTY_PATTERN.test(plainNumber(m.requiredQty)) || isZero(plainNumber(m.requiredQty))))
       return setError(t("materialInvalid"));
-    if (planned && !packio && operations.some((o) => !o.name.trim() || !/^\d{1,6}$/.test(o.plannedMinutes))) return setError(t("operationInvalid"));
+    if (planned && !getpack && operations.some((o) => !o.name.trim() || !/^\d{1,6}$/.test(o.plannedMinutes))) return setError(t("operationInvalid"));
     setError(undefined);
     const saved = await call(
       async () =>
@@ -79,7 +79,7 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
                 ? {
                     quantity: plainNumber(quantity),
                     materials: materials.map((m) => ({ itemId: m.itemId, requiredQty: plainNumber(m.requiredQty), note: m.note.trim() || null })),
-                    ...(packio
+                    ...(getpack
                       ? {}
                       : {
                           operations: operations.map((o) => ({
@@ -149,7 +149,7 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
         </fieldset>
       ) : null}
 
-      {planned && !packio ? (
+      {planned && !getpack ? (
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 font-semibold">{t("operations")}</legend>
           {operations.map((o, i) => (
@@ -170,8 +170,8 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
             {t("addOperation")}
           </Button>
         </fieldset>
-      ) : planned && packio ? (
-        <p className="text-muted text-sm">{t("packioSteps")}</p>
+      ) : planned && getpack ? (
+        <p className="text-muted text-sm">{t("getpackSteps")}</p>
       ) : null}
 
       <Field label={t("note")}>
