@@ -17,9 +17,21 @@
   "row": "{quantity} {unit} · ordered {date}",
   "shipBy": "Leaves the factory by {date}",
   "payDue": "Pay now",
+  "table": {
+    "caption": "My orders",
+    "order": "Product",
+    "placed": "Ordered",
+    "status": "Status",
+    "delivery": "Delivery",
+    "total": "Total",
+    "actions": "Actions",
+    "view": "View details",
+    "qty": "{quantity} {unit}",
+    "noDate": "—"
+  },
   "documents": {
-    "download": "Get the download link",
-    "open": "Open the document",
+    "download": "Download",
+    "open": "Open the PDF",
     "failed": "We could not get the link. Please try again.",
     "types": {
       "qt": "Quotation",
@@ -126,7 +138,13 @@
       "body": "Requested on {date} · above your ordering limit, so your company's approver decides first — then you can pay straight away"
     },
     "todo": "What to do now",
-    "todoPay": "Pay {label} to start",
+    "todoPay": "Payment due: {label}",
+    "todoPurpose": {
+      "production": "Production starts once it is paid",
+      "shipping": "Pay before the factory ships",
+      "none": "Payable after delivery"
+    },
+    "factorySteps": "At the factory",
     "todoBy": "By {date} — after that the order is cancelled automatically"
   },
   "tolerance": {
@@ -284,6 +302,17 @@
       "bulkWithCredit": "Added to the cart — the sample is credited at checkout",
       "failed": "Could not do that — try again",
       "sha": "sha256 {hash}…"
+    },
+    "table": {
+      "caption": "Samples",
+      "sample": "Sample",
+      "asked": "Asked on",
+      "price": "Sample fee",
+      "kind": "Kind",
+      "status": "Status",
+      "actions": "Actions",
+      "view": "View details",
+      "free": "No charge"
     }
   }
 }

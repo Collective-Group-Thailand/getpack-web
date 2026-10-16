@@ -12,7 +12,9 @@ const JOURNEY = [
   { key: "placed", at: () => "placed" as const },
   { key: "paid", at: (p: Progress) => p.paidForProductionAt },
   { key: "artwork", at: (p: Progress) => p.artworkApprovedAt },
-  { key: "production", at: (p: Progress) => p.productionStartedAt },
+  // Production is under way from its start and done when the job ships — a started job is
+  // "กำลังผลิต", not a finished stage (customer walkthrough 2026-10-16).
+  { key: "production", at: (p: Progress) => (p.shippedAt ? p.productionStartedAt : null) },
   { key: "shipped", at: (p: Progress) => p.shippedAt, promised: (p: Progress) => p.promisedShipDate },
   { key: "delivered", at: (p: Progress) => p.deliveredAt, promised: (p: Progress) => p.estimatedDeliveryDate },
   { key: "completed", at: (p: Progress) => p.completedAt },
@@ -21,20 +23,16 @@ const JOURNEY = [
 export type JourneyKey = (typeof JOURNEY)[number]["key"];
 
 /**
- * The stages to show for an order. The API lists production stages (`steps`) only once a factory
- * holds the job; before that — waiting for payment, for the artwork — a customer saw no tracker at
- * all, which is exactly when they ask "where am I?" (owner walkthrough 2026-10-14). The API's own
- * steps win when it has them; otherwise the journey is read off the progress timestamps: every
- * stage with a time is done, the first without is current, the rest are to come, and a cancelled
- * order skips what it never reached. Dates come from the API; nothing is computed here. Labels
- * come from `src/i18n` (`fulfilment.journey`), in the reader's language.
+ * The customer's seven stages of an order, read off the progress timestamps: every stage with a
+ * time is done, the first without is current, the rest are to come, and a cancelled order skips
+ * what it never reached. A customer saw no tracker before a factory held the job — exactly when
+ * they ask "where am I?" (owner walkthrough 2026-10-14) — and, once it did, only the factory's
+ * steps, so the big picture vanished mid-way (customer walkthrough 2026-10-16). Now the journey
+ * is always shown and the factory's own steps (`progress.steps`) go beneath it as a second
+ * tracker (the order page). Dates come from the API; nothing is computed here. Labels come from
+ * `src/i18n` (`fulfilment.journey`), in the reader's language.
  */
-export function journeySteps(
-  progress: Progress,
-  placedAt: string,
-  label: (key: JourneyKey) => string,
-): JourneyStep[] {
-  if (progress.steps.length > 0) return progress.steps;
+export function journeySteps(progress: Progress, placedAt: string, label: (key: JourneyKey) => string): JourneyStep[] {
   const cancelled = progress.status === "cancelled";
   let currentSeen = false;
   return JOURNEY.map((stage) => {

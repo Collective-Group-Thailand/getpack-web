@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { STRUCTURAL_REQUEST_STATUS } from "@/domain/status";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { listMyStructuralRequests } from "@/features/customer/structural/api.server";
 import { getFormat } from "@/features/shared/format/server";
@@ -50,27 +51,38 @@ export default async function Page() {
           }
         />
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
-          {requests.map((r) => (
-            <li key={r.id} className="bg-surface border-border rounded-xl border">
-              <Link
-                href={`/account/structural-requests/${r.id}`}
-                className="hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl p-4"
-              >
-                <div className="min-w-0">
-                  <p className="line-clamp-2 font-semibold">{r.description}</p>
-                  <p className="text-muted text-sm">
-                    {t("listMeta", {
-                      type: types[r.productTypeCode] ?? r.productTypeCode,
-                      date: format.date(r.createdAt),
-                    })}
-                  </p>
-                </div>
-                <StatusChip map={STRUCTURAL_REQUEST_STATUS} value={r.status} />
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <PortalTable
+          className="mt-6"
+          caption={t("table.caption")}
+          columns={[
+            { key: "request", label: t("table.request"), className: "md:w-[44%]" },
+            { key: "type", label: t("table.type") },
+            { key: "sent", label: t("table.sent") },
+            { key: "status", label: t("table.status") },
+            { key: "actions", label: t("table.actions"), srOnly: true, className: "text-end" },
+          ]}
+          rows={requests.map((r) => ({
+            id: r.id,
+            cells: {
+              request: (
+                <Link
+                  href={`/account/structural-requests/${r.id}`}
+                  className="text-fg line-clamp-2 font-semibold underline-offset-4 hover:underline"
+                >
+                  {r.description}
+                </Link>
+              ),
+              type: types[r.productTypeCode] ?? r.productTypeCode,
+              sent: format.date(r.createdAt),
+              status: <StatusChip map={STRUCTURAL_REQUEST_STATUS} value={r.status} />,
+              actions: (
+                <Button asChild size="sm" variant="secondary">
+                  <Link href={`/account/structural-requests/${r.id}`}>{t("table.view")}</Link>
+                </Button>
+              ),
+            },
+          }))}
+        />
       )}
     </div>
   );

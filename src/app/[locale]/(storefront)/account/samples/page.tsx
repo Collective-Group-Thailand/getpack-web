@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { listMySamples } from "@/features/customer/samples/api.server";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
@@ -36,37 +37,53 @@ export default async function Page() {
           }
         />
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
-          {samples.map((sample) => (
-            <li key={sample.id} className="bg-surface border-border rounded-xl border">
-              <Link
-                href={`/account/samples/${sample.id}`}
-                className="hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl p-4"
-              >
-                <div className="min-w-0">
-                  <p className="font-semibold">
+        <PortalTable
+          className="mt-6"
+          caption={t("table.caption")}
+          columns={[
+            { key: "sample", label: t("table.sample"), className: "md:w-[34%]" },
+            { key: "kind", label: t("table.kind") },
+            { key: "asked", label: t("table.asked"), className: "md:min-w-[7.5rem]" },
+            { key: "price", label: t("table.price"), numeric: true },
+            { key: "status", label: t("table.status") },
+            { key: "actions", label: t("table.actions"), srOnly: true, className: "text-end" },
+          ]}
+          rows={samples.map((sample) => ({
+            id: sample.id,
+            phoneSubtitle: sample.orderCode ? <span className="font-mono">{sample.orderCode}</span> : null,
+            cells: {
+              sample: (
+                <span className="block min-w-0">
+                  <Link
+                    href={`/account/samples/${sample.id}`}
+                    className="text-fg block font-semibold underline-offset-4 hover:underline"
+                  >
                     {t(`mockup.${sample.mockupOption}`)}
-                    {sample.orderCode ? (
-                      <span className="text-muted ms-2 font-mono text-sm">{sample.orderCode}</span>
-                    ) : null}
-                  </p>
-                  <p className="text-muted text-sm">
-                    {[
-                      t("asked", { date: format.date(sample.createdAt) }),
-                      sample.sellGrossAmount ? format.thb(sample.sellGrossAmount) : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusChip map={SAMPLE_KIND} value={sample.kind} />
-                  <StatusChip map={SAMPLE_STATUS} value={sample.status} size="md" />
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                  </Link>
+                  {sample.orderCode ? (
+                    <span className="text-muted hidden font-mono text-xs font-normal md:block">{sample.orderCode}</span>
+                  ) : null}
+                </span>
+              ),
+              kind: <StatusChip map={SAMPLE_KIND} value={sample.kind} />,
+              asked: format.date(sample.createdAt),
+              price: sample.sellGrossAmount ? (
+                format.thb(sample.sellGrossAmount)
+              ) : (
+                <span className="text-muted">{t("table.free")}</span>
+              ),
+              status: <StatusChip map={SAMPLE_STATUS} value={sample.status} />,
+              actions: (
+                <Button asChild size="sm" variant="secondary">
+                  <Link href={`/account/samples/${sample.id}`}>
+                    {t("table.view")}
+                    <span className="sr-only"> {sample.orderCode ?? t(`mockup.${sample.mockupOption}`)}</span>
+                  </Link>
+                </Button>
+              ),
+            },
+          }))}
+        />
       )}
     </div>
   );

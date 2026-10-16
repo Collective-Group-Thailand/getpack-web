@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { RFQ_QUOTE_STATUS } from "@/domain/status";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
@@ -92,7 +92,15 @@ export function RfqQuotes({ rfq, accepted }: { rfq: Rfq; accepted: Saved | null 
 
   return (
     <div className="flex flex-col gap-6">
-      {accepted ? (
+      {accepted && accepted.status === "converted" ? (
+        // The accepted quotation became an order: the next step is that order, not the cart again.
+        <Callout tone="success" title={t("orderedTitle", { code: accepted.quoteCode ?? rfq.rfqCode })}>
+          <p>{t("orderedBody")}</p>
+          <Button asChild size="sm" variant="secondary" className="mt-2" iconStart="package">
+            <Link href="/account/orders">{t("toOrders")}</Link>
+          </Button>
+        </Callout>
+      ) : accepted ? (
         <Callout
           tone="success"
           title={accepted.quoteCode ? t("acceptedTitle", { code: accepted.quoteCode }) : t("acceptedTitleNoCode")}

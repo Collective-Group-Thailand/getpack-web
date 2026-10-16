@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/ui/theme";
 import type { ThemeChoice } from "@/ui/theme/themes";
 
 import { HydrationMark } from "./HydrationMark";
+import { ZoneContextProvider } from "./ZoneContext";
 
 /**
  * The provider stack every zone's root layout wraps its tree in.
@@ -34,20 +35,22 @@ export function ZoneProviders({
 }) {
   return (
     <NextIntlClientProvider>
-      <ThemeProvider initialChoice={themeChoice} zone={zone}>
-        <TooltipProvider>
-          <QueryProvider>
-            {children}
-            {/* Inside QueryProvider: it needs the client whose caches it invalidates. */}
-            <RealtimeProvider zone={zone} />
-          </QueryProvider>
-        </TooltipProvider>
-        {/* One toaster per zone: toasts belong to the current page (design-system.md §4). */}
-        <Toaster />
-        {/* Renders nothing; reports field Web Vitals through this zone's BFF. */}
-        <WebVitals zone={zone} />
-        <HydrationMark />
-      </ThemeProvider>
+      <ZoneContextProvider zone={zone}>
+        <ThemeProvider initialChoice={themeChoice} zone={zone}>
+          <TooltipProvider>
+            <QueryProvider>
+              {children}
+              {/* Inside QueryProvider: it needs the client whose caches it invalidates. */}
+              <RealtimeProvider zone={zone} />
+            </QueryProvider>
+          </TooltipProvider>
+          {/* One toaster per zone: toasts belong to the current page (design-system.md §4). */}
+          <Toaster />
+          {/* Renders nothing; reports field Web Vitals through this zone's BFF. */}
+          <WebVitals zone={zone} />
+          <HydrationMark />
+        </ThemeProvider>
+      </ZoneContextProvider>
     </NextIntlClientProvider>
   );
 }

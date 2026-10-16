@@ -151,6 +151,40 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
   payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
 
+## Customer portal UX pass — 2026-10-16
+
+Walked every account menu as UAT customer C04 (orders in production and waiting for payment, saved quotations,
+an RFQ), C09 (company admin) at 1280 px and 390 px, against the UAT database. The owner's lead: "some of it should
+be a table, not cards". Findings and what changed:
+
+- **Lists are tables.** `PortalTable` (`src/features/customer/account/PortalTable.tsx`): one real `<table>` with a
+  caption and `scope` headers on wide screens; on a phone the same markup stacks — each row a block, each cell with
+  its column label beside the value, no sideways scroll. Orders (product, ordered, status, delivery, total, action),
+  saved quotations (product + spec, quantity, price incl. VAT, held until, status, actions), RFQs, samples, structural
+  requests and call-offs. Instalments and points were already tables; designs stay a thumbnail grid, messages an
+  inbox, addresses cards, replenishment suggestions cards (each carries its reasoning).
+- **Every row has a way in.** A "ดูรายละเอียด" button where no action is due; the pay / upload buttons where one is.
+- **The phone nav gets out of the way.** One closed fold naming this page ("เมนูบัญชี · หน้านี้: คำสั่งซื้อ") instead of
+  four folded groups and the open one above every page — "คำสั่งซื้อของฉัน" began below the fold.
+- **Order page.** The seven-stage journey stays once the factory holds the job, with the factory's own steps as a
+  second tracker beneath it (before, the journey vanished mid-way). "กำลังผลิต" is the current stage while the job is
+  in production, not a finished one. The payment banner says what the instalment is for ("ถึงกำหนดชำระ: มัดจำ 50% ·
+  ชำระแล้วโรงงานจึงเริ่มผลิต") instead of "ชำระ ชำระเต็มจำนวน เพื่อเริ่มงาน", and threatens auto-cancellation only while
+  the order is actually waiting for payment.
+- **Words from the customer's side.** Status chips in the customer zone read "คุณรับราคาแล้ว", "คุณตอบรับแล้ว",
+  "อนุมัติแบบตัวอย่างแล้ว", "รอคุณตรวจแบบตัวอย่าง" (`status.customer.*`, picked by `StatusChip` through the new
+  `useZone()`); staff keep "ลูกค้ารับราคาแล้ว" / "Proof". "ขอลิงก์ดาวน์โหลด" → "ดาวน์โหลด" / "เปิดไฟล์ PDF" everywhere.
+- **Dead ends and leaks.** An RFQ whose accepted quotation became an order points at the order, not "เพิ่มลงตะกร้า"
+  again. The replenishment page no longer tells customers what "comes in a later version". The company approvals
+  empty state explains itself and links on. Spend by month reads "ต.ค. 2569", not "2026-10". The wallet page's
+  section no longer repeats its own title. The agent application form sits behind "สมัครเป็นตัวแทนขาย" — most
+  customers come to read the offer, not to type a bank account.
+- **API** (`getpack-api` `rfqSpecLines`): a spec key the type's schema does not title gets a known label (material →
+  วัสดุ / Material) or the key as words, so a quotation never shows a raw `material`.
+- Checked: typecheck, lint, 1218 unit tests; the changed pages re-screenshotted at both widths.
+- Still cards by choice: designs, addresses, messages, replenishment. Not touched: the storefront (reviewed in the
+  2026-10-14/15 pass).
+
 ## Logo — 2026-10-16
 
 - The product owner's logo (the **getpack** wordmark on a green oval) replaces the drawn mark and the brand name

@@ -134,9 +134,12 @@ export default async function Page({
               <p className="font-semibold">
                 {payable ? t("detail.todoPay", { label: payable.label }) : t("detail.todo")}
               </p>
-              {payable && group?.expiresAt ? (
+              {due ? (
                 <p className="text-muted mt-1 text-sm">
-                  {t("detail.todoBy", { date: format.dateTime(group.expiresAt) })}
+                  {t(`detail.todoPurpose.${due.requiredBefore}`)}
+                  {group?.expiresAt && order.status === "waiting_payment"
+                    ? ` · ${t("detail.todoBy", { date: format.dateTime(group.expiresAt) })}`
+                    : null}
                 </p>
               ) : null}
             </div>
@@ -198,6 +201,13 @@ export default async function Page({
           <OrderStages
             steps={journeySteps(detail.progress, group?.placedAt ?? order.createdAt, (key) => tJourney(key))}
           />
+          {detail.progress.steps.length > 0 ? (
+            // The factory's own steps, under the journey they are the "production" stage of.
+            <div className="border-border mt-6 border-t pt-5">
+              <h3 className="text-muted mb-3 text-xs font-semibold">{t("detail.factorySteps")}</h3>
+              <OrderStages steps={detail.progress.steps} />
+            </div>
+          ) : null}
         </section>
       ) : null}
 

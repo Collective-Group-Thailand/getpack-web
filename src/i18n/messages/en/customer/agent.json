@@ -44,7 +44,9 @@
     "applied": "Application sent on {date}",
     "appliedBody": "Sales will check your documents and get back to you. Once approved, your agent code appears here.",
     "rejected": "Your last application was not approved; you can correct it and apply again",
-    "noAgreement": "We are not taking agent applications right now"
+    "noAgreement": "We are not taking agent applications right now",
+    "applyOpen": "Apply to be an agent",
+    "applyOpenHint": "Payee details and a bank account — about five minutes"
   },
   "application": {
     "withdraw": "Withdraw application",
