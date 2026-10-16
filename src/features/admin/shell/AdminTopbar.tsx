@@ -62,7 +62,7 @@ export function AdminTopbar({
         onClick={onOpenDrawer}
         className="md:hidden"
       />
-      <Brand href="/" className="me-2" />
+      <Brand href="/" className="me-2 flex" />
 
       {/*
         A button rather than an input. The palette is a modal with its own field, and two
