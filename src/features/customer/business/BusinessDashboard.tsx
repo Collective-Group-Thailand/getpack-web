@@ -1,10 +1,12 @@
 import { getTranslations } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { EmptyState } from "@/ui/components/EmptyState";
 
 import type { Schemas } from "@/lib/api/types";
 
@@ -41,6 +43,8 @@ export async function BusinessDashboard({
 }) {
   const [t, format] = await Promise.all([getTranslations("business.dashboard"), getFormat()]);
   const roles = await getTranslations("business.members.roles");
+  const creditStatus = company.credit?.creditStatus ?? company.creditStatus;
+  const hasCredit = creditStatus === "credit" || creditStatus === "blocked_overdue";
 
   return (
     <div className="flex flex-col gap-8">
@@ -89,12 +93,12 @@ export async function BusinessDashboard({
       <div className="grid gap-4 md:grid-cols-3">
         <section aria-labelledby="dash-credit" className="bg-surface border-border rounded-xl border p-5">
           <h2 id="dash-credit" className="text-muted text-sm font-medium">
-            {t("credit")}
+            {hasCredit ? t("credit") : t("creditNone")}
           </h2>
           {company.credit ? (
             <>
               <p className="mt-1 text-2xl font-bold tabular-nums">
-                {company.credit.creditStatus === "credit" || company.credit.creditStatus === "blocked_overdue"
+                {hasCredit
                   ? format.thb(company.credit.availableAmount)
                   : t(`creditStatus.${company.credit.creditStatus}`)}
               </p>
@@ -107,6 +111,14 @@ export async function BusinessDashboard({
           ) : (
             <p className="mt-1 text-2xl font-bold">{t(`creditStatus.${company.creditStatus}`)}</p>
           )}
+          {!hasCredit && company.can.viewFinance ? (
+            <Link
+              href="/business/credit"
+              className="text-primary mt-2 inline-block text-sm underline underline-offset-4"
+            >
+              {t("requestCredit")}
+            </Link>
+          ) : null}
         </section>
         {company.receivables ? (
           <section aria-labelledby="dash-owed" className="bg-surface border-border rounded-xl border p-5">
@@ -145,7 +157,15 @@ export async function BusinessDashboard({
         </section>
       </div>
 
-      {spend ? (
+      {spend && spend.total.orders === 0 ? (
+        // No company order yet: one sentence and the next step, not twelve rows of ฿0.00.
+        <EmptyState
+          icon="box"
+          title={t("spendEmpty")}
+          description={t("spendEmptyBody")}
+          action={<NextStep to="products" />}
+        />
+      ) : spend ? (
         <section aria-labelledby="dash-spend" className="flex flex-col gap-4">
           <h2 id="dash-spend" className="text-lg font-semibold">
             {t("spendRange", { from: format.date(spend.from), to: format.date(spend.to) })}

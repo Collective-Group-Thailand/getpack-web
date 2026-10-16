@@ -107,7 +107,7 @@ export function ApprovalsList({
         icon="check"
         title={t("empty")}
         description={t("emptyBody")}
-        action={<NextStep to="orders" href="/business" />}
+        action={<NextStep to="orders" />}
       />
     );
   }

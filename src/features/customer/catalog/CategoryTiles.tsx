@@ -40,7 +40,9 @@ export async function CategoryTiles({ tree }: { tree: readonly CatalogueCategory
                     <Badge size="sm" tone={group === "instant" ? "success" : group === "rfq" ? "info" : "neutral"}>
                       {t(`groups.${group}`)}
                     </Badge>
-                    <span className="text-muted text-xs">{t("tiles.types", { count: category.types.length })}</span>
+                    {category.types.length > 1 ? (
+                      <span className="text-muted text-xs">{t("tiles.types", { count: category.types.length })}</span>
+                    ) : null}
                   </span>
                 </span>
               </Link>

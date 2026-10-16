@@ -10,6 +10,7 @@ import { styleHref } from "@/features/customer/styles/paths";
 import { RfqForm } from "@/features/customer/rfq/RfqForm";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import type { Schemas } from "@/lib/api/types";
 import { readAccessToken } from "@/lib/auth/session";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Card } from "@/ui/components/Card";
@@ -60,7 +61,8 @@ export default async function Page({
   if (!category) notFound();
   const product = query.from ? await getProduct(query.from) : null;
   // The variant a style page asked about: kept only when the base lists it among its shown variants.
-  const styleBase = STYLE_CODE.test(query.base ?? "") && STYLE_CODE.test(query.style ?? "") ? await getStyle(query.base!) : null;
+  const styleBase =
+    STYLE_CODE.test(query.base ?? "") && STYLE_CODE.test(query.style ?? "") ? await getStyle(query.base!) : null;
   const chosenVariant = styleBase?.variants.find((variant) => variant.code === query.style) ?? null;
   const type =
     category.types.find((candidate) => candidate.code === query.type) ??
@@ -128,7 +130,7 @@ export default async function Page({
           </h2>
           <div className="mt-4">
             <RfqForm
-              form={form!}
+              form={withProductChoices(form!, product, tCatalog)}
               signedIn={Boolean(readAccessToken(jar))}
               fromProduct={product ? { slug: product.slug, name: pick(locale, product.nameTh, product.nameEn) } : null}
               calculationId={product && UUID.test(query.calc ?? "") ? query.calc! : null}
@@ -147,4 +149,52 @@ export default async function Page({
       )}
     </div>
   );
+}
+
+type RfqFormDto = Schemas["StoreRfqFormDto"];
+type RfqField = Schemas["RfqFormFieldDto"];
+
+/**
+ * A type whose schema asks nothing lets the customer type the spec into the notes — while the
+ * product page they came from had just listed what can be chosen (styles, materials, coatings;
+ * customer walkthrough 2026-10-16). When the form has no fields and the product has choices, each
+ * choice group becomes an optional select whose key the API labels (`material`, `coating`, …).
+ */
+function withProductChoices(
+  form: RfqFormDto,
+  product: Awaited<ReturnType<typeof getProduct>> | null,
+  tCatalog: (key: string) => string,
+): RfqFormDto {
+  if (form.fields.length > 0 || !product) return form;
+  const fields: RfqField[] = [];
+  const field = (key: string, labelKey: string, options: { value: string; labelTh: string; labelEn: string }[]) => {
+    if (options.length === 0) return;
+    const label = tCatalog(`product.optionKinds.${labelKey}`);
+    fields.push({
+      key,
+      type: "select",
+      labelTh: label,
+      labelEn: label,
+      helpTh: null,
+      helpEn: null,
+      unit: null,
+      required: false,
+      min: null,
+      max: null,
+      options,
+    });
+  };
+  field(
+    "pattern",
+    "pattern",
+    product.patterns.map((pattern) => ({ value: pattern.name, labelTh: pattern.name, labelEn: pattern.name })),
+  );
+  for (const group of product.optionGroups) {
+    field(
+      group.kind,
+      group.kind,
+      group.options.map((option) => ({ value: option.nameTh, labelTh: option.nameTh, labelEn: option.nameEn })),
+    );
+  }
+  return fields.length > 0 ? { ...form, fields } : form;
 }

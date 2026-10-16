@@ -80,8 +80,13 @@ export function AuthSplitLayout({
       </aside>
 
       <main id="main" className="relative flex flex-col items-center justify-center px-5 py-24 md:px-12 lg:px-16">
-        {topStart ? <div className="absolute start-5 top-6 md:start-10">{topStart}</div> : null}
-        {topEnd ? <div className="absolute end-5 top-6 text-sm md:end-10">{topEnd}</div> : null}
+        {topStart || topEnd ? (
+          // One row, so the two corners share the width instead of overlapping on a phone.
+          <div className="absolute inset-x-5 top-6 flex items-start justify-between gap-4 md:inset-x-10">
+            <div className="shrink-0">{topStart}</div>
+            {topEnd ? <div className="min-w-0 text-end text-sm">{topEnd}</div> : null}
+          </div>
+        ) : null}
         <div className="w-full max-w-[27.5rem]">{children}</div>
       </main>
     </div>

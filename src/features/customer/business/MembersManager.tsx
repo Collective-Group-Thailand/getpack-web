@@ -8,6 +8,7 @@ import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -49,6 +50,7 @@ function RoleBoxes({ value, onChange, legend }: { value: Role[]; onChange: (role
  * roles (`store.companies.changeMemberRoles`; the last Company Admin keeps the role, 409
  * `companies.last_admin`) and removes people (`store.companies.removeMember`); everyone else reads
  * the list. Members are shown by name and role only: their e-mail and phone stay private (D-224).
+ * The list is a `PortalTable` (UX pass 2026-10-16) and roles are edited in one panel under it.
  */
 export function MembersManager({
   companyId,
@@ -69,6 +71,7 @@ export function MembersManager({
   const [editing, setEditing] = useState<{ id: string; roles: Role[] } | null>(null);
   const [removing, setRemoving] = useState<Member | null>(null);
   const [busy, setBusy] = useState(false);
+  const editingMember = editing ? members.find((member) => member.id === editing.id) : undefined;
 
   async function run(call: () => Promise<unknown>, done: string) {
     setBusy(true);
@@ -105,83 +108,97 @@ export function MembersManager({
 
   return (
     <div className="flex flex-col gap-8">
-      <ul className="flex flex-col gap-3">
-        {members.map((member) => (
-          <li key={member.id} className="bg-surface border-border rounded-lg border p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-medium">
-                  {member.user.displayName}
-                  {member.id === selfId ? (
-                    <span className="text-muted ms-2 text-sm font-normal">{t("you")}</span>
-                  ) : null}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {member.roles.map((role) => (
-                    <Badge key={role} tone="neutral">
-                      {t(`roles.${role}`)}
-                    </Badge>
-                  ))}
-                  {member.status === "invited" ? <Badge tone="warning">{t("invitedBadge")}</Badge> : null}
-                </div>
-                {member.joinedAt ? (
-                  <p className="text-muted mt-1 text-xs">{t("joined", { date: format.date(member.joinedAt) })}</p>
-                ) : null}
-              </div>
-              {canManage ? (
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setEditing({ id: member.id, roles: member.roles })}
-                  >
-                    {t("editRoles")}
+      <PortalTable
+        caption={t("tableCaption")}
+        columns={[
+          { key: "name", label: t("columns.name") },
+          { key: "roles", label: t("columns.roles") },
+          { key: "joined", label: t("columns.joined"), className: "whitespace-nowrap" },
+          ...(canManage ? [{ key: "actions", label: t("columns.actions"), srOnly: true }] : []),
+        ]}
+        rows={members.map((member) => ({
+          id: member.id,
+          cells: {
+            name: (
+              <>
+                {member.user.displayName}
+                {member.id === selfId ? <span className="text-muted ms-2 text-sm font-normal">{t("you")}</span> : null}
+              </>
+            ),
+            roles: (
+              <span className="flex flex-wrap justify-end gap-1 md:justify-start">
+                {member.roles.map((role) => (
+                  <Badge key={role} tone="neutral">
+                    {t(`roles.${role}`)}
+                  </Badge>
+                ))}
+                {member.status === "invited" ? <Badge tone="warning">{t("invitedBadge")}</Badge> : null}
+              </span>
+            ),
+            joined: member.joinedAt ? format.date(member.joinedAt) : t("notJoined"),
+            actions: canManage ? (
+              <span className="flex justify-end gap-2 md:justify-start">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  aria-expanded={editing?.id === member.id}
+                  aria-controls="members-roles-editor"
+                  onClick={() => setEditing({ id: member.id, roles: member.roles })}
+                >
+                  {t("editRoles")}
+                  <span className="sr-only"> {member.user.displayName}</span>
+                </Button>
+                {member.id !== selfId ? (
+                  <Button size="sm" variant="ghost" onClick={() => setRemoving(member)}>
+                    {t("remove")}
                     <span className="sr-only"> {member.user.displayName}</span>
                   </Button>
-                  {member.id !== selfId ? (
-                    <Button size="sm" variant="ghost" onClick={() => setRemoving(member)}>
-                      {t("remove")}
-                      <span className="sr-only"> {member.user.displayName}</span>
-                    </Button>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-            {editing?.id === member.id ? (
-              <div className="mt-4 flex flex-col gap-3">
-                <RoleBoxes
-                  value={editing.roles}
-                  onChange={(roles) => setEditing({ id: member.id, roles })}
-                  legend={t("rolesOf", { name: member.user.displayName })}
-                />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    loading={busy}
-                    disabled={editing.roles.length === 0}
-                    onClick={async () => {
-                      const ok = await run(
-                        () =>
-                          browserApi().PUT("/v1/store/companies/{companyId}/members/{memberId}/roles", {
-                            params: { path: { companyId, memberId: member.id } },
-                            body: { roles: editing.roles },
-                          }),
-                        t("saved"),
-                      );
-                      if (ok) setEditing(null);
-                    }}
-                  >
-                    {t("save")}
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
-                    {t("cancel")}
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+                ) : null}
+              </span>
+            ) : null,
+          },
+        }))}
+      />
+
+      {editingMember && editing ? (
+        <section
+          id="members-roles-editor"
+          aria-labelledby="members-roles-title"
+          className="bg-surface border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
+        >
+          <h2 id="members-roles-title" className="text-lg font-semibold">
+            {t("rolesOf", { name: editingMember.user.displayName })}
+          </h2>
+          <RoleBoxes
+            value={editing.roles}
+            onChange={(roles) => setEditing({ id: editingMember.id, roles })}
+            legend={t("rolesLegend")}
+          />
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              loading={busy}
+              disabled={editing.roles.length === 0}
+              onClick={async () => {
+                const ok = await run(
+                  () =>
+                    browserApi().PUT("/v1/store/companies/{companyId}/members/{memberId}/roles", {
+                      params: { path: { companyId, memberId: editingMember.id } },
+                      body: { roles: editing.roles },
+                    }),
+                  t("saved"),
+                );
+                if (ok) setEditing(null);
+              }}
+            >
+              {t("save")}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
+              {t("cancel")}
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
       {canManage ? (
         <section
