@@ -89,7 +89,7 @@
     "title": "Quote request",
     "back": "All quote requests",
     "heading": "Quote request: {type}",
-    "submitted": "Request {code} sent. We will let you know by e-mail and LINE when the quotation is ready.",
+    "submitted": "Request {code} sent. We will notify you when the quotation is ready — through the channels set in your notifications.",
     "respondBy": "Our team will reply by {date}",
     "declinedTitle": "We are not able to quote this request",
     "quotesTitle": "Quotations",

@@ -8,6 +8,7 @@ import { PaymentPanel } from "@/features/customer/checkout/PaymentPanel";
 import { listMyOrderGroups } from "@/features/customer/orders/api.server";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
+import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("payment");
@@ -63,6 +64,14 @@ export default async function Page({ params }: { params: Promise<{ paymentId: st
             </p>
             <p className="bg-primary-subtle text-primary-subtle-fg mt-3 rounded-xl px-3.5 py-3 text-[13.5px] leading-relaxed">
               {t("afterPaying")}
+            </p>
+            {/* A customer who cannot pay now wants to know the order is kept and how to come back. */}
+            <p className="text-muted mt-3 text-[13px] leading-relaxed">
+              {t("payLater")}{" "}
+              <Link href="/account/orders" className="text-primary underline-offset-4 hover:underline">
+                {t("payLaterLink")}
+              </Link>
+              {group.expiresAt ? ` ${t("payLaterExpires", { date: format.dateTime(group.expiresAt) })}` : null}
             </p>
           </aside>
         ) : null}

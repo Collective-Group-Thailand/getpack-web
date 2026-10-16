@@ -10,6 +10,7 @@ import {
 import { pick } from "@/features/customer/catalog/localize";
 import { ProductGrid, type GridItem } from "@/features/customer/catalog/ProductGrid";
 import { CategoryTiles } from "@/features/customer/catalog/CategoryTiles";
+import { orderCards } from "@/features/customer/catalog/ordering";
 import { categoryHref } from "@/features/customer/catalog/paths";
 import { ProductSearchForm } from "@/features/customer/catalog/ProductSearchForm";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
@@ -101,7 +102,10 @@ export default async function ProductsPage({
       : []),
   ];
 
-  const catalogue: GridItem[] = products.data.map((product) => ({ kind: "catalog", product }));
+  // Within the page, what can be priced now first, then quotation products, services last — a
+  // buyer opened "สินค้า" to see boxes, not "ค่าเพลทพิมพ์" (customer walkthrough 2026-10-16). The
+  // API's order is kept inside each group (stable sort).
+  const catalogue: GridItem[] = orderCards(products.data).map((product) => ({ kind: "catalog", product }));
   const shelf: GridItem[] = stock.data.map((product) => ({ kind: "stock", product }));
   const empty = catalogue.length === 0 && shelf.length === 0;
 
@@ -181,7 +185,7 @@ export default async function ProductsPage({
                   <li key={chip.key}>
                     <Link
                       href={chip.href}
-                      className="bg-bg-subtle hover:bg-primary-subtle inline-flex items-center gap-1 rounded-control px-3 py-1 text-sm"
+                      className="bg-bg-subtle hover:bg-primary-subtle rounded-control inline-flex items-center gap-1 px-3 py-1 text-sm"
                     >
                       {chip.label}
                       <Icon name="close" size={12} aria-hidden="true" />

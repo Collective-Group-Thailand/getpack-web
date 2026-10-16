@@ -151,6 +151,34 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
   payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
 
+## Customer journeys — 2026-10-16
+
+The partner programme's method (`docs/ux-partner-journeys.md`) applied to everything a customer sees — storefront,
+checkout, account, company — as `docs/ux-customer-journeys.md`: each journey walked end to end as the customer who
+lives in it at 1280 px and 390 px against the UAT database, what blocks or confuses written down as the customer
+would say it, fixed, walked again. Six rounds; the findings in the doc. The headline fixes:
+
+- **Buying.** A first purchase no longer dead-ends in the cart: a line without an address opens its destination
+  editor with one row for the whole quantity, "เพิ่มที่อยู่ใหม่" when the address book is empty, "ใช้ที่อยู่นี้" to
+  save. Checkout warns only about what it cannot fix itself (an expired price), not about the address it is about
+  to ask for. "ค่าจัดส่ง", not "ค่าจัดส่งเพิ่มเติม". Products are ordered instant price → quotation → services. The
+  payment page says how to come back and pay later, and names the bank on a transfer account. The sign-in page's
+  two corners no longer overlap on a phone.
+- **After buying.** The order banner reads "เสร็จสมบูรณ์" / "ถ้าต้องการ" instead of "สิ่งที่ต้องทำ" once nothing is
+  due; the timeline shows the six most recent entries and folds the rest.
+- **Asking for a price.** The RFQ carries the product it started from (`?from=`); a category with no form of its
+  own offers the product's box styles and option groups as select fields (the API labels them, `RFQ_SPEC_LABELS`);
+  the confirmation names the channels the customer actually set.
+- **The company.** The overview says "ยังไม่มีคำสั่งซื้อในนามบริษัท" once instead of twelve months of ฿0.00; the
+  credit card links to ขอวงเงินเครดิต; members are a `PortalTable` with roles edited in one panel; the credit page
+  folds six zero ages into "ไม่มียอดค้างชำระ" and says when statements come; the company menu is the same single
+  fold as the account's on a phone (it was a chip strip cut off at the third item); the sign-up form puts the
+  account's phone in the local form and marks the KYC documents required.
+- **Content pages.** All nineteen load at both widths, none scroll sideways, none dead-end.
+- Checked: typecheck, lint on the changed files, 1219 unit tests, the buy flow re-walked on a 390 px phone to the
+  payment page, the company pages re-screenshotted. Not walkable here: slip upload and QR settlement (fake S3 and
+  PromptPay), the company application's submit (needs the uploads).
+
 ## Customer portal UX pass — 2026-10-16
 
 Walked every account menu as UAT customer C04 (orders in production and waiting for payment, saved quotations,

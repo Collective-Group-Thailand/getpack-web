@@ -59,18 +59,30 @@ function Destinations({
   const t = useTranslations("cart.destinations");
   const locale = useLocale();
   const format = useFormat();
+  // A fresh line has no destination yet: start with one row for the whole quantity, open, so a
+  // first-time buyer is asked for an address right here instead of finding the pay button dim
+  // with "ระบุที่อยู่จัดส่ง" and no way to do it (customer walkthrough 2026-10-16).
   const [rows, setRows] = useState(() =>
-    item.destinations.map((destination) => ({
-      addressId: destination.addressId ?? "",
-      quantity: String(destination.quantity),
-    })),
+    item.destinations.length > 0
+      ? item.destinations.map((destination) => ({
+          addressId: destination.addressId ?? "",
+          quantity: String(destination.quantity),
+        }))
+      : [{ addressId: "", quantity: String(item.quantity) }],
   );
-  const [editing, setEditing] = useState(item.destinations.some((destination) => !destination.addressId));
+  const incomplete = item.destinations.length === 0 || item.destinations.some((destination) => !destination.addressId);
+  const [editing, setEditing] = useState(incomplete);
   const total = rows.reduce((sum, row) => sum + (Number(row.quantity) || 0), 0);
 
   if (!editing) {
     return (
       <div className="flex flex-col gap-1 text-sm">
+        {incomplete ? (
+          <p className="text-warning flex items-center gap-2 font-medium">
+            <Icon name="warning" size={16} aria-hidden="true" />
+            {t("choosePrompt")}
+          </p>
+        ) : null}
         <ul className="flex flex-col gap-1">
           {item.destinations.map((destination) => (
             <li key={destination.id} className="flex items-start gap-2">
@@ -85,8 +97,13 @@ function Destinations({
             </li>
           ))}
         </ul>
-        <Button size="sm" variant="link" className="self-start px-0" onClick={() => setEditing(true)}>
-          {item.destinations.length > 1 ? t("edit") : t("split")}
+        <Button
+          size="sm"
+          variant={incomplete ? "primary" : "link"}
+          className={incomplete ? "self-start" : "self-start px-0"}
+          onClick={() => setEditing(true)}
+        >
+          {incomplete ? t("chooseAction") : item.destinations.length > 1 ? t("edit") : t("split")}
         </Button>
       </div>
     );
@@ -94,8 +111,17 @@ function Destinations({
 
   return (
     <fieldset className="bg-surface border-border flex flex-col gap-3 rounded-lg border p-3">
-      <legend className="px-1 text-sm font-medium">{t("legend", { quantity: format.number(item.quantity) })}</legend>
-      {addresses.length === 0 ? <p className="text-muted text-sm">{t("noAddresses")}</p> : null}
+      <legend className="px-1 text-sm font-medium">
+        {t(rows.length > 1 ? "legend" : "legendOne", { quantity: format.number(item.quantity) })}
+      </legend>
+      {addresses.length === 0 ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-muted text-sm">{t("noAddresses")}</p>
+          <Button size="sm" iconStart="map-pin" onClick={onAddAddress}>
+            {t("newAddress")}
+          </Button>
+        </div>
+      ) : null}
       {rows.map((row, index) => (
         <div key={index} className="flex flex-wrap items-end gap-2">
           <Field label={t("address", { index: index + 1 })} className="min-w-48 flex-1">
@@ -147,9 +173,11 @@ function Destinations({
         >
           {t("addRow")}
         </Button>
-        <Button size="sm" variant="ghost" iconStart="map-pin" onClick={onAddAddress}>
-          {t("newAddress")}
-        </Button>
+        {addresses.length > 0 ? (
+          <Button size="sm" variant="ghost" iconStart="map-pin" onClick={onAddAddress}>
+            {t("newAddress")}
+          </Button>
+        ) : null}
         <Button
           size="sm"
           loading={saving}
@@ -159,7 +187,7 @@ function Destinations({
             setEditing(false);
           }}
         >
-          {t("save")}
+          {t(rows.length > 1 ? "save" : "saveOne")}
         </Button>
       </div>
     </fieldset>
@@ -429,7 +457,10 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
         ))}
       </ul>
 
-      <aside aria-labelledby="cart-summary" className="bg-surface border-border h-fit rounded-2xl border p-5 lg:sticky lg:top-20">
+      <aside
+        aria-labelledby="cart-summary"
+        className="bg-surface border-border h-fit rounded-2xl border p-5 lg:sticky lg:top-20"
+      >
         <h2 id="cart-summary" className="text-lg font-semibold">
           {t("summary")}
         </h2>
