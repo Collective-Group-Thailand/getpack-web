@@ -104,7 +104,7 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
   quotations: { key: "quotations", href: "/quotations", icon: "document", group: "sales", permission: "factory_sales.read" },
   salesOrders: { key: "salesOrders", href: "/sales-orders", icon: "cart", group: "sales", permission: "factory_sales.read" },
   deliveries: { key: "deliveries", href: "/deliveries", icon: "truck", group: "sales", permission: "factory_sales.read" },
-  // Packio Factory ERP (E1, D-316): the factory's own stock, buying and trading partners.
+  // getpack Factory ERP (E1, D-316): the factory's own stock, buying and trading partners.
   stock: { key: "stock", href: "/stock", icon: "warehouse", group: "supply", permission: "factory_inventory.read" },
   purchasing: {
     key: "purchasing",
@@ -248,7 +248,7 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
   requests: { key: "requests", href: "/requests", icon: "send", group: "factory" },
   knowledge: { key: "knowledge", href: "/knowledge", icon: "article", group: "factory" },
   // Everyone's own notifications live there too; users and the factory's profile only for whom may manage them.
-  // E5 (D-381): the owner lets Packio support read the ERP for a few days.
+  // E5 (D-381): the owner lets getpack support read the ERP for a few days.
   supportAccess: {
     key: "supportAccess",
     href: "/settings/support",
@@ -260,7 +260,7 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
 };
 
 /** What each role works with, from the audit's IA table; the owner has everything. */
-/** Every role: the guide, a request to Packio, and their own settings (notifications). */
+/** Every role: the guide, a request to getpack, and their own settings (notifications). */
 const EVERYONE: readonly SidebarItemKey[] = ["knowledge", "requests", "settings"];
 
 const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
@@ -323,7 +323,7 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "documents",
     ...EVERYONE,
   ],
-  // Packio Factory ERP roles (D-319): the store and the buying desk.
+  // getpack Factory ERP roles (D-319): the store and the buying desk.
   factory_storekeeper: [
     "today",
     "alerts",

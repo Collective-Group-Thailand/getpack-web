@@ -1,13 +1,13 @@
 # Studio templates — authoring guide
 
-Packio 3D Studio templates (U4.4, D-216, D-282) are **constraint layouts**: they say *where on
+getpack 3D Studio templates (U4.4, D-216, D-282) are **constraint layouts**: they say *where on
 which face* each piece goes, never in millimetres, so one template re-flows onto any size of any
 box style. The format is the web's (`layoutSchemaVersion` 1, `src/features/designer/templates/layout.ts`);
-packio-api stores it as given (`studio_templates.layout`) and serves it with
+getpack-api stores it as given (`studio_templates.layout`) and serves it with
 `store.studio.listTemplates`. The first set (21 templates: 7 use cases × 3 layouts) is in
 `src/features/designer/templates/library.ts`.
 
-Templates are **Packio's own** — never copied from another product, template site or brand. A
+Templates are **getpack's own** — never copied from another product, template site or brand. A
 template is published only after **Marketing approves it** (maker-checker, D-282) in the back
 office's studio templates (`admin.studioTemplates.*`).
 

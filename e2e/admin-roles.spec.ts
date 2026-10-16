@@ -6,7 +6,7 @@ import { gotoHydrated, signInAsStaff, type Persona } from "./helpers/session";
 
 /**
  * F2 2.8 — every back-office role, end to end: the sidebar holds exactly the entries the role is
- * entitled to (the mock builds `/v1/admin/me` from the same catalogue packio-api's menu follows),
+ * entitled to (the mock builds `/v1/admin/me` from the same catalogue getpack-api's menu follows),
  * and every one of them opens — a heading, no "no permission" page, no failed load. A screen
  * that asks the API for something the role may not read shows up here as a red row.
  */
@@ -22,7 +22,7 @@ for (const persona of PERSONAS) {
 
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
     const entries = MENU_CATALOGUE.filter((entry) => entitled(persona, entry));
-    // The sidebar also offers screens packio-api's menu does not list yet, by permission
+    // The sidebar also offers screens getpack-api's menu does not list yet, by permission
     // (`localItems`, CONTRACT-REQUEST admin.menu-samples); every one of them must open too.
     const LOCAL = ["/samples", "/structural-requests", "/style-intakes"];
     await expect(nav.getByRole("link").first()).toBeVisible();

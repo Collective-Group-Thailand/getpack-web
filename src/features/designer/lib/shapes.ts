@@ -1,5 +1,5 @@
 /*
- * Packio's shape library: simple geometric shapes drawn for Packio (no third-party icons or
+ * getpack's shape library: simple geometric shapes drawn for getpack (no third-party icons or
  * artwork), each as SVG path data in a 100 × 100 box that the canvas scales to the element.
  */
 

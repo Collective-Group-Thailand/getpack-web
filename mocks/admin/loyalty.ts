@@ -4,7 +4,7 @@
  *
  * The ledger is append-only and adds up to the balance the customer detail reports; baht values
  * use the point value in force (`loyalty.point_value`, D-131), and earnings wait for completion
- * plus the claim window before they are available (D-132). Consent purposes are packio-api's
+ * plus the claim window before they are available (D-132). Consent purposes are getpack-api's
  * seeded identities (`prisma/seed/data/reference.ts`).
  */
 

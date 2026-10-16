@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Packio 3D Studio — design your box"
+    "title": "getpack 3D Studio — design your box"
   },
   "steps": {
     "label": "Design steps",
@@ -69,7 +69,7 @@
     "printMethod": "Print method",
     "methods": {
       "auto": {
-        "label": "Let Packio choose",
+        "label": "Let getpack choose",
         "description": "The inks your artwork needs"
       },
       "digital": {
@@ -100,7 +100,7 @@
     "coating": "Coating",
     "noCoating": "No coating",
     "finishPrice": "The price dock shows what changes, and why",
-    "advisor": "Let Packio suggest the board",
+    "advisor": "Let getpack suggest the board",
     "advisorOpen": "Tell us the weight and journey",
     "refitted": "The artwork was fitted to the new size (undo to go back)"
   },
@@ -321,7 +321,7 @@
   },
   "designService": {
     "title": "Rather not design it yourself?",
-    "body": "Packio's design team carries on from what you placed, in this same design; you comment and approve in the studio",
+    "body": "getpack's design team carries on from what you placed, in this same design; you comment and approve in the studio",
     "open": "Have our team design it",
     "dialogTitle": "Brief for the design team",
     "dialogBody": "The brief starts from your box and what is on it — add what you want. The design fee shows in the cart",

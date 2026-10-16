@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { allFaces } from "@packio/dieline";
+import { allFaces } from "@getpack/dieline";
 
 import { formatNumber } from "@/i18n/format";
 import { Badge } from "@/ui/components/Badge";

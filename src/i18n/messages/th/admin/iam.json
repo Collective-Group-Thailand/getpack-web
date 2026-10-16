@@ -14,7 +14,7 @@
       "kind": "ประเภทบัญชี"
     },
     "kinds": {
-      "staff": "พนักงาน Packio",
+      "staff": "พนักงาน getpack",
       "partner": "ผู้ใช้โรงงาน",
       "customer": "ลูกค้า"
     },
@@ -24,7 +24,7 @@
       "description": "ลูกค้าสมัครเองผ่าน OTP, LINE หรือ Google/Apple ที่นี่จึงเพิ่มได้เฉพาะพนักงานและผู้ใช้โรงงาน บทบาทให้ในขั้นถัดไป",
       "kind": "ประเภทบัญชี",
       "kinds": {
-        "staff": "พนักงาน Packio",
+        "staff": "พนักงาน getpack",
         "partner": "ผู้ใช้โรงงาน"
       },
       "displayName": "ชื่อที่แสดง",
@@ -41,7 +41,7 @@
     "users": "ผู้ใช้และสิทธิ์",
     "breadcrumb": "เส้นทางหน้า",
     "kinds": {
-      "staff": "พนักงาน Packio",
+      "staff": "พนักงาน getpack",
       "partner": "ผู้ใช้โรงงาน",
       "customer": "ลูกค้า"
     },
@@ -122,7 +122,7 @@
     "description": "บทบาทตาม และสิทธิ์ของแต่ละบทบาท ตามที่ระบบหลังบ้านกำหนด",
     "audience": "กลุ่มผู้ใช้",
     "audiences": {
-      "staff": "พนักงาน Packio",
+      "staff": "พนักงาน getpack",
       "partner": "โรงงานพาร์ตเนอร์",
       "customer": "ลูกค้าองค์กร"
     },

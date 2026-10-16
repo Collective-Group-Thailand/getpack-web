@@ -63,8 +63,8 @@ const ENFORCE = process.env.STEP_BUDGETS === "enforce";
 /**
  * Records the app's funnel steps, from inside the page.
  *
- * `track()` raises `packio:funnel-step` with the app's own step name (`src/lib/analytics/track.ts`)
- * before mapping it onto packio-api's five ingest names, so the journeys count what the app did —
+ * `track()` raises `getpack:funnel-step` with the app's own step name (`src/lib/analytics/track.ts`)
+ * before mapping it onto getpack-api's five ingest names, so the journeys count what the app did —
  * including steps the API derives on its side instead of receiving (`docs/ux/funnels.md`).
  */
 async function captureEvents(context: BrowserContext, into: string[]): Promise<void> {
@@ -73,7 +73,7 @@ async function captureEvents(context: BrowserContext, into: string[]): Promise<v
   });
   await context.addInitScript(() => {
     const report = (window as unknown as { __journeyEvent: (name: string) => void }).__journeyEvent;
-    window.addEventListener("packio:funnel-step", (event) => {
+    window.addEventListener("getpack:funnel-step", (event) => {
       const name = (event as CustomEvent<string>).detail;
       if (typeof name === "string") report(name);
     });

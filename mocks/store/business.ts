@@ -1,5 +1,5 @@
 /**
- * Packio for business, mocked at the published paths (`store.companies.*`, `store.companyAssets.*`,
+ * getpack for business, mocked at the published paths (`store.companies.*`, `store.companyAssets.*`,
  * `store.companyApprovals.*`, `store.companyCredit.*`, the bulk reorder of `store.claims.*`).
  *
  * Companies are the back office's rows (`../admin/companies`, F2 2.7): a sign-up here waits on
@@ -508,7 +508,7 @@ export const storeBusinessHandlers = [
     return withEtag(toCompanyDto(found.store, found.member), companyTag(found.store));
   }),
 
-  // An invitation goes to someone who already has a Packio account, found by phone (E.164).
+  // An invitation goes to someone who already has a getpack account, found by phone (E.164).
   http.post("*/v1/store/companies/:companyId/members", async ({ params, request }) => {
     const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
@@ -516,7 +516,7 @@ export const storeBusinessHandlers = [
     const body = (await request.json().catch(() => ({}))) as Schemas["InviteMemberDto"];
     const local = body.phone?.startsWith("+66") ? `0${body.phone.slice(3)}` : body.phone;
     const persona = local ? MOCK_CUSTOMER_PHONES[local] : undefined;
-    if (!persona) return problem(422, "companies.account_not_found", "ไม่พบบัญชี Packio ของเบอร์นี้");
+    if (!persona) return problem(422, "companies.account_not_found", "ไม่พบบัญชี getpack ของเบอร์นี้");
     const invitee = customerByPersona(persona);
     if (found.store.members.some((member) => member.status !== "removed" && member.user.phone === local))
       return problem(409, "companies.already_member", "เบอร์นี้เป็นสมาชิกบริษัทอยู่แล้ว");

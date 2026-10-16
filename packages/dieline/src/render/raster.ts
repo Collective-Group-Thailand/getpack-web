@@ -2,7 +2,7 @@
  * A small software rasteriser for thumbnails (U3.3 §3): z-buffered triangles and anti-aliased-by-
  * supersampling lines into an RGBA buffer. Deterministic — the same input gives the same bytes on
  * any machine with the same JavaScript engine, no GPU and no browser — so `pnpm styles:render` is
- * reproducible and packio-api's drawing service can run it in Node (U3.B5).
+ * reproducible and getpack-api's drawing service can run it in Node (U3.B5).
  */
 
 export type Rgb = [number, number, number];

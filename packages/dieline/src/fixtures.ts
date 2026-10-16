@@ -5,8 +5,8 @@ import { resolveValues, STYLES } from "./styles";
 import type { MaterialSpec, ParamValues } from "./types";
 
 /**
- * Golden-comparison fixtures for packio-api (B4.1): one drawing per legacy Locopack pattern key
- * the registry maps, from the published engine. packio-api renders the same pattern at the same
+ * Golden-comparison fixtures for getpack-api (B4.1): one drawing per legacy Locopack pattern key
+ * the registry maps, from the published engine. getpack-api renders the same pattern at the same
  * `values` with the legacy drawing service and compares the two; `fixtures/patterns/*.svg` in
  * this package are the snapshots of this function's output, so a change to a style shows up as a
  * reviewed diff here before it reaches that comparison.

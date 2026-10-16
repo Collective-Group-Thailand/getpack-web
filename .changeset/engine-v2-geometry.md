@@ -1,5 +1,5 @@
 ---
-"@packio/dieline": major
+"@getpack/dieline": major
 ---
 
 Engine v2 — breaking. Faces are closed contours of line, arc and Bézier edges, each with a

@@ -133,7 +133,7 @@ function Matrix({
 }
 
 /**
- * The guarantee policy (D-198 – D-200, D-260): how fast Packio answers and decides a claim, and the
+ * The guarantee policy (D-198 – D-200, D-260): how fast getpack answers and decides a claim, and the
  * remedies by claim type and severity. The CS Lead proposes a version; it goes to C-Level as an
  * approval and applies from its date once approved, never backwards. One proposal at a time.
  */

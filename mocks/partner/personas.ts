@@ -1,10 +1,10 @@
 /**
  * The factory users the mock partner surface knows — one per D-140 factory role at the launch
  * factory (F001), plus the owners of two factories still onboarding: F005 (applied, filling its
- * own application) and F006 (under review, with data Packio entered for it to sign off — the
+ * own application) and F006 (under review, with data getpack entered for it to sign off — the
  * assisted onboarding of the D-100 note).
  *
- * Permissions are packio-api `docs/rbac.md` § "Partner factory (factory scope)", imported verbatim
+ * Permissions are getpack-api `docs/rbac.md` § "Partner factory (factory scope)", imported verbatim
  * by `pnpm gen:rbac`. All obviously fake.
  */
 
@@ -25,7 +25,7 @@ export type PartnerRole =
   | "factory_auditor";
 
 /**
- * packio-api's factory-scope grants, role by role (`pnpm gen:rbac`, triage `partner.permissions`):
+ * getpack-api's factory-scope grants, role by role (`pnpm gen:rbac`, triage `partner.permissions`):
  * the planner accepts and plans, operators report milestones and raise issues, QC records checks
  * and answers claims with the owner, shipping ships, the accountant keeps the books.
  */
@@ -36,14 +36,14 @@ export const ROLE_PERMISSIONS: Record<PartnerRole, readonly FactoryPermission[]>
   factory_qc: FACTORY_ROLE_GRANTS.factory_qc!,
   factory_shipping: FACTORY_ROLE_GRANTS.factory_shipping!,
   factory_accountant: FACTORY_ROLE_GRANTS.factory_accountant!,
-  // Packio Factory ERP roles (packio-api v0.44.0, D-319).
+  // getpack Factory ERP roles (getpack-api v0.44.0, D-319).
   factory_storekeeper: FACTORY_ROLE_GRANTS.factory_storekeeper!,
   factory_purchaser: FACTORY_ROLE_GRANTS.factory_purchaser!,
-  // E3 (packio-api v0.46.0, D-357).
+  // E3 (getpack-api v0.46.0, D-357).
   factory_maintenance: FACTORY_ROLE_GRANTS.factory_maintenance!,
-  // E4 (packio-api v0.47.0, D-371).
+  // E4 (getpack-api v0.47.0, D-371).
   factory_sales: FACTORY_ROLE_GRANTS.factory_sales!,
-  // E6 (packio-api v0.49.0, D-396).
+  // E6 (getpack-api v0.49.0, D-396).
   factory_auditor: FACTORY_ROLE_GRANTS.factory_auditor!,
 };
 

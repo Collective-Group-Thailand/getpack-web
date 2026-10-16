@@ -38,7 +38,7 @@ import type { PrepressTab } from "./resources";
  *
  * Composed from the lean order (`admin.orders.get`) and its artwork resources (`admin.artwork.list`,
  * `.listProofs`, `.listTemplates`, `admin.designs.listOrderDrawings`, `admin.designServices.list`);
- * no workspace aggregate is published, by packio-api's decision. CONTRACT-GAP admin.prepress — no
+ * no workspace aggregate is published, by getpack-api's decision. CONTRACT-GAP admin.prepress — no
  * stage or its SLA here (they are on the desk's queue rows, with the owner), no dieline size of the
  * order's own, no owner on the order (the owner shown is the one assigned on this page,
  * `admin.artwork.assignPrepress` answers 204), and no design document. The mockup job is not here:
@@ -105,7 +105,7 @@ export function PrepressWorkspace({
       toast.success(t("drawQueued"));
       settle();
     } catch (error) {
-      // packio-api answers 501 drawing.engine_unavailable until the engine ships; its detail says so.
+      // getpack-api answers 501 drawing.engine_unavailable until the engine ships; its detail says so.
       toast.error(problemMessage(error, t("drawFailed")));
     } finally {
       setDrawing(false);

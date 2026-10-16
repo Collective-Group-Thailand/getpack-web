@@ -8,7 +8,7 @@ import { createApiClient, newIdempotencyKey } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 
 /**
- * Packio Assistant against the mock API (U5.5, D-304–D-306): answers only from its tools, refuses
+ * getpack Assistant against the mock API (U5.5, D-304–D-306): answers only from its tools, refuses
  * price manipulation and other customers' data, hands off to CS, and the evaluation gate is staff
  * with `assistant.manage` only.
  */

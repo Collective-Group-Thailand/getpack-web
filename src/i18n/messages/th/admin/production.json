@@ -14,7 +14,7 @@
     "atRiskOnly": "เฉพาะงานเสี่ยงล่าช้า",
     "count": "{count} งาน",
     "risky": "เสี่ยง {count}",
-    "inspection": "ต้องตรวจคุณภาพโดย Packio",
+    "inspection": "ต้องตรวจคุณภาพโดย getpack",
     "promised": "กำหนดส่ง",
     "atRisk": "เสี่ยงล่าช้า",
     "predicted": "คาดว่าเสร็จ {date}",
@@ -57,7 +57,7 @@
   },
   "inspections": {
     "title": "งานตรวจคุณภาพ",
-    "description": "การสุ่มตรวจของ Packio ตามความเสี่ยง ISO 2859-1 ระดับ II",
+    "description": "การสุ่มตรวจของ getpack ตามความเสี่ยง ISO 2859-1 ระดับ II",
     "columns": {
       "job": "งาน",
       "reasons": "เหตุที่ถูกเลือก",

@@ -458,7 +458,7 @@ function Delegations() {
   );
 }
 
-/** `datetime-local` gives wall-clock text; the API wants an instant, and Packio's wall clock is Bangkok. */
+/** `datetime-local` gives wall-clock text; the API wants an instant, and getpack's wall clock is Bangkok. */
 function bangkokInstant(local: string): string {
   return local.length === 16 ? `${local}:00+07:00` : local;
 }

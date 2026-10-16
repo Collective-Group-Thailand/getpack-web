@@ -10,7 +10,7 @@ const COPY: Record<string, string> = {
 const t = Object.assign((key: string) => COPY[key]!, { has: (key: string) => key in COPY }) as ProblemTranslator;
 
 const error = (code: string, detail: string) =>
-  new ApiError({ type: `https://errors.packio/${code}`, title: code, status: 400, code, detail, requestId: "r-1" });
+  new ApiError({ type: `https://errors.getpack/${code}`, title: code, status: 400, code, detail, requestId: "r-1" });
 
 describe("problemCopy", () => {
   it("puts this app's title over the API's own detail, which carries the values", () => {

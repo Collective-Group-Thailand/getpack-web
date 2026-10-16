@@ -22,7 +22,7 @@ export interface PostcodeArea {
 
 /**
  * The areas a five-digit postcode covers, from the admin-maintained geography (D-161, D-170),
- * with the uuids `admin.customers.createAddress` takes. packio-api answers `admin.geo` with the
+ * with the uuids `admin.customers.createAddress` takes. getpack-api answers `admin.geo` with the
  * store's postcode lookup, which carries ids since v0.5.0 (`CodeNameRefDto`) — but it is a
  * `/v1/store` path, and the admin zone's BFF serves the admin surface only. So the desk reads the
  * admin geography, which carries the same ids: the postcode's subdistricts, then their districts

@@ -40,8 +40,8 @@
       "materials": "Materials library"
     },
     "company": {
-      "heading": "Packio",
-      "about": "About Packio",
+      "heading": "getpack",
+      "about": "About getpack",
       "partner": "Become a partner factory",
       "contact": "Contact us",
       "guarantee": "Our guarantee",
@@ -88,12 +88,12 @@
     "rfq": "Request a quote",
     "templates": "Box templates",
     "checkout": "Checkout",
-    "business": "Packio for business",
+    "business": "getpack for business",
     "track": "Track an order",
-    "liff": "Packio on LINE",
+    "liff": "getpack on LINE",
     "contact": "Contact us",
     "samples": "Request a sample kit",
-    "referral": "Invite a friend to Packio",
+    "referral": "Invite a friend to getpack",
     "order": "Order",
     "order_artwork": "Upload artwork",
     "order_proof": "Review the proof",
@@ -104,7 +104,7 @@
   "trust": {
     "guarantee": {
       "title": "Our guarantee",
-      "intro": "If what you receive has a problem, this is what Packio does, by the kind of problem and how serious it is",
+      "intro": "If what you receive has a problem, this is what getpack does, by the kind of problem and how serious it is",
       "emptyTitle": "The guarantee is not published yet",
       "emptyBody": "We are preparing it. If an order has a problem, report a claim from its page",
       "timesTitle": "Time limits",
@@ -144,7 +144,7 @@
       "link": "Our guarantee"
     },
     "network": {
-      "title": "Packio's factory network",
+      "title": "getpack's factory network",
       "intro": "Your boxes are made by audited partner factories. We do not name them; we publish how they are audited and how the network performs",
       "emptyTitle": "No network figures yet",
       "emptyBody": "They will show here when ready",
@@ -174,7 +174,7 @@
       "starsCount": "{rating} stars: {count, number}",
       "listTitle": "All reviews",
       "reviewHead": "{rating}/5 · {name} · {product} · {date}",
-      "reply": "Packio replied on {date}",
+      "reply": "getpack replied on {date}",
       "verified": "Verified from a real order",
       "link": "Customer reviews"
     }

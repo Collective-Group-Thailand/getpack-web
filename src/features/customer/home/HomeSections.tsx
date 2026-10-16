@@ -576,7 +576,7 @@ export async function QualityBand({
 
 /* ----------------------------------------------------------------------------------------- 9 */
 
-/** Product types that are not a packaging range (packio-api `prisma/seed/data/catalog.ts`). */
+/** Product types that are not a packaging range (getpack-api `prisma/seed/data/catalog.ts`). */
 const NOT_A_RANGE = new Set(["standard_product", "service"]);
 
 /** A category the home page lists: one with at least one packaging type in it. */

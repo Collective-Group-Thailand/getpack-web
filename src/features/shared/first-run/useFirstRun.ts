@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
  * means the hint shows again.
  */
 export function useFirstRun(key: string): { show: boolean; dismiss: () => void; reopen: () => void } {
-  const storageKey = `packio.firstRun.${key}`;
+  const storageKey = `getpack.firstRun.${key}`;
   const [show, setShow] = useState(false);
   useEffect(() => {
     let seen = true;

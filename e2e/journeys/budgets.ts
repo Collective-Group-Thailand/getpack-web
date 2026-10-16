@@ -147,18 +147,18 @@ export const EXCEPTIONS: Partial<Record<JourneyId, BudgetException>> = {
     ceiling: 7,
     cause:
       "D-082: a carton photo is required with every claim (store.claims.getForm cartonPhotosMin); D-198: the customer chooses the remedy",
-    owner: "CS Lead (D-082 per claim type) · packio-api",
+    owner: "CS Lead (D-082 per claim type) · getpack-api",
   },
   T11: {
     ceiling: 7,
-    cause: "packio-api: factory steps run strictly in order and a photo is taken only when a step finishes",
-    owner: "Partner Manager · packio-api",
+    cause: "getpack-api: factory steps run strictly in order and a photo is taken only when a step finishes",
+    owner: "Partner Manager · getpack-api",
   },
   T12: {
     ceiling: 8,
     cause:
       "D-203 / D-271: the free dieline needs a signed-in customer (2 steps); reaching a style from the home page takes 3 screens — a dieline entry without the library is open",
-    owner: "Marketing (D-203) · packio-web (dieline entry)",
+    owner: "Marketing (D-203) · getpack-web (dieline entry)",
   },
 };
 

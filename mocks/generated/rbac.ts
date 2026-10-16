@@ -1,8 +1,8 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: packio-api docs/rbac.md at v0.66.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
+ * Source: getpack-api docs/rbac.md at v0.66.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
  *
- * The permissions each D-140 staff role and factory role holds in packio-api, verbatim. The mock
+ * The permissions each D-140 staff role and factory role holds in getpack-api, verbatim. The mock
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 

@@ -67,7 +67,7 @@ function Values({ values, highlight }: { values: Record<string, unknown> | null;
  * One price proposal (D-040, D-042, D-044). A factory's proposal is decided line by line —
  * accept, reject or counter — against what is in force and, for staff with the right to see them,
  * the suggested value with its basis and deviation (D-040 note; flagged against a band only once
- * one is set, D-172), plus a 90-day impact simulation. A rate card Packio drafts for a
+ * one is set, D-172), plus a 90-day impact simulation. A rate card getpack drafts for a
  * platform-rate-card factory is edited here and sent for the factory's acceptance.
  */
 export function ProposalReview({ proposalId }: { proposalId: string }) {
@@ -198,9 +198,9 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
   const componentOf = (name: string) => components.data?.find((candidate) => candidate.component === name);
   const decidable =
     canReview &&
-    item.direction === "factory_to_packio" &&
+    item.direction === "factory_to_getpack" &&
     ["submitted", "under_review", "countered"].includes(item.status);
-  const editable = canReview && item.direction === "packio_to_factory" && item.status === "draft";
+  const editable = canReview && item.direction === "getpack_to_factory" && item.status === "draft";
   const valueKeys = (component?: Component) => component?.values.map((column) => column.key) ?? [];
 
   const setDecision = (line: Line, decision: Decision) =>

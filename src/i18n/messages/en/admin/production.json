@@ -14,7 +14,7 @@
     "atRiskOnly": "At risk only",
     "count": "{count} jobs",
     "risky": "{count} at risk",
-    "inspection": "Packio inspection required",
+    "inspection": "getpack inspection required",
     "promised": "Promised",
     "atRisk": "At risk",
     "predicted": "forecast {date}",
@@ -57,7 +57,7 @@
   },
   "inspections": {
     "title": "QC inspections",
-    "description": "Packio's risk-based inspections, ISO 2859-1 level II",
+    "description": "getpack's risk-based inspections, ISO 2859-1 level II",
     "columns": {
       "job": "Job",
       "reasons": "Why selected",

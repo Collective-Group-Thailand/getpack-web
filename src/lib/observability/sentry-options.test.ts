@@ -41,18 +41,18 @@ describe("sentryOptions", () => {
 
 describe("zoneFromHost", () => {
   it.each([
-    ["admin.packio.co.th", "admin"],
+    ["admin.getpack.co", "admin"],
     ["admin.localhost:3000", "admin"],
-    ["partner.packio.co.th", "partner"],
-    ["packio.co.th", "customer"],
-    ["www.packio.co.th", "customer"],
+    ["partner.getpack.co", "partner"],
+    ["getpack.co", "customer"],
+    ["www.getpack.co", "customer"],
     ["localhost:3000", "customer"],
   ])("reads %s as the %s zone", (hostname, zone) => {
     expect(zoneFromHost(hostname)).toBe(zone);
   });
 
   it("does not let a hostname claim to be the customer zone by name", () => {
-    // "customer" is not a host label Packio uses; treating it as one would let
+    // "customer" is not a host label getpack uses; treating it as one would let
     // `customer.example.com` tag itself, and the fallback already covers the storefront.
     expect(zoneFromHost("customer.example.com")).toBe("customer");
   });

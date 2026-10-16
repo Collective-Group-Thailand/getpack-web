@@ -15,7 +15,7 @@ import { toast } from "@/ui/components/Toast";
 
 /**
  * One week's capacity of one product type, changed by the factory itself (`factory_capacity.manage`): a holiday,
- * a machine overhaul, an extra shift. Packio books new jobs against it from then on.
+ * a machine overhaul, an extra shift. getpack books new jobs against it from then on.
  */
 export function WeekCapacity({
   productTypeId,

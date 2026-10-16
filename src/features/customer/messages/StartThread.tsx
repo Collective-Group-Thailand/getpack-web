@@ -33,7 +33,7 @@ async function open(subject: Subject, draft: { body?: string; fileIds?: string[]
 }
 
 /**
- * A new message to Packio's team, inline (the messages page's support thread). Continues the live
+ * A new message to getpack's team, inline (the messages page's support thread). Continues the live
  * thread when there is one (the API keeps one per subject, D-300).
  */
 export function NewSupportMessage({ quickReplies }: { quickReplies: string[] }) {

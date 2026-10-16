@@ -16,7 +16,7 @@ export const LAYER_ORDER: readonly LayerName[] = ["CUT", "CREASE", "PERF", "HALF
 
 /**
  * The die-maker's colour convention per layer. Pure red cut and pure blue crease are what the
- * trade reads; these are file conventions, not Packio's brand colours.
+ * trade reads; these are file conventions, not getpack's brand colours.
  */
 export const LAYER_STYLE: Record<
   LayerName,

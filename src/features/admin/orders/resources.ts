@@ -14,7 +14,7 @@ export type CancelReason = Schemas["CancelReasonDto"];
 export type Quotation = Schemas["AdminSavedQuoteDto"];
 export type DiscountMemo = Schemas["DiscountMemoDto"];
 
-/** packio-api's order queues, in the desk's order. The first is the one the desk opens on. */
+/** getpack-api's order queues, in the desk's order. The first is the one the desk opens on. */
 export const ORDER_QUEUES = [
   "waiting_payment",
   "artwork_review",

@@ -22,7 +22,7 @@ export function problem(
 ) {
   return HttpResponse.json(
     {
-      type: `https://errors.packio/${code}`,
+      type: `https://errors.getpack/${code}`,
       title: code,
       status,
       code,

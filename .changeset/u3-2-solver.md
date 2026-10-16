@@ -1,5 +1,5 @@
 ---
-"@packio/dieline": minor
+"@getpack/dieline": minor
 ---
 
 Constraint solver and manufacturability (U3.2): material classes with rule sets

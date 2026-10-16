@@ -26,7 +26,7 @@ const STATUSES = ["pending", "published", "hidden"] as const satisfies readonly 
 
 /**
  * Customer reviews (D-265): new ones wait for moderation; a moderator publishes or hides each, and
- * those who may reply answer on Packio's behalf (one reply, shown under the review). The order and
+ * those who may reply answer on getpack's behalf (one reply, shown under the review). The order and
  * the loyalty points the review earned are on the row.
  */
 export function ReviewsDesk() {

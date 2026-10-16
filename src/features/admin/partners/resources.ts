@@ -47,7 +47,7 @@ export const proposalsList = defineList<ProposalSummary>({
   staleTime: STALE_TIME.live,
 });
 
-/** Packio's inspections (`admin.inspections.list`), by status and factory; no search or sort. */
+/** getpack's inspections (`admin.inspections.list`), by status and factory; no search or sort. */
 export const inspectionsList = defineList<Inspection>({
   key: "inspection",
   fetch: async ({ contract }, query) =>

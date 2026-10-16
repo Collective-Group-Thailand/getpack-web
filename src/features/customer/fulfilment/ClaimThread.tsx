@@ -20,7 +20,7 @@ import { FileLink } from "../files/FileLink";
 
 type Claim = Schemas["StoreClaimDto"];
 
-/** What a claim's resolution did that the customer is told of — not how Packio recovers it (D-083). */
+/** What a claim's resolution did that the customer is told of — not how getpack recovers it (D-083). */
 const CUSTOMER_ACTIONS = new Set<Schemas["ClaimAction"]>(["reproduction_job", "refund", "credit_note", "store_credit"]);
 const DECIDED = new Set<Claim["status"]>(["approved", "rejected", "resolved", "closed"]);
 

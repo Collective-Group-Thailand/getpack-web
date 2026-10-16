@@ -16,7 +16,7 @@ const BENEFITS: { key: string; icon: IconName }[] = [
   { key: "reorder", icon: "refresh" },
 ];
 
-/** Packio for business, for a visitor (F3 3.7): what a company account adds, and how to open one. */
+/** getpack for business, for a visitor (F3 3.7): what a company account adds, and how to open one. */
 export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
   const t = await getTranslations("business.landing");
   const page = await pageContext("/business", t("metaTitle"));

@@ -370,7 +370,7 @@
     "eanHint": "Type 12 digits and the check digit is added",
     "invalid": "A code cannot be made from this value",
     "addCode": "Add code",
-    "packio": "Packio elements",
+    "getpack": "getpack elements",
     "kinds": {
       "shape": "Shapes",
       "icon": "Icons",
@@ -687,7 +687,7 @@
   },
   "shared": {
     "metaTitle": "A shared box design",
-    "home": "Packio home",
+    "home": "getpack home",
     "badge": "Shared design · view only",
     "mm": "mm",
     "sharedAt": "Shared {time}",
@@ -726,7 +726,7 @@
     "softProof": "Soft proof"
   },
   "studioTemplates": {
-    "title": "Packio templates",
+    "title": "getpack templates",
     "useCase": "Made for",
     "all": "Everything",
     "useCases": {

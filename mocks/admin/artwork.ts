@@ -50,7 +50,7 @@ const pageOf = (url: URL) => ({
   perPage: Number(url.searchParams.get("perPage") ?? 25),
 });
 
-/** packio-api's order statuses that still take artwork, and never once it is approved. */
+/** getpack-api's order statuses that still take artwork, and never once it is approved. */
 const TAKES_ARTWORK = ["waiting_payment", "paid_for_production", "artwork_approved"];
 
 /** An order's prepress row, with any delivered design round turned into its proof. */
@@ -63,7 +63,7 @@ function notAccepting(detail: PrepressDetail) {
   return detail.artworkStatus === "approved" || !TAKES_ARTWORK.includes(detail.orderStatus);
 }
 
-/** What the next revision costs, as packio-api answers it once changes were requested (D-071). */
+/** What the next revision costs, as getpack-api answers it once changes were requested (D-071). */
 function withNextRevision(detail: PrepressDetail): Schemas["DesignServiceDto"] {
   const service = detail.designService!;
   const dto = toDesignService(detail, service);
@@ -76,7 +76,7 @@ function withNextRevision(detail: PrepressDetail): Schemas["DesignServiceDto"] {
             revisionNo: last.roundNo,
             chargeable: last.chargeable,
             feeNet: last.feeAmount,
-            // VAT on the API's fee, as packio-api's settings compute it.
+            // VAT on the API's fee, as getpack-api's settings compute it.
             feeGross: last.chargeable && last.feeAmount ? baht(Math.round(satang(last.feeAmount) * 1.07)) : null,
           }
         : dto.nextRevision,
@@ -117,7 +117,7 @@ export const artworkContractHandlers = [
     const artworkStatus = url.searchParams.get("artworkStatus");
     const rows = queueItems(asked as QueueKind)
       .filter((row) => matchesQuery(q, row.orderCode))
-      // `none` is the unassigned work, as packio-api reads it.
+      // `none` is the unassigned work, as getpack-api reads it.
       .filter((row) =>
         !assigneeId ? true : assigneeId === "none" ? row.assignee === null : row.assignee?.id === assigneeId,
       )
@@ -169,7 +169,7 @@ export const artworkContractHandlers = [
     if (notAccepting(detail)) return problem(409, "artwork.not_accepting", "คำสั่งซื้อนี้ไม่รับไฟล์งานแล้ว");
     submission.status = "rejected";
     rejectReasons.set(submission.id, body.reason.trim());
-    // packio-api: the order's artwork goes to changes_requested (D-070).
+    // getpack-api: the order's artwork goes to changes_requested (D-070).
     detail.artworkStatus = "changes_requested";
     refreshPrepress(detail);
     return HttpResponse.json(toSubmission(detail, submission));
@@ -362,7 +362,7 @@ export const artworkContractHandlers = [
   http.post("*/v1/admin/orders/:orderId/drawings", ({ params, request }) => {
     if (!allowed(request, "drawings.generate")) return forbidden();
     if (!rowOf(String(params.orderId))) return notFound("ไม่พบคำสั่งซื้อนี้");
-    // B4.1: until @packio/dieline is deployed server-side, the drawing service answers this.
+    // B4.1: until @getpack/dieline is deployed server-side, the drawing service answers this.
     return problem(501, "drawing.engine_unavailable", "ระบบวาดแบบกล่องยังไม่พร้อมใช้งาน ส่งแบบจากไฟล์ที่มีอยู่แทน");
   }),
 

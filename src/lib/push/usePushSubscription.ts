@@ -20,7 +20,7 @@ const SERVICE_WORKER_PATH = "/sw.js";
  * `state` tells a caller whether asking is even possible — so "prompt only after a meaningful
  * action" is enforced by there being no other way to do it, rather than by a comment.
  *
- * On the contract packio-api B1.3 published: `GET /v1/{surface}/web-push/vapid-public-key` and
+ * On the contract getpack-api B1.3 published: `GET /v1/{surface}/web-push/vapid-public-key` and
  * `POST /v1/{surface}/web-push/subscriptions`.
  */
 export function usePushSubscription(zone: Zone) {

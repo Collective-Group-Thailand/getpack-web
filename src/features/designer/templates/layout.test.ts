@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allFaces, faceBounds, getStyle, hingeMapOf, pointInPolygon, flattenContour, STYLES } from "@packio/dieline";
+import { allFaces, faceBounds, getStyle, hingeMapOf, pointInPolygon, flattenContour, STYLES } from "@getpack/dieline";
 
 import { uprightAngles } from "../lib/upright";
 import type { DesignContent } from "../types";

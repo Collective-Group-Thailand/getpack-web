@@ -101,7 +101,7 @@ function BrandLockup() {
   );
 }
 
-/** A flat carton's outline with its fold lines dashed — Packio's own drawing, decorative. */
+/** A flat carton's outline with its fold lines dashed — getpack's own drawing, decorative. */
 function DielineSketch() {
   return (
     <svg viewBox="0 0 200 120" aria-hidden="true" className="h-24 w-40 shrink-0">

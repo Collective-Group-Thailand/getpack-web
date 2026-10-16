@@ -22,7 +22,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
 /**
- * Confirming a statement makes it the basis of the factory's bill to Packio (D-090) — a
+ * Confirming a statement makes it the basis of the factory's bill to getpack (D-090) — a
  * financial act the API marks irreversible, so the BS number is typed to confirm and the gross
  * amount restated (00-master-plan §8). One `Idempotency-Key` per intent.
  */

@@ -7,7 +7,7 @@ import {
   remapV1Point,
   type Dieline,
   type Pt,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 import type { BoxDims, DesignContent, DesignElement, DesignSpec } from "./types";
 

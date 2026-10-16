@@ -3,7 +3,7 @@
  * campaigns with budgets (D-154), promotions with typed conditions and benefits (D-053), their
  * coupon codes and their batches, the priority reorder and the promotion report; and referral
  * attributions held for review (D-136). Referral promotions are system-managed (409
- * `promotions.system_managed`), as packio-api answers.
+ * `promotions.system_managed`), as getpack-api answers.
  *
  * The promotion engine is the API's: this mock only stores configuration and reports usage.
  * The budget alert threshold comes from the setting `campaigns.budget_alert_pct`; a held referral
@@ -296,7 +296,7 @@ function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
 }
 
 /**
- * The benefit in words, Thai and English — packio-api's `benefit-summary.ts` at v0.6.0, so the
+ * The benefit in words, Thai and English — getpack-api's `benefit-summary.ts` at v0.6.0, so the
  * screens never word a benefit themselves. Amounts are the stored decimal strings.
  */
 function benefitSummary(benefit: Schemas["PromotionBenefitDto"]): { th: string; en: string } {

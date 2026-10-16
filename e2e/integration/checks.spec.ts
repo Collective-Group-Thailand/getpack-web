@@ -4,11 +4,11 @@ import { HOSTS } from "../../playwright.config";
 import { DEV_INSTANT_PRODUCT, runId, signInCustomer } from "./support";
 
 /**
- * U4.5 parity on the real packio-api (`v0.41.0`): a studio design whose document breaks the rules
- * packio-api evaluates on the document — an EAN-13 whose check digit is wrong, beside a good one — is checked by `store.studio.runChecks`, and the studio shows the same rule ids for the
+ * U4.5 parity on the real getpack-api (`v0.41.0`): a studio design whose document breaks the rules
+ * getpack-api evaluates on the document — an EAN-13 whose check digit is wrong, beside a good one — is checked by `store.studio.runChecks`, and the studio shows the same rule ids for the
  * same elements. (The dev seed leaves the text and spot-colour rules off, D-278.)
  */
-test("the studio and packio-api find the same document rules for the same version", async ({ context, page }) => {
+test("the studio and getpack-api find the same document rules for the same version", async ({ context, page }) => {
   test.slow();
   await signInCustomer(context, runId("checks"));
   const query = new URLSearchParams({ product: DEV_INSTANT_PRODUCT, style: "rsc", l: "400", w: "300", h: "250" });
@@ -32,7 +32,7 @@ test("the studio and packio-api find the same document rules for the same versio
   await page.getByRole("textbox", { name: "ตัวเลข 13 หลัก" }).fill("5901234123458");
   await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 30_000 });
 
-  // Entering ④ runs packio-api's checks on the saved version; the run the studio got is the server's answer.
+  // Entering ④ runs getpack-api's checks on the saved version; the run the studio got is the server's answer.
   const response = page.waitForResponse((r) => r.url().endsWith(`/studio/${id}/checks`) && r.request().method() === "POST");
   await page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" }).getByRole("button", { name: /ตรวจงาน/ }).click();
   await expect(page.getByRole("button", { name: /บาร์โค้ดใช้ไม่ได้/ })).toHaveCount(1, { timeout: 30_000 });

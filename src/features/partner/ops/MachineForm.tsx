@@ -21,7 +21,7 @@ const size = (value: string) => {
 };
 
 /**
- * Add or edit a machine (D-355): the same record Packio reads in the capability profile, so a machine
+ * Add or edit a machine (D-355): the same record getpack reads in the capability profile, so a machine
  * added here is one the platform can route work to. Retiring keeps its history.
  */
 export function MachineButton({ machine }: { machine?: Machine }) {

@@ -84,7 +84,7 @@ describe("next actions", () => {
     expect(nextActionMeta("order.approve_slip").labelKey).toBe("action.approve");
   });
 
-  it("presents every action packio-api offers", () => {
+  it("presents every action getpack-api offers", () => {
     // `NextActionDto.key` is a string in the contract, so the build cannot hold this table to it.
     expect(API_ACTION_KEYS.filter((key) => nextActionMeta(key) === UNKNOWN_ACTION)).toEqual([]);
   });

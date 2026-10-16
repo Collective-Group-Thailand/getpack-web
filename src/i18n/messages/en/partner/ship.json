@@ -5,7 +5,7 @@
     "body": "Create a shipment per destination; split it across several if needed.",
     "meta": "{good} good of {ordered} ordered",
     "blocked": {
-      "inspection_pending": "Waiting for Packio's inspection before shipping",
+      "inspection_pending": "Waiting for getpack's inspection before shipping",
       "payment_pending": "The customer has not paid the before-shipping instalment: you can prepare, not dispatch"
     },
     "left": "{left} of {total} still to ship",
@@ -58,9 +58,9 @@
     "carrier": "How it goes",
     "fleet": "Our own truck",
     "fleetHint": "Record a POD (photos + signature) on hand-over",
-    "packio": "Ask Packio to book a carrier",
-    "packioHint": "Packio sends a pickup slot · confirmed within 2 hours",
-    "packioReason": "The factory asked Packio to book a carrier when creating the shipment",
+    "getpack": "Ask getpack to book a carrier",
+    "getpackHint": "getpack sends a pickup slot · confirmed within 2 hours",
+    "getpackReason": "The factory asked getpack to book a carrier when creating the shipment",
     "cancel": "Cancel",
     "submit": "Create shipment + print {count, plural, one {# label} other {# labels}}",
     "finish": "Finish {no}",
@@ -75,9 +75,9 @@
     "done": "{no} dispatched"
   },
   "carrier": {
-    "action": "Ask Packio for a carrier",
+    "action": "Ask getpack for a carrier",
     "title": "Request the fallback carrier",
-    "body": "Your fleet cannot reach this address for {no}; Packio books a carrier and tells you.",
+    "body": "Your fleet cannot reach this address for {no}; getpack books a carrier and tells you.",
     "confirm": "Send",
     "reason": "Why",
     "reasonHint": "E.g. outside the zones you deliver to",
@@ -90,7 +90,7 @@
     "photoRequired": "Take at least one photo of the delivery",
     "signatureRequired": "Get the receiver's signature or typed name",
     "uploadFailed": "Upload failed — try again",
-    "done": "Delivery recorded — waiting for Packio's review",
+    "done": "Delivery recorded — waiting for getpack's review",
     "photos": "Delivery photos",
     "photosHint": "Photograph the goods where they were left",
     "receiver": "Received by",
@@ -114,9 +114,9 @@
     "back": "Back to shipping",
     "summary": "{jobNo} · {quantity} pcs · {cartons} cartons",
     "blockedTitle": "Cannot dispatch yet",
-    "blockedBody": "The customer has not paid the before-shipping instalment; Packio tells you when it can go.",
+    "blockedBody": "The customer has not paid the before-shipping instalment; getpack tells you when it can go.",
     "carrierRequestedTitle": "Carrier requested",
-    "carrierRequestedBody": "Asked {at}: {reason} — Packio is booking the carrier and will confirm the pickup.",
+    "carrierRequestedBody": "Asked {at}: {reason} — getpack is booking the carrier and will confirm the pickup.",
     "printLabels": "Print carton labels ({count})",
     "podTitle": "Proof of delivery",
     "podBody": "Required for every delivery by your own fleet",
@@ -139,14 +139,14 @@
       "label": "1. Label the cartons",
       "labelBody": "One label per carton; the packing list travels with the goods",
       "send": "2. Send",
-      "sendBody": "Send with your own truck, or ask Packio to book a carrier"
+      "sendBody": "Send with your own truck, or ask getpack to book a carrier"
     }
   },
   "tolerance": {
     "exact": "Delivered in full",
     "shortage_within": "Short, within tolerance",
     "overage_within": "Over, within tolerance",
-    "shortage_outside": "Short beyond tolerance — Packio opens a claim",
+    "shortage_outside": "Short beyond tolerance — getpack opens a claim",
     "overage_outside": "Over beyond tolerance",
     "detail": "The whole order's result, once every trip of it is delivered"
   },
@@ -166,7 +166,7 @@
   },
   "ready": {
     "action": "Packed — make labels and packing list",
-    "hint": "Packio makes the carton labels and packing list for {no}",
+    "hint": "getpack makes the carton labels and packing list for {no}",
     "done": "{no} is ready"
   },
   "cancel": {

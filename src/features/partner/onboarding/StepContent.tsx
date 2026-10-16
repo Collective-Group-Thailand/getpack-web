@@ -311,13 +311,13 @@ async function BankAccounts({ context }: Props) {
   );
 }
 
-/* ------------------------------------------------------------------ recorded by Packio */
+/* ------------------------------------------------------------------ recorded by getpack */
 
 async function RecordedNote() {
   const t = await getTranslations("partnerOnboarding");
   return (
     <Callout tone="info" icon="info">
-      {t("recordedByPackio")}
+      {t("recordedByGetpack")}
     </Callout>
   );
 }
@@ -783,7 +783,7 @@ async function SiteVisits({ context }: Props) {
                 <Card padding="md" className="flex flex-wrap items-center gap-2">
                   <span className="flex-1 font-medium">{format.date(visit.visitedOn)}</span>
                   <StatusChip map={SITE_VISIT_RESULT} value={visit.result} size="md" />
-                  {/* CONTRACT-GAP partner.site-visits — date and result only: Packio's notes stay with the Partner team. */}
+                  {/* CONTRACT-GAP partner.site-visits — date and result only: getpack's notes stay with the Partner team. */}
                 </Card>
               </li>
             ))}

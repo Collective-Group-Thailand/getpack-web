@@ -4,7 +4,7 @@ import { attempt, partnerServerApis } from "@/features/partner/context/server";
 import type { Schemas } from "@/lib/api/types";
 
 /**
- * Reads the Packio Factory ERP screens share (E1, D-316): the factory's items, warehouses, suppliers
+ * Reads the getpack Factory ERP screens share (E1, D-316): the factory's items, warehouses, suppliers
  * and settings, for the forms' pickers. Every list is the factory's own (`/factories/{factoryId}/erp`,
  * D-317); a picker shows active records only.
  */

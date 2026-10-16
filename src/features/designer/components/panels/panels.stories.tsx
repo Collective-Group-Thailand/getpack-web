@@ -1,6 +1,6 @@
 import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import { NextIntlClientProvider } from "next-intl";
-import { faceBounds, findFace, REFERENCE_MATERIALS, SPEC_VERSION } from "@packio/dieline";
+import { faceBounds, findFace, REFERENCE_MATERIALS, SPEC_VERSION } from "@getpack/dieline";
 
 import common from "@/i18n/messages/th/common/common.json";
 import designer from "@/i18n/messages/th/customer/designer.json";
@@ -62,7 +62,7 @@ function elements(): DesignElement[] {
   const heading = { ...newText(at(0.5, 0.55), "ชาไทยโบราณ"), id: "heading", name: "ชื่อสินค้า" };
   const small = { ...newText(at(0.5, 0.72), "ส่วนประกอบ: ใบชา 100%", "body"), id: "small", fontSize: 1.6 };
   const vivid = { ...newShape(at(0.5, 0.85), "rect"), id: "badge", fill: "#00c2ff" };
-  const qr = { ...newCode(at(0.5, 0.97), "qr", "https://packio.example/p/123"), id: "qr", locked: true };
+  const qr = { ...newCode(at(0.5, 0.97), "qr", "https://getpack.example/p/123"), id: "qr", locked: true };
   const photo = { ...PHOTO, id: "photo" };
   return [heading, small, vivid, qr, photo] as DesignElement[];
 }

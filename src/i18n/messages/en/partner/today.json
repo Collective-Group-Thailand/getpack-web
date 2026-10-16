@@ -2,7 +2,7 @@
   "title": "Today",
   "greeting": "Hello, {name}",
   "stage": {
-    "applied": "Finish your application to start with Packio",
+    "applied": "Finish your application to start with getpack",
     "under_review": "The Partner team is reviewing your factory",
     "trial": "Trial — your first jobs are all inspected"
   },
@@ -12,18 +12,18 @@
   "tasks": {
     "title": "Waiting for you",
     "signOff": "Sign off {count, plural, one {# step} other {# steps}}",
-    "signOffBody": "Data Packio entered for you",
-    "rateCard": "Answer Packio's {type} rate card",
+    "signOffBody": "Data getpack entered for you",
+    "rateCard": "Answer getpack's {type} rate card",
     "rateCardBody": "{count, plural, one {# line} other {# lines}} to answer",
-    "countered": "Packio countered — {type}",
+    "countered": "getpack countered — {type}",
     "counteredBody": "{count, plural, one {# line} other {# lines}} to answer",
-    "pricesToSignOff": "Sign off the {type} prices Packio entered",
+    "pricesToSignOff": "Sign off the {type} prices getpack entered",
     "pricesToSignOffBody": "{lines} lines",
     "none": "Nothing is waiting for you right now",
     "statement": "Check statement {no}",
     "statementBody": "Confirm or dispute it",
     "claim": "Answer claim {no}",
-    "claimBody": "Packio is waiting for your side"
+    "claimBody": "getpack is waiting for your side"
   },
   "floor": {
     "clear": "Nothing waiting: {list}",
@@ -42,16 +42,16 @@
     "queueEmpty": "Nothing in the queue",
     "acceptanceOverdue": "{count, plural, one {# past the acceptance window} other {# past the acceptance window}}",
     "alerts": {
-      "acceptance_overdue": "Past the acceptance window since {at}; Packio may move the job",
+      "acceptance_overdue": "Past the acceptance window since {at}; getpack may move the job",
       "acceptance_due_soon": "Accept by {at}",
       "step_overdue": "The current step has been due since {at}",
-      "inspection_planned": "Packio inspects on {at}"
+      "inspection_planned": "getpack inspects on {at}"
     },
     "alertsUndated": {
-      "acceptance_overdue": "Past the acceptance window; Packio may move the job",
+      "acceptance_overdue": "Past the acceptance window; getpack may move the job",
       "acceptance_due_soon": "The acceptance window closes soon",
       "step_overdue": "The current step is past due",
-      "inspection_planned": "Packio plans to inspect this job"
+      "inspection_planned": "getpack plans to inspect this job"
     }
   },
   "inbox": {
@@ -108,8 +108,8 @@
     "due": "Due {date}",
     "on": "{date}",
     "by": "By {name}",
-    "acceptJob": "Accept Packio job {no} ({quantity} pcs)",
+    "acceptJob": "Accept getpack job {no} ({quantity} pcs)",
     "acceptBy": "Accept or decline by {at}",
-    "packioWork": "Work from Packio"
+    "getpackWork": "Work from getpack"
   }
 }

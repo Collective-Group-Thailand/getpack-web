@@ -71,7 +71,7 @@ function useLineValue() {
 }
 
 /**
- * Packio's sell-margin tables (D-063): per product type, print type (or every print type) and
+ * getpack's sell-margin tables (D-063): per product type, print type (or every print type) and
  * kind — margin tiers, target margins, fixed costs and design fees — each a dated series of
  * versions. A draft becomes the price only when Superadmin or C-Level approves it.
  */

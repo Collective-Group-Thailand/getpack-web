@@ -28,8 +28,8 @@ import { useViewerLabels } from "@/features/partner/viewer";
 /**
  * The factory's answer to a claim that names it (D-083, `partner.claims.respond`): accept it, or
  * dispute it with what happened and its own photos (uploaded first, then named by id). The note is
- * optional to the API; a dispute asks for one, since Packio decides on it. The claim goes back to
- * Packio's claims desk either way.
+ * optional to the API; a dispute asks for one, since getpack decides on it. The claim goes back to
+ * getpack's claims desk either way.
  */
 export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: string }) {
   const t = useTranslations("partnerAccount.claims.respond");
@@ -172,7 +172,7 @@ export function ScoreChart({ months, monthLabels }: { months: Scorecard[]; month
 
 /* ------------------------------------------------------------------------------ settings */
 
-/** The roles an owner may give (`FactoryStaffRole`): never the owner role, which Packio grants (D-171). */
+/** The roles an owner may give (`FactoryStaffRole`): never the owner role, which getpack grants (D-171). */
 const STAFF_ROLES = [
   "factory_planner",
   "factory_operator",
@@ -316,7 +316,7 @@ export function CreateUser() {
 /**
  * One user's roles and whether they may sign in (`partner.factoryUsers.setRoles` / `deactivate`).
  * Setting roles on a deactivated user reactivates them. The owner cannot change themselves, and
- * owners are Packio's to manage (D-171).
+ * owners are getpack's to manage (D-171).
  */
 export function EditUser({ user }: { user: User }) {
   const t = useTranslations("partnerAccount.users");

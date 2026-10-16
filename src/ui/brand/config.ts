@@ -10,6 +10,6 @@
  * (`common.brand.tagline`). The English name, tagline and company stay because they are the
  * legal identity rather than translatable text: they read the same in both locales.
  */
-export const BRAND_NAME = "Packio";
+export const BRAND_NAME = "getpack";
 export const BRAND_TAGLINE = "Your Packaging Production Partner";
 export const BRAND_COMPANY = "Collective Group (Thailand)";

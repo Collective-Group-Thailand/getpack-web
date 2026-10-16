@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * The factory's way to activation (D-011, D-041, D-171): where it stands — applied, in review,
- * trial, active — and the thirteen steps, with what Packio entered for it still to sign off.
+ * trial, active — and the thirteen steps, with what getpack entered for it still to sign off.
  */
 export default async function OnboardingPage() {
   const t = await getTranslations("partnerOnboarding");
@@ -104,7 +104,7 @@ export default async function OnboardingPage() {
                           {t("awaitingSignOff")}
                         </Badge>
                       ) : step.enteredByStaff ? (
-                        <Badge size="sm">{t("enteredByPackio")}</Badge>
+                        <Badge size="sm">{t("enteredByGetpack")}</Badge>
                       ) : null}
                     </span>
                   </span>

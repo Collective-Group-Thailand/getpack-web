@@ -1,4 +1,4 @@
-import { allFaces, faceBounds, faceLabel, type Dieline, type Face } from "@packio/dieline";
+import { allFaces, faceBounds, faceLabel, type Dieline, type Face } from "@getpack/dieline";
 
 export interface PositionWords {
   top: string;

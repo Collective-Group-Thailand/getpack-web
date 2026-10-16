@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-/** The sample queue (U2.F3). packio-api's menu has no entry yet: reached from Orders (CONTRACT-REQUEST admin.menu-samples). */
+/** The sample queue (U2.F3). getpack-api's menu has no entry yet: reached from Orders (CONTRACT-REQUEST admin.menu-samples). */
 export default async function SamplesPage({ searchParams }: Props) {
   const t = await getTranslations("orders.samples");
   const initial = await prefetchList(samplesList, await searchParams);

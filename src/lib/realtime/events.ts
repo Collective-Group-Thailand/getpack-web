@@ -11,7 +11,7 @@
  * So this module never returns data. It turns an event into a set of cache keys to drop, and
  * TanStack Query does the rest.
  *
- * The frames are packio-api B1.3's `{ type, id?, channel }`. `channel` says which of this
+ * The frames are getpack-api B1.3's `{ type, id?, channel }`. `channel` says which of this
  * principal's channels it came from; it is not needed to decide what to refetch, so it is dropped.
  */
 

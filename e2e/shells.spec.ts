@@ -16,9 +16,9 @@ test.describe("admin shell", () => {
     await signInAsStaff(page);
 
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
-    // The mock builds a CS agent's menu from packio-api's grants for the role (docs/rbac.md), as its
+    // The mock builds a CS agent's menu from getpack-api's grants for the role (docs/rbac.md), as its
     // menu catalogue does: these entries and nothing else. Reports carry no permission of their own
-    // in packio-api's menu; CS reads artwork (prepress) and production.
+    // in getpack-api's menu; CS reads artwork (prepress) and production.
     const expected = [
       "ภาพรวม",
       "รายการรออนุมัติ",

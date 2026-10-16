@@ -2,7 +2,7 @@
 
 > Printed (or shown one at a time on screen) for the moderated rounds in
 > `competitive-scorecard.md`. **Part A** is what the participant sees: Thai only, one card per
-> page, the same words on the competitor and on Packio. **Part B** is the moderator's sheet: the
+> page, the same words on the competitor and on getpack. **Part B** is the moderator's sheet: the
 > start state, the stop point, what counts as done, and how to count (`step-counting.md`).
 > Instructions are the scorecard's own wording; nothing here is taken from a competitor.
 
@@ -93,7 +93,7 @@ company name, company address, tax id, order code. Every value is test data — 
 participant's own company, and never typed into the competitor's site (see
 `moderator-guide.md` §4).
 
-| # | Journey | Start state — Packio | Start state — competitor | Stop point | Done when | Unit / budget |
+| # | Journey | Start state — getpack | Start state — competitor | Stop point | Done when | Unit / budget |
 |---|---|---|---|---|---|---|
 | T1 | discovery → price | home page, signed out | home page, signed out | a price for 500 pcs is on screen | the participant points at a price that is for 500 pcs of a box that fits (inner ≥ 20 × 15 × 8 cm) | steps ≤ 4 to a real price |
 | T2 | studio | a new design of the T1 box open in the studio; `logo.png` on the desktop | the equivalent box open in the competitor's mockup tool | 3D view with the logo on top and front | both faces show the logo in 3D | steps ≤ 6 |
@@ -103,14 +103,14 @@ participant's own company, and never typed into the competitor's site (see
 | T6 | target price | configurator for the T1 box at 500 pcs, price above 8 ฿/pc | the competitor's spec form | the participant stops or 5 minutes pass | the participant changes a lever that moves the price toward 8 ฿ without help | lever found unaided (yes/no) |
 | T7 | tracking | a LINE notification on the test phone for the seeded in-production order | a notification from the competitor if the demo account has an order; otherwise "not possible" | stage and date spoken aloud | the participant names the current stage and the promised date | steps ≤ 2 from the notification |
 | T8 | reorder | order list of the seeded delivered order, signed in | same, if an order exists | payment / checkout page — nothing is paid | the summary shows the same product, 2,000 pcs | steps ≤ 3 |
-| T9 | claim | order list of the seeded delivered order; `claim-1.jpg`, `claim-2.jpg` (product and carton) on the device | same, if an order exists; **stop before submitting** | Packio: submitted to the test backend · competitor: before submit | the claim form is complete with reason "print defect / colour" | steps ≤ 5 |
+| T9 | claim | order list of the seeded delivered order; `claim-1.jpg`, `claim-2.jpg` (product and carton) on the device | same, if an order exists; **stop before submitting** | getpack: submitted to the test backend · competitor: before submit | the claim form is complete with reason "print defect / colour" | steps ≤ 5 |
 | T10 | documents | order list, signed in, the seeded order has a tax invoice | same, if an order exists | the tax invoice is open | the open document is a **tax invoice** (ใบกำกับภาษี) for the info-card order | steps ≤ 2 |
 | T11 | partner job | partner zone on an Android phone, signed in as a floor operator, one job waiting | supplier console, sub-account; record "not possible" if no inquiry is waiting | the "printing started" update is sent | the job shows accepted and the print step started with a photo | taps ≤ 4, one hand |
 | T12 | dieline | home page, signed out, laptop with Illustrator | same | the file is open in Illustrator | the file opens with named layers (cut, crease, bleed, safe) | steps ≤ 3 |
 
 Notes:
 - **"Not possible"** is recorded, not skipped, when the competitor cannot do the task at all
-  (e.g. a real price in T1, an instant order in T4). It counts as a Packio win only if Packio's
+  (e.g. a real price in T1, an instant order in T4). It counts as a getpack win only if getpack's
   completion on that task is ≥ 90 % (scorecard §2).
 - **T7–T10 on the competitor need an order in the moderator's demo account.** The benchmark
   account had none (`docs/benchmark/kumopack-2026-09-29.md`). Until one exists these tasks are

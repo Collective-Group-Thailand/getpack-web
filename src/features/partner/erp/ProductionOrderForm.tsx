@@ -24,7 +24,7 @@ type Source = "stock" | "sales_order";
 
 /**
  * A production order of the factory's own (D-340): what to make, how many, for stock or a customer's order,
- * by when — materials and steps come from the product's recipe, scaled by the API. Packio jobs need none of
+ * by when — materials and steps come from the product's recipe, scaled by the API. getpack jobs need none of
  * this: they become orders when the factory accepts them.
  */
 export function ProductionOrderForm({

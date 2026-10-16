@@ -2,7 +2,7 @@ import type { Schemas } from "@/lib/api/types";
 
 type FaqGroup = Schemas["StoreFaqGroupDto"];
 
-/** A development fixture's marker (`prisma/seed/dev-seed.ts` in packio-api). */
+/** A development fixture's marker (`prisma/seed/dev-seed.ts` in getpack-api). */
 const DEV_MARK = /^\s*\[DEV\]/;
 /** An internal decision reference — "(D-051)", "(D-051, D-176)" — never customer copy. */
 const DECISION_REF = /\s*\((?:D-\d{3}[\s,/–-]*)+\)/g;

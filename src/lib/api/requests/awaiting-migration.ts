@@ -1,5 +1,5 @@
 /**
- * Contract requests packio-api has since published, still served by their request definitions.
+ * Contract requests getpack-api has since published, still served by their request definitions.
  *
  * Adopting the B2–B6 contract (2026-09-28) made 86 requests real at once. Moving each screen to
  * `serverApi` / `browserApi` means following the published shape, which can differ from the one
@@ -9,7 +9,7 @@
  * is deleted — so the list only shrinks.
  */
 export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
-  // Contract v0.4.0–v0.6.0 (2026-10-01) published every request packio-api's U-B0 groups built,
+  // Contract v0.4.0–v0.6.0 (2026-10-01) published every request getpack-api's U-B0 groups built,
   // U-F0.4 moved all three zones off them, and U-F0.5 moved the parked configurator (below).
 ];
 

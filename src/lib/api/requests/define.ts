@@ -1,7 +1,7 @@
 /**
  * Contract requests as code (ADR-0006, CLAUDE.md "if an endpoint does not exist…").
  *
- * An endpoint the frontend needs and `packio-api` has not shipped is written down **once**,
+ * An endpoint the frontend needs and `getpack-api` has not shipped is written down **once**,
  * here, as a zod schema — and that one definition does four jobs:
  *
  * 1. **Types the call site.** `requests.call("GET /v1/admin/saved-views", …)` is typed by the

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "description": "Order packaging online with Packio: see starting prices and production times straight away, design boxes at true size, and follow every step of production"
+    "description": "Order packaging online with getpack: see starting prices and production times straight away, design boxes at true size, and follow every step of production"
   },
   "hero": {
     "title": "Boxes your customers remember<br></br>designed by you, right here<br></br>priced as you go",
@@ -18,7 +18,7 @@
     }
   },
   "trust": {
-    "label": "Why Packio",
+    "label": "Why getpack",
     "dieline": {
       "title": "Dielines at true size",
       "body": "Enter a size and the box unfolds — download the dieline free"

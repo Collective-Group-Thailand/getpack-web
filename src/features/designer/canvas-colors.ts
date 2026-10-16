@@ -16,7 +16,7 @@ import { oklchToHex, PALETTES, PRINT } from "@/ui/tokens";
  *   light theme's palette because the artwork underneath is always on white or kraft board —
  *   the work area does not invert with the app theme, or a proof would lie about the print.
  *
- * Not here: the dieline **SVG export** in `@packio/dieline` writes pure red (#ff0000) for cut
+ * Not here: the dieline **SVG export** in `@getpack/dieline` writes pure red (#ff0000) for cut
  * and pure blue (#0066ff) for crease. Those are the die-maker's convention for a cut file, not
  * our colours, and they must not follow the brand.
  */

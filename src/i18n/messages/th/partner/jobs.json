@@ -44,7 +44,7 @@
   "reject": {
     "action": "ปฏิเสธงาน",
     "title": "ปฏิเสธงาน {jobNo}",
-    "body": "Packio จะย้ายงาน {jobNo} ไปโรงงานอื่นหรือติดต่อกลับ การปฏิเสธนับในผลงานของโรงงาน",
+    "body": "getpack จะย้ายงาน {jobNo} ไปโรงงานอื่นหรือติดต่อกลับ การปฏิเสธนับในผลงานของโรงงาน",
     "confirm": "ปฏิเสธงาน",
     "note": "รายละเอียด",
     "noteHint": "เช่น เครื่องพิมพ์ซ่อมถึงวันศุกร์",
@@ -80,7 +80,7 @@
       "duplicate": "บันทึกนี้ส่งไปแล้ว หน้านี้แสดงข้อมูลล่าสุด",
       "already_started": "ขั้นตอนนี้เริ่มจากอุปกรณ์อื่นแล้ว หน้านี้แสดงข้อมูลล่าสุด",
       "already_completed": "ขั้นตอนนี้บันทึกเสร็จจากอุปกรณ์อื่นแล้ว หน้านี้แสดงข้อมูลล่าสุด",
-      "skipped": "Packio ข้ามขั้นตอนนี้แล้ว"
+      "skipped": "getpack ข้ามขั้นตอนนี้แล้ว"
     },
     "inPlaceholder": "จำนวนที่รับมาจากขั้นก่อน",
     "goodPlaceholder": "จำนวนชิ้นดีที่ส่งต่อได้",
@@ -134,7 +134,7 @@
   },
   "issue": {
     "tooShort": "เล่าปัญหาอย่างน้อย 3 ตัวอักษร",
-    "raised": "แจ้งปัญหาแล้ว Packio เห็นในบอร์ดการผลิต",
+    "raised": "แจ้งปัญหาแล้ว getpack เห็นในบอร์ดการผลิต",
     "kind": "ประเภทปัญหา",
     "kinds": {
       "material_shortage": "วัสดุไม่พอ",
@@ -172,7 +172,7 @@
   },
   "card": {
     "late": "ล่าช้า",
-    "inspection": "Packio ตรวจ",
+    "inspection": "getpack ตรวจ",
     "quantity": "{quantity} ชิ้น",
     "ship": "ส่ง {date}",
     "step": "{name}",
@@ -223,7 +223,7 @@
     "destinationQty": "{quantity} ชิ้น · ส่งแล้ว {shipped}",
     "quality": "คุณภาพ",
     "qcBy": "ตรวจโดย {name}",
-    "inspection": "Packio ตรวจคุณภาพงานนี้",
+    "inspection": "getpack ตรวจคุณภาพงานนี้",
     "inspectionOn": "นัดวันที่ {date}",
     "issues": "ปัญหา",
     "summaryNoDate": "{title} · {quantity} ชิ้น",
@@ -283,7 +283,7 @@
     "override": {
       "change": "ปรับสัปดาห์นี้",
       "title": "กำลังผลิต {type} สัปดาห์ {week}",
-      "body": "เช่น หยุดซ่อมเครื่อง วันหยุดยาว หรือเพิ่มกะ — Packio จะจองงานใหม่ตามตัวเลขนี้",
+      "body": "เช่น หยุดซ่อมเครื่อง วันหยุดยาว หรือเพิ่มกะ — getpack จะจองงานใหม่ตามตัวเลขนี้",
       "capacity": "กำลังผลิตสัปดาห์นี้",
       "reason": "เหตุผล",
       "reasonPlaceholder": "เช่น ซ่อมบำรุงเครื่องพิมพ์ 2 วัน",
@@ -315,7 +315,7 @@
   },
   "knowledge": {
     "title": "คู่มือโรงงาน",
-    "body": "มาตรฐานและวิธีทำงานกับ Packio",
+    "body": "มาตรฐานและวิธีทำงานกับ getpack",
     "search": "ค้นหา",
     "searchPlaceholder": "ค้นหาคู่มือ",
     "categories": "หมวด",
@@ -327,7 +327,7 @@
   },
   "intakes": {
     "title": "เสนอแบบไดคัท",
-    "body": "ส่งแบบกล่องที่โรงงานผลิตได้ให้ Packio พิจารณาเพิ่มในคลังแบบ",
+    "body": "ส่งแบบกล่องที่โรงงานผลิตได้ให้ getpack พิจารณาเพิ่มในคลังแบบ",
     "offerTitle": "ส่งแบบใหม่",
     "offerBody": "ไฟล์ DXF หรือ PDF ฝ่ายเตรียมพิมพ์จะตรวจเทียบกับแบบในคลัง",
     "closed": "ยังไม่เปิดรับแบบจากโรงงาน (ยังไม่มีเงื่อนไขการรับแบบ)",
@@ -358,7 +358,7 @@
       "baseCodePlaceholder": "เช่น RSC-01 (ไม่ทราบเว้นว่างได้)",
       "notePlaceholder": "เช่น ผลิตได้ขนาดสูงสุดเท่าไร ใช้เครื่องอะไร"
     },
-    "closedAsk": "บอก Packio ว่าคุณมีแบบที่อยากเสนอ"
+    "closedAsk": "บอก getpack ว่าคุณมีแบบที่อยากเสนอ"
   },
   "spec": {
     "style": {
@@ -404,22 +404,22 @@
       },
       "hired_design": {
         "term": "ไฟล์งาน",
-        "value": "ทีม Packio ออกแบบให้"
+        "value": "ทีม getpack ออกแบบให้"
       },
       "free_design": {
         "term": "ไฟล์งาน",
-        "value": "ทีม Packio ออกแบบให้"
+        "value": "ทีม getpack ออกแบบให้"
       }
     }
   },
   "qcQueue": {
     "title": "คิวตรวจคุณภาพ",
-    "body": "{date} · เรียงตามเวลาที่ Packio นัดตรวจและงานที่ถึงขั้นตรวจคุณภาพ",
+    "body": "{date} · เรียงตามเวลาที่ getpack นัดตรวจและงานที่ถึงขั้นตรวจคุณภาพ",
     "waiting": "รอตรวจ {count}",
     "empty": "ไม่มีงานรอตรวจตอนนี้",
-    "inspections": "Packio นัดตรวจ",
-    "inspectionAt": "Packio นัดตรวจ {at} · สุ่ม {size} ชิ้น",
-    "inspectionUnscheduled": "Packio จะนัดเวลาตรวจ",
+    "inspections": "getpack นัดตรวจ",
+    "inspectionAt": "getpack นัดตรวจ {at} · สุ่ม {size} ชิ้น",
+    "inspectionUnscheduled": "getpack จะนัดเวลาตรวจ",
     "atQc": "ถึงขั้นตรวจคุณภาพ — พร้อมเริ่มตรวจ",
     "atStep": "ถึงขั้น {step}",
     "due": "ครบกำหนด {date}",
@@ -446,7 +446,7 @@
     "due": "ครบ {date}",
     "status": "สถานะ",
     "late": "ล่าช้า",
-    "inspection": "Packio จะมาตรวจ",
+    "inspection": "getpack จะมาตรวจ",
     "kinds": {
       "production": "ผลิต",
       "mockup": "ม็อกอัพ / ตัวอย่าง",

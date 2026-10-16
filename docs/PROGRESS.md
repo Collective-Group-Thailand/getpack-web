@@ -1,99 +1,99 @@
-# PROGRESS — packio-web
+# PROGRESS — getpack-web
 
 Running log maintained by the coding agent. Newest entry on top. This log starts fresh on 2026-09-22; nothing before this date may be assumed to exist in the codebase.
 
 | Date | Deliverable | Done | Deferred | Assumptions / questions (legacy file:line) |
 |---|---|---|---|---|
-| 2026-09-22 | Start | Repo contains the original BoxStudio single Next.js app (designer: RSC / tuck-end / tray dieline editor, localStorage designs, PNG/PDF/SVG export) plus the Packio prompt pack v3 (`docs/decisions.md` D-001…D-155, `docs/accounting-design.md`). Brand: **Packio — Your Packaging Production Partner** (Collective Group (Thailand)). | Everything from F0 Session 0.1 | ADR-0001…0003 are accepted decisions not yet implemented |
-| 2026-09-22 | **F0 Session 0.1** — structure, tooling, dieline package, zone-ready routes, rebrand | pnpm + Node 24; strict TS, ESLint flat config, Prettier; Vitest + Playwright safety net (41 unit, 4 e2e); Next 16 + React 19.3; `@packio/dieline` extracted; target folder structure; `[locale]` customer zone + `src/proxy.ts`; rebrand to Packio with localStorage migration; CI; ADR-0004…0007 | F0 Session 0.2 (`src/ui` foundation: tokens, fonts, components, Storybook, Lighthouse CI) | See the notes under this table |
+| 2026-09-22 | Start | Repo contains the original BoxStudio single Next.js app (designer: RSC / tuck-end / tray dieline editor, localStorage designs, PNG/PDF/SVG export) plus the getpack prompt pack v3 (`docs/decisions.md` D-001…D-155, `docs/accounting-design.md`). Brand: **getpack — Your Packaging Production Partner** (Collective Group (Thailand)). | Everything from F0 Session 0.1 | ADR-0001…0003 are accepted decisions not yet implemented |
+| 2026-09-22 | **F0 Session 0.1** — structure, tooling, dieline package, zone-ready routes, rebrand | pnpm + Node 24; strict TS, ESLint flat config, Prettier; Vitest + Playwright safety net (41 unit, 4 e2e); Next 16 + React 19.3; `@getpack/dieline` extracted; target folder structure; `[locale]` customer zone + `src/proxy.ts`; rebrand to getpack with localStorage migration; CI; ADR-0004…0007 | F0 Session 0.2 (`src/ui` foundation: tokens, fonts, components, Storybook, Lighthouse CI) | See the notes under this table |
 | 2026-09-23 | **F0 Session 0.2** — design-system foundation (`src/ui`) | Tokens in TS → generated CSS with a WCAG contrast gate (ADR-0003); self-hosted Noto Sans Thai / Anuphan / JetBrains Mono (ADR-0001); 30 Radix + CVA components with axe tests (ADR-0002); `pk_theme` light/dark/high-contrast; namespaced th/en messages, `formatTHB`, Buddhist-era dates, `src/domain/status` shape; Storybook 10 + docs; designer, home and My designs migrated onto `src/ui`; Lighthouse CI; React Compiler rules back to `error` | The rest of `design-system.md` §3 (DataTable, Combobox, DatePicker, PhoneInput, AddressForm, FileDropzone, Timeline, PriceSummary, ProofViewer, charts, partner shop-floor set) — built when F1–F5 first needs them | See the notes under the F0.2 heading |
 | 2026-09-23 | **F1 Deliverable 1.1** — zones, proxy, root layouts, security headers | Env schema (zod, server/client split, boot-validated); `src/proxy.ts` resolving zone from `Host`, rewriting admin/partner hosts, refusing cross-zone paths, per-zone nonce CSP + security headers, session-refresh decision; three root layouts with zone providers (theme, next-intl, TanStack Query, toasts), per-zone `not-found`/`error` and `global-error`; admin/partner locale from `pk_locale`; ESLint zone boundaries with a fixture test; 31 e2e (3 hosts, cross-zone 404s, noindex, CSP) and 76 new unit tests | F1 1.2 (contract, API clients, BFF, auth) and 1.3 (shells, observability, SEO, push, analytics) | See the notes under the F1.1 heading |
-| 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; adopted packio-api **B1.3**'s auth contract, retiring the seed F1.2 started against; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
+| 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; adopted getpack-api **B1.3**'s auth contract, retiring the seed F1.2 started against; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
 | 2026-09-24 | **F1 Deliverable 1.3** — shells, i18n, domain presentation, observability, quality gates | Eleven status maps behind one `contract.ts` indirection + the `status` namespace + `nextActions` renderer; messages split per zone with `react/jsx-no-literals`, ICU gates and the packaging glossary; the three zone shells (admin sidebar from `/v1/admin/me` entitlements, ⌘K, `?`, notification centre, storefront header/footer/bottom nav, partner shop-floor frame) and four new `src/ui` primitives; Sentry on all three runtimes with trace headers through the BFF and Web Vitals RUM; robots/sitemap/canonical/hreflang/JSON-LD on the indexed zone only; SSE→cache invalidation, web push, PWA manifest; typed D-102 funnel events behind a PDPA consent gate; five Lighthouse URL sets and Storybook visual snapshots. 481 unit, 78 e2e, 4 visual | F2–F6. The storefront's initial-JS budget is breached on every route type (see below) | See the notes under the F1.3 heading |
-| 2026-09-25 | **F2 Deliverable 2.1** — admin foundation | Adopted packio-api B1.3's platform contract (users, roles, approvals, audit, settings, flags, notifications, web push, realtime, files); status layer realigned to the backend's approved schema-design §4 (44 vocabularies, 7 typed on contract enums); contract requests as code (zod registry → typed calls, schema-checked mocks, an OpenAPI handoff document, a self-retiring test); mock API with the 14 D-140 personas over the backend's own seed data; `src/ui` back-office set (DataTable on TanStack Table 9, Combobox, FileDropzone, SlaTimer…); console framework (URL-driven lists, saved views, export, upload → preview → confirm import, `defineResource`, typed confirmations); dashboard, approvals inbox + detail + delegations, users & role grants with SoD/escalation checks, roles matrix, audit log, effective-dated settings editor, feature flags, notification templates & routes, outbox; ⌘K search; grouped sidebar. 555 unit, 100 e2e | 2.2–2.8 | See the notes under the F2.1 heading |
+| 2026-09-25 | **F2 Deliverable 2.1** — admin foundation | Adopted getpack-api B1.3's platform contract (users, roles, approvals, audit, settings, flags, notifications, web push, realtime, files); status layer realigned to the backend's approved schema-design §4 (44 vocabularies, 7 typed on contract enums); contract requests as code (zod registry → typed calls, schema-checked mocks, an OpenAPI handoff document, a self-retiring test); mock API with the 14 D-140 personas over the backend's own seed data; `src/ui` back-office set (DataTable on TanStack Table 9, Combobox, FileDropzone, SlaTimer…); console framework (URL-driven lists, saved views, export, upload → preview → confirm import, `defineResource`, typed confirmations); dashboard, approvals inbox + detail + delegations, users & role grants with SoD/escalation checks, roles matrix, audit log, effective-dated settings editor, feature flags, notification templates & routes, outbox; ⌘K search; grouped sidebar. 555 unit, 100 e2e | 2.2–2.8 | See the notes under the F2.1 heading |
 | 2026-09-25 | **F2 Deliverable 2.2** — orders & CS desk | Nine contract-request groups (orders, order notes and actions, customers, geo, CS calculators, quotations, discount memos, CS create-order) with stateful mocks; the six CS queues; the order screen (sticky header with the API's next action, ten tabs, slip review, manual start, cancel, notes with @mentions, unified timeline, order groups); the seven D-100 calculators with a factory × print × quantity comparison and the D-052 memo threshold from the API; quotations, discount memos, create-order with split delivery; `keys-used` and `server-imports` unit gates. 562 unit, 113 e2e | 2.3–2.8 | See the notes under the F2.2 heading |
-| 2026-09-25 | **F2 Deliverable 2.3** — RFQ workspace | Adopted packio-api B2.1 (catalogue, CMS, geography; committed HEAD only); six contract-request groups for the RFQ desk with a stateful mock; RFQ queues with the SLA per category; the RFQ screen (request, factory costs, quote versions, thread; SLA, owner, customer and activity rail); request factory cost from capable factories (D-043); quote composer from a factory's suggested price with API-priced amounts; send, record acceptance → quotation → CS create-order; decline with an unmet-demand reason (D-102); shared `NextActionBar`; mock `catalog.read` aligned with the backend. 564 unit, 127 e2e | 2.4–2.8 | See the notes under the F2.3 heading |
+| 2026-09-25 | **F2 Deliverable 2.3** — RFQ workspace | Adopted getpack-api B2.1 (catalogue, CMS, geography; committed HEAD only); six contract-request groups for the RFQ desk with a stateful mock; RFQ queues with the SLA per category; the RFQ screen (request, factory costs, quote versions, thread; SLA, owner, customer and activity rail); request factory cost from capable factories (D-043); quote composer from a factory's suggested price with API-priced amounts; send, record acceptance → quotation → CS create-order; decline with an unmet-demand reason (D-102); shared `NextActionBar`; mock `catalog.read` aligned with the backend. 564 unit, 127 e2e | 2.4–2.8 | See the notes under the F2.3 heading |
 | 2026-09-25 | **F2 Deliverable 2.4** — prepress & design services | Six contract-request groups (B4.1) with a mock on the commerce orders; the prepress desk by stage with SLA; the per-order workspace: preflight report by severity with accept/send back (D-070), proof versions with upload & send and decision evidence, annotation page map with reply/resolve, template sending and dieline drawing (501 engine-unavailable handled), hired-design rounds with free-round meter and next-round fee (D-071), mockup job (D-072); read-only `DesignViewer` in the shared designer + "working copy"; shared `AssignDialog`; submission & drawing status maps. 568 unit, 138 e2e | 2.5–2.8 | See the notes under the F2.4 heading |
 | 2026-09-26 | **F2 Deliverable 2.5** — catalogue & CMS | On the **published** B2.1 contract (no contract requests): a stateful table mock (ETag/If-Match, archive by status) seeded from the contract's own list examples, now emitted by `gen:api`; a typed table registry of ~40 catalogue, CMS and geography tables driving one CRUD screen; product types with the reasoned quote-mode action (D-100); Excel import with preview → confirm by hash (D-005, D-170); home-section ordering; articles with a TipTap `RichTextEditor` in `src/ui`; catalogue/CMS maps by section; `catalog.import`, `seo.manage`, `geography.manage` from `docs/rbac.md`. 576 unit, 154 e2e | 2.6–2.8 | See the notes under the F2.5 heading |
-| 2026-09-26 | **F2 Deliverable 2.6** — partners & price governance, production floor | On the **published** B2.2 contract (adopted in 1aaa711 and 2880e4e) plus contract requests for the production board, inspections and scorecards: the factory pipeline and a seven-tab workspace (onboarding, profile, KYC, bank accounts behind D-033, capabilities/capacity/zones, versioned terms with D-173 approvals, site visits and D-041 activation, prices); proposal review with suggestions, line decisions and the 90-day simulation; Packio rate cards drafted line by line; coverage (D-043); index months; production board with at-risk, QC recording (D-076), scorecards; `SectionNav`; price-component names. 581 unit, 169 e2e | 2.7–2.8 | See the notes under the F2.6 heading |
+| 2026-09-26 | **F2 Deliverable 2.6** — partners & price governance, production floor | On the **published** B2.2 contract (adopted in 1aaa711 and 2880e4e) plus contract requests for the production board, inspections and scorecards: the factory pipeline and a seven-tab workspace (onboarding, profile, KYC, bank accounts behind D-033, capabilities/capacity/zones, versioned terms with D-173 approvals, site visits and D-041 activation, prices); proposal review with suggestions, line decisions and the 90-day simulation; getpack rate cards drafted line by line; coverage (D-043); index months; production board with at-risk, QC recording (D-076), scorecards; `SectionNav`; price-component names. 581 unit, 169 e2e | 2.7–2.8 | See the notes under the F2.6 heading |
 | 2026-09-26 | **F2 Deliverable 2.7** — marketing, B2B, customers | Eight contract-request groups for B3.3–B3.5 (campaigns, promotions, coupons, referrals, customer points and consents, companies, company credit) with stateful mocks; campaigns with the budget meter against the alert threshold (D-154); the promotion editor with typed D-053 conditions and benefit and its coupon codes; promotion priority; the referral review queue decided in approvals (D-136); loyalty and referral rules as setting versions; customers (profile, orders, points ledger, referrals, consents); companies (KYC review D-120, members, branches, credit via the `credit_limit` policy D-121, overdue block D-122, statements D-125, orders). Validation codes now read as words in every form; the approvals mock routes by step condition and notifies the subject. 584 unit, 184 e2e | 2.8 | See the notes under the F2.7 heading |
 | 2026-09-26 | **F2 Deliverable 2.8** — logistics, claims, analytics, hardening | Five contract-request groups (B4.3, B4.5, B6.1, B6.2) with stateful mocks: shipments (queues, split, fallback carrier quotes and booking, exceptions, labels, POD review with the tolerance result), claims (evidence, liability by rule with a permissioned override, idempotent resolutions), the demand dashboard on a new accessible `Chart` (Recharts, data-table fallback, loaded on demand) with suppressed small groups and the anonymised prospectus, and typed operational reports with the API's totals. Hardening: every role's menu opens cleanly (14 roles), axe on the new screens, chart visual baselines, and zod out of the browser — admin shell 490 → 363 KB, lists 501 → 390 KB — with the admin Lighthouse set split and re-ratcheted. 595 unit, 211 e2e, 8 visual | F3 onwards | See the notes under the F2.8 heading |
 | 2026-09-26 | **F3 Phase 3.1** — IA, content, auth, search | Seven storefront contract requests (price hints, product FAQs, public categories, profile, order by code; category filter and FAQ search hits as docs-only) with a storefront mock that reads the back office's own catalogue/CMS rows and two customer personas; every F3 route answers (later phases as `noindex` placeholders); a cached public catalogue read (Next data cache, no token, no per-request header); home from the API's sections and banners; `/products`, `/products/[key]` (category, product or stock product), articles, `/faq`; Product/BreadcrumbList/FAQPage JSON-LD; global search (GET page + instant dialog); Google/Apple/LINE sign-in with SDKs on click, PDPA consent after sign-in, progressive profiling; `/account` guarded; four `src/ui` components; storefront JS 341 → 256 KB. 639 unit (+31), 236 e2e (+25) | ISR/CDN for storefront HTML; the consent preferences centre (3.4); legal page content; LINE `link_phone`; cookie-banner choice synced to the account; the last 106 KB to the 150 KB budget | Caching at the data level because the CSP nonce makes every page dynamic; `/products/[key]` resolves category → product → stock; FAQ search client-side until `store.search-faq-hits`; consent asked after the session exists (texts need a customer token); `pnpm dev:mock` does not intercept server fetches (found, pre-existing, open) |
-| 2026-09-27 | **F3 Phase 3.2** — configurator, 3D/2D preview, instant quote, RFQ | Adopted packio-api's committed B2.3/B2.4 contract (`store.quotes.calculate` for folding); nine store contract-request groups with mocks (configurator, the six other calculators' configuration, saved quotes with share/PDF, promo check, support channels, RFQ forms, RFQs, cart) whose RFQs are the RFQ desk's own rows; `/configure/[slug]` for the seven instant types — adaptive stepper, pattern size rules explained as typed, display-only units, choices with swatches and explainers, quantity tiers, postcode, design option, D-072 mockup, promo code — beside a live CSS 3D box / 2D mockup and the quote dock (debounced, cancelled, price breaks, tolerance, validity, route to RFQ with the API's reason; add to cart / save / share / PDF behind a sign-in gate, design now, ask CS on LINE); `/rfq/[category]`, `/account/rfqs` and the status page with messages and a confirmed acceptance into the cart; six `src/ui` components. 660 unit (+21), 247 e2e (+11) | Cart page, checkout (3.3); `/account/quotes` (3.4, the save toast links to it); estimated receive date in the dock (not on committed HEAD); the other six calculators' own DTOs | Live price from the published endpoint, quotation kept only on an action; one cast for the non-folding bodies and the duplicate `AssemblyDto`; saving/sharing needs sign-in; mockup and promo applied on the quotation, not in the live price |
+| 2026-09-27 | **F3 Phase 3.2** — configurator, 3D/2D preview, instant quote, RFQ | Adopted getpack-api's committed B2.3/B2.4 contract (`store.quotes.calculate` for folding); nine store contract-request groups with mocks (configurator, the six other calculators' configuration, saved quotes with share/PDF, promo check, support channels, RFQ forms, RFQs, cart) whose RFQs are the RFQ desk's own rows; `/configure/[slug]` for the seven instant types — adaptive stepper, pattern size rules explained as typed, display-only units, choices with swatches and explainers, quantity tiers, postcode, design option, D-072 mockup, promo code — beside a live CSS 3D box / 2D mockup and the quote dock (debounced, cancelled, price breaks, tolerance, validity, route to RFQ with the API's reason; add to cart / save / share / PDF behind a sign-in gate, design now, ask CS on LINE); `/rfq/[category]`, `/account/rfqs` and the status page with messages and a confirmed acceptance into the cart; six `src/ui` components. 660 unit (+21), 247 e2e (+11) | Cart page, checkout (3.3); `/account/quotes` (3.4, the save toast links to it); estimated receive date in the dock (not on committed HEAD); the other six calculators' own DTOs | Live price from the published endpoint, quotation kept only on an action; one cast for the non-folding bodies and the duplicate `AssemblyDto`; saving/sharing needs sign-in; mockup and promo applied on the quotation, not in the live price |
 | 2026-09-27 | **F3 Phase 3.3** — cart, checkout, instalments, payments, promotions, points | Four contract-request groups with mocks (address book, checkout preview/placement, payments, instalments) whose orders are the back office's own rows; `/cart` with per-line design option, split delivery across addresses (D-110) and confirmed re-pricing (D-051); `/checkout` on one page — contact, delivery, tax invoice (checksum-checked profiles, withholding), codes with automatic and capped promotions (D-053), points within the API's limits (D-133), the API's schedules (D-020), method — priced by the API's preview and re-priced on placement with old/new totals confirmed; `/checkout/pay/[paymentId]` (QR with countdown and live status, 2C2P redirect and `/checkout/return`, bank transfer with the slip, D-061) and `/account/instalments`; shared address and tax-profile forms. 668 unit (+8), 252 e2e (+5) | Account orders, documents (3.4) — the success page links to `/account/orders`; B2B credit-term checkout and PO numbers (3.7); realtime payment updates (polling covers it until the channel exists) | The schedule belongs to the order group, each order carrying its share; sign-in required for a cart; a slip that fails the automatic check joins the CS slip queue and Finance's decision flows back; the mock settles QR payments through a mock-only webhook endpoint and 2C2P through a mock gateway page |
 | 2026-09-27 | **F3 Phase 3.4** — account | Five contract-request groups with mocks (orders, loyalty, wallet, privacy requests, identities) over the back office's own order rows, plus the published notification preferences and consents; an account frame; overview with to-dos from the API's `nextActions`; orders by view; the order page (timeline with promised vs actual and photos, this order's share of each group instalment and paying it, documents as signed downloads, deliveries with POD, tolerance outcome, claims, public tracking link, lines); saved quotations reopened in the configurator; address book and tax profiles; notification matrix (order e-mail locked, D-144) and linked accounts (LINE linking via signed-in LINE sign-in, D-151); consents with texts and PDPA export/deletion requests; points with tier progress and history, referral with masked friends, promo wallet and store credit. 674 unit (+6), 261 e2e (+9) | Artwork, proofs (3.5); confirm receipt, claims, reorder (3.6) — their routes are placeholders; the linked-LINE flow needs a LIFF id to exercise | Seeded orders get a group payment schedule on first use so any due instalment can be paid; the account layout shows its sections only with a session, pages guard themselves (`/account/designs` stays a guest's) |
-| 2026-09-27 | **F4 Part A** — `@packio/dieline` engine v2 | Geometry model with line/arc/Bézier edges carrying roles (cut, crease, perforation, half-cut, glue area, bleed), non-convex faces with holes, multi-piece dielines; `BoxStyleDef` registry with aliases (`rte`), parameter schemas, bilingual `validate()`, caliper compensation from `MaterialSpec` (catalogue allowances win); tube and tray constructions; tuck end, reverse tuck end, RSC, four-corner tray with window, thumb notch, rounded tucks, glue side, grain arrow; Clipper2 offsetting isolated from the registry; `checkDieline`; 3D fold transforms; SVG (true arcs), R12 DXF, vector PDF with spot-colour layers; BoxStudio spec migration with artwork remapped face by face; app moved onto it; major changeset and release workflow; ADR-0008. 700 app unit, 275 engine, 69 box-related e2e | Parts B–E (style library, API integration, editor v2, quality gates) | Compensation constants marked ⚠ in `constants.ts` need prepress confirmation |
+| 2026-09-27 | **F4 Part A** — `@getpack/dieline` engine v2 | Geometry model with line/arc/Bézier edges carrying roles (cut, crease, perforation, half-cut, glue area, bleed), non-convex faces with holes, multi-piece dielines; `BoxStyleDef` registry with aliases (`rte`), parameter schemas, bilingual `validate()`, caliper compensation from `MaterialSpec` (catalogue allowances win); tube and tray constructions; tuck end, reverse tuck end, RSC, four-corner tray with window, thumb notch, rounded tucks, glue side, grain arrow; Clipper2 offsetting isolated from the registry; `checkDieline`; 3D fold transforms; SVG (true arcs), R12 DXF, vector PDF with spot-colour layers; BoxStudio spec migration with artwork remapped face by face; app moved onto it; major changeset and release workflow; ADR-0008. 700 app unit, 275 engine, 69 box-related e2e | Parts B–E (style library, API integration, editor v2, quality gates) | Compensation constants marked ⚠ in `constants.ts` need prepress confirmation |
 | 2026-09-27 | **F4 Part B** — style library mapped to the legacy pattern catalogue | 30 styles in the registry: tuck end, reverse tuck end, snap-lock and crash-lock bottoms, seal end, hang tab (euro slot/round hole), sleeve, sleeve + drawer (two pieces), gable with handle, hexagonal; RSC, HSC, FOL, CSSC (hand holes), roll-end mailer, wrap-around; four-corner, six-corner and double-wall trays, two-piece telescope (full/partial); pillow (true arcs); rectangle, rounded rectangle, circle, oval, custom SVG path, hang tag, cup sleeve (unrolled frustum), band, pouch templates (3-side, 4-side, centre seal, gusset, stand-up). Catalogue aliases incl. every legacy drawing-service name. `docs/design-tool/style-mapping.md` (every legacy pattern → style, the meaning of `b`, `s`, `cs`, `dl`, `dw` and the rest, constraints, patterns not drawn, assumptions) with thumbnails from `pnpm style:thumbnails`. The setup dialog picks by category with dieline previews, sizes and options from each style's schema. 700 app unit, 1,411 engine, 44 designer-related e2e | Parts C–E | The legacy repo has no pattern rows with limits and no drawing files; every construction read from a formula alone is marked ⚠ in the mapping |
-| 2026-09-27 | **F4 Part C** — designer on the Packio API | Contract requests `store.designs` (CRUD, autosave under `If-Match`, versions + restore, duplicate, one-time import), `store.design-assets`, `store.designer-catalog` (patterns with dieline keys and limits, materials with caliper and flute allowances, templates, colours, fonts, artwork rules) and `GET`/`PUT` on `admin.design-documents`, with stateful mocks; persistence layer (guest in the browser, account designs autosaved with a conflict choice, IndexedDB drafts, version history, image assets); materials and pattern limits from the catalogue (placeholder boards deleted); entry points from the configurator, the order's artwork page (design linked to the order) and prepress (read-only or an editable copy, same editor); live price from the published calculation; send to print with a client-side print PDF (ADR-0009) submitted as the order's artwork; configurator seeded from a design. 707 app unit, 1,411 engine, designer e2e + 5 new account flows | Parts D–E | Templates are listed but applying one to an open design is Part D's panel; `design_asset` is requested as a file purpose (artwork until then) |
+| 2026-09-27 | **F4 Part C** — designer on the getpack API | Contract requests `store.designs` (CRUD, autosave under `If-Match`, versions + restore, duplicate, one-time import), `store.design-assets`, `store.designer-catalog` (patterns with dieline keys and limits, materials with caliper and flute allowances, templates, colours, fonts, artwork rules) and `GET`/`PUT` on `admin.design-documents`, with stateful mocks; persistence layer (guest in the browser, account designs autosaved with a conflict choice, IndexedDB drafts, version history, image assets); materials and pattern limits from the catalogue (placeholder boards deleted); entry points from the configurator, the order's artwork page (design linked to the order) and prepress (read-only or an editable copy, same editor); live price from the published calculation; send to print with a client-side print PDF (ADR-0009) submitted as the order's artwork; configurator seeded from a design. 707 app unit, 1,411 engine, designer e2e + 5 new account flows | Parts D–E | Templates are listed but applying one to an open design is Part D's panel; `design_asset` is requested as a file purpose (artwork until then) |
 | 2026-09-27 | **F4 Part D** — editor v2 | Left rail (box & faces, templates applied to the open design, shapes library, QR/EAN-13 with quiet zones, text styles, uploads, brand kit, background, layers); right panel (properties incl. crop/replace, clip to face, lock, name, CMYK warning; arrange: align/distribute/group/lock; live print checks; WebGL 3D preview folded by the engine with fold slider/play, lighting presets, PNG — ADR-0010); multi-select (Shift, marquee), groups, locks, copy/paste, snapping with guides, rulers, grid, face focus turned upright with Escape back; status bar with face under pointer and issue count; `?` shortcuts overlay; phone bottom bar with inline panels; view-only share links (`store.design-share`) and the public `/design/shared/[token]` page; the read-only viewer draws every new element type. Captures (thumbnail, PNG, print PDF) lay a focused sheet flat first. 723 app unit, 1,411 engine, 287 e2e (4 new editor flows, the share flow, axe over every panel); designer route 456 KB initial JS (ratchet lowered from 540 to 460 KB), Lighthouse accessibility 100 | Part E; comments on shared designs | Upright rule for lids (reads from the front) and the CMYK warning heuristic need prepress confirmation; brand kit kept in the browser until an account endpoint exists |
-| 2026-09-27 | **F4 Part E** — quality gates, docs, final summary | `patternFixtures()` + 92 per-legacy-pattern SVG snapshots (`fixtures/patterns`) for packio-api's golden comparison, beside the style × preset × material matrix and SVG/DXF fixtures; designer panel stories and 9 visual baselines of editor states; panel component tests (store, words, axe); e2e product page → designer → live price following quantity and artwork (with Part C's order → send to print → preflight); face names that tell repeated faces apart; product page and configurator open the designer with their product; `docs/design-tool/` architecture, style authoring guide (worked example verified against the engine), print-PDF spec for factories, index. 737 app unit, 1,504 engine, 288 e2e, 17 visual; designer route 456 KB, Lighthouse a11y 100 | — | See "Assumptions needing prepress confirmation" below |
+| 2026-09-27 | **F4 Part E** — quality gates, docs, final summary | `patternFixtures()` + 92 per-legacy-pattern SVG snapshots (`fixtures/patterns`) for getpack-api's golden comparison, beside the style × preset × material matrix and SVG/DXF fixtures; designer panel stories and 9 visual baselines of editor states; panel component tests (store, words, axe); e2e product page → designer → live price following quantity and artwork (with Part C's order → send to print → preflight); face names that tell repeated faces apart; product page and configurator open the designer with their product; `docs/design-tool/` architecture, style authoring guide (worked example verified against the engine), print-PDF spec for factories, index. 737 app unit, 1,504 engine, 288 e2e, 17 visual; designer route 456 KB, Lighthouse a11y 100 | — | See "Assumptions needing prepress confirmation" below |
 | 2026-09-27 | **F5 Session 5.1** — partner onboarding & price tables | On the **published** B2.2 partner surface plus four contract requests (`partner.references`, `partner.change-requests`, `partner.site-visits`, `partner.proposal-evidence`) and one contract defect logged; a stateful partner mock over the back office's own factory rows with one persona per factory role (rbac.md) plus an applicant and an assisted owner, other factories' ids → 404 (D-044), idempotent replays; factory context (`/me` + `pk_factory`), status- and role-aware nav (phone bar, tablet side list), factory name in the shell; Today with what waits for the factory; the 13-step onboarding tracker and one screen per step (company, addresses, contacts, submit under `If-Match`; KYC upload; bank-account change with typed confirmation; capability, capacity, zones, tier, tolerance, payout policy read-only with a change request; agreement e-acceptance; site-visit dates) with **review & sign off** of staff-entered steps; price tables by mode and tier: price list read one component at a time, draft proposals line by line or from an Excel/CSV sheet (parsed in the browser, no dependency) with a future effective date, reason and evidence, submit/withdraw, counter answers, rate-card acceptance whole or per line with counters, assisted-entry sign-off, shipping payout card. 761 unit (+24), 6 new e2e on a phone | 5.2 jobs/QC/ship, 5.3 billing/payouts/settings; a back-office queue for change requests | See the notes under the F5 5.1 heading |
 | 2026-09-27 | **F5 Session 5.2** — jobs, milestones, QC, ship & POD | Seven contract requests (`partner.today`, `partner.jobs`, `partner.job-milestones`, `partner.job-qc`, `partner.job-issues`, `partner.capacity-calendar`, `partner.shipments`) and proposed factory-floor permission keys, mocked over the commerce mock's own jobs and the logistics desk's own shipment rows; the shop-floor set in `src/ui` (BigActionButton, StageStepper, CameraCapture with in-browser compression and the EXIF shutter time, ScanButton, SignaturePad with a typed-name alternative, QRCode, LabelSheet); Today with counters, alerts and the queue; jobs by the floor's tabs with search and scan; the job screen (accept/reject within the window with the PO restated, milestones with quantities and photos, QC before the QC step, approved artwork only with its watermark, PO, recipients by D-142, inspection notices, issues, history); ship (per-destination split, carton labels with a tracking QR, own-fleet dispatch or a carrier request, POD with photos, receiver, signature and delivered quantity, the tolerance result); capacity calendar; every report with `clientRef`, `clientReportedAt` and an `Idempotency-Key`, a 409 showing the server's state. 783 unit (+22), 4 new e2e; partner login 326 → 251 KB | 5.3 billing, payouts, claims, performance, settings | See the notes under the F5 5.2 heading |
 | 2026-09-27 | **F5 Session 5.3** — billing, payouts, performance, settings | Six contract requests (`partner.billing-statements`, `partner.payouts`, `partner.claims`, `partner.scorecard`, `partner.users`, `partner.notification-preferences`) mocked over the factory's own jobs, the logistics desk's delivered shipments and claims, and its payout-policy version; billing statements with production (min(delivered, shipped)), shipping, deductions and the advance already paid, confirm with the BS number typed, dispute, and the factory's own tax invoice (PDF or e-Tax) with the input-VAT status; the payout schedule per job (30 % on acceptance, balance after POD + 7-day window, 5 % retention released 30 days later), payouts with remittance advice and 50 ทวิ, the statement of account; claims answered back to the claims desk; the monthly scorecard; users and roles (Owner), notification channels with device push, label size, language, high contrast; the manifest no longer locks tablets to portrait. 796 unit (+13), 4 new e2e; partner JS 251–292 KB | Partner offline sync (R2, D-111); the 180 KB budget | See the notes under the F5 5.3 heading |
-| 2026-09-28 | **F6 Deliverable 6.1** — finance queues & customer documents | Adopted packio-api's B2–B6 contract (745 paths; 86 now-published requests kept on a shrink-only list); the finance workspace (`/finance`, grouped desk nav); home queues with SLA from `admin.dashboard` (`finance.*`); slip review (D-061) with the slip image, bank reference and duplicate check; payments and refunds (maker-checker, D-169); customer document registers with gapless series, void (IV/DN), PDF, resend, debit note; credit-note wizard through the Finance Manager's approval; AR open items, aging, allowance (P30), write-off requests, customer 50 ทวิ with upload, B2B statements, dunning log, per-customer balance; journal list and detail (the drill-down's ledger step); finance mocks over one balanced journal | 6.2–6.4 | Five contract requests (slip image, document resend + deliveries, dunning log, credit-note reasons, document payment filter); the contract is packio-api main @ `945f02e`, still labelled `0.1.0` |
+| 2026-09-28 | **F6 Deliverable 6.1** — finance queues & customer documents | Adopted getpack-api's B2–B6 contract (745 paths; 86 now-published requests kept on a shrink-only list); the finance workspace (`/finance`, grouped desk nav); home queues with SLA from `admin.dashboard` (`finance.*`); slip review (D-061) with the slip image, bank reference and duplicate check; payments and refunds (maker-checker, D-169); customer document registers with gapless series, void (IV/DN), PDF, resend, debit note; credit-note wizard through the Finance Manager's approval; AR open items, aging, allowance (P30), write-off requests, customer 50 ทวิ with upload, B2B statements, dunning log, per-customer balance; journal list and detail (the drill-down's ledger step); finance mocks over one balanced journal | 6.2–6.4 | Five contract requests (slip image, document resend + deliveries, dunning log, credit-note reasons, document payment filter); the contract is getpack-api main @ `945f02e`, still labelled `0.1.0` |
 | 2026-09-28 | **F6 Deliverable 6.2** — payables, payouts, banking | On the published B5.3 surface: AP open items with their payable dates, factory POs, GRs from POD (D-165), billing statements with tax-invoice capture, tax-invoice validation against the vendor record (P17V), the vendor master with bills (P25/P26) and bank-account changes under dual approval + call-back; payout runs from eligible payables → propose → C-Level approval (proposer ≠ approver) → bank file → confirmation import (P14/P16/P17/P18), PV numbers, 50 ทวิ, exceptions; banking: cash position, statement import with auto-match (P05/P04), the matching workbench with suggestions and split, unidentified receipts (P29) to identification, settlements, company accounts under dual approval | 6.3–6.4 | Four contract requests (payout item documents, bank-line suggestions, split, settlement list); the partner zone's statements and tax invoices are the same rows Finance validates |
 | 2026-09-29 | **F6 Deliverable 6.3** — ledger, tax, fixed assets | On the published B5.1 / B5.4 / B5.5 surface: the chart of accounts with changes under `coa_change`, cost centres and the dimension catalogue; journals with the manual-journal editor (draft under If-Match → submit → Finance Manager other than the maker approves → posted with a JV number), reversals through the same approval, auto-reversing and recurring journals (`recurring_journal`); posting rules with versions, the template in force, a dry-run preview and version proposals; fiscal periods open ⇄ soft-closed → closed → locked in order; tax: the seven monthly papers built from the books with their GL reconciliation, finalise at 0 (ภ.พ.30 posts P27), attachment export, filing, payment (P27P / P28), calendar, rates as approved versions, nature of sale and the tax settings read from Settings, document series, e-Tax off until R2; fixed assets: categories (If-Match), register (FA01), monthly depreciation preview → post (FA02), disposal / write-off (FA03), roll-forward with the register reconciled to the GL | 6.4 | One contract request (`admin.depreciation-preview`); the close checklist gates close / lock in 6.4 |
 | 2026-09-29 | **F6 Deliverable 6.4** — period close, reports, auditor | On the published B5.6 surface: the close index and each month's checklist (nine §7 steps with owners, automatic blocking checks, evidence, waivers by a Finance Manager, submit → review by a Finance Manager other than the submitter → closed → locked, the auditor's year-end sign-off), gating the ledger's close and lock; trial balance with CSV export, GL detail with drill-down and paging, balance sheet, profit and loss pivoted by factory / product type / channel / campaign / cost centre, indirect cash flow, points-liability and retention roll-forwards, sub-ledger ↔ GL reconciliation; the auditor's desk (access window from the role grant, registers, audit trail), exception reports, reproducible samples, hashed PBC pack. Month simulation e2e: trial balance, statements, sub-ledgers and the seven tax papers at zero; last month closed and locked through the checklist, then refused by the posting UI | — | Two contract requests (`admin.account-roll-forward`, `admin.subledger-reconciliation`); a 6.2 mock bug fixed (payout item ids could collide) |
 | 2026-09-29 | **U-F2** — art direction tokens (D-180) | D-180 palette in light/dark/high contrast (129 gated pairs pass); `accent` tone for promotions, `kraft` decorative slots; 12/16 px radii with pill CTA on the storefront only (`data-zone`); two elevation levels; 150/200/250 ms ease-out; `text-display` h1; `SectionDivider`; token-usage lint; Storybook art-direction docs; 33 visual baselines across all zones | Linux CI visual baselines (one-time `e2e:visual:update` on the runner); placing dividers and the hero is U-F3 | Dark primary-700 adjusted (below); secondary CTA stays 12 px — see §U-F2 |
 | 2026-09-29 | **U5.0** — UX baseline and instrumentation | Moderator guide, PDPA consent (th/en), Thai task cards, step-counting rule, results template; step counters for T1–T12 (`e2e/journeys/`, budgets checked against the scorecard, non-blocking `step-counters` CI job); journey funnel events (studio, claims, reorder) and an admin Journeys dashboard with the API's drop alert; consent-gated Sentry Replay, off by default; step baseline: **8 of 12 journeys over budget** | Running the competitor baseline round (people, not code); turning replay on; T6 walk (U2.3) | Replay gated on analytics consent (not a new purpose); seeded paid orders now carry a TR — see §U5.0 |
-| 2026-09-29 | **U-F0.1** — adopt & reconcile the tagged contract | Lock pinned to packio-api **`v0.2.0`** (tag, commit, release asset, sha256); `gen:api --adopt --tag` reads only tagged releases; `pnpm gen:triage` imports packio-api's triage — all 135 open rows carry its verdict (62 published differently, 52 open in U-B0.N, 19 mixed, 2 awaiting triage) and `contract-requests.openapi.json` carries only the 89 operations still to build; BFF and server calls forward the visitor's IP (`TRUSTED_PROXY_HOPS`); admin menu `ops` + signals screen; generated error-path mocks for 265 codes and the `?mock=<operationId>:<code>` switcher (dev + Storybook story); th/en title for every problem code with a per-zone cut and the unmapped-code gate | Migrating call sites (U-F0.2–0.4); `CONTRACT-DEFECT` narrowings (packio-api U-B0.3); `e2e:integration` (U-F0.5) | `scheduleKey` stays requested (user); problem titles are packio-api's wording, for content review — see §U-F0.1 |
+| 2026-09-29 | **U-F0.1** — adopt & reconcile the tagged contract | Lock pinned to getpack-api **`v0.2.0`** (tag, commit, release asset, sha256); `gen:api --adopt --tag` reads only tagged releases; `pnpm gen:triage` imports getpack-api's triage — all 135 open rows carry its verdict (62 published differently, 52 open in U-B0.N, 19 mixed, 2 awaiting triage) and `contract-requests.openapi.json` carries only the 89 operations still to build; BFF and server calls forward the visitor's IP (`TRUSTED_PROXY_HOPS`); admin menu `ops` + signals screen; generated error-path mocks for 265 codes and the `?mock=<operationId>:<code>` switcher (dev + Storybook story); th/en title for every problem code with a per-zone cut and the unmapped-code gate | Migrating call sites (U-F0.2–0.4); `CONTRACT-DEFECT` narrowings (getpack-api U-B0.3); `e2e:integration` (U-F0.5) | `scheduleKey` stays requested (user); problem titles are getpack-api's wording, for content review — see §U-F0.1 |
 
-| 2026-09-30 | **U-F0.2** — migrate the customer zone (`store.*`) | All 79 published store operations are called through `serverApi`/`browserApi` with the generated types (the user's call: migrate literally). Zod definitions and `mockRequest` overrides are deleted, and the mocks answer at the published paths with ETags. `awaiting-migration.ts` has no store entry (bound ≤ 54), and a gate keeps store requests to the 34 packio-api still builds. What v0.2.0 does not carry is marked `CONTRACT-GAP <id>` (gated) and left out of the screens; 14 e2e fixmes name their gap | Three defects raised (`store.geo-ids`, `store.catalog-product-ref`, `store.order-group-ref`); the admin and partner zones (U-F0.3, U-F0.4) | See §U-F0.2 |
-| 2026-09-30 | **U-F0.3** — migrate the admin zone (`admin.*`) | Contract **`v0.3.0`** adopted (the storefront configurator parked for U2.F1). All published admin operations are called through `serverApi`/`browserApi`: customers, orders, the CS desk (folding and corrugate price for real; the other five calculators are RFQ-only; checkout through the customer's cart), RFQ, prepress and designs, production, logistics and claims, marketing, companies, analytics, reports and imports. Mock personas hold packio-api's role grants (`pnpm gen:rbac`, gated). Offered actions come from one module until entities carry `nextActions`. `awaiting-migration.ts` has no admin entry (bound ≤ 5), and a gate keeps admin requests to what packio-api still builds. Gaps are marked `CONTRACT-GAP`; 7 e2e fixmes name theirs | The partner zone (U-F0.4); `e2e:integration` (U-F0.5) | See §U-F0.3 |
-| 2026-10-01 | **U-F0.4** — the partner zone, and every zone onto v0.4–v0.6 | Contract **`v0.6.0`** adopted. `gen:triage` reads the triage at the tag and its shipped tables; `gen:rbac` imports the factory scope. Every published request in all three zones is on `serverApi` / `browserApi`: 115 request operations → 5 (the parked configurator, guided help and sample kits deferred by D-223, analytics journeys for U5.B6). `CONTRACT-GAP` markers 190 → 86, e2e fixmes 21 → 7. Entities render the API's `nextActions` (59 keys); notifications show the API's unread count and link; web vitals go to the API. Interim QC checklist `packio-web-v1` (user) | `e2e:integration` (U-F0.5); the gaps packio-api left out on purpose | See §U-F0.4 |
+| 2026-09-30 | **U-F0.2** — migrate the customer zone (`store.*`) | All 79 published store operations are called through `serverApi`/`browserApi` with the generated types (the user's call: migrate literally). Zod definitions and `mockRequest` overrides are deleted, and the mocks answer at the published paths with ETags. `awaiting-migration.ts` has no store entry (bound ≤ 54), and a gate keeps store requests to the 34 getpack-api still builds. What v0.2.0 does not carry is marked `CONTRACT-GAP <id>` (gated) and left out of the screens; 14 e2e fixmes name their gap | Three defects raised (`store.geo-ids`, `store.catalog-product-ref`, `store.order-group-ref`); the admin and partner zones (U-F0.3, U-F0.4) | See §U-F0.2 |
+| 2026-09-30 | **U-F0.3** — migrate the admin zone (`admin.*`) | Contract **`v0.3.0`** adopted (the storefront configurator parked for U2.F1). All published admin operations are called through `serverApi`/`browserApi`: customers, orders, the CS desk (folding and corrugate price for real; the other five calculators are RFQ-only; checkout through the customer's cart), RFQ, prepress and designs, production, logistics and claims, marketing, companies, analytics, reports and imports. Mock personas hold getpack-api's role grants (`pnpm gen:rbac`, gated). Offered actions come from one module until entities carry `nextActions`. `awaiting-migration.ts` has no admin entry (bound ≤ 5), and a gate keeps admin requests to what getpack-api still builds. Gaps are marked `CONTRACT-GAP`; 7 e2e fixmes name theirs | The partner zone (U-F0.4); `e2e:integration` (U-F0.5) | See §U-F0.3 |
+| 2026-10-01 | **U-F0.4** — the partner zone, and every zone onto v0.4–v0.6 | Contract **`v0.6.0`** adopted. `gen:triage` reads the triage at the tag and its shipped tables; `gen:rbac` imports the factory scope. Every published request in all three zones is on `serverApi` / `browserApi`: 115 request operations → 5 (the parked configurator, guided help and sample kits deferred by D-223, analytics journeys for U5.B6). `CONTRACT-GAP` markers 190 → 86, e2e fixmes 21 → 7. Entities render the API's `nextActions` (59 keys); notifications show the API's unread count and link; web vitals go to the API. Interim QC checklist `getpack-web-v1` (user) | `e2e:integration` (U-F0.5); the gaps getpack-api left out on purpose | See §U-F0.4 |
 | 2026-10-02 | **U3.1** — module system (engine refactor, no new styles) | The 30 styles are JSON recipes (`packages/dieline/src/recipes/data/`) over **26 implemented modules** (bodies, closures, features, piece sets) with **16 more declared `planned`** for U3.4; sizes and rules as expressions in an eval-free, three-valued language (`src/expr.ts`); `parseRecipe` / `buildFromRecipe` / `styleFromRecipe`; every module declares parameters, constraints, contributed face kinds and roles, hinges and factory processes; recipes map to 20 master-file bases; **byte-identical output** proven by a 1,164-case baseline written before the switch; ADR-0011 | U3.2 solver and material classes, U3.3 3D / fold gate / assets; recipe data out of the initial bundle before U3.4 wave 1 | See U3.1 below — designer and customer-app ratchets raised (customer-app was already over on `main`) |
 | 2026-10-02 | **U3.2** — constraint solver & manufacturability | Material classes (`paperboard`, `food_board`, `corrugated` per flute, `rigid`, `flexible`, `paper`, `label_stock`, `shrink_film`) with rule sets; manufacturing rules as recipe data (`rule.*`, `stage: "manufacturing"`) plus coded rules in `rules/`; `explain()` (codes, expected/actual, parameters read), `validRanges()` / `sizeRanges()`, `fitsEnvelope()` for partner machine envelopes, `recipeProcesses()`; seeded property tests on every recipe × reference board; `validate()` and the baseline unchanged | UI on `explain()` (U3.5); envelope data from the API (U3.B3) | ⚠ new rule values await prepress; see U3.2 below |
 | 2026-10-02 | **U3.3** — automatic 3D, virtual fold test, assets | Thickness model (`foldModel`: walls centred, closures inward and stacked in fold order, rolled walls, wrapping flaps, back-to-back walls, rigid wrap) also drawn by the designer's 3D preview; recipe `outerSize`; fold gate (min / typical / max × 2 calipers, ± 1 mm, collision check) on all 21 foldable recipes; inflated pouch surface; structural variants (46) with generated TH/EN names pending review; engine rasteriser + `pnpm styles:render` (166 assets, manifest committed, reproducibility checked in CI); ADR-0012 | Name review (D-212); curved pillow panels; U3.4 waves | New rule `mfg.glue_flap_too_wide`; one preset finding for prepress — see U3.3 below |
-| 2026-10-04 | **U2.F1** — configurator v2 | Contract **`v0.41.0`** adopted (U2.1–U2.3, U3.B1–B6, U4.B, U5.B in one bump; the journeys dashboard moved to the published `admin.analytics.journeys`, the last admin request). The configurator reads `StoreConfiguratorDto` directly (adapter deleted) and sends every calculator its own published configuration (generic request retired); print colours from the published inks; size on a chosen **basis** with every other basis live from `store.specs.convertDimensions`, limits checked through the API's conversion, style-specific errors, display unit on the profile; goods-and-shipping inputs + **Structure Advisor** (recommended board, range + indicative notice, alternatives, acknowledgement, why sheet); **target price** with the API's gap, levers as cards, send to sales; **summary** step (completeness, edit, style code / verified international name, tolerances, next steps), **drafts** saved / resumed / shared; style code on artwork and proof; lint rule `packio/no-money-arithmetic`. 939 unit, 6 new e2e + the real-API journey (green on packio-api v0.41.0) | Account list of drafts (drafts name no product slug — CONTRACT-GAP store.catalog-product-ref); `journey_step` events for T6 (U5) | See §U2.F1 — process ink ×4, advisor defaults, basis reset, flat styles |
-| 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
+| 2026-10-04 | **U2.F1** — configurator v2 | Contract **`v0.41.0`** adopted (U2.1–U2.3, U3.B1–B6, U4.B, U5.B in one bump; the journeys dashboard moved to the published `admin.analytics.journeys`, the last admin request). The configurator reads `StoreConfiguratorDto` directly (adapter deleted) and sends every calculator its own published configuration (generic request retired); print colours from the published inks; size on a chosen **basis** with every other basis live from `store.specs.convertDimensions`, limits checked through the API's conversion, style-specific errors, display unit on the profile; goods-and-shipping inputs + **Structure Advisor** (recommended board, range + indicative notice, alternatives, acknowledgement, why sheet); **target price** with the API's gap, levers as cards, send to sales; **summary** step (completeness, edit, style code / verified international name, tolerances, next steps), **drafts** saved / resumed / shared; style code on artwork and proof; lint rule `getpack/no-money-arithmetic`. 939 unit, 6 new e2e + the real-API journey (green on getpack-api v0.41.0) | Account list of drafts (drafts name no product slug — CONTRACT-GAP store.catalog-product-ref); `journey_step` events for T6 (U5) | See §U2.F1 — process ink ×4, advisor defaults, basis reset, flat styles |
+| 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@getpack/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); getpack-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 | 2026-10-06 | **U5.1–U5.4, U5.6, U5.7** — UX excellence layer (U5.5 the assistant is its own session) | Signed-in **launchpad** (D-297) and **pre-fill** from defaults (D-298); notification **deep links** `/l/<token>` in all three zones (D-299); **zero dead ends** (every customer empty state, not-found and error offer a next action; an unknown storefront path gets our not-found; a test holds it); **messaging** — customer threads at `/account/messages`, "ask the team" on an order, the **CS inbox** `/admin/inbox` with SLA queues, canned responses, internal notes, assign, close (D-300); **RFQ basket** (D-301); dieline opening guide; first-run **intent picker**, studio **coach marks**, sample design, demo loops; **glossary** chips and page, check help links, **materials library**, **learning paths**; microcopy pass on problem titles; price-change highlight, paid-order stages, inbox skeleton, PR design-QA template. Step counts: T3 2→0, T4 6→4, T7 2→1, T10 4→2. | T1, T9, T12 over budget (U-F3 / API claim rules / sign-in for dielines); T11 is U2.F7's; typing indicator; inbox menu entry; content reads | CONTRACT-REQUESTs `store.catalog-glossary`, `store.catalog-materials`, `store.learning-paths`, `conversations.typing`, `admin.menu-inbox`; see the section below |
-| 2026-10-06 | **U5.5** — Packio Assistant (flagged) | A header button (and the studio's) opens the assistant in a side panel loaded on first press — labelled as AI, answering only from packio-api's seven tools (D-304), each tool named and linked to the page where its facts can be checked, blocked / refused / handed-off answers said plainly with a way to the team, logging opt-out (D-305). Built in only with `NEXT_PUBLIC_ASSISTANT=1` — off at launch (D-218) — and a session packio-api refuses shows the team instead. `/admin/assistant`: the D-306 gate, evaluation runs (≥ 100 Thai cases, red-team), every case, run on demand. | Source *cards* (records, not just tool names); filling the configurator (packio-api excludes it — a decision); availability before the first question | CONTRACT-REQUESTs `store.assistant-availability`, `store.assistant-turn-sources`, `store.assistant-configuration-proposal`, `admin.menu-assistant` |
+| 2026-10-06 | **U5.5** — getpack Assistant (flagged) | A header button (and the studio's) opens the assistant in a side panel loaded on first press — labelled as AI, answering only from getpack-api's seven tools (D-304), each tool named and linked to the page where its facts can be checked, blocked / refused / handed-off answers said plainly with a way to the team, logging opt-out (D-305). Built in only with `NEXT_PUBLIC_ASSISTANT=1` — off at launch (D-218) — and a session getpack-api refuses shows the team instead. `/admin/assistant`: the D-306 gate, evaluation runs (≥ 100 Thai cases, red-team), every case, run on demand. | Source *cards* (records, not just tool names); filling the configurator (getpack-api excludes it — a decision); availability before the first question | CONTRACT-REQUESTs `store.assistant-availability`, `store.assistant-turn-sources`, `store.assistant-configuration-proposal`, `admin.menu-assistant` |
 | 2026-10-06 | **U-F3 then U-F4** — storefront page patterns, pricing ownership check | **Header**: the six-item centred nav, a mega menu of every product type by category with its availability chip, a full-screen menu below `lg`, a condensing sticky header, an announcement bar only for a live campaign. **Home**: the eight sections in order with a **quick start** (type → approximate inside size → quantity → the configurator pre-filled and priced; T1 now 4 steps, within budget). **Cards** carry starting price with its assumed quantity, MOQ, lead time, availability chip and the campaign badge with its end date (reference price only with it). **Catalogue**: type filter, chips, clear all, count, grid / list. **Product page**: MOQ, RFQ response time, tolerance note, related types, materials. **Footer**: Collective Group (Thailand) with its tax id. **U-F4**: all met but one — a reorder or expired cart line that is no longer instant now offers a pre-filled quote request. | Other facets and sort; cart count; tolerances on the product page (API gaps) | CONTRACT-REQUESTs `store.company-identity`, `store.newsletter-subscribe`, `store.catalog-product-facets`, `store.cart-count`, `store.product-type-id` |
 | 2026-10-06 | **U5.8** — release gate (automated half) and UAT data | Step counters **blocking in CI** (`STEP_BUDGETS=enforce`) with **known exceptions** capped at today's count (scorecard §5, `EXCEPTIONS`, checked against each other); every walk brought up to the product: T4 fixed, T5 / T6 / T12 re-walked — **12 / 12 walked, 8 within budget, 4 under exception (T5, T9, T11, T12)**. Sample request from the configurator's dock; dieline sign-in returns to the open form; tolerance "5.0000%" → "5%". **UAT dataset** P01–P10 in the mock (`pnpm dev:uat`) with the round sheet (`docs/ux/uat-round-data.md`). Evidence `docs/ux/step-gate-2026-10-06.md`. | The moderated round (participants, moderator — D-217; competitor baseline); UAT backend seed | CONTRACT-REQUESTs `api.uat-scorecard-seed`, `store.claims.evidence-per-type`, `partner.production.accept-and-start`; T11 task card names an operator who cannot accept |
-| 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
-| 2026-10-07 | Home photos — dev-only local manifest fallback + `no-untracked-third-party-assets` | `HOME_PHOTOS_LOCAL_MANIFEST=1` (server env schema; **refused in production**, so the app fails at boot): `getHomeContent` fills only the photo slots the CMS left empty from `public/media/home/manifest.json` (`local-photos.ts`; positions as packio-api's `pnpm cms:home-photos`: hero, mosaic-1…5, sage → quality, frame-4 / frame-9 → process sample / packing, template-<x> by style code or `styleCode`) and logs `home photos: local manifest fallback` once. `src/proxy.ts` passes `/media/*` through unprefixed on the customer host (next-intl rewrote it to `/th/media/…` → 404). `build-checks/no-untracked-third-party-assets.mjs`, run by `next.config.ts` when `NODE_ENV=production`: every image under `public/media/` must be listed in its folder's manifest with `source` pexels / unsplash / packio — unlisted, unsourced or `interim-unverified` fails the build. Unit `local-photos.test.ts`, env schema cases. | Template photos show only once packio-api publishes styles (0 publishable in `packio_uat_partner`). | Local stacks keep packio-api `INTEGRATIONS_MODE=fake` (in-memory storage cannot serve CMS photos). The interim photos are **not committed** (`/public/media/home/` gitignored; copy from packio-api `public/media/home`): they carry no per-asset credit, so all are `interim-unverified` and would fail every production build in CI. Flag set in `.env.local` only. |
-| 2026-10-08 | **Home review vs board `Main`** — items 1, 4, 5 (branch `fix/home-review-main`) | **1 Hero**: chips from `store.catalog.heroPresets` (D-310) — ไปรษณีย์ / ฝาครอบ / ฝาเสียบ, คราฟท์ 350g / อาร์ตการ์ด 350g / ลูกฟูก E, 300/500/1000/2000; an option a shape lacks is shown disabled; labels ≤ 14 graphemes (test) and chips truncate. Price from `store.quotes.preview` (the `store.quotes.calculate` path); the server previews the API `default` and on failure logs and tries the nearest offered preset, so the first render is a price; `/configure` gets the same selection. Built in packio-api `feat/ux-r2-p4-hero-presets` (b44a6cb: endpoints, e2e, UAT presets). **4 Hygiene**: FAQs drop `[DEV]` and strip `(D-xxx)` (`listFaqs`; seeds fixed too); product rows only packaging categories (no `standard_product`/`service`); MOQ = `store.publicConfig` `minOrderQty.custom` (D-309). **5**: sage h2 left, 36px, 2 lines; consent one 12px line (`Checkbox size="sm"`, shorter copy); trust row already 4. D-309…D-314 copied into this repo's decisions (D-314 interim photography). | Contract bump: the three endpoints run as contract requests + MSW mocks until packio-api tags a release with them (`gen:api --adopt` takes tags only). Items 2 (photos) and 3 (template gallery vs board) — boards not in `docs/ui/boards/` yet; photos in progress in a parallel session. Visual baselines not re-taken. | **Assumptions**: `docs/phase4-api.md` was not found anywhere — D-310 and the committed `catalog.hero_presets` setting were the spec. Preview path is `POST /v1/store/quotes/actions/preview` (api-conventions: non-CRUD actions under `actions/`). D-309 defines `minOrderQty.custom` as the lowest made-to-order minimum: UAT corrugated products start at 100, so UAT shows 100 until that data or D-309 changes (the mock states 300). UAT E flute uses B-flute allowances and B prices; UAT black ink is priced like CMYK — rehearsal values. The folding hero product (min 500) offers 500/1000/2000. Mock dev server leaked calls to the local packio-api on :3000; checks were run on a production build with `API_INTERNAL_URL` on a dead port, as the e2e suite does. |
-| 2026-10-09 | **Visual review of main vs the boards — 2 code items** (branch `fix/home-visual-review`) | **1 TemplateGallery**: each card's image and corner thumbnail is the style's own flat dieline, drawn server-side by `@packio/dieline` from the base's recipe (`ALL_RECIPES`, default variant, first preset that passes the engine's checks, the category's reference board; `style-dielines.server.ts`, SVG data URI, engine layer colours, line weight per size); the 2×2 card shows it at full card size on the sage-2 ground (`bg-sage-subtle`) until the style has a photo; the shared `DielineGlyph` placeholder is gone from the cards (home and `/studio` "แบบที่คนเริ่มบ่อย"). No engine in the client bundle. **2 Hero facts**: "ขั้นต่ำสั่งผลิต" = the lowest quantity the hero presets offer on any shape (`lowestPresetQty`; 300 on UAT), omitted without presets; the page no longer reads `store.publicConfig.get`. Unit tests (each style's drawing distinct; none without a recipe; lowest preset qty); mock e2e home / styles / studio / storefront / seo 52 green (seo sitemap once under load, green alone). Dev on the real API: "19 แบบกล่องเริ่มต้น · … · 300 ชิ้น ขั้นต่ำสั่งผลิต". | Data items, assigned (not code): home photos manifest (product owner); lid / tuck material mapping to kraft350 / art350 (catalogue owner). | **Product owner's instruction** (2026-10-09): the hero's minimum is the presets' lowest quantity, not D-309's `minOrderQty.custom` — D-309 still defines the public config figure; packio-api owns the decision text if it should say so. **Found**: the web's `@packio/dieline` library has recipes for 96 bases, packio-api's vendored engine only 20 — PK-CT-02 and PK-PG-02 have recipes here; publishing them in UAT needs packio-api to re-vendor the engine (ADR-0010) and re-run `pnpm uat:styles`. |
-| 2026-10-09 | **Close-out**: consent hydration, UAT styles, worktree (branch `fix/closeout`) | **1** Sign-in consent step: `Checkbox`'s description is a `<div>` (it held the full text's `<details>` inside a `<p>`, a hydration error); regression test; dev on the real API: 0 issues, 0 console errors. **2 UAT style fixture — UAT ONLY, not launch data**: packio-api `pnpm uat:styles` (branch `feat/uat-style-fixture`, `e4187c3`, refused outside a `*uat*` database) published the 20 bases the dieline engine can draw, standing in for the D-243 / D-212 / D-244 gates with the UAT fixture accounts (Admin imports recipes, Prepress approves them, Marketing + Prepress approve names, Admin proposes and the Partner Manager verifies F9001's 10 process capabilities against its passing site visit). `packio_uat_partner`: 19 bases / 414 variants published (PK-CF-01, PK-TE-01 among them; PK-SP-03 waits for wave 2); the home TemplateGallery renders on :3001 ("ดูทั้ง 19 แบบ"). **3** Worktree `../packio-api-web-v0431` removed. | **Real styles come from the catalogue owner and Prepress** — none of this is a launch decision. PK-CT-02 and PK-PG-02 stay unpublished in UAT: no engine recipe (user choice: engine-backed only). packio-api `feat/uat-style-fixture` not merged (packio-api's call). | Template cards show the dieline art (no template photos in UAT CMS). The main checkout has no `public/media/home`, so :3001 shows no interim photos. |
+| 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why getpack with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
+| 2026-10-07 | Home photos — dev-only local manifest fallback + `no-untracked-third-party-assets` | `HOME_PHOTOS_LOCAL_MANIFEST=1` (server env schema; **refused in production**, so the app fails at boot): `getHomeContent` fills only the photo slots the CMS left empty from `public/media/home/manifest.json` (`local-photos.ts`; positions as getpack-api's `pnpm cms:home-photos`: hero, mosaic-1…5, sage → quality, frame-4 / frame-9 → process sample / packing, template-<x> by style code or `styleCode`) and logs `home photos: local manifest fallback` once. `src/proxy.ts` passes `/media/*` through unprefixed on the customer host (next-intl rewrote it to `/th/media/…` → 404). `build-checks/no-untracked-third-party-assets.mjs`, run by `next.config.ts` when `NODE_ENV=production`: every image under `public/media/` must be listed in its folder's manifest with `source` pexels / unsplash / getpack — unlisted, unsourced or `interim-unverified` fails the build. Unit `local-photos.test.ts`, env schema cases. | Template photos show only once getpack-api publishes styles (0 publishable in `getpack_uat_partner`). | Local stacks keep getpack-api `INTEGRATIONS_MODE=fake` (in-memory storage cannot serve CMS photos). The interim photos are **not committed** (`/public/media/home/` gitignored; copy from getpack-api `public/media/home`): they carry no per-asset credit, so all are `interim-unverified` and would fail every production build in CI. Flag set in `.env.local` only. |
+| 2026-10-08 | **Home review vs board `Main`** — items 1, 4, 5 (branch `fix/home-review-main`) | **1 Hero**: chips from `store.catalog.heroPresets` (D-310) — ไปรษณีย์ / ฝาครอบ / ฝาเสียบ, คราฟท์ 350g / อาร์ตการ์ด 350g / ลูกฟูก E, 300/500/1000/2000; an option a shape lacks is shown disabled; labels ≤ 14 graphemes (test) and chips truncate. Price from `store.quotes.preview` (the `store.quotes.calculate` path); the server previews the API `default` and on failure logs and tries the nearest offered preset, so the first render is a price; `/configure` gets the same selection. Built in getpack-api `feat/ux-r2-p4-hero-presets` (b44a6cb: endpoints, e2e, UAT presets). **4 Hygiene**: FAQs drop `[DEV]` and strip `(D-xxx)` (`listFaqs`; seeds fixed too); product rows only packaging categories (no `standard_product`/`service`); MOQ = `store.publicConfig` `minOrderQty.custom` (D-309). **5**: sage h2 left, 36px, 2 lines; consent one 12px line (`Checkbox size="sm"`, shorter copy); trust row already 4. D-309…D-314 copied into this repo's decisions (D-314 interim photography). | Contract bump: the three endpoints run as contract requests + MSW mocks until getpack-api tags a release with them (`gen:api --adopt` takes tags only). Items 2 (photos) and 3 (template gallery vs board) — boards not in `docs/ui/boards/` yet; photos in progress in a parallel session. Visual baselines not re-taken. | **Assumptions**: `docs/phase4-api.md` was not found anywhere — D-310 and the committed `catalog.hero_presets` setting were the spec. Preview path is `POST /v1/store/quotes/actions/preview` (api-conventions: non-CRUD actions under `actions/`). D-309 defines `minOrderQty.custom` as the lowest made-to-order minimum: UAT corrugated products start at 100, so UAT shows 100 until that data or D-309 changes (the mock states 300). UAT E flute uses B-flute allowances and B prices; UAT black ink is priced like CMYK — rehearsal values. The folding hero product (min 500) offers 500/1000/2000. Mock dev server leaked calls to the local getpack-api on :3000; checks were run on a production build with `API_INTERNAL_URL` on a dead port, as the e2e suite does. |
+| 2026-10-09 | **Visual review of main vs the boards — 2 code items** (branch `fix/home-visual-review`) | **1 TemplateGallery**: each card's image and corner thumbnail is the style's own flat dieline, drawn server-side by `@getpack/dieline` from the base's recipe (`ALL_RECIPES`, default variant, first preset that passes the engine's checks, the category's reference board; `style-dielines.server.ts`, SVG data URI, engine layer colours, line weight per size); the 2×2 card shows it at full card size on the sage-2 ground (`bg-sage-subtle`) until the style has a photo; the shared `DielineGlyph` placeholder is gone from the cards (home and `/studio` "แบบที่คนเริ่มบ่อย"). No engine in the client bundle. **2 Hero facts**: "ขั้นต่ำสั่งผลิต" = the lowest quantity the hero presets offer on any shape (`lowestPresetQty`; 300 on UAT), omitted without presets; the page no longer reads `store.publicConfig.get`. Unit tests (each style's drawing distinct; none without a recipe; lowest preset qty); mock e2e home / styles / studio / storefront / seo 52 green (seo sitemap once under load, green alone). Dev on the real API: "19 แบบกล่องเริ่มต้น · … · 300 ชิ้น ขั้นต่ำสั่งผลิต". | Data items, assigned (not code): home photos manifest (product owner); lid / tuck material mapping to kraft350 / art350 (catalogue owner). | **Product owner's instruction** (2026-10-09): the hero's minimum is the presets' lowest quantity, not D-309's `minOrderQty.custom` — D-309 still defines the public config figure; getpack-api owns the decision text if it should say so. **Found**: the web's `@getpack/dieline` library has recipes for 96 bases, getpack-api's vendored engine only 20 — PK-CT-02 and PK-PG-02 have recipes here; publishing them in UAT needs getpack-api to re-vendor the engine (ADR-0010) and re-run `pnpm uat:styles`. |
+| 2026-10-09 | **Close-out**: consent hydration, UAT styles, worktree (branch `fix/closeout`) | **1** Sign-in consent step: `Checkbox`'s description is a `<div>` (it held the full text's `<details>` inside a `<p>`, a hydration error); regression test; dev on the real API: 0 issues, 0 console errors. **2 UAT style fixture — UAT ONLY, not launch data**: getpack-api `pnpm uat:styles` (branch `feat/uat-style-fixture`, `e4187c3`, refused outside a `*uat*` database) published the 20 bases the dieline engine can draw, standing in for the D-243 / D-212 / D-244 gates with the UAT fixture accounts (Admin imports recipes, Prepress approves them, Marketing + Prepress approve names, Admin proposes and the Partner Manager verifies F9001's 10 process capabilities against its passing site visit). `getpack_uat_partner`: 19 bases / 414 variants published (PK-CF-01, PK-TE-01 among them; PK-SP-03 waits for wave 2); the home TemplateGallery renders on :3001 ("ดูทั้ง 19 แบบ"). **3** Worktree `../getpack-api-web-v0431` removed. | **Real styles come from the catalogue owner and Prepress** — none of this is a launch decision. PK-CT-02 and PK-PG-02 stay unpublished in UAT: no engine recipe (user choice: engine-backed only). getpack-api `feat/uat-style-fixture` not merged (getpack-api's call). | Template cards show the dieline art (no template photos in UAT CMS). The main checkout has no `public/media/home`, so :3001 shows no interim photos. |
 | 2026-10-09 | **Board-vs-live diff at 1054 — 6 code items** (branch `fix/home-board-diff`) | **1** ScreenToFactory frames and the sage band's two shortcuts: hairline, transparent — no white box (the shortcuts' hairline is `fg-inverse/25`, text `fg-inverse`); only the three StudioCapabilities UI samples keep white panels. **2** Sage band: always photo \| content from `lg`; without a photo the left cell is an empty `sage-strong` panel (new decorative token: sage −0.08 L in every theme; contrast gate `sage-strong` on `sage` 1.1–2, 1.35–1.41 measured). **3** CustomerCases: already gone entirely below 3 approved (`casesOf` → `[]`, the page skips the section — heading, link and spacing); no change. **4** TemplateGallery: corner thumbnail only over a photo (already on main, `5df6da0`); the feature card draws a `feature` dieline — 24px inset (`p-6`), hairline margin, `stroke-width="1"` + `vector-effect="non-scaling-stroke"`, so 1px at display scale; unit test. **5** Section spacing 80px up to 1054px, 104px above (`min-[1055px]`), now also on FAQ and contact (were 96/112 and `md:`). **6** Hero facts: the 168px photo cell always holds the grid; without a photo it is an empty `sage-subtle` (sage-2) well. Checks: typecheck, lint, prettier, `tokens:check`, `pnpm test` all green. Screenshots at 1054 and 1440 beside the board, with and without the local photo manifest (the no-photo run is what UAT shows); computed section padding 80 / 104 at the two widths. | — | **Product owner's instruction** (2026-10-09) overrides the board file where they differ: the board HTML gives `.frame` a white panel with a 14px radius, and its one breakpoint is 980px, not 1054. "sage-2-dark" is not a board colour: the user chose a darker shade of the band's sage (`sage-strong`). |
 | 2026-10-09 | **Sage band title — two lines at every width** (branch `fix/sage-title-1054`) | The title's second line is 557px at 36px and wrapped to 3 lines from 1024px to ~1350px, not only at 1054. Neither of the product owner's two options closed it alone (32px needs 495px; 55% gave 460px at 1054), so both, plus gutters: content column 56% (`lg:grid-cols-[44fr_56fr]`), `lg:ps-10 lg:pe-8` up to 1279px (`xl:ps-18 xl:pe-12` from 1280), title 32px from `md` to 1279px and 36px from `xl`. Measured in the browser at 768 / 900 / 1024 / 1054 / 1100 / 1279 / 1280 / 1440 / 1920: 2 lines everywhere, 36px at 1440 (the tightest fit is 1024: 501px box for a 495px line). | — | 36px starts at 1280, not 1055: at 36px the line needs a 557px box, which the 56% column reaches only from ~1230px; switching at `xl` keeps it on two lines through the band. |
-| 2026-10-09 | **Release `v0.44.0`** — Phase 4 UI complete (tag on main; root `package.json` 0.44.0) | Phase 4 storefront home (design language v3, board `Main`) and the board-vs-live diff are in. **Photos pending the product owner.** | Home photos (product owner): the CMS slots are empty in UAT, so the page shows its no-photo state (sage wells, dielines, the empty band panel). | **Stand-in photos are interim and unverified**: `public/media/home/*` (and its `manifest.json`) are local stand-ins with no confirmed licence (all 11 assets `source: interim-unverified`), shown only by the dev-only `HOME_PHOTOS_LOCAL_MANIFEST=1` fallback. They are **blocked from production by the asset rule**: the env schema refuses the flag in production and `build-checks/no-untracked-third-party-assets.mjs` fails a production build that ships them. Real photos go through the CMS (packio-api `pnpm cms:home-photos`), never this folder. |
-| 2026-10-09 | **packio-api v0.43.2 adopted** (branch `fix/home-review-main`, brought up to main) | `gen:api --adopt --tag v0.43.2`: `HeroPresetsDto.defaultAdjusted` removed (breaking) — `default` is null when not offered, and the hero then opens on the first shape's choices; dropped from the mock and fixture. `pnpm docs:sync --tag v0.43.2` (D-314 back), `gen:triage`. On :3000 (v0.43.2, reseeded `packio_uat_partner`): the hero opens on mailer · 18×12×5 · ลูกฟูก E · 1 สี · 500 at ฿20.14 (`store.quotes.preview`); the lid (PK-CT-02) is ฿28.74 at 500 in both the hero and `/configure`, two parts each; real-API parity e2e mailer + lid pass, tuck skipped. Screenshots and board comparison replaced with the v0.43.2 set (`docs/ui/reviews/2026-10-09-main-board/`). Unit 1157, lint, typecheck green. | The PR (no git remote). | FAQs on the API have no decision ids / `[DEV]` after the reseed. Data gaps vs the boards unchanged (0 published styles, proof SLA / contacts unset, MOQ 100, tuck RFQ). |
-| 2026-10-09 | **Screenshots vs boards on the real API; hero → `/configure` parity fix** (branch `fix/hero-configure-parity`) | `/` and `/studio` at 1440 on `next dev` against packio-api v0.43.1 (:3600), `packio_uat_partner` reseeded from packio-api main `38c385d`; board comparisons and findings in `docs/ui/reviews/2026-10-09-main-board/`. **Real-API price parity** (`e2e/integration/home-hero.spec.ts`, `--no-deps`): mailer and lid pass, tuck skipped (folding RFQ). It first failed on the lid (hero ฿28.74, `/configure` ฿31.52): `/configure` kept the catalogue's default inside ink, which the hero never sends — `seedFromDesign` with the hero's `ink` now starts optional groups unanswered (required keep their defaults); unit test. Mock e2e home / configurator / quote / studio green (32). | The PR (no git remote). Template gallery and studio "popular" rows absent on UAT: 0 published styles. | Differences from the boards are data (0 published styles, proof SLA / contacts unset, MOQ 100, tuck RFQ, E-flute only) or the page's own header/footer/icons — listed in the review README. Open: sign-in consent step nests `<details>` in `<p>` (hydration error in dev). |
-| 2026-10-09 | **Home review — API v0.43.1 adopted, multi-part configurator, boards** (branch `fix/home-review-main`, merged to main) | **Configurator**: `/configure` priced one part, so a two-part box (lid box, PK-CT-02) was unpriceable; it now sends one part per sub-pattern, each with its own print (`partPrints`, "พิมพ์แต่ละชิ้นไม่เหมือนกัน"; alike by default), coating / die-cut on every part, placed finishes and assemblies once. **Contract** `gen:api --adopt --tag v0.43.1` (0.42.0 →); D-313 label fields filled in the mocks (`mocks/status-labels.ts`). **Hero** on `store.catalog.getHeroPresets` / `store.quotes.preview`, MOQ on `store.publicConfig.get`; the three contract requests and their CONTRACT-REQUEST mocks retired (typed MSW mocks remain); fallback to the next preset on a 5xx only. **e2e**: hero ↔ `/configure` price parity for mailer, lid, tuck (mock: pass; `e2e/integration/home-hero.spec.ts` for the real API). `chore/docs-sync` merged, `pnpm docs:sync --tag v0.43.1`. Boards committed (`docs/ui/boards/`). Unit, typecheck, lint green; full mock e2e green (failures under load re-ran green on a fresh server). | **Screenshots of `/` and `/studio` at 1440 against the real API and the diff vs the boards: not taken** — `packio_uat_partner` has no `catalog.hero_presets` nor the hero catalogue pieces (packio-api verified v0.43.1 in testcontainers only); seeding is the user's decision. Real-API parity e2e not run for the same reason. No git remote: no PR. | D-314 leaves `decisions.md` with the v0.43.1 sync; back with v0.43.2 (packio-api af3b736). FAQ seed hygiene ships in packio-api v0.43.2 (`0df962c`); the web already strips `[DEV]` / `(D-xxx)`. v0.43.2 drops `defaultAdjusted` (unused here). Fixed the stale Structure Advisor e2e (shipping box has standard sizes since 6a4f1ac). Builds need the interim photos and `.env.local` moved aside (production refuses them, by design). |
+| 2026-10-09 | **Release `v0.44.0`** — Phase 4 UI complete (tag on main; root `package.json` 0.44.0) | Phase 4 storefront home (design language v3, board `Main`) and the board-vs-live diff are in. **Photos pending the product owner.** | Home photos (product owner): the CMS slots are empty in UAT, so the page shows its no-photo state (sage wells, dielines, the empty band panel). | **Stand-in photos are interim and unverified**: `public/media/home/*` (and its `manifest.json`) are local stand-ins with no confirmed licence (all 11 assets `source: interim-unverified`), shown only by the dev-only `HOME_PHOTOS_LOCAL_MANIFEST=1` fallback. They are **blocked from production by the asset rule**: the env schema refuses the flag in production and `build-checks/no-untracked-third-party-assets.mjs` fails a production build that ships them. Real photos go through the CMS (getpack-api `pnpm cms:home-photos`), never this folder. |
+| 2026-10-09 | **getpack-api v0.43.2 adopted** (branch `fix/home-review-main`, brought up to main) | `gen:api --adopt --tag v0.43.2`: `HeroPresetsDto.defaultAdjusted` removed (breaking) — `default` is null when not offered, and the hero then opens on the first shape's choices; dropped from the mock and fixture. `pnpm docs:sync --tag v0.43.2` (D-314 back), `gen:triage`. On :3000 (v0.43.2, reseeded `getpack_uat_partner`): the hero opens on mailer · 18×12×5 · ลูกฟูก E · 1 สี · 500 at ฿20.14 (`store.quotes.preview`); the lid (PK-CT-02) is ฿28.74 at 500 in both the hero and `/configure`, two parts each; real-API parity e2e mailer + lid pass, tuck skipped. Screenshots and board comparison replaced with the v0.43.2 set (`docs/ui/reviews/2026-10-09-main-board/`). Unit 1157, lint, typecheck green. | The PR (no git remote). | FAQs on the API have no decision ids / `[DEV]` after the reseed. Data gaps vs the boards unchanged (0 published styles, proof SLA / contacts unset, MOQ 100, tuck RFQ). |
+| 2026-10-09 | **Screenshots vs boards on the real API; hero → `/configure` parity fix** (branch `fix/hero-configure-parity`) | `/` and `/studio` at 1440 on `next dev` against getpack-api v0.43.1 (:3600), `getpack_uat_partner` reseeded from getpack-api main `38c385d`; board comparisons and findings in `docs/ui/reviews/2026-10-09-main-board/`. **Real-API price parity** (`e2e/integration/home-hero.spec.ts`, `--no-deps`): mailer and lid pass, tuck skipped (folding RFQ). It first failed on the lid (hero ฿28.74, `/configure` ฿31.52): `/configure` kept the catalogue's default inside ink, which the hero never sends — `seedFromDesign` with the hero's `ink` now starts optional groups unanswered (required keep their defaults); unit test. Mock e2e home / configurator / quote / studio green (32). | The PR (no git remote). Template gallery and studio "popular" rows absent on UAT: 0 published styles. | Differences from the boards are data (0 published styles, proof SLA / contacts unset, MOQ 100, tuck RFQ, E-flute only) or the page's own header/footer/icons — listed in the review README. Open: sign-in consent step nests `<details>` in `<p>` (hydration error in dev). |
+| 2026-10-09 | **Home review — API v0.43.1 adopted, multi-part configurator, boards** (branch `fix/home-review-main`, merged to main) | **Configurator**: `/configure` priced one part, so a two-part box (lid box, PK-CT-02) was unpriceable; it now sends one part per sub-pattern, each with its own print (`partPrints`, "พิมพ์แต่ละชิ้นไม่เหมือนกัน"; alike by default), coating / die-cut on every part, placed finishes and assemblies once. **Contract** `gen:api --adopt --tag v0.43.1` (0.42.0 →); D-313 label fields filled in the mocks (`mocks/status-labels.ts`). **Hero** on `store.catalog.getHeroPresets` / `store.quotes.preview`, MOQ on `store.publicConfig.get`; the three contract requests and their CONTRACT-REQUEST mocks retired (typed MSW mocks remain); fallback to the next preset on a 5xx only. **e2e**: hero ↔ `/configure` price parity for mailer, lid, tuck (mock: pass; `e2e/integration/home-hero.spec.ts` for the real API). `chore/docs-sync` merged, `pnpm docs:sync --tag v0.43.1`. Boards committed (`docs/ui/boards/`). Unit, typecheck, lint green; full mock e2e green (failures under load re-ran green on a fresh server). | **Screenshots of `/` and `/studio` at 1440 against the real API and the diff vs the boards: not taken** — `getpack_uat_partner` has no `catalog.hero_presets` nor the hero catalogue pieces (getpack-api verified v0.43.1 in testcontainers only); seeding is the user's decision. Real-API parity e2e not run for the same reason. No git remote: no PR. | D-314 leaves `decisions.md` with the v0.43.1 sync; back with v0.43.2 (getpack-api af3b736). FAQ seed hygiene ships in getpack-api v0.43.2 (`0df962c`); the web already strips `[DEV]` / `(D-xxx)`. v0.43.2 drops `defaultAdjusted` (unused here). Fixed the stale Structure Advisor e2e (shipping box has standard sizes since 6a4f1ac). Builds need the interim photos and `.env.local` moved aside (production refuses them, by design). |
 | 2026-10-09 | **Partner portal UX pass** — price lists, jobs, users, hours, capacity, billing, payouts (branches `feat/partner-ux-pricing`, `feat/partner-ux-r2`, `feat/partner-ux-align-v3`, merged to main) | Price lists show only the components their product type's calculator reads (`components-by-type.ts`, CONTRACT-GAP `partner.price-components-by-type`); every price column named with its unit (207 keys th/en, glossary terms); price table sorted/searchable with condition vs price columns; the proposal draft edited in place like a sheet (old value under a changed cell, remove/undo, add rows, sticky save bar, leave-page guard, draft listed old → new); CSV import behind "advanced"; jobs, users, hours, capacity, billing statement, payouts, today, performance, shipment and requests copy/layout fixes; aligned to design language v3 (no eyebrow/caps, sage not teal for decoration, `shadow-overlay`, glossary เพลท) | Zone names on shipping rates, payout totals (contract requests); sidebar count badges (no count endpoint) | Verified in the browser on :3001 against the UAT API; partner-scoped tsc/eslint/prettier only — full `pnpm typecheck` / vitest not run in the session VM (memory, darwin binaries) |
-| 2026-10-10 | **packio-api v0.43.4 adopted** (branch `feat/adopt-contract-0.43.4`, merged to main) | `gen:api --adopt --tag v0.43.4`: `PriceComponentDto.productTypeCodes` and `FactoryRateDto.zoneNameTh/zoneNameEn` (both asked for by the partner UX pass). `componentsFor` filters on the API's `productTypeCodes`; `COMPONENTS_BY_TYPE` kept only as the fallback for an older API (unit test). Shipping rates show the zone name in the viewer's language. Both CONTRACT-GAPs removed, `docs/contract-requests.md` marked done; mocks and fixtures carry the new fields. tsgo typecheck, eslint, vitest (partner, admin, lib, app, i18n) green. | Push (no remote here); UAT redeploy on v0.43.4. | API side: v0.43.4 also completes the `job_received` step when a job is accepted. |
-| 2026-10-10 | **Packio Factory ERP E2.1 + E3 — sourcing, alerts, machine schedule, kiosk, maintenance, documents** (branch `feat/factory-erp-e3`, merged to main; packio-api v0.46.0 adopted) | `gen:api --adopt --tag v0.46.0`, `gen:rbac` (role ช่างซ่อมบำรุง / Maintenance; `factory_maintenance.*`, `factory_documents.*`). Sourcing: approved supplier list (approve with review date, suspend with reason), quantity breaks, grade + 12-month scorecard on the partner page with recent rejections, PO warnings before issue, receipt rejections + landed-cost charges (at receipt and later). New: `/alerts` (open / all, acknowledge), `/purchasing/rfqs` (+ new from a request, detail: send, quotes, comparison, award → draft POs, cancel; edit), `/planning/schedule` (1/3/7-day board in working hours, drag to move + lock, move dialog, auto-plan with late orders), `/floor/kiosk` + `/floor/kiosk/[machineId]` (now / next, glove-size start · pause with reason · resume · finish, breakdown report, machine-down banner, 30 s refresh), `/machines` + `[machineId]` (state, queue, plan cycles, history, documents; add / edit by `factory_erp.configure`), `/maintenance` (open / all / plans), `/maintenance/new` (photos), `/maintenance/[mtId]` (window, start, spare parts from stock, finish with downtime, cancel), `/maintenance/plans/new` + `[planId]` (open now, edit), `/documents` (folders, all / expiring / expired / archived, search), `/documents/new` (link pre-filled from a record), `/documents/[docId]` (versions, open file, new version, archive, edit). Related documents on item, partner, PO, MO, machine and MT pages; MO steps show their schedule, pauses and the Packio step badge; floor buttons gain pause / resume, skip hidden for Packio-linked steps. Sidebar by role (alerts, kiosk, rfqs, schedule, maintenance, machines, documents), nav tests incl. a check that every menu item a role sees is one its permissions open. Namespace `partnerOps` th/en, status maps (RFQ, approval, maintenance, machine, doc expiry), MSW `mocks/partner/erp-e3.ts` + `partner-erp-e3-mocks.test.ts`, maintenance persona, Lighthouse URLs. Verified against the real API on the UAT seed with Playwright, signed in as owner, planner, operator, purchaser, storekeeper, maintenance, accountant and QC: every menu item opens (no 403), pages outside a role say so calmly; auto-plan, kiosk start / pause / resume, breakdown with photo → machine down → start → parts → finish, folder + document + new version, at 1280 and 390. tsgo, eslint, vitest (1185) green. | Lighthouse run for the new URLs (the `partnerOps` messages may move the script ratchet); phone e2e specs for E3; photo thumbnails need real storage locally (the API runs with fake storage) | Money is never summed in the browser (landed cost, parts value, comparisons come from the API). Price-break and supplier-approval edits send `If-Match: *`. |
-| 2026-10-10 | **Packio Factory ERP E1.1 + E2 — supplier prices, purchase requests, payables, production, MRP** (branch `feat/factory-erp-e2`, merged to main; packio-api v0.45.2 adopted) | `gen:api --adopt --tag v0.45.2`, `gen:rbac` (E2 permissions and role grants). Item page: suppliers & prices (usual / cheapest badges, latest price per unit and per stock unit, 12-month range, change, on-time, lead days; make usual, note a quote, add / archive a supplier) and the price history; partner page: items bought from the supplier; PO form fills the supplier's unit and latest price. New: `/purchasing/requests` (+ new, detail with submit / approve / reject / convert / cancel, edit), `/payables` (open / overdue / all / payments / aging + totals strip), `/payables/invoices/new` (from a PO's received lines, or free lines; WHT, VAT mode), `/payables/invoices/[id]` (match per line, approve variance, pay, cancel), `/payables/payments/new` + `[id]` (reverse), `/planning` (board strip, open / MRP / completed / all, machine load), `/planning/orders/new` + `[id]` (release, issue, return, complete with good/scrap, cancel, operations), `/planning/recipes` (+ new, detail/edit), `/floor` (queue per machine, start / finish / skip). Sidebar: หน้าเครื่อง, วางแผนการผลิต, เจ้าหนี้ / จ่ายเงิน by role; settings: request approval, invoice price tolerance, PR/AP/PV/MO prefixes. Namespace `partnerFactory` th/en, status maps (request, invoice, production, operation), `erp_pr.* / erp_ap.* / erp_pay.reverse / erp_mo.*` presentation, problem copy, MSW `mocks/partner/erp-e2.ts` + `partner-erp-e2-mocks.test.ts`. Verified against the real API on the UAT seed with Playwright: item suppliers, MO release → MRP → issue → floor start, invoice from a PO, PR → approved on submit → PO, payment, at 1280 and 390. tsgo, eslint, vitest (1181) green. | Phone e2e specs for the E2 screens; recipe archive toggle; PO from a chosen (not usual) supplier on a request line | The web never adds money: invoice totals, aging and costs come from the API. Supplier link edits send `If-Match: *` (flags only). |
-| 2026-10-10 | **Packio Factory ERP E1 — stock, purchasing, trading partners** (branch `feat/factory-erp-e1`, merged to main; packio-api v0.44.0 adopted) | `gen:api --adopt --tag v0.44.0`, `gen:rbac` (roles Storekeeper, Purchaser). New sidebar group คลังและจัดซื้อ: `/stock` (overview strip, task tiles, items / low / movements views, reorder list → draft POs), `/stock/items/new`, `/stock/items/[itemId]`, `/stock/receive` (pick the delivering PO, its open lines prefilled; or without a PO), `/stock/issue`, `/stock/count` (count / adjust / opening), `/stock/transfer`, `/purchasing` (open / draft / all / receipts), `/purchasing/new`, `/purchasing/[poId]` (nextActions: edit, approve with typed confirm, receive, close, cancel), `/purchasing/[poId]/edit`, `/purchasing/[poId]/print` (A4 purchase order; AppShell chrome now `print:hidden`), `/purchasing/receipts/[grId]`, `/partners` (+ new, detail), `/settings/erp` (warehouses, rules, prefixes, modules). Namespace `partnerErp` th/en, status map `ERP_PURCHASE_ORDER_STATUS`, `erp_po.*` action presentation, `erp.*` problem copy, stateful MSW mock `mocks/partner/erp.ts` + `partner-erp-mocks.test.ts`, nav tests for the new roles, Lighthouse URLs. Verified against the real API (v0.44.0 on PostgreSQL 16 + UAT seed): receive against a PO, issue, PO draft → approve, print, at 1280 and 390. tsgo, eslint, vitest (1160) green. | Phone e2e spec for the ERP screens; per-warehouse balance filter by item id (uses `q=sku`); E2 (planning, MRP) | Money is never summed in the browser: PO totals appear after saving (the API computes them). Warehouse toggles send `If-Match: *` (unconditional flag change). |
+| 2026-10-10 | **getpack-api v0.43.4 adopted** (branch `feat/adopt-contract-0.43.4`, merged to main) | `gen:api --adopt --tag v0.43.4`: `PriceComponentDto.productTypeCodes` and `FactoryRateDto.zoneNameTh/zoneNameEn` (both asked for by the partner UX pass). `componentsFor` filters on the API's `productTypeCodes`; `COMPONENTS_BY_TYPE` kept only as the fallback for an older API (unit test). Shipping rates show the zone name in the viewer's language. Both CONTRACT-GAPs removed, `docs/contract-requests.md` marked done; mocks and fixtures carry the new fields. tsgo typecheck, eslint, vitest (partner, admin, lib, app, i18n) green. | Push (no remote here); UAT redeploy on v0.43.4. | API side: v0.43.4 also completes the `job_received` step when a job is accepted. |
+| 2026-10-10 | **getpack Factory ERP E2.1 + E3 — sourcing, alerts, machine schedule, kiosk, maintenance, documents** (branch `feat/factory-erp-e3`, merged to main; getpack-api v0.46.0 adopted) | `gen:api --adopt --tag v0.46.0`, `gen:rbac` (role ช่างซ่อมบำรุง / Maintenance; `factory_maintenance.*`, `factory_documents.*`). Sourcing: approved supplier list (approve with review date, suspend with reason), quantity breaks, grade + 12-month scorecard on the partner page with recent rejections, PO warnings before issue, receipt rejections + landed-cost charges (at receipt and later). New: `/alerts` (open / all, acknowledge), `/purchasing/rfqs` (+ new from a request, detail: send, quotes, comparison, award → draft POs, cancel; edit), `/planning/schedule` (1/3/7-day board in working hours, drag to move + lock, move dialog, auto-plan with late orders), `/floor/kiosk` + `/floor/kiosk/[machineId]` (now / next, glove-size start · pause with reason · resume · finish, breakdown report, machine-down banner, 30 s refresh), `/machines` + `[machineId]` (state, queue, plan cycles, history, documents; add / edit by `factory_erp.configure`), `/maintenance` (open / all / plans), `/maintenance/new` (photos), `/maintenance/[mtId]` (window, start, spare parts from stock, finish with downtime, cancel), `/maintenance/plans/new` + `[planId]` (open now, edit), `/documents` (folders, all / expiring / expired / archived, search), `/documents/new` (link pre-filled from a record), `/documents/[docId]` (versions, open file, new version, archive, edit). Related documents on item, partner, PO, MO, machine and MT pages; MO steps show their schedule, pauses and the getpack step badge; floor buttons gain pause / resume, skip hidden for getpack-linked steps. Sidebar by role (alerts, kiosk, rfqs, schedule, maintenance, machines, documents), nav tests incl. a check that every menu item a role sees is one its permissions open. Namespace `partnerOps` th/en, status maps (RFQ, approval, maintenance, machine, doc expiry), MSW `mocks/partner/erp-e3.ts` + `partner-erp-e3-mocks.test.ts`, maintenance persona, Lighthouse URLs. Verified against the real API on the UAT seed with Playwright, signed in as owner, planner, operator, purchaser, storekeeper, maintenance, accountant and QC: every menu item opens (no 403), pages outside a role say so calmly; auto-plan, kiosk start / pause / resume, breakdown with photo → machine down → start → parts → finish, folder + document + new version, at 1280 and 390. tsgo, eslint, vitest (1185) green. | Lighthouse run for the new URLs (the `partnerOps` messages may move the script ratchet); phone e2e specs for E3; photo thumbnails need real storage locally (the API runs with fake storage) | Money is never summed in the browser (landed cost, parts value, comparisons come from the API). Price-break and supplier-approval edits send `If-Match: *`. |
+| 2026-10-10 | **getpack Factory ERP E1.1 + E2 — supplier prices, purchase requests, payables, production, MRP** (branch `feat/factory-erp-e2`, merged to main; getpack-api v0.45.2 adopted) | `gen:api --adopt --tag v0.45.2`, `gen:rbac` (E2 permissions and role grants). Item page: suppliers & prices (usual / cheapest badges, latest price per unit and per stock unit, 12-month range, change, on-time, lead days; make usual, note a quote, add / archive a supplier) and the price history; partner page: items bought from the supplier; PO form fills the supplier's unit and latest price. New: `/purchasing/requests` (+ new, detail with submit / approve / reject / convert / cancel, edit), `/payables` (open / overdue / all / payments / aging + totals strip), `/payables/invoices/new` (from a PO's received lines, or free lines; WHT, VAT mode), `/payables/invoices/[id]` (match per line, approve variance, pay, cancel), `/payables/payments/new` + `[id]` (reverse), `/planning` (board strip, open / MRP / completed / all, machine load), `/planning/orders/new` + `[id]` (release, issue, return, complete with good/scrap, cancel, operations), `/planning/recipes` (+ new, detail/edit), `/floor` (queue per machine, start / finish / skip). Sidebar: หน้าเครื่อง, วางแผนการผลิต, เจ้าหนี้ / จ่ายเงิน by role; settings: request approval, invoice price tolerance, PR/AP/PV/MO prefixes. Namespace `partnerFactory` th/en, status maps (request, invoice, production, operation), `erp_pr.* / erp_ap.* / erp_pay.reverse / erp_mo.*` presentation, problem copy, MSW `mocks/partner/erp-e2.ts` + `partner-erp-e2-mocks.test.ts`. Verified against the real API on the UAT seed with Playwright: item suppliers, MO release → MRP → issue → floor start, invoice from a PO, PR → approved on submit → PO, payment, at 1280 and 390. tsgo, eslint, vitest (1181) green. | Phone e2e specs for the E2 screens; recipe archive toggle; PO from a chosen (not usual) supplier on a request line | The web never adds money: invoice totals, aging and costs come from the API. Supplier link edits send `If-Match: *` (flags only). |
+| 2026-10-10 | **getpack Factory ERP E1 — stock, purchasing, trading partners** (branch `feat/factory-erp-e1`, merged to main; getpack-api v0.44.0 adopted) | `gen:api --adopt --tag v0.44.0`, `gen:rbac` (roles Storekeeper, Purchaser). New sidebar group คลังและจัดซื้อ: `/stock` (overview strip, task tiles, items / low / movements views, reorder list → draft POs), `/stock/items/new`, `/stock/items/[itemId]`, `/stock/receive` (pick the delivering PO, its open lines prefilled; or without a PO), `/stock/issue`, `/stock/count` (count / adjust / opening), `/stock/transfer`, `/purchasing` (open / draft / all / receipts), `/purchasing/new`, `/purchasing/[poId]` (nextActions: edit, approve with typed confirm, receive, close, cancel), `/purchasing/[poId]/edit`, `/purchasing/[poId]/print` (A4 purchase order; AppShell chrome now `print:hidden`), `/purchasing/receipts/[grId]`, `/partners` (+ new, detail), `/settings/erp` (warehouses, rules, prefixes, modules). Namespace `partnerErp` th/en, status map `ERP_PURCHASE_ORDER_STATUS`, `erp_po.*` action presentation, `erp.*` problem copy, stateful MSW mock `mocks/partner/erp.ts` + `partner-erp-mocks.test.ts`, nav tests for the new roles, Lighthouse URLs. Verified against the real API (v0.44.0 on PostgreSQL 16 + UAT seed): receive against a PO, issue, PO draft → approve, print, at 1280 and 390. tsgo, eslint, vitest (1160) green. | Phone e2e spec for the ERP screens; per-warehouse balance filter by item id (uses `q=sku`); E2 (planning, MRP) | Money is never summed in the browser: PO totals appear after saving (the API computes them). Warehouse toggles send `If-Match: *` (unconditional flag change). |
 ---
 
 ## Admin completion, in rounds (D-411) — 2026-10-15
 
-- **Round 1 — style library** (packio-api v0.61.0): `/style-library` desk (bases, sign-offs, curation, variants,
+- **Round 1 — style library** (getpack-api v0.61.0): `/style-library` desk (bases, sign-offs, curation, variants,
   imports, coverage, rules, next styles).
-- **Round 2 — studio and CMS** (packio-api v0.62.0, D-412): `/studio-catalog` (templates: from the library or a
+- **Round 2 — studio and CMS** (getpack-api v0.62.0, D-412): `/studio-catalog` (templates: from the library or a
   layout JSON with a face/slot map, families from the library's bases, thumbnail upload, submit / approve / return /
   retire — approving one's own shows the maker-checker message) and `/studio-catalog/elements`; `/reviews`;
   `/line`; `/privacy` (PDPA requests with export download, consent texts, agreement versions); `/inbox/canned`
   (linked from the inbox); CMS glossary terms and customer stories. Client checks follow the API's patterns
   (`content/codes.ts`): template / element codes lower-case, rich menu keys, canned tags (`lead-time` →
   `lead_time`). The library templates named families that do not exist (`folding_carton`, `corrugated`); they now
-  name box families with all faces. Tried in a browser against packio-api with real object storage (S3-compatible
+  name box families with all faces. Tried in a browser against getpack-api with real object storage (S3-compatible
   server locally) and the worker: template with thumbnail upload, element publish, canned add / archive, rich menu.
-- **Round 3 — logistics** (packio-api v0.63.0, D-413): `/shipping` desk — customer rate card (summary in force /
+- **Round 3 — logistics** (getpack-api v0.63.0, D-413): `/shipping` desk — customer rate card (summary in force /
   next / open, versions, rates by zone and band, draft by copy or empty, a line editor that marks overlapping bands
   and bad values before sending, Excel import with preview and export, submit for C-Level approval, withdraw,
   delete draft, a quote check), `/shipping/zones` (schemes, zones, postcodes pasted any way with the bad ones
-  named), `/shipping/carriers` (enable / disable, Packio's accounts by secret reference, a test quote),
+  named), `/shipping/carriers` (enable / disable, getpack's accounts by secret reference, a test quote),
   `/shipping/calendar` (holidays and extra working days by year, import a year from Excel); a factory's shipping
   payout tab (draft, edit, send, withdraw, answer counters line by line, staff-only suggestions); on a shipment,
   correcting the transit status and recording a POD (photos and signature uploaded as evidence). A form dialog now
   lists the API's field errors beside the fields. A new version dated today takes effect a minute from now (its
-  start of day would be refused as back-dated). Tried in a browser against packio-api with real object storage:
+  start of day would be refused as back-dated). Tried in a browser against getpack-api with real object storage:
   draft → edit → submit, zone postcodes, a holiday, the factory tab, status correction and POD → delivered with the
   order reconciled.
-- **Round 4 — factories, production, prepress, catalogue** (packio-api v0.64.0, D-414, D-415): factory tabs for
+- **Round 4 — factories, production, prepress, catalogue** (getpack-api v0.64.0, D-414, D-415): factory tabs for
   processes (propose / verify against a passing site visit / reject / withdraw) and working hours (versions,
   closures), edits of addresses, contacts, capabilities, what it makes per product type and machines;
   `/partners/requests`, `/partners/boards`; a job panel on the production board and the order (hold, resume,
@@ -102,7 +102,7 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   options, patterns, reference configuration, stock images and attributes, palettes, template fonts and design,
   pattern flutes and geometry, band tables, article categories, FAQ products) and the geometry tables. Pictures
   upload as purpose `image` (standard retention); signed files stay `document`, fonts `design_asset`. Tried in a
-  browser against packio-api with real object storage: hours and a closure, a proposal, items, an address, a board
+  browser against getpack-api with real object storage: hours and a closure, a proposal, items, an address, a board
   sheet with its file, hold / resume, a product image, options, bands.
 - **The factory app's look in the back office** (product owner, 2026-10-13): the admin zone takes the partner
   type scale (12 / 13 / 15 / 17 / 20 / 24 px; page title 20 px, was 30), one control height (44 px on a phone,
@@ -112,8 +112,8 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   remembered on the device) and a menu search appears (`/` jumps to it, Enter opens the first match). The finance
   desks list uses the same marking. Every admin dropdown is a `SearchableSelect` (search box from six options),
   which now also keeps its own choice when used with `defaultValue` alone.
-- **Round 5 — sales agent programme** (packio-api v0.65.0, D-416 – D-423): employees and freelancers who sell for
-  Packio to customers, companies and factories. Storefront: `/a/{code}` keeps the agent's code (`pk_agent`, 90
+- **Round 5 — sales agent programme** (getpack-api v0.65.0, D-416 – D-423): employees and freelancers who sell for
+  getpack to customers, companies and factories. Storefront: `/a/{code}` keeps the agent's code (`pk_agent`, 90
   days) and the storefront claims it once the visitor is signed in; `/account/agent` shows the programme and the
   application (identity file, payout account, the agreement), and for an agent their code, link, QR, money by
   status and plan, with customers (names of link-sourced people masked), leads (registered with the prospect's
@@ -123,12 +123,12 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   hand, unlink), leads (release), referred factories, commissions (adjust with an Idempotency-Key, release or cancel
   held lines), statements (generate a month, approve with the number typed under If-Match + Idempotency-Key, void,
   payroll CSV, mark paid) and plans (create, propose a version, approve or reject by someone else, retire). List
-  keys are snake_case so saved views accept them. Tried in a browser against packio-api: apply → approve → two new
+  keys are snake_case so saved views accept them. Tried in a browser against getpack-api: apply → approve → two new
   customers linked through the link → a lead → an adjustment → a month's statement generated and approved (vendor
   bill) → a plan proposal its author cannot approve. Payout, certificate and employee payroll are covered by the
   API's e2e. Commission figures and the flat 3 % ภ.ง.ด.1 rate await business and CPA sign-off.
-- **Round 6 — sales and finance remainder** (packio-api v0.66.0, D-424): every remaining sales and finance
-  `admin.*` operation has its screen. `/pricing` (menu `pricing`): Packio's sell-margin tables (create, draft a
+- **Round 6 — sales and finance remainder** (getpack-api v0.66.0, D-424): every remaining sales and finance
+  `admin.*` operation has its screen. `/pricing` (menu `pricing`): getpack's sell-margin tables (create, draft a
   version from the one in force with a line editor that marks overlapping bands as the database would, approve),
   payment schedule templates (new versions: instalments adding up to 100 %, the selection rule as fields, a setting
   reference kept as `setting:<key>`) and the guarantee policy (propose the remedy matrix to C-Level, withdraw).
@@ -144,12 +144,28 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   discount memos; withdrawing one's own memo; attaching an unidentified receipt to an order group (payments
   filter "unidentified"); coupon export; referral details; `/reports/schedules` and `/reports/files`; analytics
   studio funnel, journey export and nightly rollups (only what needs attention, backfill); inbox response times;
-  a price proposal's evidence and recomputed suggestions. Tried in a browser against packio-api: margin draft →
+  a price proposal's evidence and recomputed suggestions. Tried in a browser against getpack-api: margin draft →
   approve, schedule version, guarantee propose → withdraw, matrix proposal, route version, advisor run → replay
   identical, quotation share → stop, CS order with a refused code and the preview → placed → re-priced from a
   second quotation → schedule replaced → group cancelled, address edit, points, report scheduled → run → file
   ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
   payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
+
+## Rebrand: Packio → getpack (D-425) — 2026-10-16
+
+- The brand is the lower-case wordmark **getpack** in both locales (Thai copy keeps the Latin name), the domain
+  **getpack.co** (`www.`, `admin.`, `partner.`). Every message, metadata, `llms.txt`, manifest, mocks, tests and
+  docs renamed; identifiers follow the code's casing; the engine is `@getpack/dieline`; cookies, headers and storage
+  keys `getpack.*` / `x-getpack-*` (pre-launch, so nothing is carried over: a browser's locally kept designs,
+  brand kit and preferences under the old `packio.*` keys are not read any more). The mark is a
+  lower-case g carrying the crease line (`src/ui/brand/Brand.tsx`, `src/app/icon.svg`).
+- Contract adopted: getpack-api **v0.67.0** (breaking: renamed enum values `factory_to_getpack`,
+  `getpack_to_factory`, `getpack`, `getpack_job`, `getpack_statement`, fields such as `readByGetpackAt`).
+- Checked: typecheck, lint, 1218 unit tests (one barcode test counted the old 8-character sample), dieline package
+  tests (2 `baseline` failures already on main), storefront th/en, about, admin and partner zones in the browser
+  against a copy of the UAT database migrated by `20261209000001_rebrand_getpack` — no "Packio" left on screen.
+- Not changed: the PNG design boards in `docs/ui/boards` (pictures of the old mark), DNS, mail sender and LINE OA
+  names, the GitHub repositories' names (`contract.lock.json` already points at `collective-group-th/getpack-api`).
 
 ---
 
@@ -192,23 +208,23 @@ checked by script; `ConsentStep.test.tsx` was rewritten for the new step and `pr
   `SearchAction`, page-type JSON-LD across the storefront (CollectionPage/ItemList, DefinedTermSet, ContactPage,
   Service, AggregateRating only with verified reviews, Breadcrumb + WebPage elsewhere), `speakable` on every
   answer-first paragraph, and `/llms.txt` built from the same copy and API data (served on the indexed zone only).
-- **.ai dieline download**: `ai` beside PDF/DXF/SVG in `DielineDownload`; packio-api `feat/dieline-ai-download`
+- **.ai dieline download**: `ai` beside PDF/DXF/SVG in `DielineDownload`; getpack-api `feat/dieline-ai-download`
   delivers the designer PDF as `application/illustrator`. Contract widened locally until adopted
   (`docs/contract-requests.md`, store.dielines.download-ai).
 
 - **Studio → order, end to end on real S3 (2026-10-15, after the merge):** `uploadFile` waits for the worker's
   scan (`waitUntilScanned`, typed `ScanError`, 90 s) because every use of a file is refused until it is `clean`;
   a slow or rejected scan reads as a sentence on the order sheet, not a file id. The studio can print only a
-  style-library box (packio-api `printable()` needs a style variant with an approved recipe), so a design drawn on
+  style-library box (getpack-api `printable()` needs a style variant with an approved recipe), so a design drawn on
   a catalogue product now says so before saving and uploading, and its "order" goes through the product page —
   which was dropping the design: `seedFromDesign` reads the design id from `?design=`, the design step shows the
   attached design (title, version, open / detach), the cart line carries `designDocumentId`, the cart names the
   design, and the order's artwork page offers "send this design for checking" (`store.designs.submitForOrder`)
   above the upload. Walked: Studio → สั่งผลิต → configurator → cart (WELCOME10) → checkout → order
-  UATOR-2610-00017 → artwork from the design, preflight passed. packio-api: a failed scan attempt retries after
+  UATOR-2610-00017 → artwork from the design, preflight passed. getpack-api: a failed scan attempt retries after
   30 s instead of the 10-minute lease, and a `NoSuchKey` read right after `complete`'s HEAD is retried with
   backoff (seen twice on the shared UAT bucket; cause outside the code — check the bucket's lifecycle rules and
-  event notifications, or give Packio its own bucket).
+  event notifications, or give getpack its own bucket).
 
 ### Found, not fixed here
 
@@ -223,20 +239,20 @@ checked by script; `ConsentStep.test.tsx` was rewritten for the new step and `pr
 
 Asked by the product owner: "the partner zone is hard to use — editing anything is confusing". A tour of every partner page at 1054 on :3001 (UAT API, factory F9001, owner persona), then three slices merged to main. Same design language as the storefront work of the same day (v3: paper/ink/sage, four radii, no eyebrow, Proof wording, the glossary).
 
-- **Prices (the main complaint).** A folding-carton list offered ~50 component tabs (pouch film, corrugated board, label rolls among them), raw column keys (`pricePerSqft`, `difficultyLevelId`), rows in line-key order, and a one-line form of 17 raw fields with no old value. Now: only the components the product type's calculator reads (`src/features/partner/prices/components-by-type.ts`, copied from packio-api's `*-snapshot.loader.ts` model reads — CONTRACT-GAP `partner.price-components-by-type`, request in `docs/contract-requests.md`); 207 column labels with units in `partnerPrices.columns`; `PriceTable` (condition columns grey, price columns sage, sorted by what a line applies to with open bounds first/last, `?q=` search, sticky header); one header action (continue draft / view sent / propose); version switcher. The draft (`ProposalEditor`) is a sheet: price cells editable in place, changed cells amber with "เดิม …", undo/remove per line, new rows, one sticky "บันทึกลงร่าง" (`shadow-overlay`), a `beforeunload` guard; a `change` line sends the whole line (the API requires the identifying columns); decimals padded to the column's scale. The draft's lines read old → new with a direction arrow (comparison only, no arithmetic on money). CSV round-trip folded under "ขั้นสูง" with a warning that it replaces the draft. Proposal page in three numbered steps.
+- **Prices (the main complaint).** A folding-carton list offered ~50 component tabs (pouch film, corrugated board, label rolls among them), raw column keys (`pricePerSqft`, `difficultyLevelId`), rows in line-key order, and a one-line form of 17 raw fields with no old value. Now: only the components the product type's calculator reads (`src/features/partner/prices/components-by-type.ts`, copied from getpack-api's `*-snapshot.loader.ts` model reads — CONTRACT-GAP `partner.price-components-by-type`, request in `docs/contract-requests.md`); 207 column labels with units in `partnerPrices.columns`; `PriceTable` (condition columns grey, price columns sage, sorted by what a line applies to with open bounds first/last, `?q=` search, sticky header); one header action (continue draft / view sent / propose); version switcher. The draft (`ProposalEditor`) is a sheet: price cells editable in place, changed cells amber with "เดิม …", undo/remove per line, new rows, one sticky "บันทึกลงร่าง" (`shadow-overlay`), a `beforeunload` guard; a `change` line sends the whole line (the API requires the identifying columns); decimals padded to the column's scale. The draft's lines read old → new with a direction arrow (comparison only, no arithmetic on money). CSV round-trip folded under "ขั้นสูง" with a warning that it replaces the draft. Proposal page in three numbered steps.
 - **Jobs:** a step waiting on acceptance says to accept first; other blocked steps name who records them. Issue form folded.
 - **Settings / hours / capacity:** role pickers open per user; add-user folded; closures in Buddhist-era dates; upcoming hours worded so they do not contradict "standard hours"; capacity bars carry their product type, booked/capacity and % (the `Meter` draws only the bar — they read as skeletons).
 - **Billing statement:** totals as an invoice; lines right after the totals; the tax-invoice form folded while the amounts await confirmation. **Payouts:** still-to-be-paid / paid in full / all, with counts; a cancelled advance greyed and struck through. **Today:** the clear line as a sentence (`Intl.ListFormat`). **Performance:** one month says when the trend appears. **Shipment:** quantities with units. **Requests:** primary send.
-- **Design-language and glossary alignment:** no uppercase/tracked group labels (prices nav, `/more`); decoration on `sage-subtle`, teal only for actions and the active item; glossary "เพลท" across the Thai messages (was split เพลต/เพลท; `เทมเพลต` untouched); no "ต้นทุน" toward a factory in price labels (glossary: Packio never asks a factory for its cost).
-- **Payouts summary:** `/payouts` opens with what Packio owes, delivered, received and retention held this month — `partner.payables.financeSummary`, already published and unused until now (no new endpoint needed).
-- **packio-api branch `feat/partner-ux-contract`** (not merged): `PriceComponentDto.productTypeCodes` (registrars declare what their loaders read; a spec checks it) and `FactoryRateDto.zoneNameTh/En`. Its typecheck, tests and `contract:build` could not run in the session VM — run them on the Mac, commit `contract/openapi.json`, tag, then adopt here and drop `components-by-type.ts`.
-- **Visual polish (second pass, asked "make it more beautiful and complete"):** `src/features/partner/rows.tsx` — `RowList`/`Row` (one hairline panel instead of a stack of cards; icon tile tinted by tone; amount on the far edge that drops under the title on a phone), `ViewTabs` (one style for every list's views, with counts), `Code`. Applied to Today's to-dos, billing, claims, shipments, price history, QC samples and `/more`. Today is titled งานวันนี้ with the date (the factory's name is already in the shell), the to-dos come before the queue, a planned Packio inspection is `info`, not a warning. Job cards: product name as the heading line, icons for quantity / ship date / step, the acceptance countdown as a footer with "เปิดงาน". Job file stamp: green "อนุมัติแล้ว v1" in the corner (was a red APPROVED across the icon). Spec, PO and claim facts two columns. Settings users one panel with initials (first consonant, not a leading vowel). Header actions are secondary buttons, not underlined links; the page title keeps 16rem so actions wrap under it on a phone; descriptions `max-w-prose`. Price table on a phone: one card per line with ranges read as ranges ("จำนวนแผ่น 500–1,999", "≤ 499"); integers with separators.
+- **Design-language and glossary alignment:** no uppercase/tracked group labels (prices nav, `/more`); decoration on `sage-subtle`, teal only for actions and the active item; glossary "เพลท" across the Thai messages (was split เพลต/เพลท; `เทมเพลต` untouched); no "ต้นทุน" toward a factory in price labels (glossary: getpack never asks a factory for its cost).
+- **Payouts summary:** `/payouts` opens with what getpack owes, delivered, received and retention held this month — `partner.payables.financeSummary`, already published and unused until now (no new endpoint needed).
+- **getpack-api branch `feat/partner-ux-contract`** (not merged): `PriceComponentDto.productTypeCodes` (registrars declare what their loaders read; a spec checks it) and `FactoryRateDto.zoneNameTh/En`. Its typecheck, tests and `contract:build` could not run in the session VM — run them on the Mac, commit `contract/openapi.json`, tag, then adopt here and drop `components-by-type.ts`.
+- **Visual polish (second pass, asked "make it more beautiful and complete"):** `src/features/partner/rows.tsx` — `RowList`/`Row` (one hairline panel instead of a stack of cards; icon tile tinted by tone; amount on the far edge that drops under the title on a phone), `ViewTabs` (one style for every list's views, with counts), `Code`. Applied to Today's to-dos, billing, claims, shipments, price history, QC samples and `/more`. Today is titled งานวันนี้ with the date (the factory's name is already in the shell), the to-dos come before the queue, a planned getpack inspection is `info`, not a warning. Job cards: product name as the heading line, icons for quantity / ship date / step, the acceptance countdown as a footer with "เปิดงาน". Job file stamp: green "อนุมัติแล้ว v1" in the corner (was a red APPROVED across the icon). Spec, PO and claim facts two columns. Settings users one panel with initials (first consonant, not a leading vowel). Header actions are secondary buttons, not underlined links; the page title keeps 16rem so actions wrap under it on a phone; descriptions `max-w-prose`. Price table on a phone: one card per line with ranges read as ranges ("จำนวนแผ่น 500–1,999", "≤ 499"); integers with separators.
 - **Two densities (third pass, "fonts too big, feels AI-made"):** on a phone the factory app stays the shop floor (18 px text, 48 px+ targets); at `lg` it reads at the admin console's density — 15 px body (`PartnerShell`), 22 px page title, 16 px section titles, 36 px sidebar rows at 14 px, 56 px bar, `xl`/`lg` buttons 44/40 px, big actions 52 px, `lg` inputs 40 px, a compact stepper. Done with `data-size` on `Button`/`Input`, `data-big` on `BigActionButton`, `data-stepper` on `StageStepper` and one unlayered `@media (width >= 64rem)` block in `base.css` scoped to `[data-zone="partner"] main` (a layered rule cannot beat a utility). Less decoration: no icon tiles on rows (a plain glyph, coloured only when a row needs attention), counts in one ruled `StatStrip` instead of four iconed cards (Today, shipping, payouts), Today's floor alerts are rows in the to-do list instead of coloured boxes, no greeting or status chip on Today, "ดูทั้งหมด" as a link, row actions in the price sheet on hover at a desk, shorter page descriptions.
 - **Tables, not cards (fourth pass, "walk it as an older factory owner nobody trained; tabular data was drawn as cards"):** `src/features/partner/table.tsx` — `PartnerTable` (a real bordered table at `md`+: column headers, numbers right-aligned and tabular, a tinted start edge on a row that needs the reader, the whole row opening the record through one stretched link in the primary cell; on a phone one card per record whose every value keeps its column's name) and `jobs/JobsTable.tsx`. Now tables: jobs and Today's queue (เลขงาน · สินค้า · จำนวน · กำหนดส่ง · ขั้นตอนตอนนี้ with the acceptance countdown · สถานะ), billing statements and a statement's lines, claims, shipments, the payout schedule (advance / balance / retention per order; terms said once above the table when every order shares them; a cancelled advance says it was paid with the balance), price lists and their history, users (edit in the row), the proposal draft's changes (old → new with ขึ้น/ลง), the QC queue, and capacity as a product-type × week matrix with a sticky first column. Every table fits 1054 px without sideways scroll except the capacity matrix. A statement waiting on the factory reads "รอคุณตรวจและยืนยัน" (the shared chip says "รอโรงงานตรวจ"); a one-day billing run shows one date. Job page: the accept card says what is being accepted (product, quantity, ship-by, amount from the PO) with a link to the spec, and the accept step's deadline is the acceptance deadline (was the plan's later date). POD said as "หลักฐานการส่งมอบ" (glossary). Theme toggle left the partner bar (it lives in Settings).
-- **Clarity, colour and proportion (fifth pass, asked "still not good enough": placeholders, responsive, font sizes, card sizes, colours):** every text/number field in the partner zone has an example placeholder (47 fields; a request's placeholder follows its topic). Colours: the menu is a white panel beside a page one shade deeper than paper (`bg-bg-subtle`), the current item has a teal start edge, teal words and a tint (was a faint tint only), icons muted except the current one, group labels larger; the phone bar's current tab has a tint behind its icon and 14 px labels. Proportion at a desk: stat values 1.125rem (were larger than the page title), every partner card 20 px padding (`padding="lg"` gone from the zone), big actions and `xl` buttons as wide as their words (28rem cap) instead of full-width bars, the job page's "to shipping" link and the label print link at button size. Words: statuses said to the factory (`src/features/partner/status.tsx` — "รอคุณรับงาน", "รอคุณตอบ", "รอคุณตรวจและยืนยัน" from `partner.status`; every other status keeps the shared words); "ทีมพาร์ตเนอร์" → "ทีมดูแลโรงงานของ Packio"; step buttons "เริ่มขั้น “…”" / "ขั้น “…” เสร็จแล้ว"; step deadlines by day ("ต้องเสร็จภายใน 14 ต.ค. 2569", the plan's 04:48 clock times dropped). Screens: open job issues as a callout at the top of the job; shipment page in two numbered steps (label the cartons → send); claim answer says what accepting / disputing leads to before the choice, with a placeholder for each; performance as a table (measure · result · what it measures); weekly hours as a timetable; the payout calendar as a table with the shared view tabs; the statement's date boxes show the Buddhist-era date under them. Checked at 1054 and 390 (no sideways page scroll); a 768 tablet window could not be opened in the session browser.
+- **Clarity, colour and proportion (fifth pass, asked "still not good enough": placeholders, responsive, font sizes, card sizes, colours):** every text/number field in the partner zone has an example placeholder (47 fields; a request's placeholder follows its topic). Colours: the menu is a white panel beside a page one shade deeper than paper (`bg-bg-subtle`), the current item has a teal start edge, teal words and a tint (was a faint tint only), icons muted except the current one, group labels larger; the phone bar's current tab has a tint behind its icon and 14 px labels. Proportion at a desk: stat values 1.125rem (were larger than the page title), every partner card 20 px padding (`padding="lg"` gone from the zone), big actions and `xl` buttons as wide as their words (28rem cap) instead of full-width bars, the job page's "to shipping" link and the label print link at button size. Words: statuses said to the factory (`src/features/partner/status.tsx` — "รอคุณรับงาน", "รอคุณตอบ", "รอคุณตรวจและยืนยัน" from `partner.status`; every other status keeps the shared words); "ทีมพาร์ตเนอร์" → "ทีมดูแลโรงงานของ getpack"; step buttons "เริ่มขั้น “…”" / "ขั้น “…” เสร็จแล้ว"; step deadlines by day ("ต้องเสร็จภายใน 14 ต.ค. 2569", the plan's 04:48 clock times dropped). Screens: open job issues as a callout at the top of the job; shipment page in two numbered steps (label the cartons → send); claim answer says what accepting / disputing leads to before the choice, with a placeholder for each; performance as a table (measure · result · what it measures); weekly hours as a timetable; the payout calendar as a table with the shared view tabs; the statement's date boxes show the Buddhist-era date under them. Checked at 1054 and 390 (no sideways page scroll); a 768 tablet window could not be opened in the session browser.
 - **White across the system, smaller type, iPad (sixth pass, product owner chose "white across the whole system"):** the light theme's paper and ink moved from warm beige to white and cool neutral greys in `src/ui/tokens/primitives.ts` (page `#F8F9FA`, band `#F1F3F5`, hairline `#E3E6EA`, ink `#1A1D21` / `#4F5660` / `#838B95`, sage-subtle and primary-subtle a light teal tint; kraft and dark theme unchanged) — every zone, regenerated `tokens.css`, all 141 contrast pairs pass. Partner type: 15 px body on every screen (inputs 16 px on a phone so iOS does not zoom), 20 px page title on a phone / 22 px from a tablet, section titles 16 px, `text-lg`/`text-xl` capped at 16/18 px, 44 px buttons on a phone, placeholders 13–14 px, `xl` segmented controls 40–44 px; tablet density from `md` (iPad portrait) instead of `lg`. Responsive: `PartnerTable` is a table from `lg` (iPad landscape, 1024 — all tables fit) and two columns of cards on an iPad portrait; weekly hours drop the times under the day on a phone (checked at 320 / 360 / 390 / 768 / 1024 / 1054, no sideways scroll). Words: "คำในหน้านี้หมายถึงอะไร" (`src/features/partner/terms.tsx`, `partner.terms`) on payouts, job, claim and prices; price changes start from one "แก้ราคา" with the date preset 7 days ahead and the reason optional (the API never required it), "บันทึกไว้ก่อน (ยังไม่ส่ง)" instead of "บันทึกลงร่าง", a draft proposal's chip "แก้ไว้ ยังไม่ส่ง". Usability test for untrained owners: `docs/ux/partner-owner-test.md` (P1–P10).
-- **Tried by hand on UAT (seventh pass, "try what you have not tried"):** accepted a job, ran its steps, confirmed a billing statement, answered a claim, started → saved → sent → withdrew a price change. Fixed on the way: one fixed type scale for the zone (`--text-*` remapped to 12/13/15/17/20/24 on `[data-zone="partner"]`, shop-floor components brought onto it, one control height — 44 px phone / 40 px tablet up — checked by script on every page at 400 / 768 / 1024 / 1054); every dropdown searchable (`src/ui/components/SearchSelect.tsx`, partner `Select` wrapper; the price sheet's material cells too); photos and documents open full screen (`src/ui/components/MediaViewer.tsx`, `src/features/partner/viewer.tsx`: claim photos as thumbnails, proof, dieline, label sheet, packing list, remittance documents, evidence, photos just taken; CSP lets staff and factory screens frame the asset origin for PDFs); a step with nothing to record completes in one tap (and packio-api `feat/partner-ux-contract` closes `job_received` on acceptance); a missing step photo is said under the photo box; typed confirmations ignore case, spaces and dashes; the tax-invoice form starts from the statement's amounts and shows the พ.ศ. date; empty price cells read "—"; a withdrawn proposal drops its waiting chips; "not found" / "not yours" read in grey, not as a red error. Not testable here: any upload — UAT's presign returns `fake-s3.invalid`, so step photos, POD and tax-invoice files cannot be sent from a local browser, and seeded photo URLs do not load (the viewer says so instead of showing a broken image). `NEXT_PUBLIC_ASSET_BASE_URL` is unset locally, so `img-src`/`frame-src` do not list the storage origin either.
-- **Eighth pass (remaining screens):** shipping rates in force as a table (zone · weight per carton · you are paid · each extra kg · status; zone names still CONTRACT-GAP until packio-api `zoneNameTh`); "QC" said as "ตรวจคุณภาพ" in the factory's Thai; the notification panel no longer runs past its edge (shared `NotificationBell`: popover `max-w-96 p-0`, rows wrap); a loading skeleton for every factory screen (`(console)/loading.tsx`) so a tap on a slow line shows something at once; a guide's way back sits where every page has it; a user's roles are edited in a dialog, not in a table cell, and settings is wide.
+- **Tried by hand on UAT (seventh pass, "try what you have not tried"):** accepted a job, ran its steps, confirmed a billing statement, answered a claim, started → saved → sent → withdrew a price change. Fixed on the way: one fixed type scale for the zone (`--text-*` remapped to 12/13/15/17/20/24 on `[data-zone="partner"]`, shop-floor components brought onto it, one control height — 44 px phone / 40 px tablet up — checked by script on every page at 400 / 768 / 1024 / 1054); every dropdown searchable (`src/ui/components/SearchSelect.tsx`, partner `Select` wrapper; the price sheet's material cells too); photos and documents open full screen (`src/ui/components/MediaViewer.tsx`, `src/features/partner/viewer.tsx`: claim photos as thumbnails, proof, dieline, label sheet, packing list, remittance documents, evidence, photos just taken; CSP lets staff and factory screens frame the asset origin for PDFs); a step with nothing to record completes in one tap (and getpack-api `feat/partner-ux-contract` closes `job_received` on acceptance); a missing step photo is said under the photo box; typed confirmations ignore case, spaces and dashes; the tax-invoice form starts from the statement's amounts and shows the พ.ศ. date; empty price cells read "—"; a withdrawn proposal drops its waiting chips; "not found" / "not yours" read in grey, not as a red error. Not testable here: any upload — UAT's presign returns `fake-s3.invalid`, so step photos, POD and tax-invoice files cannot be sent from a local browser, and seeded photo URLs do not load (the viewer says so instead of showing a broken image). `NEXT_PUBLIC_ASSET_BASE_URL` is unset locally, so `img-src`/`frame-src` do not list the storage origin either.
+- **Eighth pass (remaining screens):** shipping rates in force as a table (zone · weight per carton · you are paid · each extra kg · status; zone names still CONTRACT-GAP until getpack-api `zoneNameTh`); "QC" said as "ตรวจคุณภาพ" in the factory's Thai; the notification panel no longer runs past its edge (shared `NotificationBell`: popover `max-w-96 p-0`, rows wrap); a loading skeleton for every factory screen (`(console)/loading.tsx`) so a tap on a slow line shows something at once; a guide's way back sits where every page has it; a user's roles are edited in a dialog, not in a table cell, and settings is wide.
 - **Data, not UI:** `UATJOB-2610-00009` reads `quantityOrdered: 1` but its destination 500.
 - **Not run here:** full `pnpm typecheck` and vitest (the session's Linux VM ran out of memory / has darwin-only binaries); partner-scoped tsc, eslint and prettier pass. Run both before the next release.
 
@@ -246,21 +262,21 @@ Same branch. The user's review of the Phase 4 decisions asked for three changes 
 
 1. **Hero presets come from the catalogue, not the CMS.** The panel's shapes are the first box products the catalogue prices online and gives standard sizes (`store.catalog.listProducts`, catalogue order); each shape's sizes, boards, inks and quantities are its own configurator's (`store.catalog.getConfigurator` — the endpoint `/configure` reads): `standardSizes`, the material group, the print-front inks (1 colour = the default non-process ink, full = the process ink), `quantity.presets` within min/max. The panel sends the standard size's code (`size=`), so `/configure` opens on the same standard size. The CMS `studio-hero` section is gone; the CMS holds photos, captions and customer stories only. The mock's corrugated products gained standard sizes. The e2e "hero price == configure price" was re-run (below).
 2. **No number without a source — all of them.** ขั้นต่ำ = the configurators' `quantity.min` (the minimum `/configure` enforces); ล็อกราคา = the configurator's `quoteValidityDays`; เคลม = the guarantee's `claimWindowDays`; template count = the style library's facet total; factories = `network.partnerCount` only when the network figures are published. Each is left out when its source has none — no new contract request was needed, these three policy values already have endpoints. Still filed: proof turnaround and reply time (`store.settings.proof-turnaround`, `store.support-channels.reply-minutes`). Kept as the brief asked: the screen-to-factory frames' day labels (0/1/4/9), whose copy also names 18×12×5 and 500 — an illustration of one order, not a claim; and the capability cards' prices, inside a card labelled "ตัวอย่างหน้าจอ".
-3. **Proof acceptance re-scoped** to UI copy, i18n and the enum→label mapping. A mapping layer, `src/i18n/terms.ts`, rewrites the old words wherever the API's own text reaches a screen — every problem `title`/`detail` (audience from the request's surface), notification titles and bodies, the studio's soft-proof label — so no user sees the old term while packio-api is pending. `docs/ui/Packio UX UI Audit & Spec …` opens with a header note mapping ปรู๊ฟ → Proof / แบบตัวอย่าง (Phase 4.5); the glossary names the rejected words plainly again.
+3. **Proof acceptance re-scoped** to UI copy, i18n and the enum→label mapping. A mapping layer, `src/i18n/terms.ts`, rewrites the old words wherever the API's own text reaches a screen — every problem `title`/`detail` (audience from the request's surface), notification titles and bodies, the studio's soft-proof label — so no user sees the old term while getpack-api is pending. `docs/ui/getpack UX UI Audit & Spec …` opens with a header note mapping ปรู๊ฟ → Proof / แบบตัวอย่าง (Phase 4.5); the glossary names the rejected words plainly again.
 4. **Recent designs:** "มีรายการควรตรวจ" shows only when a response carries `hasIssues: true`; otherwise no line. Contract request `store.designs.list` now asks for `hasIssues` and `issueCount`.
 5. **Found by the full e2e run** (452 passed, 8 failed before these fixes): text on the sage band hard-coded white, which fails on the dark theme's light sage — it is `fg-inverse` now; the staff sign-in note at 75 % opacity was 4.47:1 — 90 %; two tests expected the header to open `/studio/new` (it opens `/studio`); a Proof test regex had gained a leading space.
 6. **Checks at merge:** typecheck, lint, `tokens:check`, unit 1,141; e2e — full chromium run 452 / 8 before the fixes above, then every affected spec re-run green (three passed only alone: `seo` sitemap walk, the studio-checks autosave and the header-link click time out under three workers); Lighthouse `customer-marketing` (now with `/studio`) meets every budget — accessibility 1.0 on all eight pages, home CLS 0 — after a ratchet 273,800 → 291,000: `main` already exceeded the old budget on every page (`docs/performance-budgets.md`); `/studio` stopped shipping the panel's code by moving the shared pieces into `home/parts.tsx`. Visual: 31 Storybook baselines re-taken for v3; three designer-panel stories cannot render in Storybook on `main` either (ElementsPanel's `useQuery` has no QueryClient there since U4.4) — left for a fix of its own.
 
 ## UX round 2 — Phase 4: homepage v10 (Studio-first) and design language v3 — 2026-10-07
 
-Branch `feat/ux-r2-p4` (worktree `../packio-web-p4`). Source: the user's Phase 4 brief and `docs/ui/Packio Homepage Redesign (V4).html` (board `Main` = "Homepage — v10 Studio-first (final)"; StudioStart, Mobile navbar, Sign in, Proof review for the details).
+Branch `feat/ux-r2-p4` (worktree `../getpack-web-p4`). Source: the user's Phase 4 brief and `docs/ui/getpack Homepage Redesign (V4).html` (board `Main` = "Homepage — v10 Studio-first (final)"; StudioStart, Mobile navbar, Sign in, Proof review for the details).
 
 - **4.0 Tokens, every zone:** the palette goes through the token pipeline (`ART` in `src/ui/tokens/primitives.ts` → `pnpm tokens`), so admin and partner change with the storefront: paper `#F6F3EE`, ink `#1D1B17`/`#5D5850`/`#948D83`, hairline `#E4DFD6`, sage `#5F7264`/`#E7EBE5` (new `sage`, `sage-subtle` slots, contrast-gated), green `#0F5F4E`/`#0B4A3D`, kraft `#DCCDB3`. Radii are four — control 10, card 14, panel 16, thumb 6 — and the Tailwind steps alias them; the storefront-only pill CTA, CTA shadow and 22 px cards are gone. Headings 600 / −0.02em, never italic. Removed: `shape="pill"`, the eyebrow and kicker (and every label over a heading), grain, the kraft gradients and washes (the dot and line grids are SVG patterns now), button shadows and lifts, card lifts. Warning amber stays for warning/pending only.
-- **4.1 Header:** สตูดิโอออกแบบ · แบบกล่อง · สินค้าและราคา · สำหรับธุรกิจ · ติดต่อ; search · cart (count) · language · divider · sign-in or avatar + name · "เริ่มออกแบบฟรี" → `/studio`; 76 px on the paper, hairline. The phone drawer lists the same five links in the same order; the bottom bar keeps its five tabs (ออกแบบ → `/studio`). The bell and the desktop mega menu went with the v2 bar — notifications are in the account menu and the drawer. Footer on the paper: studio · ordering · Packio · help, legal links under the copyright.
+- **4.1 Header:** สตูดิโอออกแบบ · แบบกล่อง · สินค้าและราคา · สำหรับธุรกิจ · ติดต่อ; search · cart (count) · language · divider · sign-in or avatar + name · "เริ่มออกแบบฟรี" → `/studio`; 76 px on the paper, hairline. The phone drawer lists the same five links in the same order; the bottom bar keeps its five tabs (ออกแบบ → `/studio`). The bell and the desktop mega menu went with the v2 bar — notifications are in the account menu and the drawer. Footer on the paper: studio · ordering · getpack · help, legal links under the copyright.
 - **4.2 Home** in the board's order; **4.3 StudioHeroPanel** (client, SSR-safe): shape × size × board × print × quantity chips (`aria-pressed`), the isometric box drawn from the size (`home/iso-box.ts`), and the price from **the configurator's own path** — the panel writes its choices as the query `/configure` reads (`seedFromDesign`, which gains `ink` and `design`), builds `buildCalculateBody` from `initialState` and asks `store.quotes.calculate` after 250 ms. The e2e test opens `/configure` on the same query and asserts the same unit price; it caught the panel showing the *previous* product's price while the next loaded, so a kept price now applies only within the same product (`useLivePrice`). A shape whose product is quoted by hand offers "ขอใบเสนอราคา".
 - **4.4 `/studio`** (StudioStart): the question, four ways in with their own pictures (template → `/studio/templates`, which sends to the style library; product → `/studio/new?start=product`, which opens the size helper; file → `/studio/upload`, instant products into their configurator on `own_file`; reorder), the style library's popular three, the customer's latest designs with ordered / size to confirm / ready. B4 was fixed in Phase 0 (single-flight refresh); an e2e test now leaves the studio and checks the session.
 - **4.5 Proof:** customer copy says ตรวจแบบก่อนพิมพ์ (the step) and แบบตัวอย่าง (the file); statuses, back office, factory app and page names say Proof with a space either side. Every message, the hand-written mocks and e2e assertions; `docs/ui/glossary.md` and the i18n README carry the rule.
-- **4.6 Guard:** `src/ui/design-language.test.ts` fails on Trirong, `shape="pill"`, an eyebrow/kicker, any gradient, grain, `rounded-[…]` or a non-token `border-radius`, `rounded-full` on a non-square, a shadow on a button, and the rejected Proof words (code, mocks, e2e, every message file); `packio-photos/no-stock-photos` (ESLint) refuses unsplash/pexels addresses. `/studio` joins the customer Lighthouse set (accessibility must be 1.0 there, above the brief's 0.95).
+- **4.6 Guard:** `src/ui/design-language.test.ts` fails on Trirong, `shape="pill"`, an eyebrow/kicker, any gradient, grain, `rounded-[…]` or a non-token `border-radius`, `rounded-full` on a non-square, a shadow on a button, and the rejected Proof words (code, mocks, e2e, every message file); `getpack-photos/no-stock-photos` (ESLint) refuses unsplash/pexels addresses. `/studio` joins the customer Lighthouse set (accessibility must be 1.0 there, above the brief's 0.95).
 
 ### Decisions taken (most conservative option; the user approved deciding in-run)
 
@@ -270,14 +286,14 @@ Branch `feat/ux-r2-p4` (worktree `../packio-web-p4`). Source: the user's Phase 4
 - **Recent designs** cannot say "ควรตรวจ n รายการ" — the list has no issue count (`store.designs.list` request).
 - **Captions use `muted` (ink-2), not ink-3:** `#948D83` on the paper is 2.97:1; ink-3 is placeholders only (one notch darker to clear 3:1). Text on the sage band is solid white (85 % white is 4.1:1, axe caught it).
 - **The 3D/แผ่นคลี่ toggle and "ลากเพื่อหมุน" are not in the panel:** its box is a static drawing; the studio is one click away.
-- **Not changed:** `Card` stays a white surface (admin and account depend on it); the boards other than Main/StudioStart/Sign-in are reached through the tokens and primitives, not re-laid out one by one. The Proof transliteration remains only in packio-api's generated strings (`schema.d.ts`, `mocks/generated/`) — requested; the audit document in `docs/ui` is left as written.
+- **Not changed:** `Card` stays a white surface (admin and account depend on it); the boards other than Main/StudioStart/Sign-in are reached through the tokens and primitives, not re-laid out one by one. The Proof transliteration remains only in getpack-api's generated strings (`schema.d.ts`, `mocks/generated/`) — requested; the audit document in `docs/ui` is left as written.
 
 ## Sign-in pages: one look in every zone — 2026-10-07
 
 Branch `feat/partner-login-split`. Asked: the factory sign-in did not follow the others, and both it and the staff one should look like the storefront's `/sign-in`.
 
-- **Factory** (`partner/login`): was a plain card; now `AuthSplitLayout` like the storefront — the green panel with grain, eyebrow "Packio Partner", a two-line headline whose second line is the accent ("งานผลิตทั้งหมด / ในมือถือเครื่องเดียว"), three points, a note card (add to home screen, scan a job sheet's QR); "ยังไม่ได้เป็นพันธมิตร? สมัครเป็นโรงงานพันธมิตร" over the form's corner (the storefront's `/partner-with-us`). The form gains show/hide password and "ลืมรหัสผ่าน?" (who sets a new one — no self-service reset, as for staff); fields and the button keep their shop-floor sizes (48 px+).
-- **Staff** (`admin/login`): the dark ink panel gives way to the same green panel — eyebrow "Packio Back Office", "ทุกคิวงานของทีม / ในหน้าเดียว", and a note on ⌘K search. Form unchanged.
+- **Factory** (`partner/login`): was a plain card; now `AuthSplitLayout` like the storefront — the green panel with grain, eyebrow "getpack Partner", a two-line headline whose second line is the accent ("งานผลิตทั้งหมด / ในมือถือเครื่องเดียว"), three points, a note card (add to home screen, scan a job sheet's QR); "ยังไม่ได้เป็นพันธมิตร? สมัครเป็นโรงงานพันธมิตร" over the form's corner (the storefront's `/partner-with-us`). The form gains show/hide password and "ลืมรหัสผ่าน?" (who sets a new one — no self-service reset, as for staff); fields and the button keep their shop-floor sizes (48 px+).
+- **Staff** (`admin/login`): the dark ink panel gives way to the same green panel — eyebrow "getpack Back Office", "ทุกคิวงานของทีม / ในหน้าเดียว", and a note on ⌘K search. Form unchanged.
 - Checked: both at 1440 and the factory one at 390 (panel steps aside, the form has the screen); lint, unit 1111; e2e zones, a11y, admin console, partner floor / onboarding / parity — 75 passed.
 
 ## One typeface: Anuphan everywhere — 2026-10-07
@@ -302,9 +318,9 @@ Branch `feat/ux-r2-polish`. The second half of the system-wide pass, from the sa
 
 ## UX round 2 — Phase 3: every page to its V2 board — 2026-10-07
 
-Branch `feat/ux-r2-p3`. Each page set against its board in `docs/ui/Packio Homepage Redesign (V2).html`, measured in a browser (computed styles side by side), not by eye.
+Branch `feat/ux-r2-p3`. Each page set against its board in `docs/ui/getpack Homepage Redesign (V2).html`, measured in a browser (computed styles side by side), not by eye.
 
-- **Home** (Main): eyebrow, serif title with its italic accent, pill CTAs, three figures, the drawn still life (or the admin banner), the quick quote as a paper slip, the category ticker (still under reduced motion), how-it-works, editorial category tiles, why Packio, the studio as a green-ink band.
+- **Home** (Main): eyebrow, serif title with its italic accent, pill CTAs, three figures, the drawn still life (or the admin banner), the quick quote as a paper slip, the category ticker (still under reduced motion), how-it-works, editorial category tiles, why getpack, the studio as a green-ink band.
 - **Sign-in / OTP**: green-ink grain panel with the serif headline. **Catalogue**: eyebrow, 48 px serif title, solid active chips scrolling on a phone, 17 px bold card titles, serif prices. **Configure**: size cards two-up on a phone. **Checkout + pay**: numbered step cards; the pay page's "กำลังชำระสำหรับ" side card. **Account order**: one status chip, the to-do card, stages in a card. **Track**: eyebrow, serif title.
 - **Mobile shell**: the drawer portalled to `body` (the header's `backdrop-filter` made it the containing block), 56 px phone bar, the five-tab bottom bar with safe-area padding and `--mobile-tab-h`, the consent banner floating above it; **1024–1279** folds the secondary links into "เพิ่มเติม" (`MoreLinks`) — the approved navbar keeps its structure.
 - **Studio start** (StudioStart): the whole page until a box is chosen — step pill, serif question, four intent cards (the popular one outlined), recent designs (`store.designs.list`, two and "ดูทั้งหมด (n)"), the sample; the style count is the engine's (`STYLES.length`). "มีสินค้าแล้ว" opens *describe your product* in a dialog (it used to sit in the hidden left panel). The rail, stage, step bar, dock and status bar wait for a box; the tour starts with the box (its targets come with it).
@@ -325,10 +341,10 @@ Branch `feat/ux-r2-p3`. Each page set against its board in `docs/ui/Packio Homep
 
 ## UX round 2 — Phase 2: design language v2 "Warm Editorial" — 2026-10-06
 
-Branch `feat/ux-r2-p2`. Source: the audit's "Design language v2" table and the V2 design file (`docs/ui/Packio Homepage Redesign (V2).html`, the same 25 boards as the canvas).
+Branch `feat/ux-r2-p2`. Source: the audit's "Design language v2" table and the V2 design file (`docs/ui/getpack Homepage Redesign (V2).html`, the same 25 boards as the canvas).
 
 - **Trirong** (500, 600, 500 italic; Thai and Latin; OFL) self-hosted through `next/font/local` (ADR-0001 — no runtime Google Fonts), ~68 KB, not preloaded; it is `--font-display`.
-- **Headings by zone** (`base.css`): storefront h1 and h2 at ≥ 22 px (`text-2xl` and up) in Trirong 600, `<em>` in a heading italic 500 in the primary colour; admin and partner only the page h1, Trirong 30 px; sub-headings stay Anuphan, codes monospace. The Packio wordmark stays sans (the navbar is approved as it is).
+- **Headings by zone** (`base.css`): storefront h1 and h2 at ≥ 22 px (`text-2xl` and up) in Trirong 600, `<em>` in a heading italic 500 in the primary colour; admin and partner only the page h1, Trirong 30 px; sub-headings stay Anuphan, codes monospace. The getpack wordmark stays sans (the navbar is approved as it is).
 - **Classes:** `.serif`, `.eyebrow` (12.5 px / 600 / .18em / uppercase, 28 px `--kraft-3` lead rule), `.grain` (fractalNoise SVG, opacity .5, multiply), `.kraft-1/2/3` gradients, `.rise` (18 px → 0, 0.9 s, 0.08 s stagger) — off under `prefers-reduced-motion`. Tokens `--green-ink #083f36`, `--kraft-3 #b8956a`.
 - **Buttons:** `shape="pill"` (any zone); the storefront's CTA shadow is v2's `0 14px 28px -14px` primary 70 %; a storefront secondary is an ink outline on the pill (`--cta-outline`); the back office keeps 12 px and its strong border.
 - **Cards:** storefront 22 px radius, way-in cards lift 4 px (`--card-lift`); admin/partner 16 px, no lift.
@@ -342,7 +358,7 @@ Branch `feat/ux-r2-p2`. Source: the audit's "Design language v2" table and the V
 Branch `feat/ux-r2-p1`. Boards: PartnerDashboard (sidebar), PartnerQc, AdminMobile (V2 file = the canvas boards).
 
 - **Partner sidebar** (`partnerSidebar`): the "เพิ่มเติม" page's items moved into four groups — งานประจำวัน · แผนและกำลังผลิต · การเงิน · โรงงาน — filtered by the user's roles at this factory per the audit's IA table, and by permission; the factory and its status at the top, the user and roles at the foot. The phone keeps a bottom bar of the role's first four daily destinations + "เพิ่มเติม", which now shows the rest of the role's groups. A factory being onboarded keeps its wizard, prices and guides.
-- **QC home** `/qc` (`qcQueue`): Packio's booked inspections soonest first, jobs at a QC-form step that offer `job.record_qc`, samples to record; "รอตรวจ N". The QC form gains สุ่มตรวจ / ของดี / ของเสีย (`quantityChecked`, `quantityDefective`, counts — never money) and asks for two photos. A QC-only user sees the floor's steps but not their start/finish buttons ("ขั้นนี้ฝ่ายผลิตเป็นผู้บันทึก"), except the QC step.
+- **QC home** `/qc` (`qcQueue`): getpack's booked inspections soonest first, jobs at a QC-form step that offer `job.record_qc`, samples to record; "รอตรวจ N". The QC form gains สุ่มตรวจ / ของดี / ของเสีย (`quantityChecked`, `quantityDefective`, counts — never money) and asks for two photos. A QC-only user sees the floor's steps but not their start/finish buttons ("ขั้นนี้ฝ่ายผลิตเป็นผู้บันทึก"), except the QC step.
 - **Shipping home**: a shipping-only user opens `/ship`, which leads with รอออกรถวันนี้ · กำลังส่ง · POD ค้าง.
 - **Admin on a phone**: a menu button opens the sidebar in a drawer (it closes on navigation); every `DataTable` lays out as cards below 768 px with each value named by its column (ARIA table roles kept); list toolbars wrap. No horizontal scroll at 390 on nine admin queues and seven partner pages (capacity's holiday badges now wrap).
 - **Customer account** (done in Phase 0): grouped nav, accordion on a phone.
@@ -350,13 +366,13 @@ Branch `feat/ux-r2-p1`. Boards: PartnerDashboard (sidebar), PartnerQc, AdminMobi
 
 ## UX round 2 — Phase 0: blocking bugs B1–B14 and round-1 leftovers — 2026-10-06
 
-Branch `feat/ux-r2-p0` (both repos). Spec: the audit doc's "รอบ 2" table; boards from the Claude Design canvas (Checkout, CompanyApprovals, PartnerQc, StudioEditor). packio-api release **`v0.42.0`** adopted (contract 0.41.0 → 0.42.0, additive).
+Branch `feat/ux-r2-p0` (both repos). Spec: the audit doc's "รอบ 2" table; boards from the Claude Design canvas (Checkout, CompanyApprovals, PartnerQc, StudioEditor). getpack-api release **`v0.42.0`** adopted (contract 0.41.0 → 0.42.0, additive).
 
 | Bug | Root cause found | Fix |
 |---|---|---|
 | B1 checkout | The payment call sent `"<key>:pay"` (the API takes a UUID only) after the order existed; the error left the customer on an emptied checkout. The mock accepted any key. | A fresh UUID v4 per call (`newIdempotencyKey`, with a `getRandomValues` fallback outside a secure context); a failed payment start goes to the order (`?payment=not_started`, banner + pay button). Mock now refuses a non-UUID key; e2e test added. |
 | B2 B2B | The company pages existed at `/business` but nothing in the account led there; the notification printed `{{payload.policyKey}}` and had no link. | Account nav "บริษัทของฉัน" (approvals with a count, company, credit, members, settings — by `CompanyDto.can`); overview card "รออนุมัติจากคุณ N"; `/account/company` → `/business`; approvals to the board (one note, อนุมัติ / ส่งกลับให้แก้ไข, tabs, `?request=` focus); buyer's order shows "รอผู้อนุมัติของบริษัท". API: inbox link `/business/approvals?request=` and policy names rendered in place of keys. |
-| B3 partner shipping | The ship plan returns jobs already fully shipped; the page dropped their destinations but kept the cards — no button anywhere. | Fully shipped jobs hidden; "สร้างการจัดส่ง" opens a sheet (quantity, cartons, weight, own truck / Packio booking) → create + pack (labels) [+ request carrier]; a half-done attempt finishes instead of duplicating. |
+| B3 partner shipping | The ship plan returns jobs already fully shipped; the page dropped their destinations but kept the cards — no button anywhere. | Fully shipped jobs hidden; "สร้างการจัดส่ง" opens a sheet (quantity, cartons, weight, own truck / getpack booking) → create + pack (labels) [+ request carrier]; a half-done attempt finishes instead of duplicating. |
 | B4 studio session | **Refresh-token race**: parallel BFF calls (the studio fires many) each met the expired token and refreshed with the same single-use refresh token; the API revoked the family as theft. Reproduced: 1×200 + 5×401 and signed out; fixed: 6×200, still signed in. | `refreshSession` single-flight on `globalThis` (proxy and BFF share it) with a 30 s reuse window. Step 5 copy follows the session again. |
 | B5 stock products | "สั่งซื้อสินค้านี้" linked to `/configure/<sku>` (no configurator for stock); the store DTO had no id to price with. | Quantity + live price + add to cart on the product page (`standard_product`, `stockProductId`); API `StoreStockProductDto.id`. |
 | B6 studio | (a) the sample link only changed the query — the same-route studio kept its state; (b) no product without `?product=` → no price, local-only design; (c) the first save ran before the configurator → version without box fields; (d) 3D: first artwork draw found no stage and never retried; then three.js kept the map-less shader after the texture arrived. | Studio keyed by its seed; `applySeed` starts with the box when a later step is asked; the page resolves the style's product (instant first, by type); a re-save when the configurator lands; artwork draw retries; the material is keyed on its map. |
@@ -446,7 +462,7 @@ Branch `feat/ux-4-products`, to the mockup's "Products — หมวดลูก
 - **`/products`:** category **tiles** (drawing, name, group badge, type count) in place of the long sidebar; one toolbar — a single search field with its icon that **searches as you type** (debounced URL replace inside a GET form, so Enter and no-JS still work; the separate "ค้นหา" button is gone), the count, and a two-icon view toggle.
 - **`/products/[category]`:** 38 px title, one-line description built from the category's own types and pricing mode, the item count; filter chips ราคาทันที / ขอใบเสนอราคา / ขั้นต่ำ ≤ 100 / ผลิต ≤ 5 วัน / มีโปรโมชัน (`?f=`) and "เรียงตาม" แนะนำ / ราคาต่ำ → สูง / ผลิตเร็วที่สุด (`?sort=`), applied to the API's own card facts (D-307). Prices are **compared as decimal strings** (`compareDecimal`) — `no-money-arithmetic` forbids turning them into numbers. Three columns and a dark "ไม่เจอแบบที่ต้องการ?" card into the RFQ.
 - **Product card:** mode badge top-left, campaign badge top-right, price `เริ่มต้น ฿x / ชิ้น` bold in brand colour with the reference price struck through on the same line, one caption line (quantity basis · MOQ · lead time), hover lift and "ดูราคา".
-- **Product detail:** without a photo, the product's **own dieline** (`@packio/dieline`, its first pattern at its first standard size; the family drawing when there is none); a compact price card — big price with "ที่ … ชิ้น · รวม VAT", three facts (lead time, MOQ, guarantee), one full-width primary and two outline buttons, the fine print last and small; specs as a ruled list under it; **standard-size rows open `/configure/<slug>?size=<code>`** with that size chosen (new `size` seed); a kraft "ไม่ตรงกับขนาดมาตรฐาน?" card.
+- **Product detail:** without a photo, the product's **own dieline** (`@getpack/dieline`, its first pattern at its first standard size; the family drawing when there is none); a compact price card — big price with "ที่ … ชิ้น · รวม VAT", three facts (lead time, MOQ, guarantee), one full-width primary and two outline buttons, the fine print last and small; specs as a ruled list under it; **standard-size rows open `/configure/<slug>?size=<code>`** with that size chosen (new `size` seed); a kraft "ไม่ตรงกับขนาดมาตรฐาน?" card.
 - **Configure:** the intent card removed (the studio keeps it); 7:5 grid with the sticky price panel (its add-to-cart always in view; the phone keeps its bottom bar); **steps tick in order** — a later step with defaults no longer shows done while an earlier one waits.
 - **Tests:** unit — `ordering` (group order, `compareDecimal`, URL parsing); e2e full run 447 passed; the browse test follows the tiles, the price test the split price line, the first-visit test now checks the studio asks the intent and `/configure` does not, the chips use `aria-current` (axe). Sitemap test flaky under load, green alone.
 - **Not done:** "ประหยัด x%" per tier — it is arithmetic on money; **contract request** `savingVsFirstPct` on `QuoteStepDto`. The materials comparison card of the mockup (+8 %, +22 %) has no API data.
@@ -472,7 +488,7 @@ Branch `feat/ux-6a-user-findings`. Raised by the user mid-run ("สิ่งท�
 |---|---|---|
 | Approvals: no approve/reject for CS Lead; snapshot shows raw keys (`amount`, `groupId`, `poNumber null`) | The buttons **exist** but were hidden without a word when the account lacks `approvals.act` (by design: the API decides who may act). Payload keys without a label printed as-is, `null`s included. | Pending and not yours to decide → an info callout "รอ {role} อนุมัติ" with the step's SLA timer. Payload: labels for `amount`, `threshold`, `groupId/groupCode`, `poNumber`, `companyId/companyCode`; `null`/empty hidden; UUID values hidden; any other key humanised. A "เตือนอีกครั้ง" button waits for **contract request `admin.approvals.remind`**. |
 | `/quotations` number shows part of a UUID | `quoteCode` is issued only at share or PDF; the list fell back to `id.slice(0, 8)`. | "ยังไม่ออกเลขที่" in the list, the detail title and CS's create-order notice. **Contract request:** issue `quoteCode` when the quotation is kept. |
-| `/styles` shows "0 แบบ" while the studio has dozens | Two sources: the API lists only *publishable* styles (D-243; 0 on UAT — no recipe bundle, no verified capability), the studio draws `@packio/dieline`'s 30 recipes. | With nothing published and no filter, `/styles` shows the studio's own 30 styles by category (FEFCO/ECMA codes where verified) with "ออกแบบด้วยแบบนี้" into the studio, and an honest note that ordering waits for a factory; the "0 แบบ" count is hidden. |
+| `/styles` shows "0 แบบ" while the studio has dozens | Two sources: the API lists only *publishable* styles (D-243; 0 on UAT — no recipe bundle, no verified capability), the studio draws `@getpack/dieline`'s 30 recipes. | With nothing published and no filter, `/styles` shows the studio's own 30 styles by category (FEFCO/ECMA codes where verified) with "ออกแบบด้วยแบบนี้" into the studio, and an honest note that ordering waits for a factory; the "0 แบบ" count is hidden. |
 | Studio uses the browser's `beforeunload` dialog (stalls automation) | Account designs autosaved; a guest's design did not, so the prompt guarded it. | A guest's design autosaves too (to this browser); the prompt is gone; the bar says "บันทึกอัตโนมัติ {time}". The first autosave of a new guest design updates the address with `history.replaceState` rather than a navigation, which had remounted the editor and dropped a name typed meanwhile. |
 
 **Tests:** designer + studio e2e 34/34 (assertions follow the new "บันทึกอัตโนมัติ" label); admin console/orders, styles and business suites green.
@@ -491,17 +507,17 @@ Branch `feat/ux-2-design-baseline`. The audit's "Design system baseline" table, 
 | Status chips | already semantic with an icon at 24 px (`Badge md`); unchanged. **Assumption:** "waiting on the customer" keeps `warning`, not the audit's accent: D-180 keeps amber for promotions. |
 | Imagery | `ProductIllustration` — 13 original line drawings by family (shipping, tuck, rigid, bag, pouch, label, tag, tube, food, display, tape, stock, service) matched from a type/category/slug code; `ProductCard` draws one instead of the `package` icon, with a top-right promo slot and a hover "ดูราคา" CTA; `ProductThumb` for cart lines; `OpenBoxIllustration` for 404s. |
 | Empty / error | `ReferenceCode` (step 1); `EmptyState` gains `titleAs`. |
-| System-wide | Cookie banner is a slim full-width bottom bar, **not shown on `/studio`, `/configure`, `/checkout`, `/design`** (nothing is tracked until answered, D-144). Language button shows "TH" / "EN". 404s: storefront inside its layout (header/footer) with the open-box drawing and three ways on; admin/partner with the brand, and inside the console layout for a miss behind sign-in. Captions on `text-subtle` moved to `text-muted` (#5B534B). **Internal decision codes removed from 214 UI strings** (th + en); `[DEV]` / "(รีวิวทดสอบ UAT)" are seed data in packio-api, not UI copy. |
+| System-wide | Cookie banner is a slim full-width bottom bar, **not shown on `/studio`, `/configure`, `/checkout`, `/design`** (nothing is tracked until answered, D-144). Language button shows "TH" / "EN". 404s: storefront inside its layout (header/footer) with the open-box drawing and three ways on; admin/partner with the brand, and inside the console layout for a miss behind sign-in. Captions on `text-subtle` moved to `text-muted` (#5B534B). **Internal decision codes removed from 214 UI strings** (th + en); `[DEV]` / "(รีวิวทดสอบ UAT)" are seed data in getpack-api, not UI copy. |
 
 **Tests:** unit 1090; e2e full run 449 passed — the four failures asserted the D-codes in copy (now assert the sentence and that no code shows) and the known-flaky sitemap test, all green on re-run.
 
 ## UX audit Flow 1 — step 1: the blocking bugs — 2026-10-06
 
-From `docs/ui/Packio UX UI Audit & Spec — Flow 1 Order-to-Production.md` (the user: "อ่านไฟล์นี้แล้วดำเนินการเลย … ปิด gap ทั้งหมด"). Branch `feat/ux-1-blocking-bugs` (worktree `../packio-web-ux`); the audit's steps 2–10 follow on their own branches.
+From `docs/ui/getpack UX UI Audit & Spec — Flow 1 Order-to-Production.md` (the user: "อ่านไฟล์นี้แล้วดำเนินการเลย … ปิด gap ทั้งหมด"). Branch `feat/ux-1-blocking-bugs` (worktree `../getpack-web-ux`); the audit's steps 2–10 follow on their own branches.
 
 | # | Audit finding | Root cause found | Fix |
 |---|---|---|---|
-| 1 | OTP verify fails with "กรุณาใส่เบอร์มือถือในประเทศไทยให้ถูกต้อง" | **Not** a phone normalisation mismatch — verify sends only the challenge id. packio-api answers a wrong code with **422 `auth.otp_invalid`**, and `otpErrorFor` mapped every 422 to "invalid phone". The mock answered 401, so no test could see it. And with fake integrations the API's code is random and kept in memory, so `000000` was never the code on the real stack. | Branch on `code` before status (`auth.otp_invalid` → "รหัส OTP ไม่ถูกต้อง" + the API's "เหลือโอกาสอีก n ครั้ง"); mock aligned with the API (422 `auth.otp_invalid`, 422 `validation.failed`, `codeLength`, `maxAttempts`, `8x` numbers). packio-api `963e753`: `toE164` accepts a mobile without its leading zero. **Open:** how a UAT tester reads the OTP on the fake-SMS stack — a fixed `000000` in fake mode was proposed and not applied (blocked as a security weakening); the owner decides. |
+| 1 | OTP verify fails with "กรุณาใส่เบอร์มือถือในประเทศไทยให้ถูกต้อง" | **Not** a phone normalisation mismatch — verify sends only the challenge id. getpack-api answers a wrong code with **422 `auth.otp_invalid`**, and `otpErrorFor` mapped every 422 to "invalid phone". The mock answered 401, so no test could see it. And with fake integrations the API's code is random and kept in memory, so `000000` was never the code on the real stack. | Branch on `code` before status (`auth.otp_invalid` → "รหัส OTP ไม่ถูกต้อง" + the API's "เหลือโอกาสอีก n ครั้ง"); mock aligned with the API (422 `auth.otp_invalid`, 422 `validation.failed`, `codeLength`, `maxAttempts`, `8x` numbers). getpack-api `963e753`: `toE164` accepts a mobile without its leading zero. **Open:** how a UAT tester reads the OTP on the fake-SMS stack — a fixed `000000` in fake mode was proposed and not applied (blocked as a security weakening); the owner decides. |
 | 2 | Admin login → 404 | A `returnTo` in the internal spelling (`/admin/orders`) is rewritten again by the proxy (`/admin/admin/orders`). | `signInReturnTo()` (shared): never a sign-in page, never `/admin` · `/partner` · `/bff`; used by the three login pages and both staff/partner actions. |
 | 3 | `/cart` forces sign-in | The API has no guest cart and a saved quotation is a customer's. | A **guest cart in this browser** (`guest-cart.ts`: the `store.quotes.save` body and the price the API showed — display only, no token, no personal data); the configurator adds to it for a guest; `/cart` shows it (`GuestCartView`) with checkout → `/sign-in?returnTo=/cart`; the signed-in cart moves each line in (save quotation at today's price → add item), keeping a line that fails. |
 | 4 | Header "เข้าสู่ระบบ" goes through `/account` | — | Links to `/sign-in?returnTo=<this path>`; still opens the sheet when interactive. |
@@ -514,16 +530,16 @@ From `docs/ui/Packio UX UI Audit & Spec — Flow 1 Order-to-Production.md` (the 
 
 ## Home redesign — 2026-10-06
 
-Requested by the user from a design mockup (`Homepage — Desktop-html.zip`, `Main.dc.html` at 1440 px). Plan approved; scope: home + header + footer, Studio section added, Articles kept. Branch `feat/home-redesign` (worktree `../packio-web-home`).
+Requested by the user from a design mockup (`Homepage — Desktop-html.zip`, `Main.dc.html` at 1440 px). Plan approved; scope: home + header + footer, Studio section added, Articles kept. Branch `feat/home-redesign` (worktree `../getpack-web-home`).
 
 ### Where the build departs from the mockup, and why
 - **Tokens, not the mockup's values.** The mockup's palette already *is* D-180, so colours are the semantic tokens. Fonts stay self-hosted (ADR-0001): no Google Fonts link, body in Noto Sans Thai, headings in Anuphan.
 - **Amber is for campaigns only (D-180).** The mockup's amber title highlighter is kraft (`Highlight`). The amber newsletter button is primary. The amber cart-count bubble is left out, because there is no cart count in the API (`store.cart-count`).
-- **No heavy gradients (D-180).** The teal-gradient "Why Packio" lead card is solid primary. The radial washes are single-hue and soft (`pk-hero-wash`, `pk-band-glow`).
+- **No heavy gradients (D-180).** The teal-gradient "Why getpack" lead card is solid primary. The radial washes are single-hue and soft (`pk-hero-wash`, `pk-band-glow`).
 - **Radii.** Cards keep `rounded-card` (16 px). The large bands and the hero picture use `rounded-2xl` (24 px, an existing token) instead of the mockup's 28 px. Home CTAs use `rounded-xl` (16 px) as drawn, instead of the storefront pill. *Assumption:* the mockup is the newer art direction for the home page; the rest of the storefront keeps the pill.
 - **Elevation.** The mockup's big warm shadows map to the existing `shadow-overlay`; D-180 allows two elevation levels.
 - **Placeholders become data.** `[ราคา]`/`[MOQ]` come from `cardFacts` and price hints. "7 ประเภท" is the catalogue's count of priced types. Support hours come from `/v1/store/support-channels`. The mockup's "จัดส่งภายใน 1–3 วันทำการ" and "เหลือน้อย" are dropped: the API gives neither figure (D-181).
-- **The hero picture** is the real `@packio/dieline` tuck-end on the designer's dotted canvas, not the mockup's hand-drawn SVG. The admin's `home_hero` banner still wins when there is one.
+- **The hero picture** is the real `@getpack/dieline` tuck-end on the designer's dotted canvas, not the mockup's hand-drawn SVG. The admin's `home_hero` banner still wins when there is one.
 - **"ขอใบเสนอราคางานพิเศษ"** links to the RFQ form of the first RFQ-only category and is hidden without one. There is no customer `/rfq` index page.
 - **LINE green** (`#06c755`) is a third-party brand colour, so the LINE button uses our secondary style (CLAUDE.md: no third-party assets).
 - **Header**: the theme menu moved to the footer's bottom row, so it is still on every page. The LINE icon stays in the bar below `lg` only.
@@ -535,10 +551,10 @@ Requested by the user from a design mockup (`Homepage — Desktop-html.zip`, `Ma
 
 ## U5.8 — Release gate: the automated half, and UAT data for the round — 2026-10-06
 
-`docs/prompts/U5-ux-excellence.md` §U5.8 (run order step 9), on `feat/u5.8-release-gate` (worktree `../packio-web-u5`, from `main` at `1d22a41`). Gap table: `docs/ux/u5.8-gap.md`. Plan approved by the user, who added "prepare UAT data or mock UAT data close to the real product".
+`docs/prompts/U5-ux-excellence.md` §U5.8 (run order step 9), on `feat/u5.8-release-gate` (worktree `../getpack-web-u5`, from `main` at `1d22a41`). Gap table: `docs/ux/u5.8-gap.md`. Plan approved by the user, who added "prepare UAT data or mock UAT data close to the real product".
 
 ### What U5.8 is today
-The moderated round (§1) needs people: 8–10 participants (Marketing), a moderator (open, D-217) and a UAT backend with production-like data. D-217 also says the round does not block launch, and all of U5 is post-launch (D-219). So this session builds the **automated half of the gate** and **everything the round needs to run**. No `scorecard-results/<date>-packio.md` is written until a round has really been run.
+The moderated round (§1) needs people: 8–10 participants (Marketing), a moderator (open, D-217) and a UAT backend with production-like data. D-217 also says the round does not block launch, and all of U5 is post-launch (D-219). So this session builds the **automated half of the gate** and **everything the round needs to run**. No `scorecard-results/<date>-getpack.md` is written until a round has really been run.
 
 ### Done
 - **Step counters are a gate.**
@@ -562,7 +578,7 @@ The moderated round (§1) needs people: 8–10 participants (Marketing), a moder
     - in production, with its notification link (T7);
     - a job waiting at the factory (T11).
   - Off by default (`MOCK_DATASET=uat`, `pnpm dev:uat`) and appended after every seed, so no test or seeded id moves (tested).
-  - The doc carries the round sheet, kept equal to the dataset by `mocks/uat.test.ts`, the per-task preparation, and the spec of the same records for packio-api's UAT seed.
+  - The doc carries the round sheet, kept equal to the dataset by `mocks/uat.test.ts`, the per-task preparation, and the spec of the same records for getpack-api's UAT seed.
 - **Evidence**: `docs/ux/step-gate-2026-10-06.md` (U5.0 → `main` → U5.8 per journey, the exceptions, real-API evidence and what it does not prove).
 
 ### Step counts (mock, enforced)
@@ -577,7 +593,7 @@ The moderated round (§1) needs people: 8–10 participants (Marketing), a moder
 
 ### Decisions taken (most conservative option)
 - **No budget changed, nothing trimmed to make a number.** The claim's remedy stays the customer's (D-198). The basis stays a choice (D-182). Job acceptance keeps its confirmation.
-- **Exceptions say what causes them.** T12's row says plainly that 3 of its 5 extra steps are navigation, which is packio-web's to shorten, and only 2 are D-271's sign-in.
+- **Exceptions say what causes them.** T12's row says plainly that 3 of its 5 extra steps are navigation, which is getpack-web's to shorten, and only 2 are D-271's sign-in.
 - **T12's layers are checked on the real API** (`downloads.spec.ts` now asserts the D-302 layers), not on the mock's placeholder PDF.
 - **Mock tokens accept digits in a persona** (`uat_p01`). The token pattern was `[a-z_]+`, so the first UAT sign-in was silently anonymous.
 
@@ -593,17 +609,17 @@ The moderated round (§1) needs people: 8–10 participants (Marketing), a moder
 - **Step counters, enforced** (`STEP_BUDGETS=enforce pnpm e2e:journeys`): **12 passed**.
 - **E2E (mock)**: the configurator v2, samples, downloads, studio order and styles specs: 20 passed. The downloads spec failed once under two workers in the shared sign-in helper, then passed 3 / 3 alone.
 - **UAT dataset live**: on a build served with `MOCK_DATASET=uat`, P01, P07 and P10 each signed in and saw their own orders. Their T7 links opened the order's progress, and the delivered order offered claim and reorder. All ten jobs were waiting on the partner floor.
-- **Real API** (packio-api v0.41.0 on :3400): 42 passed, 3 skipped (the download spec, because no style is published; and the two checkout steps, `api.dev-seed-launch-path`), 1 failed and then passed 2 / 2 alone (the assistant's lazy button, as at U5.5).
+- **Real API** (getpack-api v0.41.0 on :3400): 42 passed, 3 skipped (the download spec, because no style is published; and the two checkout steps, `api.dev-seed-launch-path`), 1 failed and then passed 2 / 2 alone (the assistant's lazy button, as at U5.5).
 - **Lighthouse** (plain build, private port): customer-marketing within budget; customer-app 80 B over at 346,280 (the dock's sample button and its on-demand loader), so it was ratcheted 346,200 → **346,300** (`docs/performance-budgets.md` U5.8).
 ---
 
 ## U-F3 / U-F4 — Storefront page patterns, pricing ownership — 2026-10-06
 
-`docs/prompts/U1-update-2026-09-29.md` §U-F3 and §U-F4, on `feat/u-f3-f4` (worktree `../packio-web-u5`, from `main` at `714d9b2`). Gap tables: `docs/update-2026-09-29-gap.md` (U-F3, U-F4).
+`docs/prompts/U1-update-2026-09-29.md` §U-F3 and §U-F4, on `feat/u-f3-f4` (worktree `../getpack-web-u5`, from `main` at `714d9b2`). Gap tables: `docs/update-2026-09-29-gap.md` (U-F3, U-F4).
 
 ### Done
 - **Header** (`SiteHeader.tsx`): หน้าแรก · สินค้าและบริการ · ออกแบบออนไลน์ · ราคาและตัวอย่าง · บทความ · ติดต่อ. The product menu has a column per category listing every type with "ราคาทันที" / "บางสเปก" / "ขอใบเสนอราคา" from `store.catalog.listTypes`, each to the catalogue filtered by that type, and a panel to the style library and the whole catalogue. Below `lg` a menu sheet carries the pages and the same columns (seven Thai labels overflowed a 768 px tablet). The header condenses on scroll in CSS only (`animation-timeline`, reduced-motion respected). An announcement bar appears only when a type carries a live `campaignBadge`.
-- **Home** (`(storefront)/page.tsx`): exactly eight sections — hero with the quick start; product types; how ordering works (→ /learn); stock items; why Packio (six claims, the lowest MOQ and the claim window read from the API); work and verified reviews, or the empty variant; articles; newsletter and contact. The CMS's section ordering no longer drives the home page (the hero banner and the showcase still come from it).
+- **Home** (`(storefront)/page.tsx`): exactly eight sections — hero with the quick start; product types; how ordering works (→ /learn); stock items; why getpack (six claims, the lowest MOQ and the claim window read from the API); work and verified reviews, or the empty variant; articles; newsletter and contact. The CMS's section ordering no longer drives the home page (the hero banner and the showcase still come from it).
 - **Quick start** (`home/QuickStart.tsx`): only instantly priced products; size in cm sent as millimetres with basis "inside" (D-182) and the quantity added as a tier (`seedFromDesign` `qty`, `from=home` leaves the design choice open).
 - **Cards** (`catalog/cardFacts.tsx`, D-181 / D-307): starting price "from … for N pcs", MOQ · lead time, availability chip, accent badge with the campaign's end date, the struck reference price only alongside it.
 - **Catalogue** (`/products`): type filter (by category, with chips), applied chips with clear all, result count, grid / list, all in the URL.
@@ -632,18 +648,18 @@ The moderated round (§1) needs people: 8–10 participants (Marketing), a moder
 
 ---
 
-## U5.5 — Packio Assistant (flagged) — 2026-10-06
+## U5.5 — getpack Assistant (flagged) — 2026-10-06
 
-`docs/prompts/U5-ux-excellence.md` §U5.5, on `feat/u5.5-assistant` (worktree `../packio-web-u5`, from `main` at `486f1ee`). Gap table: `docs/ux/u5.5-gap.md`. packio-api's U5.B5 (in contract v0.41.0) runs the assistant on a fake model until ADR-0012 names a vendor; **D-218 keeps it off at launch**. Post-launch (D-219).
+`docs/prompts/U5-ux-excellence.md` §U5.5, on `feat/u5.5-assistant` (worktree `../getpack-web-u5`, from `main` at `486f1ee`). Gap table: `docs/ux/u5.5-gap.md`. getpack-api's U5.B5 (in contract v0.41.0) runs the assistant on a fake model until ADR-0012 names a vendor; **D-218 keeps it off at launch**. Post-launch (D-219).
 
 ### Done
-- **Two locks**: the build flag `NEXT_PUBLIC_ASSISTANT` (unset → no assistant code in any bundle; the header's entry is a server component that renders nothing) and packio-api's own switch (`assistant.disabled` / `assistant.not_configured` → "not available yet", with the team).
-- **Panel** (`src/features/customer/assistant/`): from the storefront header and the studio's chrome, a side sheet loaded on first press. A standing AI label and note (Packio's own data only, never a guessed price, date or policy, not used for training, how long conversations are kept — the API's figure when it gives one); "don't keep this conversation" (`setLogging`, D-305); each answer lists the tools it came from, each linked to the storefront page with the same facts (style library, products, my orders, glossary, learning paths, messages); a blocked, refused or handed-off answer says so with "คุยกับทีม"; a guest is asked to sign in; an ended session starts again on the next question.
+- **Two locks**: the build flag `NEXT_PUBLIC_ASSISTANT` (unset → no assistant code in any bundle; the header's entry is a server component that renders nothing) and getpack-api's own switch (`assistant.disabled` / `assistant.not_configured` → "not available yet", with the team).
+- **Panel** (`src/features/customer/assistant/`): from the storefront header and the studio's chrome, a side sheet loaded on first press. A standing AI label and note (getpack's own data only, never a guessed price, date or policy, not used for training, how long conversations are kept — the API's figure when it gives one); "don't keep this conversation" (`setLogging`, D-305); each answer lists the tools it came from, each linked to the storefront page with the same facts (style library, products, my orders, glossary, learning paths, messages); a blocked, refused or handed-off answer says so with "คุยกับทีม"; a guest is asked to sign in; an ended session starts again on the next question.
 - **Evaluation gate** `/admin/assistant` (`assistant.manage`): clearance and its reason, sessions, cost, outcomes by status chip (`ASSISTANT_OUTCOME`), the runs; `/admin/assistant/runs/{id}` lists every case, failures first; "ประเมินตอนนี้" runs the suite. Linked from Analytics until the menu has an entry.
-- **Mock** (`mocks/store/assistant.ts`): packio-api's fake model in miniature — Thai intents over the seven tools, refusing manipulation and other customers' orders, handing off, blocking a guess; runs of 104 cases with 22 red-team.
+- **Mock** (`mocks/store/assistant.ts`): getpack-api's fake model in miniature — Thai intents over the seven tools, refusing manipulation and other customers' orders, handing off, blocking a guess; runs of 104 cases with 22 red-team.
 
 ### Not built, and why
-- **Filling the configurator with undo** (§2): packio-api decided the assistant never builds a calculator configuration from free text (U5.B5 assumption 6), and D-304's seven tools have no such tool. Recorded as `store.assistant-configuration-proposal` — a decision comes first.
+- **Filling the configurator with undo** (§2): getpack-api decided the assistant never builds a calculator configuration from free text (U5.B5 assumption 6), and D-304's seven tools have no such tool. Recorded as `store.assistant-configuration-proposal` — a decision comes first.
 - **Source cards with the facts** (§1): a turn names its tools, not what they returned; chips link to the page instead. `store.assistant-turn-sources`.
 - **Hiding the button when the API has it off**: no store read of availability; `store.assistant-availability` (mocked as on).
 
@@ -654,15 +670,15 @@ The moderated round (§1) needs people: 8–10 participants (Marketing), a moder
 
 ### Verification
 - `pnpm lint`, `pnpm typecheck`, `pnpm gen:api:check` clean; unit **1,075** (the assistant over the mock: tool-sourced answers, refusal of manipulation and other customers' orders, hand-off, the gate for `assistant.manage` only).
-- E2E (flag on): `storefront-assistant.spec.ts` 4/4 — AI label and retention, a sourced answer, opt-out, a refusal with the team link, packio-api's switch off (`?mock=store.assistant.startSession:assistant.disabled`), a guest, the evaluation gate with all 104 cases; axe clean (it caught an in-text link underlined only on hover — fixed). The header-sensitive specs (`storefront`, `storefront-studio`, `storefront-ux` messaging) pass run serially; under two parallel workers on a loaded machine they timed out once.
-- **Real API** (v0.41.0, flag on): `e2e/integration/assistant.spec.ts` — packio-api refuses the session (off at launch, D-218) and the panel offers the team; `ux.spec.ts` still green.
+- E2E (flag on): `storefront-assistant.spec.ts` 4/4 — AI label and retention, a sourced answer, opt-out, a refusal with the team link, getpack-api's switch off (`?mock=store.assistant.startSession:assistant.disabled`), a guest, the evaluation gate with all 104 cases; axe clean (it caught an in-text link underlined only on hover — fixed). The header-sensitive specs (`storefront`, `storefront-studio`, `storefront-ux` messaging) pass run serially; under two parallel workers on a loaded machine they timed out once.
+- **Real API** (v0.41.0, flag on): `e2e/integration/assistant.spec.ts` — getpack-api refuses the session (off at launch, D-218) and the panel offers the team; `ux.spec.ts` still green.
 - **Flag off** (production): `pnpm release:hygiene` clean; Lighthouse within budget after two ~200 B ratchet moves (`docs/performance-budgets.md` U5.5).
 
 ---
 
 ## U5.1–U5.4, U5.6, U5.7 — UX excellence layer — 2026-10-06
 
-`docs/prompts/U5-ux-excellence.md` §U5.1–U5.4, U5.6, U5.7, on `feat/u5.1-ux-pack` (worktree `../packio-web-u5`, from `main` at `cf520ea`). Gap table: `docs/ux/u5.1-7-gap.md`. Contract **v0.41.0** (already adopted) carries U5.B1–B4, B6 (D-297–D-303); nothing new was adopted. All of it is post-launch (D-219). U2.F7 was running in `../packio-web-u2` at the same time, so the partner zone (T11) was left alone.
+`docs/prompts/U5-ux-excellence.md` §U5.1–U5.4, U5.6, U5.7, on `feat/u5.1-ux-pack` (worktree `../getpack-web-u5`, from `main` at `cf520ea`). Gap table: `docs/ux/u5.1-7-gap.md`. Contract **v0.41.0** (already adopted) carries U5.B1–B4, B6 (D-297–D-303); nothing new was adopted. All of it is post-launch (D-219). U2.F7 was running in `../getpack-web-u2` at the same time, so the partner zone (T11) was left alone.
 
 ### Done
 - **U5.1 Journeys and zero dead ends**
@@ -679,7 +695,7 @@ The moderated round (§1) needs people: 8–10 participants (Marketing), a moder
   - Every studio **check links to its explanation** (glossary entry or the print-ready learning path).
 - **U5.3 Messaging** (D-300)
   - `/account/messages` (threads, unread, a new support message with quick asks) and `/account/messages/{id}` (the thread, photos and files, context cards, read receipts, reply channel web/LINE). "ถามทีม" on an order opens its thread with the order's card.
-  - **CS inbox** `/admin/inbox` and `/admin/inbox/{id}` — the paths packio-api's notifications link to: queues by first-response state, filters, the thread with internal notes inline, canned responses (filled in, never sent unseen), assign to me, close, mark read on open, links to the customer, order, RFQ, quotation and design. Linked from the CS page until the menu has an entry.
+  - **CS inbox** `/admin/inbox` and `/admin/inbox/{id}` — the paths getpack-api's notifications link to: queues by first-response state, filters, the thread with internal notes inline, canned responses (filled in, never sent unseen), assign to me, close, mark read on open, links to the customer, order, RFQ, quotation and design. Linked from the CS page until the menu has an entry.
 - **U5.4 Parity fixes**
   - **RFQ basket** (D-301): "เพิ่มลงตะกร้าคำขอ" beside "ส่ง" on every RFQ form; `/rfq/basket` (items, remove, one delivery postcode / date / notes, send, discard); `/account/rfq-baskets/{id}` (each item's RFQ and sent quote, choose a quantity per item, accept into the cart — the dialog lists each item and amount as the API gave them); baskets listed on `/account/rfqs`.
   - **Dieline guide**: three lines per format under the download (PDF layers already named per D-302).
@@ -695,7 +711,7 @@ The moderated round (§1) needs people: 8–10 participants (Marketing), a moder
 - A new customer's launchpad recommends starting a configuration (D-297's last step).
 - A support message reaches the CS inbox, the reply comes back to the customer's thread.
 - A two-item RFQ basket submits as two RFQs.
-- **Deep-link tokens are exactly `[sap]` + 32 characters**: packio-api answers a malformed token `422` (the contract's `ResolveDeepLinkDto` does not state the pattern). The web treats `422` like `404` — "not this account's link", with a way on.
+- **Deep-link tokens are exactly `[sap]` + 32 characters**: getpack-api answers a malformed token `422` (the contract's `ResolveDeepLinkDto` does not state the pattern). The web treats `422` like `404` — "not this account's link", with a way on.
 
 ### Step counts (mocks, `pnpm e2e:journeys`)
 | Task | `main` before | after | budget |
@@ -706,7 +722,7 @@ The moderated round (§1) needs people: 8–10 participants (Marketing), a moder
 | T10 documents | 4 | **2** | ≤ 2 |
 | T1, T2, T8, T9, T11, T12 | 8, 5, 3, 7, 7, 6 | unchanged | 4, 6, 3, 5, 4, 3 |
 
-T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old designer). Still over: **T1** (U-F3's quick-start strip, next session), **T9** (the carton photo is required by the API for every claim type, D-082), **T11** (partner floor, U2.F7), **T12** (the free dieline needs a signed-in customer, D-271, so the shortest signed-out path is still the designer).
+T3 and T4 were re-walked on getpack 3D Studio (the U5.0 walks drove the old designer). Still over: **T1** (U-F3's quick-start strip, next session), **T9** (the carton photo is required by the API for every claim type, D-082), **T11** (partner floor, U2.F7), **T12** (the free dieline needs a signed-in customer, D-271, so the shortest signed-out path is still the designer).
 
 ### Decisions taken (most conservative option; the user approved the plan up front)
 - **No new contract**: v0.41.0 already carries U5.B; the glossary, materials and learning paths are **CONTRACT-REQUESTs** (`store.catalog-glossary`, `store.catalog-materials`, `store.learning-paths`), as are the **typing indicator** (`conversations.typing`) and the inbox's **menu entry** (`admin.menu-inbox`).
@@ -716,7 +732,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 - **No "fly to cart"**: the add-to-cart confirmation stays the toast with "ดูตะกร้า". A cart-icon pop was built and removed — the header's extra client component cost 2.5 KB of script on every storefront page and pushed `/styles` over its budget.
 - **First-run pieces load on demand** (glossary chip and its request client, intent picker, coach marks) so the configurator and the studio stay inside their script budgets.
 - **`checkout_started` fires on the checkout page**, not on the cart's link, so the studio's "order now" (straight to checkout) stays in the funnel.
-- **Admin conversations reuse one mock** with the store (`mocks/store/conversations.ts`), so a message crosses zones in tests as it does in packio-api.
+- **Admin conversations reuse one mock** with the store (`mocks/store/conversations.ts`), so a message crosses zones in tests as it does in getpack-api.
 
 ### Contract requests
 `store.catalog-glossary`, `store.catalog-materials`, `store.learning-paths` (zod in `src/lib/api/requests/store-content.ts`, awaiting triage), `conversations.typing`, `admin.menu-inbox`.
@@ -728,7 +744,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 - `pnpm lint`, `pnpm typecheck`, `pnpm gen:api:check` clean; unit **1,069** app tests + the dieline package green; `pnpm release:hygiene` clean (603 files).
 - **Mock e2e, full run** (after merging U2.F7 and U3.4 wave 2): **438 passed**, 1 failed — this session's content test ran axe before a client navigation's streamed `<title>` arrived; it now waits for the title (passes alone). An earlier full run's 404s served as 200 were real (route `loading.tsx`, removed); `storefront-repeat` / `storefront-downloads` failed once on shared mock state and pass alone and in the last full run.
 - **Step counters** (`pnpm e2e:journeys`): 10 walks pass, T5/T6 pending; counts in the table above.
-- **Real API** (`e2e/integration/ux.spec.ts`, packio-api v0.41.0 on :3400): green — launchpad, a support thread answered from the inbox, a two-item basket; the malformed deep-link token finding above.
+- **Real API** (`e2e/integration/ux.spec.ts`, getpack-api v0.41.0 on :3400): green — launchpad, a support thread answered from the inbox, a two-item basket; the malformed deep-link token finding above.
 - **Lighthouse** on a private port against `main` built the same way: three ratchets moved (`docs/performance-budgets.md` U5.1 — customer-app 346,000, customer-marketing 273,000, studio 505,500); every set meets its budget.
 - `pnpm format:check` lists the same 27 files `main` lists (none of this session's).
 
@@ -736,10 +752,10 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ## U3.6 — Partner dieline intake and structural design requests — 2026-10-06
 
-`docs/prompts/U3-style-library.md` §U3.6, on `feat/u3.6-intake` (worktree `../packio-web-u3`, from `main` at `f46582d`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.6.
+`docs/prompts/U3-style-library.md` §U3.6, on `feat/u3.6-intake` (worktree `../getpack-web-u3`, from `main` at `f46582d`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.6.
 
 ### Done
-- **Reading a DXF** (`@packio/dieline/library`):
+- **Reading a DXF** (`@getpack/dieline/library`):
   - `parseDxf` reads LINE, ARC, CIRCLE, LWPOLYLINE with bulges, POLYLINE and SPLINE, honouring `$INSUNITS`. It skips text and blocks and says how many.
   - `deviationFrom` lays the drawing over a dieline, top-left corners together and mirrored if that is closer. It measures cut and crease lines both ways, so a line missing on either side counts. A match is within **0.5 mm** (`INTAKE_TOLERANCE_MM`).
   - Tested round-trip on five styles from the engine's own DXF (< 0.05 mm), mirrored, and a 3 mm longer box refused.
@@ -787,7 +803,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ## U3.4 wave 3 — Style library, third wave — 2026-10-06
 
-`docs/prompts/U3-style-library.md` §U3.4 (wave 3), on `feat/u3.4-wave3` (worktree `../packio-web-u3`, from `main` at `c1f8967`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.4 wave 3.
+`docs/prompts/U3-style-library.md` §U3.4 (wave 3), on `feat/u3.4-wave3` (worktree `../getpack-web-u3`, from `main` at `c1f8967`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.4 wave 3.
 
 ### Counts
 | | Bases | Master variants | Drawn |
@@ -796,7 +812,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 | Waves 1–3 | **96 / 105** | 960 | **796** |
 
 - **By category (wave 3):** folding carton 19 / 23, corrugated 13 / 15, rigid 6 / 6, flexible 1 / 1, labels 6 / 6.
-- **Publishable:** packio-api's (D-243).
+- **Publishable:** getpack-api's (D-243).
 
 ### Done
 - 21 recipes:
@@ -839,7 +855,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ## U3.4 wave 2 — Style library, second wave — 2026-10-06
 
-`docs/prompts/U3-style-library.md` §U3.4 (wave 2), on `feat/u3.4-wave2` (worktree `../packio-web-u3`, from `main` at `fe20338`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.4 wave 2.
+`docs/prompts/U3-style-library.md` §U3.4 (wave 2), on `feat/u3.4-wave2` (worktree `../getpack-web-u3`, from `main` at `fe20338`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.4 wave 2.
 
 ### Counts
 | | Bases | Master variants | Drawn |
@@ -848,14 +864,14 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 | Waves 1 + 2 | 84 / 90 | 909 | **751** |
 
 - **By category (wave 2):** folding carton 105 / 137, inserts 8 / 8, corrugated 49 / 49, rigid 60 / 74, flexible and bags 51 / 52, labels 6 / 6, tags and sleeves 4 / 5.
-- **Publishable:** decided by packio-api (D-243: a pricing path and a capable partner). The engine has no flag; the library shows only what `store.styles.list` returns.
+- **Publishable:** decided by getpack-api (D-243: a pricing path and a capable partner). The engine has no flag; the library shows only what `store.styles.list` returns.
 - **The 881 milestone is not reached, and cannot be by drawing alone.**
   - Wave 1 left 110 variants undrawn because they cannot be made. Even every wave-2 variant drawn would give 799.
   - Today: 751 drawn. 18 of the 48 not drawn cannot be made; 30 are deferred, each with the work it needs (`style-mapping.md` §3).
   - Passing 881 needs either more structural options in the master file (a product decision) or the deferred constructions. Not counted variants that cannot be made (`style-library-program.md` §1).
 
 ### Done
-- 63 new recipes in `@packio/dieline/library` and an override of the core hexagon (window variants).
+- 63 new recipes in `@getpack/dieline/library` and an override of the core hexagon (window variants).
 - **New modules:**
   - Closures: `osc`, `displayTop`, `coverFlaps`.
   - Features: `trayWindow`, `securityCuts`, `neckHole`, `tearStrip`, `adhesiveStrip`, `dispenser`, `tearLine`, `tamperTuck`, `partitionInsert`, `neckLock`.
@@ -896,13 +912,13 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
   - SP-07 and SP-16: positions below the lid's lips and ears.
 - **Every new construction is marked ⚠ "to be confirmed by Prepress"** in its module documentation: overlaps, perforation positions, tongue and slit, magnet pockets, case overhang (3 mm), neck clearance.
 - **Wave-1 boards in the render.** Some wave-1 recipes render on a board they do not allow: tags and cards on label film, the roll-end tray on E flute. Kept as they are so their published assets do not change; flagged for a deliberate re-render.
-- **For the backend team:** packio-api reads `ALL_RECIPES`. The new recipes reach the catalogue once it takes this package version and imports them; publishability is then its call.
+- **For the backend team:** getpack-api reads `ALL_RECIPES`. The new recipes reach the catalogue once it takes this package version and imports them; publishability is then its call.
 
 ---
 
 ## U2.F7 — Partner zone parity — 2026-10-05
 
-`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F7, on `feat/u2.f7-partner` (worktree `../packio-web-u2`, from `main` at `cf520ea`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F7. **U2.F6 was skipped** in this pass, by agreement, until the backend seed and decisions it needs exist.
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F7, on `feat/u2.f7-partner` (worktree `../getpack-web-u2`, from `main` at `cf520ea`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F7. **U2.F6 was skipped** in this pass, by agreement, until the backend seed and decisions it needs exist.
 
 ### Done
 - **Today:** two more counters, sample jobs waiting for evidence and open claims, each linked to its queue.
@@ -937,7 +953,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ## U2.F5 — Buyer dashboard and repeat business — 2026-10-05
 
-`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F5, on `feat/u2.f5-repeat` (worktree `../packio-web-u2`, from `main` at `24f175a`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F5.
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F5, on `feat/u2.f5-repeat` (worktree `../getpack-web-u2`, from `main` at `24f175a`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F5.
 
 ### Done
 - **Dashboard** (`/account`):
@@ -982,13 +998,13 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ## U2.F4 — Trust surfaces — 2026-10-05
 
-`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F4, on `feat/u2.f4-trust` (worktree `../packio-web-u2`, from `main` at `ebbfc32`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F4.
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F4, on `feat/u2.f4-trust` (worktree `../getpack-web-u2`, from `main` at `ebbfc32`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F4.
 
 ### Done
-- **`/guarantee`**: the remedies matrix exactly as packio-api publishes it (claim type × severity → reprint / refund / partial credit, or case by case), the time limits (claim window, response and decision business days, the clock stopping while Packio waits for the customer) and the version in force. It is linked from the footer, every product page, the checkout summary and the order's tolerances.
+- **`/guarantee`**: the remedies matrix exactly as getpack-api publishes it (claim type × severity → reprint / refund / partial credit, or case by case), the time limits (claim window, response and decision business days, the clock stopping while getpack waits for the customer) and the version in force. It is linked from the footer, every product page, the checkout summary and the order's tolerances.
 - **`/network`**: the aggregate figures (partners, on-time, QC first pass) with their window, shown only when the API publishes them; otherwise it says why, with the API's own thresholds. Also the audit criteria and coverage by product type. No factory is named and no figure is filled in.
-- **Claim timeline** on the claim page: who must act now (Packio / you / the factory / done), the response and decision due times with overdue badges, the stopped clock while information is awaited, every event, and the guarantee version the claim follows.
-- **`/reviews`**: verified reviews only (product type, date, Packio's reply) with the summary and distribution, and an honest empty state.
+- **Claim timeline** on the claim page: who must act now (getpack / you / the factory / done), the response and decision due times with overdue badges, the stopped clock while information is awaited, every event, and the guarantee version the claim follows.
+- **`/reviews`**: verified reviews only (product type, date, getpack's reply) with the summary and distribution, and an honest empty state.
 
 ### Decisions taken
 - **Tolerances and evidence are not invented on the guarantee page.** The DTO has neither; the page says where each order shows them (CONTRACT-REQUEST `store.guarantee-evidence`).
@@ -1011,7 +1027,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ## U2.F3 — Samples and prototypes — 2026-10-05
 
-`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F3, on `feat/u2.f3-samples` (worktree `../packio-web-u2`, from `main` at `fea0100`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F3.
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F3, on `feat/u2.f3-samples` (worktree `../getpack-web-u2`, from `main` at `fea0100`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F3.
 
 ### Done
 - **Customer:**
@@ -1036,7 +1052,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 - **The RBAC grants were still at v0.6.0** (no `samples.*`, among 124 lines of changes): regenerated at v0.41.0 (`pnpm gen:rbac`).
 
 ### Decisions taken
-- **The admin queue is reached from Orders**: packio-api's menu has no sample entry at v0.41.0 (CONTRACT-REQUEST `admin.menu-samples`).
+- **The admin queue is reached from Orders**: getpack-api's menu has no sample entry at v0.41.0 (CONTRACT-REQUEST `admin.menu-samples`).
 - **The checklist goes into the decision's note**: `SampleDecisionDto` takes only a note. The API keeps the evidence photos seen.
 - **Requests start from a saved quotation**, not from the configurator. A draft configuration can be sampled too (`draftId`), but drafts have no product link to come back to (CONTRACT-GAP store.catalog-product-ref), so this is deferred.
 - **The mock seeds samples in each state** (the founder persona) instead of running payment, the factory job and delivery.
@@ -1048,7 +1064,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ### Verification
 - `pnpm typecheck` and `pnpm lint` are clean; unit tests 1,045.
-- Mock e2e full run: 412 passed. Four admin/partner tests failed after the RBAC regeneration: packio-api renamed `factory_cost.read` to `factory_buy_prices.read` at v0.41.0, and the web and its mocks still checked the old name. Renamed in 14 files; the three suites pass (41/41).
+- Mock e2e full run: 412 passed. Four admin/partner tests failed after the RBAC regeneration: getpack-api renamed `factory_cost.read` to `factory_buy_prices.read` at v0.41.0, and the web and its mocks still checked the old name. Renamed in 14 files; the three suites pass (41/41).
 - Lighthouse: all sets within budget (studio 495,306 B).
 - Real API: `samples.spec.ts` green.
 
@@ -1056,7 +1072,7 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ## U2.F2 — Free dieline download and packaging spec sheet — 2026-10-05
 
-`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F2, on `feat/u2.f2` (worktree `../packio-web-u2`, from `main` at `f80f1ec`, U4 merged). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F2. The library page itself is U3.5's (precedence note), so only the two artefacts were built.
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F2, on `feat/u2.f2` (worktree `../getpack-web-u2`, from `main` at `f80f1ec`, U4 merged). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F2. The library page itself is U3.5's (precedence note), so only the two artefacts were built.
 
 ### Done
 - **Free dieline download** on every style page, under the chosen variant (a button that loads the form). The customer enters sizes on a basis (inside, outside, over-crease: the API converts), picks a material class from the style's size ranges and a format (PDF, DXF, SVG). The download goes through `store.dielines.download`. The panel shows the sizes drawn and how many downloads are left today, and explains the layers (CutContour, Crease, Perf, Glue, Bleed, Safe, HalfCut). After a download it nudges to "ดูราคาและสั่งผลิต". There is no plan gate and no paywall. Signed out, it asks for sign-in, because the API counts downloads per customer. The API's own range, rate-limit and engine errors are shown as given.
@@ -1081,7 +1097,7 @@ e2e `storefront-downloads.spec.ts`: signed out → sign-in link; a size out of r
 
 ## U4.8 — Reorder, product library, design-service hand-off, polish — 2026-10-05
 
-`docs/prompts/U4-3d-studio.md` §U4.8, on `feat/u4.8-reorder-polish` (worktree `../packio-web-u4`, from `main` at `049e978`, U4.7 merged). Post-launch (D-219); "auto mode".
+`docs/prompts/U4-3d-studio.md` §U4.8, on `feat/u4.8-reorder-polish` (worktree `../getpack-web-u4`, from `main` at `049e978`, U4.7 merged). Post-launch (D-219); "auto mode".
 
 ### Gap → done
 | Item | Before | Done |
@@ -1093,12 +1109,12 @@ e2e `storefront-downloads.spec.ts`: signed out → sign-in link; a size out of r
 
 ### Found on the real API
 - **The design service needs a design fee in the quotation** (`422 cart.design_option_unavailable` otherwise). It comes from the version's spec asking for graphic design. Handled as above; `e2e/integration/handoff.spec.ts` is green. See `docs/integration.md`.
-- **The studio's funnel events were refused by the mock** (its analytics allow-list predates `studio_*`); packio-api v0.41.0 accepts them (checked). The mock now takes every published name.
+- **The studio's funnel events were refused by the mock** (its analytics allow-list predates `studio_*`); getpack-api v0.41.0 accepts them (checked). The mock now takes every published name.
 
 ### Decisions taken
 - **Re-fit on every size change in ②**, not only for "ทำขนาดใหม่": artwork left at its old millimetres is never what is wanted, and the change is one undo step with a message.
 - **The library is the account's designs with a lock**, the order that locked them and that version; reorder reuses F3's reorder (the order's lines and destinations) rather than a second path.
-- **The hand-off's brief is the cart line's `designNote`** (≤ 4,000 characters): the request is created at checkout by packio-api from that line (D-286).
+- **The hand-off's brief is the cart line's `designNote`** (≤ 4,000 characters): the request is created at checkout by getpack-api from that line (D-286).
 - **The usability log stays empty until real sessions run**; nothing in it is inferred.
 
 ### Tests
@@ -1111,19 +1127,19 @@ Unit 1,045 (+ `refit`, `brief`). e2e: `storefront-studio-order.spec.ts` (+ the p
 
 ## U4.7 — Collaboration, versions, presentation, AR — 2026-10-05
 
-`docs/prompts/U4-3d-studio.md` §U4.7, on `feat/u4.7-collab` (worktree `../packio-web-u4`, from `main` at `9509440`, U4.6 merged). Post-launch (D-219); "auto mode".
+`docs/prompts/U4-3d-studio.md` §U4.7, on `feat/u4.7-collab` (worktree `../getpack-web-u4`, from `main` at `9509440`, U4.6 merged). Post-launch (D-219); "auto mode".
 
 ### Gap → done
 | Item | Before | Done |
 |---|---|---|
-| 1 Share links | one view-only link (`store.designs.share`, D-226) | The studio's **share dialog** on `store.studio` share links (D-285): view / comment / edit, as many as wanted, each listed with its scope and expiry and revocable; the address shown once (packio-api keeps a hash). Edit is offered to company members only. `/design/shared/<token>` follows the link's scope: a comment or edit link asks to sign in and comes back; comment shows the threads beside the sheet with pinning; edit adds **"แก้ไขแบบนี้"** → `/design/shared/<token>/edit`, the designer in a new persistence mode `shared` (every save a JSON Patch through `store.studio.editShared` under the link's ETag; conflict → reload theirs or keep mine). Artwork only there: no box tool, no uploads. |
+| 1 Share links | one view-only link (`store.designs.share`, D-226) | The studio's **share dialog** on `store.studio` share links (D-285): view / comment / edit, as many as wanted, each listed with its scope and expiry and revocable; the address shown once (getpack-api keeps a hash). Edit is offered to company members only. `/design/shared/<token>` follows the link's scope: a comment or edit link asks to sign in and comes back; comment shows the threads beside the sheet with pinning; edit adds **"แก้ไขแบบนี้"** → `/design/shared/<token>/edit`, the designer in a new persistence mode `shared` (every save a JSON Patch through `store.studio.editShared` under the link's ETag; conflict → reload theirs or keep mine). Artwork only there: no box tool, no uploads. |
 | 1 Comments | — | A **"ความเห็น"** rail tool in the studio: "ปักหมุดความคิดเห็น" arms a click on the **3D box** (the hit's sheet UV → its face and the point on it: `faceId` + `u`, `v` as fractions of the face's bounds on the flat) or on the **flat sheet** (`xMm`, `yMm`); numbered pins on both views (`comments/pins.ts`, never in a capture); threads oldest first with replies, **@mentions** of the company's active members (from `store.companies.get`), resolve (owner side), resolved threads hidden by default. The same panel on the shared page over the server-drawn sheet. |
 | 2 Versions | list + restore | **Named versions** (save the current state with a label), and **compare** any two: side by side, or overlaid with a fader; restore as before. |
 | 3 Presentation | 3D preview: fold slider, three lightings, PNG | **"นำเสนอและ AR"**: the box alone on **our own scenes** (studio, kraft table, store shelf, daylight — colours and lighting, no stock environments), **turntable**, **open / close** the lid, **PNG**, a **video of one turn** (MP4 where the browser records it, WebM otherwise — said so), the **die line free to download** (vector PDF); the existing exports stay free (no plan gate). Reduced motion: no turntable by default, the lid jumps. |
 | 4 AR | — | **The box at real size**: the preview's own fold geometry in metres standing on the floor, glTF (`GLTFExporter`) + USDZ (`USDZExporter`), in **`@google/model-viewer`** (loaded on demand) — WebXR / Scene Viewer / Quick Look, `ar-scale="fixed"`; without AR (a desktop) the 3D model, its closed size and the GLB/USDZ to open on a phone. |
 
 ### Found on the real API
-- packio-api **creates an edit link for a design with no company** and refuses its use (`403 designs.share_scope`); the studio offers edit links to company members only. Asserted in `e2e/integration/collab.spec.ts`.
+- getpack-api **creates an edit link for a design with no company** and refuses its use (`403 designs.share_scope`); the studio offers edit links to company members only. Asserted in `e2e/integration/collab.spec.ts`.
 
 ### Decisions taken
 - **Face anchors are face-local fractions** (`u` across, `v` down) of the face's bounds on the outside of the flat sheet: one point for the 3D view and the flat, and stable when the size changes. The contract leaves `u`, `v` undefined beyond "a face of the 3D box".
@@ -1138,26 +1154,26 @@ Unit 1,045 (+ `refit`, `brief`). e2e: `storefront-studio-order.spec.ts` (+ the p
 Unit 1,040 (+ anchors, CSP per zone). e2e: `storefront-studio-collab.spec.ts` (flat pin → comment → resolve; comment link by another customer; edit link → new version through the token), `storefront-studio-present.spec.ts` (two named versions compared side by side / overlay; presentation scene, lid, PNG, recorded turn; AR view with the closed size and the GLB). Real API: `collab.spec.ts` green on v0.41.0.
 
 ### Verification
-`pnpm typecheck`, `pnpm lint` clean; unit 1,040; mock e2e full run 398 passed — the two failures fixed (`designer-account`: the history's compare checkbox label and the studio's share dialog; mock link tokens now 43 characters like packio-api's) and the known `storefront-account` timeout green on re-run. Real API: `collab.spec.ts` green on v0.41.0. Lighthouse studio 496,889 B (ratchet lowered 499,000 → 497,500), all sets within budget.
+`pnpm typecheck`, `pnpm lint` clean; unit 1,040; mock e2e full run 398 passed — the two failures fixed (`designer-account`: the history's compare checkbox label and the studio's share dialog; mock link tokens now 43 characters like getpack-api's) and the known `storefront-account` timeout green on re-run. Real API: `collab.spec.ts` green on v0.41.0. Lighthouse studio 496,889 B (ratchet lowered 499,000 → 497,500), all sets within budget.
 
 ---
 
 ## U4.6 — ⑤ Order from the studio — 2026-10-05
 
-`docs/prompts/U4-3d-studio.md` §U4.6, on `feat/u4.6-order` (worktree `../packio-web-u4`, from `main` at `e4308be`, U4.5 merged). Post-launch (D-219); "auto mode".
+`docs/prompts/U4-3d-studio.md` §U4.6, on `feat/u4.6-order` (worktree `../getpack-web-u4`, from `main` at `e4308be`, U4.5 merged). Post-launch (D-219); "auto mode".
 
 ### Gap → done
 | Item | Before | Done |
 |---|---|---|
 | 1 Order sheet | ⑤ linked to the configurator | **`OrderSheet`**: quantity tiers priced for the saved version (`store.studio.quote`, the presets plus the chosen quantity, ≤ 10), **best value per piece** marked (decimal-string compare, no arithmetic), and for the chosen tier the delivery date and lead time, what is included (product, tooling, design, VAT, shipping), the tolerances, a **target price** with the API's gap and a link to the levers, and a **sample** link. A final pass gates the buttons: no block, every warning accepted for this version. |
-| 2 ADR + order flow | browser print PDF only (ADR-0009) | **ADR-0013** (the prompt's "ADR-0012"; that number was taken): the studio renders, packio-api assembles; ADR-0009 stays for the customer's own download. "สั่งเลย" / "เพิ่มลงตะกร้า" / "ส่งขออนุมัติ": save the version → `store.studio.saveQuote` → render and upload 300 dpi tiles per printed side (the inside on the mirrored die) and one PNG mask per finish (`store.studio.addRender`) → carry the acceptances to the version → `store.studio.order` (202) → poll the print job with a progress dialog → client navigation to the cart or checkout. Idempotency keys are name-based uuids (retries dedupe). A company buyer's "ส่งขออนุมัติ" makes a view link for the approvers (D-281). `studio.print_unavailable` shows the upload-with-order route instead. Funnel: `studio_add_to_cart` after the job, `studio_ordered` after checkout. |
+| 2 ADR + order flow | browser print PDF only (ADR-0009) | **ADR-0013** (the prompt's "ADR-0012"; that number was taken): the studio renders, getpack-api assembles; ADR-0009 stays for the customer's own download. "สั่งเลย" / "เพิ่มลงตะกร้า" / "ส่งขออนุมัติ": save the version → `store.studio.saveQuote` → render and upload 300 dpi tiles per printed side (the inside on the mirrored die) and one PNG mask per finish (`store.studio.addRender`) → carry the acceptances to the version → `store.studio.order` (202) → poll the print job with a progress dialog → client navigation to the cart or checkout. Idempotency keys are name-based uuids (retries dedupe). A company buyer's "ส่งขออนุมัติ" makes a view link for the approvers (D-281). `studio.print_unavailable` shows the upload-with-order route instead. Funnel: `studio_add_to_cart` after the job, `studio_ordered` after checkout. |
 | 3 Proof | the F3 proof screen | The proof screen of a studio order also shows the **locked version as the studio drew it** (read-only `DesignViewer`) beside the proof, with its approval checklist and evidence unchanged (B4). |
 | 4 After the order | — | The cart line carries `designDocumentId` / `designVersionNo`; placing the order locks the version (`DesignDocumentDto.lock`): the studio says "เวอร์ชัน N สั่งผลิตแล้ว — การแก้ไขจะสร้างเวอร์ชันใหม่", and the order page links to the design and its locked version (found among the customer's linked designs: no lookup by order exists). |
 | 5 Acceptance | — | Mock e2e `storefront-studio-order.spec.ts`: studio → order sheet → cart, the line's **product gross equals the studio's tier total** for the same options, then checkout places the order and the version is locked (studio notice, order link). Real API `e2e/integration/studio-order.spec.ts` (see below). |
 
 ### Found on the real API
 - **Idempotency-Key must be a uuid** — the first keys were readable composites; now `stableIdempotencyKey()` (uuid v5 layout).
-- *(Superseded 2026-10-15: real object storage is in use; see `docs/integration.md`.)* **The dev stack's storage was a placeholder** (`https://fake-s3.invalid`): no browser upload completes there, so the order flow stops at the renders with "ส่งไฟล์งานพิมพ์ไม่สำเร็จ…" and adds nothing to the cart; packio-api refuses an order of a version without renders. The full order (print job, cart, lock) is therefore proven on the mock only. Both in `docs/integration.md`.
+- *(Superseded 2026-10-15: real object storage is in use; see `docs/integration.md`.)* **The dev stack's storage was a placeholder** (`https://fake-s3.invalid`): no browser upload completes there, so the order flow stops at the renders with "ส่งไฟล์งานพิมพ์ไม่สำเร็จ…" and adds nothing to the cart; getpack-api refuses an order of a version without renders. The full order (print job, cart, lock) is therefore proven on the mock only. Both in `docs/integration.md`.
 - **A thumbnail upload fetched a `data:` URL**, which our CSP's `connect-src` refuses (every studio save logged it): decoded in place now.
 - **`designer.shortcuts.group.*` were missing** (the `group` key is the "group" action's label): the shortcut sections are `shortcuts.groups.*` now.
 
@@ -1177,27 +1193,27 @@ Unit 1,035 (+ `compareDecimal`, `stableIdempotencyKey`). e2e: the order spec abo
 
 ## U4.5 — ④ Check: continuous checks, one-click fixes, soft proof — 2026-10-05
 
-`docs/prompts/U4-3d-studio.md` §U4.5, on `feat/u4.5-checks` (worktree `../packio-web-u4`, from `main` at `e2fde40`, U4.4 merged). Post-launch (D-219); "auto mode".
+`docs/prompts/U4-3d-studio.md` §U4.5, on `feat/u4.5-checks` (worktree `../getpack-web-u4`, from `main` at `e2fde40`, U4.4 merged). Post-launch (D-219); "auto mode".
 
 ### Gap → done
 | Item | F4 had | Done |
 |---|---|---|
-| 1 Checks engine on shared rules | its own codes and fixed thresholds (`lib/checks.ts`) | Rewritten on **packio-api's catalogue** (`store.studio.getRules`; `contract/studio-rules.json` vendored at the lock's tag as the fallback and for the back office): the same **rule ids** (all 15), severities (block / warn / info) and thresholds from settings — a rule with unset thresholds is **off** (D-278), rules apply by print method and material class. The six rules packio-api evaluates on the document are computed exactly as its `evaluateDocument`; the die-geometry rules (safe zone, bleed, creases, glue, barcode across a fold), the CMYK gamut, finish feature size and undeclared marks are the studio's. Messages th/en per rule with the element and its face. |
-| 2 Panel, fixes, acknowledgements | a list that selects | Counts by severity; click selects (turning to the other side when needed); **one-click safe fixes** (`lib/fixes.ts`: move into the safe area, extend to the bleed, enlarge text / thicken a hairline / enlarge a barcode to the rule's minimum, the nearest allowed spot colours, an in-gamut colour); **warnings accepted per version** — on packio-api for the rules it finds (`acknowledgeCheck`, on the version it has, whose run is fetched first), in the design (`content.acknowledged`) for the studio-only ones. Blocks are never accepted. |
+| 1 Checks engine on shared rules | its own codes and fixed thresholds (`lib/checks.ts`) | Rewritten on **getpack-api's catalogue** (`store.studio.getRules`; `contract/studio-rules.json` vendored at the lock's tag as the fallback and for the back office): the same **rule ids** (all 15), severities (block / warn / info) and thresholds from settings — a rule with unset thresholds is **off** (D-278), rules apply by print method and material class. The six rules getpack-api evaluates on the document are computed exactly as its `evaluateDocument`; the die-geometry rules (safe zone, bleed, creases, glue, barcode across a fold), the CMYK gamut, finish feature size and undeclared marks are the studio's. Messages th/en per rule with the element and its face. |
+| 2 Panel, fixes, acknowledgements | a list that selects | Counts by severity; click selects (turning to the other side when needed); **one-click safe fixes** (`lib/fixes.ts`: move into the safe area, extend to the bleed, enlarge text / thicken a hairline / enlarge a barcode to the rule's minimum, the nearest allowed spot colours, an in-gamut colour); **warnings accepted per version** — on getpack-api for the rules it finds (`acknowledgeCheck`, on the version it has, whose run is fetched first), in the design (`content.acknowledged`) for the studio-only ones. Blocks are never accepted. |
 | 3 Soft proof | — | A toggle on the stage when Prepress has a profile for the material class (`softProof.profiles`, D-279): the simplified transform as a CSS filter and a multiply overlay (kraft absorption), always labelled with the API's "ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา". The seed has no profiles yet; the mock carries two fake ones. |
-| 4 Acceptance | — | Fixture designs triggering **each rule**, each safe fix leaving **no violation** of it (`checks-rules.test.ts`); **parity**: the client and packio-api's evaluator (the mock's port) find the same ids, elements and severities for every fixture; on the **real API** `e2e/integration/checks.spec.ts` shows the studio and packio-api's run of the saved version agreeing (a bad EAN-13 check digit). |
+| 4 Acceptance | — | Fixture designs triggering **each rule**, each safe fix leaving **no violation** of it (`checks-rules.test.ts`); **parity**: the client and getpack-api's evaluator (the mock's port) find the same ids, elements and severities for every fixture; on the **real API** `e2e/integration/checks.spec.ts` shows the studio and getpack-api's run of the saved version agreeing (a bad EAN-13 check digit). |
 
 ### Found on the real API
-**`store.studio.runChecks` answers 500 on a second run of the same version** (unique index on the stored run). Recorded in `docs/integration.md` ("Defects found in packio-api"); the studio asks for a version's run once (versions are immutable).
+**`store.studio.runChecks` answers 500 on a second run of the same version** (unique index on the stored run). Recorded in `docs/integration.md` ("Defects found in getpack-api"); the studio asks for a version's run once (versions are immutable).
 
 ### Decisions taken
-- **Material class = the board kind** (`paperboard`, `corrugated` …) until packio-api's style-variant material class reaches the document; every seeded rule applies to all classes.
+- **Material class = the board kind** (`paperboard`, `corrugated` …) until getpack-api's style-variant material class reaches the document; every seeded rule applies to all classes.
 - **The F4 QR module-size warning is dropped** — it is not in the catalogue, and the catalogue is Prepress's (D-278).
 - **`rich_black_small_text` and `white_ink_needed`** are recognised but not evaluated: their thresholds are unset in the seed and their keys undefined; they run once Prepress defines them (follow-up).
 - **The step panel is rendered once** and placed by CSS order (it was in the DOM twice, desktop and phone).
 
 ### Tests
-Unit 1,033 (the rule fixtures and parity, the checks panel with fixes and acceptances, the old F4 cases moved to rule ids). e2e `storefront-studio-checks.spec.ts`: two too-small headings — one fixed in a click, one accepted and stored by packio-api with the version — and the soft proof; axe on the check step. Repeated runs of the studio suites green (the content suite made idempotent: declared rights and kits persist in the mock).
+Unit 1,033 (the rule fixtures and parity, the checks panel with fixes and acceptances, the old F4 cases moved to rule ids). e2e `storefront-studio-checks.spec.ts`: two too-small headings — one fixed in a click, one accepted and stored by getpack-api with the version — and the soft proof; axe on the check step. Repeated runs of the studio suites green (the content suite made idempotent: declared rights and kits persist in the mock).
 
 ### Verification
 `pnpm typecheck`, `pnpm lint` clean; mock e2e full run 398 passed (failures fixed above; the known `storefront-account` timeouts green on re-run). Real API: `checks.spec.ts` and `studio.spec.ts` green. Lighthouse studio 496,235 B (ratchet 497,000).
@@ -1206,36 +1222,36 @@ Unit 1,033 (the rule fixtures and parity, the checks panel with fixes and accept
 
 ## U4.4 — ③ Design content: templates, brand kit, elements, data blocks, images, background, finishes — 2026-10-05
 
-`docs/prompts/U4-3d-studio.md` §U4.4, on `feat/u4.4-design-content` (worktree `../packio-web-u4`, from `main` at `34b19dc`, U4.3 merged). Post-launch (D-219); "auto mode".
+`docs/prompts/U4-3d-studio.md` §U4.4, on `feat/u4.4-design-content` (worktree `../getpack-web-u4`, from `main` at `34b19dc`, U4.3 merged). Post-launch (D-219); "auto mode".
 
 ### Gap → done
 | Item | F4 had | Done |
 |---|---|---|
-| 1 Templates | the product's semi-designs, mapped proportionally | Packio's **constraint layouts** (`templates/layout.ts`, schema v1, owned by the web, stored by packio-api as given): slots on face **roles** (front, back, sides, top, main) as fractions of each face's safe area, upright on lids, text sized within a point range, colours and fonts as roles. **21 templates** — 7 use cases × 3 layouts (classic, colour band, pattern), all original (`templates/library.ts`, D-216's 20+). `store.studio.listTemplates` with a use-case filter in the Templates panel; applying re-flows onto the box on screen (one undo step). Tested: every template on every core box style lands each piece on its face, text within its range. Guide: `docs/design-tool/template-authoring.md`. |
+| 1 Templates | the product's semi-designs, mapped proportionally | getpack's **constraint layouts** (`templates/layout.ts`, schema v1, owned by the web, stored by getpack-api as given): slots on face **roles** (front, back, sides, top, main) as fractions of each face's safe area, upright on lids, text sized within a point range, colours and fonts as roles. **21 templates** — 7 use cases × 3 layouts (classic, colour band, pattern), all original (`templates/library.ts`, D-216's 20+). `store.studio.listTemplates` with a use-case filter in the Templates panel; applying re-flows onto the box on screen (one undo step). Tested: every template on every core box style lands each piece on its face, text within its range. Guide: `docs/design-tool/template-authoring.md`. |
 | 2 Brand kit | colours and a logo in the browser | **Company kits** on `store.brandKits` (D-227, D-282): logos from the company's brand assets, a palette **extracted from the logo** (median cut, editable), font pairs from the studio fonts, usage notes; created / edited by the Company Admin (If-Match; a 403 says so); **"ใช้แบรนด์ของฉัน"** restyles every template piece by role and puts the logo into the logo slots. A customer without a company keeps the browser kit, with the same one-click apply. |
-| 3 Elements | Packio shapes | + `store.studio.listElements`: shapes, icons, packaging marks; a mark with legal meaning asks for the **right declaration** first (`declareRight`, D-282) and the placed shape keeps its `studioElementId` (packio-api's `element_right_missing` rule reads it). |
-| 4 Data blocks | QR, EAN-13 | + **EAN-8, UPC-A, Code 128** encoders with quiet zones; every code checked by packio-api's **validation service** (check digit, character set, QR capacity per level, GS1 minimum width — the symbol is placed at least that wide, D-283); **ingredients / nutrition / manufacturer** blocks typed as facts and set with **Thai line breaks at word boundaries** (`Intl.Segmenter`, measured). |
+| 3 Elements | getpack shapes | + `store.studio.listElements`: shapes, icons, packaging marks; a mark with legal meaning asks for the **right declaration** first (`declareRight`, D-282) and the placed shape keeps its `studioElementId` (getpack-api's `element_right_missing` rule reads it). |
+| 4 Data blocks | QR, EAN-13 | + **EAN-8, UPC-A, Code 128** encoders with quiet zones; every code checked by getpack-api's **validation service** (check digit, character set, QR capacity per level, GS1 minimum width — the symbol is placed at least that wide, D-283); **ingredients / nutrition / manufacturer** blocks typed as facts and set with **Thai line breaks at word boundaries** (`Intl.Segmenter`, measured). |
 | 5 Images | upload (multipart with per-part retry), crop / replace | + the **effective-ppi badge** against the `image_resolution` thresholds (300 / 150, D-278) and a **colour-space note** (a CMYK JPEG is detected from its frame header). Background removal is not built (D-214 / D-284: after launch, self-hosted). |
 | 6 Background | colour, four tiled patterns in mm | + **gradient** (two colours, angle) and a **full-wrap picture** over the sheet and its bleed (uploaded as a design asset). |
-| 7 Finishes as layers | — | Any shape or text can be **foil, spot UV, emboss or window film**: previewed on the flat sheet, **left out of the ink artwork**, drawn as masks from the document (`lib/finishes.ts`) that the 3D model renders physically (metallic foil, clear-coated spot UV, embossed relief, a see-through window) and that the print PDF carries as **separation pages** — a 1-bit stencil in a spot colour of the finish's name with the die lines (`@packio/dieline` `PdfFinish`, tested). |
+| 7 Finishes as layers | — | Any shape or text can be **foil, spot UV, emboss or window film**: previewed on the flat sheet, **left out of the ink artwork**, drawn as masks from the document (`lib/finishes.ts`) that the 3D model renders physically (metallic foil, clear-coated spot UV, embossed relief, a see-through window) and that the print PDF carries as **separation pages** — a 1-bit stencil in a spot colour of the finish's name with the die lines (`@getpack/dieline` `PdfFinish`, tested). |
 
 ### Decisions taken
 - **Template palettes map to a kit's palette in order** (primary, accent, ink, paper) — the kit DTO's colours have names but no roles.
-- **The template set lives in the repo** and is imported into packio-api by Marketing (maker-checker); the dev seed publishes none, so the real API's list is empty until then.
+- **The template set lives in the repo** and is imported into getpack-api by Marketing (maker-checker); the dev seed publishes none, so the real API's list is empty until then.
 - **Placed finishes** (foil or window film priced by area) stay out of ②'s finish options; they are drawn as layers here and priced once the calculator takes their area from the design (follow-up).
 - **The browser kit stays** for a customer with no company: brand kits are company-scoped (D-227).
 
 ### Tests
-Unit: template re-flow on every core box style × every template, brand application, faces by role; palette extraction; Thai wrapping and data blocks; EAN-8 / UPC-A / Code 128 (check digits, quiet zones, start B); engine PDF finish pages. e2e `storefront-studio-content.spec.ts` (3): a template re-flowed and restyled with my brand; Packio elements with a declared right, an EAN-8 checked and placed at its minimum width, a nutrition block, a foil layer, a gradient — all read back from the saved document; the company kit created by the Company Admin and applied in one click (axe on the panels and dialogs).
+Unit: template re-flow on every core box style × every template, brand application, faces by role; palette extraction; Thai wrapping and data blocks; EAN-8 / UPC-A / Code 128 (check digits, quiet zones, start B); engine PDF finish pages. e2e `storefront-studio-content.spec.ts` (3): a template re-flowed and restyled with my brand; getpack elements with a declared right, an EAN-8 checked and placed at its minimum width, a nutrition block, a foil layer, a gradient — all read back from the saved document; the company kit created by the Company Admin and applied in one click (axe on the panels and dialogs).
 
 ### Verification
-`pnpm typecheck`, `pnpm lint` clean; `pnpm test:app` 1,005, `pnpm test:dieline` 5,393. Mock e2e full run 396 passed (a load-related fulfilment sign-in timeout green on re-run). The orbit perf test moved to its own project (`pnpm e2e:perf`, one worker; 56.1 fps): in the parallel suite it measured the machine's load (38 fps). **Real API**: `studio.spec.ts` green — the template list answers (none published yet), packio-api refuses an EAN-8 with a wrong check digit and gives 21.38 mm as the minimum for a good one. Lighthouse studio 492,619 B (ratchet 493,000; content tools load on demand).
+`pnpm typecheck`, `pnpm lint` clean; `pnpm test:app` 1,005, `pnpm test:dieline` 5,393. Mock e2e full run 396 passed (a load-related fulfilment sign-in timeout green on re-run). The orbit perf test moved to its own project (`pnpm e2e:perf`, one worker; 56.1 fps): in the parallel suite it measured the machine's load (38 fps). **Real API**: `studio.spec.ts` green — the template list answers (none published yet), getpack-api refuses an EAN-8 with a wrong check digit and gives 21.38 mm as the minimum for a good one. Lighthouse studio 492,619 B (ratchet 493,000; content tools load on demand).
 
 ---
 
 ## U4.3 — ③ Design core: split view and face-aware 3D editing — 2026-10-05
 
-`docs/prompts/U4-3d-studio.md` §U4.3, on `feat/u4.3-design-core` (worktree `../packio-web-u4`, from `main` at `daa5219`, U4.2 merged). Post-launch (D-219); "auto mode".
+`docs/prompts/U4-3d-studio.md` §U4.3, on `feat/u4.3-design-core` (worktree `../getpack-web-u4`, from `main` at `daa5219`, U4.2 merged). Post-launch (D-219); "auto mode".
 
 ### Gap → done
 | Item | F4 had | Done |
@@ -1243,7 +1259,7 @@ Unit: template re-flow on every core box style × every template, brand applicat
 | 1 Split view, mobile 3D-first | 3D in a side tab | The studio's stage (`EditorChrome.views`): **split** (3D beside the flat sheet) by default on wide screens, **3D** first on phones, **flat**; selection and focus shared (one store); the flat canvas stays mounted in 3D-only to draw the model's artwork. Swipe: a view toggle instead (a swipe would fight the orbit drag) — deviation recorded. |
 | 2 Face picking in 3D | double-click a face on the flat | Click / tap a face on the model (raycast → the face's triangles) or its button (keyboard path): the box **turns to face the camera** (`facing()`, unit-tested for every side), the face is highlighted and named ("กำลังแก้: …"), and the next element lands on it **clipped to that face**; wrapping across a fold is the explicit "ทั้งแผ่นคลี่ (ข้ามรอยพับได้)" choice with its tolerance warning. |
 | 3 Guides, distances, rulers, layers, undo, shortcuts | snapping, rulers, a layers list, undo 100, "?" overlay | **Distance labels in mm** from the face edges while dragging; the layers panel is an **accessible tree** (sides → elements, arrow keys / Home / End / Left, Enter or Space to select, Shift adds; lock and order for the selection); **undo ≥ 200**; the shortcuts overlay as before. |
-| 4 Outside / inside | outside only | An **inside** side: the sheet as seen from inside (`mirrorDieline` in `@packio/dieline`, winding kept, tested), its own elements (`side: "inside"`), checks against the mirrored die, the inside texture on the model's inner surface; the **cost is shown before the first switch** ("พิมพ์ด้านในด้วยไหม?") and confirming sets print sides to both, which the dock re-prices. Exports always draw the outside. |
+| 4 Outside / inside | outside only | An **inside** side: the sheet as seen from inside (`mirrorDieline` in `@getpack/dieline`, winding kept, tested), its own elements (`side: "inside"`), checks against the mirrored die, the inside texture on the model's inner surface; the **cost is shown before the first switch** ("พิมพ์ด้านในด้วยไหม?") and confirming sets print sides to both, which the dock re-prices. Exports always draw the outside. |
 | 5 Performance | one sheet texture | One draw call per surface with the sheet as the texture atlas; level of detail: 1024 px in split view, 2048 alone. Perf test with 150 objects under a 4× CPU throttle: **59.6 fps** (floor 45). |
 | 6 Acceptance | — | e2e: text on the lid picked in 3D lands on the matching flat panel **within 0.5 mm** (saved document + engine geometry), clicking the model picks the face under the pointer, inside printing after its cost; perf spec. |
 
@@ -1262,14 +1278,14 @@ T2 (logo on top and front, then 3D) **5 steps, within its budget of 6** (was 8):
 
 ## U4.2 — ① Start and ② Box — 2026-10-05
 
-`docs/prompts/U4-3d-studio.md` §U4.2, on `feat/u4.2-start-box` (worktree `../packio-web-u4`, from `main` at `13cc467`, U4.1 merged). Gap: `docs/update-2026-09-29-gap.md` §U4. Post-launch (D-219); run straight through under the user's "auto mode" instruction.
+`docs/prompts/U4-3d-studio.md` §U4.2, on `feat/u4.2-start-box` (worktree `../getpack-web-u4`, from `main` at `13cc467`, U4.1 merged). Gap: `docs/update-2026-09-29-gap.md` §U4. Post-launch (D-219); run straight through under the user's "auto mode" instruction.
 
 ### Done
 | Item | What |
 |---|---|
 | 1 Entry points | One helper (`studio/paths.ts` `studioHref`) for every way in, each with the step that fits: header / home / phone nav / account "ออกแบบใหม่" → ①; product page → ① with the product; style page → ② (style chosen, size and material next); configurator and an order's artwork page → ③ (box known, the order line carried); account design cards → the design; a shared design's "start your own" → ①. **`/design/[id]` redirects into the studio** with everything it carried, so old links (and LIFF, which opens the same storefront links) land there; `CustomerDesigner` and the top-bar `PriceWidget` are gone (their pricing helpers moved to `studio/state.ts`). |
 | 2 Describe your product | ① `DescribeProduct`: the product as measured (L × W × H, unit switch) and how it travels (parcel / pallet / shelf) → up to three boxes it fits (`suggest.ts`: the product's own patterns, inside = product + the designer's clearance, the engine's rules and the pattern's limits must accept it; ordered by family for the journey, then least board), each with reasons (fits at inside size, family suits the journey, Structure Advisor picks the board in ② for corrugated, flat sheet size). Picking one sets the box and opens ②. |
-| 3 Box step | ② `BoxStep`: the published **variant** of the base (U3.5's axes, an option that cannot go with the rest disabled; a wave recipe loads `@packio/dieline/library` on demand and saved library styles register it before opening); **size** with basis (inside / outside / over the creases), unit switch and the API's three derived sizes (`store.specs.convertDimensions`), a size the engine or the product cannot make listed with the solver's message and reason code, applied on purpose (a warning when artwork is placed); **materials** as swatches; **print method** (ให้ระบบเลือก / digital / offset / flexo / none) and **print sides**; **coating and finishes** (placed finishes wait for finish layers, U4.4); the **Structure Advisor** for corrugated boxes (goods and journey → recommended board; taking it changes the material). Every choice lives in the design's `spec.studio` and in the version's box fields (`printMethod`, `styleVariantCode`, D-275). |
+| 3 Box step | ② `BoxStep`: the published **variant** of the base (U3.5's axes, an option that cannot go with the rest disabled; a wave recipe loads `@getpack/dieline/library` on demand and saved library styles register it before opening); **size** with basis (inside / outside / over the creases), unit switch and the API's three derived sizes (`store.specs.convertDimensions`), a size the engine or the product cannot make listed with the solver's message and reason code, applied on purpose (a warning when artwork is placed); **materials** as swatches; **print method** (ให้ระบบเลือก / digital / offset / flexo / none) and **print sides**; **coating and finishes** (placed finishes wait for finish layers, U4.4); the **Structure Advisor** for corrugated boxes (goods and journey → recommended board; taking it changes the material). Every choice lives in the design's `spec.studio` and in the version's box fields (`printMethod`, `styleVariantCode`, D-275). |
 | 4 Print method configures editor and price | `studio/state.ts`: digital / offset → the process ink; flexo → one spot ink per artwork colour, never more than Prepress's `spot_colour_count.maxColours` (`store.studio.getRules`, D-278); none → no ink; ให้ระบบเลือก → what the artwork needs (F4). Sides put the inks on front / back. The editor follows: no print → only Box and Layers on the rail and "ไม่พิมพ์: ออกแบบได้เฉพาะโครงสร้าง"; flexo → no photo uploads and a live "เฟล็กโซ: ใช้ n จาก max สี" (warning past the limit); a plain box can be checked and ordered without artwork. |
 
 ### Decisions taken (most conservative option)
@@ -1278,7 +1294,7 @@ T2 (logo on top and front, then 3D) **5 steps, within its budget of 6** (was 8):
 - **A method chosen on purpose is priced as printed** even before artwork is placed (the customer has said they print); "ให้ระบบเลือก" keeps F4's inference.
 - **Flexo limit unset = no limit shown** (the seed leaves it off until Prepress sets it; the mock sets 3 to exercise it).
 - **The new design's address is swapped in place** (`history.replaceState`), not navigated: a navigation to the new id remounted the studio, whose first save raced the old one's with an older ETag — a **412 conflict found on the real API** right after creation.
-- `contract/studio-rules.json` is vendored from packio-api at the lock's tag (the shared rule ids, for U4.5).
+- `contract/studio-rules.json` is vendored from getpack-api at the lock's tag (the shared rule ids, for U4.5).
 
 ### Tests
 Unit: print-method inks and sides, coating, the flexo limit from the rules, suggestions (≤ 3, journey family first, every one valid, none for an impossible size), entry links (`box.test.ts`). e2e `storefront-studio.spec.ts`: + "② print method configures the editor and the price; a size that cannot be made says why" (digital re-priced with "เปลี่ยนการพิมพ์", flexo limit and no uploads, no print → structure only, a 2 mm height refused with the reason, axe) and "① describe your product → three boxes with reasons → ②" (axe). Designer suites, a11y, consent and journeys T2–T4 moved to the studio entry.
@@ -1294,17 +1310,17 @@ Unit: print-method inks and sides, coating, the flexo limit from the rules, sugg
 
 ---
 
-## U4.1 — Packio 3D Studio shell, step bar, price dock, instrumentation — 2026-10-05
+## U4.1 — getpack 3D Studio shell, step bar, price dock, instrumentation — 2026-10-05
 
-`docs/prompts/U4-3d-studio.md` §U4.1 with `docs/design-tool/studio-spec.md`, on `feat/u4.1-studio-shell` (worktree `../packio-web-u4`, from `main` at `6de9599`). Gap analysis: `docs/update-2026-09-29-gap.md` §U4. Post-launch per D-219. The user approved running U4.1 → U4.8 straight through ("auto mode"); decisions below are the most conservative option each time.
+`docs/prompts/U4-3d-studio.md` §U4.1 with `docs/design-tool/studio-spec.md`, on `feat/u4.1-studio-shell` (worktree `../getpack-web-u4`, from `main` at `6de9599`). Gap analysis: `docs/update-2026-09-29-gap.md` §U4. Post-launch per D-219. The user approved running U4.1 → U4.8 straight through ("auto mode"); decisions below are the most conservative option each time.
 
 ### Done
 | Item | What |
 |---|---|
 | 1 Route, layout, steps | `/[locale]/studio/[designId]` (`/studio/new?product=&style=&l=&w=&h=` to start) wraps the F4 `Editor` — no second editor — through new `chrome` slots: the step bar under the header, a step panel in place of the tool rail for ① ② ④ ⑤, the dock as a right rail (desktop) or a bottom bar (phones). The editor never unmounts, so every step is reversible with canvas, history and selection intact; the step is kept in `?step=` (`history.replaceState`, no navigation) and a reload reopens it. ② onwards needs a box, ④ ⑤ need content; a locked step says why. Entry: "ออกแบบใน 3D Studio" on a style page (the engine recipe of the base at its first preset, on the style's priced product). |
-| 2 Price dock | `PriceDock`: per piece, quantity chip, total incl. VAT, lead time + earliest delivery, why the price moved ("จาก ฿x เป็น ฿y/ชิ้น เพราะเปลี่ยนจำนวน" — the API's `changes` + `reasons`, no subtraction here), RFQ types → "ขอใบเสนอราคา" with the RFQ form's `slaTargetHours`. Signed in: `store.studio.quote` on the saved version, debounced 400 ms, cancelled when stale (signal), keyed by the saved box + quantity so a version that only moved artwork is never priced again; the shown `specHash` goes back as `previousSpecHash`. Guest: `store.quotes.calculate` with the same configuration. Never computes money: `packio/no-money-arithmetic` covers `features/customer/**`; a test lints a studio-path fixture through the real config. |
-| 3 Studio document | Each version carries its **box** and calculator **spec** (D-275) — `studioFieldsOf` builds both from the product's configurator (`stateForDesign` + `buildConfiguration`), so `studio.spec_mismatch` cannot happen; print sides from the spec's colours as packio-api reads them. A save that changes neither box nor title is **JSON Patch** (`store.designs.patchDocument`, D-276, ≤ 256 KiB else PUT); a box change saves after 0.4 s so the price follows. ETag / 412 conflict dialog, IndexedDB draft (now also the offline queue, flushed on `online`) as before. |
-| 4 Analytics | `studio_started`, `studio_box_confirmed`, `studio_first_artwork`, `studio_checks_clean` (artwork and no blocking check), `studio_add_to_cart` (U4.6), `studio_ordered` (U4.6) ingested as packio-api's names with `printMethod` / `styleFamily` only (D-286); `docs/ux/funnels.md`. The studio route joins the replay journeys; Web Vitals report it by route pattern like every route. |
+| 2 Price dock | `PriceDock`: per piece, quantity chip, total incl. VAT, lead time + earliest delivery, why the price moved ("จาก ฿x เป็น ฿y/ชิ้น เพราะเปลี่ยนจำนวน" — the API's `changes` + `reasons`, no subtraction here), RFQ types → "ขอใบเสนอราคา" with the RFQ form's `slaTargetHours`. Signed in: `store.studio.quote` on the saved version, debounced 400 ms, cancelled when stale (signal), keyed by the saved box + quantity so a version that only moved artwork is never priced again; the shown `specHash` goes back as `previousSpecHash`. Guest: `store.quotes.calculate` with the same configuration. Never computes money: `getpack/no-money-arithmetic` covers `features/customer/**`; a test lints a studio-path fixture through the real config. |
+| 3 Studio document | Each version carries its **box** and calculator **spec** (D-275) — `studioFieldsOf` builds both from the product's configurator (`stateForDesign` + `buildConfiguration`), so `studio.spec_mismatch` cannot happen; print sides from the spec's colours as getpack-api reads them. A save that changes neither box nor title is **JSON Patch** (`store.designs.patchDocument`, D-276, ≤ 256 KiB else PUT); a box change saves after 0.4 s so the price follows. ETag / 412 conflict dialog, IndexedDB draft (now also the offline queue, flushed on `online`) as before. |
+| 4 Analytics | `studio_started`, `studio_box_confirmed`, `studio_first_artwork`, `studio_checks_clean` (artwork and no blocking check), `studio_add_to_cart` (U4.6), `studio_ordered` (U4.6) ingested as getpack-api's names with `printMethod` / `styleFamily` only (D-286); `docs/ux/funnels.md`. The studio route joins the replay journeys; Web Vitals report it by route pattern like every route. |
 
 ### Decisions taken (most conservative option)
 - **Guests keep a browser design** in the studio (the studio API needs an owner; `store.designs.import` exists for sign-in). "Replace local storage" applies to account designs, which have none.
@@ -1318,7 +1334,7 @@ Unit: JSON Patch diff/apply/size/canonical (5), steps (3), studio fields + mock 
 ### Verification
 - `pnpm typecheck`, `pnpm lint` clean; `pnpm test:app` green.
 - Lighthouse: new `studio` set 478,237 B initial JS (performance 0.98) → ratchet 479,000; `designer` 473,984 → ratchet 472,000 → 474,500 (`docs/performance-budgets.md` §U4.1).
-- **Real API** (packio-api `v0.41.0`, integration stack): `e2e/integration/studio.spec.ts` green — the design is created with its box and spec, `store.studio.quote` prices it, a new quantity is re-priced with the API's `quantity_changed`; the whole integration suite 34 passed (2 skipped as before). Found on the way: the dev seed's carton suggests **no quantities** (`presets: []`, no default), so the dock now takes a typed quantity in the product's range when there are no presets.
+- **Real API** (getpack-api `v0.41.0`, integration stack): `e2e/integration/studio.spec.ts` green — the design is created with its box and spec, `store.studio.quote` prices it, a new quantity is re-priced with the API's `quantity_changed`; the whole integration suite 34 passed (2 skipped as before). Found on the way: the dev seed's carton suggests **no quantities** (`presets: []`, no default), so the dock now takes a typed quantity in the product's range when there are no presets.
 - `pnpm test:app` 964, `pnpm test:dieline` 5,390; mock e2e studio + designer account green.
 
 ### Follow-ups
@@ -1329,16 +1345,16 @@ Unit: JSON Patch diff/apply/size/canonical (5), steps (3), studio fields + mock 
 
 ## U3.4 wave 1 → U3.5 — Style library waves and library UX — 2026-10-04
 
-`docs/prompts/U3-style-library.md` §U3.4 (wave 1) and §U3.5, on `feat/u3.4-wave1-u3.5-library` (worktree `../packio-web-u3`, from `main` at `8982cd6`, U2.F1 merged). Gap analysis and outcome: `docs/update-2026-09-29-gap.md` §U3.4 / §U3.5. Post-launch per D-219.
+`docs/prompts/U3-style-library.md` §U3.4 (wave 1) and §U3.5, on `feat/u3.4-wave1-u3.5-library` (worktree `../getpack-web-u3`, from `main` at `8982cd6`, U2.F1 merged). Gap analysis and outcome: `docs/update-2026-09-29-gap.md` §U3.4 / §U3.5. Post-launch per D-219.
 
 ### U3.4 — engine, wave 1
 | Slice | What |
 |---|---|
-| Library entry + variant gate | `@packio/dieline/library` (`WAVE_RECIPES`, `OVERRIDE_RECIPES`, `ALL_RECIPES`, `registerLibrary()`): the wave recipes, the 15 wave modules, their parameters and axis words register from it; the 21 core styles the waves extend keep their pre-wave form in the main entry and are replaced by id with their extended form in the library — the designer and configurator draw exactly what they did. Tests, `styles:render` and the mocks read `ALL_RECIPES`. `model/variant-gate.test.ts`: every variant of every recipe builds a clean blank at the first preset it is valid at and, when it folds, closes to its outer size ± 1 mm with no collision; variant keys unique per base. |
+| Library entry + variant gate | `@getpack/dieline/library` (`WAVE_RECIPES`, `OVERRIDE_RECIPES`, `ALL_RECIPES`, `registerLibrary()`): the wave recipes, the 15 wave modules, their parameters and axis words register from it; the 21 core styles the waves extend keep their pre-wave form in the main entry and are replaced by id with their extended form in the library — the designer and configurator draw exactly what they did. Tests, `styles:render` and the mocks read `ALL_RECIPES`. `model/variant-gate.test.ts`: every variant of every recipe builds a clean blank at the first preset it is valid at and, when it folds, closes to its outer size ± 1 mm with no collision; variant keys unique per base. |
 | Tuck end | Airplane tuck, four-flap lock, lid (top) window, hang `none`/sombrero; the 19 allowed tuck pairs; PK-TE-02 (friction / slit lock × tuck corners); PK-FT-01 flip-top (lip outside the front) × bottoms × window × die-cut insert. |
 | Trays, sleeves, inserts, display | Lock corners, display header card, die-cut insert as its own piece placed on the box floor (`pieces` hook, `floor` placement), open ends with thumb notches, slit-lock band, pillow hang holes and window, gable with every bottom, cavity insert, tray insert, roll-end paperboard tray; window/insert on the sleeve-drawer; corners, top window and finger holes on the telescope. |
 | Corrugated | Joints (glued / stitched / taped), hand holes in end or long panels and clip-in handle slots, vents, mailer fronts (tuck / tab lock, tear strip, adhesive strips), full telescope, HSC with a telescope lid, lock-corner / archive / produce / pizza trays, cross partitions (2D), pads. |
-| Flexible, bags, labels, tags | Pouch features as packio-api's multi-select key (`hang_hole+zipper`…): zipper, tear notch, hang hole, window (cut-out + film); poly mailer; paper carrier bag (2D); roll labels, wrap labels, cards, hang tags per shape. |
+| Flexible, bags, labels, tags | Pouch features as getpack-api's multi-select key (`hang_hole+zipper`…): zipper, tear notch, hang hole, window (cut-out + film); poly mailer; paper carrier bag (2D); roll labels, wrap labels, cards, hang tags per shape. |
 | Words, mapping, assets | `AXIS_PHRASES` for every wave-1 axis value (pending review, D-212); `style-mapping.md` regenerated with coverage and the not-drawn reasons; `pnpm styles:render` manifest current (reproducible check passes). |
 
 ### Counts (structure; publishable is the API's, D-243)
@@ -1362,7 +1378,7 @@ Not drawn (110): hang tabs on straight-tuck and seal tops (81 — the back panel
 ### Decisions taken (most conservative option)
 - **Not drawn when it cannot be made**: such a variant stays `no_recipe` in the API rather than being drawn wrong.
 - **⚠ geometry for Prepress** (listed in `style-mapping.md` §5): slit and lock-corner slits, flip-top lip, insert proportions, mailer tab lock (no receiving slots), tear strips, adhesive strips, vents, hand-hole and handle-slot sizes, partition slots, pouch feature positions, paper-bag turn-over.
-- **In the library, the F4 chamfered hang tag left PK-TG-01**: packio-api reads an axis a recipe does not name as any value, so it could be returned for any shape; the `tag-*` recipes draw PK-TG-01 (the main entry's `hang-tag` keeps its base). A test now holds every multi-recipe base to naming all its axes.
+- **In the library, the F4 chamfered hang tag left PK-TG-01**: getpack-api reads an axis a recipe does not name as any value, so it could be returned for any shape; the `tag-*` recipes draw PK-TG-01 (the main entry's `hang-tag` keeps its base). A test now holds every multi-recipe base to naming all its axes.
 - **A pillow box is at most half as thick as it is wide** (`pillow.too_thick`): beyond that its end flaps overlap — found by the property test.
 - **Card thumbnails**: `StyleCardDto` has none; the card shows a neutral glyph (`CONTRACT-GAP store.styles.card-thumbnail`, request row written). The detail uses the API's signed assets.
 - **Marketing budget kept**: the first page's cards render on the server and only the save / compare islands run in the browser; sort and facets are links; favourites are a small store; the API client and the card renderer load on interaction.
@@ -1371,11 +1387,11 @@ Not drawn (110): hang tabs on straight-tuck and seal tops (81 — the back panel
 ### Verification
 - `pnpm typecheck`, `pnpm lint` clean; `pnpm test` 949 app + 5,390 engine tests (13 files; the variant gate 474 cases); `pnpm styles:render:check` reproducible.
 - Mock e2e (chromium): `storefront-styles.spec.ts` 5 / 5 with axe on the list, compare and detail; full suite 390 passed, 7 skipped, 1 load-related timeout (`storefront-account` saved quotation) green on re-run.
-- **Real API** (packio-api `v0.41.0`, integration stack): `e2e/integration/styles.spec.ts` green — the dev seed publishes no style yet (no approved recipes), so the library shows its empty state and an unknown code is a 404.
+- **Real API** (getpack-api `v0.41.0`, integration stack): `e2e/integration/styles.spec.ts` green — the dev seed publishes no style yet (no approved recipes), so the library shows its empty state and an unknown code is a 404.
 - Lighthouse `customer-marketing` (now with `/styles` and a style page): `/styles` 269,148 B, style page 269,242 B initial JS (budget 270,000), performance / SEO / a11y 100; `customer-app` and `designer` green on the raised ratchets.
 
 ### Follow-ups (not done)
-- **packio-api must read `ALL_RECIPES`** (`@packio/dieline/library`) instead of `RECIPES` in `recipesByBase` / facts to see the wave-1 recipes; until it does it draws exactly what it drew before.
+- **getpack-api must read `ALL_RECIPES`** (`@getpack/dieline/library`) instead of `RECIPES` in `recipesByBase` / facts to see the wave-1 recipes; until it does it draws exactly what it drew before.
 - Split the core modules' wave extensions into the library to win back the two ratchets.
 - Card thumbnails once `store.styles.card-thumbnail` ships (AVIF `sizes` then).
 - Prepress sign-off of every ⚠ above; Marketing / Prepress review of the generated names (D-212).
@@ -1385,11 +1401,11 @@ Not drawn (110): hang tabs on straight-tuck and seal tops (81 — the back panel
 
 ## U2.F1 — Configurator v2 — 2026-10-04
 
-`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F1, on `feat/u2.f1-configurator-v2` (worktree `../packio-web-u2`, from `main` at `026f375`). Gap analysis: `docs/update-2026-09-29-gap.md` §U2.F1. Post-launch per D-219. The user approved the plan and asked for it to run straight through ("auto mode"); the decisions below were taken under that instruction, the most conservative option each time.
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F1, on `feat/u2.f1-configurator-v2` (worktree `../getpack-web-u2`, from `main` at `026f375`). Gap analysis: `docs/update-2026-09-29-gap.md` §U2.F1. Post-launch per D-219. The user approved the plan and asked for it to run straight through ("auto mode"); the decisions below were taken under that instruction, the most conservative option each time.
 
 ### Base
 - **U-F0.5 brought in first.** `feat/u-f0.5-integration` (11 commits, 2026-10-01: the configurator on `store.catalog.getConfigurator` through a thin adapter, the `e2e:integration` project) was never merged and had no PROGRESS entry. U2.F1 builds on it, so it is merged into this branch (`06e9f16`) and reaches `main` with U2.F1. Its own entry stays open for U-F0.5's remaining scope.
-- **Contract `v0.41.0`** (one bump from `v0.6.0`, the latest tag): 54 type errors, all fixture fields packio-api added (tolerances, claim SLA facts, studio document fields, card facts, `devOnly`, `buyPriceNet`) — filled with their honest empty values. Quote statuses `declined`, `routed_to_rfq` got copy; 25 new problem codes got th/en titles. `admin.analytics-journeys` shipped as `admin.analytics.journeys` (U5.B6) although packio-api's triage still says "implement": the registry gate requires migrating on adoption, so the journeys dashboard now shows the scorecard's 11 journeys and the Monday checks, and the last admin request is deleted.
+- **Contract `v0.41.0`** (one bump from `v0.6.0`, the latest tag): 54 type errors, all fixture fields getpack-api added (tolerances, claim SLA facts, studio document fields, card facts, `devOnly`, `buyPriceNet`) — filled with their honest empty values. Quote statuses `declined`, `routed_to_rfq` got copy; 25 new problem codes got th/en titles. `admin.analytics-journeys` shipped as `admin.analytics.journeys` (U5.B6) although getpack-api's triage still says "implement": the registry gate requires migrating on adoption, so the journeys dashboard now shows the scorecard's 11 journeys and the Monday checks, and the last admin request is deleted.
 
 ### Done
 | Item | What |
@@ -1402,22 +1418,22 @@ Not drawn (110): hang tabs on straight-tuck and seal tops (81 — the back panel
 | §4 Target price | Field in the quantity step; the API's `target.steps` gap in the dock and `TargetPanel`; levers (`getLevers`) as cards, `applyLever` re-seeds the configurator from the new quotation; "คุยกับทีมขาย" = `sendToCs` with a note. |
 | §5 Summary | `SummaryStep`: completeness (the draft's `completenessPct` once saved, else sections answered), per-section edit, style code + international name (empty until verified), tolerances from the priced step, next steps with the API's dates; drafts (`store.configurations.*`) saved, resumed (`?draft=`, offered on the product's configurator) and shared (`?config=` → `getShared`). |
 | §6 Style codes | Pattern cards and summary; artwork rules and the proof page (`ArtworkDielineDto.styleCode`); quote, cart and order pages already list the API's `style_code` spec line; the public tracking page shows no product (D-224 wins). |
-| §7 Guard | ESLint `packio/no-money-arithmetic` (customer and shared features; RuleTester cases). |
+| §7 Guard | ESLint `getpack/no-money-arithmetic` (customer and shared features; RuleTester cases). |
 
 ### Decisions taken (most conservative option)
-- **Process ink = one four-colour pass.** packio-api's engine and golden cases send its one process ink four times (`cmyk()`); the storefront does the same, spot / white / metallic inks once, at full coverage (the CS desk's precedent). The mock ink catalogue was aligned (one "CMYK" ink, spot colours). Label and corrugated colours go once each (their DTOs say nothing of a process set) — **to confirm with the Pricing owner.**
+- **Process ink = one four-colour pass.** getpack-api's engine and golden cases send its one process ink four times (`cmyk()`); the storefront does the same, spot / white / metallic inks once, at full coverage (the CS desk's precedent). The mock ink catalogue was aligned (one "CMYK" ink, spot colours). Label and corrugated colours go once each (their DTOs say nothing of a process set) — **to confirm with the Pricing owner.**
 - **Advisor defaults:** the goods (weight, units, stacking) are never assumed; the conditions start at their middle band (normal humidity, ≤ 30 days, medium fragility, parcel) shown as answers to change. The advisor is asked on a button, not on every keystroke (every recommendation is logged, D-240).
 - **Basis:** a catalogue standard size is an inside size; switching to a custom size asks for the basis again. `product` is not offered for boxes (clearance rules undecided).
 - **Anonymous advice** uses a page-scoped `anonymousId` (nothing stored in the browser).
 - **Drafts are resumed from the product's configurator**: a draft names its product by id only; recorded on `store.catalog-product-ref` (CONTRACT-GAP).
 
 ### Tests
-Unit 939 (configurator v2 core against the mock: bases, conversion-checked limits, every published body, process ink ×4, target gaps, levers, send to CS, drafts and share, advisor), the lint rule's RuleTester cases. e2e: `storefront-configurator-v2.spec.ts` (6, axe on each new block) and the updated `storefront-quote.spec.ts`; `e2e/integration/configurator.spec.ts` — the acceptance journey on the real packio-api (`prepare.ts` switches on `advisory.structure_advisor`).
+Unit 939 (configurator v2 core against the mock: bases, conversion-checked limits, every published body, process ink ×4, target gaps, levers, send to CS, drafts and share, advisor), the lint rule's RuleTester cases. e2e: `storefront-configurator-v2.spec.ts` (6, axe on each new block) and the updated `storefront-quote.spec.ts`; `e2e/integration/configurator.spec.ts` — the acceptance journey on the real getpack-api (`prepare.ts` switches on `advisory.structure_advisor`).
 
 ### Verification
 - `pnpm typecheck`, `pnpm lint` clean; `pnpm test` 939 app + 1,784 engine tests.
-- Mock e2e (chromium): full suite 383 passed after fixes (first full run had 10 load-related timeouts while packio-api built alongside; re-run green), 6 skipped as before.
-- **Real API** (`pnpm e2e:integration`, packio-api `v0.41.0`, fresh dev seed): 31 integration tests green, including the new journey — the advisor offered two boards and one was taken, the API returned levers and one was applied, then add to cart. Found on the way: the dev seed's boards carry no caliper, so a size entered outside or over the creases cannot be converted ("without a caliper only the given basis is known"); the configurator now says so and asks for no price until the inside size or another material is chosen.
+- Mock e2e (chromium): full suite 383 passed after fixes (first full run had 10 load-related timeouts while getpack-api built alongside; re-run green), 6 skipped as before.
+- **Real API** (`pnpm e2e:integration`, getpack-api `v0.41.0`, fresh dev seed): 31 integration tests green, including the new journey — the advisor offered two boards and one was taken, the API returned levers and one was applied, then add to cart. Found on the way: the dev seed's boards carry no caliper, so a size entered outside or over the creases cannot be converted ("without a caliper only the given basis is known"); the configurator now says so and asks for no price until the inside size or another material is chosen.
 - Lighthouse `customer-app`: `/configure/tuck-end-box` 336,117 B initial JS — ratchet 327,000 → 337,000 with the reason in `docs/performance-budgets.md` §U2.F1.
 
 ### Not done / follow-ups
@@ -1429,14 +1445,14 @@ Unit 939 (configurator v2 core against the mock: bases, conversion-checked limit
 
 ## U3.3 — Automatic 3D, virtual fold test, assets — 2026-10-02
 
-`docs/prompts/U3-style-library.md` §U3.3, on `feat/u3.3-auto-3d` (worktree `../packio-web-u3`, from `main` at `519a861`, U3.2 merged).
+`docs/prompts/U3-style-library.md` §U3.3, on `feat/u3.3-auto-3d` (worktree `../getpack-web-u3`, from `main` at `519a861`, U3.2 merged).
 
 ### Gap analysis
 | U3.3 item | Found | Done |
 |---|---|---|
 | 1 3D from the hinge graph | `foldDieline` (zero-thickness faces), `Preview3D` with open/close animation and slider | `foldModel`: a slab of the caliper per face, layered (ADR-0012); `inflatedPouch` (flexible: seals flat, webs bulge); rigid board wrapped (`WRAP_MM`); `Preview3D` draws the slabs — artwork on the printed surface, board colour inside and on every cut edge — keeping its animation, slider and buttons; three.js still lazy |
 | 2 Virtual fold test | Zero-thickness bbox vs inside size, presets only, [−1, +2t+1] | `model/fold-gate.test.ts`: every foldable recipe (21) × smallest / typical / largest valid size (from `validRanges`) × two calipers of its category: thick model = `outerSizeOf` ± 1 mm per axis, and `collisions()` empty (transversal crossings between non-adjacent faces, contacts shrunk away); the F4 assertion stays as extra cover |
-| 3 Asset pipeline | `pnpm style:thumbnails` (Playwright, docs only) | `pnpm styles:render`: per variant the dieline SVG, a 2D thumbnail and 3D thumbnails on kraft and white board by the engine's own rasteriser (our "Packio studio" lights) → `packages/dieline/generated/`; `manifest.json` (key, axes, names, review state, processes, recipe hash, preset, values, sha256 per asset) committed; images git-ignored, rendered before publishing and shipped in `files`; CI `styles:render:check` |
+| 3 Asset pipeline | `pnpm style:thumbnails` (Playwright, docs only) | `pnpm styles:render`: per variant the dieline SVG, a 2D thumbnail and 3D thumbnails on kraft and white board by the engine's own rasteriser (our "getpack studio" lights) → `packages/dieline/generated/`; `manifest.json` (key, axes, names, review state, processes, recipe hash, preset, values, sha256 per asset) committed; images git-ignored, rendered before publishing and shipped in `files`; CI `styles:render:check` |
 | 4 Names | Hand-written per style | `variants` axes in recipes (master-file axes of their base, checked against the master file), `variantsOf`, `describeVariant` (recipe name + axis phrases + module labels), `reviewStatus: pending` until in `names.reviewed.json`; a test forbids claims (best, premium, eco, ดีที่สุด, พรีเมียม …) |
 
 ### Counts (U3.4 counting rules: structure only, nothing publishable yet)
@@ -1472,7 +1488,7 @@ Name review (Marketing + Prepress, D-212); curved pillow panels; U3.4 wave 1 (re
 
 ## U3.2 — Constraint solver & manufacturability rules — 2026-10-02
 
-`docs/prompts/U3-style-library.md` §U3.2, on `feat/u3.2-solver` (worktree `../packio-web-u3`, from `main` at `e1069c5`, U3.1 merged).
+`docs/prompts/U3-style-library.md` §U3.2, on `feat/u3.2-solver` (worktree `../getpack-web-u3`, from `main` at `e1069c5`, U3.1 merged).
 
 ### Gap analysis
 | U3.2 item | Found | Done |
@@ -1498,7 +1514,7 @@ U3.5: the configurator and library show `explain()` codes and `sizeRanges()`; U3
 
 ## U3.1 — Module system (composable style recipes) — 2026-10-02
 
-`docs/prompts/U3-style-library.md` §U3.1, on `feat/u3.1-module-system` (worktree `../packio-web-u3`, from `main` at `bb1fe7f`). Runs in parallel with U-F0.5 (RUN-ORDER §1 row 2); nothing here touches the app's API use. Post-launch per D-219.
+`docs/prompts/U3-style-library.md` §U3.1, on `feat/u3.1-module-system` (worktree `../getpack-web-u3`, from `main` at `bb1fe7f`). Runs in parallel with U-F0.5 (RUN-ORDER §1 row 2); nothing here touches the app's API use. Post-launch per D-219.
 
 ### Gap analysis (against the code, not the prompt)
 | U3.1 item | Found | Done |
@@ -1510,18 +1526,18 @@ U3.5: the configurator and library show `explain()` codes and `sizeRanges()`; U3
 | 5 ADR | — | ADR-0011 "Composable style recipes" |
 
 ### Decisions taken, with reasons
-- **Recipes are JSON, geometry stays code.** What prepress reviews (modules, compensation, rules, names, presets) is data packio-api can import (U3.B1); the drawing code is the F4 builders, unchanged.
+- **Recipes are JSON, geometry stays code.** What prepress reviews (modules, compensation, rules, names, presets) is data getpack-api can import (U3.B1); the drawing code is the F4 builders, unchanged.
 - **Expressions, not code, for sizes and rules** — hand-parsed (CSP-safe), three-valued so a rule over an unset value never fires, exactly as the old checks behaved. Logic keywords are reserved (`x + not y` is a syntax error — found by a test).
 - **Straight / reverse tuck are lid choices of one `tuck` closure**, `tube4` and the hexagon are settings of one `tube` body: fewer generators, same output.
 - **Engine ids unchanged**; `base` / `variant` map each recipe to its master-file row (tuck end, reverse tuck, snap-lock, crash-lock, seal end and hang-tab tuck are variants of PK-TE-01). Informational only — public codes are the API's (D-184); no reference codes added (D-211 open).
 - **Recipes are not re-checked at package load** (the browser would pay for the checker); `recipes.test.ts` runs every one through `parseRecipe`, and anything from outside must be parsed first.
-- **JSON imports carry `with { type: "json" }`** so the published `dist/` loads in Node ESM (packio-api).
+- **JSON imports carry `with { type: "json" }`** so the published `dist/` loads in Node ESM (getpack-api).
 
 ### Tests added
 `baseline.test.ts` (1,164 cases), `expr.test.ts`, `recipes/recipes.test.ts` (registry = recipes, recipe build = style build, every rejection code, module catalogue: unique ids, bilingual labels, known processes, every implemented module used, planned ones refuse to build, faces only of declared kinds), `src/lib/style-library.test.ts` (each base is a master row; variant axes and values exist; tuck pairs allowed; every construction the programme names is declared). Mutation check: a 0.0001 mm change in one recipe fails the baseline.
 
 ### Performance — ratchets raised (rule: say why here)
-The engine adds ~7.4 KB of compressed JS wherever `@packio/dieline` loads (30 recipes as data, module declarations, the evaluator): `/design/new` 459,739 → 467,144 (designer ratchet 460,000 → **468,000**), `/configure/tuck-end-box` 319,069 → 326,473, `/account/designs` 308,493 → 315,900 (customer-app ratchet 293,000 → **327,000**). Deduplicating shared presets/defaults (`sets.json`) and dropping the load-time check won ~1.4 KB; the rest is the engine. **`customer-app` was already failing on `main`** (319,069 against 293,000) — growth from the U-F0 migrations no entry explains; follow-up for the U-F0.5 / U-F3 owner. Details in `docs/performance-budgets.md` §U3.1.
+The engine adds ~7.4 KB of compressed JS wherever `@getpack/dieline` loads (30 recipes as data, module declarations, the evaluator): `/design/new` 459,739 → 467,144 (designer ratchet 460,000 → **468,000**), `/configure/tuck-end-box` 319,069 → 326,473, `/account/designs` 308,493 → 315,900 (customer-app ratchet 293,000 → **327,000**). Deduplicating shared presets/defaults (`sets.json`) and dropping the load-time check won ~1.4 KB; the rest is the engine. **`customer-app` was already failing on `main`** (319,069 against 293,000) — growth from the U-F0 migrations no entry explains; follow-up for the U-F0.5 / U-F3 owner. Details in `docs/performance-budgets.md` §U3.1.
 
 ### Follow-ups
 - **Before U3.4 wave 1:** recipe data must leave the initial bundle (≈ 75 more recipes would add tens of KB to every engine page) — load per style or read from U3.B2.
@@ -1535,9 +1551,9 @@ The engine adds ~7.4 KB of compressed JS wherever `@packio/dieline` loads (30 re
 
 ## U-F0.4 — The partner zone, and every zone onto v0.4–v0.6 — 2026-10-01
 
-`docs/prompts/U1-update-2026-09-29.md` §U-F0.4, on `feat/u-f0.4-migration` (worktree `../packio-web-u1`, from `main` at `bbcfdcd`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.4 (20 rows, all met).
+`docs/prompts/U1-update-2026-09-29.md` §U-F0.4, on `feat/u-f0.4-migration` (worktree `../getpack-web-u1`, from `main` at `bbcfdcd`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.4 (20 rows, all met).
 
-**What changed since U-F0.3:** packio-api tagged `v0.4.0` (U-B0.1 store), `v0.5.0` (U-B0.2 admin) and `v0.6.0` (U-B0.3 platform, finance, partner and cross-cutting). Together they add 124 operations and remove none. Every triage row is now published, except three deferred by decision:
+**What changed since U-F0.3:** getpack-api tagged `v0.4.0` (U-B0.1 store), `v0.5.0` (U-B0.2 admin) and `v0.6.0` (U-B0.3 platform, finance, partner and cross-cutting). Together they add 124 operations and remove none. Every triage row is now published, except three deferred by decision:
 - guided help (D-223);
 - sample kits (D-223);
 - analytics journeys (U5.B6, D-219).
@@ -1552,27 +1568,27 @@ The migration rule of U-F0.2 / U-F0.3 stands:
 - what it still lacks is `CONTRACT-GAP <id>`;
 - a test that needs it is a `test.fixme` naming the gap.
 
-Slice 0 was built first, on its own. Six slices were then built in parallel worktrees, each from one written brief, and merged: `feat/u-f0.4-{floor,partner-account,store,admin-sales,admin-ops,admin-platform}`, worktrees `../packio-web-u1-<slice>`, branches kept. The slices are cut by domain, not by zone, because partner and admin mocks share state (jobs, shipments, claims, statements).
+Slice 0 was built first, on its own. Six slices were then built in parallel worktrees, each from one written brief, and merged: `feat/u-f0.4-{floor,partner-account,store,admin-sales,admin-ops,admin-platform}`, worktrees `../getpack-web-u1-<slice>`, branches kept. The slices are cut by domain, not by zone, because partner and admin mocks share state (jobs, shipments, claims, statements).
 
 ### Result
 - **Requests:** 115 request operations → **5**: the parked configurator (U2.F1), the three deferred ones, and `admin.analytics-journeys`.
   - `PUBLISHED_AWAITING_MIGRATION` holds only the parked configurator (bound ≤ 1, pinned to `CUSTOMER_ZONE_PARKED`).
   - No `/v1/partner/` request remains, and the partner zone builds no request client.
-- **Gap markers:** `CONTRACT-GAP` markers 190 → 86. Each names an open row or a gap packio-api left out on purpose.
+- **Gap markers:** `CONTRACT-GAP` markers 190 → 86. Each names an open row or a gap getpack-api left out on purpose.
 - **e2e fixmes:** 21 → 7.
 
 ### Done
 - **Slice 0: contract, triage, permissions, shared pieces.**
-  - `decisions.md` (D-229–D-232) and `accounting-design.md` synced with packio-api `v0.6.0`.
+  - `decisions.md` (D-229–D-232) and `accounting-design.md` synced with getpack-api `v0.6.0`.
   - `gen:api --adopt --tag v0.6.0`. Mock converters fill each new required field from data the mock holds, else with the schema's empty value.
   - `gen:triage`:
-    - reads the triage **at the lock's tag**, not packio-api's working tree;
+    - reads the triage **at the lock's tag**, not getpack-api's working tree;
     - applies the new `U-B0.x shipped` tables over *Details*, whose headings still say "implement here";
     - resolves each built operation to its published operationId: exact path, else the operationIds the shipped row names, else four prose-named mappings that must be among the row's own;
     - adds the verdict `deferred`;
     - fails on anything it cannot place.
-  - `gen:rbac` reads `rbac.md` at the tag and imports the factory-scope table. Partner personas hold `FACTORY_ROLE_GRANTS`, the proposed keys are renamed to packio-api's, and a new gate (`src/features/partner/permissions.test.ts`) fails on any other factory key.
-  - **Next actions:** presentation and th/en labels for packio-api's 59 action keys (`API_ACTION_KEYS`, tested). Screens render the entity's own `nextActions`.
+  - `gen:rbac` reads `rbac.md` at the tag and imports the factory-scope table. Partner personas hold `FACTORY_ROLE_GRANTS`, the proposed keys are renamed to getpack-api's, and a new gate (`src/features/partner/permissions.test.ts`) fails on any other factory key.
+  - **Next actions:** presentation and th/en labels for getpack-api's 59 action keys (`API_ACTION_KEYS`, tested). Screens render the entity's own `nextActions`.
   - **Notifications:** the API's unread count, items that link to their `url`, read-all in one call.
   - **Web vitals:** posted as `WebVitalDto`.
   - th/en titles for the 16 new problem codes.
@@ -1619,7 +1635,7 @@ Slice 0 was built first, on its own. Six slices were then built in parallel work
   - **Designs:** owner, `editable`, copy.
   - **Marketing:** spent gauge, reasons on actions, priority reorder, coupon batches. Referral promotions are read-only.
 - **Admin platform (admin-platform slice).**
-  - **Console:** the sidebar is packio-api's menu; a DPO persona (D-222); the dashboard's 21 queues; saved views; search; staff directory; SoD rules.
+  - **Console:** the sidebar is getpack-api's menu; a DPO persona (D-222); the dashboard's 21 queues; saved views; search; staff directory; SoD rules.
   - **Finance:**
     - documents: credit-note reasons, deliveries, resend, `?paymentId`, `nextActions`;
     - dunning log; bank suggestions, split and settlements;
@@ -1628,13 +1644,13 @@ Slice 0 was built first, on its own. Six slices were then built in parallel work
     - the slip image from its `fileId`.
   - **Reports and exports:** report totals, `generatedAt` and groups; analytics price sensitivity; exports on orders, customers, companies, shipments and claims.
 - **Close-out.**
-  - **Dashboard counts:** the shipment and RFQ tabs asked for queue keys packio-api never sends (`logistics.*`, `rfq.*`), which the mock aliased. They now use `shipments.exceptions`, `shipments.pod_review` and `rfqs.awaiting_first_response`, and the alias is gone.
+  - **Dashboard counts:** the shipment and RFQ tabs asked for queue keys getpack-api never sends (`logistics.*`, `rfq.*`), which the mock aliased. They now use `shipments.exceptions`, `shipments.pod_review` and `rfqs.awaiting_first_response`, and the alias is gone.
   - **Interim action rules:** the store module is deleted. The admin module keeps only campaigns, promotions, coupons, prepress and submissions, which have no `nextActions` in v0.6.0.
   - `NextActionBar` leads with an action the screen can perform, never a destructive one while a constructive one is open, and shows `disabledReason` in the app's problem wording.
 
 ### Interim QC checklist (user decision)
-- `recordQc` requires `checklist` and `checklistVersion` and stores what it is sent, but no partner response carries the route's checklist (packio-api: "no checklist invented").
-- The factory therefore answers `src/domain/qc/checklist.ts`, version `packio-web-v1`: the five items F5.2 showed, labelled in i18n.
+- `recordQc` requires `checklist` and `checklistVersion` and stores what it is sent, but no partner response carries the route's checklist (getpack-api: "no checklist invented").
+- The factory therefore answers `src/domain/qc/checklist.ts`, version `getpack-web-v1`: the five items F5.2 showed, labelled in i18n.
 - A defect's `code` is the item key, and its severity comes from `DefectSeverity`.
 - New request `partner.job-qc-checklist` asks for `qcChecklist` on `PartnerJobDto`. When it ships, the list is replaced, not the form.
 
@@ -1674,7 +1690,7 @@ Slice 0 was built first, on its own. Six slices were then built in parallel work
   - report pagination beyond 200 rows;
   - GMV / conversion per demand cell.
 - **Published, no screen yet** (not migrations):
-  - the admin privacy-requests screen (no menu entry in packio-api's catalogue);
+  - the admin privacy-requests screen (no menu entry in getpack-api's catalogue);
   - business calendar (`admin.calendar.*`);
   - approval-policy versions (`admin.approvalPolicies.*`);
   - admin job hold / resume / reassign controls (read-only on the board).
@@ -1691,17 +1707,17 @@ Slice 0 was built first, on its own. Six slices were then built in parallel work
   - a reason is required on campaign / promotion pause and end and on disabling a coupon;
   - a note is required on a statement dispute and on a claim dispute.
 - **Offered actions not yet built** (`order.submit_artwork`, `add_mockup`, `reprice`) are shown disabled as unsupported rather than hidden.
-- **Payment reminder, record slip and slip review** are offered from the order's Payments tab, since packio-api has no order-group actions. A bug was fixed on the way: record slip now sends real uuid Idempotency-Keys.
+- **Payment reminder, record slip and slip review** are offered from the order's Payments tab, since getpack-api has no order-group actions. A bug was fixed on the way: record slip now sends real uuid Idempotency-Keys.
 - **Blank designs** use the engine's default board, because the designer catalogue needs a product.
 - **Mocks:**
-  - mirror packio-api's `*-actions.ts` rule tables at v0.6.0 (`mocks/next-actions.ts`, `mocks/admin/floor-actions.ts`);
+  - mirror getpack-api's `*-actions.ts` rule tables at v0.6.0 (`mocks/next-actions.ts`, `mocks/admin/floor-actions.ts`);
   - the shared state between partner and admin is kept: jobs, shipments, claims, statements.
 - **Two date-dependent tests fixed** (both failed on 2026-10-01):
   - the audit sample asks for `min(5, populationSize)`;
   - the ภ.ง.ด.53 e2e reads the seeded payout run's month.
   - Moving the seed into the current month instead broke the ภ.พ.30 reconciliation, so it was reverted.
 
-### For packio-api
+### For getpack-api
 - **Orders:** `groupId` / `groupCode` on `OrderDto` and `AdminOrderDto`; a typed `AdminOrderGroupDto.taxProfile`.
 - **Store:**
   - a catalogue for a blank design;
@@ -1756,13 +1772,13 @@ Slice 0 was built first, on its own. Six slices were then built in parallel work
 - Gates proven to bite:
   - the partner permissions gate, on a planted `factory_jobs.accept`;
   - the registry zone gates and the gap gate keep their U-F0.2 / U-F0.3 logic and are green. The migration list is pinned to the parked configurator.
-- Not run: `e2e:integration` against packio-api (U-F0.5, next).
+- Not run: `e2e:integration` against getpack-api (U-F0.5, next).
 
 ---
 
 ## U-F0.3 — Migrate the admin zone (`admin.*`) — 2026-09-30
 
-`docs/prompts/U1-update-2026-09-29.md` §U-F0.3, on `feat/u-f0.3-admin-migration` (worktree `../packio-web-u1`, from `main` at `5af34e9`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.3 (13 rows, all met).
+`docs/prompts/U1-update-2026-09-29.md` §U-F0.3, on `feat/u-f0.3-admin-migration` (worktree `../getpack-web-u1`, from `main` at `5af34e9`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.3 (13 rows, all met).
 
 **User decisions (2026-09-30):**
 1. Adopt contract `v0.3.0` first, and park the newly published storefront configurator until U2.F1.
@@ -1776,19 +1792,19 @@ Slices 0–4 were built one after another. Slices 5–11 were built in parallel 
 ### Done
 - **Slice 0 — contract and triage.**
   - `pnpm gen:api --adopt --tag v0.3.0`: +16 operations, none removed. The lock now pins `v0.3.0`.
-  - `pnpm gen:triage` imports packio-api's re-triage (`cb2ebe4`).
+  - `pnpm gen:triage` imports getpack-api's re-triage (`cb2ebe4`).
   - `store.configurator` is published; it is parked (`CUSTOMER_ZONE_PARKED`) with a named exception in the customer-zone gate.
 - **Slice 1 — permissions.**
-  - `pnpm gen:rbac` reads packio-api's generated `docs/rbac.md` into `mocks/generated/rbac.ts`. Every mock persona holds exactly its role's grants.
+  - `pnpm gen:rbac` reads getpack-api's generated `docs/rbac.md` into `mocks/generated/rbac.ts`. Every mock persona holds exactly its role's grants.
   - The 13 names F2 proposed are replaced by the ones each operation's `x-required-permissions` names (`rfqs.*`, `artwork.read`, `prepress.review`, `quotes.*`, `carts.manage_on_behalf`, `inspections.perform`, `claims.manage`, `promotions.*` / `campaigns.manage`, `companies.kyc_review`, `company_credit.manage`).
   - Reports need only their data permission.
-  - New gate `permissions.test.ts`: every permission the admin UI or its mocks check is a packio-api staff permission, and every persona holds exactly its role's grants.
+  - New gate `permissions.test.ts`: every permission the admin UI or its mocks check is a getpack-api staff permission, and every persona holds exactly its role's grants.
 - **Slice 2 — customers, loyalty, referrals.**
   - Customer list, detail and find-or-create run on the published operations. The page is composed from the customer, its addresses, tax profiles and loyalty summary. Points come from `admin.loyalty.get` and `.ledger`.
   - Referrals: `admin.referrals.list`.
   - New addresses carry geography ids (`usePostcodeAreas`: a postcode's subdistricts, then their districts and provinces).
 - **Slice 3 — orders.**
-  - The desk is packio-api's queues.
+  - The desk is getpack-api's queues.
   - The order page is composed from the lean order, its group (found by order code), the customer and one resource per tab.
   - Offered actions come from `src/domain/next-actions/admin.ts`.
   - Cancel and manual start run on the published operations. CS records a slip by initiate payment + upload slip.
@@ -1832,7 +1848,7 @@ Slices 0–4 were built one after another. Slices 5–11 were built in parallel 
   - `admin-sales.ts`, `admin-companies.ts` and `admin-partners.ts` are deleted. Their schemas still in use moved to `store-quotes.ts`, `store-business.ts` or mock-only model files under `mocks/admin/*-model.ts`.
 
 ### What the screens lost (marked `CONTRACT-GAP`)
-- **Menu** (`admin.menu-entries`): the business entries stay mock-provided; packio-api's menu has platform entries only.
+- **Menu** (`admin.menu-entries`): the business entries stay mock-provided; getpack-api's menu has platform entries only.
 - **Customers** (`admin.customers`, `admin.referrals`, `admin.customer-loyalty`, `admin.geo`):
   - no type or channel filters;
   - no company, order count, last order or referral code;
@@ -1906,18 +1922,18 @@ Each names its gap:
   - Marketing no longer reads customers.
   - Finance no longer reviews KYC.
   - approve-kyc needs `companies.kyc_review`, not `companies.manage`.
-  - The e2e cases sign in as the role packio-api grants.
+  - The e2e cases sign in as the role getpack-api grants.
 - **Offered actions** live in one pure module, `src/domain/next-actions/admin.ts`, until entities carry `nextActions` (U-B0.3): orders, RFQs, companies, campaigns, promotions, coupons, shipments, claims, prepress, submissions and designs. Every action is still the API's to refuse.
 - **CS checkout takes the customer's whole cart** (contract). The page refuses to place while the cart holds anything else, rather than place items CS did not choose.
 - **Discounts are enforced by the API.** The limit is a setting the input data does not carry, so the desk sends the discount. On `discounts.cs_limit_exceeded` it offers a memo, and it never shows a limit of its own.
 - **Slip review:** Finance's own sheet (bank reference, then the group code retyped) is reused on the order page; there is no second approve dialog.
-- **Mocks mirror packio-api's shapes and codes.**
+- **Mocks mirror getpack-api's shapes and codes.**
   - Fixtures keep a mock-only model, converted on the way out (`toXDto`).
   - A handler serving only some requests falls through (`return undefined`).
   - The prepress mock is the one source of artwork. The calculators price with the storefront mock's engine, so both sides agree.
 - **Axe scans leave the transient toaster out** (`storefront-account`), as the finance specs already did: a toast mid-fade measured 4.16:1.
 
-### For packio-api
+### For getpack-api
 - **Orders:** a group or customer reference on `AdminOrderDto`; an all-orders list with filters; `hasSlipToReview`; payments by order or group; Idempotency-Key on cancel and manual start; the timeline's `type` / `messageKey` list; what `q` matches on the slip queue and on payments.
 - **CS desk:** `discounts.cs_limit_pct`, quantity presets and size rules in the calculator input data; the specs of a saved quotation in words; a memo code.
 - **Permissions:**
@@ -1942,7 +1958,7 @@ Each names its gap:
   - The three failures, and what was done:
     - the RFQ cost-column header showed the word "cost" to CS — fixed;
     - a consultation names its factory by code only — now asserted as a named gap;
-    - the CS sidebar gained reports, prepress and production under packio-api's grants.
+    - the CS sidebar gained reports, prepress and production under getpack-api's grants.
   - Their specs were re-run: 24 passed, 3 skipped (named gaps).
   - Earlier, under the other session's load, failures turned out to be timeouts; every one passed when re-run with one worker.
 - `pnpm e2e:journeys`: 11 walks pass, T6 pending (storefront journeys; untouched by this session).
@@ -1962,11 +1978,11 @@ Each names its gap:
 
 ## U-F0.2 — Migrate the customer zone (`store.*`) — 2026-09-30
 
-`docs/prompts/U1-update-2026-09-29.md` §U-F0.2, on `feat/u-f0.2-store-migration` (worktree `../packio-web-u1`, from `main` at `601191d`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.2 (17 rows, all met). **User decision (2026-09-30): migrate all 79 literally.** Where v0.2.0 carries less, the screen follows it. What is missing is marked `// CONTRACT-GAP <id>`, and a test that needs it becomes `test.fixme` naming the gap. Nothing is invented.
+`docs/prompts/U1-update-2026-09-29.md` §U-F0.2, on `feat/u-f0.2-store-migration` (worktree `../getpack-web-u1`, from `main` at `601191d`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.2 (17 rows, all met). **User decision (2026-09-30): migrate all 79 literally.** Where v0.2.0 carries less, the screen follows it. What is missing is marked `// CONTRACT-GAP <id>`, and a test that needs it becomes `test.fixme` naming the gap. Nothing is invented.
 
 ### Done
 Eleven slices (`308b1cd`…`7f9c159`), each green on lint, typecheck and unit:
-- **Groundwork.** Mock ETag helpers (`versionTag`, `withEtag`, `precondition` → 428/412). The `CONTRACT-GAP` gate (`gaps.test.ts`): every marker in `src`, `mocks` and `e2e` names an open row. `src/domain/next-actions/store.ts` is the one place the storefront decides what to *offer* until `nextActions` ships (U-B0.3); the API still refuses what it must. The R1 payment-method list (`src/domain/payment-methods.ts`). The 2C2P return route `/payments/[paymentId]/return` (packio-api `payments.service.ts:259`).
+- **Groundwork.** Mock ETag helpers (`versionTag`, `withEtag`, `precondition` → 428/412). The `CONTRACT-GAP` gate (`gaps.test.ts`): every marker in `src`, `mocks` and `e2e` names an open row. `src/domain/next-actions/store.ts` is the one place the storefront decides what to *offer* until `nextActions` ships (U-B0.3); the API still refuses what it must. The R1 payment-method list (`src/domain/payment-methods.ts`). The 2C2P return route `/payments/[paymentId]/return` (getpack-api `payments.service.ts:259`).
 - **Account:**
   - Points, ledger, referral and store credit.
   - The customer profile, GET then PATCH under If-Match. The e-mail is not writable (triage open question 4); "already asked" is kept in the first-party cookie `pk_profile_asked`.
@@ -2014,7 +2030,7 @@ Eleven slices (`308b1cd`…`7f9c159`), each green on lint, typecheck and unit:
   - `contract-requests.openapi.json` is regenerated; the only shape change is the credit application now answering `CreditApplicationDto`.
 
 ### What v0.2.0 does not carry (marked `CONTRACT-GAP`, left out of the screens)
-- **Three contract defects outside the triage**, raised as rows "Open — awaiting packio-api triage":
+- **Three contract defects outside the triage**, raised as rows "Open — awaiting getpack-api triage":
   - **`store.geo-ids`.** The store geo reads have no ids, but address, tax-profile, company and branch inputs need `provinceId` and `subdistrictId`. So nothing new can be created; edits work.
   - **`store.catalog-product-ref`.** A design and a saved quotation name their product by id only, and no catalogue read resolves an id. So a blank design stays in the browser, a reopened design has no product, price widget or order action, and a saved quotation cannot reopen in the configurator.
   - **`store.order-group-ref`.** `OrderDto` does not name its group; the page finds it by the order's code.
@@ -2045,12 +2061,12 @@ Eleven slices (`308b1cd`…`7f9c159`), each green on lint, typecheck and unit:
 - **Offered actions come from facts, in one module.** Until U-B0.3 (`entity.next-actions`), `src/domain/next-actions/store.ts` reads the generated status enums (`orderActions`, `artworkActions`, `canAcceptQuotation`), and B2B reads `capabilitiesOf(roles)`. They decide what to show only; every action is still the API's to refuse. Reorder is offered once a delivery arrived, as before.
 - **The order list reads shipments for `shipping` orders only**, one call each, so receiving, claiming and reordering stay one tap from the list. T8 stays at 3 steps; drop it when the list carries actions.
 - **Context the customer arrived with is carried, not invented.** The designer keeps `?product=` and the order line in its address after creation, and a design's product id comes from the configurator request. Neither is stored on the design.
-- **Backend wins on send-to-print.** `submitForOrder` takes the design, and Prepress exports it (D-070). The browser-built print PDF (ADR-0009) is no longer submitted; the export and download still work. ADR-0009 needs a note from packio-api (below).
+- **Backend wins on send-to-print.** `submitForOrder` takes the design, and Prepress exports it (D-070). The browser-built print PDF (ADR-0009) is no longer submitted; the export and download still work. ADR-0009 needs a note from getpack-api (below).
 - **Copy follows the contract, not the old shape:**
   - Quantities show without a unit wherever the published order has none.
   - A decline says the RFQ was declined, not why.
   - A charged design round confirms `feeGross`; the round list shows `feeNet` "before VAT".
-- **Mocks mirror packio-api where the web cannot tell otherwise:**
+- **Mocks mirror getpack-api where the web cannot tell otherwise:**
   - A design delivery becomes a proof.
   - A design's preflight stays `pending` until export (about 3 s in the mock).
   - Idempotency-Key is required exactly where the contract declares it.
@@ -2059,7 +2075,7 @@ Eleven slices (`308b1cd`…`7f9c159`), each green on lint, typecheck and unit:
   - Notification preferences e2e now waits for the PUT before reloading.
   - The public-tracking unit test compared clock-derived step times from two reads.
 
-### For packio-api
+### For getpack-api
 - Triage the three new rows: `store.geo-ids`, `store.catalog-product-ref`, `store.order-group-ref`.
 - List the `TimelineEntryDto.type` / `messageKey` values, the checkout notice codes and the RFQ decline reason codes, so the storefront can have words for each rather than a fallback.
 - Confirm that `store.files.download` serves the customer the files staff attach to their order: proof files, `dielineFileId` overlays, dieline templates, design thumbnails and assets.
@@ -2088,26 +2104,26 @@ Eleven slices (`308b1cd`…`7f9c159`), each green on lint, typecheck and unit:
 
 ## U-F0.1 — Adopt & reconcile the tagged contract — 2026-09-29
 
-`docs/prompts/U1-update-2026-09-29.md` §U-F0.1, on `feat/u-f0.1-adopt-reconcile` (worktree `../packio-web-u1`, from `main` at `81cce53`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.1. Screens keep their behaviour; one new admin screen; no call site was migrated (that is U-F0.2–0.4).
+`docs/prompts/U1-update-2026-09-29.md` §U-F0.1, on `feat/u-f0.1-adopt-reconcile` (worktree `../getpack-web-u1`, from `main` at `81cce53`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.1. Screens keep their behaviour; one new admin screen; no call site was migrated (that is U-F0.2–0.4).
 
 ### Done
-- **Tagged contract.** `pnpm gen:api --adopt --tag vX.Y.Z` reads the document *at the tag* (`git show <tag>:./openapi.json` in the sibling checkout, or a downloaded release asset through `API_CONTRACT_SOURCE`) and refuses a missing tag or a document whose `info.version` is not the tag's. `contract.lock.json` now pins `v0.2.0` — `tag`, `commit` `6b12ccd`, `source` = the release-asset URL, sha256 `90cb8752…` (equal to the one in the tag's message). `--check` also fails on a lock without a tag, a `source` that does not name it, or a vendored version that differs. The vendored document differed from `v0.2.0` only in `info.version`, so adopting changed no type. packio-api's working tree is ahead of the tag (U-B6 corrugate, +331 contract lines) and is deliberately **not** adopted. ADR-0006 amended.
-- **Triage imported.** `pnpm gen:triage` parses packio-api's `docs/contract-requests-triage.md` (per-operation verdict, operationId, group, additive-gap count) into `src/lib/api/requests/triage.ts` and writes the verdict at the start of every open Status cell in `docs/contract-requests.md`, keeping our note after ` · web:`; re-run it whenever packio-api ships a group. 293 of the registry's 294 operations have a verdict (88 implement, 204 published differently, 1 published); the journeys read is in `awaiting-triage.ts`. `contract-requests.openapi.json` holds only what packio-api still has to build: **89 operations, 62 ids** (was 294 / 116). New gates in `registry.test.ts`: every request has a verdict or is awaiting triage; every published verdict names an operationId the pinned contract has at that method and path; every markdown status agrees with the triage; the requests document is exactly the open set.
-- **Visitor IP** (packio-api B6.3, `SECURITY.md` §7 #1). `src/lib/security/client-ip.ts` takes the entry `TRUSTED_PROXY_HOPS` places from the right of the incoming `X-Forwarded-For` — the address our outermost load balancer saw — and sends **only that one address** on. The browser's chain is never forwarded, since anyone can write it. It is applied to the BFF, `serverApi`, the auth Server Actions and token refresh (proxy and BFF). Default `0` sends nothing. The cached public catalogue read sends none, so it stays one cache entry.
-- **Admin `ops`.** Menu icon, `system` group, th/en label; `/ops` renders `admin.ops.signals` (value, threshold, `OpsSignalStatus` badge from `src/domain/status`); the admin mock persona holds `ops.read`, as in packio-api's roles catalogue.
+- **Tagged contract.** `pnpm gen:api --adopt --tag vX.Y.Z` reads the document *at the tag* (`git show <tag>:./openapi.json` in the sibling checkout, or a downloaded release asset through `API_CONTRACT_SOURCE`) and refuses a missing tag or a document whose `info.version` is not the tag's. `contract.lock.json` now pins `v0.2.0` — `tag`, `commit` `6b12ccd`, `source` = the release-asset URL, sha256 `90cb8752…` (equal to the one in the tag's message). `--check` also fails on a lock without a tag, a `source` that does not name it, or a vendored version that differs. The vendored document differed from `v0.2.0` only in `info.version`, so adopting changed no type. getpack-api's working tree is ahead of the tag (U-B6 corrugate, +331 contract lines) and is deliberately **not** adopted. ADR-0006 amended.
+- **Triage imported.** `pnpm gen:triage` parses getpack-api's `docs/contract-requests-triage.md` (per-operation verdict, operationId, group, additive-gap count) into `src/lib/api/requests/triage.ts` and writes the verdict at the start of every open Status cell in `docs/contract-requests.md`, keeping our note after ` · web:`; re-run it whenever getpack-api ships a group. 293 of the registry's 294 operations have a verdict (88 implement, 204 published differently, 1 published); the journeys read is in `awaiting-triage.ts`. `contract-requests.openapi.json` holds only what getpack-api still has to build: **89 operations, 62 ids** (was 294 / 116). New gates in `registry.test.ts`: every request has a verdict or is awaiting triage; every published verdict names an operationId the pinned contract has at that method and path; every markdown status agrees with the triage; the requests document is exactly the open set.
+- **Visitor IP** (getpack-api B6.3, `SECURITY.md` §7 #1). `src/lib/security/client-ip.ts` takes the entry `TRUSTED_PROXY_HOPS` places from the right of the incoming `X-Forwarded-For` — the address our outermost load balancer saw — and sends **only that one address** on. The browser's chain is never forwarded, since anyone can write it. It is applied to the BFF, `serverApi`, the auth Server Actions and token refresh (proxy and BFF). Default `0` sends nothing. The cached public catalogue read sends none, so it stays one cache entry.
+- **Admin `ops`.** Menu icon, `system` group, th/en label; `/ops` renders `admin.ops.signals` (value, threshold, `OpsSignalStatus` badge from `src/domain/status`); the admin mock persona holds `ops.read`, as in getpack-api's roles catalogue.
 - **Error-path mocks.** `gen:api` writes `mocks/generated/problems.ts`: every operation's documented codes with their status (931 operations) and one contract example body per code (265). `?mock=<operationId>:<code>` (comma-separated; `?mock=off` ends it; remembered in a cookie) makes the mock answer that operation with that problem. The proxy stamps the scenario on the request and the BFF, `serverApi` and the auth actions pass it on. Every step requires `API_MOCKS=1`, and off the mock the proxy strips the header. An unknown code answers `500 mock.scenario_unknown`, listing the codes the operation documents. Storybook: **Patterns/API problems**, args-driven (`scenario`, `locale`), renders `QueryError` with the same catalogue.
-- **Problem copy.** `common/problems.json` (th, en): a title for each of the 265 contract codes, seeded from packio-api's own `src/i18n/{th,en}/errors.json`, plus the BFF's 7 codes. The API's localised `detail` stays beneath the title because it carries the values (93 details have placeholders). Each zone loads only its surface's codes plus auth and the BFF's (customer ≈ 2.7 KB gzipped instead of 5.4 KB). `problemCopy()` / `useProblemCopy()` map an `ApiError`, and `QueryError` uses them. **Gate** `src/i18n/problems.test.ts`: scans every typed contract call (`.GET("/v1/…")` …) and fails on a documented code without th and en copy, one the zone's cut drops, or copy for a code the contract no longer has (checked: removing `auth.otp_invalid` names both call sites).
+- **Problem copy.** `common/problems.json` (th, en): a title for each of the 265 contract codes, seeded from getpack-api's own `src/i18n/{th,en}/errors.json`, plus the BFF's 7 codes. The API's localised `detail` stays beneath the title because it carries the values (93 details have placeholders). Each zone loads only its surface's codes plus auth and the BFF's (customer ≈ 2.7 KB gzipped instead of 5.4 KB). `problemCopy()` / `useProblemCopy()` map an `ApiError`, and `QueryError` uses them. **Gate** `src/i18n/problems.test.ts`: scans every typed contract call (`.GET("/v1/…")` …) and fails on a documented code without th and en copy, one the zone's cut drops, or copy for a code the contract no longer has (checked: removing `auth.otp_invalid` names both call sites).
 
 ### Decisions taken, with reasons
-- **`store.checkout` `scheduleKey` stays requested** (user, 2026-09-29), although packio-api proposes not adding it (rules pick the schedule, D-020). The picker stays mock-backed; packio-api's "needs the user's OK" is answered **no** for now.
-- **Release-asset URL by convention.** packio-api has no git remote in this environment, so the URL `…/releases/download/v0.2.0/openapi.json` is where the asset will be, following the lock's existing form; adopt read the tag from the sibling checkout. Once the remote exists, CI can download it and check the sha256.
-- **The web copy is a title per code, not a full sentence.** `ProblemDetails` carries no params, so a param-free sentence would lose what the API's detail says (attempts left, blocking status). The seeded titles are packio-api's wording, and some are developer-flavoured (`ต้องระบุ If-Match`). They are ours to edit now and belong to the U5.6 content pass. One title had a placeholder (`reports.schedule_state`) and was rewritten without it.
+- **`store.checkout` `scheduleKey` stays requested** (user, 2026-09-29), although getpack-api proposes not adding it (rules pick the schedule, D-020). The picker stays mock-backed; getpack-api's "needs the user's OK" is answered **no** for now.
+- **Release-asset URL by convention.** getpack-api has no git remote in this environment, so the URL `…/releases/download/v0.2.0/openapi.json` is where the asset will be, following the lock's existing form; adopt read the tag from the sibling checkout. Once the remote exists, CI can download it and check the sha256.
+- **The web copy is a title per code, not a full sentence.** `ProblemDetails` carries no params, so a param-free sentence would lose what the API's detail says (attempts left, blocking status). The seeded titles are getpack-api's wording, and some are developer-flavoured (`ต้องระบุ If-Match`). They are ours to edit now and belong to the U5.6 content pass. One title had a placeholder (`reports.schedule_state`) and was rewritten without it.
 - **Only typed contract calls are gated.** Calls still going through request definitions (`awaiting-migration.ts`) have no documented codes yet. They join the gate automatically as U-F0.2–0.4 migrate them.
 - **The switcher also rides Server Actions**, not only the BFF and `serverApi`, so sign-in errors (e.g. `auth.customer.verifyOtp:auth.otp_invalid`) can be looked at too.
 
-### For packio-api
+### For getpack-api
 - Triage the two rows written after `9cbd99a`: `analytics.journey-events`, `admin.analytics-journeys` (U5.0).
-- Set `TRUST_PROXY` = 1 + the proxies between packio-web and the API, and set packio-web's `TRUSTED_PROXY_HOPS` to the load balancers in front of it. Then verify in the k6 run (`docs/launch/PERFORMANCE.md`).
+- Set `TRUST_PROXY` = 1 + the proxies between getpack-web and the API, and set getpack-web's `TRUSTED_PROXY_HOPS` to the load balancers in front of it. Then verify in the k6 run (`docs/launch/PERFORMANCE.md`).
 - Publish the `v0.2.0` release asset once the remote exists.
 - Open questions 1–6 of the triage stand (partner issue resolve, POD review, tracking province, profile e-mail, sample-kit / guided-help / PDPA business values, claim resolution visibility). None blocks the frontend.
 
@@ -2123,13 +2139,13 @@ Eleven slices (`308b1cd`…`7f9c159`), each green on lint, typecheck and unit:
   | `/account/designs` | 293,000 | 304,596 | 304,673 |
   | `/configure/tuck-end-box` | 293,000 | 319,549 | 319,626 |
   | partner `/settings` | 300,000 | 300,998 | 301,256 |
-- Not run: `e2e:integration` (U-F0.5); the visitor IP behind a real load balancer (unit-tested with a spoofed chain; to verify in packio-api's k6 run).
+- Not run: `e2e:integration` (U-F0.5); the visitor IP behind a real load balancer (unit-tested with a spoofed chain; to verify in getpack-api's k6 run).
 
 ---
 
 ## U5.0 — UX baseline and instrumentation — 2026-09-29
 
-`docs/prompts/U5-ux-excellence.md` §U5.0, on `feat/u5.0-baseline` (worktree `../packio-web-u1`, from `main` at `d9931b6`, after U-F2 was merged). Gap table: `docs/ux/u5.0-gap.md`. No UI change for customers; one new admin section. No backend involved.
+`docs/prompts/U5-ux-excellence.md` §U5.0, on `feat/u5.0-baseline` (worktree `../getpack-web-u1`, from `main` at `d9931b6`, after U-F2 was merged). Gap table: `docs/ux/u5.0-gap.md`. No UI change for customers; one new admin section. No backend involved.
 
 ### Done
 - **Study materials** (`docs/ux/`): `moderator-guide.md` (roles, screener, the rules that are never bent on the competitor, the Thai session script, block-randomised task order, what to record, SEQ and our own Thai rendering of SUS), `consent-pdpa.md` (th/en, separate consents for recording, camera, assistive technology and clips; **draft for legal review**, placeholders for the registered name, DPO, retention), `task-cards.md` (participant cards in Thai, the moderator sheet with start state, stop point and "done when" per side, English reference), `step-counting.md` (one rule for moderators and the counters), `scorecard-results/` (README and a template carrying the §3 gates).
@@ -2188,7 +2204,7 @@ Over budget: T1, T2, T3, T4, T9, T10, T11, T12. The walks and what owns each fix
 
 ## U-F2 — Art direction tokens (D-180) — 2026-09-29
 
-`docs/prompts/U1-update-2026-09-29.md` §U-F2, on `feat/u-f2-art-direction` (worktree `../packio-web-u1`, from `main` at `94aa968`). Gap table: `docs/update-2026-09-29-gap.md` §U-F2. No backend involved.
+`docs/prompts/U1-update-2026-09-29.md` §U-F2, on `feat/u-f2-art-direction` (worktree `../getpack-web-u1`, from `main` at `94aa968`). Gap table: `docs/update-2026-09-29-gap.md` §U-F2. No backend involved.
 
 ### Decisions implemented
 D-180 (visual direction, values Proposed) and the D-181 card facts in the new storefront story. Token **values** changed; the semantic key set grew by the `accent` tone and `kraft` / `kraft-strong`, and no component names a palette.
@@ -2239,23 +2255,23 @@ The tightest pass is light `primary` on the paper band, 4.52:1. `pnpm contrast` 
 
 ## F6 Deliverable 6.4 — 2026-09-29
 
-Period close, financial reports and the auditor, on `feat/f6.4-close-reports-audit` (from the 6.3 merge). All on packio-api's published B5.6 surface, with two contract requests.
+Period close, financial reports and the auditor, on `feat/f6.4-close-reports-audit` (from the 6.3 merge). All on getpack-api's published B5.6 surface, with two contract requests.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
 |---|---|
-| A month closes only through its checklist (§7) | the ledger asks the close before it closes or locks a month (`registerCloseGate`, packio-api's `PERIOD_CLOSE_GATE`): closing needs the checklist in review with step 9 done, locking needs it closed and, at the year end, the auditor's sign-off; `close.checklist_incomplete` otherwise — unit-tested by trying the ledger's own close action first |
+| A month closes only through its checklist (§7) | the ledger asks the close before it closes or locks a month (`registerCloseGate`, getpack-api's `PERIOD_CLOSE_GATE`): closing needs the checklist in review with step 9 done, locking needs it closed and, at the year end, the auditor's sign-off; `close.checklist_incomplete` otherwise — unit-tested by trying the ledger's own close action first |
 | Automatic steps block until their check passes | steps 1, 2, 3, 6, 7, 8 re-run their check when marked done and refuse with `close.check_failed` (the step shows as blocked); only a Finance Manager waives one, with a reason kept on the step |
 | The submitter never approves the close (§8 SoD) | the approve button is disabled for the submitter with the reason; the mock answers `iam.sod_conflict`; Finance holds no `close.approve` and is never offered it (unit test: a Finance Manager submits, is refused, returns it; Finance submits; the other approves) |
 | A locked month refuses postings, and says so first | after the e2e locks last month, the journal editor shows that an entry dated in it lands in the next open month, and the depreciation page does not offer the run for it; unit-tested end to end — the late journal keeps its document date and posts into this month |
 | Every report carries its own zero | trial balance (Σ debit = Σ credit, balances sum to 0), balance sheet (assets − liabilities − equity), cash flow (net change − cash accounts' movement), sub-ledger reconciliation (AR, factory AP, vendor bills, retention, store credit, fixed assets) — each computed by the mock over the same posted journals, asserted zero in `finance-mocks.test.ts` and shown as zero in the month-simulation e2e, together with the seven tax papers |
 | Exports say exactly what the API said | report CSVs are serialised from the API's strings, nothing added up or reformatted (UTF-8 BOM, CRLF, RFC 4180 quoting); snapshot tests pin the trial-balance export and the ภ.ง.ด.53 attachment layout (`csv.test.ts`), and the e2e reads the downloaded trial balance's total row |
-| The auditor reads, for a set time | the desk shows the access window from the auditor's own role grant (`validTo`); every write action is gated by a permission the auditor does not hold (e2e checks the manual-journal and depreciation actions are absent); samples are reproducible from their seed (mulberry32, as packio-api draws) and the PBC pack carries its SHA-256 |
+| The auditor reads, for a set time | the desk shows the access window from the auditor's own role grant (`validTo`); every write action is gated by a permission the auditor does not hold (e2e checks the manual-journal and depreciation actions are absent); samples are reproducible from their seed (mulberry32, as getpack-api draws) and the PBC pack carries its SHA-256 |
 
 ### Decisions taken, with reasons
-- **Last month is the month the e2e closes**; months before it are seeded locked (the new business had nothing in them, D-092), so closing and locking run in sequence as packio-api requires. The month simulation reads this month and changes nothing.
+- **Last month is the month the e2e closes**; months before it are seeded locked (the new business had nothing in them, D-092), so closing and locking run in sequence as getpack-api requires. The month simulation reads this month and changes nothing.
 - **Points liability is posted from the loyalty ledger** (P10 earned, P11 redeemed) so 2330 carries what the roll-forward and balance sheet show.
-- **The PBC pack is CSV sections in the mock**; packio-api writes an xlsx workbook with the same sheets. The download is named `.csv` accordingly.
+- **The PBC pack is CSV sections in the mock**; getpack-api writes an xlsx workbook with the same sheets. The download is named `.csv` accordingly.
 - **Owner assignment is "take this step"**: Finance does not hold `users.read`, so the screen assigns the step to whoever takes it rather than offering a staff picker.
 - **Fixed a 6.2 mock bug**: payout item ids mixed in `Math.random()`, so two items of one run could share an id and a bank confirmation landed on the wrong item (it showed as a rare ภ.ง.ด.3 / AP difference under load). Item ids — and the partner proposal line ids, same pattern — are plain sequences now.
 - Byte-order marks written as literal characters in string and regex literals (finance, partner price sheet, business CSV) are spelled `\uFEFF` — the same value, visible in review.
@@ -2274,7 +2290,7 @@ Year-end closing entries (P&L to retained earnings) — the balance sheet comput
 
 ## F6 Deliverable 6.3 — 2026-09-29
 
-The general ledger, tax and fixed assets, on `feat/f6.3-ledger-tax-assets` (from the 6.2 merge). All on packio-api's published B5.1 / B5.4 / B5.5 surface; one contract request.
+The general ledger, tax and fixed assets, on `feat/f6.3-ledger-tax-assets` (from the 6.2 merge). All on getpack-api's published B5.1 / B5.4 / B5.5 surface; one contract request.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2311,7 +2327,7 @@ Editing the settings from the tax page (Settings owns them); a template editor b
 
 ## F6 Deliverable 6.2 — 2026-09-28
 
-Payables, payouts and banking, on `feat/f6.2-payables-payouts-banking` (from the 6.1 merge). All on packio-api's published B5.3 surface, with four contract requests where it has a gap.
+Payables, payouts and banking, on `feat/f6.2-payables-payouts-banking` (from the 6.1 merge). All on getpack-api's published B5.3 surface, with four contract requests where it has a gap.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2347,10 +2363,10 @@ Bank-specific file adapters and parsing the bank's confirmation file (the mock t
 
 ## F6 Deliverable 6.1 — 2026-09-28
 
-Queues and customer documents in the admin zone's finance workspace, on `feat/f6.1-queues-documents` in the worktree `../packio-web-f6` (from `chore/contract-adopt`, merged first). The user asked for deliverables 6.1–6.4 in one run; each is its own branch, merged into `main` before the next. The kickoff dropped "Plan first", so the plan is recorded here rather than waited on.
+Queues and customer documents in the admin zone's finance workspace, on `feat/f6.1-queues-documents` in the worktree `../getpack-web-f6` (from `chore/contract-adopt`, merged first). The user asked for deliverables 6.1–6.4 in one run; each is its own branch, merged into `main` before the next. The kickoff dropped "Plan first", so the plan is recorded here rather than waited on.
 
 ### The contract came first
-packio-api has published the whole B5 finance surface (B5.1 ledger … B5.6 close and audit, ~140 operations), while this repo still vendored the B1-era contract. Building F6 on contract requests would have re-described shapes the backend already owns, so `chore/contract-adopt` ran `pnpm gen:api --adopt` against the sibling checkout (main @ `945f02e`; its `info.version` is still `0.1.0`, so the lock pins it by sha256 — the backend is asked to tag a release). The change was additive except four new quote-step fields, which the store quote mock now fills. It also made **86 existing contract requests** real at once; migrating every F2–F5 screen onto the published shapes is its own change per screen (ADR-0006), so they stay on `src/lib/api/requests/awaiting-migration.ts`, which `registry.test.ts` lets only shrink. The full e2e suite passed on the adoption (one storefront test flaked under load and passed alone).
+getpack-api has published the whole B5 finance surface (B5.1 ledger … B5.6 close and audit, ~140 operations), while this repo still vendored the B1-era contract. Building F6 on contract requests would have re-described shapes the backend already owns, so `chore/contract-adopt` ran `pnpm gen:api --adopt` against the sibling checkout (main @ `945f02e`; its `info.version` is still `0.1.0`, so the lock pins it by sha256 — the backend is asked to tag a release). The change was additive except four new quote-step fields, which the store quote mock now fills. It also made **86 existing contract requests** real at once; migrating every F2–F5 screen onto the published shapes is its own change per screen (ADR-0006), so they stay on `src/lib/api/requests/awaiting-migration.ts`, which `registry.test.ts` lets only shrink. The full e2e suite passed on the adoption (one storefront test flaked under load and passed alone).
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2388,7 +2404,7 @@ Migrating the 86 published requests (each screen its own change); a pdf.js viewe
 
 ## F5 Session 5.3 — 2026-09-27
 
-Billing, payouts, claims, performance and settings, on `feat/f5.3-billing` (from the 5.2 merge). This closes F5. packio-api has published none of B5.3's partner surface, so it is contract requests with mocks derived from what the other mocks already hold.
+Billing, payouts, claims, performance and settings, on `feat/f5.3-billing` (from the 5.2 merge). This closes F5. getpack-api has published none of B5.3's partner surface, so it is contract requests with mocks derived from what the other mocks already hold.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2397,7 +2413,7 @@ Billing, payouts, claims, performance and settings, on `feat/f5.3-billing` (from
 | Confirming a statement is a financial act | the BS number is typed to confirm and the amount restated (00-master-plan §8), with one `Idempotency-Key` per intent; a replay answers with the confirmed statement |
 | The tax invoice is the factory's own (D-090, accounting-design §2) | only against a confirmed statement (409 otherwise), with the factory's own tax id (422 otherwise), a PDF or an e-Tax reference; input VAT stays `pending_document` until Finance validates it |
 | Payouts follow the payout-policy version (D-022, D-164) | the schedule shows each job's advance, balance and retention with their date or what they wait for (acceptance, POD, the claim window, the retention period); the seeded policy now carries the decided 5 % / 30 days (it had 0 %) |
-| A factory answers claims, Packio decides them (D-083) | the answer goes back to the claims desk's own row (`under_review`, the factory's note in its messages); the customer is never named (D-142) |
+| A factory answers claims, getpack decides them (D-083) | the answer goes back to the claims desk's own row (`under_review`, the factory's note in its messages); the customer is never named (D-142) |
 | An operator cannot manage users or see billing | no billing in the nav or "more", `/billing` answers "no access", and settings shows only the operator's own notifications and device |
 | A factory keeps an owner | the owner cannot remove their own owner role or deactivate themselves (409 `users.last_owner`) |
 
@@ -2425,13 +2441,13 @@ Lighthouse partner set, eight URLs (adds /settings): accessibility 100 on each; 
 - The 180 KB initial-JS target (251–292 KB now; the shared zone runtime is most of it) and a 2.5 s LCP on simulated 4G.
 - Offline sync (R2, D-111): the floor needs a connection; a report that fails keeps its key for the retry.
 - Everything in `docs/contract-requests.md` marked `partner.*`, the proposed permission keys, and the `RateCardLineResponse` contract defect.
-- A back-office queue for change requests; adopting packio-api's newer committed contract (its own PR, ADR-0006).
+- A back-office queue for change requests; adopting getpack-api's newer committed contract (its own PR, ADR-0006).
 
 ---
 
 ## F5 Session 5.2 — 2026-09-27
 
-The production floor and shipping in the partner zone, on `feat/f5.2-jobs` (from the 5.1 merge). packio-api has published none of B4.2/B4.3's partner surface, so it is contract requests with stateful mocks over the rows the back office already has.
+The production floor and shipping in the partner zone, on `feat/f5.2-jobs` (from the 5.1 merge). getpack-api has published none of B4.2/B4.3's partner surface, so it is contract requests with stateful mocks over the rows the back office already has.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2472,14 +2488,14 @@ Offline queueing of reports (R2, D-111: the floor needs a connection; a failed r
 
 ## F5 Session 5.1 — 2026-09-27
 
-Onboarding and price tables in the partner zone, on `feat/f5.1-onboarding` (from the F4 Part E merge), in the worktree `../packio-web-f5`. The user asked for sessions 5.1–5.3 in one run; each session is its own branch, merged into `main` before the next.
+Onboarding and price tables in the partner zone, on `feat/f5.1-onboarding` (from the F4 Part E merge), in the worktree `../getpack-web-f5`. The user asked for sessions 5.1–5.3 in one run; each session is its own branch, merged into `main` before the next.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
 |---|---|
 | A factory reaches its own rows only (D-044) | every partner mock handler goes through `own()`: no token 401, another audience 403, **another factory's id 404** (never 403), a role without the rbac.md permission 403; `partner-mocks.test.ts` asserts all four, and the e2e opens F006's rate card as F001 |
 | No suggestion, benchmark or peer price reaches a factory | the partner DTOs have no field for one; a test scans the price-list, proposal and configuration answers for `suggest|benchmark|peer|p75|median` |
-| A factory never edits what Packio records | capability, capacity, delivery zones, tolerance, tier, payout policy and site visits are read-only on the published contract; the screens offer a change request (`partner.change-requests`) instead of a form |
+| A factory never edits what getpack records | capability, capacity, delivery zones, tolerance, tier, payout policy and site visits are read-only on the published contract; the screens offer a change request (`partner.change-requests`) instead of a form |
 | Staff-entered data is the factory's word only once signed off (D-100 note) | steps with `enteredByStaff` and no `factorySignedOffAt` show "รอคุณรับรอง" on Today, the tracker and the step; the sign-off restates the step; assisted price lists apply only after the version's sign-off (idempotent) |
 | Prices are never back-dated (D-040, B2.2) | the proposal's effective date is a future day in the form and a 422 in the mock |
 | Irreversible partner actions replay, never repeat | submit, respond, sign-off of a version and the shipping-card answer carry an `Idempotency-Key` minted per intent (`ConfirmAction`); the mock's `once()` answers a replay with the first response |
@@ -2493,7 +2509,7 @@ Onboarding and price tables in the partner zone, on `feat/f5.1-onboarding` (from
 - **Nav follows the stage**: an onboarding factory's bar is today · onboarding · prices · more; from trial on it is today · jobs · ship · billing · more (≤ 5 targets of 64 px). Tablets get the same list as a side column (AppShell's sidebar), so the zone has navigation above `md` — before, it had none.
 - **A price list is read one component at a time** (`?component=`): a tier-A table has ~40 components; one small read per view instead of forty.
 - **Excel upload without a spreadsheet library**: `sheet.ts` reads the first worksheet of an `.xlsx` with the zip directory, `DecompressionStream("deflate-raw")` and `DOMParser`, and CSV by RFC 4180 — loaded on demand. The template is the factory's own current rows as a UTF-8 CSV with a BOM (Excel opens it in Thai), one `change` line per row, identified by `lineKey`.
-- **Rate cards and assisted entry are separate flows**: a `packio_to_factory` proposal is answered (accept all, or accept/counter per line); an `assisted_entry` version is signed off. Both are on Today and the prices page.
+- **Rate cards and assisted entry are separate flows**: a `getpack_to_factory` proposal is answered (accept all, or accept/counter per line); an `assisted_entry` version is signed off. Both are on Today and the prices page.
 - **Seed changes in `mocks/admin/partners.ts`**: an applicant (F005) has no step complete (its application was not submitted); F006 (under review, assisted) has capability and capacity awaiting sign-off, a tier-B price list awaiting sign-off, and a rate card sent for its tier-A type; seeded tax ids carry a valid check digit (the company form checks it). The shipping card's initial state is taken at seed time, so the back-office e2e moving F006 to trial does not change what the partner test sees.
 - `ConfirmAction` and `QueryError` moved to `src/features/shared/actions` (admin re-exports them); the tax-id checksum moved to `src/domain/tax-id.ts`; `SegmentedControl` gained a shop-floor `xl` size.
 
@@ -2504,7 +2520,7 @@ Onboarding and price tables in the partner zone, on `feat/f5.1-onboarding` (from
 Lighthouse partner set (mobile, simulated 4G), now five URLs: accessibility 100 on each; initial JS **264 KB** on Today, onboarding and requests, 285 KB on a step with a form, **316 KB on /login** (361 KB before) — the ratchet is lowered from 380 to **330 KB**. Still over the 180 KB target, and LCP measures ~3.8 s against 2.5 s (simulated, warning level, as before F5). Every screen is server-rendered with small client islands; the sheet reader, the proposal editor's row read and the file flow load only where used.
 
 ### Deliberately not done here
-A back-office queue for change requests (the Partner team has no screen for them yet — F2.6 follow-up); materials and finishes in the capability matrix (`CapabilityDto` has neither); adopting packio-api's newer committed contract (it adds partner RFQ consultations; a contract bump is its own PR, ADR-0006).
+A back-office queue for change requests (the Partner team has no screen for them yet — F2.6 follow-up); materials and finishes in the capability matrix (`CapabilityDto` has neither); adopting getpack-api's newer committed contract (it adds partner RFQ consultations; a contract bump is its own PR, ADR-0006).
 
 ### Open questions
 - **Backend**: the four requests and the enum defect above; whether a factory may propose capability or capacity itself (B2.2 says the Partner team records them — the conservative reading taken here).
@@ -2520,7 +2536,7 @@ Quality gates and documentation, on `feat/f4e-quality` (from the Part D merge). 
 | Gate | Mechanism |
 |---|---|
 | Every style folds, closes, validates and draws the same | `styles.test.ts`: every style × preset × reference material — closed cut loops ≤ 0.01 mm, no overlaps, no dangling cuts, anchored at the origin, labelled in both languages, `validate()` accepts presets and rejects out-of-range sizes, folded bounding box = nominal size within the caliper allowance ± 1 mm; SVG and DXF snapshots per style × preset |
-| packio-api can compare with the legacy drawings | `patternFixtures()` (exported, published): each mapped legacy pattern key with the values, material, SVG and DXF; `fixtures/patterns/<key>.svg` snapshots ship in the package; a test asserts every mapped key is covered once |
+| getpack-api can compare with the legacy drawings | `patternFixtures()` (exported, published): each mapped legacy pattern key with the values, material, SVG and DXF; `fixtures/patterns/<key>.svg` snapshots ship in the package; a test asserts every mapped key is covered once |
 | The editor looks the way it did | 9 Storybook stories of designer panels in fixed states (text, image with crop, shape with an out-of-gamut colour, a locked code, arrange, print checks, layers, box, elements) under `e2e/visual.spec.ts` |
 | The designer stays within its budget | `lighthouse/designer.json`: 456 KB measured, ceiling 460 KB (Part D) |
 
@@ -2574,7 +2590,7 @@ Editor v2 UX, on `feat/f4d-editor` (from the Part C merge). One contract request
 - **Face focus turns the face the way it reads on the box.** `uprightAngles` folds the dieline and compares each face's flat "up" with world up (walls) or with "away from the viewer" (a face lying flat: lids, bases), snapped to 90°. A tuck-end's top lid reads 180°; walls 0°. **Assumption for prepress**: lids read from the front of the box.
 - **Escape steps back one level** — the selection first, then the focused face.
 - **Templates are applied proportionally** from the template's sheet to this box (face bounds of both sheets), replacing the elements after a confirmation; undo restores the design.
-- **Brand kit in the browser** (`packio.brandkit`): colours and a logo, plus the catalogue's colours on every colour field. No account endpoint exists; a business account's shared brand assets are F3 3.7's.
+- **Brand kit in the browser** (`getpack.brandkit`): colours and a logo, plus the catalogue's colours on every colour field. No account endpoint exists; a business account's shared brand assets are F3 3.7's.
 - **CMYK warning is a heuristic** (`lib/colour.ts`: very saturated, very bright, outside the hues process inks reach) — no ICC profile in the browser; the proof is the authority.
 - **Share links are view-only, one per design**, revocable, no account needed to open, never indexed. **Comments are deferred** to after launch: they need a thread model, notifications and moderation on the API side, and nothing in the order flow depends on them.
 - **Phones get the same panels inline above a bottom bar**, not in a modal sheet, so the canvas stays usable while a panel is open.
@@ -2594,7 +2610,7 @@ Comments on shared designs; ICC-accurate CMYK soft-proofing; per-glyph text-to-o
 
 ## F4 Part C — 2026-09-27
 
-The designer on the Packio API, on `feat/f4c-api` (from `4764127`, Part B merged). packio-api has published nothing of B4.1's designs, so it is contract requests with stateful mocks that enforce the same rules.
+The designer on the getpack API, on `feat/f4c-api` (from `4764127`, Part B merged). getpack-api has published nothing of B4.1's designs, so it is contract requests with stateful mocks that enforce the same rules.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2653,7 +2669,7 @@ Style-specific 3D polish (curved pillow panels), insert/partition construction, 
 
 ## F4 Part A — 2026-09-27
 
-Engine v2 of `@packio/dieline`, on `feat/f4a-engine` (from `47c5307`, F3 merged), in the worktree `../packio-web-f4`. The user asked for Parts A–E in one run; each part is its own branch, merged into `main` before the next.
+Engine v2 of `@getpack/dieline`, on `feat/f4a-engine` (from `47c5307`, F3 merged), in the worktree `../getpack-web-f4`. The user asked for Parts A–E in one run; each part is its own branch, merged into `main` before the next.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2678,7 +2694,7 @@ Everything the later parts own: the rest of the style library (B), the designs A
 
 ## F3 Phase 3.7 — 2026-09-27
 
-Packio for business, LINE LIFF and help, on `feat/f3.7-b2b` (from `274632d`, 3.6 merged). This is the last phase of F3. packio-api has published none of it for the storefront, so it is all contract requests. The mocks work over the back office's company rows (F2 2.7): a company signed up here waits on the KYC desk, and its members, branches and statements are the desk's.
+getpack for business, LINE LIFF and help, on `feat/f3.7-b2b` (from `274632d`, 3.6 merged). This is the last phase of F3. getpack-api has published none of it for the storefront, so it is all contract requests. The mocks work over the back office's company rows (F2 2.7): a company signed up here waits on the KYC desk, and its members, branches and statements are the desk's.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2716,7 +2732,7 @@ Packio for business, LINE LIFF and help, on `feat/f3.7-b2b` (from `274632d`, 3.6
 
 ## F3 Phase 3.6 — 2026-09-27
 
-Tracking, delivery, receipt, claims and reorder, on `feat/f3.6-tracking` (from `1ddcc98`, 3.5 merged). packio-api has published none of this, so it is all contract requests. The mocks work over the back office's own rows: orders from commerce, claims from the logistics desk (F2 2.8). A claim the customer files is on the desk's queue, and the e2e opens it there.
+Tracking, delivery, receipt, claims and reorder, on `feat/f3.6-tracking` (from `1ddcc98`, 3.5 merged). getpack-api has published none of this, so it is all contract requests. The mocks work over the back office's own rows: orders from commerce, claims from the logistics desk (F2 2.8). A claim the customer files is on the desk's queue, and the e2e opens it there.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2726,7 +2742,7 @@ Tracking, delivery, receipt, claims and reorder, on `feat/f3.6-tracking` (from `
 | What a short delivery means is the API's (D-021, D-080) | the tolerance outcome and the credit are shown as returned; the credit links to the wallet |
 | Confirming receipt restates what it means (D-081, D-082) | an `AlertDialog` names the order and says the 7-day claim window starts now; one `Idempotency-Key` |
 | A claim cannot go without both kinds of evidence (D-082) | product photos and carton photos are separate required groups (counts from the claim form). Errors are listed at the top and at each field; the API refuses it too (`claim.evidence_missing`), and refuses anything after the window (`claim.window_closed`) |
-| Liability never reaches the customer (D-083) | the store claim is a view without liability, factory or internal messages; staff appear as "ทีม Packio" |
+| Liability never reaches the customer (D-083) | the store claim is a view without liability, factory or internal messages; staff appear as "ทีม getpack" |
 | A reorder is placed at the price shown (D-153) | the preview's `previewToken` goes with the reorder. A stale one is refused (`409 reorder.repriced`) and the preview reloads. Reusable plates and dies come back as waived lines with the reason; the proof is skipped when the approved artwork is reused |
 
 ### Decisions taken, with reasons
@@ -2751,7 +2767,7 @@ Tracking, delivery, receipt, claims and reorder, on `feat/f3.6-tracking` (from `
 
 ## F3 Phase 3.5 — 2026-09-27
 
-Artwork, proofs and hired design from the customer's side, on `feat/f3.5-artwork` (from `31683f7`, 3.4 merged). packio-api has published nothing of this for the storefront, so it is all contract requests; the mock is a view over the back office's prepress rows (F2 2.4). A file the customer submits appears in the prepress desk, a proof prepress sends appears in the viewer, and a comment is one thread both sides answer. The e2e walks that loop across the two zones.
+Artwork, proofs and hired design from the customer's side, on `feat/f3.5-artwork` (from `31683f7`, 3.4 merged). getpack-api has published nothing of this for the storefront, so it is all contract requests; the mock is a view over the back office's prepress rows (F2 2.4). A file the customer submits appears in the prepress desk, a proof prepress sends appears in the viewer, and a comment is one thread both sides answer. The e2e walks that loop across the two zones.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2764,7 +2780,7 @@ Artwork, proofs and hired design from the customer's side, on `feat/f3.5-artwork
 | A charged design round is never a surprise (D-071) | the API's `nextRound` says whether the round is charged and what it costs. The customer ticks acceptance of that exact fee, which the request restates as `acceptedFee` (the API refuses a mismatch). The fee becomes an instalment that must be paid before work starts |
 
 ### Decisions taken, with reasons
-- **The proof arrives as page images plus a separate dieline overlay** (the API rasterises the PDF). Zoom, pan, overlay toggle, compare (side by side or slider) and pinning are then plain HTML/CSS, with no PDF.js in the bundle. The 3D view reuses the designer's CSS `BoxPreview3D` when the order has a known `@packio/dieline` style.
+- **The proof arrives as page images plus a separate dieline overlay** (the API rasterises the PDF). Zoom, pan, overlay toggle, compare (side by side or slider) and pinning are then plain HTML/CSS, with no PDF.js in the bundle. The 3D view reuses the designer's CSS `BoxPreview3D` when the order has a known `@getpack/dieline` style.
 - **The free-round counter follows the back office**: it counts every round the API did not charge, first design included, so "round 4 is charged" and the counter agree. D-071 says "3 free revision rounds; from round 4". The admin mock and screens read "round 4" as the fourth round overall, so the customer screen matches them. The API's `nextRound` decides either way; the question is raised below.
 - **The upload step hides once the artwork is approved**; the file is fixed after approval (B4.1).
 - **A fourth mock persona, `artist`** (0834567890, the fourth fake commerce customer), owns an unpaid order waiting for artwork. The artwork e2e has its own order, apart from the admin prepress spec's seeded ones. Every non-returning persona now gets its own token from the auth mock.
@@ -2786,7 +2802,7 @@ Artwork, proofs and hired design from the customer's side, on `feat/f3.5-artwork
 
 ## F3 Phase 3.4 — 2026-09-27
 
-The customer's account, on `feat/f3.4-account` (from `e877160`, 3.3 merged). packio-api has published notification preferences and consents (B1.3) and LINE linking (a LINE sign-in made with a customer's bearer token links the identity); everything about orders, loyalty and the wallet is contract requests, mocked over the back office's own rows.
+The customer's account, on `feat/f3.4-account` (from `e877160`, 3.3 merged). getpack-api has published notification preferences and consents (B1.3) and LINE linking (a LINE sign-in made with a customer's bearer token links the identity); everything about orders, loyalty and the wallet is contract requests, mocked over the back office's own rows.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2822,7 +2838,7 @@ The customer's account, on `feat/f3.4-account` (from `e877160`, 3.3 merged). pac
 
 ## F3 Phase 3.3 — 2026-09-27
 
-Cart, checkout, payment schedules, payments and the instalment centre, on `feat/f3.3-checkout` (from `1f3e09d`, 3.2 merged). packio-api has published nothing of carts, checkout or payments, so all of it is contract requests, mocked; the mock creates the back office's own order rows, so a web order appears in the CS queues and a slip that fails the automatic check appears in Finance's slip review. Six commits: contract requests and mocks → mock fixes → cart/checkout/payments UI → e2e → this log.
+Cart, checkout, payment schedules, payments and the instalment centre, on `feat/f3.3-checkout` (from `1f3e09d`, 3.2 merged). getpack-api has published nothing of carts, checkout or payments, so all of it is contract requests, mocked; the mock creates the back office's own order rows, so a web order appears in the CS queues and a slip that fails the automatic check appears in Finance's slip review. Six commits: contract requests and mocks → mock fixes → cart/checkout/payments UI → e2e → this log.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2866,7 +2882,7 @@ Cart, checkout, payment schedules, payments and the instalment centre, on `feat/
 
 ## F3 Phase 3.2 — 2026-09-27
 
-The configurator, its 3D/2D preview, the instant-quote dock and requests for quotation, in the `../packio-web-f3` worktree on `feat/f3.2-configurator` (from `362c903`, F3.1 merged). packio-api has since committed B2.3 (the folding calculator, `POST /v1/store/quotes/actions/calculate`) and B2.4 (shipping rate cards); both were adopted from its **committed HEAD** only — its working tree adds shipping fields to the quote step (`shippingNetAmount`, `earliestDeliveryDate`…) that are not in this contract. Eight commits: contract → contract requests and mocks → `src/ui` → designer previews → configurator → RFQ → e2e → performance/a11y.
+The configurator, its 3D/2D preview, the instant-quote dock and requests for quotation, in the `../getpack-web-f3` worktree on `feat/f3.2-configurator` (from `362c903`, F3.1 merged). getpack-api has since committed B2.3 (the folding calculator, `POST /v1/store/quotes/actions/calculate`) and B2.4 (shipping rate cards); both were adopted from its **committed HEAD** only — its working tree adds shipping fields to the quote step (`shippingNetAmount`, `earliestDeliveryDate`…) that are not in this contract. Eight commits: contract → contract requests and mocks → `src/ui` → designer previews → configurator → RFQ → e2e → performance/a11y.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -2902,7 +2918,7 @@ The configurator measures 283 KB initial JS (292 before its later steps and the 
 ### Deliberately not done
 - The cart page and checkout (3.3) — "add to cart" works and says so; `/cart` is still the placeholder until 3.3 in this same run.
 - `/account/quotes` (3.4), which the "saved" toast links to.
-- An estimated receive date in the live dock: only a saved quotation has one until packio-api commits `earliestDeliveryDate`.
+- An estimated receive date in the live dock: only a saved quotation has one until getpack-api commits `earliestDeliveryDate`.
 - Tier-B envelopes and the six calculators' own DTOs (backend).
 
 ### Open questions
@@ -2913,7 +2929,7 @@ The configurator measures 283 KB initial JS (292 before its later steps and the 
 
 ## F3 Phase 3.1 — 2026-09-26
 
-The customer zone's information architecture, catalogue and content pages, global search and the complete sign-in, in the `../packio-web-f2` worktree on `feat/f3-storefront` (from `7dd1d0d`, F2 merged). packio-api has published B2.1's public catalogue (`/v1/store/catalog/*`) and B1.3's customer auth, and nothing of quotes, carts or orders — so everything that needs a price, a lead time or an order is a contract request, mocked. Ten commits, each with lint, typecheck, unit tests and build green: contract requests and mocks → IA and the cached read → `src/ui` → home, catalogue and product pages → articles and FAQ → search → auth → performance → e2e → this log.
+The customer zone's information architecture, catalogue and content pages, global search and the complete sign-in, in the `../getpack-web-f2` worktree on `feat/f3-storefront` (from `7dd1d0d`, F2 merged). getpack-api has published B2.1's public catalogue (`/v1/store/catalog/*`) and B1.3's customer auth, and nothing of quotes, carts or orders — so everything that needs a price, a lead time or an order is a contract request, mocked. Ten commits, each with lint, typecheck, unit tests and build green: contract requests and mocks → IA and the cached read → `src/ui` → home, catalogue and product pages → articles and FAQ → search → auth → performance → e2e → this log.
 
 ### What is now enforced rather than advised
 | Rule | Mechanism |
@@ -3003,7 +3019,7 @@ worktree and branch. Nothing of B4.3, B4.5 or B6 is published, so all of it is c
   group. The screen shows whatever `minGroupSize` the API returns; the mock uses 5. Flagged in the
   contract request.
 
-### Proposed permission changes (for packio-api's rbac.md)
+### Proposed permission changes (for getpack-api's rbac.md)
 
 - `claims.override_liability` (CS Lead) — D-083's "override by permission".
 - `analytics.prospectus` (Partner Manager, C-Level) — the prospectus is a recruiting document.
@@ -3064,7 +3080,7 @@ promotions, loyalty, companies and discount-memo tables. `admin.orders` gains `c
 - **The form dialog and section card moved to the console**, now that three features use them.
 - **Discount memos**: the list from 2.2 is unchanged; a company's discount links to its memo.
 
-### Proposed permission changes (for packio-api's rbac.md)
+### Proposed permission changes (for getpack-api's rbac.md)
 
 - `settings.read` for **Marketing**: the loyalty and referral rules are Marketing's to reason about,
   but the backend's matrix does not give Marketing `settings.read`, so the loyalty page is hidden
@@ -3162,7 +3178,7 @@ scorecards — is written as contract requests that follow the backend's work-in
   The simulation window is the setting `partners.impact_simulation_window_days`, so the card
   shows its dates instead of "90 days". The new public `POST /v1/store/catalog/quote-path` is
   for the F3 configurator.
-- **This repo**: `docs/decisions.md` still stops at D-169; D-170–D-173 (from packio-api) are
+- **This repo**: `docs/decisions.md` still stops at D-169; D-170–D-173 (from getpack-api) are
   cited in 2.5 and 2.6 copy. Sync it.
 
 ---
@@ -3170,7 +3186,7 @@ scorecards — is written as contract requests that follow the backend's work-in
 ## F2 Deliverable 2.5 — 2026-09-26
 
 Catalogue and CMS. Same worktree and branch. Unlike 2.2–2.4 this deliverable runs on endpoints
-packio-api has **published** (B2.1, adopted in 2.3), so there are no contract requests: every
+getpack-api has **published** (B2.1, adopted in 2.3), so there are no contract requests: every
 call is the contract's, and the mocks stand in for it.
 
 ### What is now enforced rather than advised
@@ -3199,7 +3215,7 @@ call is the contract's, and the mocks stand in for it.
 - **References render as names** (a material's family, a finish's group) from one page of up to
   100 rows per referenced table; a reference outside that page still renders, as its id.
 - ~~**Catalogue and CMS images upload with purpose `document`.**~~ Resolved 2026-10-15: pictures
-  upload as purpose `image` (packio-api v0.64.0, admin round 4).
+  upload as purpose `image` (getpack-api v0.64.0, admin round 4).
 - **The mock's seven calculator types remain `instant`** (2.3's assumption), so the quote-mode
   refusal is demonstrated on the RFQ-only categories.
 
@@ -3220,14 +3236,14 @@ call is the contract's, and the mocks stand in for it.
   (`content`?); `document` is used meanwhile.
 - **Backend**: retire or keep the generic `admin.imports` / `admin.exports` requests, now that
   the catalogue has its own import and export?
-- **This repo**: `docs/decisions.md` stops at D-169; packio-api's copy has D-170–D-173 (geography
+- **This repo**: `docs/decisions.md` stops at D-169; getpack-api's copy has D-170–D-173 (geography
   entry, factory entry, suggestion band, override approvals), which 2.5 and 2.6 rely on. Sync it.
 
 ---
 
 ## F2 Deliverable 2.4 — 2026-09-25
 
-Prepress and design services. Same worktree and branch. packio-api has not built B4.1, so the
+Prepress and design services. Same worktree and branch. getpack-api has not built B4.1, so the
 endpoints are contract requests shaped by schema-design §3.7; the mock hangs prepress state off
 the commerce mock's own orders, so `/orders/{id}` and `/prepress/{id}` describe one order.
 
@@ -3239,7 +3255,7 @@ the commerce mock's own orders, so `/orders/{id}` and `/prepress/{id}` describe 
 | Warnings accepted silently | accepting a submission with warnings requires a note, kept with the review |
 | A proof sent twice on a retry | proof upload is idempotent, one key per opening of the dialog; the files go through the published presign flow (purpose `proof`) first |
 | The UI deciding what a paid design round costs (D-071) | rounds carry `chargeable` and `feeAmount`, and `nextRound` says what the next one would cost — the API's figures; the UI states them |
-| A drawing engine that is not deployed looking like a bug | `POST …/drawing-jobs` answers `501 drawing.engine_unavailable` (as B4.1 specifies until `@packio/dieline` ships server-side) and the screen shows that message and offers sending a template file instead |
+| A drawing engine that is not deployed looking like a bug | `POST …/drawing-jobs` answers `501 drawing.engine_unavailable` (as B4.1 specifies until `@getpack/dieline` ships server-side) and the screen shows that message and offers sending a template file instead |
 | Editing the customer's design from the back office | the design is shown read-only; prepress works on a copy (`admin.design-documents`), never the customer's document |
 
 ### Decisions taken, with reasons
@@ -3248,7 +3264,7 @@ the commerce mock's own orders, so `/orders/{id}` and `/prepress/{id}` describe 
   uses the storefront's locale routing and loads the customer-zone `designer` messages; mounting
   it in the admin zone would mean rewiring all three, which is F4 Part B's job (designs move to
   the API). The new `DesignViewer` lives in `src/features/designer` (shared) and draws the same
-  geometry from `@packio/dieline` in the same millimetre coordinates as the canvas, as SVG.
+  geometry from `@getpack/dieline` in the same millimetre coordinates as the canvas, as SVG.
   **Deferred:** opening a working copy in the designer from the back office, until F4 Part B.
 - **Annotations without a PDF renderer.** The page map places each thread's pin or area by its
   page-relative geometry over a blank page, beside the threads. Rendering the proof PDF itself is
@@ -3281,7 +3297,7 @@ the commerce mock's own orders, so `/orders/{id}` and `/prepress/{id}` describe 
 
 ## F2 Deliverable 2.3 — 2026-09-25
 
-The RFQ workspace (D-100). Same worktree and branch. The endpoints are packio-api's B2.5, not built
+The RFQ workspace (D-100). Same worktree and branch. The endpoints are getpack-api's B2.5, not built
 yet, so they are contract requests shaped by schema-design §3.5; the product types they refer to
 come from B2.1's **published** catalogue, adopted at the start of this deliverable.
 
@@ -3299,7 +3315,7 @@ come from B2.1's **published** catalogue, adopted at the start of this deliverab
 
 ### Decisions taken, with reasons
 
-- **Adopted packio-api's committed B2.1 contract, not its working tree.** The backend checkout
+- **Adopted getpack-api's committed B2.1 contract, not its working tree.** The backend checkout
   holds uncommitted B2.2 factory endpoints that are still changing; adopting them would pin this
   app to a contract that may never be published. Adoption came first because the RFQ category
   filter and the RFQ's product type both come from `GET /v1/admin/catalog/product-types`.
@@ -3315,7 +3331,7 @@ come from B2.1's **published** catalogue, adopted at the start of this deliverab
   and it matches `rfq_quotes.version_no`.
 - **CS records acceptance** by phone or LINE with a note, because legacy CS work happens there;
   the customer-side acceptance is F3's.
-- **`catalog.read` follows the backend now that it is defined** (packio-api `docs/rbac.md`,
+- **`catalog.read` follows the backend now that it is defined** (getpack-api `docs/rbac.md`,
   B2.1): CS, CS Lead, Prepress, Marketing and Partner Manager gain it, executives lose it. The
   product-type filter is omitted for a role without it, rather than failing.
 - **The staff directory takes `permission=`**, so "assign" offers only people who can take an
@@ -3342,7 +3358,7 @@ come from B2.1's **published** catalogue, adopted at the start of this deliverab
 ## F2 Deliverable 2.2 — 2026-09-25
 
 Orders and the CS desk. Same worktree and branch as 2.1. None of 2.2's endpoints exist in
-packio-api yet (its B3 is next on its side), so every screen runs on contract requests shaped by
+getpack-api yet (its B3 is next on its side), so every screen runs on contract requests shaped by
 the approved schema design (§3.6 commerce, §3.7 fulfilment, §4 enums, §2.9 amounts as strings).
 
 ### What is now enforced rather than advised
@@ -3406,7 +3422,7 @@ the approved schema design (§3.6 commerce, §3.7 fulfilment, §4 enums, §2.9 a
 
 ## F2 Deliverable 2.1 — 2026-09-25
 
-The back-office foundation. Worked in its own git worktree (`../packio-web-f2`, branch
+The back-office foundation. Worked in its own git worktree (`../getpack-web-f2`, branch
 `feat/f2-admin`), because two other sessions were editing the shared checkout — the master plan
 says F2–F6 run in separate worktrees for exactly that reason.
 
@@ -3428,7 +3444,7 @@ says F2–F6 run in separate worktrees for exactly that reason.
 ### Bugs this session found and fixed
 
 1. **Every Web Vitals beacon and every funnel event was a 403** (F1 1.3). `sendBeacon` cannot set
-   a header and the BFF required `x-packio-csrf` on every POST, so field RUM and the D-102 funnel
+   a header and the BFF required `x-getpack-csrf` on every POST, so field RUM and the D-102 funnel
    never reached the API. The two beacon endpoints are exempt from the header only; the `Origin`
    check still applies.
 2. **The realtime client could not have received anything.** The published stream sends named
@@ -3446,10 +3462,10 @@ says F2–F6 run in separate worktrees for exactly that reason.
 
 ### Decisions taken, with reasons
 
-- **Adopted packio-api's newer B1.3 contract** (`pnpm gen:api --adopt`, still versioned 0.1.0 on
+- **Adopted getpack-api's newer B1.3 contract** (`pnpm gen:api --adopt`, still versioned 0.1.0 on
   its `feat/b1.3-platform` branch). 2.1 is mostly screens for endpoints that contract publishes,
   and building them against mocks while the real shapes existed would have meant writing them
-  twice. The lock's `source` still names the v0.1.0 release asset — **re-pin when packio-api tags
+  twice. The lock's `source` still names the v0.1.0 release asset — **re-pin when getpack-api tags
   a release with this document.**
 - **The status vocabularies follow the backend's approved schema design (§4)**, replacing the
   seven F1 had to propose. The design was approved on 2026-09-23 and says each enum becomes a named
@@ -3461,7 +3477,7 @@ says F2–F6 run in separate worktrees for exactly that reason.
   mechanical.
 - **Mock reference data is the backend's own seed**, copied into `mocks/admin/fixtures` (settings,
   approval policies, SoD rules, roles, permissions) rather than imported: CI has no sibling
-  checkout. The admin menu mirrors packio-api's `menu.catalog.ts` verbatim, which is how feature
+  checkout. The admin menu mirrors getpack-api's `menu.catalog.ts` verbatim, which is how feature
   flags, notification templates/routes and the outbox entered 2.1's scope.
 - **A staff directory is a contract request**, not a use of `GET /v1/admin/users`: that needs
   `users.read`, which a Director delegating an approval does not hold.
@@ -3511,7 +3527,7 @@ analytics → quality gates → docs.
 | A malformed ICU message, or a plural with no `other` branch | two new gates in `messages.test.ts`, both verified to fail on a broken message |
 | The admin sidebar showing a screen this user may not open | it is built from `AdminMeDto.menu` and nothing else; an e2e test asserts exactly the two entries the mock returns |
 | A storefront link that 404s | an e2e test fetches every `href` in the header, footer and nav |
-| A canonical claiming every page is the home page | built from `x-packio-path`; an e2e test asserts each locale is canonical to itself |
+| A canonical claiming every page is the home page | built from `x-getpack-path`; an e2e test asserts each locale is canonical to itself |
 | `robots.txt` or `sitemap.xml` answering on a `noindex` zone | matched in `src/proxy.ts` before next-intl, gated on `ZONE_CONFIG[zone].indexable`; unit and e2e |
 | A sitemap entry that does not exist | an e2e test fetches every `<loc>` |
 | Business data in a realtime payload | `parseEvent` keeps three known string fields and drops everything else |
@@ -3544,7 +3560,7 @@ All eight came from running the thing, not from reading it.
 6. **Every storefront page claimed the site root as its canonical.** Metadata set in a layout is
    inherited by every page under it, and a layout's `generateMetadata` is not given the
    pathname — so the first version told crawlers the whole site was one page, which is worse
-   than no canonical. It reads `x-packio-path` now.
+   than no canonical. It reads `x-getpack-path` now.
 7. **Three of the four new browser→BFF calls were silently 404ing in admin and partner.**
    `ZONE_CONFIG[zone].bffPath` is the *internal* route segment (`/admin/bff`); a browser on the
    admin host asks for `/bff/...` and the proxy adds the prefix. They share `browserBffUrl` now,
@@ -3602,7 +3618,7 @@ quietly relaxed to green is worse. The documented budgets are unchanged.
   have agreed to a third-party processor. The e2e test asserting otherwise failed, which is how
   this was decided rather than assumed.
 - **First-party funnel events are not gated on cookie consent**, on the reading that they are
-  necessary to operate the service, carry no advertising identifier and never leave Packio.
+  necessary to operate the service, carry no advertising identifier and never leave getpack.
   **This needs legal counsel to confirm before launch** — recorded here rather than assumed
   silently.
 - **SSE rather than a websocket or Pusher**, because traffic is one-way, it reconnects itself,
@@ -3648,7 +3664,7 @@ quietly relaxed to green is worse. The documented budgets are unchanged.
 
 ## F1 Deliverable 1.2 — 2026-09-23
 
-The app can now talk to `packio-api` — typed, mocked and authenticated. Six commits, each
+The app can now talk to `getpack-api` — typed, mocked and authenticated. Six commits, each
 with lint, typecheck, unit tests and build green: contract pipeline → clients → BFF → auth →
 MSW and e2e → docs.
 
@@ -3662,7 +3678,7 @@ MSW and e2e → docs.
 | A failed API call that returns rather than throws | `problemMiddleware` throws `ApiError`; a non-problem body still becomes one |
 | Admin code calling `/v1/store/...` | `surfaceZone` on `serverApi` refuses it in-process, before the request leaves |
 | The browser reaching a surface its zone has no business with | the BFF allow-list, built from `ZONE_CONFIG`, answering 404 |
-| A cross-site form post riding the session cookie | `Origin` + `x-packio-csrf` on every non-GET through the BFF |
+| A cross-site form post riding the session cookie | `Origin` + `x-getpack-csrf` on every non-GET through the BFF |
 | A token in JS-readable storage | there is no code path that writes one; the e2e suite asserts `document.cookie` holds neither |
 | A back-office screen added without a guard | it inherits `(console)/layout.tsx` by where it is placed |
 | A staff password attempted from the browser | `/v1/auth/staff/login` is on no BFF allow-list; it is a Server Action only |
@@ -3693,7 +3709,7 @@ MSW and e2e → docs.
 ### Decisions taken, with reasons
 
 - **The contract is vendored at `contract/openapi.json`.** CI has no sibling checkout of
-  `packio-api` and no credentials for a private release asset, so a drift gate that reached
+  `getpack-api` and no credentials for a private release asset, so a drift gate that reached
   outside the repo could not be reproducible. `--adopt` is the only command that reaches out,
   and it rewrites the vendored copy and the lock together.
 - **The seed contract was a separate document and a separate generated file**, which is what
@@ -3733,11 +3749,11 @@ MSW and e2e → docs.
 - **`/account/designs` is deliberately left unguarded.** Designs live in localStorage until F4
   Part B gives them a server-side home, so a guard would remove working behaviour rather than
   protect anything.
-- **`docs/contract/api-conventions.md` was re-synced from `packio-api`**, which had added §5
+- **`docs/contract/api-conventions.md` was re-synced from `getpack-api`**, which had added §5
   (Swagger/Scalar documentation requirements) and renumbered Realtime to §6. CLAUDE.md requires
   the two copies to be identical. Confirmed with the user.
 
-### Adopting packio-api B1.3, the same day
+### Adopting getpack-api B1.3, the same day
 
 The backend published the real auth surface while this deliverable was finishing, so the seed
 was retired immediately rather than left to rot: `pnpm gen:api --adopt` pinned contract
@@ -3837,7 +3853,7 @@ Both came out of the browser, not the unit tests:
 - **next-intl's middleware is kept, not replaced.** It builds its rewrite from
   `new Headers(request.headers)` and forwards them through
   `NextResponse.rewrite(url, { request: { headers } })`, so handing it a header-only clone of
-  the request carries `x-nonce`, the CSP and `x-packio-zone` through to the render — and
+  the request carries `x-nonce`, the CSP and `x-getpack-zone` through to the render — and
   locale negotiation, the `Link` alternate-links header and trailing-slash normalisation stay
   its job rather than becoming ours.
 - **Host matching ignores the port.** One set of `*_HOST` values therefore serves `pnpm dev`
@@ -4019,7 +4035,7 @@ the three remaining `eslint-disable` lines cannot rot: two mount-time `localStor
 
 ## F0 Session 0.1 — 2026-09-22
 
-Branch `chore/packio-baseline`, tag `pre-packio` on the pre-F0 commit. Working tree was
+Branch `chore/getpack-baseline`, tag `pre-getpack` on the pre-F0 commit. Working tree was
 clean at the start: nothing needed stashing.
 
 ### Things that turned out differently from `docs/prompts/F0-setup.md`
@@ -4032,11 +4048,11 @@ clean at the start: nothing needed stashing.
    `src/proxy.ts` directly instead of a `middleware.ts` it would later rename.
 2. **`docs/` was in `.gitignore` from the first commit**, so the entire prompt pack —
    decisions, ADRs, F0–F6 prompts, PROGRESS — had never been committed, even though both
-   existing commits are titled "docs: Packio prompt pack v3". Confirmed with the user;
+   existing commits are titled "docs: getpack prompt pack v3". Confirmed with the user;
    `docs/` is tracked now.
 3. **Step 9's deletions did not apply.** `docs/frontend-00-master-plan.md` and
    `docs/README.md` do not exist. The **root** `README.md` was the v2 prompt-pack index,
-   and step 7 replaced it with the packio-web README.
+   and step 7 replaced it with the getpack-web README.
 4. **Node on this machine defaults to v18.17.0**, which is below what Next supports.
    `.nvmrc` pins 24 and every command in this session ran on nvm's v24.21.0.
 5. Next 16 **overwrites `CLAUDE.md`** with generated agent rules on `next dev`.
@@ -4049,7 +4065,7 @@ clean at the start: nothing needed stashing.
 - **`patterns.ts` stays in the app.** Step 4 asks for "pattern tile maths without DOM" in
   the package; there is none — `buildPatternTile` is a canvas routine end to end and
   `PATTERN_OPTIONS` is Thai UI copy. The package holds geometry only.
-- **Face names stay Thai** (`PANEL_NAMES`, "ปีกกาว", "ฝาบน" …) inside `@packio/dieline`, so
+- **Face names stay Thai** (`PANEL_NAMES`, "ปีกกาว", "ฝาบน" …) inside `@getpack/dieline`, so
   the extraction changes no behaviour. F4 Part A turns them into i18n keys; ADR-0007 and
   the package README say so.
 - **`noUncheckedIndexedAccess` is off.** The geometry code indexes arrays positionally
@@ -4072,7 +4088,7 @@ clean at the start: nothing needed stashing.
 - **The brand hue is a placeholder** (`BRAND_HEX`, the teal the app already used) until the
   brand kit arrives and F0.2 puts colour behind generated tokens.
 - **Prettier does not format `docs/` or `CLAUDE.md`.** `docs/contract/api-conventions.md`
-  must stay byte-identical to its copy in `packio-api`, and the prompt pack is a delivered
+  must stay byte-identical to its copy in `getpack-api`, and the prompt pack is a delivered
   reference. `tsconfig.json` and `next-env.d.ts` are left to Next, which rewrites them.
 
 ### Known regression, deliberate

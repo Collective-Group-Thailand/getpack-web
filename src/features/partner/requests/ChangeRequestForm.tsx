@@ -33,7 +33,7 @@ const TYPED = new Set<ChangeRequestTopic>(["capability", "capacity", "tolerance"
 
 /**
  * "Please change this" to the Partner team (`partner.changeRequests.create`). The factory never
- * edits what Packio records — capability, capacity, zones, tolerance, tier, visits (D-011, D-171) —
+ * edits what getpack records — capability, capacity, zones, tolerance, tier, visits (D-011, D-171) —
  * it asks, and the answer comes back on the requests list.
  *
  * `productTypes` offers a product type when the topic is about one (a tier, a capacity, a

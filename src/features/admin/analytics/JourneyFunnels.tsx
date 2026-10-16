@@ -29,7 +29,7 @@ type Step = Schemas["JourneyStepCountDto"];
 type WeekCheck = Schemas["JourneyWeekCheckDto"];
 
 /**
- * The UX scorecard's journeys (`admin.analytics.journeys`, packio-api U5.B6, D-303): sessions at
+ * The UX scorecard's journeys (`admin.analytics.journeys`, getpack-api U5.B6, D-303): sessions at
  * each step of one journey in the period, the share that went on from the step before, and the
  * Monday check of the last week against the week before. The journeys, their steps and whether a
  * drop is alarming are all the API's — the screen shows them and compares nothing itself.

@@ -405,7 +405,7 @@
     "resume": "Resume",
     "markReady": "Mark ready and print labels",
     "dispatch": "Dispatch",
-    "requestCarrier": "Ask Packio for a carrier",
+    "requestCarrier": "Ask getpack for a carrier",
     "updateStatus": "Update delivery status",
     "recordPod": "Record proof of delivery",
     "bookCarrier": "Book a carrier",

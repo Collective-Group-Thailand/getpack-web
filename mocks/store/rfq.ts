@@ -207,7 +207,7 @@ const rawSpecs = new Map<string, Record<string, unknown>>();
 
 const OPEN = ["submitted", "in_review", "need_info", "quoted"];
 
-/** packio-api's `STORE_RFQ_ACTIONS` (`src/modules/rfq/rfq-actions.ts` at v0.6.0) over the row. */
+/** getpack-api's `STORE_RFQ_ACTIONS` (`src/modules/rfq/rfq-actions.ts` at v0.6.0) over the row. */
 function storeRfqActions(rfq: AdminRfq): Schemas["NextActionDto"][] {
   const today = bangkokIso().slice(0, 10);
   const acceptable =
@@ -271,12 +271,12 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
           shippingNetAmount: "0.00",
         })),
       })),
-    // Staff appear as the team (`packio`); internal notes never leave the desk.
+    // Staff appear as the team (`getpack`); internal notes never leave the desk.
     messages: (rfqMessages.get(rfq.id) ?? [])
       .filter((message) => message.visibility === "customer")
       .map((message) => ({
         id: message.id,
-        author: message.authorKind === "staff" ? ("packio" as const) : ("customer" as const),
+        author: message.authorKind === "staff" ? ("getpack" as const) : ("customer" as const),
         body: message.body,
         files: messageFiles.get(message.id) ?? [],
         createdAt: message.createdAt,

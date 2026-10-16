@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * The factory recruitment page (SEO pass): what a partner gets, how to apply, and the way into
- * the partner portal for a factory that already is one. Packio's launch plan recruits further
+ * the partner portal for a factory that already is one. getpack's launch plan recruits further
  * factories from the traffic this page draws.
  */
 export default async function PartnerWithUsPage({ params }: { params: Promise<{ locale: string }> }) {

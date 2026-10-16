@@ -1,6 +1,6 @@
 import "server-only";
 
-import { RECIPES, resolveStyleId } from "@packio/dieline";
+import { RECIPES, resolveStyleId } from "@getpack/dieline";
 
 import { publicApi } from "@/features/customer/catalog/api.server";
 import { isApiError } from "@/lib/api/problem";
@@ -32,7 +32,7 @@ const ATTEMPTS = 4;
 
 /** One of the hero's shapes, as the catalogue backs it (D-310), with the studio style its dieline opens. */
 export interface HeroShape extends HeroShapeView {
-  /** The `@packio/dieline` style the studio opens on; null when the dieline has none. */
+  /** The `@getpack/dieline` style the studio opens on; null when the dieline has none. */
   styleId: string | null;
 }
 
@@ -46,7 +46,7 @@ export interface StudioHero {
 const isServerFailure = (error: unknown) => !isApiError(error) || error.status >= 500;
 
 /**
- * The homepage Studio hero (D-310): the presets packio-api reads from `catalog.hero_presets`
+ * The homepage Studio hero (D-310): the presets getpack-api reads from `catalog.hero_presets`
  * against the catalogue (`store.catalog.getHeroPresets`), and the first selection priced by
  * `store.quotes.preview` — the `store.quotes.calculate` path, so the price is the configurator's.
  *

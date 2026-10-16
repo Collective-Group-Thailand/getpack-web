@@ -57,7 +57,7 @@ export interface PersistenceConfig {
   /** The box fields the server's current version has, as the page read them. */
   initialBox?: BoxFields | null;
   /**
-   * An edit link (U4.7, D-285, mode `shared`): its token, and the document as packio-api answered it
+   * An edit link (U4.7, D-285, mode `shared`): its token, and the document as getpack-api answered it
    * — every save is a JSON Patch from that document, under the link's ETag.
    */
   shared?: { token: string; document: { spec: unknown; content: unknown } };

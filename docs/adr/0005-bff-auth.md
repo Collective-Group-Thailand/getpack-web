@@ -26,7 +26,7 @@ through a **backend-for-frontend route handler owned by the zone**.
   allow-lists upstream prefixes per zone (customer → `/v1/store`, `/v1/auth/customer`;
   admin → `/v1/admin`; partner → `/v1/partner`), attaches the token, streams the response
   back including file downloads, refreshes once on `401`, and requires a same-origin
-  `Origin` plus the header `x-packio-csrf: 1` on anything that is not a GET.
+  `Origin` plus the header `x-getpack-csrf: 1` on anything that is not a GET.
 - **Token refresh** happens in `src/proxy.ts` before rendering, because Server Components
   cannot set cookies, and again inside the BFF.
 - **Login** is a Server Action or route handler that calls `/v1/auth/*`, sets the cookies

@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { getStyle, RECIPES, type ParamValues } from "@packio/dieline";
+import { getStyle, RECIPES, type ParamValues } from "@getpack/dieline";
 
 import { loadOf, useAdvisor, useAdvisorMethod, type AdvisorOption } from "@/features/customer/configurator/advisor";
 import { LogisticsStep } from "@/features/customer/configurator/LogisticsStep";

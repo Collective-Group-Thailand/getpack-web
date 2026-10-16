@@ -2,7 +2,7 @@
   "nav": {
     "label": "Pricing and policies sections",
     "title": "Pricing and policies",
-    "description": "Packio's sell margins, payment schedules and the guarantee policy — every change is a new version from its date",
+    "description": "getpack's sell margins, payment schedules and the guarantee policy — every change is a new version from its date",
     "margins": "Sell margins",
     "schedules": "Payment schedules",
     "guarantee": "Guarantee policy",
@@ -34,7 +34,7 @@
   },
   "margins": {
     "title": "Sell margins",
-    "description": "The tables that turn a factory's buy price into Packio's sell price, per product type, print type and kind",
+    "description": "The tables that turn a factory's buy price into getpack's sell price, per product type, print type and kind",
     "listTitle": "Sell-margin tables",
     "listBody": "A draft prices nothing until Superadmin or C-Level approves it.",
     "create": "New table",

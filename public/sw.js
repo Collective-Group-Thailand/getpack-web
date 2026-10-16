@@ -1,5 +1,5 @@
 /*
- * Packio service worker — web push only (D-143).
+ * getpack service worker — web push only (D-143).
  *
  * Deliberately not an offline cache. Caching a storefront that shows live prices and lead
  * times, or a shop-floor app whose job states must be current, is how people end up acting on

@@ -1,5 +1,5 @@
 /**
- * The books behind every finance mock (packio-api B5.1, published): the chart of accounts from
+ * The books behind every finance mock (getpack-api B5.1, published): the chart of accounts from
  * accounting-design §3, one fiscal year of monthly periods, and the journal.
  *
  * Every other finance mock posts through `post()`, which refuses an entry whose debits and

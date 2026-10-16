@@ -6,12 +6,12 @@ import {
   svgPathData,
   type MaterialSpec,
   type ParamValues,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 
 export interface BoxPreviewProps {
-  /** A `@packio/dieline` style id. */
+  /** A `@getpack/dieline` style id. */
   styleId: string;
   /** The style's parameters (at least length, width, height in mm); defaults fill the rest. */
   values: ParamValues;
@@ -25,7 +25,7 @@ export interface BoxPreviewProps {
 
 /**
  * The dieline as a small SVG — the setup dialog, the home page, and any card that should
- * "show the box" (design-system.md §1.2). Geometry comes from `@packio/dieline`, so this
+ * "show the box" (design-system.md §1.2). Geometry comes from `@getpack/dieline`, so this
  * preview and the canvas can never disagree about the shape. Outlines are drawn from their
  * path data (true arcs), which keeps the offsetting engine out of the page.
  */

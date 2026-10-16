@@ -90,8 +90,8 @@
       "top_side": "Top and side",
       "all_round": "All round"
     },
-    "designGraphic": "Graphic design by Packio",
-    "designStructure": "Structure design by Packio",
+    "designGraphic": "Graphic design by getpack",
+    "designStructure": "Structure design by getpack",
     "rangeMin": "At least {min} mm",
     "rangeMax": "At most {max} mm",
     "tooSmall": "Must be at least {min} mm",
@@ -238,7 +238,7 @@
     },
     "designHints": {
       "own_file": "Checked automatically before the proof",
-      "online_designer": "The customer designs it in Packio",
+      "online_designer": "The customer designs it in getpack",
       "hired_design": "Our designers; 3 free rounds"
     },
     "mockup": "Mockup",

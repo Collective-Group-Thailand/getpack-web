@@ -6,7 +6,7 @@ export type Brand = "google" | "apple" | "line";
 
 /**
  * A sign-in provider's mark, `public/brands/<brand>.svg`: the provider's own logo, unchanged, from
- * a CC0 icon set (sources and licences in `public/brands/README.md`). Packio draws none of them.
+ * a CC0 icon set (sources and licences in `public/brands/README.md`). getpack draws none of them.
  * A missing file shows nothing, never a broken image.
  */
 export function BrandMark({ brand, className }: { brand: Brand; className?: string }) {

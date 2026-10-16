@@ -16,7 +16,7 @@ import { PATH_HEADER, ZONE_CONFIG } from "@/lib/zones";
  * The public origin, from the request rather than from configuration.
  *
  * `PUBLIC_HOST` is a *Host header value* and carries no scheme, and the same image serves UAT
- * and production, so hard-coding `https://packio.co.th` would emit a canonical pointing at
+ * and production, so hard-coding `https://getpack.co` would emit a canonical pointing at
  * production from every UAT page — which is how a staging site gets itself de-indexed in
  * favour of nothing. `x-forwarded-proto` is what the load balancer sets.
  */
@@ -47,7 +47,7 @@ export function localePath(pathname: string, locale: Locale): string {
  * tells a crawler that every storefront page is the home page, which is considerably worse
  * than having no canonical at all. (It did exactly that until an e2e test caught it.)
  *
- * `x-packio-path` is the browser's own spelling, stamped by `src/proxy.ts` before any rewrite,
+ * `x-getpack-path` is the browser's own spelling, stamped by `src/proxy.ts` before any rewrite,
  * which is the only place this is still knowable.
  */
 export async function currentPathname(): Promise<string> {

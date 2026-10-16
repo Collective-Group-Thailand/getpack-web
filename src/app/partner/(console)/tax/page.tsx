@@ -36,7 +36,7 @@ const SOURCE_HREF: Record<string, (id: string) => string> = {
   credit_note: (id) => `/invoices/notes/${id}`,
   debit_note: (id) => `/invoices/notes/${id}`,
   supplier_tax_invoice: (id) => `/payables/invoices/${id}`,
-  packio_statement: (id) => `/billing/${id}`,
+  getpack_statement: (id) => `/billing/${id}`,
 };
 
 /**

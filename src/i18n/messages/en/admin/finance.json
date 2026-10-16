@@ -260,7 +260,7 @@
   },
   "documents": {
     "title": "Customer document registers",
-    "description": "Issued by Collective Group (Thailand) under the Packio brand. Numbers run without gaps in each series; a voided document keeps its number and its reason.",
+    "description": "Issued by Collective Group (Thailand) under the getpack brand. Numbers run without gaps in each series; a voided document keeps its number and its reason.",
     "search": "Search by number, order, buyer or tax id",
     "typesLabel": "Document type",
     "all": "All",
@@ -799,7 +799,7 @@
     },
     "open": {
       "title": "Open payables",
-      "description": "What Packio owes, net and VAT separately, with the date each becomes payable under the payout policy frozen on its PO.",
+      "description": "What getpack owes, net and VAT separately, with the date each becomes payable under the payout policy frozen on its PO.",
       "search": "Search by vendor, PO or order",
       "empty": "No open payables",
       "waiting": "Waiting for an event",
@@ -892,7 +892,7 @@
     },
     "statements": {
       "title": "Factory billing statements",
-      "description": "Packio generates the statement from PO and delivery for the factory to confirm; the factory then issues its own tax invoice.",
+      "description": "getpack generates the statement from PO and delivery for the factory to confirm; the factory then issues its own tax invoice.",
       "search": "Search by statement number",
       "empty": "No billing statements",
       "breadcrumb": "You are here",

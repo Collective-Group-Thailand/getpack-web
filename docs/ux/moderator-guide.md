@@ -1,7 +1,7 @@
 # Moderator guide — competitive UX scorecard rounds
 
 > How to run one round of `competitive-scorecard.md`: the competitor baseline (U5.0, now), the
-> Packio release gate (U5.8) and every quarterly round after launch. Same guide, same cards
+> getpack release gate (U5.8) and every quarterly round after launch. Same guide, same cards
 > (`task-cards.md`), same counting rule (`step-counting.md`), same results template
 > (`scorecard-results/_template.md`) — otherwise two rounds cannot be compared.
 > Operating text is English for the team; everything said to a participant is Thai, in the
@@ -48,9 +48,9 @@ Participants are paid the same incentive whatever they say, and are told so (§5
 - Consent form (`consent-pdpa.md`) sent **at least 24 hours before** the session, so it is read,
   not clicked through; signed copy back before the session starts.
 - One results file per round: copy `scorecard-results/_template.md` to
-  `scorecard-results/<YYYY-MM-DD>-<competitor|packio>.md` and fill the header (product, build,
+  `scorecard-results/<YYYY-MM-DD>-<competitor|getpack>.md` and fill the header (product, build,
   environment, seed list, moderator, note-taker).
-- **Seed data** (Packio rounds): the UAT environment's buyer persona per participant, the
+- **Seed data** (getpack rounds): the UAT environment's buyer persona per participant, the
   in-production order (T7), the delivered order (T8–T10) with a tax invoice, the job waiting in
   the partner zone (T11), the T3 design with its seeded issues. List every id in the results file.
 - **Files on the test device**: `logo.png` (T2, our own), `claim-1.jpg` and `claim-2.jpg` (T9,
@@ -65,15 +65,15 @@ Participants are paid the same incentive whatever they say, and are told so (§5
 2. **The competitor is used through the moderator's own demo account**, signed in before the
    session. A participant never types their own name, phone, company or address into the
    competitor's site — only the test data on the info card, and only up to the stop point.
-3. **Nothing from the competitor is copied** into Packio: not screenshots into designs, not
+3. **Nothing from the competitor is copied** into getpack: not screenshots into designs, not
    wording into copy. Recordings of the competitor are evidence for this study only
    (`docs/benchmark/kumopack-2026-09-29.md` header applies).
-4. On Packio, only the UAT environment and its seeded personas are used — never production data.
+4. On getpack, only the UAT environment and its seeded personas are used — never production data.
 
 ## 5. Session script (buyer session, ~75 minutes)
 
 **Setup (5 min, before the participant joins):** recording ready, test device on Do Not Disturb,
-browser history cleared, demo account signed in (competitor) or UAT persona ready (Packio),
+browser history cleared, demo account signed in (competitor) or UAT persona ready (getpack),
 start page open.
 
 **Welcome and consent (5 min)**
@@ -185,4 +185,4 @@ attribution). Score as usual: odd items − 1, 5 − even items, sum × 2.5.
   under the participant id; the results file links to the id and a timestamp, nothing else.
   Retention as in `consent-pdpa.md`; deletion requests are handled within the period stated there.
 - After the last session: compute the aggregates and the gates table (scorecard §3); every failed
-  gate on a Packio round gets a fix ticket linked from the results file.
+  gate on a getpack round gets a fix ticket linked from the results file.

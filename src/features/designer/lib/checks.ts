@@ -1,4 +1,4 @@
-import { pointInPolygon, type Pt } from "@packio/dieline";
+import { pointInPolygon, type Pt } from "@getpack/dieline";
 
 import type { DesignElement } from "../types";
 import { barModules, ean13Modules, qrMatrix } from "./codes";
@@ -6,11 +6,11 @@ import { outOfPrintGamut } from "./colour";
 import { boxOf, segmentHitsPolygon } from "./geometry";
 
 /**
- * The studio's print checks (U4.5, D-278): **one rule catalogue** shared with packio-api — the same
+ * The studio's print checks (U4.5, D-278): **one rule catalogue** shared with getpack-api — the same
  * rule ids, severities and thresholds (setting `studio.print_rules`, served by
  * `store.studio.getRules`, vendored at the lock's tag in `contract/studio-rules.json`). A rule
  * whose thresholds are unset is off until Prepress sets them; a rule names the print methods and
- * material classes it applies to. The rules packio-api evaluates on the document
+ * material classes it applies to. The rules getpack-api evaluates on the document
  * (`evaluatedOn: document`) are computed here exactly as its `evaluateDocument` does — same units,
  * same rounding — so the client and the server find the same ids for the same document; the
  * rest (`web`) only the studio can see (the die's geometry). Each finding names its element so a
@@ -124,7 +124,7 @@ export const barcodeMinWidth = (kind: string): number | null => {
   return nominal === undefined ? null : Math.round(nominal * 0.8 * 100) / 100;
 };
 
-/** The barcode's problems as packio-api's validation names them (D-283), size included. */
+/** The barcode's problems as getpack-api's validation names them (D-283), size included. */
 export function barcodeProblems(el: Extract<DesignElement, { type: "code" }>): string[] {
   const problems: string[] = [];
   if (el.kind === "qr") {
@@ -181,7 +181,7 @@ export function designIssues(input: CheckInput): DesignIssue[] {
       continue;
     }
 
-    // --- the rules packio-api evaluates on the document (the same arithmetic as `evaluateDocument`).
+    // --- the rules getpack-api evaluates on the document (the same arithmetic as `evaluateDocument`).
     if (image && el.type === "image" && el.naturalWidth && el.naturalHeight) {
       const warn = num(image.thresholds!.warnBelowPpi);
       const block = num(image.thresholds!.blockBelowPpi);
@@ -295,7 +295,7 @@ export function designIssues(input: CheckInput): DesignIssue[] {
     }
   }
 
-  // The spot colours a flexo design uses, counted as packio-api counts them (every fill, stroke and
+  // The spot colours a flexo design uses, counted as getpack-api counts them (every fill, stroke and
   // background, and the background pattern).
   const spots = rule("spot_colour_count");
   const maxColours = t("spot_colour_count", "maxColours");

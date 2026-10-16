@@ -34,7 +34,7 @@ import { draftOf, type Rfq, type RfqTab } from "./resources";
  * and the conversation — with the SLA, the customer and the owner in the rail. The header
  * restates code, customer and category on every tab, and leads with the next action on offer.
  *
- * What is offered is the RFQ's own `nextActions` (packio-api's rule table, filtered by what the
+ * What is offered is the RFQ's own `nextActions` (getpack-api's rule table, filtered by what the
  * actor may do). Editing or discarding the open draft goes with sending it: the API offers no
  * separate key, so the draft is workable while `rfq.send_quote` is on offer. Ordering from an
  * accepted request is CS create-order's own screen, for whoever may fill a customer's cart.

@@ -91,7 +91,7 @@
   },
   "schedules": {
     "title": "Report schedules",
-    "description": "Reports sent to the team on a cycle; recipients are notified and download the file in Packio",
+    "description": "Reports sent to the team on a cycle; recipients are notified and download the file in getpack",
     "body": "Times are Bangkok time and periods count from the run. A schedule is not edited: switch it off and make a new one.",
     "create": {
       "title": "Schedule a report",

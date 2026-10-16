@@ -1,5 +1,5 @@
 /**
- * `@packio/dieline/library` — the whole style library (U3.4): the core recipes as the library
+ * `@getpack/dieline/library` — the whole style library (U3.4): the core recipes as the library
  * extends them, and the wave recipes, for the drawing service, the asset pipeline, the tests and
  * the library pages. Importing it registers the modules, parameters and axis words the waves add;
  * a page draws a library style after `registerLibrary()` has added the styles to the registry

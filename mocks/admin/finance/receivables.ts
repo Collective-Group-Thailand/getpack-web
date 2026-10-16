@@ -12,7 +12,7 @@
  *
  * The slip image is the slip's own file (`SlipDto.fileId`, through `admin.files.download`), and
  * resending a document, its delivery log, the dunning log and the credit-note reasons are the
- * operations packio-api published in U-B0.3 (v0.6.0).
+ * operations getpack-api published in U-B0.3 (v0.6.0).
  */
 
 import { http, HttpResponse } from "msw";
@@ -113,14 +113,14 @@ export const dunning: DunningEntry[] = [];
 /** Where each document went (`admin.customerDocuments.deliveries`), oldest first. */
 const deliveries = new Map<string, Schemas["DocumentDeliveryDto"][]>();
 
-/** An address as packio-api shows it to staff (PDPA): `s***@example.com`, or a LINE name's first letter. */
+/** An address as getpack-api shows it to staff (PDPA): `s***@example.com`, or a LINE name's first letter. */
 export function masked(address: string): string {
   const at = address.indexOf("@");
   return at > 0 ? `${address[0]}***${address.slice(at)}` : `${[...address][0] ?? ""}***`;
 }
 
 /**
- * packio-api's `ADMIN_DOCUMENT_ACTIONS` (receivables/document-actions.ts, v0.6.0): resend while
+ * getpack-api's `ADMIN_DOCUMENT_ACTIONS` (receivables/document-actions.ts, v0.6.0): resend while
  * not void; void an IV or DN nothing was collected on. Filtered by the reader's permissions.
  */
 function untouched(doc: Doc): boolean {
@@ -636,7 +636,7 @@ export const CN_REASONS: Record<CnKind, string> = {
   discount: "post_sale_discount",
 };
 
-/** packio-api's seeded reason list (`prisma/seed/data/receivables.ts`), as `admin.customerDocuments.listCreditNoteReasons` returns it. */
+/** getpack-api's seeded reason list (`prisma/seed/data/receivables.ts`), as `admin.customerDocuments.listCreditNoteReasons` returns it. */
 export const REASONS = [
   [
     "cancellation_before_production",
@@ -1268,7 +1268,7 @@ export const receivableHandlers = [
     ),
   ),
   // admin.files.download for a slip's file (SlipDto.fileId): whoever reviews slips may read it
-  // (packio-api's file policy, D-061). Any other file falls through to the next handler.
+  // (getpack-api's file policy, D-061). Any other file falls through to the next handler.
   http.get("*/v1/admin/files/:fileId/download", ({ params, request }) => {
     const slip = orders.flatMap((o) => o.payments.flatMap((p) => p.slips)).find((s) => s.file.id === params.fileId);
     if (!slip) return undefined;

@@ -34,7 +34,7 @@ const BASE_CODE = /^PK-[A-Z]{2}-\d{2,3}$/;
  * a structural designer (`structural_requests.manage`), links the service RFQ when a fee applies,
  * or declines with a reason; the designer delivers the dieline (`structural_requests.design`);
  * Prepress approves it and publishes it as a library base (`styles.approve_recipe`). The customer
- * is told at every step by packio-api.
+ * is told at every step by getpack-api.
  */
 export function StructuralRequestDetail({ requestId }: { requestId: string }) {
   const t = useTranslations("catalogue.structural");

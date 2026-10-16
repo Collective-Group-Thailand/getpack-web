@@ -45,7 +45,7 @@ test.describe("billing and payouts (F001)", () => {
     await expect(page.getByRole("heading", { level: 1, name: /^BS-/ })).toBeVisible();
     const bsNumber = (await page.getByRole("heading", { level: 1 }).textContent())!;
     await expect(page.getByText("ค่าผลิต").first()).toBeVisible();
-    await expect(page.getByText(/^Packio สร้างเมื่อ /)).toBeVisible();
+    await expect(page.getByText(/^getpack สร้างเมื่อ /)).toBeVisible();
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "ยืนยันใบวางบิล" }).click();

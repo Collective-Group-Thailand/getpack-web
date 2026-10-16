@@ -145,7 +145,7 @@ describe("failures", () => {
 
   it("throws a typed ApiError instead of returning one", async () => {
     const body = {
-      type: "https://errors.packio/auth.invalid_credentials",
+      type: "https://errors.getpack/auth.invalid_credentials",
       title: "Invalid credentials",
       status: 401,
       code: "auth.invalid_credentials",

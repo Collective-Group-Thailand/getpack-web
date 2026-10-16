@@ -8,7 +8,7 @@ import { ZONE_HEADER, isZone } from "@/lib/zones";
  * The web-app manifest. The partner zone is the installable one (00-master-plan.md §2).
  *
  * One file, but its contents differ by zone, because a manifest is what the phone uses when a
- * factory user adds Packio to their home screen: the name on the icon, the colour of the
+ * factory user adds getpack to their home screen: the name on the icon, the colour of the
  * status bar and the URL it opens. Serving the storefront's manifest there would install a
  * shortcut to the shop.
  *

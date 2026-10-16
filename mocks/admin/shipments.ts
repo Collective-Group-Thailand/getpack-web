@@ -11,7 +11,7 @@
  * area and needs a fallback carrier, held by an unpaid before-shipping instalment (B3.2), a failed
  * delivery attempt, a POD to review with a shortage within tolerance. Rows keep a mock-only model
  * (`Shipment`) and are turned into `AdminShipmentDto` / `PartnerShipmentDto` on the way out, with
- * `nextActions` from packio-api's rule tables (`./floor-actions.ts`).
+ * `nextActions` from getpack-api's rule tables (`./floor-actions.ts`).
  */
 
 import { http, HttpResponse } from "msw";
@@ -88,7 +88,7 @@ export interface Shipment {
   } | null;
   /** A before-shipping instalment was unpaid when the trip was made (the shipping gate, B3.2). */
   blockedByPayment: boolean;
-  /** What Packio pays the factory or a fallback carrier (D-141: `factory_buy_prices.read` only). */
+  /** What getpack pays the factory or a fallback carrier (D-141: `factory_buy_prices.read` only). */
   economics: { factoryPayout: string | null; carrierCost: string | null } | null;
   carrierRequest: Schemas["CarrierRequestDto"] | null;
   splitFrom: Schemas["ShipmentRefDto"] | null;
@@ -485,7 +485,7 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
   };
 }
 
-/** A shipment as `partner.shipments.*` answers it: the factory's trip, never Packio's costs. */
+/** A shipment as `partner.shipments.*` answers it: the factory's trip, never getpack's costs. */
 export function toPartnerShipmentDto(item: Shipment, permissions: readonly string[]): Schemas["PartnerShipmentDto"] {
   return { ...common(item), nextActions: partnerShipmentActions(factsOf(item), new Set(permissions)) };
 }
@@ -574,7 +574,7 @@ export const shipmentHandlers = [
     return item ? answer(item, who) : noShipment();
   }),
 
-  // admin.shipments.carrierQuotes: the enabled fallback carriers for this trip (D-114); costs are Packio's (D-141).
+  // admin.shipments.carrierQuotes: the enabled fallback carriers for this trip (D-114); costs are getpack's (D-141).
   http.post("*/v1/admin/shipments/:shipmentId/carrier-quotes", ({ params, request }) => {
     const who = access(request, "shipments.manage");
     if (!who) return forbidden();
@@ -625,7 +625,7 @@ export const shipmentHandlers = [
         carrier: body.carrier,
         trackingNo: `${body.carrier === "flash_express" ? "TH" : "DLV"}${String(Date.now()).slice(-9)}`,
         exception: null,
-        // The carrier's price at booking is Packio's cost (D-114, D-141); no fleet payout.
+        // The carrier's price at booking is getpack's cost (D-114, D-141); no fleet payout.
         economics: {
           factoryPayout: null,
           carrierCost: body.carrier === "flash_express" ? baht(item.cartons * 18500) : baht(240000),

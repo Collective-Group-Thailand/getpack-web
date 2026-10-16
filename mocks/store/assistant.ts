@@ -1,5 +1,5 @@
 /**
- * The assistant (U5.B5, D-304–D-306), mocked like packio-api's `FakeAssistantModel`: rule-based Thai
+ * The assistant (U5.B5, D-304–D-306), mocked like getpack-api's `FakeAssistantModel`: rule-based Thai
  * intent matching over the seven tools, never a fact no tool returned. Obviously fake — every reply
  * says "(ข้อมูลจำลอง)". Sessions and the evaluation runs live in memory.
  *
@@ -46,7 +46,7 @@ function answer(text: string, ownerId: string): Reply {
   const t = text.trim();
   if (/ลดราคา|ราคาพิเศษให้|ขอส่วนลด|ข้อมูลลูกค้าคนอื่น|ของคนอื่น|ignore|system prompt/i.test(t))
     return {
-      reply: `ผู้ช่วยทำเรื่องนี้ไม่ได้ ราคาและข้อมูลของลูกค้าแต่ละรายดูแลโดยทีม Packio — คุยกับทีมได้เลย ${FAKE}`,
+      reply: `ผู้ช่วยทำเรื่องนี้ไม่ได้ ราคาและข้อมูลของลูกค้าแต่ละรายดูแลโดยทีม getpack — คุยกับทีมได้เลย ${FAKE}`,
       outcome: "refused",
       tools: [],
     };

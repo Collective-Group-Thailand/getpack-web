@@ -1,12 +1,12 @@
-# 00 — Master Plan (frontend): packio-web
+# 00 — Master Plan (frontend): getpack-web
 
 > อ่านไฟล์นี้ก่อนทุก session แล้วค่อยเปิด prompt ของ deliverable ที่ได้รับมอบหมาย (F0–F5)
-> Repo นี้คือ **frontend อย่างเดียว** — Next.js app เดียวที่รวม customer + admin + partner · backend อยู่ที่ repo `packio-api`
+> Repo นี้คือ **frontend อย่างเดียว** — Next.js app เดียวที่รวม customer + admin + partner · backend อยู่ที่ repo `getpack-api`
 
 ---
 
 ## 1. Product
-**Packio — Your Packaging Production Partner**, operated by Collective Group (Thailand), is a **new** self-service, end-to-end, fully traceable packaging platform (discover → configure (7 instant types) or RFQ → design with 3D/2D preview → cart → instalments → artwork & proof → production at partner factories → delivery with POD → claim/reorder → full accounting). Legacy Locopack is a logic and UX-inspiration reference only (D-005). This repo delivers every user interface; `packio-api` delivers every behaviour and all data. Business rules live in `docs/decisions.md`.
+**getpack — Your Packaging Production Partner**, operated by Collective Group (Thailand), is a **new** self-service, end-to-end, fully traceable packaging platform (discover → configure (7 instant types) or RFQ → design with 3D/2D preview → cart → instalments → artwork & proof → production at partner factories → delivery with POD → claim/reorder → full accounting). Legacy Locopack is a logic and UX-inspiration reference only (D-005). This repo delivers every user interface; `getpack-api` delivers every behaviour and all data. Business rules live in `docs/decisions.md`.
 
 ## 2. Why one app with three zones
 One Next.js app gives one design system, one set of domain components (status badges, price summary, timeline, proof viewer, box designer) and one deployment, while zones keep audiences apart:
@@ -23,7 +23,7 @@ One Next.js app gives one design system, one set of domain components (status ba
 
 ## 3. Repository structure (target, after F0)
 ```
-packio-web/
+getpack-web/
 ├─ src/
 │  ├─ proxy.ts                      host → zone rewrite, 404 cross-zone paths, next-intl (customer), token refresh, CSP nonce, security headers
 │  ├─ app/
@@ -47,7 +47,7 @@ packio-web/
 │     ├─ auth/                      session cookies, login/logout server actions, refresh, current actor
 │     ├─ bff/                       createBffHandler(zone) — allow-listed upstream prefixes, token attach, refresh-once, CSRF checks
 │     └─ observability/             Sentry, OpenTelemetry, web-vitals
-├─ packages/dieline/                framework-free box geometry engine, published as `@packio/dieline` (the only workspace package)
+├─ packages/dieline/                framework-free box geometry engine, published as `@getpack/dieline` (the only workspace package)
 ├─ .storybook/  e2e/  mocks/ (MSW handlers generated from the contract + overrides)
 ├─ docs/  prompts/ contract/ legacy/ adr/ design-tool/ PROGRESS.md contract-requests.md performance-budgets.md
 ├─ contract.lock.json               pinned backend contract version + source URL + sha256
@@ -57,15 +57,15 @@ Import rules (ESLint `boundaries` / `no-restricted-imports`): `app/[locale]/**` 
 
 ## 4. Data access & auth (BFF pattern — ADR-0005)
 - **Server Components** fetch with `serverApi(zone)` (openapi-fetch, `API_INTERNAL_URL`, `Authorization: Bearer <access token from the zone cookie>`, `Accept-Language`). Lists render initial data on the server and hydrate TanStack Query.
-- **Client Components** use `browserApi` (same generated types, base URL `/bff`) + TanStack Query. The zone BFF route handler allow-lists upstream prefixes (customer → `/v1/store`, `/v1/auth/customer`; admin → `/v1/admin`; partner → `/v1/partner`), attaches the token, streams the response back (including file downloads), refreshes once on `401`, and requires same-origin `Origin` + header `x-packio-csrf: 1` for non-GET requests.
+- **Client Components** use `browserApi` (same generated types, base URL `/bff`) + TanStack Query. The zone BFF route handler allow-lists upstream prefixes (customer → `/v1/store`, `/v1/auth/customer`; admin → `/v1/admin`; partner → `/v1/partner`), attaches the token, streams the response back (including file downloads), refreshes once on `401`, and requires same-origin `Origin` + header `x-getpack-csrf: 1` for non-GET requests.
 - **Cookies** (host-only, `Secure`, `HttpOnly`, `SameSite=Lax`, `__Host-` prefix): `__Host-pk_at` / `__Host-pk_rt` per host (so zones never share them). Access token refresh happens in `proxy.ts` before rendering (Server Components cannot set cookies) and in the BFF.
 - **Login flows** are Server Actions/route handlers that call `/v1/auth/*`, set cookies and redirect: staff username/password (admin), customer phone OTP (primary) / Firebase (Google, Apple) / LINE Login & LIFF (customer), partner login + optional device PIN (partner).
 - **Authorisation in the UI** reads `/v1/{surface}/me` (roles, permissions, menu entitlements, scopes). The UI hides what the user cannot do; the API is the enforcement point.
 - **Server Actions** only for auth and small progressive-enhancement forms; business mutations go through the BFF so errors, idempotency keys and optimistic updates are handled uniformly.
 - Realtime (order/payment/chat alerts, production updates) via the API's realtime auth; payloads are ids only → invalidate TanStack Query keys.
 
-## 5. Contract sync with `packio-api` (ADR-0006)
-- `pnpm gen:api` reads `API_CONTRACT_SOURCE` (local: `../packio-api/contract/openapi.json`; CI: the release asset pinned in `contract.lock.json`) → `openapi-typescript` → `src/lib/api/schema.d.ts` (committed) → regenerates MSW base handlers in `mocks/generated/`.
+## 5. Contract sync with `getpack-api` (ADR-0006)
+- `pnpm gen:api` reads `API_CONTRACT_SOURCE` (local: `../getpack-api/contract/openapi.json`; CI: the release asset pinned in `contract.lock.json`) → `openapi-typescript` → `src/lib/api/schema.d.ts` (committed) → regenerates MSW base handlers in `mocks/generated/`.
 - CI fails if the generated file differs from the committed one. Upgrading the backend contract = bump `contract.lock.json` in a PR; type errors show exactly what changed.
 - `src/domain/status/*` is typed `Record<Schemas['OrderStatus'], StatusMeta>` etc., so a new backend enum value fails the frontend build until it has a label, tone and icon.
 - Missing endpoints → `docs/contract-requests.md` + mock; never invent a shape.
@@ -78,11 +78,11 @@ Next.js 16 (App Router, RSC, `proxy.ts`), React 19, TypeScript 6 strict, Tailwin
 
 | Step | Prompt | Output | Needs from backend |
 |---|---|---|---|
-| F0 | `F0-setup.md` 0.1 → 0.2 | BoxStudio single app → packio-web structure, pnpm, `@packio/dieline`, rebrand; `src/ui` foundation | nothing |
+| F0 | `F0-setup.md` 0.1 → 0.2 | BoxStudio single app → getpack-web structure, pnpm, `@getpack/dieline`, rebrand; `src/ui` foundation | nothing |
 | F1 | `F1-foundation.md` 1.1 → 1.3 | zones, proxy, root layouts, BFF & auth, contract & mocks, i18n, shells, observability | B1.1 contract (mocks until then) |
 | F2 | `F2-admin.md` 2.1 → 2.8 | admin zone (orders, CS, RFQ, prepress, catalogue, partners & cost review, promotions, B2B, discount memos, settings, analytics) | B2–B4, B6 |
 | F3 | `F3-storefront.md` 3.1 → 3.7 | customer zone (catalogue, configurator + 3D, RFQ, cart, checkout & instalments, account, B2B, loyalty, referral, tracking, claims, reorder, LIFF) | B2–B4 |
-| F4 | `F4-designer.md` A → E | designer v2 + `@packio/dieline` engine, style library, publishing | B4.1 designs API, B2.5 quotes |
+| F4 | `F4-designer.md` A → E | designer v2 + `@getpack/dieline` engine, style library, publishing | B4.1 designs API, B2.5 quotes |
 | F5 | `F5-partner.md` 5.1 → 5.3 | partner zone PWA | B2.2, B4.2–4.3, B5.3 |
 | F6 | `F6-finance.md` 6.1 → 6.4 | finance & accounting workspace in the admin zone | B5 |
 F2–F6 run in parallel in separate git worktrees after F1, against MSW mocks until the backend deliverable exists.
@@ -95,4 +95,4 @@ F2–F6 run in parallel in separate git worktrees after F1, against MSW mocks un
 - `docs/PROGRESS.md` updated: screens done, decisions implemented (D-
 
 ## 9. ADRs in this repo
-0001 Thai-first typography · 0002 Component base (Radix + Tailwind v4 + CVA) · 0003 Theming via generated CSS variables · 0004 One app, three host-based zones · 0005 BFF, cookies & token handling · 0006 Contract consumption & mocks · 0007 `@packio/dieline` ownership & publishing. (0001–0003 are accepted decisions implemented in F0 Session 0.2; F0 Session 0.1 writes 0004–0007.)
+0001 Thai-first typography · 0002 Component base (Radix + Tailwind v4 + CVA) · 0003 Theming via generated CSS variables · 0004 One app, three host-based zones · 0005 BFF, cookies & token handling · 0006 Contract consumption & mocks · 0007 `@getpack/dieline` ownership & publishing. (0001–0003 are accepted decisions implemented in F0 Session 0.2; F0 Session 0.1 writes 0004–0007.)

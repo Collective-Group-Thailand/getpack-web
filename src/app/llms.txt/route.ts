@@ -12,7 +12,7 @@ import { BRAND_COMPANY, BRAND_NAME, BRAND_TAGLINE } from "@/ui/brand";
 export const dynamic = "force-dynamic";
 
 /**
- * `/llms.txt` (llmstxt.org): what Packio is, in one page an answer engine can read whole — the
+ * `/llms.txt` (llmstxt.org): what getpack is, in one page an answer engine can read whole — the
  * entity statement, the pages that matter and what each answers, the catalogue's categories,
  * and the public FAQ. Markdown, in the default language with English links beside the Thai
  * ones, built from the same copy and API data the pages use, so it never says something the

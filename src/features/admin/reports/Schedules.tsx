@@ -86,7 +86,7 @@ function useScheduleText() {
 /**
  * Report schedules (D-111, D-033): a report run daily, weekly or monthly at a time of day in
  * Bangkok, over a relative period, for staff who may read and export it — they are told in-app and
- * by e-mail and download the file in Packio; the data is never attached. A schedule is not edited:
+ * by e-mail and download the file in getpack; the data is never attached. A schedule is not edited:
  * it is switched off and a new one made.
  */
 export function ReportSchedules() {

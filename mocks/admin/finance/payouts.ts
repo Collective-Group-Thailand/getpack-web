@@ -412,7 +412,7 @@ const vendorBank = (item: Item) =>
   stores.get(item.vendorId)?.banks.find((bank) => bank.status === "active")?.bankCode ?? "004";
 
 /**
- * packio-api's `RUN_ACTIONS` (payouts/run-actions.ts, v0.6.0), filtered by the reader's
+ * getpack-api's `RUN_ACTIONS` (payouts/run-actions.ts, v0.6.0), filtered by the reader's
  * permissions: propose a draft with something to pay, cancel before the bank file is confirmed,
  * (re)generate the bank file once approved, confirm what the bank paid.
  */
@@ -435,7 +435,7 @@ export function runActions(run: Run, who: StaffPersona): Run["nextActions"] {
 
 const out = (run: Run, who: StaffPersona): Run => ({ ...run, nextActions: runActions(run, who) });
 
-/** The rate withheld for each category of income (PND 3 / 53), as packio-api's certificate states it. */
+/** The rate withheld for each category of income (PND 3 / 53), as getpack-api's certificate states it. */
 const WHT_RATE_OF: Record<(typeof whtIssued)[number]["category"], string> = {
   hire_of_work: "3.0000",
   transport: "1.0000",
@@ -527,7 +527,7 @@ export const payoutHandlers = [
     ({ params, persona }) => {
       const state = runById(params.runId);
       if (!state) return notFound("รอบจ่ายเงิน");
-      // packio-api offers the file again once generated (a lost download), as `generate_bank_file` says.
+      // getpack-api offers the file again once generated (a lost download), as `generate_bank_file` says.
       if (state.run.status !== "approved" && state.run.status !== "file_generated")
         return problem(409, "payouts.run_invalid_status", "สร้างไฟล์ได้เฉพาะรอบที่อนุมัติแล้ว");
       state.bankFile = csvOf(state);

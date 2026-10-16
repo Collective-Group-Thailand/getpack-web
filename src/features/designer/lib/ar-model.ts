@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
-import type { Dieline, HingeMap, MaterialSpec } from "@packio/dieline";
+import type { Dieline, HingeMap, MaterialSpec } from "@getpack/dieline";
 
 import { buildGeometry, triangulated } from "../components/Preview3D";
 

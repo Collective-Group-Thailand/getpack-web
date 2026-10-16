@@ -1,5 +1,5 @@
 /**
- * Help from the storefront that packio-api has deferred by decision (D-223): ordering a sample kit
+ * Help from the storefront that getpack-api has deferred by decision (D-223): ordering a sample kit
  * (U2.4) and guided help's recommendation (the Structure Advisor, U2.2). The storefront hides both
  * entry points until then. Contacting the team and the hand-off to CS are published
  * (`store.support.contact` / `.handoff`).

@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("platform.ops"))("title") };
 }
 
-/** The `ops` menu entry packio-api returns to holders of `ops.read` (B6.3). */
+/** The `ops` menu entry getpack-api returns to holders of `ops.read` (B6.3). */
 export default async function OpsPage() {
   const [t, tErrors] = await Promise.all([getTranslations("platform.ops"), getTranslations("common.errors")]);
   const result = await loadSignals();

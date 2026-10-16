@@ -227,7 +227,7 @@ test.describe("loyalty rules (D-130…D-136)", () => {
 
 test.describe("customers", () => {
   test("a customer's points add up to the balance, and consents are read-only", async ({ page }) => {
-    // packio-api grants customers.read to CS, not to Marketing (docs/rbac.md).
+    // getpack-api grants customers.read to CS, not to Marketing (docs/rbac.md).
     await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/customers`);
     const list = page.getByRole("table", { name: "ลูกค้า" });
@@ -268,7 +268,7 @@ test.describe("customers", () => {
 
 test.describe("B2B companies (D-120…D-125)", () => {
   test("KYC is reviewed document by document, then the account approved", async ({ page }) => {
-    // packio-api: companies.kyc_review reviews each document and approves the account (approve-kyc, no reason).
+    // getpack-api: companies.kyc_review reviews each document and approves the account (approve-kyc, no reason).
     await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/companies/${company(3)}?tab=kyc`);
     await expect(header(page)).toContainText("กำลังตรวจเอกสาร");

@@ -614,7 +614,7 @@ const ISSUE_KINDS = [
   "other",
 ] as const satisfies readonly Schemas["JobIssueKind"][];
 
-/** Raising an issue (D-232): a named kind and what happened; Packio sees it on the board. */
+/** Raising an issue (D-232): a named kind and what happened; getpack sees it on the board. */
 export function RaiseIssue({ job }: { job: PartnerJob }) {
   const t = useTranslations("partnerJobs.issue");
   const tCommon = useTranslations("common");

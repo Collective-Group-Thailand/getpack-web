@@ -22,7 +22,7 @@ test("adds a QR code, finds it in layers, locks it, and undoes", async ({ page }
   await newDesign(page);
 
   await openRail(page, "องค์ประกอบ");
-  await page.getByRole("textbox", { name: "ลิงก์หรือข้อความ" }).fill("https://packio.example/p/123");
+  await page.getByRole("textbox", { name: "ลิงก์หรือข้อความ" }).fill("https://getpack.example/p/123");
   await page.getByRole("button", { name: "เพิ่มโค้ด" }).click();
   await expect(
     page.getByRole("tabpanel", { name: "คุณสมบัติ" }).getByRole("heading", { name: "คิวอาร์โค้ด" }),

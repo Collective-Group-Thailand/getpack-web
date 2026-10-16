@@ -28,7 +28,7 @@ import { fingerNotch, vents } from "./feature/wave-features";
 import { depthScores } from "./feature/features";
 import type { ModuleDef } from "./types";
 
-/** The modules the style library's waves add (U3.4) — registered by `@packio/dieline/library`. */
+/** The modules the style library's waves add (U3.4) — registered by `@getpack/dieline/library`. */
 export const WAVE_MODULES: readonly ModuleDef[] = [
   insertBody,
   partitionSet,

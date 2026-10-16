@@ -4,13 +4,13 @@ import { HOSTS } from "../../playwright.config";
 import { DEV_INSTANT_PRODUCT, runId, signInCustomer } from "./support";
 
 /**
- * U4.7 on the real packio-api (`v0.41.0`): a comment pinned on the studio's flat sheet and resolved
+ * U4.7 on the real getpack-api (`v0.41.0`): a comment pinned on the studio's flat sheet and resolved
  * (D-285), a comment link opened by another signed-in customer who comments through it, a named
- * version (its label in `listVersions`), and what packio-api answers to an edit link for a customer
+ * version (its label in `listVersions`), and what getpack-api answers to an edit link for a customer
  * with no company.
  */
 
-const BFF = { "x-packio-csrf": "1", origin: HOSTS.customer, "content-type": "application/json" };
+const BFF = { "x-getpack-csrf": "1", origin: HOSTS.customer, "content-type": "application/json" };
 
 async function studioDesign(page: Page): Promise<string> {
   const query = new URLSearchParams({ product: DEV_INSTANT_PRODUCT, style: "rsc", l: "400", w: "300", h: "250" });
@@ -79,7 +79,7 @@ test("comments, a comment link, a named version — on the real API", async ({ c
   const after = await (await page.request.get(`${HOSTS.customer}/bff/v1/store/studio/${id}/comments`)).json();
   expect(after.map((c: { body: string }) => c.body)).toContain("เพิ่มเลขล็อต");
 
-  // An edit link for a design with no company: packio-api makes it, and refuses its use — editing
+  // An edit link for a design with no company: getpack-api makes it, and refuses its use — editing
   // is for the design's company's members (D-285); the studio offers edit links to them only.
   const edit = await page.request.post(`${HOSTS.customer}/bff/v1/store/studio/${id}/share-links`, {
     headers: BFF,

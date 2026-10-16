@@ -73,7 +73,7 @@
     "contents": "Contents",
     "cartons": "{count} cartons · about {weight} kg",
     "economics": "Shipping economics",
-    "economicsNote": "What Packio pays the factory or the fallback carrier",
+    "economicsNote": "What getpack pays the factory or the fallback carrier",
     "factoryPayout": "Factory payout",
     "carrierCost": "Carrier cost",
     "splitTitle": "Split the shipment",
@@ -82,7 +82,7 @@
     "splitHint": "Less than {quantity}",
     "splitDone": "Split into {no}",
     "bookTitle": "Book a fallback carrier",
-    "bookBody": "{no}: choose the fallback carrier; its price at booking is Packio's cost",
+    "bookBody": "{no}: choose the fallback carrier; its price at booking is getpack's cost",
     "quoting": "Getting carrier quotes…",
     "quotes": "Fallback carrier",
     "booked": "Booked — tracking {tracking}",
@@ -229,7 +229,7 @@
       "factory": "Factory",
       "customer": "Customer",
       "carrier": "Carrier",
-      "packio": "Packio",
+      "getpack": "getpack",
       "undetermined": "Undetermined"
     },
     "resolutions": {

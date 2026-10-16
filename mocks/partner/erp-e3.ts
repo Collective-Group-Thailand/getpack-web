@@ -1,5 +1,5 @@
 /**
- * Packio Factory ERP E2.1 + E3 (packio-api v0.46.0; D-346 – D-358) for `pnpm dev:mock` and the e2e: alerts,
+ * getpack Factory ERP E2.1 + E3 (getpack-api v0.46.0; D-346 – D-358) for `pnpm dev:mock` and the e2e: alerts,
  * machines and the kiosk's dispatch list, the machine schedule, maintenance (breakdowns, preventive plans,
  * spare parts) and documents (folders, versions, expiry). It reads E2's production orders for the floor and
  * keeps the rest per factory. Requests for quotation list empty here; their flow lives in the API's e2e.

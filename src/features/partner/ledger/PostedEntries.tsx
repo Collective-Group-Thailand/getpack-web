@@ -9,7 +9,7 @@ import { getFormat } from "@/features/shared/format/server";
 
 /**
  * The factory's ledger entries a document made (D-388): shown on the document for whoever reads the books, so an
- * accountant goes from an invoice, a receipt, a payment or a Packio statement straight to its journal — and sees a
+ * accountant goes from an invoice, a receipt, a payment or a getpack statement straight to its journal — and sees a
  * reversal when the document was cancelled. Nothing is shown before the ledger has an entry for it.
  */
 export async function PostedEntries({ sourceId }: { sourceId: string }) {

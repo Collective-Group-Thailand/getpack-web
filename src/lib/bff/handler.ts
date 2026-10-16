@@ -141,12 +141,12 @@ export function createBffHandler(zone: Zone) {
  *
  * `SameSite=Lax` lets the session cookie ride a top-level navigation, which is what keeps a
  * link from an email or LINE working — and is also what a cross-site form post could abuse.
- * `x-packio-csrf` closes that: a form post cannot set a custom header, so only code running
+ * `x-getpack-csrf` closes that: a form post cannot set a custom header, so only code running
  * on this origin can produce one, and the `Origin` check makes sure that origin is ours.
  */
 /**
  * Fire-and-forget telemetry posted with `navigator.sendBeacon`, which cannot set a header — so
- * `x-packio-csrf` can never be present and, before this list, every beacon was refused with a
+ * `x-getpack-csrf` can never be present and, before this list, every beacon was refused with a
  * 403 and field Web Vitals and the funnel never reached the API. The `Origin` check still
  * applies to them in full: a beacon from another site is refused exactly as before. What is
  * given up is only the header, on endpoints whose worst abuse is a fake measurement.
@@ -208,7 +208,7 @@ async function forward(
     if (value) headers.set(name, value);
   }
   headers.set(REQUEST_ID_HEADER, requestId);
-  // The visitor's address for the API's per-IP throttles (packio-api B6.3), one entry only.
+  // The visitor's address for the API's per-IP throttles (getpack-api B6.3), one entry only.
   if (visitor) headers.set(FORWARDED_FOR_HEADER, visitor);
   // `?mock=` scenarios, under `pnpm dev:mock` only (src/lib/api/mock-scenario.ts).
   const scenario = mockScenarioOf(request.headers);

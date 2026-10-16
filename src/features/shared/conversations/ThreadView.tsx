@@ -15,12 +15,12 @@ import { cn } from "@/ui/lib/cn";
 export type ThreadMessage = Schemas["MessageDto"];
 export type ContextCard = NonNullable<ThreadMessage["contextCard"]>;
 
-/** Whose side of the thread is looking: the customer, or Packio's staff. */
+/** Whose side of the thread is looking: the customer, or getpack's staff. */
 export type Perspective = "customer" | "staff";
 
 /**
  * One conversation's messages, oldest first, for either side (U5.3, D-300). The customer's own
- * messages are `inbound`; Packio's are `outbound` and appear as the team on the customer's side,
+ * messages are `inbound`; getpack's are `outbound` and appear as the team on the customer's side,
  * by name on the staff side. Internal notes (staff only — the API never sends them to the
  * customer) are marked as such. A message of mine shows whether the other side has read it.
  *

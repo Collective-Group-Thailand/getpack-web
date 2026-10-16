@@ -1,7 +1,7 @@
 /**
  * Supplier AP, mocked over the published B5.3 surface: vendors (the factories and the others —
  * carriers, freelancers, services), factory purchase orders, goods receipts from POD (D-165),
- * the billing statements Packio generates and the factory confirms (D-090), the factory's own tax
+ * the billing statements getpack generates and the factory confirms (D-090), the factory's own tax
  * invoices, other vendors' bills, the AP open items with the date each becomes payable under the
  * frozen payout policy (D-022, D-164), and bank-account changes under dual approval with a
  * call-back (§8, D-169).
@@ -41,7 +41,7 @@ const vatOf = (net: number, registered: boolean) => (registered ? Math.round(net
 
 /* ------------------------------------------------------------------------------- vendors */
 
-/** The factories that trade with Packio: every one that has passed onboarding. */
+/** The factories that trade with getpack: every one that has passed onboarding. */
 const factoryStores = () =>
   [...stores.values()].filter((store) => ["trial", "active", "suspended"].includes(store.factory.status));
 
@@ -388,7 +388,7 @@ export function refreshPayables() {
       row.dto.status = "eligible";
 }
 
-/** P15 (+P16): the GR puts what Packio owes into AP; an advance already paid is applied to it. */
+/** P15 (+P16): the GR puts what getpack owes into AP; an advance already paid is applied to it. */
 function onGoodsReceipt(row: GrRow) {
   const store = stores.get(row.factoryId)!;
   const dims = { factory: row.factoryId, order: row.delivery.order.id };
@@ -524,7 +524,7 @@ function statementsAll() {
 }
 
 /**
- * packio-api's `ADMIN_STATEMENT_ACTIONS` (payables/statement-actions.ts, v0.6.0): capture a tax
+ * getpack-api's `ADMIN_STATEMENT_ACTIONS` (payables/statement-actions.ts, v0.6.0): capture a tax
  * invoice while none is recorded or validated (a rejected one is replaced), validate a recorded one.
  */
 function statementActions(dto: Omit<Statement, "nextActions">, who: StaffPersona | null): Statement["nextActions"] {

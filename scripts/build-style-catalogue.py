@@ -1,9 +1,9 @@
-"""Packio style-library master catalogue (original work).
+"""getpack style-library master catalogue (original work).
 Base structures x variant axes -> distinct producible dielines.
 Reference codes marked 'verify' must be checked against the official FEFCO / ECMA editions before publishing."""
 import csv, json, itertools, math
 
-# product_type = the Packio calculator that prices the structure (D-100): folding, corrugate, label, tag_sleeve,
+# product_type = the getpack calculator that prices the structure (D-100): folding, corrugate, label, tag_sleeve,
 # pouch, standard_product (stock items only), service. Types WITHOUT a calculator route to RFQ (D-100):
 # rigid, paper_bag, mailer, shrink_sleeve. The live pricing path is decided at runtime by the API's quote-path
 # service (calculator signed off + a factory price path + capability, D-043); the field below is a planning hint only.
@@ -341,7 +341,7 @@ USE_CASES = {
 ALLOWED_TUCK_PAIRS = [(t,b) for t in AX["tuck_top"] for b in AX["tuck_bottom"] if not (t=="seal" and b=="four_flap_lock")]
 
 # Combinations no factory can build (D-408): each rule names its bases, the axis values that together are impossible,
-# and why. packio-api's importer drops them (`excluded_combinations`); the counts below exclude them too.
+# and why. getpack-api's importer drops them (`excluded_combinations`); the counts below exclude them too.
 EXCLUDED = [
     {"bases": ["PK-TE-01"], "when": {"tuck_top": ["straight_tuck"], "hang": ["euro_slot", "round_hole", "sombrero_header"]},
      "reason": "A straight tuck's top lid hinges on the back panel's edge, where a hang tab stands; a hang tab takes a reverse, airplane or seal top."},

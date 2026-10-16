@@ -73,7 +73,7 @@
     "contents": "สินค้าในการจัดส่ง",
     "cartons": "{count} กล่อง · ประมาณ {weight} กก.",
     "economics": "ค่าขนส่ง",
-    "economicsNote": "ต้นทุนที่ Packio จ่ายโรงงานหรือขนส่งสำรอง",
+    "economicsNote": "ต้นทุนที่ getpack จ่ายโรงงานหรือขนส่งสำรอง",
     "factoryPayout": "จ่ายโรงงาน",
     "carrierCost": "ค่าขนส่งสำรอง",
     "splitTitle": "แยกการจัดส่ง",
@@ -82,7 +82,7 @@
     "splitHint": "น้อยกว่า {quantity}",
     "splitDone": "แยกเป็น {no} แล้ว",
     "bookTitle": "จองขนส่งสำรอง",
-    "bookBody": "{no} เลือกขนส่งสำรอง ราคาขนส่งตอนจองเป็นต้นทุนของ Packio",
+    "bookBody": "{no} เลือกขนส่งสำรอง ราคาขนส่งตอนจองเป็นต้นทุนของ getpack",
     "quoting": "กำลังขอราคาขนส่ง…",
     "quotes": "ขนส่งสำรอง",
     "booked": "จองขนส่งแล้ว เลขพัสดุ {tracking}",
@@ -229,7 +229,7 @@
       "factory": "โรงงาน",
       "customer": "ลูกค้า",
       "carrier": "บริษัทขนส่ง",
-      "packio": "Packio",
+      "getpack": "getpack",
       "undetermined": "ยังไม่ระบุ"
     },
     "resolutions": {

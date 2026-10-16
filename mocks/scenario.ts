@@ -53,7 +53,7 @@ export const scenarioHandlers = [
       if (status === undefined || !example) {
         // A typo should be loud, and say what would have worked.
         return problem(500, {
-          type: "https://errors.packio/mock.scenario_unknown",
+          type: "https://errors.getpack/mock.scenario_unknown",
           title: "Unknown mock scenario",
           code: "mock.scenario_unknown",
           detail: `${operationId} documents no ${code}. It documents: ${Object.keys(operation.problems).join(", ")}.`,

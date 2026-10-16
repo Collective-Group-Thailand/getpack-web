@@ -17,8 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 const QUICK = ["quick.status", "quick.file", "quick.change"] as const;
 
 /**
- * My conversations with Packio (U5.3, D-300): the support chat and a thread per order, design or RFQ
- * I asked about, latest activity first with what is unread. Packio answers here, or on LINE when I
+ * My conversations with getpack (U5.3, D-300): the support chat and a thread per order, design or RFQ
+ * I asked about, latest activity first with what is unread. getpack answers here, or on LINE when I
  * choose it. Never a conversation with a factory (D-050).
  */
 export default async function Page() {

@@ -93,8 +93,8 @@ interface Flight {
  * module-level map would give each its own copy and they would still race each other.
  */
 function inFlight(): Map<string, Flight> {
-  const holder = globalThis as typeof globalThis & { __packioRefreshFlights?: Map<string, Flight> };
-  return (holder.__packioRefreshFlights ??= new Map());
+  const holder = globalThis as typeof globalThis & { __getpackRefreshFlights?: Map<string, Flight> };
+  return (holder.__getpackRefreshFlights ??= new Map());
 }
 
 async function exchange(

@@ -15,10 +15,10 @@
     "meta": "{shipment} · {carrier} · {cartons} กล่อง",
     "metaTracking": "{shipment} · {carrier} · {cartons} กล่อง · เลขพัสดุ {tracking}",
     "carrier": {
-      "factory_fleet": "รถขนส่งของ Packio",
+      "factory_fleet": "รถขนส่งของ getpack",
       "flash_express": "Flash Express",
       "deliveree": "Deliveree",
-      "packio": "รถขนส่งของ Packio"
+      "getpack": "รถขนส่งของ getpack"
     },
     "carrierPage": "ดูสถานะที่เว็บขนส่ง",
     "events": "ความเคลื่อนไหว ({count})",
@@ -235,7 +235,7 @@
     "arrivesBy": "คาดว่าจะได้รับ {date}",
     "delivered": "ส่งถึงเมื่อ {date}",
     "codePlaceholder": "วางลิงก์หรือพิมพ์รหัสติดตาม",
-    "signInTitle": "มีบัญชี Packio อยู่แล้ว?",
+    "signInTitle": "มีบัญชี getpack อยู่แล้ว?",
     "signInBody": "เข้าสู่ระบบเพื่อดูทุกคำสั่งซื้อ แบบตัวอย่างที่รออนุมัติ และงวดที่ต้องชำระ ในที่เดียว",
     "signInCta": "เข้าสู่ระบบเพื่อดูทุกคำสั่งซื้อ",
     "mineTitle": "คำสั่งซื้อทั้งหมดของคุณ",
@@ -245,7 +245,7 @@
   "claimTimeline": {
     "title": "สถานะเคลม",
     "owner": {
-      "packio": "รอทีม Packio",
+      "getpack": "รอทีม getpack",
       "customer": "รอข้อมูลเพิ่มจากคุณ",
       "factory": "รอโรงงานตรวจสอบ",
       "none": "ดำเนินการเสร็จแล้ว"

@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * The QC inspector's home (round 2, Phase 1 — the "PartnerQc" board): Packio's booked inspections,
+ * The QC inspector's home (round 2, Phase 1 — the "PartnerQc" board): getpack's booked inspections,
  * the jobs waiting at a QC step, and the samples to record, each one tap from its form. Counted at
  * the top so the shift starts with how much there is.
  */

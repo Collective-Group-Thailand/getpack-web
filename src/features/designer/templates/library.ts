@@ -1,12 +1,12 @@
 import { LAYOUT_SCHEMA_VERSION, type ColourRole, type Slot, type TemplateLayout } from "./layout";
 
 /**
- * Packio's own first template set (D-216: 20 templates across the studio spec's 7 use cases, made
+ * getpack's own first template set (D-216: 20 templates across the studio spec's 7 use cases, made
  * in house; Marketing approves each before it is published — maker-checker, D-282). Three
  * archetypes — **classic** (logo, headline, band), **band** (a colour band carrying the name) and
  * **pattern** (a patterned wrap with a label panel) — each dressed per use case with its own
- * palette and copy. Every line, colour and arrangement here is Packio's; nothing is taken from
- * another product. The layouts are imported into packio-api as `studio_templates` (admin) and
+ * palette and copy. Every line, colour and arrangement here is getpack's; nothing is taken from
+ * another product. The layouts are imported into getpack-api as `studio_templates` (admin) and
  * served back by `store.studio.listTemplates`; the mock serves them as they are.
  */
 

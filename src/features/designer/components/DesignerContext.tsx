@@ -3,7 +3,7 @@
 import { createContext, useContext } from "react";
 import type Konva from "konva";
 
-import type { Dieline } from "@packio/dieline";
+import type { Dieline } from "@getpack/dieline";
 
 import type { DesignerCatalog } from "../data/api";
 import type { Persistence, PersistenceMode } from "../data/persistence";

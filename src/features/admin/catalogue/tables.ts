@@ -1,5 +1,5 @@
 /**
- * The catalogue, CMS and geography tables packio-api B2.1 publishes, declared once for the
+ * The catalogue, CMS and geography tables getpack-api B2.1 publishes, declared once for the
  * generic table screen (F2 2.5, A.2.1 "≈60 generic CRUD screens"). Plain module: the pages read
  * it on the server to prefetch and validate `/catalogue/[table]`.
  *

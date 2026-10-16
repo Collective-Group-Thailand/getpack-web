@@ -1,5 +1,5 @@
 /**
- * The factory's money with Packio (F5 5.3) on the published partner surface, `partner.payables.*`
+ * The factory's money with getpack (F5 5.3) on the published partner surface, `partner.payables.*`
  * (contract v0.6.0): billing statements on the token-scoped `/v1/partner/billing-statements` (D-044),
  * the factory's own tax invoice against one, the payout schedule per job (D-022, D-164), payouts with
  * their remittance advice and 50 ทวิ, and the statement of account.
@@ -373,7 +373,7 @@ const DECIDABLE = ["generated", "sent", "disputed"];
 /** A tax invoice is still wanted while none is recorded or validated (a rejected one is replaced). */
 const wantsInvoice = (s: StatementFacts) => !s.invoiceStatuses.some((i) => i === "recorded" || i === "validated");
 
-/** packio-api `src/modules/payables/statement-actions.ts` (v0.6.0), the factory's rules. */
+/** getpack-api `src/modules/payables/statement-actions.ts` (v0.6.0), the factory's rules. */
 const PARTNER_STATEMENT_ACTIONS: ActionRule<StatementFacts>[] = [
   {
     key: "billing_statement.confirm",
@@ -701,7 +701,7 @@ function account(factoryId: string, from: string, to: string): AccountDto {
       kind: "payout" as const,
       reference: item.pvNumber,
       credit: "0.00",
-      // What Packio paid, with the tax it withheld for the factory.
+      // What getpack paid, with the tax it withheld for the factory.
       debit: baht(satang(item.cashAmount) + satang(item.whtAmount)),
     })),
   ].sort((a, b) => a.date.localeCompare(b.date));

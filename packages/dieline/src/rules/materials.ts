@@ -5,7 +5,7 @@ import type { MaterialSpec } from "../types";
  * Material classes and the manufacturing rules each one brings (U3.2). A recipe's constraints read
  * them as `rule.<name>` (`"tuckDepth >= rule.minTuck"`), so one rule set serves every style made
  * of that class. Values say where they come from: an existing engine constant, the legacy
- * calculators, or a Packio assumption awaiting prepress confirmation (⚠) — the same convention
+ * calculators, or a getpack assumption awaiting prepress confirmation (⚠) — the same convention
  * as `constants.ts`. Real calipers always come from the catalogue API.
  */
 

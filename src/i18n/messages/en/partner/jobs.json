@@ -44,7 +44,7 @@
   "reject": {
     "action": "Reject the job",
     "title": "Reject {jobNo}",
-    "body": "Packio will move {jobNo} or contact you; rejections count in your scorecard.",
+    "body": "getpack will move {jobNo} or contact you; rejections count in your scorecard.",
     "confirm": "Reject",
     "note": "Details",
     "noteHint": "E.g. the press is under repair until Friday",
@@ -80,7 +80,7 @@
       "duplicate": "This report was already sent; the page shows the latest",
       "already_started": "Another device already started this step; the page shows the latest",
       "already_completed": "Another device already completed this step; the page shows the latest",
-      "skipped": "Packio skipped this step"
+      "skipped": "getpack skipped this step"
     },
     "inPlaceholder": "Pieces received from the step before",
     "goodPlaceholder": "Good pieces passed on",
@@ -134,7 +134,7 @@
   },
   "issue": {
     "tooShort": "Describe the issue in at least 3 characters",
-    "raised": "Issue raised — Packio sees it on the board",
+    "raised": "Issue raised — getpack sees it on the board",
     "kind": "Kind",
     "kinds": {
       "material_shortage": "Material shortage",
@@ -172,7 +172,7 @@
   },
   "card": {
     "late": "Late",
-    "inspection": "Packio inspects",
+    "inspection": "getpack inspects",
     "quantity": "{quantity} pcs",
     "ship": "Ship {date}",
     "step": "{name}",
@@ -223,7 +223,7 @@
     "destinationQty": "{quantity} pcs · {shipped} shipped",
     "quality": "Quality",
     "qcBy": "Checked by {name}",
-    "inspection": "Packio inspects this job",
+    "inspection": "getpack inspects this job",
     "inspectionOn": "On {date}",
     "issues": "Issues",
     "summaryNoDate": "{title} · {quantity} pcs",
@@ -283,7 +283,7 @@
     "override": {
       "change": "Change this week",
       "title": "{type} capacity, week of {week}",
-      "body": "E.g. an overhaul, a long holiday or an extra shift — Packio books new jobs against this figure",
+      "body": "E.g. an overhaul, a long holiday or an extra shift — getpack books new jobs against this figure",
       "capacity": "Capacity this week",
       "reason": "Reason",
       "reasonPlaceholder": "E.g. 2-day press overhaul",
@@ -315,7 +315,7 @@
   },
   "knowledge": {
     "title": "Factory guides",
-    "body": "Standards and how to work with Packio",
+    "body": "Standards and how to work with getpack",
     "search": "Search",
     "searchPlaceholder": "Search the guides",
     "categories": "Categories",
@@ -327,7 +327,7 @@
   },
   "intakes": {
     "title": "Offer a dieline",
-    "body": "Send a structure the factory makes for Packio to consider for its library",
+    "body": "Send a structure the factory makes for getpack to consider for its library",
     "offerTitle": "Send a new dieline",
     "offerBody": "A DXF or PDF; Prepress compares it with the library",
     "closed": "Dieline offers are not open yet (no intake terms are in force)",
@@ -358,7 +358,7 @@
       "baseCodePlaceholder": "e.g. RSC-01 (leave blank if unsure)",
       "notePlaceholder": "e.g. largest size you can make, which machine"
     },
-    "closedAsk": "Tell Packio you have designs to offer"
+    "closedAsk": "Tell getpack you have designs to offer"
   },
   "spec": {
     "style": {
@@ -404,22 +404,22 @@
       },
       "hired_design": {
         "term": "Artwork",
-        "value": "Designed by Packio"
+        "value": "Designed by getpack"
       },
       "free_design": {
         "term": "Artwork",
-        "value": "Designed by Packio"
+        "value": "Designed by getpack"
       }
     }
   },
   "qcQueue": {
     "title": "QC queue",
-    "body": "{date} · by Packio's inspection time and the jobs that reached QC",
+    "body": "{date} · by getpack's inspection time and the jobs that reached QC",
     "waiting": "{count} waiting",
     "empty": "Nothing waiting for QC now",
-    "inspections": "Packio inspections",
-    "inspectionAt": "Packio inspects {at} · sample of {size}",
-    "inspectionUnscheduled": "Packio will book a time",
+    "inspections": "getpack inspections",
+    "inspectionAt": "getpack inspects {at} · sample of {size}",
+    "inspectionUnscheduled": "getpack will book a time",
     "atQc": "Reached the QC step — ready to check",
     "atStep": "At {step}",
     "due": "due {date}",
@@ -446,7 +446,7 @@
     "due": "Due {date}",
     "status": "Status",
     "late": "Late",
-    "inspection": "Packio will inspect",
+    "inspection": "getpack will inspect",
     "kinds": {
       "production": "Production",
       "mockup": "Mock-up / sample",

@@ -7,7 +7,7 @@ import { accessToken, mockId } from "../../../mocks/support";
 import { createApiClient } from "./client";
 
 /**
- * The Packio Factory ERP mock (packio-api v0.44.0, D-316 – D-327) keeps the API's rules: the factory's own
+ * The getpack Factory ERP mock (getpack-api v0.44.0, D-316 – D-327) keeps the API's rules: the factory's own
  * data only, roles, idempotent stock posts, no negative stock, and purchase orders numbered when issued.
  */
 
@@ -20,7 +20,7 @@ const api = (persona: string) =>
   createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("partner", persona) });
 const path = { factoryId: F001 };
 
-describe("Packio Factory ERP mock", () => {
+describe("getpack Factory ERP mock", () => {
   it("keeps another factory's ERP out of reach and checks roles (D-317, D-319)", async () => {
     await expect(
       api("owner").GET("/v1/partner/factories/{factoryId}/erp/items", {

@@ -1,11 +1,11 @@
-import { getStyle, REFERENCE_MATERIALS, resolveStyleId } from "@packio/dieline";
+import { getStyle, REFERENCE_MATERIALS, resolveStyleId } from "@getpack/dieline";
 
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { ProductPlate, type ProductFamily } from "@/ui/components/ProductIllustration";
 
 /**
  * A product's picture before it has a photo: its own flat dieline on the designer's dotted canvas,
- * drawn by `@packio/dieline` at the product's first standard size (UX audit: "gallery ใช้ dieline/3D
+ * drawn by `@getpack/dieline` at the product's first standard size (UX audit: "gallery ใช้ dieline/3D
  * render ของแบบกล่องแทน placeholder"); the family's drawing when the product has no dieline.
  */
 export function ProductPicture({

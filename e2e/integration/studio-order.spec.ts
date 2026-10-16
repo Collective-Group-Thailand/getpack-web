@@ -4,9 +4,9 @@ import { HOSTS } from "../../playwright.config";
 import { DEV_INSTANT_PRODUCT, runId, signInCustomer } from "./support";
 
 /**
- * U4.6 on the real packio-api (`v0.41.0`): from ⑤ the studio saves the version's quotation, uploads
+ * U4.6 on the real getpack-api (`v0.41.0`): from ⑤ the studio saves the version's quotation, uploads
  * its renders and orders it. Either the print job succeeds and the cart carries the version at the
- * studio's price, or packio-api cannot assemble the file here (`studio.print_unavailable`) and the
+ * studio's price, or getpack-api cannot assemble the file here (`studio.print_unavailable`) and the
  * studio offers the upload route instead — never a half-made order.
  */
 test("ordering a studio version: the cart at the studio's price, or the honest fallback", async ({ context, page }) => {
@@ -78,9 +78,9 @@ test("ordering a studio version: the cart at the studio's price, or the honest f
     expect((cart.items as { designDocumentId: string | null }[]).some((item) => item.designDocumentId === id)).toBe(
       false,
     );
-    // packio-api refuses to order a version it has no renders for.
+    // getpack-api refuses to order a version it has no renders for.
     const design = await (await page.request.get(`${HOSTS.customer}/bff/v1/store/designs/${id}`)).json();
-    const headers = { "x-packio-csrf": "1", origin: HOSTS.customer, "content-type": "application/json" };
+    const headers = { "x-getpack-csrf": "1", origin: HOSTS.customer, "content-type": "application/json" };
     const quote = await (
       await page.request.post(`${HOSTS.customer}/bff/v1/store/studio/${id}/quote/actions/save`, {
         headers: { ...headers, "idempotency-key": crypto.randomUUID() },

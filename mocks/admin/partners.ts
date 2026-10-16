@@ -1,5 +1,5 @@
 /**
- * The published partners surface (packio-api B2.2), mocked statefully: factories and their
+ * The published partners surface (getpack-api B2.2), mocked statefully: factories and their
  * onboarding (D-011, D-041, D-171), KYC, bank accounts (D-033), capability and machines,
  * delivery zones, capacity, the commercial configuration — pricing arrangement (D-042),
  * participations (D-043), tolerance (D-021, D-163) and payout policy (D-022, D-164) — agreements,
@@ -215,7 +215,7 @@ function stepsFor(seed: Seed): Step[] {
     status: index < done ? "approved" : index === done ? "in_progress" : "pending",
     completedAt: index < done ? bangkokIso(-DAY * (40 - index)) : null,
     enteredByStaff: seed.mode === "assisted" && index < done && index > 0,
-    // Under review, the capability and capacity Packio entered still wait for the factory's
+    // Under review, the capability and capacity getpack entered still wait for the factory's
     // sign-off (the D-100 note) — what the partner zone's "review & sign off" is for.
     factorySignedOffAt:
       seed.mode === "assisted" && index < done && index > 0 && !(seed.status === "under_review" && index >= 3)
@@ -419,7 +419,7 @@ function build(seed: Seed, index: number): Store {
     agreements: [
       {
         key: "partner_agreement",
-        name: "สัญญาพาร์ตเนอร์ Packio",
+        name: "สัญญาพาร์ตเนอร์ getpack",
         versionNo: 2,
         effectiveFrom: bangkokIso(-DAY * 120),
         accepted: !["applied", "under_review"].includes(seed.status),
@@ -466,9 +466,9 @@ function build(seed: Seed, index: number): Store {
       : [],
     priceLists: types.map((code, at): PriceList => {
       const listId = nextId("prl");
-      // Under review with assisted onboarding: the tier-B list Packio entered waits for the
+      // Under review with assisted onboarding: the tier-B list getpack entered waits for the
       // factory's sign-off before it applies (D-100 note); the tier-A type waits for the rate
-      // card Packio sent (proposal 4, D-042 a).
+      // card getpack sent (proposal 4, D-042 a).
       const pendingEntry = seed.status === "under_review" && seed.mode === "assisted";
       return {
         id: listId,
@@ -625,7 +625,7 @@ export function proposal(
     productTypeCode: code,
     priceListId: list.id,
     direction,
-    origin: direction === "factory_to_packio" ? "factory_proposal" : "platform_rate_card",
+    origin: direction === "factory_to_getpack" ? "factory_proposal" : "platform_rate_card",
     status,
     baseVersionNo: list.current?.versionNo ?? null,
     proposedEffectiveFrom: bangkokIso(DAY * 7),
@@ -644,7 +644,7 @@ export const proposals: Proposal[] = [
     1,
     FACTORY.id,
     "folding_carton",
-    "factory_to_packio",
+    "factory_to_getpack",
     "submitted",
     [
       line(
@@ -680,7 +680,7 @@ export const proposals: Proposal[] = [
     2,
     mockId("fac", 2),
     "rigid_box",
-    "packio_to_factory",
+    "getpack_to_factory",
     "draft",
     [
       line(
@@ -697,7 +697,7 @@ export const proposals: Proposal[] = [
     3,
     mockId("fac", 3),
     "food_packaging",
-    "factory_to_packio",
+    "factory_to_getpack",
     "approved",
     [
       {
@@ -708,14 +708,14 @@ export const proposals: Proposal[] = [
     ],
     "ลดของเสียจากเครื่องใหม่",
   ),
-  // The rate card Packio sent F006 for its tier-A type during onboarding (D-042 a): the factory
+  // The rate card getpack sent F006 for its tier-A type during onboarding (D-042 a): the factory
   // accepts it whole, or line by line with counters, in the partner zone.
   {
     ...proposal(
       4,
       mockId("fac", 6),
       "label_sticker",
-      "packio_to_factory",
+      "getpack_to_factory",
       "submitted",
       [
         line(7, "material_prices", "add", null, {
@@ -771,7 +771,7 @@ export function factoryTiers(): {
 }
 
 /**
- * The coverage map for one product type, as packio-api's quote-path service computes it (D-043):
+ * The coverage map for one product type, as getpack-api's quote-path service computes it (D-043):
  * every factory not offboarded with a capability for the type, and the instant path — the type
  * quoted instantly and an active factory with an active capability at tier A with a price list in
  * force (tier B needs a configuration to match its envelope, so the map says `envelope_not_covered`).
@@ -844,11 +844,11 @@ registerQueue("partners.read", () => {
 });
 registerQueue("price_proposals.review", () => {
   const rows = proposals.filter(
-    (item) => item.direction === "factory_to_packio" && ["submitted", "under_review"].includes(item.status),
+    (item) => item.direction === "factory_to_getpack" && ["submitted", "under_review"].includes(item.status),
   );
   return {
     key: "partners.proposals",
-    path: "/admin/partners/proposals?direction=factory_to_packio",
+    path: "/admin/partners/proposals?direction=factory_to_getpack",
     count: rows.length,
     overdueCount: 0,
     nextDueAt: null,
@@ -1496,7 +1496,7 @@ export const partnerHandlers: HttpHandler[] = [
       100 + proposals.length,
       ok.store!.factory.id,
       type.code,
-      "packio_to_factory",
+      "getpack_to_factory",
       "draft",
       [],
       body.comment ?? "",
@@ -1516,8 +1516,8 @@ export const partnerHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const item = proposals.find((candidate) => candidate.id === params.proposalId);
     if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-    if (item.status !== "draft" || item.direction !== "packio_to_factory")
-      return problem(409, "price.proposal_not_editable", "แก้ไขรายการได้เฉพาะฉบับร่างของ Packio");
+    if (item.status !== "draft" || item.direction !== "getpack_to_factory")
+      return problem(409, "price.proposal_not_editable", "แก้ไขรายการได้เฉพาะฉบับร่างของ getpack");
     const { lines } = (await request.json()) as Schemas["ReplaceProposalLinesDto"];
     item.lines = lines.map((input) => ({
       ...line(
@@ -1549,8 +1549,8 @@ export const partnerHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const item = proposals.find((candidate) => candidate.id === params.proposalId);
     if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-    if (item.direction !== "packio_to_factory" || !["draft", "submitted"].includes(item.status))
-      return problem(409, "price.proposal_not_withdrawable", "ถอนได้เฉพาะข้อเสนอของ Packio ที่ยังไม่ได้ตอบ");
+    if (item.direction !== "getpack_to_factory" || !["draft", "submitted"].includes(item.status))
+      return problem(409, "price.proposal_not_withdrawable", "ถอนได้เฉพาะข้อเสนอของ getpack ที่ยังไม่ได้ตอบ");
     item.status = "withdrawn";
     return HttpResponse.json(item);
   }),
@@ -1559,7 +1559,7 @@ export const partnerHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const item = proposals.find((candidate) => candidate.id === params.proposalId);
     if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-    if (item.direction !== "factory_to_packio" || !["submitted", "under_review", "countered"].includes(item.status))
+    if (item.direction !== "factory_to_getpack" || !["submitted", "under_review", "countered"].includes(item.status))
       return problem(409, "price.proposal_not_decidable", "ตัดสินได้เฉพาะข้อเสนอของโรงงานที่รอพิจารณา");
     const body = (await request.json()) as Schemas["DecideLinesDto"];
     for (const decision of body.lines) {

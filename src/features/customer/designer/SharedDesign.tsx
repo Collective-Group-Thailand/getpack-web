@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { allFaces, faceBounds, getStyle, isStyleId } from "@packio/dieline";
+import { allFaces, faceBounds, getStyle, isStyleId } from "@getpack/dieline";
 
 import { DesignViewer, readDesignDocument } from "@/features/designer/components/DesignViewer";
 import { dielineOf, sizeOf } from "@/features/designer/document";

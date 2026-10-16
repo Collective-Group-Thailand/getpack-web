@@ -23,7 +23,7 @@ import { toast } from "@/ui/components/Toast";
 type Rate = Schemas["FactoryRateDto"];
 
 /**
- * What Packio pays the factory for delivering with its own fleet (D-013), sent for acceptance
+ * What getpack pays the factory for delivering with its own fleet (D-013), sent for acceptance
  * (D-042): the whole card, or line by line — accept, or ask for another amount. The card applies
  * once every line is agreed.
  */

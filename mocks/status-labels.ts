@@ -1,5 +1,5 @@
 /**
- * D-313: packio-api puts its words next to every labelled status — `<field>LabelTh` (the
+ * D-313: getpack-api puts its words next to every labelled status — `<field>LabelTh` (the
  * customer's) and `<field>LabelAdminTh` (staff and factories). The mock takes one Thai wording for
  * both from the web's own status maps; the API's dictionary is `store.statusLabels.list`.
  */

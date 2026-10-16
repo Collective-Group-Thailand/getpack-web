@@ -1,4 +1,4 @@
-import { defaultsOf, presetsOf, resolveStyleId, variantsOf, type StyleRecipe } from "@packio/dieline";
+import { defaultsOf, presetsOf, resolveStyleId, variantsOf, type StyleRecipe } from "@getpack/dieline";
 
 import type { EditorSeed } from "@/features/designer/components/Editor";
 

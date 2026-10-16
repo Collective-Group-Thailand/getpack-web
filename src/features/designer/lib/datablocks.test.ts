@@ -53,8 +53,8 @@ describe("barcodes (U4.4, D-283)", () => {
     expect(ean8Modules("96385075")).toBeNull();
     expect(upcaModules("03600029145")!.length).toBe(9 + 95 + 9);
     expect(upcaModules("036000291453")).toBeNull();
-    const c = code128Modules("Packio-1")!;
-    expect(c.length).toBe(2 * CODE128_QUIET + 11 * (8 + 2) + 13);
+    const c = code128Modules("getpack-1")!;
+    expect(c.length).toBe(2 * CODE128_QUIET + 11 * (9 + 2) + 13);
     expect(c.slice(CODE128_QUIET, CODE128_QUIET + 11)).toBe("11010010000"); // start B
     expect(code128Modules("ก")).toBeNull();
   });

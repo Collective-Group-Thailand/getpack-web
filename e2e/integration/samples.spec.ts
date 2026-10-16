@@ -4,7 +4,7 @@ import { HOSTS } from "../../playwright.config";
 import { DEV_INSTANT_PRODUCT, runId, signInCustomer, signInStaff } from "./support";
 
 /**
- * U2.F3 on the real packio-api (`v0.41.0`): a customer asks for a sample from a saved quotation
+ * U2.F3 on the real getpack-api (`v0.41.0`): a customer asks for a sample from a saved quotation
  * (`store.samples.request`) and sees it waiting for a quote; CS (lead) finds it in the sample queue
  * (`admin.samples.list`) and quotes it when the dev seed has a service item.
  */

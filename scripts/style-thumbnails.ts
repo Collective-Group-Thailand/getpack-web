@@ -1,5 +1,5 @@
 /**
- * Draws every `@packio/dieline` style to `docs/design-tool/styles/<id>.png` — the thumbnails in
+ * Draws every `@getpack/dieline` style to `docs/design-tool/styles/<id>.png` — the thumbnails in
  * the style-mapping table (F4 Part E) — plus `styles/_sheet.png`, all of them on one page for a
  * quick visual review. Each is the style's first preset on its category's reference board, cut
  * in red, creases dashed blue, glue areas in amber, on a white sheet.
@@ -21,7 +21,7 @@ import {
   REFERENCE_MATERIALS,
   resolveValues,
   STYLES,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 const OUT = new URL("../docs/design-tool/styles/", import.meta.url).pathname;
 const SIZE = 480;

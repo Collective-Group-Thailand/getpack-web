@@ -4,7 +4,7 @@ import { HOSTS } from "../../playwright.config";
 import { DEV_INSTANT_PRODUCT, runId, signInCustomer } from "./support";
 
 /**
- * U4.1 on the real packio-api (`v0.41.0`): a studio design on the dev seed's instant corrugated
+ * U4.1 on the real getpack-api (`v0.41.0`): a studio design on the dev seed's instant corrugated
  * carton is created with its box and calculator spec (D-275), the dock prices that version through
  * `store.studio.quote` (D-277), and another quantity is re-priced with the API's reason. Every
  * figure is the API's; the assertions check that they arrive and follow the change.
@@ -55,9 +55,9 @@ test("studio → saved box and spec → studio price → quantity → new price,
   await expect(rail.getByRole("button", { name: "อัปโหลด", exact: true })).toHaveCount(0);
 
   // ③ content on the real API (U4.4): the template list answers (the dev seed publishes none yet),
-  // and a barcode is checked by packio-api's validation service — its check digit and GS1 minimum.
+  // and a barcode is checked by getpack-api's validation service — its check digit and GS1 minimum.
   await rail.getByRole("button", { name: "แม่แบบ", exact: true }).click();
-  const templates = page.getByRole("region", { name: "แม่แบบของ Packio" });
+  const templates = page.getByRole("region", { name: "แม่แบบของ getpack" });
   await expect(templates.getByText("ยังไม่มีแม่แบบสำหรับประเภทนี้").or(templates.getByRole("listitem").first())).toBeVisible({
     timeout: 30_000,
   });

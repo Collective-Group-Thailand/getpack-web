@@ -1,4 +1,4 @@
-import type { Pt } from "@packio/dieline";
+import type { Pt } from "@getpack/dieline";
 
 import type { DesignContent, DesignElement } from "../types";
 import { barcodeMinWidth, spotColours, type DesignIssue, type PrintRule } from "./checks";

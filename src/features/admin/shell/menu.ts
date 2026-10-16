@@ -15,7 +15,7 @@ import type { IconName } from "@/ui/icons";
 /**
  * `MenuEntryDto.path` is host-absolute (`/admin/approvals`) because that is how the backend
  * thinks about the surface. On the admin host the browser never sees `/admin` — `src/proxy.ts`
- * rewrites `admin.packio.co.th/approvals` to the internal `/admin/approvals` — so a link
+ * rewrites `admin.getpack.co/approvals` to the internal `/admin/approvals` — so a link
  * printed verbatim would send someone to `/admin/approvals`, which the proxy then refuses as a
  * cross-zone path (`isInternalOnlyPath`) and answers 404.
  *

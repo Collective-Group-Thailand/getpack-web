@@ -1,5 +1,5 @@
 /**
- * A server-sent-events reader over `fetch`, for the stream packio-api B1.3 published.
+ * A server-sent-events reader over `fetch`, for the stream getpack-api B1.3 published.
  *
  * Why not `EventSource`: the contract's frames are **named** (`event: notification.created`),
  * and `EventSource` delivers a named event only to a listener registered for that exact name —

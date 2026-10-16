@@ -405,7 +405,7 @@
     "resume": "ผลิตต่อ",
     "markReady": "พร้อมส่ง พิมพ์ฉลาก",
     "dispatch": "ออกรถส่งของ",
-    "requestCarrier": "ขอให้ Packio จัดหาขนส่ง",
+    "requestCarrier": "ขอให้ getpack จัดหาขนส่ง",
     "updateStatus": "อัปเดตสถานะการส่ง",
     "recordPod": "บันทึกหลักฐานการส่งมอบ",
     "bookCarrier": "จองขนส่ง",

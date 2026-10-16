@@ -7,7 +7,7 @@ import { accessToken } from "../../../mocks/support";
 import { createApiClient } from "./client";
 
 /**
- * The Packio Factory ERP E3 mock (packio-api v0.46, D-352 – D-358) keeps what the screens show: who may read
+ * The getpack Factory ERP E3 mock (getpack-api v0.46, D-352 – D-358) keeps what the screens show: who may read
  * machines and maintenance, a breakdown that stops the machine and raises an alert until the repair is done,
  * and documents that remind before they expire.
  */
@@ -22,7 +22,7 @@ const api = (persona: string) =>
 const path = { factoryId: F001 };
 const key = (n: number) => ({ "Idempotency-Key": `00000000-0000-4000-8000-0000000e3${String(n).padStart(3, "0")}` });
 
-describe("Packio Factory ERP E3 mock", () => {
+describe("getpack Factory ERP E3 mock", () => {
   it("lets the maintenance technician run a breakdown from report to finish (D-355)", async () => {
     const machines = (
       await api("maintenance").GET("/v1/partner/factories/{factoryId}/erp/machines", { params: { path } })
