@@ -1025,5 +1025,18 @@
     "open": "Open",
     "contacted": "Contacted",
     "dismissed": "Set aside"
+  },
+  "customer": {
+    "proof": {
+      "pendingCustomer": "Awaiting your review",
+      "approved": "Proof approved",
+      "changesRequested": "You asked for changes"
+    },
+    "rfq": {
+      "accepted": "You accepted the price"
+    },
+    "rfqQuote": {
+      "accepted": "You accepted"
+    }
   }
 }

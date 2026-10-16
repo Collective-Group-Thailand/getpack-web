@@ -74,7 +74,16 @@
     "emptyTitle": "No quote requests yet",
     "emptyBody": "Products without an instant price can be quoted from their product page.",
     "browse": "Browse products",
-    "row": "Quantities {quantities} · sent {date}"
+    "row": "Quantities {quantities} · sent {date}",
+    "table": {
+      "caption": "My quotation requests",
+      "request": "Request",
+      "quantities": "Quantities",
+      "submitted": "Sent",
+      "status": "Status",
+      "actions": "Actions",
+      "view": "View details"
+    }
   },
   "detail": {
     "title": "Quote request",
@@ -116,6 +125,9 @@
     "acceptedTitle": "Accepted — quotation {code}",
     "acceptedBody": "{quantity} pieces. Add it to your cart to order.",
     "addToCart": "Add to cart",
+    "orderedTitle": "Ordered from quotation {code}",
+    "orderedBody": "Follow production and payment in your orders",
+    "toOrders": "View orders",
     "cartFailed": "We could not add it to your cart. Please try again.",
     "declinedBody": "Chat with us to find another way, such as a different spec or quantity.",
     "yes": "Yes",
