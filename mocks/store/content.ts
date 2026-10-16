@@ -1,5 +1,5 @@
 /**
- * Content that teaches (U5.6), standing in for three contract requests until packio-api publishes
+ * Content that teaches (U5.6), standing in for three contract requests until getpack-api publishes
  * them: the customer glossary (the terms of `docs/ui/glossary.md`, our own wording), the materials
  * library over the back office's material rows, and learning paths over the mock's own articles.
  */

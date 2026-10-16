@@ -337,7 +337,7 @@ export function SkillManager({
 
 // ---------------------------------------------------------------------------------- support grants
 
-/** D-381: the owner lets Packio support read the dashboard and settings for a few days, and sees every read. */
+/** D-381: the owner lets getpack support read the dashboard and settings for a few days, and sees every read. */
 export function SupportGrants({ grants }: { grants: Grant[] }) {
   const t = useTranslations("partnerInsight.support");
   const format = useFormat();

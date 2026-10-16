@@ -1,7 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { nanoid } from "nanoid";
-import { DEFAULT_BLEED_MM } from "@packio/dieline";
+import { DEFAULT_BLEED_MM } from "@getpack/dieline";
 import { DEFAULT_PATTERN } from "@/features/designer/catalog";
 import type { DesignContent, DesignElement, DesignSpec, NewElement, PatternSettings } from "@/features/designer/types";
 

@@ -1,5 +1,5 @@
 /**
- * `packio/no-stock-photos` — every photo on the storefront is Packio's own, served by the CMS
+ * `getpack/no-stock-photos` — every photo on the storefront is getpack's own, served by the CMS
  * (Phase 4 §4.6; CLAUDE.md: never copy third-party assets). A stock-library address in the code
  * means a placeholder that can ship: this flags any string or template literal naming one.
  */

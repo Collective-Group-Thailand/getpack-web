@@ -1,5 +1,5 @@
 /**
- * The typed clients for `packio-api` (ADR-0005).
+ * The typed clients for `getpack-api` (ADR-0005).
  *
  *   browserApi()        Client Components → this app's zone BFF at /bff
  *   serverApi(zone)     Server Components → API_INTERNAL_URL with the zone's cookie token
@@ -23,7 +23,7 @@ import { ApiError, toApiError } from "./problem";
 import { audienceOfPath } from "@/i18n/terms";
 import type { ApiPaths } from "./types";
 
-export const CSRF_HEADER = "x-packio-csrf";
+export const CSRF_HEADER = "x-getpack-csrf";
 export const REQUEST_ID_HEADER = "x-request-id";
 export const IDEMPOTENCY_HEADER = "Idempotency-Key";
 

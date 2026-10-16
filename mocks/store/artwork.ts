@@ -7,11 +7,11 @@
  * both reply to. This file projects them onto the published DTOs, for this zone and for the back
  * office's own operations (`../admin/artwork.ts`), which show staff by name.
  *
- * Proof pages and the dieline template are drawn with `@packio/dieline` from the order's box size —
+ * Proof pages and the dieline template are drawn with `@getpack/dieline` from the order's box size —
  * obviously fake artwork on the real outline — and served as SVG through `store.files.download`,
  * so the viewer has something true-to-shape to zoom, overlay and annotate.
  *
- * As in packio-api, a designer's delivery (hired design, D-071) is a proof: approving it approves
+ * As in getpack-api, a designer's delivery (hired design, D-071) is a proof: approving it approves
  * the design, asking for changes opens the next free round; a charged round is confirmed with the
  * fee the customer saw.
  */
@@ -24,7 +24,7 @@ import {
   faceBounds,
   REFERENCE_MATERIALS,
   svgPathData,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 import { http, HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
@@ -77,7 +77,7 @@ const APPROVAL_CHECKLIST: Schemas["ArtworkChecklistItemDto"][] = [
 const decisionChecklists = new Map<string, string[]>();
 const BOARD = REFERENCE_MATERIALS["board-350"];
 const PALETTE = ["#1f6f5c", "#b4532a", "#3b5ba5", "#8a3f8f"];
-const TEAM = "ทีม Packio";
+const TEAM = "ทีม getpack";
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
@@ -439,7 +439,7 @@ const whoOf = (customer: MockCustomer, displayName: string) => ({ id: ownerIdOf(
 const designProofs = new Map<string, { serviceId: string; roundNo: number }>();
 
 /**
- * A delivered design round as the proof the customer decides on (packio-api: the delivery is a
+ * A delivered design round as the proof the customer decides on (getpack-api: the delivery is a
  * submission with source `design_service` that goes to a proof). Made once per delivered round.
  */
 export function syncDesign(detail: PrepressDetail): PrepressDetail {

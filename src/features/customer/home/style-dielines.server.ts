@@ -8,8 +8,8 @@ import {
   REFERENCE_BY_CATEGORY,
   REFERENCE_MATERIALS,
   styleFromRecipe,
-} from "@packio/dieline";
-import { ALL_RECIPES } from "@packio/dieline/library";
+} from "@getpack/dieline";
+import { ALL_RECIPES } from "@getpack/dieline/library";
 
 /** A style's own dieline as an image: an SVG data URI, the drawing's proportions with it. */
 export interface StyleDieline {
@@ -33,8 +33,8 @@ type Drawn = { width: number; height: number; svg: (size: DielineSize) => string
 const drawn = new Map<string, Drawn>();
 
 /**
- * The flat dieline of a style base, drawn by `@packio/dieline` from the base's own recipe — the one
- * packio-api draws it from (ADR-0010) — on the reference board of its category, at the first of the
+ * The flat dieline of a style base, drawn by `@getpack/dieline` from the base's own recipe — the one
+ * getpack-api draws it from (ADR-0010) — on the reference board of its category, at the first of the
  * recipe's starting sizes that passes the engine's own checks. Cut lines and creases keep the
  * engine's layer colours. Null when the engine has no recipe for the base: the card shows no
  * drawing rather than another style's.

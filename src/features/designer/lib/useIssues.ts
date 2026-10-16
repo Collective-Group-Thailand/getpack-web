@@ -12,7 +12,7 @@ import {
   safeZone,
   type Dieline,
   type Pt,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 import { useEditor } from "../store/editor";
 import type { DesignElement } from "../types";

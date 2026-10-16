@@ -198,7 +198,7 @@ test.describe("price proposals (D-040, D-042)", () => {
     await expect(page.getByText(/เสนอกลับ:/)).toContainText("11.900000");
   });
 
-  test("a Packio rate card is drafted line by line and sent to the factory", async ({ page }) => {
+  test("a getpack rate card is drafted line by line and sent to the factory", async ({ page }) => {
     await signInAsStaff(page, "partner_manager");
     await gotoHydrated(page, `${HOSTS.admin}/partners/proposals/${proposal(2)}`);
     await expect(header(page)).toContainText("ฉบับร่าง");

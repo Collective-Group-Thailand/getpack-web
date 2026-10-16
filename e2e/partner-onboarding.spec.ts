@@ -8,7 +8,7 @@ import { gotoHydrated, signInAsPartner, signInAsStaff } from "./helpers/session"
  * F5 5.1 — the partner zone's onboarding and price tables, on a phone, against the mock API.
  *
  * The factories are the back office's own rows: F005 applies (applicant), F006 is in assisted
- * onboarding (Packio entered its capability and capacity, sent a rate card, entered a tier-B
+ * onboarding (getpack entered its capability and capacity, sent a rate card, entered a tier-B
  * price list), F001 is active in factory price-list mode. Each test changes a factory no other
  * partner test changes.
  */
@@ -39,13 +39,13 @@ test.use({ viewport: PHONE });
 test.describe("an applicant's onboarding wizard (F005)", () => {
   test("fills its application step by step and submits it to the Partner team", async ({ page }) => {
     await signInAsPartner(page, "applicant");
-    await expect(page.getByText("กรอกใบสมัครให้ครบเพื่อเริ่มงานกับ Packio")).toBeVisible();
+    await expect(page.getByText("กรอกใบสมัครให้ครบเพื่อเริ่มงานกับ getpack")).toBeVisible();
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
     await expect(nav.getByRole("link", { name: "เริ่มงาน" })).toBeVisible();
     await expectAxeClean(page);
 
     await nav.getByRole("link", { name: "เริ่มงาน" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "การเริ่มงานกับ Packio" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "การเริ่มงานกับ getpack" })).toBeVisible();
     await expect(page.getByRole("list", { name: "ขั้นตอนสู่การเปิดใช้งาน" })).toBeVisible();
     await expectAxeClean(page);
 
@@ -59,7 +59,7 @@ test.describe("an applicant's onboarding wizard (F005)", () => {
       buffer: Buffer.from("%PDF-1.4 mock"),
     });
     await page.getByRole("button", { name: "ส่งเอกสาร" }).click();
-    await expect(page.getByText("ส่งเอกสารแล้ว รอ Packio ตรวจ")).toBeVisible();
+    await expect(page.getByText("ส่งเอกสารแล้ว รอ getpack ตรวจ")).toBeVisible();
     await expectAxeClean(page);
 
     // The application step: company details, a contact, then submit.
@@ -92,7 +92,7 @@ test.describe("an applicant's onboarding wizard (F005)", () => {
 });
 
 test.describe("assisted onboarding (F006)", () => {
-  test("signs off what Packio entered, accepts the rate card and the delivery rates", async ({ page }) => {
+  test("signs off what getpack entered, accepts the rate card and the delivery rates", async ({ page }) => {
     await signInAsPartner(page, "assisted");
     await expect(page.getByRole("link", { name: /รับรองข้อมูล 2 ขั้นตอน/ })).toBeVisible();
 
@@ -106,24 +106,24 @@ test.describe("assisted onboarding (F006)", () => {
     await expect(page.getByText("รับรอง “ความสามารถในการผลิต” แล้ว")).toBeVisible();
     await expect(page.getByText(/โรงงานรับรองข้อมูลนี้แล้วเมื่อ/)).toBeVisible();
 
-    // The rate card Packio sent for the tier-A type (D-042 a): accepted whole.
+    // The rate card getpack sent for the tier-A type (D-042 a): accepted whole.
     await gotoHydrated(page, `${HOSTS.partner}/prices`);
     await expectAxeClean(page);
-    await page.getByRole("link", { name: /ใหม่จาก Packio/ }).click();
-    await expect(page.getByRole("heading", { level: 1, name: /จาก Packio$/ })).toBeVisible();
+    await page.getByRole("link", { name: /ใหม่จาก getpack/ }).click();
+    await expect(page.getByRole("heading", { level: 1, name: /จาก getpack$/ })).toBeVisible();
     await expectAxeClean(page);
     await page.getByRole("button", { name: "ยอมรับอัตราทั้งฉบับ" }).click();
     await dialog(page).getByRole("button", { name: "ยอมรับอัตราทั้งฉบับ" }).click();
     await expect(page.getByText("ยอมรับอัตราแล้ว")).toBeVisible();
     await expect(page.getByText("โรงงานยอมรับแล้ว").first()).toBeVisible();
 
-    // The tier-B list Packio entered for it: signed off, so it applies.
+    // The tier-B list getpack entered for it: signed off, so it applies.
     await gotoHydrated(page, `${HOSTS.partner}/prices`);
     await page.getByRole("button", { name: "ตรวจแล้ว ราคาถูกต้อง — รับรอง" }).click();
     await dialog(page).getByRole("button", { name: "รับรองราคา" }).click();
     await expect(page.getByText("รับรองราคาแล้ว")).toBeVisible();
 
-    // What Packio pays for delivering with its own fleet (D-013).
+    // What getpack pays for delivering with its own fleet (D-013).
     await gotoHydrated(page, `${HOSTS.partner}/prices/shipping`);
     await expectAxeClean(page);
     await page.getByRole("button", { name: /ยอมรับทั้ง \d+ บรรทัด/ }).click();
@@ -153,9 +153,9 @@ test.describe("a factory price-list proposal (F001)", () => {
     await expect(page.getByRole("list", { name: "บรรทัดในร่างข้อเสนอ" }).getByRole("listitem")).toHaveCount(1);
     await expectAxeClean(page);
 
-    await page.getByRole("button", { name: "ส่งข้อเสนอให้ Packio" }).click();
+    await page.getByRole("button", { name: "ส่งข้อเสนอให้ getpack" }).click();
     await dialog(page).getByRole("button", { name: "ส่งข้อเสนอ" }).click();
-    await expect(page.getByText("ส่งข้อเสนอแล้ว รอ Packio ตรวจ")).toBeVisible();
+    await expect(page.getByText("ส่งข้อเสนอแล้ว รอ getpack ตรวจ")).toBeVisible();
     await expect(page.getByText("ส่งแล้ว").first()).toBeVisible();
 
     await signInAsStaff(page, "partner_manager");
@@ -169,7 +169,7 @@ test.describe("the partner zone's permissions", () => {
   test("an operator sees no prices and cannot open them", async ({ page }) => {
     await signInAsPartner(page, "operator");
     await gotoHydrated(page, `${HOSTS.partner}/more`);
-    await expect(page.getByRole("link", { name: /คำขอถึง Packio/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /คำขอถึง getpack/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /ราคาของโรงงาน/ })).toHaveCount(0);
     await gotoHydrated(page, `${HOSTS.partner}/prices`);
     await expect(page.getByText("คุณไม่มีสิทธิ์เปิดหน้านี้")).toBeVisible();

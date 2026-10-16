@@ -535,7 +535,7 @@ orders.forEach((order, index) => {
 
 /* ----------------------------------------------------------------------------- queues, lookups */
 
-/** packio-api's prepress queue (`admin.artwork.queue`), one row per submission or proof. */
+/** getpack-api's prepress queue (`admin.artwork.queue`), one row per submission or proof. */
 export type QueueKind = Schemas["PrepressQueueKind"];
 
 /** Prepress's SLA in the mock: a flat number of hours from when the work arrived (D-175 is the API's). */
@@ -546,7 +546,7 @@ function dueOf(since: string) {
 }
 
 /**
- * The rows of one queue, oldest first, as packio-api builds them: preflighted files still to
+ * The rows of one queue, oldest first, as getpack-api builds them: preflighted files still to
  * review; proofs waiting for the customer (no due time — they wait on the customer); proofs the
  * customer sent back that no newer proof answers yet.
  */

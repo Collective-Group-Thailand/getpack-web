@@ -17,8 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Verified reviews (U2.F4, D-181): only reviews packio-api ties to a delivered order, each with its
- * product type and date, and Packio's reply. With none yet, the page says so — never a placeholder
+ * Verified reviews (U2.F4, D-181): only reviews getpack-api ties to a delivered order, each with its
+ * product type and date, and getpack's reply. With none yet, the page says so — never a placeholder
  * testimonial.
  */
 export default async function ReviewsPage({ params }: { params: Promise<{ locale: string }> }) {

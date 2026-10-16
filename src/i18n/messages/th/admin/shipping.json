@@ -10,7 +10,7 @@
     },
     "carriers": {
       "title": "ผู้ขนส่ง",
-      "description": "รถของโรงงานเป็นค่าเริ่มต้น และผู้ขนส่งสำรองที่ Packio จองให้เมื่อโรงงานส่งโซนนั้นไม่ได้"
+      "description": "รถของโรงงานเป็นค่าเริ่มต้น และผู้ขนส่งสำรองที่ getpack จองให้เมื่อโรงงานส่งโซนนั้นไม่ได้"
     },
     "calendar": {
       "title": "ปฏิทินวันทำการ",
@@ -216,7 +216,7 @@
   },
   "carriers": {
     "fleetIntro": "รถของโรงงานเอง เป็นวิธีส่งหลัก ค่าขนส่งที่จ่ายโรงงานตั้งในแท็บค่าขนส่งของแต่ละโรงงาน",
-    "fallbackIntro": "ผู้ขนส่งสำรองที่ Packio จองให้เมื่อโรงงานส่งโซนนั้นไม่ได้ ใช้บัญชีของ Packio",
+    "fallbackIntro": "ผู้ขนส่งสำรองที่ getpack จองให้เมื่อโรงงานส่งโซนนั้นไม่ได้ ใช้บัญชีของ getpack",
     "on": "เปิดใช้",
     "off": "ปิดอยู่",
     "enable": "เปิดใช้",
@@ -245,13 +245,13 @@
     "addIntro": "บันทึกเฉพาะรหัสอ้างอิงของ secret ใน Secrets Manager ไม่เก็บรหัสผ่านหรือคีย์ในระบบ บัญชีเดิมของสภาพแวดล้อมเดียวกันจะถูกปิด",
     "label": "ชื่อบัญชี",
     "secretRef": "รหัส secret ใน Secrets Manager",
-    "secretRefHint": "เช่น packio/carriers/flash/production (JSON ของ credentials)",
+    "secretRefHint": "เช่น getpack/carriers/flash/production (JSON ของ credentials)",
     "sandboxLabel": "บัญชีทดสอบ (sandbox)",
     "incomplete": "กรอกชื่อบัญชีและรหัส secret",
     "save": "บันทึก",
     "accountAdded": "เพิ่มบัญชีแล้ว",
     "testTitle": "ทดลองขอราคาจาก {name}",
-    "testIntro": "ขอราคาจริงด้วยบัญชีของ Packio เพื่อตรวจว่าบัญชีใช้ได้",
+    "testIntro": "ขอราคาจริงด้วยบัญชีของ getpack เพื่อตรวจว่าบัญชีใช้ได้",
     "fromPostcode": "รหัสไปรษณีย์ต้นทาง",
     "toPostcode": "รหัสไปรษณีย์ปลายทาง",
     "lat": "ละติจูด",

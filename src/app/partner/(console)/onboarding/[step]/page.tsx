@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: isOnboardingStep(step) ? t(`steps.${step}.title`) : t("title") };
 }
 
-/** One onboarding step: what it is, where it stands, what Packio entered, and what to do. */
+/** One onboarding step: what it is, where it stands, what getpack entered, and what to do. */
 export default async function OnboardingStepPage({ params }: Props) {
   const { step } = await params;
   if (!isOnboardingStep(step)) notFound();
@@ -49,13 +49,13 @@ export default async function OnboardingStepPage({ params }: Props) {
         row ? (
           <>
             <StatusChip map={ONBOARDING_STEP_STATUS} value={row.status} size="md" />
-            {row.enteredByStaff ? <Badge>{t("enteredByPackio")}</Badge> : null}
+            {row.enteredByStaff ? <Badge>{t("enteredByGetpack")}</Badge> : null}
           </>
         ) : null
       }
     >
       {row?.notes ? (
-        <Callout tone="info" title={t("packioNote")}>
+        <Callout tone="info" title={t("getpackNote")}>
           {row.notes}
         </Callout>
       ) : null}

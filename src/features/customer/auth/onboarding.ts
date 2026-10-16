@@ -7,7 +7,7 @@ import type { Schemas } from "@/lib/api/types";
  * What a customer is asked right after signing in — through the BFF, with the session the
  * sign-in just set, like every other customer call.
  *
- *   consent   every required purpose not granted, or granted at an older version (PDPA; Packio's
+ *   consent   every required purpose not granted, or granted at an older version (PDPA; getpack's
  *             own consent records, D-005), plus the optional ones never answered
  *   profile   never saved (`CustomerProfileDto.profileCompletedAt` is null) — the progressive-
  *             profiling step. The e-mail is not asked: it comes from a verified sign-in (D-224).

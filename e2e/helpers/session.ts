@@ -6,7 +6,7 @@ import { HOSTS } from "../../playwright.config";
  * Credentials the mock API accepts (`mocks/handlers.ts`). Obviously fake, and the mock only
  * runs when the server is started with `API_MOCKS=1`.
  */
-export const MOCK_STAFF = { email: "somchai.staff@packio.invalid", password: "mock-password" };
+export const MOCK_STAFF = { email: "somchai.staff@getpack.invalid", password: "mock-password" };
 export const MOCK_PARTNER = { email: "planner@factory.invalid", password: "mock-password", pin: "1234" };
 export const MOCK_OTP = { phone: "0812345678", code: "000000" };
 /** A first-time customer: the mock resets them on every sign-in, so consent and profile are asked. */
@@ -58,7 +58,7 @@ export type Persona =
   | "dpo";
 
 export function personaEmail(persona: Persona): string {
-  return persona === "cs" ? MOCK_STAFF.email : `${persona.replace(/_/g, ".")}.staff@packio.invalid`;
+  return persona === "cs" ? MOCK_STAFF.email : `${persona.replace(/_/g, ".")}.staff@getpack.invalid`;
 }
 
 /** Signs in as staff and waits until the admin shell is actually rendering for them. */

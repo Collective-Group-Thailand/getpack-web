@@ -8,7 +8,7 @@ import {
   type ParamGroup,
   type ParamSchema,
   type ParamValues,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";

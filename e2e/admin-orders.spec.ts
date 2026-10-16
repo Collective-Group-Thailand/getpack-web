@@ -30,7 +30,7 @@ async function choose(page: Page, label: string | RegExp, option: string | RegEx
 }
 
 test.describe("the CS queues", () => {
-  test("open on packio-api's first queue, with its count and the orders in it", async ({ page }) => {
+  test("open on getpack-api's first queue, with its count and the orders in it", async ({ page }) => {
     await signInAsStaff(page, "cs");
     await gotoHydrated(page, `${HOSTS.admin}/orders`);
     const tab = page.getByRole("link", { name: /^รอชำระ/ });

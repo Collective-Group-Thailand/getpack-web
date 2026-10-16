@@ -122,7 +122,7 @@ test.describe("after production", () => {
     await expect(page.getByLabel("ตอบกลับ")).toHaveCount(0);
     // The claim's clock (U2.F4, D-263): who acts now, by when, and the guarantee it follows.
     const clock = page.getByRole("region", { name: "สถานะเคลม" });
-    await expect(clock.getByText("รอทีม Packio")).toBeVisible();
+    await expect(clock.getByText("รอทีม getpack")).toBeVisible();
     await expect(clock.getByText(/ตัดสินภายใน/)).toBeVisible();
     await expect(clock.getByRole("link", { name: "ตามเงื่อนไขการรับประกันฉบับที่ 1" })).toHaveAttribute(
       "href",

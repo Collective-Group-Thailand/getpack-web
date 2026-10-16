@@ -3,7 +3,7 @@
  * name-based UUID (v5 layout over SHA-1), so a retry of the same operation sends the same key.
  */
 export async function stableIdempotencyKey(name: string): Promise<string> {
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder().encode(`packio:${name}`)));
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder().encode(`getpack:${name}`)));
   const bytes = digest.slice(0, 16);
   bytes[6] = (bytes[6]! & 0x0f) | 0x50;
   bytes[8] = (bytes[8]! & 0x3f) | 0x80;

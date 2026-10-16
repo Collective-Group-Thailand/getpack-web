@@ -22,7 +22,7 @@ const METRICS = [
 
 /**
  * The factory's own monthly scorecard (D-155, `partner.production.scorecards`) — the same numbers
- * Packio's allocation weighs (D-075): this month so far, the last full month, and the trend.
+ * getpack's allocation weighs (D-075): this month so far, the last full month, and the trend.
  */
 export default async function PerformancePage() {
   const t = await getTranslations("partnerAccount.performance");

@@ -1,18 +1,18 @@
 {
   "title": "Your prices",
   "mode": {
-    "platform_rate_card": "You are on Packio's rate card — review and answer each new version Packio sends.",
-    "factory_price_list": "You keep your own price list — propose changes; Packio reviews them before they apply.",
+    "platform_rate_card": "You are on getpack's rate card — review and answer each new version getpack sends.",
+    "factory_price_list": "You keep your own price list — propose changes; getpack reviews them before they apply.",
     "none": "No pricing arrangement agreed yet"
   },
   "shippingLink": "Delivery rates",
   "attention": {
     "title": "Waiting for your answer",
-    "rateCard": "New {type} rate card from Packio",
+    "rateCard": "New {type} rate card from getpack",
     "rateCardBody": "{count, plural, one {# line} other {# lines}} to answer · applies from {date}",
-    "countered": "Packio countered — {type}",
+    "countered": "getpack countered — {type}",
     "counteredBody": "Take or withdraw {count, plural, one {# line} other {# lines}}",
-    "signOff": "{type} prices Packio entered",
+    "signOff": "{type} prices getpack entered",
     "signOffBody": "Version {version} · {lines} lines · applies from {date} once you sign it off",
     "review": "Review before signing off"
   },
@@ -29,8 +29,8 @@
   "history": {
     "title": "Your price history",
     "body": "Your own prices only",
-    "factory_to_packio": "{type} price proposal",
-    "packio_to_factory": "{type} rate card from Packio",
+    "factory_to_getpack": "{type} price proposal",
+    "getpack_to_factory": "{type} rate card from getpack",
     "meta": "Created {date} · from {from} · {lines} lines",
     "resulting": "Became version {version}",
     "table": {
@@ -45,7 +45,7 @@
   "back": "Back to all prices",
   "tierC": {
     "title": "Quote on request",
-    "body": "There is no price table for this type yet; Packio asks you for a price job by job. Giving prices up front means:",
+    "body": "There is no price table for this type yet; getpack asks you for a price job by job. Giving prices up front means:",
     "unlockInstant": "customers get an instant price on the web, without waiting for a quote",
     "unlockJobs": "you receive more jobs, more steadily",
     "unlockRfq": "no more pricing each job one by one"
@@ -61,7 +61,7 @@
   "tiers": {
     "A": "Full price list — instant quotes and automatic job allocation",
     "B": "Prices for some specs, such as standard sizes — instant quotes there, quote requests outside",
-    "C": "Quote on request — no price table; Packio asks you for a price job by job"
+    "C": "Quote on request — no price table; getpack asks you for a price job by job"
   },
   "envelopeTitle": "These prices cover",
   "version": {
@@ -79,8 +79,8 @@
   },
   "origin": {
     "factory_proposal": "From your proposal",
-    "platform_rate_card": "Packio's rate card, accepted by you",
-    "assisted_entry": "Entered by Packio for you",
+    "platform_rate_card": "getpack's rate card, accepted by you",
+    "assisted_entry": "Entered by getpack for you",
     "import": "Imported from a file"
   },
   "componentsNav": "Price components",
@@ -90,14 +90,14 @@
   "noVersionBody": "Start by proposing your first prices below",
   "propose": {
     "title": "Propose new prices",
-    "body": "1. Pick when new prices start → 2. edit prices in the sheet → 3. send to Packio; they apply once approved",
+    "body": "1. Pick when new prices start → 2. edit prices in the sheet → 3. send to getpack; they apply once approved",
     "open": "You have an open proposal",
     "openLink": "Open it",
     "oneAtATime": "A proposal is already open (above) — send or withdraw it before starting another"
   },
   "rateCardMode": {
-    "title": "Packio's rate card",
-    "body": "Packio updates this table; when a new version comes, you are asked to review and answer it."
+    "title": "getpack's rate card",
+    "body": "getpack updates this table; when a new version comes, you are asked to review and answer it."
   },
   "components": {
     "material_prices": "Material prices",
@@ -396,7 +396,7 @@
   "signOff": {
     "action": "Checked and correct — sign off",
     "title": "Sign off the prices",
-    "body": "You confirm that {label} entered by Packio for you are right. They apply to new orders from their planned date.",
+    "body": "You confirm that {label} entered by getpack for you are right. They apply to new orders from their planned date.",
     "confirm": "Sign off",
     "done": "Prices signed off",
     "failed": "Could not sign off"
@@ -409,17 +409,17 @@
     "from": "New prices start on",
     "fromHint": "Set 7 days ahead; change it if needed. No back-dating; jobs already accepted keep their price",
     "reason": "Reason (optional)",
-    "reasonHint": "Helps Packio approve sooner",
+    "reasonHint": "Helps getpack approve sooner",
     "action": "Start editing prices",
     "reasonPlaceholder": "e.g. corrugated board price rise from our supplier"
   },
   "submit": {
-    "action": "Send to Packio",
+    "action": "Send to getpack",
     "noLines": "Add at least one line first",
     "title": "Send the proposal",
     "body": "Send the {type} proposal ({count, plural, one {# line} other {# lines}}) to the Partner team. Lines cannot change after sending; you can withdraw it.",
     "confirm": "Send",
-    "done": "Proposal sent — waiting for Packio",
+    "done": "Proposal sent — waiting for getpack",
     "failed": "Could not send the proposal"
   },
   "withdraw": {
@@ -434,7 +434,7 @@
   },
   "counters": {
     "answerFor": "Answer for {line}",
-    "accept": "Take Packio's price",
+    "accept": "Take getpack's price",
     "withdrawLine": "Withdraw this line",
     "send": "Send answers",
     "done": "Answers sent",
@@ -461,10 +461,10 @@
     "modeLabel": "How to answer",
     "modeAll": "Accept all",
     "modeLines": "Line by line",
-    "allBody": "Accept all {count} lines as Packio proposed them.",
+    "allBody": "Accept all {count} lines as getpack proposed them.",
     "acceptAll": "Accept the whole card",
     "acceptAllTitle": "Accept the whole rate card",
-    "acceptAllBody": "You accept all {count} {type} lines. They apply to new orders from their date, and Packio keeps your acceptance as evidence.",
+    "acceptAllBody": "You accept all {count} {type} lines. They apply to new orders from their date, and getpack keeps your acceptance as evidence.",
     "accepted": "Rate card accepted",
     "answerFor": "Answer for {line}",
     "accept": "Accept",
@@ -476,8 +476,8 @@
     "commentPlaceholder": "e.g. board price up 8% this month"
   },
   "shipping": {
-    "title": "What Packio pays for delivery",
-    "body": "When you deliver with your own fleet, Packio pays this table (VAT excluded).",
+    "title": "What getpack pays for delivery",
+    "body": "When you deliver with your own fleet, getpack pays this table (VAT excluded).",
     "back": "Back to prices",
     "ownerOnly": "The factory owner answers rate cards.",
     "amountInvalid": "{band}: enter an amount such as 45 or 45.50",
@@ -491,7 +491,7 @@
     "acceptAllBody": "You accept the {count} lines awaiting an answer.",
     "acceptAllConfirm": "Accept",
     "accepted": "Delivery rates accepted",
-    "payout": "Packio pays {amount}",
+    "payout": "getpack pays {amount}",
     "perKg": "+{amount} per extra kg",
     "answerFor": "Answer for {band}",
     "accept": "Accept",
@@ -607,7 +607,7 @@
       "change": "Price change",
       "remove": "Remove line"
     },
-    "counter": "Packio's counter: {values}",
+    "counter": "getpack's counter: {values}",
     "comment": "Note: {comment}",
     "removeNote": "Remove this line — the figures below are the prices in force"
   },
@@ -615,10 +615,10 @@
     "metaTitle": "Price proposal",
     "back": "Back to prices",
     "titleOwn": "{type} price proposal",
-    "titleRateCard": "{type} rate card from Packio",
+    "titleRateCard": "{type} rate card from getpack",
     "meta": "From {from} · based on version {base} · {lines, plural, one {# changed line} other {# changed lines}}",
     "reasonOwn": "Your reason",
-    "reasonPackio": "Packio's reason",
+    "reasonGetpack": "getpack's reason",
     "resultingTitle": "Became version {version}",
     "resultingBody": "Applies to new orders from {date}",
     "draftTitle": "1 · Change prices",
@@ -628,10 +628,10 @@
       "change": "Change",
       "remove": "Remove"
     },
-    "sendTitle": "3 · Send to Packio",
-    "sendBody": "The Packio Partner team checks each line and may accept, reject or counter it.",
+    "sendTitle": "3 · Send to getpack",
+    "sendBody": "The getpack Partner team checks each line and may accept, reject or counter it.",
     "linesTitle": "Lines",
-    "countersTitle": "Answer Packio's counters",
+    "countersTitle": "Answer getpack's counters",
     "countersBody": "Take the counter or withdraw that line; other lines stay as decided.",
     "answerTitle": "Answer this rate card",
     "answerBody": "It applies to new orders from {date}, once every line is agreed.",
@@ -645,16 +645,16 @@
     "backList": "Back to {type} prices",
     "next": {
       "submitted": {
-        "title": "Sent to Packio — waiting for review",
-        "body": "Customers keep getting version {version} meanwhile. Once Packio approves, the new prices start on {date}. To change anything, withdraw and start again"
+        "title": "Sent to getpack — waiting for review",
+        "body": "Customers keep getting version {version} meanwhile. Once getpack approves, the new prices start on {date}. To change anything, withdraw and start again"
       },
       "under_review": {
-        "title": "Packio is reviewing it",
+        "title": "getpack is reviewing it",
         "body": "Customers keep getting version {version} meanwhile; once approved the new prices start on {date}"
       },
       "countered": {
-        "title": "Packio countered — your answer is needed",
-        "body": "See the lines Packio countered below and accept or decline them. Customers keep getting version {version} meanwhile"
+        "title": "getpack countered — your answer is needed",
+        "body": "See the lines getpack countered below and accept or decline them. Customers keep getting version {version} meanwhile"
       }
     }
   },
@@ -665,10 +665,10 @@
   },
   "openNotice": {
     "draft": "You have a draft price proposal not yet sent",
-    "sent": "Packio is reviewing your price proposal",
+    "sent": "getpack is reviewing your price proposal",
     "meta": "From {date} · {lines, plural, one {# line} other {# lines}}",
-    "draftNext": "Packio has not seen these changes; customers still get the current prices. Carry on and send when ready",
-    "sentNext": "While Packio reviews it, customers keep getting the current prices; once approved the new prices start on the date you chose"
+    "draftNext": "getpack has not seen these changes; customers still get the current prices. Carry on and send when ready",
+    "sentNext": "While getpack reviews it, customers keep getting the current prices; once approved the new prices start on the date you chose"
   },
   "table": {
     "count": "{total, plural, one {# line} other {# lines}}",
@@ -692,7 +692,7 @@
   "tierShort": {
     "A": "Instant price on every spec",
     "B": "Instant price on some specs",
-    "C": "Packio asks per job"
+    "C": "getpack asks per job"
   },
   "componentsHint": "The number is how many price lines a part has; a part at 0 is not used for your prices yet",
   "componentHelp": {

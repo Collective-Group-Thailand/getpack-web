@@ -49,9 +49,9 @@ async function asDataUrl(fileId: string): Promise<{ src: string; naturalWidth: n
 /**
  * The company's brand kits (U4.4, D-227, D-282): logos from the company's brand assets, a palette
  * (extracted from the logo, then edited), the studio's print-licensed font pairs and usage notes —
- * kept by packio-api for the whole company. "ใช้แบรนด์ของฉัน" restyles every template piece on the
+ * kept by getpack-api for the whole company. "ใช้แบรนด์ของฉัน" restyles every template piece on the
  * box in one click: colours and fonts by role, the logo into the logo slots. The Company Admin
- * keeps the kits; packio-api refuses anyone else's edit, and the panel says so.
+ * keeps the kits; getpack-api refuses anyone else's edit, and the panel says so.
  */
 export function CompanyBrandKits() {
   const t = useTranslations("designer.brandKits");

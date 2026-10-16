@@ -19,8 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Packio's partner network (U2.F4, D-201, D-264): how factories are audited, what the network can
- * make, and its aggregate figures over a stated window — only when packio-api publishes them (enough
+ * getpack's partner network (U2.F4, D-201, D-264): how factories are audited, what the network can
+ * make, and its aggregate figures over a stated window — only when getpack-api publishes them (enough
  * factories and jobs). No factory is named; no figure is ever filled in here.
  */
 export default async function NetworkPage({ params }: { params: Promise<{ locale: string }> }) {

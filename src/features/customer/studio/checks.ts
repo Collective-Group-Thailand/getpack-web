@@ -15,7 +15,7 @@ export type CheckRun = Schemas["CheckRunDto"];
 export const findingKey = (ruleId: string, elementId: string) => `${ruleId}:${elementId}`;
 
 /**
- * The checks packio-api keeps for a saved version (U4.5, D-278): `store.studio.runChecks` evaluates
+ * The checks getpack-api keeps for a saved version (U4.5, D-278): `store.studio.runChecks` evaluates
  * the document with the same rule ids the studio uses and stores the run; a warning it found is
  * accepted with `acknowledgeCheck` (who, when). A warning only the studio can see (the die's
  * geometry) is accepted in the design itself (`content.acknowledged`), so it too is kept with the
@@ -43,7 +43,7 @@ export function useStudioChecks(
     queryFn: fetchRun(versionNo!),
     enabled: enabled && !!designId && !!versionNo,
     // A version never changes, so its run is asked for once (and never twice at the same time:
-    // packio-api answers concurrent runs of a version with a 500 — docs/integration.md).
+    // getpack-api answers concurrent runs of a version with a 500 — docs/integration.md).
     staleTime: Infinity,
     gcTime: 30 * 60_000,
     retry: false,
@@ -76,7 +76,7 @@ export function useStudioChecks(
     },
     onSuccess: ({ version, run: next }, issue) => {
       if (next) client.setQueryData(keyOf(version), next);
-      // packio-api did not find it on the saved version (the design moved on): kept with the design.
+      // getpack-api did not find it on the saved version (the design moved on): kept with the design.
       else acknowledgeInDesign(issue);
     },
     onError: (_error, issue) => acknowledgeInDesign(issue),
@@ -102,7 +102,7 @@ export function useStudioChecks(
   /**
    * Before ordering (U4.6): the version to be ordered carries every acceptance — the warnings the
    * customer accepted on an earlier version (or in the design) are accepted again on this one where
-   * packio-api finds them, so its run of the version is `ready`.
+   * getpack-api finds them, so its run of the version is `ready`.
    */
   const carryAcknowledgements = async (version: number, issues: DesignIssue[]) => {
     if (!designId) return;

@@ -1,5 +1,5 @@
 {
-  "$comment": "Shared with packio-api, which owns them. Written by `pnpm docs:sync`; `pnpm docs:sync --check` fails on hand edits.",
+  "$comment": "Shared with getpack-api, which owns them. Written by `pnpm docs:sync`; `pnpm docs:sync --check` fails on hand edits.",
   "tag": "v0.43.2",
   "commit": "d151c6fa7f134eea320a476c9476710e22fd5d96",
   "files": {

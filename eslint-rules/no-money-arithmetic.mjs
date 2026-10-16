@@ -1,5 +1,5 @@
 /**
- * `packio/no-money-arithmetic` — the storefront formats prices and strengths, it never computes
+ * `getpack/no-money-arithmetic` — the storefront formats prices and strengths, it never computes
  * them (CLAUDE.md "never computes money"; U2.F1 §7: "no client-side price or strength maths").
  *
  * Money and structural figures arrive as the API's decimal strings or numbers (`unitPrice`,

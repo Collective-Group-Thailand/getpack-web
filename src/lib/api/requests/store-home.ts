@@ -24,7 +24,7 @@ export const companyIdentity = z
 export const newsletterSignUp = z
   .object({
     email: z.string().email().max(254),
-    /** The box was ticked: consent to `marketing_email` (PDPA); packio-api records its current text version. */
+    /** The box was ticked: consent to `marketing_email` (PDPA); getpack-api records its current text version. */
     marketingConsent: z.literal(true),
   })
   .meta({ id: "NewsletterSignUpDto" });

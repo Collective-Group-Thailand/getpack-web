@@ -8,7 +8,7 @@ import type { AnalyticsProperties, FunnelEvent } from "./events";
 import { toIngestEvent, type Visitor } from "./ingest";
 
 /**
- * Sends a funnel event to Packio's own API through the storefront BFF, as packio-api's
+ * Sends a funnel event to getpack's own API through the storefront BFF, as getpack-api's
  * `store.analytics.ingest` takes it: a batch of one `AnalyticsEventDto` (see `./ingest.ts`).
  *
  * Customer zone only: D-102's funnel is about customers, and staff clicking around the back
@@ -21,7 +21,7 @@ import { toIngestEvent, type Visitor } from "./ingest";
  */
 export function track(name: FunnelEvent, properties: AnalyticsProperties = {}): void {
   if (typeof window === "undefined") return;
-  // The app's own funnel step, whatever packio-api ingests of it: the UX journeys (U5.0,
+  // The app's own funnel step, whatever getpack-api ingests of it: the UX journeys (U5.0,
   // `docs/ux/funnels.md`, `e2e/journeys/`) count these names, several of which the API derives
   // on its side instead of receiving.
   window.dispatchEvent(new CustomEvent(FUNNEL_STEP_EVENT, { detail: name }));
@@ -47,13 +47,13 @@ export function track(name: FunnelEvent, properties: AnalyticsProperties = {}): 
 }
 
 /** The DOM event `track()` raises with the app's own step name, before mapping it for the API. */
-export const FUNNEL_STEP_EVENT = "packio:funnel-step";
+export const FUNNEL_STEP_EVENT = "getpack:funnel-step";
 
 const VISITOR_COOKIE = "pk_vid";
 const SESSION_KEY = "pk_sid";
 const newId = () => crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 
-/** Ids for this page when nothing may be kept: packio-api discards them without consent anyway. */
+/** Ids for this page when nothing may be kept: getpack-api discards them without consent anyway. */
 let ephemeral: Visitor | null = null;
 
 /**

@@ -7,7 +7,7 @@ import { DEV_INSTANT_PRODUCT, runId, signInCustomer, signInStaff } from "./suppo
  * The R1 launch path on the real API (D-110), one order end to end: a customer prices the
  * corrugated test product online, orders it by bank transfer with a slip, and Finance confirms the
  * payment if the automatic check left it for them (D-061). Later steps — artwork, proof,
- * production at F9001, shipping, receipt — continue the same order (serial) once packio-api's dev
+ * production at F9001, shipping, receipt — continue the same order (serial) once getpack-api's dev
  * seed can carry an order through checkout (`api.dev-seed-launch-path`).
  */
 
@@ -30,7 +30,7 @@ test("a customer prices the carton online and adds it to the cart", async ({ con
   await page.getByLabel(/^เพิ่มจำนวน/).fill("1000");
   await page.getByRole("button", { name: "เพิ่ม", exact: true }).click();
 
-  // The price comes from packio-api's calculator on F9001's price list.
+  // The price comes from getpack-api's calculator on F9001's price list.
   await expect(dock(page).getByText(/^฿[\d,]+\.\d{2} \/ ชิ้น$/)).toBeVisible({ timeout: 30_000 });
   await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
   await expect(page.getByText(/ลงตะกร้าแล้ว/)).toBeVisible({ timeout: 30_000 });

@@ -1,7 +1,7 @@
 import { defineStatusMap } from "./types";
 import type { ConversationSlaState, ConversationStatus, RfqBasketStatus } from "./contract";
 
-/** A conversation with Packio (D-300): open, waiting on the customer, or closed. */
+/** A conversation with getpack (D-300): open, waiting on the customer, or closed. */
 export const CONVERSATION_STATUS = defineStatusMap<ConversationStatus>({
   open: { tone: "info", icon: "chat", labelKey: "conversation.open" },
   pending: { tone: "neutral", icon: "hourglass", labelKey: "conversation.pending" },

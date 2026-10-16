@@ -21,7 +21,7 @@ const SIZE = /^\d{1,4}(\.\d)?$/;
 /**
  * "ไม่เจอแบบที่ต้องการ" (U3.6, D-273): a customer describes the structure the library lacks — the
  * product type, what goes in it and how it is used, its sizes on a stated basis, the quantity, and
- * photos or drawings — and Packio's structural designers take it from there. A fee, when one
+ * photos or drawings — and getpack's structural designers take it from there. A fee, when one
  * applies, is quoted separately before any work is charged.
  */
 export function RequestStructure({ productTypes }: { productTypes: { value: string; label: string }[] }) {

@@ -22,7 +22,7 @@ backend publishes its enums:
 ```ts
 // today
 export type OrderStatus = "waiting_payment" | "paid" | …;
-// the day packio-api ships the component
+// the day getpack-api ships the component
 export type OrderStatus = Schemas["OrderStatus"];
 ```
 
@@ -33,7 +33,7 @@ badge at runtime, because a customer should never see a blank where a status bel
 
 `contract.ts` records, per vocabulary, whether the values are **sourced** (legacy §5.2 for
 order/payment/artwork, `accounting-design.md` for document) or **proposed** — the seven
-workflows Packio has no prior vocabulary for. The proposals are a request to the backend,
+workflows getpack has no prior vocabulary for. The proposals are a request to the backend,
 logged as `status.enums` in `docs/contract-requests.md`, not a claim about the contract.
 
 Labels live in the `status` namespace in `src/i18n`, shared by all three zones: a status must

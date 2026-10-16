@@ -6,7 +6,7 @@ import { OG_SIZE, renderOgCard } from "@/features/customer/seo/og-image";
 import { formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 
-export const alt = "Packio";
+export const alt = "getpack";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 

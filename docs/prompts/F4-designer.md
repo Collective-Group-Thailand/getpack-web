@@ -1,4 +1,4 @@
-# F4 — Online box designer v2 & `@packio/dieline` engine
+# F4 — Online box designer v2 & `@getpack/dieline` engine
 
 > 3D preview component built here is reused by the configurator (F3.2) and the proof viewer (F3.5) — D-152.
 
@@ -8,11 +8,11 @@
 
 ---
 
-You are a senior engineer building the Packio online box designer. Current state after F0: the editor lives in `src/features/designer` (Konva canvas, toolbar, side panels, setup modal, Zustand store with undo/redo, PNG/PDF/SVG/thumbnail export, localStorage designs) with routes `/[locale]/design/[id]` and `/[locale]/account/designs`; framework-free geometry lives in `packages/dieline` (`@packio/dieline`: `Face`, `Dieline`, `DesignSpec`, `rsc()`, `tuckEnd()`, `tray()`, `buildDieline()`, `dielineSegments()`, `dielineToSvg()`, `insetConvex`).
+You are a senior engineer building the getpack online box designer. Current state after F0: the editor lives in `src/features/designer` (Konva canvas, toolbar, side panels, setup modal, Zustand store with undo/redo, PNG/PDF/SVG/thumbnail export, localStorage designs) with routes `/[locale]/design/[id]` and `/[locale]/account/designs`; framework-free geometry lives in `packages/dieline` (`@getpack/dieline`: `Face`, `Dieline`, `DesignSpec`, `rsc()`, `tuckEnd()`, `tray()`, `buildDieline()`, `dielineSegments()`, `dielineToSvg()`, `insetConvex`).
 
-Legacy Locopack used an **external design tool** (`UR_DESIGN_URL`) and an **external drawing generator** (`DRAWING_URL`); Packio does not migrate legacy designs (D-005); the backend stores new design documents in its `designs` / `design_assets` / `design_versions` tables. This workstream replaces both external tools: the engine and editor here, the drawing service in `packio-api` (B4.1) using the **published** `@packio/dieline`.
+Legacy Locopack used an **external design tool** (`UR_DESIGN_URL`) and an **external drawing generator** (`DRAWING_URL`); getpack does not migrate legacy designs (D-005); the backend stores new design documents in its `designs` / `design_assets` / `design_versions` tables. This workstream replaces both external tools: the engine and editor here, the drawing service in `getpack-api` (B4.1) using the **published** `@getpack/dieline`.
 
-## Part A — Engine v2 (`packages/dieline` (`@packio/dieline`))
+## Part A — Engine v2 (`packages/dieline` (`@getpack/dieline`))
 1. **Geometry model**: faces with path edges — `Edge { kind: 'line'|'arc'|'bezier', from, to, …params, role: 'cut'|'crease'|'perforation'|'half_cut'|'glue_area'|'bleed' }`; faces may be non-convex and contain holes (windows, hang holes, handle cut-outs). Helpers for rect/trapezoid faces keep generators readable.
 2. **Multi-piece dielines**: `Dieline { pieces: Piece[] }` (lid + base, sleeve + tray…), each with bounds and label.
 3. **Style definition contract** — one file per style under `packages/dieline/src/styles/<id>.ts`:
@@ -32,13 +32,13 @@ Legacy Locopack used an **external design tool** (`UR_DESIGN_URL`) and an **exte
    Registry `packages/dieline/src/styles/index.ts`. Keep rule-of-thumb constants in `constants.ts` with comments for prepress engineers.
 4. **Caliper compensation**: panel, flap and tuck dimensions adjusted by `MaterialSpec.caliperMm` (from the catalogue API: `paper` / `paper_grade` + `flute_type` concepts); formula documented per style.
 5. **Robust offsetting** for safe zone/bleed on non-convex faces and curves (Clipper2 or equivalent; flatten curves to ≤ 0.2 mm only for offsetting).
-6. **Exports** (pure functions): SVG (layers `CUT`, `CREASE`, `PERF`, `HALFCUT`, `GLUE`, true mm, real SVG arcs), **DXF** (same layers), PDF dieline (vector) — used both by the editor and by the backend drawing service (`packio-api` B4.1, which consumes the published package).
+6. **Exports** (pure functions): SVG (layers `CUT`, `CREASE`, `PERF`, `HALFCUT`, `GLUE`, true mm, real SVG arcs), **DXF** (same layers), PDF dieline (vector) — used both by the editor and by the backend drawing service (`getpack-api` B4.1, which consumes the published package).
 7. **Migration** of BoxStudio-era localStorage designs (`specVersion`) so existing local designs still open.
 
-8. **Publishing**: `@packio/dieline` is versioned with Changesets and published to GitHub Packages on release (semver; breaking geometry changes = major). The public API is documented in `packages/dieline/README.md`; the backend pins a version. The package has zero runtime dependencies on React/DOM/Node-only APIs (runs in browser and Node).
+8. **Publishing**: `@getpack/dieline` is versioned with Changesets and published to GitHub Packages on release (semver; breaking geometry changes = major). The public API is documented in `packages/dieline/README.md`; the backend pins a version. The package has zero runtime dependencies on React/DOM/Node-only APIs (runs in browser and Node).
 
 ## Part B — Style library (mapped to the legacy pattern catalogue)
-First, **inventory the legacy Locopack pattern catalogue as the style reference** (nothing is migrated, D-005): read `pattern`, `sub_patterns`, `pattern_rel_standard_sizes`, `pattern_match_flute`, pattern size constraints (min/max w/l/h/b/s/cs/dl/dw) and `mapping_inputs` from `docs/legacy/03-legacy-schema.txt` and the legacy code/seeders (and from Packio's own catalogue endpoints once admins have created patterns) and write `docs/design-tool/style-mapping.md`: each Locopack pattern → a `BoxStyleDef` (existing or new), its parameters (including legacy `b`, `s`, `cs`, `dl`, `dw` meaning — find it in legacy code/drawing requests and document it), and constraints. **Cover the legacy pattern list plus the minimum reference set below; Packio admins create the live catalogue from these style definitions.** Where a legacy pattern's construction is unclear, compare with drawing files previously produced by `DRAWING_URL` (from `download_drawing_logs` / S3) and record assumptions.
+First, **inventory the legacy Locopack pattern catalogue as the style reference** (nothing is migrated, D-005): read `pattern`, `sub_patterns`, `pattern_rel_standard_sizes`, `pattern_match_flute`, pattern size constraints (min/max w/l/h/b/s/cs/dl/dw) and `mapping_inputs` from `docs/legacy/03-legacy-schema.txt` and the legacy code/seeders (and from getpack's own catalogue endpoints once admins have created patterns) and write `docs/design-tool/style-mapping.md`: each Locopack pattern → a `BoxStyleDef` (existing or new), its parameters (including legacy `b`, `s`, `cs`, `dl`, `dw` meaning — find it in legacy code/drawing requests and document it), and constraints. **Cover the legacy pattern list plus the minimum reference set below; getpack admins create the live catalogue from these style definitions.** Where a legacy pattern's construction is unclear, compare with drawing files previously produced by `DRAWING_URL` (from `download_drawing_logs` / S3) and record assumptions.
 
 Reference set (implement all that exist in Locopack's catalogue, plus these):
 - Folding carton: straight tuck end; reverse tuck end; tuck top + snap-lock (1-2-3) bottom; tuck top + crash-lock (auto) bottom; seal end; tuck end with hang tab (euro slot option); sleeve; sleeve + tray drawer (two pieces); pillow box (arcs); gable/handle box; hexagonal tuck box.
@@ -49,7 +49,7 @@ Reference set (implement all that exist in Locopack's catalogue, plus these):
 
 Attach FEFCO/ECMA codes only when verified.
 
-## Part C — Integration with the Packio API (`src/features/designer`)
+## Part C — Integration with the getpack API (`src/features/designer`)
 1. **Design documents**: replace localStorage with the designs API (`/v1/store/designs/*`): the editor document is JSON with a `schemaVersion`; autosave (debounced) with `If-Match`/ETag conflict detection and a resolve dialog; versions/history list; large assets via presigned upload (`design_assets`); offline draft in IndexedDB; one-time import of existing localStorage designs into the account after sign-in.
 2. **Entry points**: from product pages/configurator (F3) with product (`mapping_input`), pattern, size and material preselected; from orders (design linked to an order item — legacy `design_uuid`, "design online"); from the admin zone (prepress opens a customer design read-only or as a copy — same components, read-only mode).
 3. **Constraints & materials** come from catalogue endpoints (pattern min/max, paper/grade, flute caliper, available colours) — no hard-coded catalogue. Delete the old `catalog.ts` placeholders once wired.
@@ -67,8 +67,8 @@ Attach FEFCO/ECMA codes only when verified.
 - Mobile: view + light edits (text, replace image, colours) with a bottom-sheet UI; full editing is desktop/tablet.
 
 ## Part E — Quality gates
-- `packages/dieline` (`@packio/dieline`) Vitest for every style × preset × material: closed cut loops (≤ 0.01 mm gaps), no face overlaps, key dimensions equal inputs after compensation, `validate()` rejects out-of-range and accepts presets, SVG/DXF snapshots stable, 3D hinge map folds into a closed box within tolerance (bounding box = L×W×H ± 1 mm).
-- Golden comparison vs legacy drawings is run by `packio-api` (B4.1) using the published engine; provide the fixture generator and per-pattern SVG snapshots it needs.
+- `packages/dieline` (`@getpack/dieline`) Vitest for every style × preset × material: closed cut loops (≤ 0.01 mm gaps), no face overlaps, key dimensions equal inputs after compensation, `validate()` rejects out-of-range and accepts presets, SVG/DXF snapshots stable, 3D hinge map folds into a closed box within tolerance (bounding box = L×W×H ± 1 mm).
+- Golden comparison vs legacy drawings is run by `getpack-api` (B4.1) using the published engine; provide the fixture generator and per-pattern SVG snapshots it needs.
 - App: component tests, Playwright e2e (open from product page → design → price updates → submit for print → preflight result), visual regression of editor states, axe, Lighthouse budgets for the editor route (designer budget).
 - Docs: `docs/design-tool/` (architecture, style authoring guide with a worked example, style-mapping table with thumbnails generated to `docs/design-tool/styles/*.png`, print-PDF spec for factories), ADRs (geometry model, 3D approach, PDF generation tooling), `docs/PROGRESS.md`.
 - Final summary: styles implemented and mapped, patterns still on `DRAWING_URL` fallback and why, assumptions needing prepress confirmation.

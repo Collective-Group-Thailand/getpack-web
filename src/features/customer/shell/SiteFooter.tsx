@@ -10,7 +10,7 @@ import { DeferredThemeMenu } from "./DeferredMenus";
 
 /**
  * The storefront footer, to the V4 board (design language v3: on the paper, under a hairline): the
- * studio, ordering, Packio and help columns, the ways to pay, and the legal links PDPA requires
+ * studio, ordering, getpack and help columns, the ways to pay, and the legal links PDPA requires
  * somewhere reachable from every page.
  *
  * Payment methods are named in words, not with card-scheme logos — CLAUDE.md forbids
@@ -29,7 +29,7 @@ export async function SiteFooter() {
     emptyContent(),
   ]);
 
-  // The V4 board's columns — studio, ordering, Packio — then help and the legal links PDPA requires.
+  // The V4 board's columns — studio, ordering, getpack — then help and the legal links PDPA requires.
   const columns = [
     {
       key: "studio",

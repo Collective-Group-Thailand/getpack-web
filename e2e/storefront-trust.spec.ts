@@ -20,7 +20,7 @@ async function expectNoViolations(page: Page) {
   ).toEqual([]);
 }
 
-test("the guarantee: time limits and the remedies matrix as packio-api publishes it", async ({ page }) => {
+test("the guarantee: time limits and the remedies matrix as getpack-api publishes it", async ({ page }) => {
   await gotoHydrated(page, `${HOSTS.customer}/`);
   await page.getByRole("contentinfo").getByRole("link", { name: "การรับประกันงาน" }).click();
   await expect(page).toHaveURL(/\/guarantee$/);

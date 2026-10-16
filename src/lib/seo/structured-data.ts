@@ -23,7 +23,7 @@ export function organizationSchema(origin: string): OrganizationSchema {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: BRAND_NAME,
-    // Packio is the brand; Collective Group (Thailand) is the legal entity that issues every
+    // getpack is the brand; Collective Group (Thailand) is the legal entity that issues every
     // document (D-010, D-092), and a search engine should know which is which.
     legalName: BRAND_COMPANY,
     description: BRAND_TAGLINE,
@@ -231,7 +231,7 @@ export function definedTermSetSchema(input: { name: string; url: string; terms: 
   } as const;
 }
 
-/** What Packio offers as a service (the business page): named, by the brand, in Thailand. */
+/** What getpack offers as a service (the business page): named, by the brand, in Thailand. */
 export function serviceSchema(input: { name: string; description: string; url: string; serviceType: string }) {
   return {
     "@context": "https://schema.org",

@@ -8,7 +8,7 @@ import { cn } from "../lib/cn";
 /**
  * The short form of a request id, for people: `PK-` and its last six characters, upper-cased.
  *
- * The last characters rather than the first: packio-api's ids may be UUIDv7, whose leading
+ * The last characters rather than the first: getpack-api's ids may be UUIDv7, whose leading
  * characters are a timestamp and barely differ between two requests made the same afternoon.
  * Support finds the request by this suffix; the full id is what the copy button puts on the
  * clipboard, so it is never shown and never has to be read out (UX audit: "ไม่โชว์ UUID").

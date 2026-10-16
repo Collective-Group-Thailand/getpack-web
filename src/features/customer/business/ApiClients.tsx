@@ -24,7 +24,7 @@ const SCOPES: Scope[] = ["b2b_orders.read", "b2b_orders.write", "b2b_documents.r
 
 /**
  * The company's API clients (U2.F5, D-291): issued by a Company Admin with the scopes they need —
- * read or place orders, read documents, manage webhooks — the secret shown once (packio-api keeps a
+ * read or place orders, read documents, manage webhooks — the secret shown once (getpack-api keeps a
  * hash), when each was last used, and revoking. Rotating is issuing a new one, then revoking the old.
  * Webhook subscriptions and their delivery log are managed through the B2B API with a client that
  * holds the webhooks scope.

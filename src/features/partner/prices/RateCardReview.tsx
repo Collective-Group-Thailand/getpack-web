@@ -29,7 +29,7 @@ export interface RateCardLine {
 type Answer = "accept" | "counter";
 
 /**
- * A rate card Packio sent (D-042 a): accepted whole, or line by line — accept, or counter with
+ * A rate card getpack sent (D-042 a): accepted whole, or line by line — accept, or counter with
  * the value the factory asks for instead (a negotiated exception). Lines left unanswered stay
  * open. The card applies to new orders once every line is agreed; orders already priced keep
  * their snapshot (D-040). One `Idempotency-Key` per answer sent.
@@ -77,7 +77,7 @@ export function RateCardReview({
           lines: answered.map((line) => ({
             lineId: line.id,
             // CONTRACT-DEFECT contract.rate-card-line-response: the contract types `response` as
-            // its own DTO (an enum name collision); packio-api declares it `accept | counter`.
+            // its own DTO (an enum name collision); getpack-api declares it `accept | counter`.
             response: answers[line.id] as unknown as Schemas["RateCardLineResponse"]["response"],
             ...(answers[line.id] === "counter"
               ? {

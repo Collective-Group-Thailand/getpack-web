@@ -4,14 +4,14 @@
  * assets without a record). An unlisted image, or one whose `source` is not a known licence
  * (`interim-unverified`, missing), fails a production build; `next.config.ts` runs this check.
  *
- * Manifest shape (shared with packio-api's `pnpm cms:home-photos`):
+ * Manifest shape (shared with getpack-api's `pnpm cms:home-photos`):
  * `{ assets: [{ file, position, source, altTh, captionTh? }] }`.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
-/** Sources a production build accepts: free-commercial-use libraries and Packio's own photos. */
-export const ALLOWED_SOURCES = ["pexels", "unsplash", "packio"];
+/** Sources a production build accepts: free-commercial-use libraries and getpack's own photos. */
+export const ALLOWED_SOURCES = ["pexels", "unsplash", "getpack"];
 
 const IMAGE = /\.(jpe?g|png|webp|avif|gif|svg)$/i;
 

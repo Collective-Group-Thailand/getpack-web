@@ -370,7 +370,7 @@
     "eanHint": "พิมพ์ 12 หลัก ระบบเติมหลักตรวจสอบให้",
     "invalid": "ใช้ค่านี้สร้างโค้ดไม่ได้",
     "addCode": "เพิ่มโค้ด",
-    "packio": "องค์ประกอบของ Packio",
+    "getpack": "องค์ประกอบของ getpack",
     "kinds": {
       "shape": "รูปทรง",
       "icon": "ไอคอน",
@@ -687,7 +687,7 @@
   },
   "shared": {
     "metaTitle": "แบบกล่องที่แชร์",
-    "home": "หน้าแรก Packio",
+    "home": "หน้าแรก getpack",
     "badge": "แบบที่แชร์ · ดูอย่างเดียว",
     "mm": "มม.",
     "sharedAt": "แชร์เมื่อ {time}",
@@ -726,7 +726,7 @@
     "softProof": "ดูแบบพิมพ์จริง"
   },
   "studioTemplates": {
-    "title": "แม่แบบของ Packio",
+    "title": "แม่แบบของ getpack",
     "useCase": "ใช้กับสินค้า",
     "all": "ทุกประเภท",
     "useCases": {

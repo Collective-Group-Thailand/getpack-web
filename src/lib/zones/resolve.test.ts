@@ -4,9 +4,9 @@ import { BROWSER_BFF_PATH, browserBffUrl, isUpstreamPathAllowed, upstreamPrefixe
 import { isInternalOnlyPath, normaliseHost, resolveZone, type ZoneHosts } from "./resolve";
 
 const hosts: ZoneHosts = {
-  customer: "packio.co.th",
-  admin: "admin.packio.co.th",
-  partner: "partner.packio.co.th",
+  customer: "getpack.co",
+  admin: "admin.getpack.co",
+  partner: "partner.getpack.co",
 };
 
 const localHosts: ZoneHosts = {
@@ -17,10 +17,10 @@ const localHosts: ZoneHosts = {
 
 describe("normaliseHost", () => {
   it.each([
-    ["Packio.CO.th", "packio.co.th"],
-    ["packio.co.th:443", "packio.co.th"],
+    ["Getpack.CO", "getpack.co"],
+    ["getpack.co:443", "getpack.co"],
     // RFC 1034 root dot: the same name, and a classic way past an allow-list.
-    ["packio.co.th.", "packio.co.th"],
+    ["getpack.co.", "getpack.co"],
     ["  admin.localhost:3000  ", "admin.localhost"],
     ["[::1]:3000", "::1"],
     ["[::1]", "::1"],
@@ -35,9 +35,9 @@ describe("normaliseHost", () => {
 
 describe("resolveZone", () => {
   it.each([
-    ["packio.co.th", "customer"],
-    ["admin.packio.co.th", "admin"],
-    ["partner.packio.co.th", "partner"],
+    ["getpack.co", "customer"],
+    ["admin.getpack.co", "admin"],
+    ["partner.getpack.co", "partner"],
   ] as const)("maps %s to the %s zone", (host, zone) => {
     expect(resolveZone(host, hosts)).toBe(zone);
   });
@@ -55,18 +55,18 @@ describe("resolveZone", () => {
   });
 
   it("does not let a trailing dot or a stray port smuggle a host past the check", () => {
-    expect(resolveZone("admin.packio.co.th.", hosts)).toBe("admin");
-    expect(resolveZone("admin.packio.co.th.evil.com", hosts)).toBeNull();
+    expect(resolveZone("admin.getpack.co.", hosts)).toBe("admin");
+    expect(resolveZone("admin.getpack.co.evil.com", hosts)).toBeNull();
     expect(resolveZone("evil.com:80", hosts)).toBeNull();
   });
 
   it("serves only the zones this deployment is configured for", () => {
-    expect(resolveZone("admin.packio.co.th", hosts, ["customer"])).toBeNull();
-    expect(resolveZone("packio.co.th", hosts, ["customer"])).toBe("customer");
+    expect(resolveZone("admin.getpack.co", hosts, ["customer"])).toBeNull();
+    expect(resolveZone("getpack.co", hosts, ["customer"])).toBe("customer");
   });
 
   it("is case-insensitive", () => {
-    expect(resolveZone("ADMIN.Packio.CO.TH", hosts)).toBe("admin");
+    expect(resolveZone("ADMIN.Getpack.CO", hosts)).toBe("admin");
   });
 });
 

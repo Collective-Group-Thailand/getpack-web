@@ -19,7 +19,7 @@ export function normaliseHost(host: string | null | undefined): string | null {
   }
 
   const withoutPort = trimmed.split(":", 1)[0] ?? "";
-  // `packio.co.th.` and `packio.co.th` are the same name (RFC 1034); a stray trailing dot
+  // `getpack.co.` and `getpack.co` are the same name (RFC 1034); a stray trailing dot
   // is a classic way to slip past a host allow-list.
   const withoutRootDot = withoutPort.endsWith(".") ? withoutPort.slice(0, -1) : withoutPort;
   return withoutRootDot || null;

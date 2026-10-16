@@ -4,10 +4,10 @@
 
 ## Context
 
-Packio needs three very different surfaces — a public storefront, a staff back-office and
+getpack needs three very different surfaces — a public storefront, a staff back-office and
 a shop-floor PWA for partner factories — that nevertheless share one design system, one
 set of domain components (status badges, price summary, order timeline, proof viewer, box
-designer) and one contract with `packio-api` (D-002).
+designer) and one contract with `getpack-api` (D-002).
 
 Three separate frontends would mean three copies of that shared layer, three deployments
 and three chances for the status vocabulary to drift. One app with path-based zones

@@ -22,7 +22,7 @@ import { catalogProducts, imageUrl } from "./catalog";
 type Answers = z.output<typeof guidedAnswers>;
 
 const DAY = 24 * 60;
-const LINE_OA = "@packio.mock";
+const LINE_OA = "@getpack.mock";
 
 let ticketSeq = 0;
 export const tickets: { ticketNo: string; kind: "contact" | "handoff"; body: unknown; at: string }[] = [];

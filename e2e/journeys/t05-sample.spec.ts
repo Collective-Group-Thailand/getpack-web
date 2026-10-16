@@ -7,7 +7,7 @@ const dock = (page: Page) => page.getByRole("complementary", { name: "ราค�
 
 /**
  * T5 "ขอตัวอย่างก่อนสั่งผลิตจริง" — from the T1 box's product page, signed in, to a sample request
- * sent to Packio's CS (D-253: a standalone sample of a saved quotation, quoted by CS and bought like
+ * sent to getpack's CS (D-253: a standalone sample of a saved quotation, quoted by CS and bought like
  * any quotation). Since U5.8 the configurator's dock asks for it directly: the quotation is kept on
  * the way (`store.quotes.save`), and the postcode comes from the configuration or the default
  * delivery address. The task card stops before submitting with a participant; the walk submits to

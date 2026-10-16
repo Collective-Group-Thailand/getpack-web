@@ -1,7 +1,7 @@
 import type { StudioStep } from "./steps";
 
 /**
- * Every way into Packio 3D Studio (U4.2 §1): the style library, a product page, the configurator,
+ * Every way into getpack 3D Studio (U4.2 §1): the style library, a product page, the configurator,
  * an order's artwork page, the account's designs, a shared design, LINE (LIFF opens the same
  * links) — each lands on `/studio/…` with the step that fits what is already known: ① to pick a
  * box, ② when the style is chosen but not yet its size and material, ③ once the box is set.

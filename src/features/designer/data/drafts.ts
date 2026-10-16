@@ -20,7 +20,7 @@ export interface Draft {
   savedAt: number;
 }
 
-const DB_NAME = "packio-designer";
+const DB_NAME = "getpack-designer";
 const STORE = "drafts";
 
 function open(): Promise<IDBDatabase | null> {

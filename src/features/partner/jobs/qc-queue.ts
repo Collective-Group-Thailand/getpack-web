@@ -5,14 +5,14 @@ import { needsQcForm } from "./evidence";
 type Job = Schemas["PartnerJobDto"];
 
 export interface QcQueue {
-  /** Packio's inspector is booked: soonest first. */
+  /** getpack's inspector is booked: soonest first. */
   inspections: Job[];
   /** The job stands at a step whose evidence is the QC form, and the factory may record it. */
   atQc: Job[];
 }
 
 /**
- * The QC inspector's queue (round 2, Phase 1 — the "PartnerQc" board): jobs Packio will inspect,
+ * The QC inspector's queue (round 2, Phase 1 — the "PartnerQc" board): jobs getpack will inspect,
  * soonest first, and jobs that reached a step needing the QC form and offer `job.record_qc`. A
  * job finished, cancelled or rejected is never in it.
  */

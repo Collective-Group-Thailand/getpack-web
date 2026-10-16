@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * The assistant's evaluation gate and usage (U5.5 §3, D-306): whether it is cleared to be switched on,
- * the latest evaluation runs (≥ 100 Thai cases and the red-team set, in packio-api), what its turns
+ * the latest evaluation runs (≥ 100 Thai cases and the red-team set, in getpack-api), what its turns
  * ended as, and its cost. No menu entry yet (CONTRACT-REQUEST admin.menu-assistant): linked from Analytics.
  */
 export default async function AssistantDashboardPage() {

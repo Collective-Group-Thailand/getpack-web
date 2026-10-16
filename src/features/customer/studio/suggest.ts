@@ -7,7 +7,7 @@ import {
   type BoxStyleDef,
   type Issue,
   type ParamValues,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 import {
   dimsFromProduct,

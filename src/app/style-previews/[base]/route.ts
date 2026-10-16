@@ -6,7 +6,7 @@ const BASE = /^PK-[A-Z]+-\d{2}$/;
 
 /**
  * `/style-previews/<base>?<axis>=<value>…` (D-410): a variant's flat dieline as an SVG image for the
- * library's cards, until packio-api renders its thumbnail. Public, cached a week: the drawing changes
+ * library's cards, until getpack-api renders its thumbnail. Public, cached a week: the drawing changes
  * only with the engine. Outside `[locale]`, like the BFF (the proxy lets it through).
  */
 export async function GET(request: Request, { params }: { params: Promise<{ base: string }> }) {

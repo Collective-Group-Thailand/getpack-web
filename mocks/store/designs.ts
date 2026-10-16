@@ -361,7 +361,7 @@ function studioFieldsOf(
 /** A new studio share link; the token is answered once (`store.studio.createShareLink`). */
 export function addStudioLink(designId: string, scope: Schemas["ShareScope"]): StudioLink & { token: string } {
   const n = linkSeq++;
-  // 43 base64url characters, as packio-api's (32 random bytes).
+  // 43 base64url characters, as getpack-api's (32 random bytes).
   const token = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("base64url");
   const link: StudioLink = {
     id: `0192f3a0-7c1e-7d2a-9b1f-${String(0xfb00 + n).padStart(12, "0")}`,

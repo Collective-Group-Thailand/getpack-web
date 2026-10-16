@@ -37,7 +37,7 @@ const KINDS = [
  * One billing statement (D-090, `partner.payables.getStatement`): its lines by kind — goods received
  * at the PO's price (min(delivered, ordered), D-165), shipping, claim deductions — the totals with VAT
  * and the advance already paid, then confirm or dispute and the factory's own tax invoice, each shown
- * only when the API offers it (`nextActions`). Input VAT is Packio's to claim once that invoice is
+ * only when the API offers it (`nextActions`). Input VAT is getpack's to claim once that invoice is
  * validated (accounting-design §2).
  */
 export default async function StatementPage({ params }: Props) {

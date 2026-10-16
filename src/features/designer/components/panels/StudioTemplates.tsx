@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import { DEFAULT_SAFE_MM } from "@packio/dieline";
+import { DEFAULT_SAFE_MM } from "@getpack/dieline";
 
 import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -24,7 +24,7 @@ type Template = Schemas["StudioTemplateDto"];
 const USE_CASES = ["coffee", "cosmetics", "snacks", "e_commerce", "gift", "electronics", "pharmacy"] as const;
 
 /**
- * Packio's own templates (U4.4, `store.studio.listTemplates`): constraint layouts that re-flow
+ * getpack's own templates (U4.4, `store.studio.listTemplates`): constraint layouts that re-flow
  * onto whatever box is on screen — any style, any size — with text kept upright on lids and within
  * its point range. Filtered by use case; applying replaces the artwork (after asking, when there is
  * some), as one undo step.

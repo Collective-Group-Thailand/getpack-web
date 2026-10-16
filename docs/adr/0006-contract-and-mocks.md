@@ -4,7 +4,7 @@
 
 ## Context
 
-`packio-api` and `packio-web` are separate repositories (D-002) built in parallel, and
+`getpack-api` and `getpack-web` are separate repositories (D-002) built in parallel, and
 F2–F6 run in parallel worktrees against backend deliverables that do not exist yet. The
 failure mode to avoid is a frontend that compiles happily against a shape the backend
 never agreed to, and only fails in integration.
@@ -14,7 +14,7 @@ never agreed to, and only fails in integration.
 **The OpenAPI contract is the only thing the two repositories share, and the frontend
 never hand-writes a type the contract can produce.**
 
-- `pnpm gen:api` reads `API_CONTRACT_SOURCE` (locally `../packio-api/contract/openapi.json`;
+- `pnpm gen:api` reads `API_CONTRACT_SOURCE` (locally `../getpack-api/contract/openapi.json`;
   in CI the release asset pinned in `contract.lock.json` with its sha256), runs
   `openapi-typescript` into `src/lib/api/schema.d.ts`, and regenerates the MSW base
   handlers in `mocks/generated/`. The generated file is **committed**.

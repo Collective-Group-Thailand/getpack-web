@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("cs.inbox"))("title") };
 }
 
-/** One conversation in the CS inbox (U5.3) — the path packio-api's notifications link to (`/inbox/{id}`). */
+/** One conversation in the CS inbox (U5.3) — the path getpack-api's notifications link to (`/inbox/{id}`). */
 export default async function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId } = await params;
   const t = await getTranslations("cs.inbox");

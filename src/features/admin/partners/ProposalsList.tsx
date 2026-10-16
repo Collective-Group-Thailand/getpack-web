@@ -10,7 +10,7 @@ import type { DataTableColumn } from "@/ui/components/DataTable";
 import { QueueTabs, ResourceList, StatusChip, useProductTypes, type InitialPage } from "../console";
 import { proposalsList, type ProposalSummary } from "./resources";
 
-/** Price proposals (D-040, D-042): factories' proposals to review, and Packio's rate cards out for acceptance. */
+/** Price proposals (D-040, D-042): factories' proposals to review, and getpack's rate cards out for acceptance. */
 export function ProposalsList({ initial }: { initial: InitialPage<ProposalSummary> | null }) {
   const t = useTranslations("partners.proposals");
   const { labelOf } = useProductTypes();
@@ -59,8 +59,8 @@ export function ProposalsList({ initial }: { initial: InitialPage<ProposalSummar
         param="direction"
         tabs={[
           { value: null, label: t("all") },
-          { value: "factory_to_packio", label: t("directions.factory_to_packio"), countKey: "partners.proposals" },
-          { value: "packio_to_factory", label: t("directions.packio_to_factory") },
+          { value: "factory_to_getpack", label: t("directions.factory_to_getpack"), countKey: "partners.proposals" },
+          { value: "getpack_to_factory", label: t("directions.getpack_to_factory") },
         ]}
       />
       <ResourceList

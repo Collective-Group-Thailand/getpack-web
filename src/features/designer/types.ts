@@ -1,9 +1,9 @@
 // Box geometry lives in the framework-free engine; re-exported here so design code has
 // one place to import its types from.
-export type { Dieline, DielineSpec, Face, MaterialSpec, ParamValues, Pt } from "@packio/dieline";
-import type { DielineSpec } from "@packio/dieline";
+export type { Dieline, DielineSpec, Face, MaterialSpec, ParamValues, Pt } from "@getpack/dieline";
+import type { DielineSpec } from "@getpack/dieline";
 
-/** A box style id `@packio/dieline` knows (`tuck-end`, `rsc`, `tray`…). */
+/** A box style id `@getpack/dieline` knows (`tuck-end`, `rsc`, `tray`…). */
 export type BoxStyleId = string;
 
 /** Length × width × height in millimetres — the inside of a box, or a product to fit in one. */
@@ -55,7 +55,7 @@ interface BaseElement {
     colour: "primary" | "accent" | "ink" | "paper";
     font?: "heading" | "body";
   };
-  /** A Packio studio element it was placed from (D-282): marks with legal meaning are checked by it. */
+  /** A getpack studio element it was placed from (D-282): marks with legal meaning are checked by it. */
   studioElementId?: string;
   /** A finish painted as its own layer (U4.4): produced as a separation, not as ink. */
   finish?: "foil" | "spot_uv" | "emboss" | "window";
@@ -136,7 +136,7 @@ export interface StudioChoices {
   styleVariantCode?: string | null;
   /** The base the variant belongs to (`PK-TE-01`), for a library style the main entry does not name. */
   baseCode?: string | null;
-  /** Handed to Packio's design team (U4.8): the version is priced with the graphic design fee. */
+  /** Handed to getpack's design team (U4.8): the version is priced with the graphic design fee. */
   designService?: boolean;
 }
 
@@ -155,7 +155,7 @@ export interface DesignContent {
   pattern: PatternSettings;
   /**
    * Warnings the customer accepted that only the studio can see (U4.5, `ruleId:elementId`), kept with
-   * the design version; the ones packio-api also finds are acknowledged with it (`acknowledgeCheck`).
+   * the design version; the ones getpack-api also finds are acknowledged with it (`acknowledgeCheck`).
    */
   acknowledged?: string[];
 }

@@ -1,5 +1,5 @@
-import { MODULES } from "@packio/dieline";
-import { ALL_RECIPES as RECIPES } from "@packio/dieline/library";
+import { MODULES } from "@getpack/dieline";
+import { ALL_RECIPES as RECIPES } from "@getpack/dieline/library";
 import { describe, expect, it } from "vitest";
 
 import master from "../../docs/design-tool/style-library-master.json" with { type: "json" };
@@ -36,7 +36,7 @@ describe("recipes and the style library master file", () => {
     }
   });
 
-  it("name every axis of their base when the base has several recipes (packio-api reads an unnamed axis as any value)", () => {
+  it("name every axis of their base when the base has several recipes (getpack-api reads an unnamed axis as any value)", () => {
     const byBase = new Map<string, typeof RECIPES>();
     for (const r of RECIPES.filter((x) => x.base)) byBase.set(r.base!, [...(byBase.get(r.base!) ?? []), r]);
     for (const [base, recipes] of byBase) {

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { SPEC_VERSION } from "@packio/dieline";
+import { SPEC_VERSION } from "@getpack/dieline";
 
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken } from "../../../../mocks/support";
@@ -41,7 +41,7 @@ const printed: DesignContent = {
       scaleX: 1,
       scaleY: 1,
       opacity: 1,
-      text: "Packio",
+      text: "getpack",
       fontFamily: "Sarabun",
       fontSize: 12,
       fontStyle: "normal",
@@ -85,7 +85,7 @@ describe("studio fields (D-275)", () => {
     expect(studioFieldsOf(configurator, null, blank)).toBeNull();
   });
 
-  it("tell print sides as packio-api does", () => {
+  it("tell print sides as getpack-api does", () => {
     expect(printSidesOf({ parts: [{ printFront: [1], printBack: [] }] })).toBe("outside");
     expect(printSidesOf({ parts: [{ printFront: [], printBack: [1] }] })).toBe("inside");
     expect(printSidesOf({ parts: [{ printFront: [1], printBack: [1] }] })).toBe("both");

@@ -209,7 +209,7 @@ export async function SiteHeader() {
             <HeaderSearch label={tCommon("actions.search")} />
             <CartButton signedIn={signedIn} label={t("nav.cart")} />
             <span className="hidden md:contents">
-              {/* Packio Assistant (U5.5) — off at launch (D-218), so nothing renders here until it is on. */}
+              {/* getpack Assistant (U5.5) — off at launch (D-218), so nothing renders here until it is on. */}
               <DeferredAssistant signedIn={signedIn} />
               <DeferredLocaleMenu />
             </span>

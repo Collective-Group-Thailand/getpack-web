@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   agentRules: false,
   // The workspace package is shipped as TypeScript source for local development;
   // publishConfig points the published copy at dist/ instead.
-  transpilePackages: ["@packio/dieline"],
+  transpilePackages: ["@getpack/dieline"],
   async redirects() {
     return [
       // BoxStudio's "My designs" lives under the customer account area now.

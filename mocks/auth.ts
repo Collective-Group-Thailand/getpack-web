@@ -3,7 +3,7 @@
  * credentials that can be wrong, an OTP that can be mistyped, audiences that are actually
  * checked. Staff sign in as one of the D-140 personas (`./personas.ts`), chosen by e-mail.
  *
- * Every endpoint here is one packio-api has published (B1.3).
+ * Every endpoint here is one getpack-api has published (B1.3).
  */
 
 import { http, HttpResponse } from "msw";
@@ -16,7 +16,7 @@ import { uatParticipants, uatPersona } from "./uat";
 import { accessToken, principalOf, principalOfRefresh, problem, refreshToken, type Audience } from "./support";
 
 /** The default staff credentials the F1 tests use: a CS agent. */
-export const MOCK_STAFF = { email: "somchai.staff@packio.invalid", password: MOCK_PASSWORD };
+export const MOCK_STAFF = { email: "somchai.staff@getpack.invalid", password: MOCK_PASSWORD };
 export const MOCK_PARTNER = { email: "planner@factory.invalid", password: MOCK_PASSWORD, pin: "1234" };
 export const MOCK_OTP = {
   phone: "0812345678",
@@ -133,7 +133,7 @@ export const authHandlers = [
 
   http.post("*/v1/auth/customer/otp/request", async ({ request }) => {
     const body = (await request.json()) as { phone?: string };
-    // As packio-api's `toE164`: a national number, or a mobile without its leading zero.
+    // As getpack-api's `toE164`: a national number, or a mobile without its leading zero.
     const digits = (body.phone ?? "").replace(/[\s\-().]/g, "");
     const national = /^[689]\d{8}$/.test(digits) ? `0${digits}` : digits;
     if (!/^0\d{8,9}$/.test(national)) {
@@ -152,7 +152,7 @@ export const authHandlers = [
   http.post("*/v1/auth/customer/otp/verify", async ({ request }) => {
     const body = (await request.json()) as { challengeId?: string; code?: string };
     const persona = (Object.keys(CHALLENGES) as CustomerPersona[]).find((key) => CHALLENGES[key] === body.challengeId);
-    // packio-api answers a wrong code with 422 `auth.otp_invalid` and the tries left — not a 401.
+    // getpack-api answers a wrong code with 422 `auth.otp_invalid` and the tries left — not a 401.
     if (!persona || body.code !== MOCK_OTP.code) {
       return problem(422, "auth.otp_invalid", "รหัส OTP ไม่ถูกต้อง เหลือโอกาสอีก 4 ครั้ง");
     }

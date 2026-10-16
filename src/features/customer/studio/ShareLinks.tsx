@@ -24,7 +24,7 @@ type Scope = Schemas["ShareScope"];
  * Sharing a studio design (U4.7, D-285): links with a scope — view (anyone with the link), comment
  * (a signed-in user), edit (a signed-in member of the design's company) — as many as needed, each
  * expiring (`configurations.share_link_days`) and revocable. A link's address is shown once, when it
- * is made: packio-api keeps only its hash.
+ * is made: getpack-api keeps only its hash.
  */
 export function ShareLinks({
   designId,
@@ -35,7 +35,7 @@ export function ShareLinks({
   designId: string;
   open: boolean;
   onClose: () => void;
-  /** Edit links only for a company member (packio-api enforces it too). */
+  /** Edit links only for a company member (getpack-api enforces it too). */
   canEdit: boolean;
 }) {
   const t = useTranslations("studio.share");

@@ -39,7 +39,7 @@ type Grade = "critical" | "major" | "minor";
 const countOf = (counts: Inspection["accept"] | null, grade: Grade): string => (counts ? String(counts[grade]) : "–");
 
 /**
- * Packio's risk-based QC inspections (D-076): the job, its order and product type, why it was
+ * getpack's risk-based QC inspections (D-076): the job, its order and product type, why it was
  * selected, the ISO 2859-1 sample with the AQL and accept numbers per defect class, the scheduled
  * inspector, and recording what was found — the API judges pass or fail against those numbers;
  * the result feeds the factory's scorecard. Filtered by status and factory.

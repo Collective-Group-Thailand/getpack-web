@@ -1,5 +1,5 @@
 /**
- * Packio Factory ERP E1 (packio-api v0.44.0; D-316 – D-327) for `pnpm dev:mock` and the e2e: per factory,
+ * getpack Factory ERP E1 (getpack-api v0.44.0; D-316 – D-327) for `pnpm dev:mock` and the e2e: per factory,
  * suppliers and customers, warehouses, items, a stock ledger at moving average cost, purchase orders and
  * goods receipts — the rules of the real API (factory-scoped 404, permissions, idempotent posts, ETags,
  * no negative stock, over-receipt tolerance, numbering `<PREFIX>-YYMM-NNNN`). A mock is a fake engine, so it

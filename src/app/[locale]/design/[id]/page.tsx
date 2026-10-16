@@ -2,7 +2,7 @@ import { type Query } from "@/features/customer/designer/seed";
 import { redirect } from "@/i18n/navigation";
 
 /**
- * `/design/[id]` is Packio 3D Studio now (U4.2: one route for the whole journey). Old links —
+ * `/design/[id]` is getpack 3D Studio now (U4.2: one route for the whole journey). Old links —
  * bookmarks, emails, a LINE message — land in the studio with everything they carried and the
  * step that fits: ③ for a saved design or a known box, ① otherwise.
  */

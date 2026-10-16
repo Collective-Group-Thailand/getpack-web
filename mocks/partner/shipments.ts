@@ -4,9 +4,9 @@
  * readies, dispatches or proves delivered here is the one the desk sees, and its POD waits in the
  * desk's review queue (D-013, D-229).
  *
- * The flow (packio-api `shipments.service.ts` at v0.6.0): a **draft** for one address (`items[]`,
+ * The flow (getpack-api `shipments.service.ts` at v0.6.0): a **draft** for one address (`items[]`,
  * a split when several trips serve one destination, D-110) → **ready**, which makes the carton
- * labels and the packing list → dispatched by the factory's own fleet, or a request for Packio's
+ * labels and the packing list → dispatched by the factory's own fleet, or a request for getpack's
  * carrier fallback (D-114; the factory never books) → the POD (`items[]` with the delivered
  * quantity per destination). An unpaid before-shipping instalment or a pending inspection holds
  * the trip at the gate (B3.2, D-076). Token-scoped: other factories' trips are 404 (D-044).
@@ -77,9 +77,9 @@ function tripFor(request: Request, shipmentId: unknown, permission: string) {
 /** The gate at pick-up (B3.2, D-076): an inspection still open, or a before-shipping instalment unpaid. */
 function gate(item: Shipment): Response | null {
   if (item.items.some((line) => inspectionHold(line.jobId)))
-    return problem(409, "shipments.inspection_pending", "รอ Packio ตรวจคุณภาพก่อนส่ง");
+    return problem(409, "shipments.inspection_pending", "รอ getpack ตรวจคุณภาพก่อนส่ง");
   if (factsOf(item).blockedByPayment)
-    return problem(409, "shipments.payment_pending", "ลูกค้ายังชำระงวดก่อนจัดส่งไม่ครบ Packio จะแจ้งเมื่อส่งได้");
+    return problem(409, "shipments.payment_pending", "ลูกค้ายังชำระงวดก่อนจัดส่งไม่ครบ getpack จะแจ้งเมื่อส่งได้");
   return null;
 }
 
@@ -288,7 +288,7 @@ export const shipmentHandlers = [
     }),
   ),
 
-  // partner.shipments.requestCarrier: ask Packio for its fallback carrier (D-114); the desk books it.
+  // partner.shipments.requestCarrier: ask getpack for its fallback carrier (D-114); the desk books it.
   http.post("*/v1/partner/shipments/:shipmentId/actions/request-carrier", ({ request, params }) =>
     once(request, `shipment-carrier:${String(params.shipmentId)}`, async () => {
       const found = tripFor(request, params.shipmentId, perm.manage);

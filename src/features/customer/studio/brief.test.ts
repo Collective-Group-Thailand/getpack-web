@@ -1,4 +1,4 @@
-import { getStyle } from "@packio/dieline";
+import { getStyle } from "@getpack/dieline";
 import { describe, expect, it } from "vitest";
 
 import type { DesignContent, DesignSpec } from "@/features/designer/types";

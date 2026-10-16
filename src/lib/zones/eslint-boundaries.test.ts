@@ -97,7 +97,7 @@ describe("zone import boundaries", { timeout: 60_000 }, () => {
     expect(boundaryErrors(messages)).toEqual([]);
   });
 
-  it("keeps @packio/dieline free of this app (ADR-0007)", async () => {
+  it("keeps @getpack/dieline free of this app (ADR-0007)", async () => {
     const messages = await messagesFor(
       "packages/dieline/src/geometry.ts",
       'import { cn } from "@/ui/lib/cn";\nexport const x = cn;\n',

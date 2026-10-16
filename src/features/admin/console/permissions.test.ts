@@ -8,7 +8,7 @@ import { MENU_CATALOGUE, PERSONAS } from "../../../../mocks/personas";
 
 /**
  * Backend names win (triage `admin.permissions`, U-F0.3): every permission the admin zone or its
- * mock checks is one packio-api grants to staff, and every persona holds exactly its role's grants.
+ * mock checks is one getpack-api grants to staff, and every persona holds exactly its role's grants.
  */
 
 const ROOT = process.cwd();
@@ -40,7 +40,7 @@ function checkedPermissions(source: string): string[] {
 }
 
 describe("admin permissions", () => {
-  it("names only permissions packio-api grants to staff", () => {
+  it("names only permissions getpack-api grants to staff", () => {
     const unknown = ["src/features/admin", "src/app/admin", "mocks/admin"].flatMap((dir) =>
       files(dir).flatMap((file) =>
         checkedPermissions(readFileSync(join(ROOT, file), "utf8"))

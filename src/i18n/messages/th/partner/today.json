@@ -2,7 +2,7 @@
   "title": "งานวันนี้",
   "greeting": "สวัสดี {name}",
   "stage": {
-    "applied": "กรอกใบสมัครให้ครบเพื่อเริ่มงานกับ Packio",
+    "applied": "กรอกใบสมัครให้ครบเพื่อเริ่มงานกับ getpack",
     "under_review": "ทีมดูแลโรงงานกำลังตรวจข้อมูลของโรงงาน",
     "trial": "ช่วงทดลองผลิต — งานแรกตรวจคุณภาพทุกงาน"
   },
@@ -12,18 +12,18 @@
   "tasks": {
     "title": "รอคุณดำเนินการ",
     "signOff": "รับรองข้อมูล {count} ขั้นตอน",
-    "signOffBody": "ข้อมูลที่ทีม Packio กรอกแทนโรงงาน",
-    "rateCard": "ตอบอัตรา {type} ที่ Packio ส่งมา",
+    "signOffBody": "ข้อมูลที่ทีม getpack กรอกแทนโรงงาน",
+    "rateCard": "ตอบอัตรา {type} ที่ getpack ส่งมา",
     "rateCardBody": "{count} บรรทัดรอคำตอบ",
-    "countered": "Packio เสนอราคากลับ — {type}",
+    "countered": "getpack เสนอราคากลับ — {type}",
     "counteredBody": "{count} บรรทัดรอคำตอบ",
-    "pricesToSignOff": "รับรองราคา {type} ที่ Packio กรอกให้",
+    "pricesToSignOff": "รับรองราคา {type} ที่ getpack กรอกให้",
     "pricesToSignOffBody": "{lines} บรรทัด",
     "none": "ตอนนี้ไม่มีอะไรรอคุณ",
     "statement": "ตรวจใบวางบิล {no}",
     "statementBody": "ยืนยันหรือโต้แย้ง",
     "claim": "ตอบเคลม {no}",
-    "claimBody": "Packio รอคำชี้แจงจากโรงงาน"
+    "claimBody": "getpack รอคำชี้แจงจากโรงงาน"
   },
   "floor": {
     "clear": "ไม่มีงาน{list}",
@@ -33,7 +33,7 @@
       "dueToday": "ครบกำหนดวันนี้",
       "atRisk": "เสี่ยงล่าช้า",
       "onHold": "พักงาน",
-      "inspections": "Packio นัดตรวจ",
+      "inspections": "getpack นัดตรวจ",
       "samples": "ตัวอย่างที่ต้องบันทึก",
       "claims": "เคลมที่ต้องตอบ"
     },
@@ -42,16 +42,16 @@
     "queueEmpty": "ไม่มีงานในคิว",
     "acceptanceOverdue": "{count, plural, other {เลยเวลารับงาน # งาน}}",
     "alerts": {
-      "acceptance_overdue": "เลยเวลารับงานตั้งแต่ {at} Packio อาจย้ายงาน",
+      "acceptance_overdue": "เลยเวลารับงานตั้งแต่ {at} getpack อาจย้ายงาน",
       "acceptance_due_soon": "รับงานภายใน {at}",
       "step_overdue": "ขั้นตอนปัจจุบันเลยกำหนดตั้งแต่ {at}",
-      "inspection_planned": "Packio นัดตรวจคุณภาพ {at}"
+      "inspection_planned": "getpack นัดตรวจคุณภาพ {at}"
     },
     "alertsUndated": {
-      "acceptance_overdue": "เลยเวลารับงานแล้ว Packio อาจย้ายงาน",
+      "acceptance_overdue": "เลยเวลารับงานแล้ว getpack อาจย้ายงาน",
       "acceptance_due_soon": "ใกล้หมดเวลารับงาน",
       "step_overdue": "ขั้นตอนปัจจุบันเลยกำหนดแล้ว",
-      "inspection_planned": "Packio นัดตรวจคุณภาพงานนี้"
+      "inspection_planned": "getpack นัดตรวจคุณภาพงานนี้"
     }
   },
   "inbox": {
@@ -108,8 +108,8 @@
     "due": "กำหนด {date}",
     "on": "{date}",
     "by": "โดย {name}",
-    "acceptJob": "รับงาน Packio {no} ({quantity} ชิ้น)",
+    "acceptJob": "รับงาน getpack {no} ({quantity} ชิ้น)",
     "acceptBy": "ตอบรับหรือปฏิเสธภายใน {at}",
-    "packioWork": "งานจาก Packio"
+    "getpackWork": "งานจาก getpack"
   }
 }

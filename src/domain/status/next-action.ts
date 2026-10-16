@@ -14,7 +14,7 @@
  *
  * Since contract v0.6.0 (`entity.next-actions`) the list is `NextActionDto[]` on orders, jobs, RFQs,
  * shipments, claims, billing statements, payout runs and customer documents. The keys are a plain
- * string in the contract, so `API_ACTION_KEYS` copies packio-api's vocabulary and a test holds
+ * string in the contract, so `API_ACTION_KEYS` copies getpack-api's vocabulary and a test holds
  * every one of them to a presentation of its own.
  */
 
@@ -86,7 +86,7 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "order.open_claim": { tone: "warning", icon: "flag", labelKey: "action.openClaim" },
   "order.design_brief": { tone: "primary", icon: "edit", labelKey: "action.designBrief" },
   "order.review_design": { tone: "primary", icon: "palette", labelKey: "action.reviewDesign" },
-  // packio-api's keys (contract v0.6.0) whose verb has no presentation above, or reads wrongly
+  // getpack-api's keys (contract v0.6.0) whose verb has no presentation above, or reads wrongly
   // for the entity ("reject" a job is turning it down, not refusing an approval).
   "order.submit_artwork": { tone: "primary", icon: "upload", labelKey: "action.submitArtwork" },
   "order.add_mockup": { tone: "neutral", icon: "plus", labelKey: "action.addMockup" },
@@ -131,13 +131,13 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "customer_document.void": { tone: "danger", icon: "ban", labelKey: "action.void" },
   "rfq.accept": { tone: "success", icon: "check", labelKey: "action.acceptQuote" },
   "rfq.post_message": { tone: "neutral", icon: "chat", labelKey: "action.postMessage" },
-  // Packio Factory ERP (packio-api v0.44.0, D-325).
+  // getpack Factory ERP (getpack-api v0.44.0, D-325).
   "erp_po.edit": { tone: "neutral", icon: "edit", labelKey: "action.editPurchaseOrder" },
   "erp_po.issue": { tone: "primary", icon: "send", labelKey: "action.issuePurchaseOrder" },
   "erp_po.receive": { tone: "primary", icon: "package-check", labelKey: "action.receiveGoods" },
   "erp_po.close": { tone: "neutral", icon: "archive", labelKey: "action.closePurchaseOrder" },
   "erp_po.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelPurchaseOrder" },
-  // packio-api v0.45.0 (D-336 – D-341).
+  // getpack-api v0.45.0 (D-336 – D-341).
   "erp_pr.edit": { tone: "neutral", icon: "edit", labelKey: "action.editPurchaseRequest" },
   "erp_pr.submit": { tone: "primary", icon: "send", labelKey: "action.submitPurchaseRequest" },
   "erp_pr.approve": { tone: "success", icon: "check", labelKey: "action.approvePurchaseRequest" },
@@ -154,7 +154,7 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "erp_mo.return": { tone: "neutral", icon: "undo", labelKey: "action.returnMaterials" },
   "erp_mo.complete": { tone: "success", icon: "check", labelKey: "action.completeProductionOrder" },
   "erp_mo.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelProductionOrder" },
-  // packio-api v0.46.0 (D-348, D-350, D-355).
+  // getpack-api v0.46.0 (D-348, D-350, D-355).
   "erp_gr.add_charge": { tone: "neutral", icon: "plus", labelKey: "action.addLandedCharge" },
   "erp_rfq.edit": { tone: "neutral", icon: "edit", labelKey: "action.editRfq" },
   "erp_rfq.send": { tone: "primary", icon: "send", labelKey: "action.sendRfq" },
@@ -166,7 +166,7 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "erp_mt.parts": { tone: "neutral", icon: "package", labelKey: "action.issueSpareParts" },
   "erp_mt.finish": { tone: "success", icon: "check", labelKey: "action.finishMaintenance" },
   "erp_mt.cancel": { tone: "danger", icon: "ban", labelKey: "action.cancelMaintenance" },
-  // packio-api v0.47.0 (D-359 – D-366).
+  // getpack-api v0.47.0 (D-359 – D-366).
   "erp_lead.edit": { tone: "neutral", icon: "edit", labelKey: "action.editLead" },
   "erp_lead.convert": { tone: "success", icon: "user-plus", labelKey: "action.convertLead" },
   "erp_lead.lose": { tone: "danger", icon: "ban", labelKey: "action.loseLead" },
@@ -255,7 +255,7 @@ const ACTION_META: Record<string, NextActionMeta> = {
 };
 
 /**
- * Every action key packio-api offers (contract v0.6.0; the `*-actions.ts` rule tables under `src/modules` at the tag).
+ * Every action key getpack-api offers (contract v0.6.0; the `*-actions.ts` rule tables under `src/modules` at the tag).
  * The contract types `NextActionDto.key` as a string, so this list is the vocabulary: the test
  * beside it fails when one of them falls back to `UNKNOWN_ACTION`. Re-check it on each adopt.
  */

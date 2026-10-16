@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * The factory's billing statements (F5 5.3, D-090, `partner.payables.listStatements`): what Packio
+ * The factory's billing statements (F5 5.3, D-090, `partner.payables.listStatements`): what getpack
  * owes for each period, generated from PO + POD, waiting for the factory to confirm — then for its
  * own tax invoice. Token-scoped (D-044); `factoryId` picks the factory a user of several acts for.
  */

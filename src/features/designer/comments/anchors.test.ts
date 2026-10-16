@@ -1,4 +1,4 @@
-import { allFaces, faceBounds, getStyle } from "@packio/dieline";
+import { allFaces, faceBounds, getStyle } from "@getpack/dieline";
 import { describe, expect, it } from "vitest";
 
 import { faceAnchor, faceAt, flatAnchor, readAnchor, sheetPoint } from "./anchors";

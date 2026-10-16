@@ -24,7 +24,7 @@ describe("serverEnvSchema", () => {
   it("names every problem in one error", () => {
     let message = "";
     try {
-      parseEnv(production, { PUBLIC_HOST: "https://packio.co.th", API_INTERNAL_URL: "not-a-url" }, "server");
+      parseEnv(production, { PUBLIC_HOST: "https://getpack.co", API_INTERNAL_URL: "not-a-url" }, "server");
     } catch (error) {
       message = (error as Error).message;
     }
@@ -55,12 +55,12 @@ describe("serverEnvSchema", () => {
   });
 
   it("rejects a URL where a Host header value belongs", () => {
-    expect(() => parseEnv(development, { ADMIN_HOST: "https://admin.packio.co.th" }, "server")).toThrow(/ADMIN_HOST/);
+    expect(() => parseEnv(development, { ADMIN_HOST: "https://admin.getpack.co" }, "server")).toThrow(/ADMIN_HOST/);
   });
 
   it("normalises the API base URL so call sites need not guess about trailing slashes", () => {
-    const env = parseEnv(development, { API_INTERNAL_URL: "https://api.packio.co.th/" }, "server");
-    expect(env.API_INTERNAL_URL).toBe("https://api.packio.co.th");
+    const env = parseEnv(development, { API_INTERNAL_URL: "https://api.getpack.co/" }, "server");
+    expect(env.API_INTERNAL_URL).toBe("https://api.getpack.co");
   });
 
   it("reads ZONES as an allow-list and rejects a name that is not a zone", () => {
@@ -87,16 +87,16 @@ describe("clientEnvSchema", () => {
   });
 
   it("strips the trailing slash from the asset origin", () => {
-    const env = parseEnv(schema, { NEXT_PUBLIC_ASSET_BASE_URL: "https://cdn.packio.co.th//" }, "client");
-    expect(env.NEXT_PUBLIC_ASSET_BASE_URL).toBe("https://cdn.packio.co.th");
+    const env = parseEnv(schema, { NEXT_PUBLIC_ASSET_BASE_URL: "https://cdn.getpack.co//" }, "client");
+    expect(env.NEXT_PUBLIC_ASSET_BASE_URL).toBe("https://cdn.getpack.co");
   });
 });
 
 function productionHosts() {
   return {
-    PUBLIC_HOST: "packio.co.th",
-    ADMIN_HOST: "admin.packio.co.th",
-    PARTNER_HOST: "partner.packio.co.th",
-    API_INTERNAL_URL: "https://api.internal.packio.co.th",
+    PUBLIC_HOST: "getpack.co",
+    ADMIN_HOST: "admin.getpack.co",
+    PARTNER_HOST: "partner.getpack.co",
+    API_INTERNAL_URL: "https://api.internal.getpack.co",
   };
 }

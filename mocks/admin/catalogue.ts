@@ -1,5 +1,5 @@
 /**
- * The published catalogue, CMS and geography surface (packio-api B2.1), mocked statefully:
+ * The published catalogue, CMS and geography surface (getpack-api B2.1), mocked statefully:
  * every table through `./tables.ts` (ETag / If-Match, archive by status), plus the operations
  * that are not plain CRUD — changing a product type's quote mode, reordering home sections,
  * replacing an article's categories, and the Excel import (upload → preview → confirm) and
@@ -312,7 +312,7 @@ const TABLES: Record<string, TableConfig> = {
     search: ["code", "name"],
     filters: ["groupId"],
     unique: "code",
-    // As packio-api's catalogue and engine model them: the process set is one ink ("CMYK"), laid
+    // As getpack-api's catalogue and engine model them: the process set is one ink ("CMYK"), laid
     // four times for full colour (`FoldingPartDto.printFront`, its golden cases' `cmyk()`); spot,
     // white and metallic inks are one colour each (U2.F1).
     examples: false,
@@ -962,7 +962,7 @@ const TABLES: Record<string, TableConfig> = {
     variants: [
       {
         pageKey: "/th",
-        titleTh: "Packio — ผลิตบรรจุภัณฑ์ออนไลน์",
+        titleTh: "getpack — ผลิตบรรจุภัณฑ์ออนไลน์",
         h1: null,
         descriptionTh: "ออกแบบ สั่งผลิต ติดตามงาน ในที่เดียว",
         keywords: null,
@@ -1180,7 +1180,7 @@ const special: HttpHandler[] = [
   }),
   http.post("*/v1/admin/catalog/exports/:kind", ({ request, params }) => {
     if (!can(staffPersonaOf(request), "catalog.import")) return forbidden();
-    const text = `Packio catalogue export: ${String(params.kind)} (ข้อมูลจำลอง)`;
+    const text = `getpack catalogue export: ${String(params.kind)} (ข้อมูลจำลอง)`;
     return HttpResponse.json({
       fileId: mockId("exp", 7),
       url: `data:text/plain;charset=utf-8,${encodeURIComponent(text)}`,

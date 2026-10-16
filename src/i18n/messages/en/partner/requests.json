@@ -4,7 +4,7 @@
   "newTitle": "New request",
   "listTitle": "Your requests",
   "dates": "Offered dates: {dates}",
-  "response": "Packio's answer: {response}",
+  "response": "getpack's answer: {response}",
   "meta": "Sent by {by} on {date}",
   "empty": "No requests yet",
   "form": {
@@ -41,7 +41,7 @@
       "pricing_arrangement": "e.g. Per-piece pricing for runs over 10,000",
       "payout_policy": "e.g. 50% advance for large runs",
       "site_visit": "e.g. New machine installed, please visit the factory",
-      "other": "What would you like to tell Packio?"
+      "other": "What would you like to tell getpack?"
     }
   },
   "answeredBy": "Answered by {by} on {date}"

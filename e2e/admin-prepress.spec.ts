@@ -8,7 +8,7 @@ import { gotoHydrated, signInAsStaff } from "./helpers/session";
  * F2 2.4 — prepress and design services, against the mock API.
  *
  * Prepress state hangs off the commerce mock's orders (`…-6f7264` + the order's number in hex),
- * and each test that changes state uses an order no other test reads. The desk is packio-api's
+ * and each test that changes state uses an order no other test reads. The desk is getpack-api's
  * queues and the workspace is composed from the published artwork resources (U-F0.3).
  */
 
@@ -70,7 +70,7 @@ test.describe("preflight (D-070)", () => {
     await dialog.getByRole("button", { name: "ส่งคืน" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(page.getByRole("main")).toContainText("ส่งคืนให้แก้ไข");
-    // packio-api puts the order's artwork into changes_requested (D-070).
+    // getpack-api puts the order's artwork into changes_requested (D-070).
     await expect(header(page)).toContainText("ขอให้แก้ไขไฟล์");
   });
 

@@ -1,4 +1,4 @@
-# Step baseline — Packio, 2026-09-29 (U5.0 output, U5.1 input)
+# Step baseline — getpack, 2026-09-29 (U5.0 output, U5.1 input)
 
 > What the step counters (`pnpm e2e:journeys`, `e2e/journeys/`) measured on `main` after U-F2, against
 > the MSW mocks, counted by `step-counting.md`. These are the **shortest paths that exist today**;
@@ -47,7 +47,7 @@ inside the budget and which deliverable owns it.
 1. **T5** walks the D-072 physical mockup add-on inside the configurator, because a sample of the
    customer's own design before a run does not exist yet (U2.4 / U2.F3). It is within budget
    because it is a checkbox on a full order — not because the sample journey is good.
-2. **T7** counts from Packio's LINE (LIFF) home, the closest LINE can land today: in-app and LINE
+2. **T7** counts from getpack's LINE (LIFF) home, the closest LINE can land today: in-app and LINE
    notifications carry no link to the order (contract `notifications.unread-and-link`). From the
    notification itself the task is not possible yet; with the deep link it would be 1 step.
 3. **T8** is the only journey measured with no gap.

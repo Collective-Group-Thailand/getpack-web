@@ -93,7 +93,7 @@ export default async function KioskPage({ params }: { params: Promise<{ machineI
         <span className="flex flex-wrap items-center gap-1">
           {item.order.late ? <Badge tone="danger">{tPlan("late")}</Badge> : null}
           {item.order.short ? <Badge tone="warning">{tPlan("short")}</Badge> : null}
-          {item.operation.milestone ? <Badge tone="info">{tShared("packioStep")}</Badge> : null}
+          {item.operation.milestone ? <Badge tone="info">{tShared("getpackStep")}</Badge> : null}
           <StatusChip map={ERP_OPERATION_STATUS} value={item.operation.status} />
         </span>
       </div>

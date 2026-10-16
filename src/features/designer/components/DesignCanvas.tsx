@@ -30,7 +30,7 @@ import {
   type Face,
   type Bounds,
   type Pt,
-} from "@packio/dieline";
+} from "@getpack/dieline";
 
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import { formatMm } from "@/i18n/format";

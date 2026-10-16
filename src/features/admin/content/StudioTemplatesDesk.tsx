@@ -80,7 +80,7 @@ function parseLayout(text: string): TemplateLayout | null {
 }
 
 /**
- * Packio's studio templates (U4.4, D-216, D-282): constraint layouts that re-flow onto any box.
+ * getpack's studio templates (U4.4, D-216, D-282): constraint layouts that re-flow onto any box.
  * Drafted here — from the built-in set or as layout JSON (the format `layout.ts` defines), with a
  * map of where each slot goes — then submitted, approved by someone else with the approval
  * permission (or returned), published to the studio, and retired when no longer wanted.

@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("newTitle"), robots: { index: false, follow: false } };
 }
 
-/** "ไม่เจอแบบที่ต้องการ" — ask Packio's structural designers for a box (U3.6, D-273). Signed in. */
+/** "ไม่เจอแบบที่ต้องการ" — ask getpack's structural designers for a box (U3.6, D-273). Signed in. */
 export default async function Page() {
   await requireCustomer();
   const [t, locale, types] = await Promise.all([getTranslations("styles.request"), getLocale(), getProductTypes()]);

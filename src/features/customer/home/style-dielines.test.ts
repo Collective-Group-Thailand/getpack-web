@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { styleDieline } from "./style-dielines.server";
 
-/** The bases UAT publishes (packio-api `pnpm uat:styles`): every one the engine has a recipe for. */
+/** The bases UAT publishes (getpack-api `pnpm uat:styles`): every one the engine has a recipe for. */
 const PUBLISHED = ["PK-CF-01", "PK-CS-01", "PK-CS-02", "PK-LB-01", "PK-SL-01", "PK-TE-01", "PK-TG-01", "PK-TR-01"];
 
 describe("a template card's dieline (visual review, item 1)", () => {

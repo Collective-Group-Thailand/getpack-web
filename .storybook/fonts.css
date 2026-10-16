@@ -7,44 +7,44 @@
  */
 
 @font-face {
-  font-family: "Packio Sans Latin";
+  font-family: "getpack Sans Latin";
   src: url("/fonts/noto-sans-thai-latin.woff2") format("woff2");
   font-weight: 100 900;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Packio Sans Thai";
+  font-family: "getpack Sans Thai";
   src: url("/fonts/noto-sans-thai-thai.woff2") format("woff2");
   font-weight: 100 900;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Packio Display Latin";
+  font-family: "getpack Display Latin";
   src: url("/fonts/anuphan-latin.woff2") format("woff2");
   font-weight: 100 700;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Packio Display Thai";
+  font-family: "getpack Display Thai";
   src: url("/fonts/anuphan-thai.woff2") format("woff2");
   font-weight: 100 700;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Packio Mono";
+  font-family: "getpack Mono";
   src: url("/fonts/jetbrains-mono-latin.woff2") format("woff2");
   font-weight: 100 800;
   font-display: swap;
 }
 
 :root {
-  --font-pk-sans-latin: "Packio Sans Latin";
-  --font-pk-sans-thai: "Packio Sans Thai";
-  --font-pk-display-latin: "Packio Display Latin";
-  --font-pk-display-thai: "Packio Display Thai";
-  --font-pk-mono: "Packio Mono";
+  --font-pk-sans-latin: "getpack Sans Latin";
+  --font-pk-sans-thai: "getpack Sans Thai";
+  --font-pk-display-latin: "getpack Display Latin";
+  --font-pk-display-thai: "getpack Display Thai";
+  --font-pk-mono: "getpack Mono";
 }

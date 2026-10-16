@@ -23,9 +23,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * One proposal — the factory's own (D-042 b), or a rate card Packio sent (D-042 a) — with what
+ * One proposal — the factory's own (D-042 b), or a rate card getpack sent (D-042 a) — with what
  * the factory can do at its stage: build and submit a draft, attach evidence, withdraw, answer
- * Packio's counters, or accept a rate card whole or line by line.
+ * getpack's counters, or accept a rate card whole or line by line.
  */
 export default async function ProposalPage({ params, searchParams }: Props) {
   const [{ proposalId }, query] = await Promise.all([params, searchParams]);
@@ -51,7 +51,7 @@ export default async function ProposalPage({ params, searchParams }: Props) {
     );
   const item = proposal.data;
   const name = prices.typeName(item.productTypeId);
-  const factoryOwn = item.direction === "factory_to_packio";
+  const factoryOwn = item.direction === "factory_to_getpack";
   const label = await lineLabeller(prices.components, prices.references);
   const evidence = factoryOwn
     ? await attempt(
@@ -88,7 +88,7 @@ export default async function ProposalPage({ params, searchParams }: Props) {
         </Callout>
       ) : null}
       {item.comment ? (
-        <Callout tone="neutral" title={factoryOwn ? t("reasonOwn") : t("reasonPackio")}>
+        <Callout tone="neutral" title={factoryOwn ? t("reasonOwn") : t("reasonGetpack")}>
           {item.comment}
         </Callout>
       ) : null}

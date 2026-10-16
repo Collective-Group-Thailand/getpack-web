@@ -16,7 +16,7 @@ import { recordConsents, type Consent, type ConsentSource } from "./onboarding";
 const MARKETING_PURPOSES = new Set(["marketing_email", "marketing_line", "marketing_sms", "personalisation"]);
 
 /**
- * The PDPA consent step after sign-in (F3 3.1; Packio's own consent records, D-005).
+ * The PDPA consent step after sign-in (F3 3.1; getpack's own consent records, D-005).
  *
  * Two ticks, not seven (owner feedback 2026-10-14): one for what is required — the terms and the
  * privacy notice, read as one line with a link to each — and one, opt-in, for news and offers,

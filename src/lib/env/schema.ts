@@ -10,7 +10,7 @@ import { isZone, ZONES, type Zone } from "@/lib/zones";
  * browser, and `src/lib/env/server.ts` enforces that with `server-only`.
  */
 
-/** `packio.co.th` or `admin.localhost:3000` — a Host header value, never a URL. */
+/** `getpack.co` or `admin.localhost:3000` — a Host header value, never a URL. */
 const hostValue = z
   .string()
   .trim()
@@ -72,7 +72,7 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
     ADMIN_HOST: isProduction ? hostValue : hostValue.default("admin.localhost:3000"),
     PARTNER_HOST: isProduction ? hostValue : hostValue.default("partner.localhost:3000"),
 
-    /** Server-to-server base URL for `packio-api`; never reaches the browser (ADR-0005). */
+    /** Server-to-server base URL for `getpack-api`; never reaches the browser (ADR-0005). */
     API_INTERNAL_URL: isProduction ? originUrl : originUrl.default("http://localhost:4000"),
     /** Where `pnpm gen:api` reads the contract from (api-conventions.md §1). */
     API_CONTRACT_SOURCE: optionalText,
@@ -82,7 +82,7 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
     /**
      * How many load balancers in front of this app append to `X-Forwarded-For` (0 = none, the
      * default). The visitor's address is the entry that many places from the right, and it is
-     * what the BFF and server-side calls forward to packio-api (`src/lib/security/client-ip.ts`).
+     * what the BFF and server-side calls forward to getpack-api (`src/lib/security/client-ip.ts`).
      */
     TRUSTED_PROXY_HOPS: z
       .string()
@@ -95,7 +95,7 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
 
     /**
      * Dev only: `1` fills the home page's photo slots the CMS leaves empty from
-     * `public/media/home/manifest.json` (local stacks run packio-api with fake, in-memory file
+     * `public/media/home/manifest.json` (local stacks run getpack-api with fake, in-memory file
      * storage, so CMS photos cannot be served there). Refused in production, so a deployment
      * never shows the interim photos.
      */
@@ -153,8 +153,8 @@ export function clientEnvSchema() {
      */
     NEXT_PUBLIC_REPLAY_ENABLED: z.enum(["0", "1"]).optional(),
     /**
-     * Packio Assistant (U5.5): its code is built in only when `1`. D-218 keeps it off at launch;
-     * even built in, packio-api decides per customer (`assistant.enabled`, the D-306 gate).
+     * getpack Assistant (U5.5): its code is built in only when `1`. D-218 keeps it off at launch;
+     * even built in, getpack-api decides per customer (`assistant.enabled`, the D-306 gate).
      */
     NEXT_PUBLIC_ASSISTANT: z.enum(["0", "1"]).optional(),
     /** Share of consented visits recorded, 0–1 (default 0.1). */

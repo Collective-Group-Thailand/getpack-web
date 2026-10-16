@@ -28,7 +28,7 @@ beforeEach(() => {
 
 const apiError = (status: number) =>
   new ApiError({
-    type: `https://errors.packio/http.${status}`,
+    type: `https://errors.getpack/http.${status}`,
     title: "t",
     status,
     code: `http.${status}`,

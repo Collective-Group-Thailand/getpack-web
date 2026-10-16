@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { AGENT_COOKIE, AGENT_COOKIE_MAX_AGE } from "@/features/customer/agent/cookie";
 
 /**
- * The link packio-api hands an agent (`store.agent.me` → `link`, `${STOREFRONT_BASE_URL}/a/{code}`,
+ * The link getpack-api hands an agent (`store.agent.me` → `link`, `${STOREFRONT_BASE_URL}/a/{code}`,
  * D-417): the visitor's browser keeps the code, and once they are signed in the storefront claims it
  * for the agent (`store.agent.claimLink`). The code is not a secret, so the cookie is readable by the
  * page; it never decides anything — the API does.

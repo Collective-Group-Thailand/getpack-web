@@ -59,8 +59,8 @@
       "erp_gl_fixed_asset": "สินทรัพย์ถาวร",
       "erp_gl_bank_statement_line": "รายการเดินบัญชี",
       "erp_gl_journal_entry": "รายการบันทึกบัญชี",
-      "billing_statement": "ใบวางบิล Packio",
-      "payout_item": "เงินโอนจาก Packio"
+      "billing_statement": "ใบวางบิล getpack",
+      "payout_item": "เงินโอนจาก getpack"
     }
   },
   "posted": {
@@ -300,7 +300,7 @@
     "closing": "ยกไป",
     "balance": "คงเหลือ",
     "balanced": "งบทดลองสมดุล",
-    "unbalanced": "งบทดลองไม่สมดุล — แจ้งทีม Packio",
+    "unbalanced": "งบทดลองไม่สมดุล — แจ้งทีม getpack",
     "glAccount": "รหัสบัญชี",
     "noRows": "ไม่มีรายการในช่วงนี้",
     "thisMonth": "เดือนนี้",
@@ -434,7 +434,7 @@
     "postsTo": "บัญชีที่ใช้",
     "entries": "รายการที่บันทึก",
     "version": "ฉบับ",
-    "rulesBody": "เอกสาร ERP และ Packio แต่ละชนิดบันทึกบัญชีตามกฎเหล่านี้ เปิดกฎเพื่อดูรายละเอียดหรือเสนอแก้ไข (ผู้เสนอและผู้อนุมัติต้องเป็นคนละคน)",
+    "rulesBody": "เอกสาร ERP และ getpack แต่ละชนิดบันทึกบัญชีตามกฎเหล่านี้ เปิดกฎเพื่อดูรายละเอียดหรือเสนอแก้ไข (ผู้เสนอและผู้อนุมัติต้องเป็นคนละคน)",
     "rulePending": "มีฉบับรออนุมัติ"
   },
   "rules": {

@@ -16,7 +16,7 @@
     },
     "reviews": {
       "title": "Customer reviews",
-      "description": "New reviews wait for moderation before they show on the site. Publish, hide or reply on Packio's behalf."
+      "description": "New reviews wait for moderation before they show on the site. Publish, hide or reply on getpack's behalf."
     },
     "line": {
       "title": "LINE",
@@ -166,7 +166,7 @@
     "failed": "That didn't work",
     "replyTitle": "Reply to the review of {order}",
     "replyLabel": "Reply",
-    "replyHint": "Shown under the review as Packio.",
+    "replyHint": "Shown under the review as getpack.",
     "replyRequired": "Write at least 2 characters.",
     "sendReply": "Save reply",
     "replySaved": "Reply saved",

@@ -2,7 +2,7 @@
   "skip": "Skip to content",
   "tagline": "in LINE",
   "nav": {
-    "label": "Packio in LINE",
+    "label": "getpack in LINE",
     "home": "Home",
     "orders": "Orders",
     "points": "Points",
@@ -10,13 +10,13 @@
   },
   "signIn": {
     "working": "Signing in with LINE…",
-    "title": "Sign in to Packio",
+    "title": "Sign in to getpack",
     "intro": "Sign in to see your orders, approve proofs and collect points.",
     "failed": "Couldn't sign in with LINE — sign in with your mobile number instead.",
     "phone": "Sign in with mobile number"
   },
   "home": {
-    "title": "Packio in LINE",
+    "title": "getpack in LINE",
     "hello": "Hello {name}",
     "points": "Points",
     "todo": "To do",
@@ -52,7 +52,7 @@
   "chat": {
     "title": "Talk to us",
     "intro": "Message our customer service team in LINE, or answer a few quick questions so they know what you need.",
-    "open": "Open the Packio chat",
+    "open": "Open the getpack chat",
     "hours": "Hours: {hours}"
   }
 }

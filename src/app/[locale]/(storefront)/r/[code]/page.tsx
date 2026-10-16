@@ -1,7 +1,7 @@
 import { redirect } from "@/i18n/navigation";
 
 /**
- * The share link packio-api hands out with a referral code (`store.referral.get` → `link`,
+ * The share link getpack-api hands out with a referral code (`store.referral.get` → `link`,
  * `${STOREFRONT_BASE_URL}/r/{code}`): this route answers it and sends the friend on to the
  * referral landing page.
  */

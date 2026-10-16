@@ -3,7 +3,7 @@ import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { REFERENCE_MATERIALS, SPEC_VERSION } from "@packio/dieline";
+import { REFERENCE_MATERIALS, SPEC_VERSION } from "@getpack/dieline";
 
 import common from "@/i18n/messages/th/common/common.json";
 import designer from "@/i18n/messages/th/customer/designer.json";

@@ -45,7 +45,7 @@ function RoleBoxes({ value, onChange, legend }: { value: Role[]; onChange: (role
 
 /**
  * Members and their roles (F3 3.7): Company Admin, Buyer, Approver, Accountant. An admin invites
- * someone who already has a Packio account by their phone (`store.companies.inviteMember`), edits
+ * someone who already has a getpack account by their phone (`store.companies.inviteMember`), edits
  * roles (`store.companies.changeMemberRoles`; the last Company Admin keeps the role, 409
  * `companies.last_admin`) and removes people (`store.companies.removeMember`); everyone else reads
  * the list. Members are shown by name and role only: their e-mail and phone stay private (D-224).

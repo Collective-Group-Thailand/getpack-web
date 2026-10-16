@@ -183,7 +183,7 @@ import type { StyleRecipe } from "../types";
 /**
  * The style library's recipes (U3.4 waves): every base structure beyond the core styles the
  * designer and configurator ship with (`recipes/index.ts`). Kept out of the package's main entry
- * — imported as `@packio/dieline/library` — so a page that only draws the core styles does not
+ * — imported as `@getpack/dieline/library` — so a page that only draws the core styles does not
  * carry the library's data (U3.1 follow-up). In the catalogue's reading order: category, then base.
  */
 export const WAVE_RECIPES: readonly StyleRecipe[] = [

@@ -1,21 +1,21 @@
 # UAT data for a scorecard round
 
-> **Audience:** the moderator and note-taker of a Packio scorecard round (`moderator-guide.md`), and
-> packio-api for the same records on the UAT backend. What each participant signs in with and which
+> **Audience:** the moderator and note-taker of a getpack scorecard round (`moderator-guide.md`), and
+> getpack-api for the same records on the UAT backend. What each participant signs in with and which
 > seeded records their task cards start from (`task-cards.md` Part B). Written 2026-10-06 (U5.8).
 
 ## 1. Two ways to run a round
 
 | | Mock UAT (now) | UAT backend (the release-gate round) |
 |---|---|---|
-| What it is | packio-web on its own mock API with the dataset below: `pnpm dev:uat` (`API_MOCKS=1 MOCK_DATASET=uat`), or a production build started with the same two variables | packio-web against the UAT packio-api, with the same records seeded there |
+| What it is | getpack-web on its own mock API with the dataset below: `pnpm dev:uat` (`API_MOCKS=1 MOCK_DATASET=uat`), or a production build started with the same two variables | getpack-web against the UAT getpack-api, with the same records seeded there |
 | Good for | a pilot round, rehearsing the moderator guide, training note-takers | the round whose results are published in `scorecard-results/` |
-| Limits | prices, lead times and documents are the mock's; nothing reaches LINE, SMS or e-mail; the dieline PDF is a placeholder (T12's layers are checked on the UAT backend) | needs packio-api's seed (§4) — contract request `api.uat-scorecard-seed` |
-| Reset between sessions | restart the server: every participant's records start again | packio-api's seed job, per participant |
+| Limits | prices, lead times and documents are the mock's; nothing reaches LINE, SMS or e-mail; the dieline PDF is a placeholder (T12's layers are checked on the UAT backend) | needs getpack-api's seed (§4) — contract request `api.uat-scorecard-seed` |
+| Reset between sessions | restart the server: every participant's records start again | getpack-api's seed job, per participant |
 
 Each participant has an account of their own, so a claim, a reorder or an accepted job in one session
 never changes what the next participant sees. The names are invented and marked "(ข้อมูลจำลอง)";
-the products are Packio's own catalogue rows. Nothing here is a real person or company.
+the products are getpack's own catalogue rows. Nothing here is a real person or company.
 
 ## 2. Round sheet
 
@@ -54,7 +54,7 @@ receipt. The T7 link is the path the order's LINE notification opens (D-299): se
 | T9 | two photos on the device | `claim-1.jpg` (product), `claim-2.jpg` (carton) |
 | T11 | the partner zone on the Android phone, signed in | `owner@factory.invalid` / `mock-password`, the job of §2 — see the note below |
 
-**T11 note (finding).** The task card says "signed in as a floor operator", but in packio-api's RBAC
+**T11 note (finding).** The task card says "signed in as a floor operator", but in getpack-api's RBAC
 only the factory **owner** and **planner** hold `factory_jobs.respond`, which accepting a job needs;
 an operator reports steps only. The step counter signs in as the owner. Either the task card names
 the planner, or the operator gets the accept permission — a decision for the Partner Manager before
@@ -62,7 +62,7 @@ the round on the UAT backend.
 
 ## 4. The same records on the UAT backend (`api.uat-scorecard-seed`)
 
-For each participant P01–P10, packio-api's UAT seed creates — through its own services, so every
+For each participant P01–P10, getpack-api's UAT seed creates — through its own services, so every
 fact, document and journal entry is real:
 
 1. A customer with the phone of §2 (OTP sign-in), consents answered, the delivery address (the

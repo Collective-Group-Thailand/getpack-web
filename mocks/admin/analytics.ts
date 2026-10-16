@@ -1,14 +1,14 @@
 /**
  * Demand analytics, the partner prospectus and operational reports on the published contract
  * (`admin.analytics.*`, `admin.reports.*`, U-F0.3), plus the journey funnels that are still a
- * request (CONTRACT-REQUEST admin.analytics-journeys, packio-api U5.B6).
+ * request (CONTRACT-REQUEST admin.analytics-journeys, getpack-api U5.B6).
  *
  * Figures are deterministic per period so a screen and its test agree. Every dashboard takes an
  * explicit `from` / `to` (Asia/Bangkok) and answers the topic's rollup; staff dashboards are not
  * k-suppressed — k ≥ 3 (D-044, D-160, `analytics.prospectus_min_group_size`) applies to the
  * prospectus, whose export reports the threshold it used. Money is decimal strings throughout.
  *
- * The reports are packio-api's definitions (`src/modules/reports/definitions`): names, filters,
+ * The reports are getpack-api's definitions (`src/modules/reports/definitions`): names, filters,
  * columns (a subset) and the data permission of each; the rows are generated from the column types.
  */
 
@@ -489,7 +489,7 @@ const CLAIM_STATUSES = [
 
 type Column = Schemas["ReportColumnDto"];
 type FilterDef = Schemas["ReportFilterDefDto"];
-/** `total` as packio-api: money and integer columns are summed unless the column says not to. */
+/** `total` as getpack-api: money and integer columns are summed unless the column says not to. */
 const col = (
   key: string,
   labelTh: string,
@@ -526,7 +526,7 @@ const uuidOf = (key: "productTypeId" | "factoryId"): FilterDef => ({
   values: null,
 });
 
-/** The totals row packio-api adds (U-B0.3): money in satang, then back to a decimal string; counts as numbers. */
+/** The totals row getpack-api adds (U-B0.3): money in satang, then back to a decimal string; counts as numbers. */
 function totalsOf(
   columns: readonly Column[],
   rows: readonly Record<string, unknown>[],
@@ -541,7 +541,7 @@ function totalsOf(
   return totals;
 }
 
-/** packio-api's R1 reports (B6.2, D-111), in its order. */
+/** getpack-api's R1 reports (B6.2, D-111), in its order. */
 const REPORTS: MockReport[] = [
   {
     key: "sales",
@@ -876,7 +876,7 @@ const filtersOfUrl = (url: URL): Filters =>
 type Journey = Schemas["ScorecardJourney"];
 
 /**
- * packio-api's journeys (`src/modules/analytics/journeys.ts`): the scorecard task, its steps, and
+ * getpack-api's journeys (`src/modules/analytics/journeys.ts`): the scorecard task, its steps, and
  * the share of the previous step's sessions that reach each one. `claim` drops this week, so the
  * weekly check has an alert to show.
  */
@@ -1127,7 +1127,7 @@ export const analyticsContractHandlers = [
       filters,
       rows: rows.slice(0, PREVIEW_ROWS),
       truncated: rows.length > PREVIEW_ROWS,
-      // As packio-api: the sum of every row of the report, not only the previewed ones.
+      // As getpack-api: the sum of every row of the report, not only the previewed ones.
       totals: totalsOf(report.columns, rows),
       generatedAt: bangkokIso(),
     } satisfies Schemas["ReportPreviewDto"]);

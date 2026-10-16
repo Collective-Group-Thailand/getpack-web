@@ -1,5 +1,5 @@
 /**
- * Packio Factory ERP E4 (packio-api v0.47.0; D-359 – D-371) for `pnpm dev:mock` and the e2e: leads and deals, a
+ * getpack Factory ERP E4 (getpack-api v0.47.0; D-359 – D-371) for `pnpm dev:mock` and the e2e: leads and deals, a
  * quotation sent with a customer link and accepted there, the sales order, a delivery note that ships it, the
  * invoice and its receipt, the aging and the month's tax reports. Kept per factory, on top of E1's customers and
  * items. A mock is a fake engine and does its sums in numbers; the screens never do. All data obviously fake.

@@ -59,8 +59,8 @@
       "erp_gl_fixed_asset": "Fixed asset",
       "erp_gl_bank_statement_line": "Bank statement line",
       "erp_gl_journal_entry": "Journal entry",
-      "billing_statement": "Packio billing statement",
-      "payout_item": "Packio payout"
+      "billing_statement": "getpack billing statement",
+      "payout_item": "getpack payout"
     }
   },
   "posted": {
@@ -300,7 +300,7 @@
     "closing": "Closing",
     "balance": "Balance",
     "balanced": "In balance",
-    "unbalanced": "Out of balance — tell the Packio team",
+    "unbalanced": "Out of balance — tell the getpack team",
     "glAccount": "Account code",
     "noRows": "Nothing in this range",
     "thisMonth": "This month",
@@ -434,7 +434,7 @@
     "postsTo": "Accounts",
     "entries": "Entries",
     "version": "Version",
-    "rulesBody": "Each ERP and Packio document posts by these rules — open one to see it or propose a change (proposer and approver are different people)",
+    "rulesBody": "Each ERP and getpack document posts by these rules — open one to see it or propose a change (proposer and approver are different people)",
     "rulePending": "Version waiting"
   },
   "rules": {

@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
  * `CONTRACT-GAP <id>` marks a place where a screen shows less than it did, because the published
  * contract carries less than the request asked for (U1 U-F0.2: "follow the contract and record
  * the change"). Each marker names the `docs/contract-requests.md` row that asks for what is
- * missing, so the day packio-api ships it, a search for the id finds every screen to restore.
+ * missing, so the day getpack-api ships it, a search for the id finds every screen to restore.
  *
  * This gate holds the markers to that: an id with no open row is a gap nobody was asked to fill.
  */

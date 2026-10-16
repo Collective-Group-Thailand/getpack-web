@@ -8,7 +8,7 @@ import type { Schemas } from "@/lib/api/types";
 /**
  * What a studio design version carries beside its document (D-275): the box — sizes on their
  * basis, material, pattern, print sides — and the **spec**, the calculator configuration the
- * studio prices (`store.studio.quote`, D-277). packio-api refuses a spec that disagrees with the
+ * studio prices (`store.studio.quote`, D-277). getpack-api refuses a spec that disagrees with the
  * box (`studio.spec_mismatch`), so both are written from the same configuration here.
  *
  * The spec is the configurator's own configuration for this design (`stateForDesign`): the
@@ -23,7 +23,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const id = (value: unknown) => (typeof value === "string" && UUID.test(value) ? value : undefined);
 const size = (value: unknown) => (typeof value === "number" && value > 0 ? value : undefined);
 
-/** Outside, inside, both or none — as packio-api reads it from the spec's colours (`studio-spec.ts`). */
+/** Outside, inside, both or none — as getpack-api reads it from the spec's colours (`studio-spec.ts`). */
 export function printSidesOf(configuration: Record<string, unknown>): Schemas["PrintSides"] {
   const has = (value: unknown) =>
     Array.isArray(value) ? value.length > 0 : !!value && typeof value === "object" && Object.keys(value).length > 0;

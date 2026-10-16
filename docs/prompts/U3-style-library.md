@@ -1,4 +1,4 @@
-# U3 — Style Library at scale (frontend + `@packio/dieline`)
+# U3 — Style Library at scale (frontend + `@getpack/dieline`)
 
 > อ่าน `CLAUDE.md`, `docs/prompts/00-master-plan.md`, `docs/decisions.md`, `docs/design-tool/architecture.md`, `docs/design-tool/style-authoring.md`, `docs/design-tool/style-library-program.md` และไฟล์ข้อมูล `docs/design-tool/style-library-master.json` ก่อนทุก session
 > ลำดับ: หลัง U-F0 (integration) · ขนานกับ U2 ได้ · ทำทีละ session (U3.1 → U3.6) · **ทุก session เริ่มด้วย gap analysis** เทียบกับโค้ดจริงใน `packages/dieline` และ `src/features/designer`
@@ -7,7 +7,7 @@
 ---
 
 ## Goal
-Grow `@packio/dieline` from ~30 hand-written styles to the **105 base structures / 960 structural variants** in `style-library-master.json`, every one validated, folded in 3D, priced (instant or RFQ) and makeable by at least one partner. Wave 2 must pass 881 producible variants. Counting rules are in `style-library-program.md` §1 — do not count sizes, materials, prints or mockup scenes.
+Grow `@getpack/dieline` from ~30 hand-written styles to the **105 base structures / 960 structural variants** in `style-library-master.json`, every one validated, folded in 3D, priced (instant or RFQ) and makeable by at least one partner. Wave 2 must pass 881 producible variants. Counting rules are in `style-library-program.md` §1 — do not count sizes, materials, prints or mockup scenes.
 
 ## U3.1 — Module system (engine refactor, no new styles yet)
 1. Introduce composable **modules** in `packages/dieline/src/modules/`:

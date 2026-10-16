@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerErp.move"))("countTitle") };
 }
 
-/** Stock task "count" (Packio Factory ERP E1; D-321, D-324). */
+/** Stock task "count" (getpack Factory ERP E1; D-321, D-324). */
 export default async function StockCountPage({ searchParams }: { searchParams: Promise<{ item?: string; view?: string }> }) {
   const [query, t, tStock, tCount, locale, context] = await Promise.all([
     searchParams,

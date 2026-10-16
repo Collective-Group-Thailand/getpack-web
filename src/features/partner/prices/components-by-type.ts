@@ -32,12 +32,12 @@ const FOLDING: readonly Component[] = [
 ];
 
 /**
- * The price components each product type's calculator reads (packio-api
+ * The price components each product type's calculator reads (getpack-api
  * `src/modules/pricing/calculators/<family>/*-snapshot.loader.ts`, the `pl*` models each loader
  * queries). The price screens show only these, so a folding-carton factory is not asked about
  * pouch film or corrugated board.
  *
- * Fallback only: since packio-api v0.43.4 `PriceComponentDto.productTypeCodes` names the product
+ * Fallback only: since getpack-api v0.43.4 `PriceComponentDto.productTypeCodes` names the product
  * types; this copy answers only for an API that predates the field (see `componentsFor`).
  */
 export const COMPONENTS_BY_TYPE: Record<string, readonly Component[]> = {
@@ -102,7 +102,7 @@ export function componentsFor<T extends { component: Component; productTypeCodes
   productTypeCode: string | null | undefined,
 ): T[] {
   if (!productTypeCode) return [...definitions];
-  // packio-api v0.43.4 names, per component, the product types whose calculator reads it
+  // getpack-api v0.43.4 names, per component, the product types whose calculator reads it
   // (`PriceComponentDto.productTypeCodes`) — that is the answer. An API that predates it sends no
   // field; only then does the copy below decide (remove it once every stack serves v0.43.4).
   if (definitions.some((item) => Array.isArray(item.productTypeCodes))) {

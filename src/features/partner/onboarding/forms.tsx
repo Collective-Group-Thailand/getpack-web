@@ -31,7 +31,7 @@ function fieldErrors(error: unknown): Errors {
 /* --------------------------------------------------------------------------- sign-off */
 
 /**
- * Assisted onboarding (D-100 note): Packio staff entered this step for the factory; the owner
+ * Assisted onboarding (D-100 note): getpack staff entered this step for the factory; the owner
  * confirms it is right. Restated in the dialog, because the sign-off is the factory's word.
  */
 export function SignOffStep({ step, stepLabel }: { step: Step; stepLabel: string }) {

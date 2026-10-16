@@ -4,7 +4,7 @@
  * `mockRequest` holds a contract request to its zod schema; the B5 surface is published, so the
  * shapes are the generated ones instead. `finance.get("/v1/admin/slips", …)` takes the OpenAPI
  * path template and types the resolver's return value as that operation's success body — a
- * mock that drifts from what packio-api published stops compiling. It also does what every B5
+ * mock that drifts from what getpack-api published stops compiling. It also does what every B5
  * operation does before its business rule: a staff token (401), the operation's
  * `x-required-permissions` (403), and — where the contract requires `Idempotency-Key` — a 400
  * without one and the original answer on a replay (api-conventions §3).

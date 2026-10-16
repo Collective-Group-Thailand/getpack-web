@@ -263,7 +263,7 @@ export async function getSharedQuote(token: string): Promise<SharedQuote | null>
   );
 }
 
-/** Packio's CS channels (`store.support.getChannels`, D-221); `null` when unavailable. */
+/** getpack's CS channels (`store.support.getChannels`, D-221); `null` when unavailable. */
 export async function getSupportChannels(): Promise<SupportChannels | null> {
   const api = await publicApi("content");
   return orFallback(

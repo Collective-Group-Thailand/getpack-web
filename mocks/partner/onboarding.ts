@@ -1,5 +1,5 @@
 /**
- * What the partner zone's onboarding and price screens read beyond packio-api B2.2, published in
+ * What the partner zone's onboarding and price screens read beyond getpack-api B2.2, published in
  * contract v0.6.0 (U-B0.3): the catalogue names behind the factory's price lines
  * (`partner.factories.priceReferences`, names only — D-044), its requests to the Partner team
  * (`partner.changeRequests.*`), its site visits (`partner.factories.listSiteVisits`, date and result
@@ -165,7 +165,7 @@ export const onboardingHandlers = [
   http.get("*/v1/partner/factories/:factoryId/site-visits", ({ request, params }) => {
     const ok = own(request, params.factoryId, "factory_profile.read");
     if (ok instanceof Response) return ok;
-    // The inspectors, the checklist and Packio's notes stay with the Partner team (D-041).
+    // The inspectors, the checklist and getpack's notes stay with the Partner team (D-041).
     return HttpResponse.json(
       [...ok.store.visits]
         .sort((a, b) => b.visitedOn.localeCompare(a.visitedOn))
@@ -194,7 +194,8 @@ export const onboardingHandlers = [
       const ok = own(request, params.factoryId, "factory_prices.propose");
       if (ok instanceof Response) return ok;
       const item = proposals.find((c) => c.id === params.proposalId && c.factoryId === ok.store.factory.id);
-      if (!item || item.direction !== "factory_to_packio") return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
+      if (!item || item.direction !== "factory_to_getpack")
+        return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
       if (!["draft", "submitted", "under_review", "countered"].includes(item.status))
         return problem(409, "partners.proposal_closed", "ข้อเสนอนี้ปิดไปแล้ว แนบหลักฐานเพิ่มไม่ได้");
       if ((body.note?.length ?? 0) > 500)

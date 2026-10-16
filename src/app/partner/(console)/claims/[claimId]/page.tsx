@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * One claim naming the factory (`partner.claims.get`): what the customer reported and the photos of
- * the goods and the carton (D-082), whose it is by D-083's rules, Packio's decision and what was
+ * the goods and the carton (D-082), whose it is by D-083's rules, getpack's decision and what was
  * done, the deductions it caused — and the factory's answer when the API offers one
  * (`claim.respond`). Nothing identifies the customer (D-142).
  */

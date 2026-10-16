@@ -18,7 +18,7 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { facetLabel, type StylesT } from "./labels";
 
 type Basis = "internal" | "external" | "over_crease";
-/** The engine's three formats plus `ai`: the designer PDF delivered as an Illustrator file (packio-api v0.59.0). */
+/** The engine's three formats plus `ai`: the designer PDF delivered as an Illustrator file (getpack-api v0.59.0). */
 type Format = Schemas["DielineDownloadFormat"];
 
 export interface DielineDownloadProps {
@@ -34,7 +34,7 @@ const MM = /^\d{1,4}(\.\d)?$/;
 
 /**
  * The free dieline of a variant at the customer's sizes (U2.F2, D-271): PDF, DXF or SVG, no plan
- * gate and no watermark, drawn by packio-api (`store.dielines.download`) within the style's range for
+ * gate and no watermark, drawn by getpack-api (`store.dielines.download`) within the style's range for
  * the material class — sizes entered on any basis are converted by the API. The PDF's layers are
  * explained; after a download the page says the box can be ordered as it is, never a paywall. A
  * signed-out visitor is asked to sign in (the API counts downloads per customer).

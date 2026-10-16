@@ -9,8 +9,8 @@ import {
   REFERENCE_MATERIALS,
   resolveParam,
   type Pt,
-} from "@packio/dieline";
-import { ALL_RECIPES, deviationFrom, INTAKE_TOLERANCE_MM, parseDxf, type DxfDrawing } from "@packio/dieline/library";
+} from "@getpack/dieline";
+import { ALL_RECIPES, deviationFrom, INTAKE_TOLERANCE_MM, parseDxf, type DxfDrawing } from "@getpack/dieline/library";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
@@ -41,7 +41,7 @@ function pathOf(lines: Pt[][], scale: number, dx: number, dy: number) {
  * (downloaded from the offer — the file host's signed URL is not fetched by the page), picks the
  * closest recipe and board, adjusts its sizes until the two drawings agree, and reads the deviation
  * — the largest distance between their cut and crease lines, both ways, mirrored if that is closer.
- * Within 0.5 mm it is a match; the report goes to packio-api with the recipe. A PDF offer is
+ * Within 0.5 mm it is a match; the report goes to getpack-api with the recipe. A PDF offer is
  * reviewed by eye: the page draws only DXF.
  */
 export function IntakeMatcher({

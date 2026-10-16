@@ -35,7 +35,7 @@ export interface CommentsPanelProps {
 /**
  * Comments on a design (U4.7, D-285): threads pinned to the 3D box (a face and a point on it) or to
  * a point of the flat sheet — "ปักหมุด" arms a click on either view — with replies, @mentions of
- * the company's members (notified by packio-api) and resolving. Each thread is numbered as its pin.
+ * the company's members (notified by getpack-api) and resolving. Each thread is numbered as its pin.
  */
 export function CommentsPanel({ source, toAnchor, toPoint, placeOf, members = [], versionNo }: CommentsPanelProps) {
   const t = useTranslations("studio.comments");

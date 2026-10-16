@@ -429,8 +429,8 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
  * (`provider-sdks.ts`), so it costs the page nothing until then.
  *
  * Google and Apple are the providers' white buttons — white in every theme, so Apple's black mark
- * always shows — on Packio's hairline; LINE is its own green with the white mark. These are the
- * providers' published button colours, not Packio's palette, which is why they sit here.
+ * always shows — on getpack's hairline; LINE is its own green with the white mark. These are the
+ * providers' published button colours, not getpack's palette, which is why they sit here.
  */
 const PROVIDER_STYLE: Record<Brand, string> = {
   google: "bg-white text-[#1f1f1f] border-border hover:bg-[#f7f7f7]",

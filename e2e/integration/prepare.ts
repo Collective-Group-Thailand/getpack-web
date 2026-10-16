@@ -3,7 +3,7 @@ import { api, apiWithEtag, DEV_INSTANT_PRODUCT, staffToken } from "./support";
 /**
  * Prepares the dev seed's catalogue for the launch path, as catalogue admins would before launch.
  *
- * The seed leaves every product type RFQ-only, so packio-api answers `instant: false` for every
+ * The seed leaves every product type RFQ-only, so getpack-api answers `instant: false` for every
  * product (`store-configurator.service.ts`: instant needs an instant type and a difficulty level)
  * and `pricing.not_instant` for every calculation. F9001's corrugate price list prices the seed's
  * corrugated test product (`dev-rsc-carton`, which has a difficulty level) end to end, so an Admin

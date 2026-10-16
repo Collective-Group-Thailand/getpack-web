@@ -5,7 +5,7 @@ import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
 
 /**
- * F2 2.5 — catalogue and CMS, against the stateful mock of packio-api B2.1's published tables.
+ * F2 2.5 — catalogue and CMS, against the stateful mock of getpack-api B2.1's published tables.
  * Each test that changes state uses its own rows or names (the mock keeps state for the run).
  */
 

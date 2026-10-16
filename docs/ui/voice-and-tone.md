@@ -5,7 +5,7 @@
 
 ## The voice
 
-**Clear, polite, specific.** Packio is a production partner, not a brochure. A customer is
+**Clear, polite, specific.** getpack is a production partner, not a brochure. A customer is
 spending real money on a physical thing that cannot be un-printed, so copy is judged on whether
 it prevents a mistake — not on how friendly it sounds.
 

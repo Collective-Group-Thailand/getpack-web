@@ -11,7 +11,7 @@ export type Material = z.output<typeof materialCard>;
 export type LearningPath = z.output<typeof learningPath>;
 
 /**
- * These endpoints are contract requests packio-api has not shipped: against a real backend they
+ * These endpoints are contract requests getpack-api has not shipped: against a real backend they
  * answer 404, which reads as "nothing published yet" — each page's empty state — not a crash.
  * Any other failure still surfaces.
  */

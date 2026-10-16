@@ -1,7 +1,7 @@
 /**
  * RFC 9457 problem details (`docs/contract/api-conventions.md` §3) as one typed error.
  *
- * Every failure from `packio-api` arrives as `application/problem+json` with a stable
+ * Every failure from `getpack-api` arrives as `application/problem+json` with a stable
  * machine-readable `code`, a `detail` already localised by `Accept-Language`, an optional
  * field-level `errors[]`, and a `requestId` that support can quote. `ApiError` carries all
  * of it, so a screen never has to parse a response body or guess at a message.
@@ -103,7 +103,7 @@ export async function toApiError(
   }
 
   return new ApiError({
-    type: `https://errors.packio/http.${response.status}`,
+    type: `https://errors.getpack/http.${response.status}`,
     title: response.statusText || "Request failed",
     status: response.status,
     code: `http.${response.status}`,

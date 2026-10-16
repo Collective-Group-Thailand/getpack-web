@@ -125,7 +125,7 @@ transfer size, heaviest of three runs:
 | `/account/designs` | 308,493 | 315,900 | (same set) |
 | `/rfq/rigid-box`, `/sign-in` | 281,735 / 274,726 | unchanged | — |
 
-The ~7.4 KB is the recipe engine on every page that loads `@packio/dieline` (ADR-0011): 30
+The ~7.4 KB is the recipe engine on every page that loads `@getpack/dieline` (ADR-0011): 30
 recipes as data, the module declarations and the expression evaluator. Recipe data must leave the
 initial bundle before U3.4 wave 1 (≈ 75 more recipes) — loaded per style, or read from the API
 (U3.B2). **`customer-app` was already over its ceiling on `main`** (319,069 against 293,000):
@@ -149,7 +149,7 @@ The size step is the configurator's first step and carries the new measurement-b
 | `/design/new` | ≤ 468,000 | 471,492 | designer 468,000 → **472,000** |
 
 Wave 1 adds 60 recipes and 15 modules; all of them, their parameters and their words live in
-`@packio/dieline/library`, and the core styles the designer and configurator draw stay in their
+`@getpack/dieline/library`, and the core styles the designer and configurator draw stay in their
 pre-wave form in the main entry (the library replaces them by id with their extended versions).
 What is left in the main entry is the code of core modules that the extended versions share:
 joints (stitched / taped), hand holes in long panels and trays, the insert-piece hook and the
@@ -161,7 +161,7 @@ rendered on the server, facets and sort are links, favourites are a small store,
 client, the card renderer and the 3D model load on interaction.
 
 
-## U4.1 — Packio 3D Studio shell (2026-10-05)
+## U4.1 — getpack 3D Studio shell (2026-10-05)
 
 | Page | Before | After | Ratchet |
 |---|---|---|---|
@@ -207,7 +207,7 @@ software WebGL; the floor is 45 fps (`STUDIO_ORBIT_FPS_FLOOR`).
 |---|---|---|---|
 | `/studio/new?product=tuck-end-box…` | 486,106 | 492,619 (performance 0.98) | studio 487,000 → **493,000** |
 
-The content tools — Packio templates and their re-flow, elements, codes and data blocks, brand
+The content tools — getpack templates and their re-flow, elements, codes and data blocks, brand
 kits with palette extraction, backgrounds — are `next/dynamic` rail panels (inline they measured
 496,380). What the canvas itself needs stays in the first load: finish layers, gradients and the
 full-wrap picture, the EAN-8 / UPC-A / Code 128 encoders (the canvas draws every symbol) and the
@@ -219,7 +219,7 @@ image-quality badge of the properties panel. Orbit performance alone (`pnpm e2e:
 |---|---|---|---|
 | `/studio/new?product=tuck-end-box…` | 492,619 | 496,235 (performance 0.98) | studio 493,000 → **497,000** |
 
-The checks now run packio-api's rule catalogue (ids, severities, thresholds, print methods,
+The checks now run getpack-api's rule catalogue (ids, severities, thresholds, print methods,
 material classes) with the vendored catalogue as the fallback while `getRules` has not answered;
 the panel groups findings by severity with their fixes and acceptances; the soft proof is a CSS
 filter. The fixes themselves load on first use.
@@ -267,7 +267,7 @@ this back for everyone (follow-up).
 `customer-app` script ratchet 340000 → **340200**. The configurator measured 340092, 92 B over. The
 core engine (main entry) carries the shared parts of the wave-2 extensions that the configurator draws
 with: the n-sided polygon lid, marks on tube panels, `under`/`offset` piece placement and the lid
-window lookup. The 63 new recipes and 19 new modules stay in `@packio/dieline/library`, loaded on
+window lookup. The 63 new recipes and 19 new modules stay in `@getpack/dieline/library`, loaded on
 demand on the style pages; every other set is within budget.
 
 ## U5.1–U5.7 — UX excellence layer (2026-10-06)
@@ -288,7 +288,7 @@ Measured on a private port (`LHCI_PORT`) against `main` at `c1f8967` built the s
 - Taken back on the way: a header cart-icon animation (2.5 KB on every page, removed), the glossary chip's popover and request client (were loading after hydration), the configurator's defaults seed (server only now).
 - **`pnpm lhci` and parallel worktrees**: two sessions measuring at once both used port 3200, so one measured the other's server (this session's first figures, and possibly the 340,092 recorded for U3.4 wave 2, came from whichever server answered). `scripts/lhci.ts` now refuses a port that already answers and rewrites the configs' URLs to `LHCI_PORT`.
 
-## U5.5 — Packio Assistant (2026-10-06)
+## U5.5 — getpack Assistant (2026-10-06)
 
 Measured with the assistant **built out** (`NEXT_PUBLIC_ASSISTANT` unset — the launch configuration, D-218), private port:
 

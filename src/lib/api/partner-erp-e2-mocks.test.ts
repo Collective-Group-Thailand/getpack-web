@@ -7,7 +7,7 @@ import { accessToken } from "../../../mocks/support";
 import { createApiClient } from "./client";
 
 /**
- * The Packio Factory ERP E2 mock (packio-api v0.45, D-333 – D-342) keeps the rules a screen shows: a request
+ * The getpack Factory ERP E2 mock (getpack-api v0.45, D-333 – D-342) keeps the rules a screen shows: a request
  * waits for an approver, an invoice priced off the order needs approval before it can be paid, and a released
  * production order holds its material and lists what is short.
  */
@@ -22,7 +22,7 @@ const api = (persona: string) =>
 const path = { factoryId: F001 };
 const key = (n: number) => ({ "Idempotency-Key": `00000000-0000-4000-8000-0000000e2${String(n).padStart(3, "0")}` });
 
-describe("Packio Factory ERP E2 mock", () => {
+describe("getpack Factory ERP E2 mock", () => {
   it("links the usual supplier and keeps quoted prices (D-333, D-334)", async () => {
     const items = (await api("owner").GET("/v1/partner/factories/{factoryId}/erp/items", { params: { path } })).data!;
     const paper = items.data.find((i) => i.defaultSupplier)!;

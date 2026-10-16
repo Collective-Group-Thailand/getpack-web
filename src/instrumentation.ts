@@ -58,14 +58,14 @@ async function registerApiMocks(): Promise<void> {
   // `console.info`, not `process.stdout`: Next compiles this module for the edge runtime as
   // well, where `process.stdout` does not exist — and warns about it on every build, even
   // though the guard above means that copy never runs.
-  console.info("[packio] API mocks are serving this process (API_MOCKS=1)");
+  console.info("[getpack] API mocks are serving this process (API_MOCKS=1)");
 }
 
 /**
  * Every server-side error Next catches, reported with the zone it happened in.
  *
  * The zone is per request — one process answers all three hosts — so this is where it can be
- * tagged at all. `src/proxy.ts` stamps `x-packio-zone` before anything else runs, so it is on
+ * tagged at all. `src/proxy.ts` stamps `x-getpack-zone` before anything else runs, so it is on
  * every request that reached application code.
  */
 export const onRequestError: typeof Sentry.captureRequestError = (error, request, context) => {

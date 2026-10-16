@@ -19,7 +19,7 @@
 
 | Thai | English | Note |
 |---|---|---|
-| กล่องฝาเสียบ | Tuck-end box | Folding carton with tucked flaps; `tuck-end` in `@packio/dieline` |
+| กล่องฝาเสียบ | Tuck-end box | Folding carton with tucked flaps; `tuck-end` in `@getpack/dieline` |
 | กล่องฝาชน | Regular slotted container (RSC) | The standard corrugated shipping box |
 | กล่องถาด | Tray | Open-top tray, often with a separate lid |
 | กล่องฝาครอบ | Lid-and-base box | Two pieces; "rigid box" when mounted on greyboard |
@@ -94,8 +94,8 @@
 | Do not use | Use instead | Why |
 |---|---|---|
 | Locopack | — | The legacy system; it never appears in the product (D-001) |
-| ต้นทุนโรงงาน | ราคาซื้อ / price list | Packio never asks a factory for its internal cost (D-042) |
-| ซัพพลายเออร์ (to a customer) | โรงงานพาร์ตเนอร์ | Packio is the seller; the factory relationship is not the customer's (D-010) |
+| ต้นทุนโรงงาน | ราคาซื้อ / price list | getpack never asks a factory for its internal cost (D-042) |
+| ซัพพลายเออร์ (to a customer) | โรงงานพาร์ตเนอร์ | getpack is the seller; the factory relationship is not the customer's (D-010) |
 | สินค้า (for a box) | the box style by name | "Name the thing" (`voice-and-tone.md`) |
 | คลิกที่นี่ | the verb for the action | |
-| ปรู๊ฟ, ตัวอย่างงานพิมพ์, พิสูจน์อักษร | แบบตัวอย่าง / ตรวจแบบก่อนพิมพ์ for customers; Proof for statuses, the back office, the factory app and page names | Phase 4 §4.5. Zero in UI copy, i18n and the display mapping (CI: `src/ui/design-language.test.ts`); API text is mapped at display (`src/i18n/terms.ts`) until packio-api adopts this glossary |
+| ปรู๊ฟ, ตัวอย่างงานพิมพ์, พิสูจน์อักษร | แบบตัวอย่าง / ตรวจแบบก่อนพิมพ์ for customers; Proof for statuses, the back office, the factory app and page names | Phase 4 §4.5. Zero in UI copy, i18n and the display mapping (CI: `src/ui/design-language.test.ts`); API text is mapped at display (`src/i18n/terms.ts`) until getpack-api adopts this glossary |

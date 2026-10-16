@@ -260,7 +260,7 @@ const PAUSE_REASONS = [
 
 /**
  * An operator's buttons on one operation (D-341, D-353): start, pause with a reason, resume, finish
- * with good and scrap, or skip. A step that mirrors a Packio job milestone cannot be skipped — the
+ * with good and scrap, or skip. A step that mirrors a getpack job milestone cannot be skipped — the
  * customer's job needs it done — and a failed milestone update is shown with a way to the job.
  * `size="xl"` is the machine kiosk's glove-sized variant.
  */

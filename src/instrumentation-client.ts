@@ -18,7 +18,7 @@ if (browserSentryEnabled) {
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
       environment: process.env.NEXT_PUBLIC_ENV_BADGE,
       release: process.env.NEXT_PUBLIC_SENTRY_RELEASE,
-      // The browser cannot read `x-packio-zone` (a request header) or `ADMIN_HOST` (a server
+      // The browser cannot read `x-getpack-zone` (a request header) or `ADMIN_HOST` (a server
       // variable), but it can see the host it was served from, and the zone hosts are
       // distinct by construction (00-master-plan.md §2).
       zone: zoneFromHost(window.location.host),

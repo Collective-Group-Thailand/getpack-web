@@ -43,7 +43,7 @@ type Preview = Schemas["CheckoutPreviewDto"];
 type Body = Schemas["CheckoutDto"];
 
 const NO_TAX = "__receipt__";
-/** The notices the storefront has words for (the contract names none; packio-api's checkout extensions do). */
+/** The notices the storefront has words for (the contract names none; getpack-api's checkout extensions do). */
 const KNOWN_NOTICES = new Set([
   "promotion.applied",
   "promotion.capped",

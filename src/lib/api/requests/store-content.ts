@@ -1,6 +1,6 @@
 /**
  * Storefront content that teaches (U5.6, U5.2): the glossary, the materials library and buyer
- * learning paths. packio-api keeps the glossary (`glossary_terms`, `admin.cmsGlossaryTerms`) and the
+ * learning paths. getpack-api keeps the glossary (`glossary_terms`, `admin.cmsGlossaryTerms`) and the
  * materials (`admin.catalogMaterials`) for staff only at v0.41.0, and has no learning paths, so the
  * storefront asks for public reads of each. All three are open to guests (`public`).
  */

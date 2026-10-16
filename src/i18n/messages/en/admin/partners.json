@@ -206,7 +206,7 @@
   },
   "onboarding": {
     "title": "Onboarding steps",
-    "assistedNote": "Packio enters the data; the factory signs each step off in the partner zone.",
+    "assistedNote": "getpack enters the data; the factory signs each step off in the partner zone.",
     "selfNote": "The factory enters its own data; the Partner team reviews it.",
     "step": "Step",
     "status": "Status",
@@ -467,7 +467,7 @@
   },
   "terms": {
     "arrangement": "Pricing arrangement",
-    "arrangementNote": "The factory's own price list, or Packio's rate card",
+    "arrangementNote": "The factory's own price list, or getpack's rate card",
     "modes": {
       "factory_price_list": "Factory price list",
       "platform_rate_card": "Platform rate card"
@@ -573,7 +573,7 @@
     "upcoming": "{count} scheduled",
     "origins": {
       "factory_proposal": "Factory proposal",
-      "platform_rate_card": "Packio rate card",
+      "platform_rate_card": "getpack rate card",
       "assisted_entry": "Assisted entry",
       "import": "Import"
     },
@@ -594,8 +594,8 @@
     "proposalName": "{type} · from {date}",
     "direction": "Direction",
     "directions": {
-      "factory_to_packio": "From the factory",
-      "packio_to_factory": "Packio rate card"
+      "factory_to_getpack": "From the factory",
+      "getpack_to_factory": "getpack rate card"
     },
     "status": "Status",
     "lines": "Lines",
@@ -604,12 +604,12 @@
   },
   "proposals": {
     "title": "Price proposals",
-    "description": "Factories' proposals, and Packio's rate cards out for acceptance",
+    "description": "Factories' proposals, and getpack's rate cards out for acceptance",
     "directionsLabel": "Direction",
     "all": "All",
     "directions": {
-      "factory_to_packio": "From the factory",
-      "packio_to_factory": "Packio rate card"
+      "factory_to_getpack": "From the factory",
+      "getpack_to_factory": "getpack rate card"
     },
     "columns": {
       "proposal": "Proposal",
@@ -629,8 +629,8 @@
     "partners": "Partners",
     "proposals": "Proposals",
     "directions": {
-      "factory_to_packio": "From the factory",
-      "packio_to_factory": "Packio rate card"
+      "factory_to_getpack": "From the factory",
+      "getpack_to_factory": "getpack rate card"
     },
     "factory": "Factory",
     "productType": "Product type",

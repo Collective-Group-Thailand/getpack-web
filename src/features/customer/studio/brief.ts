@@ -1,4 +1,4 @@
-import { getStyle, isStyleId } from "@packio/dieline";
+import { getStyle, isStyleId } from "@getpack/dieline";
 
 import { sizeOf } from "@/features/designer/document";
 import type { DesignContent, DesignSpec } from "@/features/designer/types";

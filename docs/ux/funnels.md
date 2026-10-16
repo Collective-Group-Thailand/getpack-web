@@ -8,7 +8,7 @@
 
 ## Rules every event follows
 
-- **First-party only.** Events go to Packio's own API through the storefront BFF (`track()`),
+- **First-party only.** Events go to getpack's own API through the storefront BFF (`track()`),
   never to GTM, and carry no advertising identifier. They are necessary to run the service and
   are not consent-gated (`src/lib/analytics/consent.ts`); session replay is, separately.
 - **Dimensions, never identities** (D-102, PDPA): route *pattern*, product type code, quantity
@@ -44,7 +44,7 @@ Leak signal: `quote_abandoned` (declared, not sent yet — needs a session end t
 | — | `design_started`, `design_saved` | retired with U4.2 (`/design/[id]` is the studio now); the studio funnel below replaces them |
 | 3 | `design_ordered` | "สั่งผลิต" in the studio's ⑤ opened the pre-filled configurator (`OrderAction.tsx`); from there the configurator funnel takes over (until U4.6) |
 
-### Studio funnel (U4.1, D-286) — `/studio/[designId]`, ingested as packio-api's `studio_*` events
+### Studio funnel (U4.1, D-286) — `/studio/[designId]`, ingested as getpack-api's `studio_*` events
 Each carries `printMethod` (once ② sets it) and `styleFamily` (the product type code) only.
 | Step | Event | Sent from |
 |---|---|---|

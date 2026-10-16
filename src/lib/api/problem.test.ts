@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ApiError, applyProblemToForm, isApiError, toApiError, type ProblemDetails } from "./problem";
 
 const problem: ProblemDetails = {
-  type: "https://errors.packio/order.invalid_transition",
+  type: "https://errors.getpack/order.invalid_transition",
   title: "Invalid order transition",
   status: 422,
   code: "order.invalid_transition",

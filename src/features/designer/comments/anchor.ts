@@ -1,4 +1,4 @@
-// No engine here: the shared page's comments read anchors without @packio/dieline.
+// No engine here: the shared page's comments read anchors without @getpack/dieline.
 
 /**
  * Where a comment is pinned (U4.7, D-285): to a face of the 3D box — its id and a point in it as
@@ -8,7 +8,7 @@
  */
 export type CommentAnchor = { faceId: string; u: number; v: number } | { xMm: number; yMm: number };
 
-/** An anchor as packio-api answers it (`CommentDto.anchor`, opaque), or `null` when it is neither. */
+/** An anchor as getpack-api answers it (`CommentDto.anchor`, opaque), or `null` when it is neither. */
 export function readAnchor(raw: Record<string, unknown> | null | undefined): CommentAnchor | null {
   if (!raw) return null;
   const { faceId, u, v, xMm, yMm } = raw;

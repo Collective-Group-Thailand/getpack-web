@@ -6,7 +6,7 @@ import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { addHeading } from "./helpers/designer";
 
 /**
- * U4.6, ⑤ order from Packio 3D Studio against the mock API: the order sheet's tiers priced for the
+ * U4.6, ⑤ order from getpack 3D Studio against the mock API: the order sheet's tiers priced for the
  * saved version, "เพิ่มลงตะกร้า" saving the quotation, uploading the version's renders and ordering
  * it (a print job polled to success), then the cart with the version pinned at the studio's price —
  * and, once the order is placed, the design locked by it (editing makes a new version).
@@ -15,7 +15,7 @@ import { addHeading } from "./helpers/designer";
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const STUDIO = /\/studio\/([0-9a-f-]{36})\?/;
 const BOX = "/studio/new?product=tuck-end-box&style=tuck-end&l=70&w=40&h=150&step=design";
-const BFF = { "x-packio-csrf": "1", origin: HOSTS.customer };
+const BFF = { "x-getpack-csrf": "1", origin: HOSTS.customer };
 
 async function expectNoViolations(page: Page) {
   const { violations } = await new AxeBuilder({ page })
