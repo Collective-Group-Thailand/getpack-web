@@ -42372,6 +42372,41 @@
         ],
         "type": "object"
       },
+      "ErpDashGetpackDto": {
+        "properties": {
+          "confirmedNet": {
+            "description": "Net of the getpack billing statements confirmed this month — the factory’s revenue from getpack (F14, D-397)",
+            "example": "239951.41",
+            "type": "string"
+          },
+          "confirmedStatements": {
+            "example": 2,
+            "type": "number"
+          },
+          "toConfirm": {
+            "description": "Statements sent by getpack, waiting for the factory to check and confirm",
+            "example": 2,
+            "type": "number"
+          },
+          "toConfirmGross": {
+            "example": "44999.33",
+            "type": "string"
+          },
+          "toInvoice": {
+            "description": "Confirmed statements without the factory’s tax invoice (getpack pays once it is attached)",
+            "example": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "confirmedNet",
+          "confirmedStatements",
+          "toConfirm",
+          "toConfirmGross",
+          "toInvoice"
+        ],
+        "type": "object"
+      },
       "ErpDashLateOrderDto": {
         "properties": {
           "dueOn": {
@@ -42423,41 +42458,6 @@
           "total",
           "down",
           "oeeYesterdayPct"
-        ],
-        "type": "object"
-      },
-      "ErpDashGetpackDto": {
-        "properties": {
-          "confirmedNet": {
-            "description": "Net of the getpack billing statements confirmed this month — the factory’s revenue from getpack (F14, D-397)",
-            "example": "239951.41",
-            "type": "string"
-          },
-          "confirmedStatements": {
-            "example": 2,
-            "type": "number"
-          },
-          "toConfirm": {
-            "description": "Statements sent by getpack, waiting for the factory to check and confirm",
-            "example": 2,
-            "type": "number"
-          },
-          "toConfirmGross": {
-            "example": "44999.33",
-            "type": "string"
-          },
-          "toInvoice": {
-            "description": "Confirmed statements without the factory’s tax invoice (getpack pays once it is attached)",
-            "example": 1,
-            "type": "number"
-          }
-        },
-        "required": [
-          "confirmedNet",
-          "confirmedStatements",
-          "toConfirm",
-          "toConfirmGross",
-          "toInvoice"
         ],
         "type": "object"
       },
@@ -42635,13 +42635,6 @@
           "followUps": {
             "$ref": "#/components/schemas/ErpDashFollowUpsDto"
           },
-          "machines": {
-            "$ref": "#/components/schemas/ErpDashMachinesDto"
-          },
-          "month": {
-            "example": "2026-10",
-            "type": "string"
-          },
           "getpack": {
             "allOf": [
               {
@@ -42649,6 +42642,13 @@
               }
             ],
             "description": "Work for getpack (D-402)"
+          },
+          "machines": {
+            "$ref": "#/components/schemas/ErpDashMachinesDto"
+          },
+          "month": {
+            "example": "2026-10",
+            "type": "string"
           },
           "payables": {
             "$ref": "#/components/schemas/ErpDashPayablesDto"
@@ -113033,12 +113033,12 @@
     "contact": {},
     "description": "getpack — Your Packaging Production Partner, operated by Collective Group (Thailand).\nRules: `docs/contract/api-conventions.md` (shared with getpack-web).\n\n- **Surfaces:** `/v1/auth`, `/v1/store` (customer), `/v1/admin` (staff), `/v1/partner` (factories), `/v1/b2b` (company API clients, D-291), `/webhooks`. A token is accepted only on its own audience's prefix.\n- **Money:** decimal strings with exactly 2 decimals (`\"1234.50\"`) plus `currency: \"THB\"` on the object; never JSON numbers. Clients never compute prices.\n- **Dates:** ISO 8601 with offset, rendered in `Asia/Bangkok` (`2026-09-22T14:05:00+07:00`); date-only fields `YYYY-MM-DD`.\n- **IDs:** uuid only; business keys (`orderCode`) are separate fields.\n- **Errors:** RFC 9457 `application/problem+json` with a stable `code`; `title`/`detail` localised by `Accept-Language` (`th` default, `en`).\n- **Lists:** `?page&perPage(≤100)&sort&order&q` → `{ data, meta: { page, perPage, total } }`; feeds use `?cursor&limit` → `{ data, meta: { nextCursor } }`.\n- **Idempotency:** irreversible POSTs require `Idempotency-Key` (uuid); replays within 24 h return the original response.\n- **Concurrency:** editable resources return `ETag`; updates send `If-Match` (412 `concurrency.stale`).\n- **Files:** presign → PUT to the returned URL → reference the `fileId`.",
     "title": "getpack API",
-    "version": "0.66.0",
+    "version": "0.67.0",
     "x-getpack-dieline": {
-      "bundleSha256": "f565899b3b1915ef0d0467f8afa903c126dc8e80995319e944973fbb17ce0521",
+      "bundleSha256": "ccc03fe8ee1fee2f8cc4f90c6eb15731949ec59916aad738478812243c46e9f1",
+      "getpackWebCommit": "fa265f3153a577041379ab031cc083e10cd2f9e5",
       "package": "@getpack/dieline",
-      "getpackWebCommit": "169afab28d696d4b12a44f70c471cb22d576ac09",
-      "sourceTree": "6626947202605e5f1ab8feb63f79ea37650fbede",
+      "sourceTree": "ff377198832e2fa33d3ca6372cd7326cd679a1d5",
       "version": "0.1.0"
     }
   },
@@ -235940,12 +235940,6 @@
                       "dueToday": 4,
                       "overdue": 2
                     },
-                    "machines": {
-                      "down": 1,
-                      "oeeYesterdayPct": "68.4",
-                      "total": 6
-                    },
-                    "month": "2026-10",
                     "getpack": {
                       "confirmedNet": "239951.41",
                       "confirmedStatements": 2,
@@ -235953,6 +235947,12 @@
                       "toConfirmGross": "44999.33",
                       "toInvoice": 1
                     },
+                    "machines": {
+                      "down": 1,
+                      "oeeYesterdayPct": "68.4",
+                      "total": 6
+                    },
+                    "month": "2026-10",
                     "payables": {
                       "dueThisWeek": "56000.00",
                       "dueThisWeekCount": 4,
@@ -363223,12 +363223,6 @@
                     "dueToday": 4,
                     "overdue": 2
                   },
-                  "machines": {
-                    "down": 1,
-                    "oeeYesterdayPct": "68.4",
-                    "total": 6
-                  },
-                  "month": "2026-10",
                   "getpack": {
                     "confirmedNet": "239951.41",
                     "confirmedStatements": 2,
@@ -363236,6 +363230,12 @@
                     "toConfirmGross": "44999.33",
                     "toInvoice": 1
                   },
+                  "machines": {
+                    "down": 1,
+                    "oeeYesterdayPct": "68.4",
+                    "total": 6
+                  },
+                  "month": "2026-10",
                   "payables": {
                     "dueThisWeek": "56000.00",
                     "dueThisWeekCount": 4,

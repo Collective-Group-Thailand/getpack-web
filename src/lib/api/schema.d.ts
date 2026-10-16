@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (getpack-api 0.66.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (getpack-api 0.67.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -49915,11 +49915,11 @@ export interface components {
              */
             asOf: string;
             followUps: components["schemas"]["ErpDashFollowUpsDto"];
+            /** @description Work for getpack (D-402) */
+            getpack: components["schemas"]["ErpDashGetpackDto"];
             machines: components["schemas"]["ErpDashMachinesDto"];
             /** @example 2026-10 */
             month: string;
-            /** @description Work for getpack (D-402) */
-            getpack: components["schemas"]["ErpDashGetpackDto"];
             payables: components["schemas"]["ErpDashPayablesDto"];
             production: components["schemas"]["ErpDashProductionDto"];
             quality: components["schemas"]["ErpDashQualityDto"];
@@ -49940,6 +49940,27 @@ export interface components {
             dueToday: number;
             /** @example 2 */
             overdue: number;
+        };
+        ErpDashGetpackDto: {
+            /**
+             * @description Net of the getpack billing statements confirmed this month — the factory’s revenue from getpack (F14, D-397)
+             * @example 239951.41
+             */
+            confirmedNet: string;
+            /** @example 2 */
+            confirmedStatements: number;
+            /**
+             * @description Statements sent by getpack, waiting for the factory to check and confirm
+             * @example 2
+             */
+            toConfirm: number;
+            /** @example 44999.33 */
+            toConfirmGross: string;
+            /**
+             * @description Confirmed statements without the factory’s tax invoice (getpack pays once it is attached)
+             * @example 1
+             */
+            toInvoice: number;
         };
         ErpDashLateOrderDto: {
             /**
@@ -49966,27 +49987,6 @@ export interface components {
             oeeYesterdayPct: string | null;
             /** @example 6 */
             total: number;
-        };
-        ErpDashGetpackDto: {
-            /**
-             * @description Net of the getpack billing statements confirmed this month — the factory’s revenue from getpack (F14, D-397)
-             * @example 239951.41
-             */
-            confirmedNet: string;
-            /** @example 2 */
-            confirmedStatements: number;
-            /**
-             * @description Statements sent by getpack, waiting for the factory to check and confirm
-             * @example 2
-             */
-            toConfirm: number;
-            /** @example 44999.33 */
-            toConfirmGross: string;
-            /**
-             * @description Confirmed statements without the factory’s tax invoice (getpack pays once it is attached)
-             * @example 1
-             */
-            toInvoice: number;
         };
         ErpDashPayablesDto: {
             /**
@@ -145663,12 +145663,6 @@ export interface operations {
                      *           "dueToday": 4,
                      *           "overdue": 2
                      *         },
-                     *         "machines": {
-                     *           "down": 1,
-                     *           "oeeYesterdayPct": "68.4",
-                     *           "total": 6
-                     *         },
-                     *         "month": "2026-10",
                      *         "getpack": {
                      *           "confirmedNet": "239951.41",
                      *           "confirmedStatements": 2,
@@ -145676,6 +145670,12 @@ export interface operations {
                      *           "toConfirmGross": "44999.33",
                      *           "toInvoice": 1
                      *         },
+                     *         "machines": {
+                     *           "down": 1,
+                     *           "oeeYesterdayPct": "68.4",
+                     *           "total": 6
+                     *         },
+                     *         "month": "2026-10",
                      *         "payables": {
                      *           "dueThisWeek": "56000.00",
                      *           "dueThisWeekCount": 4,
@@ -214107,12 +214107,6 @@ export interface operations {
                      *         "dueToday": 4,
                      *         "overdue": 2
                      *       },
-                     *       "machines": {
-                     *         "down": 1,
-                     *         "oeeYesterdayPct": "68.4",
-                     *         "total": 6
-                     *       },
-                     *       "month": "2026-10",
                      *       "getpack": {
                      *         "confirmedNet": "239951.41",
                      *         "confirmedStatements": 2,
@@ -214120,6 +214114,12 @@ export interface operations {
                      *         "toConfirmGross": "44999.33",
                      *         "toInvoice": 1
                      *       },
+                     *       "machines": {
+                     *         "down": 1,
+                     *         "oeeYesterdayPct": "68.4",
+                     *         "total": 6
+                     *       },
+                     *       "month": "2026-10",
                      *       "payables": {
                      *         "dueThisWeek": "56000.00",
                      *         "dueThisWeekCount": 4,
