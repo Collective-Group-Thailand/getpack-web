@@ -816,7 +816,7 @@
     "images": {
       "menu": "Product images",
       "title": "Images of {name}",
-      "intro": "Shown to customers once the scan reports them clean. Removing an image keeps the stored file (retention policy).",
+      "intro": "The first photo is the cover customers see on the card. A new upload becomes the cover in place of the AI render; shown to customers once its scan is clean",
       "open": "Open",
       "remove": "Remove",
       "none": "No images yet",
@@ -824,7 +824,18 @@
       "drop": "Drop PNG / JPEG / WebP images or",
       "browse": "choose them",
       "tooLarge": "{name} is over 20 MB",
-      "wrongType": "{name} is not PNG, JPEG or WebP"
+      "wrongType": "{name} is not PNG, JPEG or WebP",
+      "cover": "Cover",
+      "sourcePhoto": "Photograph",
+      "sourceRender": "AI render",
+      "photoNo": "Photo {no}",
+      "moveEarlier": "Move photo {no} earlier",
+      "moveLater": "Move photo {no} later",
+      "makeCover": "Make cover",
+      "removeNo": "Remove photo {no}",
+      "orderHint": "Drag to reorder, or use the arrows. Removed files are kept under the retention policy",
+      "rendersLeft": "A photograph is in, but {count} AI render(s) remain in the gallery, so the storefront still shows its “AI-generated” note",
+      "removeRenders": "Remove all {count} AI render(s)"
     },
     "options": {
       "menu": "Customer options",

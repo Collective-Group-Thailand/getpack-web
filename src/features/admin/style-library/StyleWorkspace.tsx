@@ -24,7 +24,10 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
+import { FileDropzone } from "@/ui/components/FileDropzone";
+import { uploadFile } from "@/features/shared/files/upload";
 
+import { FileImage } from "../catalogue/FileImage";
 import { adminBrowserApis, FormDialog, problemMessage, QueryError, Section, useCan, useProductTypes } from "../console";
 import {
   type AdminStyleDetail,
@@ -138,7 +141,14 @@ export function StyleWorkspace({ styleId, storefront }: { styleId: string; store
           {
             value: "storefront",
             label: t("tabs.storefront"),
-            content: <Curation key={style.version} style={style} etag={etag} onChanged={changed} />,
+            content: (
+              <>
+                <div className="pt-4">
+                  <PhotoPanel key={`photo-${style.version}`} style={style} etag={etag} onChanged={changed} />
+                </div>
+                <Curation key={style.version} style={style} etag={etag} onChanged={changed} />
+              </>
+            ),
           },
           {
             value: "variants",
@@ -362,6 +372,101 @@ function Readiness({
 interface Synonym {
   locale: "th" | "en";
   term: string;
+}
+
+/**
+ * The photo on the style's card (D-426): a photograph uploaded here replaces the AI-rendered
+ * reference on the card, the variant cards and the configurator preview; removing it puts the
+ * rendered thumbnail back. Its own saves (`setPhoto` / `clearPhoto`), outside the curation form,
+ * because a photo is placed in one move, not typed in with the names.
+ */
+function PhotoPanel({ style, etag, onChanged }: { style: AdminStyleDetail; etag: string; onChanged: () => void }) {
+  const t = useTranslations("styleLibrary.photo");
+  const canCurate = useCan("styles.curate");
+  const [busy, setBusy] = useState(false);
+  const photo = style.photo;
+
+  async function run(work: () => Promise<unknown>) {
+    setBusy(true);
+    try {
+      await work();
+      toast.success(t("saved"));
+      onChanged();
+    } catch (error) {
+      toast.error(problemMessage(error, t("failed")));
+    } finally {
+      setBusy(false);
+    }
+  }
+  const headers = { "If-Match": etag };
+
+  return (
+    <Section title={t("title")} description={t("intro")}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        {photo ? (
+          <div className="relative w-full shrink-0 sm:w-56">
+            <FileImage fileId={photo.fileId} alt={photo.alt.th} className="aspect-square w-full rounded-md" />
+            <div className="absolute start-2 top-2">
+              {photo.source === "ai-render" ? (
+                <Badge tone="warning">{t("sourceRender")}</Badge>
+              ) : (
+                <Badge tone="success">{t("sourcePhoto")}</Badge>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-bg-subtle text-muted flex aspect-square w-full shrink-0 items-center justify-center rounded-md text-sm sm:w-56">
+            {t("none")}
+          </div>
+        )}
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          {photo?.source === "ai-render" ? <Callout tone="info" title={t("renderHint")} /> : null}
+          {canCurate ? (
+            <>
+              <FileDropzone
+                accept="image/png,image/jpeg,image/webp"
+                maxBytes={20 * 1024 * 1024}
+                disabled={busy}
+                onFiles={async ([file]) => {
+                  if (!file) return;
+                  await run(async () => {
+                    const uploaded = await uploadFile("admin", file, "image");
+                    await adminBrowserApis().contract.PUT("/v1/admin/styles/{styleId}/photo", {
+                      params: { path: { styleId: style.id }, header: headers },
+                      body: { fileId: uploaded.id },
+                    });
+                  });
+                }}
+                labels={{
+                  prompt: busy ? t("uploading") : t("drop"),
+                  browse: t("browse"),
+                  tooLarge: (name) => t("tooLarge", { name }),
+                  wrongType: (name) => t("wrongType", { name }),
+                }}
+              />
+              {photo ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="self-start"
+                  disabled={busy}
+                  onClick={() =>
+                    void run(() =>
+                      adminBrowserApis().contract.DELETE("/v1/admin/styles/{styleId}/photo", {
+                        params: { path: { styleId: style.id }, header: headers },
+                      }),
+                    )
+                  }
+                >
+                  {t("remove")}
+                </Button>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </div>
+    </Section>
+  );
 }
 
 function Curation({ style, etag, onChanged }: { style: AdminStyleDetail; etag: string; onChanged: () => void }) {
