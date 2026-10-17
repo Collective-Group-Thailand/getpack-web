@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { listFaqs, searchCatalogue, type SearchResult } from "@/features/customer/catalog/api.server";
+import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { articleHref, productHref, stockProductHref } from "@/features/customer/catalog/paths";
+import { styleHref } from "@/features/customer/styles/paths";
 import { findOwnOrder } from "@/features/customer/search/lookup.server";
 import { faqHitsOf } from "@/features/customer/search/match";
 import { ORDER_STATUS, statusMeta } from "@/domain/status";
@@ -23,10 +25,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("search.title"), description: t("search.metaDescription"), robots: { index: false, follow: true } };
 }
 
-type Hit = { key: string; label: string; href: string; icon: IconName; hint?: string };
+type Hit = { key: string; label: string; href: string; icon: IconName; hint?: string; image?: string | null };
 
 /**
- * Global search (F3 3.1): products, stock products, articles and FAQs from the catalogue search
+ * Global search (F3 3.1): products, stock products, box styles, articles and FAQs from the catalogue search
  * (the FAQ's answer from the FAQ list), and — for a signed-in customer typing an order code — their
  * order. A plain GET page, so it works without JavaScript and is the target of the header's
  * instant search.
@@ -56,20 +58,26 @@ export default async function SearchPage({
       ])
     : [null, [], null];
 
-  const hitsOf = (kind: "catalog_product" | "stock_product" | "article"): Hit[] =>
+  const hitsOf = (kind: "catalog_product" | "stock_product" | "style" | "article"): Hit[] =>
     (result?.hits ?? [])
       .filter((hit) => hit.kind === kind)
-      .map((hit) => ({
-        key: `${kind}-${hit.key}`,
-        label: pick(currentLocale, hit.titleTh, hit.titleEn),
-        href:
-          kind === "article"
-            ? articleHref(hit.key)
-            : kind === "stock_product"
-              ? stockProductHref(hit.key)
-              : productHref(hit.key),
-        icon: (kind === "article" ? "article" : "box") as IconName,
-      }));
+      .map((hit) => {
+        const label = pick(currentLocale, hit.titleTh, hit.titleEn);
+        return {
+          key: `${kind}-${hit.key}`,
+          label,
+          href:
+            kind === "article"
+              ? articleHref(hit.key)
+              : kind === "stock_product"
+                ? stockProductHref(hit.key)
+                : kind === "style"
+                  ? styleHref(hit.key, label)
+                  : productHref(hit.key),
+          icon: (kind === "article" ? "article" : kind === "style" ? "layers" : "box") as IconName,
+          image: storeImageSrc(hit.imageUrl),
+        };
+      });
 
   const orderHits: Hit[] = order
     ? [
@@ -91,6 +99,7 @@ export default async function SearchPage({
     },
     { key: "catalog_product", title: t("search.groups.catalog_product"), hits: hitsOf("catalog_product") },
     { key: "stock_product", title: t("search.groups.stock_product"), hits: hitsOf("stock_product") },
+    { key: "style", title: t("search.groups.style"), hits: hitsOf("style") },
     { key: "article", title: t("search.groups.article"), hits: hitsOf("article") },
     {
       key: "faq",
@@ -160,7 +169,17 @@ export default async function SearchPage({
                   href={hit.href}
                   className="hover:bg-bg-subtle focus-visible:ring-focus-ring flex items-start gap-3 px-4 py-3 outline-none focus-visible:ring-2"
                 >
-                  <Icon name={hit.icon} size={18} className="text-muted mt-0.5 shrink-0" aria-hidden="true" />
+                  {hit.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- a catalogue thumbnail through the BFF
+                    <img
+                      src={hit.image}
+                      alt=""
+                      className="bg-bg-subtle h-12 w-12 shrink-0 rounded-md object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <Icon name={hit.icon} size={18} className="text-muted mt-0.5 shrink-0" aria-hidden="true" />
+                  )}
                   <span className="min-w-0">
                     <span className="block font-medium">{hit.label}</span>
                     {hit.hint ? <span className="text-muted line-clamp-2 block text-sm">{hit.hint}</span> : null}

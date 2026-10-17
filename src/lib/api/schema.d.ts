@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (getpack-api 0.71.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (getpack-api 0.72.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -27576,7 +27576,7 @@ export interface paths {
         };
         /**
          * Search products, articles and FAQs
-         * @description Trigram search (`pg_trgm`) over catalogue products, stock products, showcase products, articles and published FAQ questions (`faq`, key = FAQ id), ranked by similarity (top 20).
+         * @description Trigram search (`pg_trgm`) over catalogue products, stock products, showcase products, published style-library bases (`style`, key = base code; their names, codes and search synonyms), articles and published FAQ questions (`faq`, key = FAQ id), ranked by similarity (the best 8 of each kind, 40 in all).
          *
          *     Implements: D-100, D-102.
          */
@@ -75724,7 +75724,7 @@ export interface components {
             /** @example /v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009 */
             imageUrl: string | null;
             /**
-             * @description Slug to open; SKU for stock products; the FAQ id (uuid) for `faq`
+             * @description Slug to open; SKU for stock products; the base code for `style`; the FAQ id (uuid) for `faq`
              * @example mailer-box
              */
             key: string;
@@ -75747,7 +75747,7 @@ export interface components {
          * @description Clients must tolerate new kinds (additive enum)
          * @enum {string}
          */
-        StoreSearchHitKind: "catalog_product" | "stock_product" | "showcase_product" | "article" | "faq";
+        StoreSearchHitKind: "catalog_product" | "stock_product" | "showcase_product" | "style" | "article" | "faq";
         StoreSearchResultDto: {
             hits: components["schemas"]["StoreSearchHitDto"][];
             /** @example กล่องไปรษณีย์ */

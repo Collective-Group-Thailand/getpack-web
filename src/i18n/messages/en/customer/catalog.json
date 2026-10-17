@@ -208,7 +208,8 @@
       "catalog_product": "Products",
       "stock_product": "Stock products",
       "article": "Articles",
-      "faq": "FAQs"
+      "faq": "FAQs",
+      "style": "Box styles"
     }
   },
   "filters": {
