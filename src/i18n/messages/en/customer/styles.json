@@ -377,7 +377,8 @@
     "allVariants": "Every variant code",
     "allVariantsIntro": "Pick a code to choose that variant above.",
     "optionPages": "{name} by feature",
-    "choose": "Choose this one"
+    "choose": "Choose this one",
+    "renderedNote": "Reference render of this box type (AI-generated) — your order is made to the size and spec you choose"
   },
   "preview3d": {
     "canvas": "The box in 3D — drag to turn",

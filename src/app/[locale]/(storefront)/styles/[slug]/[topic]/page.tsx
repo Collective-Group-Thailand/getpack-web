@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { getStyle, listAllStyles, listStyleVariants, type StyleDetail } from "@/features/customer/catalog/api.server";
+import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { illustrationOf } from "@/features/customer/styles/illustration";
@@ -94,7 +95,7 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
   const words = t as unknown as StylesT;
   const heading = headingOf(t, locale, name, topic);
   const href = styleTopicHref(style.code, name, topic.id);
-  const thumb = list.data.find((v) => v.thumbnailUrl)?.thumbnailUrl ?? null;
+  const thumb = storeImageSrc(list.data.find((v) => v.thumbnailUrl)?.thumbnailUrl);
   const others = all
     .filter((s) => s.code !== style.code && topicsOf(s.options ?? []).some((x) => x.id === topic.id))
     .slice(0, OTHERS);

@@ -104,7 +104,8 @@
     "sizesHint": "Pick a size to price it straight away, or set your own in the configurator",
     "customSizeTitle": "Not a standard size?",
     "customSizeBody": "Set length × width × height yourself; the dieline and the price follow at once",
-    "customSizeCta": "Set my own size"
+    "customSizeCta": "Set my own size",
+    "renderedNote": "Reference render of this product type (AI-generated) — your order is made to the spec you choose"
   },
   "stock": {
     "minOrder": "Minimum order {quantity} {unit}",
@@ -114,7 +115,6 @@
     "capacity": "{ml} ml",
     "dimensions": "Dimensions",
     "details": "Product details",
-    "attributes": "Attributes",
     "order": "Order this product",
     "units": {
       "piece": "pieces",
@@ -136,7 +136,22 @@
     "goToCart": "Go to cart",
     "added": "{name} added to the cart",
     "viewCart": "View cart",
-    "failed": "Could not add to the cart"
+    "failed": "Could not add to the cart",
+    "askPrice": "Ask for a price",
+    "askPriceHint": "Tell us the quantity; the team sends a quotation you can order from right away",
+    "renderedNote": "Reference photo (AI-generated) — the real item may differ slightly in colour and finish; see the sizes below",
+    "attributeLabels": {
+      "material": "Material",
+      "type": "Type",
+      "sub_type": "Sub-type",
+      "shape": "Shape",
+      "shoulder": "Shoulder",
+      "neck": "Neck",
+      "colour": "Colour",
+      "size_text": "Size",
+      "cap_type": "Cap",
+      "capacity": "Capacity"
+    }
   },
   "category": {
     "rfqTitle": "Can't find what you need?",

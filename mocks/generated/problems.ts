@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** Documented problem codes per operation, from contract/openapi.json (getpack-api 0.67.0). */
+/** Documented problem codes per operation, from contract/openapi.json (getpack-api 0.69.0). */
 
 export interface OperationProblems {
   method: string;

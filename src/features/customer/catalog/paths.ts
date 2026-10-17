@@ -16,3 +16,6 @@ export const stockProductHref = (sku: string) => `/products/${encodeURIComponent
 export const configureHref = (slug: string) => `/configure/${slug}`;
 export const rfqHref = (categoryCode: string) => `/rfq/${categorySegment(categoryCode)}`;
 export const articleHref = (slug: string) => `/articles/${slug}`;
+
+/** Asking for a price on a stock item when its type is quote-only: the stock RFQ, naming the SKU. */
+export const stockRfqHref = (sku: string) => `/rfq/standard-product?sku=${encodeURIComponent(sku)}`;

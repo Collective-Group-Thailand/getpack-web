@@ -1,8 +1,15 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
-import type { CatalogueCategory, FaqGroup, StyleCard, SupportChannels } from "@/features/customer/catalog/api.server";
+import {
+  type CatalogueCategory,
+  type FaqGroup,
+  type StockProduct,
+  type StyleCard,
+  type SupportChannels,
+} from "@/features/customer/catalog/api.server";
+import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
-import { categoryHref } from "@/features/customer/catalog/paths";
+import { categoryHref, stockProductHref } from "@/features/customer/catalog/paths";
 import { compareDecimal } from "@/features/customer/studio/decimal";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { getFormat } from "@/features/shared/format/server";
@@ -16,6 +23,7 @@ import type { CustomerCase, HomePhoto } from "./content.server";
 import { HOME_WRAP, Photo, TemplateCard, UNDERLINE } from "./parts";
 import { styleDieline } from "./style-dielines.server";
 import { NewsletterForm } from "./NewsletterForm";
+import { StockShelf, type ShelfItem } from "./StockShelf";
 import { StudioHeroPanel } from "./StudioHeroPanel";
 import type { StudioHero } from "./studio-hero.server";
 
@@ -739,6 +747,94 @@ export async function HomeContact({ channels }: { channels: SupportChannels | nu
           <NewsletterForm />
         </div>
       </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------------------------- stock */
+
+/** How many stock types the shelf offers as chips (the most stocked first). */
+const SHELF_TYPES = 6;
+
+/**
+ * "สินค้าพร้อมส่ง สั่งได้ทันที" (product owner, 2026-10-17): the stock range on the home page, so a
+ * customer who needs mailers or bottles this week orders them in one tap. A varied first row —
+ * the items are taken in turn from each stock type, not eight of one — chips by type (each with
+ * its whole range), the price at the minimum on every card and "ใส่ตะกร้า" at that minimum
+ * (`StockShelf`). Out-of-stock items are left off: the shelf is what can be bought now.
+ */
+export async function StockShelfSection({
+  items,
+  total,
+  signedIn,
+  instant,
+}: {
+  items: StockProduct[];
+  total: number;
+  signedIn: boolean;
+  /** `standard_product` prices instantly; otherwise the cards ask for a price. */
+  instant: boolean;
+}) {
+  const [t, tCatalog, format, locale] = await Promise.all([
+    getTranslations("home.stock"),
+    getTranslations("catalog.stock"),
+    getFormat(),
+    getLocale(),
+  ]);
+  const typeOf = (product: StockProduct) =>
+    product.attributes.find((attribute) => attribute.attribute === "type") ?? null;
+  const available = items.filter((product) => product.inStock && typeOf(product));
+  if (available.length === 0) return null;
+
+  // Round-robin across types, the most stocked first, so the first eight cards are not all one kind.
+  const byType = new Map<string, StockProduct[]>();
+  for (const product of available) {
+    const name = pick(locale, typeOf(product)!.nameTh, typeOf(product)!.nameEn);
+    byType.set(name, [...(byType.get(name) ?? []), product]);
+  }
+  const queues = [...byType.entries()]
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([name, list]) => ({ name, list: [...list] }));
+  const ordered: { product: StockProduct; type: string }[] = [];
+  while (queues.some((queue) => queue.list.length > 0)) {
+    for (const queue of queues) {
+      const next = queue.list.shift();
+      if (next) ordered.push({ product: next, type: queue.name });
+    }
+  }
+  const shelfItems: ShelfItem[] = ordered.map(({ product, type }) => {
+    const unit = tCatalog(`units.${product.unit}`);
+    return {
+      id: product.id,
+      sku: product.sku,
+      href: stockProductHref(product.sku),
+      name: pick(locale, product.nameTh, product.nameEn),
+      type,
+      image: storeImageSrc(product.imageUrls[0]),
+      unit,
+      minimum: tCatalog("minOrder", { quantity: format.number(product.minOrderQty), unit }),
+      minOrderQty: product.minOrderQty,
+      addLabel: t("add", { quantity: format.number(product.minOrderQty), unit }),
+    };
+  });
+  const types = queues
+    .slice(0, SHELF_TYPES)
+    .map((queue) => ({ name: queue.name, count: byType.get(queue.name)!.length }));
+
+  return (
+    <section aria-labelledby="home-stock" className={SECTION}>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-2xl">
+          <h2 id="home-stock" className={H2}>
+            {t(instant ? "title" : "titleQuote")}
+          </h2>
+          <p className="text-muted mt-3 text-[1.0625rem] leading-relaxed">{t(instant ? "body" : "bodyQuote")}</p>
+        </div>
+        <Link href="/products#catalogue-stock" className={cn("text-[0.90625rem]", UNDERLINE)}>
+          {t("all", { count: format.number(total) })}
+        </Link>
+      </div>
+      <StockShelf items={shelfItems} types={types} signedIn={signedIn} instant={instant} />
     </section>
   );
 }
