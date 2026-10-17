@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (getpack-api 0.67.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (getpack-api 0.69.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -75787,6 +75787,8 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c001
              */
             id: string;
+            /** @description The same images in order, each with what it is (an AI-rendered reference photo says so, D-426) */
+            images: components["schemas"]["StoreImageDto"][];
             /**
              * @example [
              *       "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009"
@@ -76507,6 +76509,8 @@ export interface components {
              *     ]
              */
             options: string[];
+            /** @example null */
+            photo: components["schemas"]["StylePhotoDto"] | null;
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
             /**
@@ -76517,7 +76521,7 @@ export interface components {
             /** @description Null without a price hint (D-220) */
             startingPrice: components["schemas"]["StylePriceDto"] | null;
             /**
-             * @description A rendered thumbnail of the style (its first variant's); null before thumbnails are rendered
+             * @description The style's picture: its photo when it has one, else a rendered thumbnail (its first variant's); null before either exists
              * @example null
              */
             thumbnailUrl: string | null;
@@ -76580,6 +76584,8 @@ export interface components {
              * @example null
              */
             partnersCount: number | null;
+            /** @example null */
+            photo: components["schemas"]["StylePhotoDto"] | null;
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
             /**
@@ -76596,7 +76602,7 @@ export interface components {
             /** @description Null without a price hint (D-220) */
             startingPrice: components["schemas"]["StylePriceDto"] | null;
             /**
-             * @description A rendered thumbnail of the style (its first variant's); null before thumbnails are rendered
+             * @description The style's picture: its photo when it has one, else a rendered thumbnail (its first variant's); null before either exists
              * @example null
              */
             thumbnailUrl: string | null;
@@ -76866,6 +76872,16 @@ export interface components {
         };
         /** @enum {string} */
         StyleOptionPriceEffect: "neutral" | "configuration";
+        StylePhotoDto: {
+            alt: components["schemas"]["LocalisedLabelDto"];
+            /**
+             * @description `getpack` for a photograph of a made box; `ai-render` for an AI-rendered reference image of the type
+             * @example ai-render
+             */
+            source: string;
+            /** @example /v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009 */
+            url: string;
+        };
         StylePriceDto: {
             /**
              * @description The catalogue product whose reference configuration was priced
@@ -77074,10 +77090,12 @@ export interface components {
             options: {
                 [key: string]: unknown;
             };
+            /** @example null */
+            photo: components["schemas"]["StylePhotoDto"] | null;
             /** @example rfq */
             pricePath: components["schemas"]["QuoteMode"];
             /**
-             * @description The variant's rendered thumbnail, else its style's; null before thumbnails are rendered
+             * @description The variant's picture: its style's photo when it has one, else the variant's rendered thumbnail, else its style's; null before any exists
              * @example null
              */
             thumbnailUrl: string | null;
@@ -284332,6 +284350,12 @@ export interface operations {
                      *           "imageUrls": [
                      *             "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009"
                      *           ],
+                     *           "images": [
+                     *             {
+                     *               "url": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *               "variant": null
+                     *             }
+                     *           ],
                      *           "inStock": true,
                      *           "isFoodGrade": true,
                      *           "lengthMm": 60,
@@ -284433,6 +284457,12 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c001",
                      *       "imageUrls": [
                      *         "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009"
+                     *       ],
+                     *       "images": [
+                     *         {
+                     *           "url": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *           "variant": null
+                     *         }
                      *       ],
                      *       "inStock": true,
                      *       "isFoodGrade": true,
@@ -318864,6 +318894,7 @@ export interface operations {
                      *             "tuck_bottom:crash_lock",
                      *             "window:front_window"
                      *           ],
+                     *           "photo": null,
                      *           "pricePath": "instant",
                      *           "referenceCode": null,
                      *           "startingPrice": {
@@ -319147,6 +319178,7 @@ export interface operations {
                      *             "tuck_bottom:crash_lock",
                      *             "window:front_window"
                      *           ],
+                     *           "photo": null,
                      *           "pricePath": "instant",
                      *           "referenceCode": null,
                      *           "startingPrice": {
@@ -319315,6 +319347,7 @@ export interface operations {
                      *         "window:front_window"
                      *       ],
                      *       "partnersCount": null,
+                     *       "photo": null,
                      *       "pricePath": "instant",
                      *       "productTypeCode": "folding_carton",
                      *       "referenceCode": null,
@@ -319470,6 +319503,7 @@ export interface operations {
                      *           "window:front_window"
                      *         ],
                      *         "partnersCount": null,
+                     *         "photo": null,
                      *         "pricePath": "instant",
                      *         "productTypeCode": "folding_carton",
                      *         "referenceCode": null,
@@ -319634,6 +319668,7 @@ export interface operations {
                      *             "tuck_top": "reverse_tuck",
                      *             "window": "front_window"
                      *           },
+                     *           "photo": null,
                      *           "pricePath": "rfq",
                      *           "thumbnailUrl": null
                      *         }

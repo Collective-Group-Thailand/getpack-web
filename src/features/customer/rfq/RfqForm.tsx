@@ -35,6 +35,8 @@ export interface RfqFormProps {
   signedIn: boolean;
   /** The catalogue product the customer came from, when the configurator sent them (D-043). */
   fromProduct: { slug: string; name: string } | null;
+  /** The note the form starts with (a stock item's name and SKU, when the request is about one). */
+  initialNotes?: string;
   /** The configurator's calculation that routed here (D-102), sent as `routedFrom`. */
   calculationId?: string | null;
   /** The published style variant chosen on a style page (D-407), sent as `styleVariantCode`. */
@@ -60,7 +62,14 @@ const newKey = () =>
  * who is asked to sign in at the end submits the same answers straight after. The submit carries
  * one idempotency key per attempt, so a double tap files one request.
  */
-export function RfqForm({ form, signedIn, fromProduct, calculationId = null, style = null }: RfqFormProps) {
+export function RfqForm({
+  form,
+  signedIn,
+  fromProduct,
+  initialNotes = "",
+  calculationId = null,
+  style = null,
+}: RfqFormProps) {
   const t = useTranslations("quoteRequests.form");
   const locale = useLocale();
   const format = useFormat();
@@ -70,7 +79,7 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null, sty
   const [quantities, setQuantities] = useState<string[]>([String(Math.max(form.quantity.min, 1000))]);
   const [targetDate, setTargetDate] = useState("");
   const [postcode, setPostcode] = useState("");
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(initialNotes);
   const [files, setFiles] = useState<Attached[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);

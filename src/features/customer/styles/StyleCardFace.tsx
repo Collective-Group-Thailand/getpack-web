@@ -1,4 +1,5 @@
 import type { StyleCard } from "@/features/customer/catalog/api.server";
+import { storeImageSrc } from "@/features/customer/catalog/images";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
 import { ProductCard } from "@/ui/components/ProductCard";
@@ -60,8 +61,9 @@ export function StyleCardFace({
         </>
       }
       image={
-        style.thumbnailUrl
-          ? { src: style.thumbnailUrl, alt: words.alt }
+        // The API's picture: a public photo path (`/v1/store/…`, through the BFF) or a signed thumbnail URL.
+        storeImageSrc(style.thumbnailUrl)
+          ? { src: storeImageSrc(style.thumbnailUrl)!, alt: words.alt }
           : { src: previewSrc(style.code, {}), alt: words.alt, fit: "contain" }
       }
       fallback={{ family: illustrationOf(style) }}
