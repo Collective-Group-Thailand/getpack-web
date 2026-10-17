@@ -289,7 +289,9 @@ export default async function Page({
                           : t(`detail.trigger.${instalment.requiredBefore}`)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    {/* On a phone the amount and status share a line and the button takes its own, full
+                        width — the three side by side were wider than the card at 390 px. */}
+                    <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-2 sm:w-auto">
                       <span className="tabular-nums">{format.thb(instalment.grossAmount)}</span>
                       <StatusChip map={INSTALMENT_STATUS} value={instalment.status} />
                       {instalment.payable ? (
@@ -298,6 +300,7 @@ export default async function Page({
                         // "ชำระงวดนี้" buttons left the customer unsure which one the factory waits for).
                         <PayInstalmentButton
                           size="sm"
+                          className="w-full sm:ms-auto sm:w-auto"
                           variant={
                             instalment.status === "due" || instalment.status === "overdue" || instalment.activePaymentId
                               ? "primary"
