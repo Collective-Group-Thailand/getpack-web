@@ -214,5 +214,6 @@
     "listTitle": "Quote request baskets",
     "draftRow": "Basket not sent yet · {count} items",
     "sentRow": "{count} items"
-  }
+  },
+  "stockNote": "Ready-to-ship item: {name} (SKU {sku}) · minimum {minimum}"
 }

@@ -170,6 +170,7 @@ function card(s: MockStyle, favourite: boolean | null): Card {
       return [...[...closure].sort(), ...[...feature].sort()];
     })(),
     thumbnailUrl: null,
+    photo: null,
   };
 }
 
@@ -390,6 +391,7 @@ export const storeStyleHandlers: HttpHandler[] = [
         options: v.options,
         pricePath: v.pricePath,
         thumbnailUrl: null,
+        photo: null,
       })),
       facets: {
         option: [...option].sort((a, b) => a[0].localeCompare(b[0])).map(([value, n]) => ({ value, count: n })),

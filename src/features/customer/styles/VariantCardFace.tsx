@@ -1,4 +1,5 @@
 import type { StyleVariantCard } from "@/features/customer/catalog/api.server";
+import { storeImageSrc } from "@/features/customer/catalog/images";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
 import { ProductCard } from "@/ui/components/ProductCard";
@@ -48,8 +49,9 @@ export function VariantCardFace({
         </>
       }
       image={
-        card.thumbnailUrl
-          ? { src: card.thumbnailUrl, alt: words.alt }
+        // The API's picture: a public photo path (`/v1/store/…`, through the BFF) or a signed thumbnail URL.
+        storeImageSrc(card.thumbnailUrl)
+          ? { src: storeImageSrc(card.thumbnailUrl)!, alt: words.alt }
           : { src: previewSrc(card.baseCode, card.options), alt: words.alt, fit: "contain" }
       }
       fallback={{ family: illustrationOf(card) }}

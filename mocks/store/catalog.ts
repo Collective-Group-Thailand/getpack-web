@@ -209,6 +209,10 @@ function stock(product: Row): Schemas["StoreStockProductDto"] {
     nameEn: String(product.nameEn),
     description: str(product.description),
     imageUrls: ((product.images as { fileId: string }[] | undefined) ?? []).map((image) => imageUrl(image.fileId)!),
+    images: ((product.images as { fileId: string }[] | undefined) ?? []).map((image) => ({
+      url: imageUrl(image.fileId)!,
+      variant: null,
+    })),
     inStock: true,
     isFoodGrade: Boolean(product.isFoodGrade),
     minOrderQty: Number(product.minOrderQty ?? 1),

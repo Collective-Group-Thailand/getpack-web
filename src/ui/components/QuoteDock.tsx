@@ -2,8 +2,8 @@
 
 import { lazy, Suspense, useState } from "react";
 
+import { Icon } from "../icons";
 import { cn } from "../lib/cn";
-import { Button } from "./Button";
 
 // The phone sheet (Radix Dialog) loads on the first "details" tap, not with the page.
 const Sheet = lazy(() => import("./Sheet").then((module) => ({ default: module.Sheet })));
@@ -33,6 +33,9 @@ export interface QuoteDockProps {
   className?: string;
 }
 
+const detailsLinkClass =
+  "text-primary focus-visible:ring-focus-ring inline-flex min-h-11 shrink-0 items-center gap-0.5 rounded-sm text-xs font-medium outline-none focus-visible:ring-2";
+
 /**
  * The instant-quote dock (design-system.md §3 "QuoteDock", §5 "sticky quote dock").
  *
@@ -61,6 +64,10 @@ export function QuoteDock({
 }: QuoteDockProps) {
   const [open, setOpen] = useState(false);
   const [opened, setOpened] = useState(false);
+  const openDetails = () => {
+    setOpened(true);
+    setOpen(true);
+  };
   const figure = (
     <div aria-live={live ? "polite" : undefined} aria-atomic="true">
       {status ?? (
@@ -97,24 +104,36 @@ export function QuoteDock({
         )}
       >
         <div className="flex items-center gap-3">
-          <div className="min-w-0 flex-1" aria-live={live ? "polite" : undefined} aria-atomic="true">
-            {status ?? (
-              <>
-                <p className="truncate text-lg font-bold tabular-nums">{headline}</p>
-                {subline ? <p className="text-muted truncate text-xs tabular-nums">{subline}</p> : null}
-              </>
-            )}
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              setOpened(true);
-              setOpen(true);
-            }}
-          >
-            {detailsLabel}
-          </Button>
+          {status ? (
+            // A status may hold its own control ("ลองอีกครั้ง"), so it stays outside a button.
+            <>
+              <div className="min-w-0 flex-1" aria-live={live ? "polite" : undefined} aria-atomic="true">
+                {status}
+              </div>
+              <button type="button" onClick={openDetails} className={detailsLinkClass}>
+                {detailsLabel}
+                <Icon name="chevron-up" size={14} aria-hidden="true" />
+              </button>
+            </>
+          ) : (
+            // The price is the way into the details: one big target, and the bar keeps its width
+            // for the price and the primary action instead of a third button squeezing the total.
+            <button
+              type="button"
+              onClick={openDetails}
+              className="focus-visible:ring-focus-ring -my-1 -ml-1 flex min-h-11 min-w-0 flex-1 items-center gap-1.5 rounded-md py-1 pl-1 text-left outline-none focus-visible:ring-2"
+            >
+              <span className="min-w-0 flex-1" aria-live={live ? "polite" : undefined} aria-atomic="true">
+                <span className="block truncate text-lg font-bold tabular-nums">{headline}</span>
+                {subline ? <span className="text-muted block truncate text-xs tabular-nums">{subline}</span> : null}
+              </span>
+              <span className={detailsLinkClass}>
+                <span className="sr-only">, </span>
+                {detailsLabel}
+                <Icon name="chevron-up" size={14} aria-hidden="true" />
+              </span>
+            </button>
+          )}
           <div className="shrink-0">{primaryAction}</div>
         </div>
       </div>

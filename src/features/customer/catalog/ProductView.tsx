@@ -24,7 +24,7 @@ import {
   type ProductDetail,
   type ProductType,
 } from "./api.server";
-import { absoluteImageUrl, storeImageSrc } from "./images";
+import { absoluteImageUrl, isRendered, photoVariant, storeImageSrc } from "./images";
 import { pick } from "./localize";
 import { categoryHref, configureHref, productHref, rfqHref } from "./paths";
 import { priceHintText } from "./PriceHint";
@@ -64,7 +64,8 @@ export async function ProductView({
   const images = product.images
     .flatMap((image) => {
       const src = storeImageSrc(image.url);
-      return src ? [{ src, alt: name }] : [];
+      const photo = photoVariant(image.variant);
+      return src ? [{ src, alt: photo ? pick(locale, photo.alt.th, photo.alt.en) : name }] : [];
     })
     .map((image, index, all) => ({
       ...image,
@@ -124,13 +125,20 @@ export async function ProductView({
 
       <div className="mt-6 grid gap-8 md:grid-cols-[1.15fr_1fr] md:gap-12">
         {images.length > 0 ? (
-          <ImageGallery
-            images={images}
-            labels={{
-              thumbnails: t("product.gallery"),
-              empty: t("product.galleryEmpty"),
-            }}
-          />
+          <div>
+            <ImageGallery
+              images={images}
+              labels={{
+                thumbnails: t("product.gallery"),
+                empty: t("product.galleryEmpty"),
+              }}
+            />
+            {product.images.some((image) => isRendered(image.variant)) ? (
+              // An AI-rendered reference photo (D-426), said plainly: the box the customer gets
+              // is made to their spec, and the picture shows the type, not a sample of their run.
+              <p className="text-muted mt-2 text-xs">{t("product.renderedNote")}</p>
+            ) : null}
+          </div>
         ) : (
           // No photo yet: the product's own dieline (its first pattern, at its first standard size),
           // not a "no image" box (UX audit, product detail).

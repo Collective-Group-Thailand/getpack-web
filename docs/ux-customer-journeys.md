@@ -87,3 +87,17 @@ words, "สิ่งที่ต้องทำ" at the top, the receipt and the
 **Walked** every content page at both widths: แบบกล่อง (styles, variants view), วัสดุ, เรียนรู้, ช่วยเหลือ, FAQ, search,
 ติดตามคำสั่งซื้อ, about, business landing, partner-with-us, guarantee, samples, templates, studio, network, reviews,
 contact, articles, how-it-works. All load, none scroll sideways on a phone, none dead-end. No change needed.
+
+## Round 7 — photos and the stock shelf
+
+**Walked** home → สินค้าพร้อมส่ง → a stock product → ขอราคา, /products, /styles and /configure at both widths, after
+every product, style and stock item got its AI-rendered photo (D-426).
+
+| # | Finding (as the customer) | Fix |
+|---|---|---|
+| 7.1 | The catalogue is drawings; I cannot tell a mailer bag from a zip pouch until I open it. | Every product, style and stock item has a photo, labelled as an AI render under the gallery. |
+| 7.2 | Ready-made stock is three clicks deep in /products; I just want 500 mailer bags. | A stock shelf on the home page: chips by type, one tap to the cart at the minimum (or "ขอราคา" while stock is quote-only). |
+| 7.3 | The stock page's "สั่งซื้อ" failed with an error — stock cannot be priced yet. | Quote-only stock asks for a price instead; the request names the product, SKU and minimum. |
+| 7.4 | Every row of the stock details is called "คุณสมบัติ". | Each row is labelled by its kind: วัสดุ, ทรง, สี, ฝา, ความจุ. |
+| 7.5 | On a phone the configurator bar cuts the total off ("รวม ฿5,178.00 · …"). | The price itself opens the details; the bar has room for the whole total. |
+| 7.6 | The footer is a screenful of links on a phone. | Four disclosures below `sm`. |
