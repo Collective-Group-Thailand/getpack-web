@@ -62,7 +62,8 @@
     "receiverAccountTypes": {
       "savings": "Savings",
       "current": "Current"
-    }
+    },
+    "transferredAtHint": "Leave empty if you transferred just now"
   },
   "failure": {
     "declined": "Your bank or card issuer declined it. Try another method, or contact your bank.",

@@ -293,8 +293,24 @@ export default async function Page({
                       <span className="tabular-nums">{format.thb(instalment.grossAmount)}</span>
                       <StatusChip map={INSTALMENT_STATUS} value={instalment.status} />
                       {instalment.payable ? (
-                        <PayInstalmentButton size="sm" instalment={payableOf(instalment)} orderCode={order.orderCode}>
-                          {instalment.activePaymentId ? t("detail.continuePay") : t("detail.pay")}
+                        // The instalment that is due is the one to press; a later one can be paid
+                        // early, but reads as the quieter choice (customer walk, round 8: two identical
+                        // "ชำระงวดนี้" buttons left the customer unsure which one the factory waits for).
+                        <PayInstalmentButton
+                          size="sm"
+                          variant={
+                            instalment.status === "due" || instalment.status === "overdue" || instalment.activePaymentId
+                              ? "primary"
+                              : "secondary"
+                          }
+                          instalment={payableOf(instalment)}
+                          orderCode={order.orderCode}
+                        >
+                          {instalment.activePaymentId
+                            ? t("detail.continuePay")
+                            : instalment.status === "due" || instalment.status === "overdue"
+                              ? t("detail.pay")
+                              : t("detail.payEarly")}
                           <span className="sr-only"> {pick(locale, instalment.labelTh, instalment.labelEn)}</span>
                         </PayInstalmentButton>
                       ) : null}
