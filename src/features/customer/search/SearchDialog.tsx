@@ -9,8 +9,10 @@ import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { CommandPalette, type CommandItem } from "@/ui/components/CommandPalette";
 
+import { storeImageSrc } from "../catalog/images";
 import { pick } from "../catalog/localize";
 import { articleHref, productHref, stockProductHref } from "../catalog/paths";
+import { styleHref } from "../styles/paths";
 import { faqHitsOf, mightBeOrderCode, orderCodeOf } from "./match";
 import { clearRecent, readRecent, rememberSearch } from "./recent";
 
@@ -101,19 +103,23 @@ export default function SearchDialog({ open, onOpenChange }: { open: boolean; on
         onSelect: () => go(`/account/orders/${order.id}`),
       });
     }
-    for (const kind of ["catalog_product", "stock_product", "article"] as const) {
+    for (const kind of ["catalog_product", "stock_product", "style", "article"] as const) {
       for (const hit of results.hits.filter((entry) => entry.kind === kind).slice(0, 5)) {
+        const label = pick(locale, hit.titleTh, hit.titleEn);
         const href =
           kind === "article"
             ? articleHref(hit.key)
             : kind === "stock_product"
               ? stockProductHref(hit.key)
-              : productHref(hit.key);
+              : kind === "style"
+                ? styleHref(hit.key, label)
+                : productHref(hit.key);
         list.push({
           id: `${kind}-${hit.key}`,
-          label: pick(locale, hit.titleTh, hit.titleEn),
+          label,
           group: t(`search.groups.${kind}`),
-          icon: kind === "article" ? "article" : "box",
+          icon: kind === "article" ? "article" : kind === "style" ? "layers" : "box",
+          image: storeImageSrc(hit.imageUrl),
           onSelect: () => go(href),
         });
       }

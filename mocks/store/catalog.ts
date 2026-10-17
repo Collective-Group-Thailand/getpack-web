@@ -14,6 +14,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import { catalogueRows } from "../admin/catalogue";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { styleSearchHits } from "./styles";
 
 export type Row = ReturnType<typeof catalogueRows>[number];
 
@@ -609,6 +610,9 @@ export const storeCatalogHandlers: HttpHandler[] = [
         const s = showcaseDto(row);
         return hit("showcase_product", s.slug, s.nameTh, s.nameEn, s.imageUrl);
       }),
+      ...styleSearchHits().map((style) =>
+        hit("style", style.key, style.titleTh, style.titleEn ?? null, style.imageUrl),
+      ),
       ...articles().map((row) => {
         const a = articleCard(row);
         return hit("article", a.slug, a.titleTh, a.titleEn, a.coverUrl);
@@ -620,7 +624,9 @@ export const storeCatalogHandlers: HttpHandler[] = [
     ]
       .filter((entry): entry is Schemas["StoreSearchHitDto"] => entry !== null)
       .sort((a, b) => b.score - a.score)
-      .slice(0, 20);
+      // As the API: the best 8 of each kind, then 40 in all.
+      .filter((entry, index, all) => all.filter((other) => other.kind === entry.kind).indexOf(entry) < 8)
+      .slice(0, 40);
     return HttpResponse.json({ q, hits } satisfies Schemas["StoreSearchResultDto"]);
   }),
 
