@@ -104,8 +104,7 @@
     "sizesHint": "Pick a size to price it straight away, or set your own in the configurator",
     "customSizeTitle": "Not a standard size?",
     "customSizeBody": "Set length × width × height yourself; the dieline and the price follow at once",
-    "customSizeCta": "Set my own size",
-    "renderedNote": "Reference render of this product type (AI-generated) — your order is made to the spec you choose"
+    "customSizeCta": "Set my own size"
   },
   "stock": {
     "minOrder": "Minimum order {quantity} {unit}",
@@ -139,7 +138,6 @@
     "failed": "Could not add to the cart",
     "askPrice": "Ask for a price",
     "askPriceHint": "Tell us the quantity; the team sends a quotation you can order from right away",
-    "renderedNote": "Reference photo (AI-generated) — the real item may differ slightly in colour and finish; see the sizes below",
     "attributeLabels": {
       "material": "Material",
       "type": "Type",
@@ -210,7 +208,8 @@
       "catalog_product": "Products",
       "stock_product": "Stock products",
       "article": "Articles",
-      "faq": "FAQs"
+      "faq": "FAQs",
+      "style": "Box styles"
     }
   },
   "filters": {

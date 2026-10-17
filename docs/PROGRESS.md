@@ -151,6 +151,29 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
   payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
 
+## Readiness, search, thumbnails, two more walks — 2026-10-17
+
+Product owner: "ดำเนินการต่อให้เสร็จครบทุกจุด … เอา badge หรือสิ่งที่บอกว่าเป็นภาพ AI ออก". Contract adopted at getpack-api
+**v0.73.1** (v0.71.0 unlabelled photos + readiness, v0.72.0 styles in search, v0.73.1 thumbnails).
+
+- **No "AI" anywhere customers look.** The render notes under the product, stock and style galleries are gone; the API no
+  longer sends a photo's origin to the storefront. The admin still tells renders ("ภาพอ้างอิง") from photographs ("รูปถ่าย") so
+  they can be replaced.
+- **Catalogue readiness** (`/catalogue/readiness`, from the catalogue hub): product types with their pricing mode and
+  whether the calculator is shipped (the A-16 switch lives on the product types page, linked), and per group — products,
+  stock, styles — the rows still showing a reference image, with no image, quote-only, not active, not publishable,
+  hidden; each row opens where it is edited.
+- **Search.** Box styles are a group in the palette and on `/search`; every product, stock or style hit shows its photo.
+- **Thumbnails.** Cards, shelves and search hits draw `?size=thumb` (640 px WebP); the products page's photos went from
+  387 KB to about 60 KB. Lighthouse (dev server) on home, /products, /styles, a stock page, /configure: accessibility
+  97–100 → 100 after one contrast fix (the library view counts), best practices 100, SEO 100 (the configurator is
+  `noindex` by design).
+- **Round 8 (customer, phone, after buying)** and **round 10 (partner, phone)** in the journey docs: notification
+  settings as cards on a phone, the due instalment as the one primary button, the slip time defaulting to now, no
+  method switch while a slip is checked, the shipping section renamed.
+
+tsgo clean, ESLint clean on the changed files, Vitest 151 files / 1219 tests.
+
 ## Photo curation in the admin — 2026-10-17
 
 Product owner: "ปิดและแก้ไขช่องโหว่เลยครับ" — the admin could upload a photo but it went to the end of the gallery, could

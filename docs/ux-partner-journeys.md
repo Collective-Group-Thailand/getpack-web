@@ -19,6 +19,7 @@ what blocks, confuses, is missing or is out of place; fix it (web, and API when 
 | 7 | The books: ledger, journals, reports, accounts, assets, bank | **done** (web `feat/ux-round7-books`) |
 | 8 | Insight: dashboard, costs, profit, OEE | **done** (web `feat/ux-round8-insight`, API v0.53.0) |
 | 9 | The factory: performance, style intakes, documents, requests, knowledge, settings, support access, onboarding | **done** (web `feat/ux-round9-factory`) |
+| 10 | The day's work again, on a phone only: jobs, a job offer, floor, QC, shipping, alerts | **done** (web `feat/ux-round10-phone`) |
 
 ## Round 1 — the day's work
 
@@ -200,3 +201,13 @@ and carton prices, with a draft and a sent proposal open.
 | P.6 | A proposal's lines read "จำนวนแผ่น — · 499" and a removal showed bare numbers. | Lines say what they apply to with ranges; a removal says "ขอยกเลิกบรรทัดนี้ — ตัวเลขคือราคาที่ใช้อยู่"; a change shows the old price struck through → the new one. |
 | P.7 | After sending, nothing said what happens next; "back" went to the overview. | A box per stage (sent, under review, countered) with what customers get meanwhile and when the new prices start; back returns to that product's prices. |
 | P.8 | The editor's table had the same split ranges and did not mark rows already in the draft. | Ranges in the editor too; rows in the draft are tinted. |
+
+## Round 10 — the day's work on a phone
+
+**Walked as** the owner at 390 px only: งานผลิต → a job offer (accept / refuse, spec, approved proof) → หน้าเครื่อง → ตรวจคุณภาพ → จัดส่ง → การแจ้งเตือน.
+
+| # | Finding (as the user) | Fix |
+|---|---|---|
+| 10.1 | Shipping: a section headed "พร้อมส่ง" that is empty, and right under it a shipment whose status chip also says "พร้อมส่ง" — the same word for finished jobs and for a shipment waiting to leave. | The section is "งานผลิตเสร็จ รอสร้างการจัดส่ง"; the chip keeps "พร้อมส่ง". |
+
+Everything else held up: no page scrolls sideways, every card is tappable across its whole face, the job offer's accept / refuse and the proof open on the phone.

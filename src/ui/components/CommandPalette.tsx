@@ -16,6 +16,8 @@ export interface CommandItem {
   /** Shown as a group heading above the first item of each group. */
   group?: string;
   icon?: IconName;
+  /** A small picture instead of the icon — a product's photo beside its name. */
+  image?: string | null;
   onSelect: () => void;
 }
 
@@ -192,7 +194,12 @@ export function CommandPalette({
                     index === activeIndex && "bg-primary-subtle text-primary-subtle-fg",
                   )}
                 >
-                  {item.icon ? <Icon name={item.icon} size={16} className="shrink-0" /> : null}
+                  {item.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- a catalogue thumbnail through the BFF
+                    <img src={item.image} alt="" className="bg-bg-subtle h-9 w-9 shrink-0 rounded-md object-cover" />
+                  ) : item.icon ? (
+                    <Icon name={item.icon} size={16} className="shrink-0" />
+                  ) : null}
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
                   {item.hint ? <span className="text-muted shrink-0 text-xs">{item.hint}</span> : null}
                 </li>

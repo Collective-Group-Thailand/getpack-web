@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** Documented problem codes per operation, from contract/openapi.json (getpack-api 0.70.0). */
+/** Documented problem codes per operation, from contract/openapi.json (getpack-api 0.73.1). */
 
 export interface OperationProblems {
   method: string;
@@ -252,6 +252,7 @@ export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {
   "admin.catalogProductTypes.get": {"method":"GET","path":"/v1/admin/catalog/product-types/{id}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.catalogProductTypes.update": {"method":"PATCH","path":"/v1/admin/catalog/product-types/{id}","problems":{"http.bad_request":400,"http.malformed_json":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"catalog.code_taken":409,"concurrency.stale":412,"validation.failed":422,"concurrency.precondition_required":428,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.catalogProductTypes.changeQuoteMode": {"method":"POST","path":"/v1/admin/catalog/product-types/{id}/actions/change-quote-mode","problems":{"http.bad_request":400,"http.malformed_json":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"concurrency.stale":412,"catalog.calculator_required":422,"validation.failed":422,"concurrency.precondition_required":428,"http.too_many_requests":429,"internal.unexpected":500}},
+  "admin.catalogReadiness.get": {"method":"GET","path":"/v1/admin/catalog/readiness","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.catalogSemiDesignTemplates.list": {"method":"GET","path":"/v1/admin/catalog/semi-design-templates","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.catalogSemiDesignTemplates.create": {"method":"POST","path":"/v1/admin/catalog/semi-design-templates","problems":{"http.bad_request":400,"http.malformed_json":400,"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"catalog.code_taken":409,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "admin.catalogSemiDesignTemplates.get": {"method":"GET","path":"/v1/admin/catalog/semi-design-templates/{id}","problems":{"auth.unauthenticated":401,"auth.forbidden":403,"auth.wrong_audience":403,"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},

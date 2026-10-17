@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (getpack-api 0.70.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (getpack-api 0.73.1) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -4022,6 +4022,28 @@ export interface paths {
          *     Implements: D-100, D-043.
          */
         post: operations["admin.catalogProductTypes.changeQuoteMode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What the catalogue still needs
+         * @description Per active product type: quote mode and whether its calculator is shipped (the switch to instant, A-16). Catalogue products, stock products and style bases that have no photo, only a reference render (D-426), are not active, have no instant price, or have no publishable variant (D-243) — counts over the whole catalogue, the first fifty of each to open.
+         *
+         *     Implements: D-426, D-100, D-243.
+         */
+        get: operations["admin.catalogReadiness.get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -27312,7 +27334,7 @@ export interface paths {
         };
         /**
          * Get a catalogue image
-         * @description Served only while an active catalogue row or published CMS content references the file and its malware scan is clean (contract §3 "Files"); anything else is 404. Cacheable for a day.
+         * @description Served only while an active catalogue row or published CMS content references the file and its malware scan is clean (contract §3 "Files"); anything else is 404. `size=thumb` serves the 640 px WebP thumbnail (the original when there is none) — for cards and lists. Cacheable for a day.
          *
          *     Implements: D-005.
          */
@@ -27554,7 +27576,7 @@ export interface paths {
         };
         /**
          * Search products, articles and FAQs
-         * @description Trigram search (`pg_trgm`) over catalogue products, stock products, showcase products, articles and published FAQ questions (`faq`, key = FAQ id), ranked by similarity (top 20).
+         * @description Trigram search (`pg_trgm`) over catalogue products, stock products, showcase products, published style-library bases (`style`, key = base code; their names, codes and search synonyms), articles and published FAQ questions (`faq`, key = FAQ id), ranked by similarity (the best 8 of each kind, 40 in all).
          *
          *     Implements: D-100, D-102.
          */
@@ -41260,6 +41282,13 @@ export interface components {
             patternId: string;
             /** @example 0 */
             sort: number;
+        };
+        CatalogReadinessDto: {
+            products: components["schemas"]["ReadinessProductsDto"];
+            /** @description Active types, in catalogue order */
+            productTypes: components["schemas"]["ReadinessProductTypeDto"][];
+            stock: components["schemas"]["ReadinessProductsDto"];
+            styles: components["schemas"]["ReadinessStylesDto"];
         };
         /** @enum {string} */
         CatalogStatus: "draft" | "active" | "inactive" | "archived";
@@ -68392,6 +68421,85 @@ export interface components {
         };
         /** @enum {string} */
         RateLineAcceptance: "pending" | "accepted" | "countered";
+        ReadinessItemDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c001
+             */
+            id: string;
+            /**
+             * @description The slug (product), SKU (stock) or code (style)
+             * @example tuck-end-box
+             */
+            key: string;
+            /** @example Tuck-end box */
+            nameEn: string;
+            /** @example กล่องฝาเสียบ */
+            nameTh: string;
+        };
+        ReadinessListDto: {
+            /** @example 3 */
+            count: number;
+            /** @description Up to 50; `count` is the whole number */
+            items: components["schemas"]["ReadinessItemDto"][];
+        };
+        ReadinessProductsDto: {
+            /** @description Active, with no image at all */
+            noImage: components["schemas"]["ReadinessListDto"];
+            /** @description Draft or inactive, so not on the storefront */
+            notActive: components["schemas"]["ReadinessListDto"];
+            /** @description Active, but the product type is quote-only, so no instant price (A-16) */
+            quoteOnly: components["schemas"]["ReadinessListDto"];
+            /** @description Active, every image a reference render — no photograph uploaded yet (D-426) */
+            referenceOnly: components["schemas"]["ReadinessListDto"];
+            /**
+             * @description Active rows
+             * @example 42
+             */
+            total: number;
+        };
+        ReadinessProductTypeDto: {
+            /**
+             * @description Active catalogue or stock products of this type
+             * @example 12
+             */
+            activeProducts: number;
+            /**
+             * @description Its calculator is shipped with golden tests, so it may switch to instant (D-100, A-16)
+             * @example true
+             */
+            calculatorShipped: boolean;
+            /** @example standard_product */
+            code: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c0004
+             */
+            id: string;
+            /** @example Stock products */
+            nameEn: string;
+            /** @example สินค้ามาตรฐาน */
+            nameTh: string;
+            /** @example rfq */
+            quoteMode: components["schemas"]["QuoteMode"];
+            /** @example active */
+            status: components["schemas"]["CatalogStatus"];
+        };
+        ReadinessStylesDto: {
+            /** @description Hidden by curation — never published */
+            hidden: components["schemas"]["ReadinessListDto"];
+            /** @description Active, no card photo (the rendered thumbnail shows) */
+            noPhoto: components["schemas"]["ReadinessListDto"];
+            /** @description Active, not hidden, yet no publishable variant (D-243) */
+            notPublishable: components["schemas"]["ReadinessListDto"];
+            /** @description Active, the card photo is a reference render (D-426) */
+            referenceOnly: components["schemas"]["ReadinessListDto"];
+            /**
+             * @description Active bases
+             * @example 122
+             */
+            total: number;
+        };
         RealtimeAuthDto: {
             /**
              * @example [
@@ -75101,6 +75209,8 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /** @enum {string} */
+        StoreImageSize: "full" | "thumb";
         StoreInstalmentDto: {
             /**
              * Format: uuid
@@ -75616,7 +75726,7 @@ export interface components {
             /** @example /v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009 */
             imageUrl: string | null;
             /**
-             * @description Slug to open; SKU for stock products; the FAQ id (uuid) for `faq`
+             * @description Slug to open; SKU for stock products; the base code for `style`; the FAQ id (uuid) for `faq`
              * @example mailer-box
              */
             key: string;
@@ -75639,7 +75749,7 @@ export interface components {
          * @description Clients must tolerate new kinds (additive enum)
          * @enum {string}
          */
-        StoreSearchHitKind: "catalog_product" | "stock_product" | "showcase_product" | "article" | "faq";
+        StoreSearchHitKind: "catalog_product" | "stock_product" | "showcase_product" | "style" | "article" | "faq";
         StoreSearchResultDto: {
             hits: components["schemas"]["StoreSearchHitDto"][];
             /** @example กล่องไปรษณีย์ */
@@ -75913,7 +76023,7 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c001
              */
             id: string;
-            /** @description The same images in order, each with what it is (an AI-rendered reference photo says so, D-426) */
+            /** @description The same images in order, each with what it shows (its alt text, legacy material / colour keys) */
             images: components["schemas"]["StoreImageDto"][];
             /**
              * @example [
@@ -77000,11 +77110,6 @@ export interface components {
         StyleOptionPriceEffect: "neutral" | "configuration";
         StylePhotoDto: {
             alt: components["schemas"]["LocalisedLabelDto"];
-            /**
-             * @description `getpack` for a photograph of a made box; `ai-render` for an AI-rendered reference image of the type
-             * @example ai-render
-             */
-            source: string;
             /** @example /v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009 */
             url: string;
         };
@@ -111088,6 +111193,154 @@ export interface operations {
             };
             /** @description Problem: `concurrency.precondition_required` */
             428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogReadiness.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The readiness lists */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "productTypes": [
+                     *         {
+                     *           "activeProducts": 101,
+                     *           "calculatorShipped": true,
+                     *           "code": "standard_product",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c0004",
+                     *           "nameEn": "Stock products",
+                     *           "nameTh": "สินค้ามาตรฐาน",
+                     *           "quoteMode": "rfq",
+                     *           "status": "active"
+                     *         }
+                     *       ],
+                     *       "products": {
+                     *         "noImage": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "notActive": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "quoteOnly": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "referenceOnly": {
+                     *           "count": 1,
+                     *           "items": [
+                     *             {
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c001",
+                     *               "key": "tuck-end-box",
+                     *               "nameEn": "Tuck-end box",
+                     *               "nameTh": "กล่องฝาเสียบ"
+                     *             }
+                     *           ]
+                     *         },
+                     *         "total": 42
+                     *       },
+                     *       "stock": {
+                     *         "noImage": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "notActive": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "quoteOnly": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "referenceOnly": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "total": 101
+                     *       },
+                     *       "styles": {
+                     *         "hidden": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "noPhoto": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "notPublishable": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "referenceOnly": {
+                     *           "count": 0,
+                     *           "items": []
+                     *         },
+                     *         "total": 122
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CatalogReadinessDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -283716,7 +283969,10 @@ export interface operations {
     };
     "store.catalog.getImage": {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description `thumb`: the WebP thumbnail (640 px wide) for cards; default the original */
+                size?: components["schemas"]["StoreImageSize"];
+            };
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];

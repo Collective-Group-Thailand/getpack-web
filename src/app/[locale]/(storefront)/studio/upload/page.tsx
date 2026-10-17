@@ -56,7 +56,7 @@ export default async function StudioUpload({ params }: { params: Promise<{ local
           <ul className="mt-5 grid gap-x-5 sm:grid-cols-2 lg:grid-cols-4">
             {priced.map((product) => {
               const name = pick(locale, product.nameTh, product.nameEn);
-              const src = storeImageSrc(product.imageUrl);
+              const src = storeImageSrc(product.imageUrl, "thumb");
               const facts = [
                 product.startingPricePerPiece ? t("from", { price: format.thb(product.startingPricePerPiece) }) : null,
                 product.moq !== null ? t("moq", { count: format.number(product.moq) }) : null,

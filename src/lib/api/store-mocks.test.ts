@@ -57,11 +57,13 @@ describe("the storefront catalogue mock", () => {
     ).rejects.toMatchObject({ status: 404 });
   });
 
-  it("searches across products and articles", async () => {
+  it("searches across products, box styles and articles, no kind crowding the others out", async () => {
     const { data } = await anonymous().GET("/v1/store/catalog/search", { params: { query: { q: "กล่อง" } } });
     const kinds = data!.hits.map((hit) => hit.kind);
     expect(kinds).toContain("catalog_product");
+    expect(kinds).toContain("style");
     expect(kinds).toContain("article");
+    expect(kinds.filter((kind) => kind === "style").length).toBeLessThanOrEqual(8);
   });
 });
 

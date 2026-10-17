@@ -50,8 +50,8 @@ export function VariantCardFace({
       }
       image={
         // The API's picture: a public photo path (`/v1/store/…`, through the BFF) or a signed thumbnail URL.
-        storeImageSrc(card.thumbnailUrl)
-          ? { src: storeImageSrc(card.thumbnailUrl)!, alt: words.alt }
+        storeImageSrc(card.thumbnailUrl, "thumb")
+          ? { src: storeImageSrc(card.thumbnailUrl, "thumb")!, alt: words.alt }
           : { src: previewSrc(card.baseCode, card.options), alt: words.alt, fit: "contain" }
       }
       fallback={{ family: illustrationOf(card) }}
