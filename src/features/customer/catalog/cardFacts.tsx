@@ -76,7 +76,9 @@ export async function cardFacts(card: Facts) {
         <span className="truncate" aria-hidden="true">
           {campaign.label}
         </span>
-        <span className="sr-only">{t("card.campaign", { label: campaign.label, date: format.date(campaign.endsAt) })}</span>
+        <span className="sr-only">
+          {t("card.campaign", { label: campaign.label, date: format.date(campaign.endsAt) })}
+        </span>
       </Badge>
     ) : null,
   };

@@ -62,8 +62,8 @@ export function StyleCardFace({
       }
       image={
         // The API's picture: a public photo path (`/v1/store/…`, through the BFF) or a signed thumbnail URL.
-        storeImageSrc(style.thumbnailUrl)
-          ? { src: storeImageSrc(style.thumbnailUrl)!, alt: words.alt }
+        storeImageSrc(style.thumbnailUrl, "thumb")
+          ? { src: storeImageSrc(style.thumbnailUrl, "thumb")!, alt: words.alt }
           : { src: previewSrc(style.code, {}), alt: words.alt, fit: "contain" }
       }
       fallback={{ family: illustrationOf(style) }}

@@ -17,9 +17,15 @@ import type { Own } from "./support";
 
 type Line = Schemas["ErpSalesLineDto"];
 type Quote = Omit<Schemas["ErpQuotationDto"], "nextActions" | "revisions" | "linkActive"> & { token: string | null };
-type So = Omit<Schemas["ErpSalesOrderDto"], "nextActions" | "credit" | "deliveryNotes" | "invoices" | "deliveredPct" | "late">;
+type So = Omit<
+  Schemas["ErpSalesOrderDto"],
+  "nextActions" | "credit" | "deliveryNotes" | "invoices" | "deliveredPct" | "late"
+>;
 type Dn = Omit<Schemas["ErpDeliveryNoteDto"], "nextActions" | "invoiced">;
-type Iv = Omit<Schemas["ErpSalesInvoiceDto"], "nextActions" | "openAmount" | "overdue" | "receipts" | "notes" | "deliveryNotes">;
+type Iv = Omit<
+  Schemas["ErpSalesInvoiceDto"],
+  "nextActions" | "openAmount" | "overdue" | "receipts" | "notes" | "deliveryNotes"
+>;
 type Rc = Omit<Schemas["ErpCustomerReceiptDto"], "nextActions">;
 type Lead = Omit<Schemas["ErpLeadDto"], "nextActions" | "openActivities">;
 type Opp = Omit<Schemas["ErpOpportunityDto"], "nextActions" | "weightedValue" | "quotations">;
@@ -121,7 +127,8 @@ function linesOf(ok: Ctx, input: Schemas["ErpSalesLineInput"][] | undefined): Li
 function totals(lines: { amount: string }[], mode: string) {
   const sum = lines.reduce((a, l) => a + Number(l.amount), 0);
   if (mode === "none") return { subtotal: m2(sum), vatAmount: "0.00", total: m2(sum), vatRatePct: "0.0000" };
-  if (mode === "exclusive") return { subtotal: m2(sum), vatAmount: m2(sum * 0.07), total: m2(sum * 1.07), vatRatePct: "7.0000" };
+  if (mode === "exclusive")
+    return { subtotal: m2(sum), vatAmount: m2(sum * 0.07), total: m2(sum * 1.07), vatRatePct: "7.0000" };
   const vat = (sum * 7) / 107;
   return { subtotal: m2(sum - vat), vatAmount: m2(vat), total: m2(sum), vatRatePct: "7.0000" };
 }
@@ -189,7 +196,12 @@ const dnView = (ok: Ctx, d: E4["dns"][number]): Schemas["ErpDeliveryNoteDto"] =>
 const ivOpen = (ok: Ctx, iv: Iv) =>
   iv.status === "draft" || iv.status === "voided"
     ? 0
-    : Number(iv.total) - ok.e4.rcs.filter((r) => r.status === "issued").flatMap((r) => r.allocations).filter((a) => a.invoice.id === iv.id).reduce((a, x) => a + Number(x.amount), 0);
+    : Number(iv.total) -
+      ok.e4.rcs
+        .filter((r) => r.status === "issued")
+        .flatMap((r) => r.allocations)
+        .filter((a) => a.invoice.id === iv.id)
+        .reduce((a, x) => a + Number(x.amount), 0);
 const ivView = (ok: Ctx, iv: E4["ivs"][number]): Schemas["ErpSalesInvoiceDto"] => {
   const open = ivOpen(ok, iv);
   const { dnIds, ...rest } = iv;
@@ -266,7 +278,7 @@ const activityView = (a: Activity): Schemas["ErpActivityDto"] => ({
 });
 
 const find = <T extends { id: string }>(rows: T[], id: unknown) => rows.find((r) => r.id === id);
-const listOf = <T,>(request: Request, rows: T[]) => HttpResponse.json(paginate(rows, pageQuery(new URL(request.url))));
+const listOf = <T>(request: Request, rows: T[]) => HttpResponse.json(paginate(rows, pageQuery(new URL(request.url))));
 
 export const erpE4Handlers = [
   // ------------------------------------------------------------------------------------ CRM
@@ -274,7 +286,11 @@ export const erpE4Handlers = [
     const ok = ctx(request, params.factoryId, "factory_sales.read");
     if (ok instanceof Response) return ok;
     return HttpResponse.json(
-      PARTNER_PERSONAS.filter((p) => p.factoryId === ok.who.factoryId).map((p) => ({ id: p.id, name: p.displayName, roles: p.roles })),
+      PARTNER_PERSONAS.filter((p) => p.factoryId === ok.who.factoryId).map((p) => ({
+        id: p.id,
+        name: p.displayName,
+        roles: p.roles,
+      })),
     );
   }),
   http.get(`${BASE}/pipeline`, ({ request, params }) => {
@@ -292,7 +308,9 @@ export const erpE4Handlers = [
         const rows = ok.e4.opps.filter((o) => o.stage === stage);
         return { stage, count: rows.length, value: value(rows), weighted: weighted(rows) };
       }),
-      salespeople: open.length ? [{ salesperson: person(), open: open.length, value: value(open), weighted: weighted(open) }] : [],
+      salespeople: open.length
+        ? [{ salesperson: person(), open: open.length, value: value(open), weighted: weighted(open) }]
+        : [],
     } satisfies Schemas["ErpPipelineDto"]);
   }),
   http.get(`${BASE}/leads`, ({ request, params }) => {
@@ -302,7 +320,10 @@ export const erpE4Handlers = [
     const rows = ok.e4.leads.filter((l) =>
       !stage ? true : stage === "open" ? ["new", "contacted", "qualified"].includes(l.stage) : l.stage === stage,
     );
-    return listOf(request, rows.map((l) => leadView(ok, l)));
+    return listOf(
+      request,
+      rows.map((l) => leadView(ok, l)),
+    );
   }),
   http.post(`${BASE}/leads`, async ({ request, params }) => {
     const ok = ctx(request, params.factoryId, "factory_sales.manage");
@@ -355,10 +376,14 @@ export const erpE4Handlers = [
     const customerId = url.searchParams.get("customerId");
     const rows = ok.e4.opps.filter(
       (o) =>
-        (!stage || (stage === "open" ? ["prospecting", "proposal", "negotiation"].includes(o.stage) : o.stage === stage)) &&
+        (!stage ||
+          (stage === "open" ? ["prospecting", "proposal", "negotiation"].includes(o.stage) : o.stage === stage)) &&
         (!customerId || o.customer?.id === customerId),
     );
-    return listOf(request, rows.map((o) => oppView(ok, o)));
+    return listOf(
+      request,
+      rows.map((o) => oppView(ok, o)),
+    );
   }),
   http.post(`${BASE}/opportunities`, async ({ request, params }) => {
     const ok = ctx(request, params.factoryId, "factory_sales.manage");
@@ -411,7 +436,8 @@ export const erpE4Handlers = [
     const ok = ctx(request, params.factoryId, "factory_sales.read");
     if (ok instanceof Response) return ok;
     const url = new URL(request.url);
-    const about = url.searchParams.get("leadId") ?? url.searchParams.get("opportunityId") ?? url.searchParams.get("customerId");
+    const about =
+      url.searchParams.get("leadId") ?? url.searchParams.get("opportunityId") ?? url.searchParams.get("customerId");
     const view = url.searchParams.get("view") ?? "open";
     const rows = ok.e4.activities.filter((a) => (!about || a.about.id === about) && (view === "all" || !a.doneAt));
     return listOf(request, rows.map(activityView));
@@ -548,7 +574,8 @@ export const erpE4Handlers = [
     if (ok instanceof Response) return ok;
     const q = find(ok.e4.quotes, params.quotationId);
     if (!q) return notFound();
-    if (!["draft", "sent"].includes(q.status)) return problem(409, "erp.invalid_status", `เอกสารอยู่ในสถานะ ${q.status}`);
+    if (!["draft", "sent"].includes(q.status))
+      return problem(409, "erp.invalid_status", `เอกสารอยู่ในสถานะ ${q.status}`);
     q.status = "sent";
     q.sentAt = now();
     q.token = `mock${q.id.replaceAll("-", "")}`.slice(0, 32);
@@ -631,7 +658,11 @@ export const erpE4Handlers = [
     if (ok instanceof Response) return ok;
     const status = new URL(request.url).searchParams.get("status");
     const rows = ok.e4.sos.filter((s) =>
-      !status ? true : status === "open" ? ["confirmed", "partially_delivered"].includes(s.status) : s.status === status,
+      !status
+        ? true
+        : status === "open"
+          ? ["confirmed", "partially_delivered"].includes(s.status)
+          : s.status === status,
     );
     return listOf(
       request,
@@ -693,12 +724,23 @@ export const erpE4Handlers = [
     const soId = url.searchParams.get("salesOrderId");
     const rows = ok.e4.dns.filter(
       (d) =>
-        (!status || (status === "uninvoiced" ? d.status !== "draft" && d.status !== "cancelled" && !d.invoiceId : d.status === status)) &&
+        (!status ||
+          (status === "uninvoiced"
+            ? d.status !== "draft" && d.status !== "cancelled" && !d.invoiceId
+            : d.status === status)) &&
         (!soId || d.salesOrder.id === soId),
     );
     return listOf(
       request,
-      rows.map((d) => ({ id: d.id, doNo: d.doNo, customer: d.customer, salesOrder: d.salesOrder, deliverOn: d.deliverOn, status: d.status, invoiced: !!d.invoiceId })),
+      rows.map((d) => ({
+        id: d.id,
+        doNo: d.doNo,
+        customer: d.customer,
+        salesOrder: d.salesOrder,
+        deliverOn: d.deliverOn,
+        status: d.status,
+        invoiced: !!d.invoiceId,
+      })),
     );
   }),
   http.post(`${BASE}/delivery-notes`, async ({ request, params }) => {
@@ -707,7 +749,9 @@ export const erpE4Handlers = [
     const b = await body<Schemas["ErpCreateDeliveryNoteDto"]>(request);
     const so = find(ok.e4.sos, b.salesOrderId);
     if (!so) return notFound();
-    const wanted = b.lines ?? so.lines.filter((l) => l.fulfilment !== "service").map((l) => ({ salesOrderLineId: l.id, quantity: l.quantity }));
+    const wanted =
+      b.lines ??
+      so.lines.filter((l) => l.fulfilment !== "service").map((l) => ({ salesOrderLineId: l.id, quantity: l.quantity }));
     const d: E4["dns"][number] = {
       id: mockId("edn", (ok.e4.seq += 1)),
       doNo: number(ok.erp, "do"),
@@ -773,7 +817,9 @@ export const erpE4Handlers = [
         l.costAmount = m2(Number(l.quantity) * 10);
       }
       d.costTotal = m2(d.lines.reduce((a, l) => a + Number(l.costAmount), 0));
-      const all = so.lines.filter((l) => l.fulfilment !== "service").every((l) => Number(l.deliveredQty) >= Number(l.quantity));
+      const all = so.lines
+        .filter((l) => l.fulfilment !== "service")
+        .every((l) => Number(l.deliveredQty) >= Number(l.quantity));
       so.status = all ? "delivered" : "partially_delivered";
     } else if (params.action === "deliver") {
       if (!b.receivedBy?.trim()) return invalid("receivedBy", "ใส่ชื่อผู้รับ");
@@ -823,10 +869,28 @@ export const erpE4Handlers = [
       for (const d of dns)
         for (const l of d.lines) {
           const sl = source.lines.find((x) => x.id === l.salesOrderLineId)!;
-          lines.push({ ...sl, id: mockId("eil", (ok.e4.seq += 1)), lineNo: lines.length + 1, quantity: l.quantity, amount: m2((Number(l.quantity) * Number(sl.unitPrice) * (100 - Number(sl.discountPct))) / 100) });
+          lines.push({
+            ...sl,
+            id: mockId("eil", (ok.e4.seq += 1)),
+            lineNo: lines.length + 1,
+            quantity: l.quantity,
+            amount: m2((Number(l.quantity) * Number(sl.unitPrice) * (100 - Number(sl.discountPct))) / 100),
+          });
         }
-      if (so) for (const sl of so.lines.filter((l) => l.fulfilment === "service" && Number(l.invoicedQty) === 0)) lines.push({ ...sl, id: mockId("eil", (ok.e4.seq += 1)), lineNo: lines.length + 1 });
-      lines = lines.map(({ id, lineNo, item, description, quantity, unit, unitPrice, discountPct, amount }) => ({ id, lineNo, item, description, quantity, unit, unitPrice, discountPct, amount }));
+      if (so)
+        for (const sl of so.lines.filter((l) => l.fulfilment === "service" && Number(l.invoicedQty) === 0))
+          lines.push({ ...sl, id: mockId("eil", (ok.e4.seq += 1)), lineNo: lines.length + 1 });
+      lines = lines.map(({ id, lineNo, item, description, quantity, unit, unitPrice, discountPct, amount }) => ({
+        id,
+        lineNo,
+        item,
+        description,
+        quantity,
+        unit,
+        unitPrice,
+        discountPct,
+        amount,
+      }));
     } else {
       const free = linesOf(ok, b.lines);
       if (free instanceof Response) return free;
@@ -853,8 +917,20 @@ export const erpE4Handlers = [
       ...totals(lines, vatMode),
       totalInWords: "(จำลอง)",
       lines,
-      seller: { name: "โรงงานตัวอย่าง (จำลอง)", address: "1 ถนนจำลอง", taxId: "0000500000001", branchCode: "00000", phone: null },
-      buyer: { name: customer.name, address: customer.address, taxId: customer.taxId, branchCode: customer.branchCode, phone: customer.phone },
+      seller: {
+        name: "โรงงานตัวอย่าง (จำลอง)",
+        address: "1 ถนนจำลอง",
+        taxId: "0000500000001",
+        branchCode: "00000",
+        phone: null,
+      },
+      buyer: {
+        name: customer.name,
+        address: customer.address,
+        taxId: customer.taxId,
+        branchCode: customer.branchCode,
+        phone: customer.phone,
+      },
       creditedAmount: "0.00",
       debitedAmount: "0.00",
       receivedAmount: "0.00",
@@ -908,7 +984,10 @@ export const erpE4Handlers = [
   http.get(`${BASE}/receipts`, ({ request, params }) => {
     const ok = ctx(request, params.factoryId, "factory_receivables.read");
     if (ok instanceof Response) return ok;
-    return listOf(request, ok.e4.rcs.map((r) => ({ ...r, nextActions: [] })));
+    return listOf(
+      request,
+      ok.e4.rcs.map((r) => ({ ...r, nextActions: [] })),
+    );
   }),
   http.post(`${BASE}/receipts`, async ({ request, params }) => {
     const ok = ctx(request, params.factoryId, "factory_receivables.manage");
@@ -918,7 +997,10 @@ export const erpE4Handlers = [
     if (!customer) return invalid("customerId", "เลือกลูกค้า");
     const allocations = (b.allocations ?? []).map((a) => {
       const iv = find(ok.e4.ivs, a.invoiceId)!;
-      return { invoice: { id: iv.id, invoiceNo: iv.invoiceNo, status: iv.status, total: iv.total }, amount: m2(Number(a.amount)) };
+      return {
+        invoice: { id: iv.id, invoiceNo: iv.invoiceNo, status: iv.status, total: iv.total },
+        amount: m2(Number(a.amount)),
+      };
     });
     const rc: Rc = {
       id: mockId("erc", (ok.e4.seq += 1)),
@@ -970,7 +1052,14 @@ export const erpE4Handlers = [
     const open = ok.e4.ivs.filter((iv) => ivOpen(ok, iv) > 0);
     const byCustomer = new Map<string, number>();
     for (const iv of open) byCustomer.set(iv.customer.id, (byCustomer.get(iv.customer.id) ?? 0) + ivOpen(ok, iv));
-    const buckets = (n: number) => ({ current: m2(n), d1_30: "0.00", d31_60: "0.00", d61_90: "0.00", over90: "0.00", total: m2(n) });
+    const buckets = (n: number) => ({
+      current: m2(n),
+      d1_30: "0.00",
+      d31_60: "0.00",
+      d61_90: "0.00",
+      over90: "0.00",
+      total: m2(n),
+    });
     const all = [...byCustomer.values()].reduce((a, n) => a + n, 0);
     return HttpResponse.json({
       asOf: today(),
@@ -980,7 +1069,12 @@ export const erpE4Handlers = [
       totals: buckets(all),
       customers: [...byCustomer.entries()].map(([id, n]) => {
         const c = customerOf(ok, id)!;
-        return { customer: coded(c), buckets: buckets(n), invoices: open.filter((iv) => iv.customer.id === id).length, creditLimit: c.creditLimit };
+        return {
+          customer: coded(c),
+          buckets: buckets(n),
+          invoices: open.filter((iv) => iv.customer.id === id).length,
+          creditLimit: c.creditLimit,
+        };
       }),
     } satisfies Schemas["ErpArAgingDto"]);
   }),
@@ -991,10 +1085,28 @@ export const erpE4Handlers = [
     if (ok instanceof Response) return ok;
     const month = new URL(request.url).searchParams.get("month") ?? today().slice(0, 7);
     if (params.report === "vat30")
-      return HttpResponse.json({ month, vatRegistered: true, salesNet: "0.00", outputVat: "0.00", purchaseNet: "0.00", inputVat: "0.00", vatPayable: "0.00", dueOn: `${month}-15` });
+      return HttpResponse.json({
+        month,
+        vatRegistered: true,
+        salesNet: "0.00",
+        outputVat: "0.00",
+        purchaseNet: "0.00",
+        inputVat: "0.00",
+        vatPayable: "0.00",
+        dueOn: `${month}-15`,
+      });
     if (params.report === "wht")
-      return HttpResponse.json({ month, form: "pnd53", rows: [], baseAmount: "0.00", whtAmount: "0.00", dueOn: `${month}-07` });
-    const issued = ok.e4.ivs.filter((iv) => params.report === "sales-vat" && iv.invoiceNo && iv.issueDate.startsWith(month));
+      return HttpResponse.json({
+        month,
+        form: "pnd53",
+        rows: [],
+        baseAmount: "0.00",
+        whtAmount: "0.00",
+        dueOn: `${month}-07`,
+      });
+    const issued = ok.e4.ivs.filter(
+      (iv) => params.report === "sales-vat" && iv.invoiceNo && iv.issueDate.startsWith(month),
+    );
     return HttpResponse.json({
       month,
       kind: params.report === "sales-vat" ? "sales" : "purchase",
@@ -1030,7 +1142,9 @@ export const erpE4Handlers = [
     const ok = ctx(request, params.factoryId, "factory_sales.read");
     if (ok instanceof Response) return ok;
     const month = new URL(request.url).searchParams.get("month") ?? today().slice(0, 7);
-    const net = ok.e4.ivs.filter((iv) => iv.invoiceNo && iv.issueDate.startsWith(month)).reduce((a, iv) => a + Number(iv.subtotal), 0);
+    const net = ok.e4.ivs
+      .filter((iv) => iv.invoiceNo && iv.issueDate.startsWith(month))
+      .reduce((a, iv) => a + Number(iv.subtotal), 0);
     return HttpResponse.json({
       month,
       invoicedNet: m2(net),
@@ -1050,7 +1164,13 @@ export const erpE4Handlers = [
           quoteNo: q.quoteNo,
           revision: q.revision,
           status: q.status === "draft" ? "sent" : q.status,
-          seller: { name: "โรงงานตัวอย่าง (จำลอง)", address: "1 ถนนจำลอง", taxId: "0000500000001", branchCode: "00000", phone: null },
+          seller: {
+            name: "โรงงานตัวอย่าง (จำลอง)",
+            address: "1 ถนนจำลอง",
+            taxId: "0000500000001",
+            branchCode: "00000",
+            phone: null,
+          },
           sellerLogoUrl: null,
           sellerContact: null,
           buyer: { name: q.customer.name, address: null, taxId: null, branchCode: null, phone: null },

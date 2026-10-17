@@ -287,6 +287,17 @@ const SORTS: Record<string, (a: MockStyle, b: MockStyle) => number> = {
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบแบบกล่องนี้");
 
+/** The bases as search hits (`store.catalog.search`, kind `style`): code, names, no photo in the mock. */
+export const styleSearchHits = (): Schemas["StoreSearchHitDto"][] =>
+  STYLES.map((s) => ({
+    kind: "style",
+    key: s.row.code,
+    titleTh: s.row.name_th,
+    titleEn: s.row.name_en,
+    imageUrl: null,
+    score: 0,
+  }));
+
 export const storeStyleHandlers: HttpHandler[] = [
   http.get("*/v1/store/styles", ({ request }) => {
     const url = new URL(request.url);

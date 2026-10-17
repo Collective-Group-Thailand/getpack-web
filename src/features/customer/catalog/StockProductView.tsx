@@ -15,7 +15,7 @@ import { ImageGallery } from "@/ui/components/ImageGallery";
 import { Icon } from "@/ui/icons";
 
 import { getPriceHints, getProductTypes, type StockProduct } from "./api.server";
-import { absoluteImageUrl, isRendered, photoVariant, storeImageSrc } from "./images";
+import { absoluteImageUrl, photoVariant, storeImageSrc } from "./images";
 import { pick } from "./localize";
 import { stockProductHref, stockRfqHref } from "./paths";
 import { priceHintText } from "./PriceHint";
@@ -90,11 +90,6 @@ export async function StockProductView({ product }: { product: StockProduct }) {
               empty: t("product.galleryEmpty"),
             }}
           />
-          {product.images.some((image) => isRendered(image.variant)) ? (
-            // An AI-rendered reference photo (D-426), said plainly: one look stands for the sizes of
-            // a family, so the sizes in the details are what the customer gets.
-            <p className="text-muted mt-2 text-xs">{t("stock.renderedNote")}</p>
-          ) : null}
         </div>
         <div className="flex flex-col gap-5">
           <div>

@@ -95,7 +95,7 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
   const words = t as unknown as StylesT;
   const heading = headingOf(t, locale, name, topic);
   const href = styleTopicHref(style.code, name, topic.id);
-  const thumb = storeImageSrc(list.data.find((v) => v.thumbnailUrl)?.thumbnailUrl);
+  const thumb = storeImageSrc(list.data.find((v) => v.thumbnailUrl)?.thumbnailUrl, "thumb");
   const others = all
     .filter((s) => s.code !== style.code && topicsOf(s.options ?? []).some((x) => x.id === topic.id))
     .slice(0, OTHERS);

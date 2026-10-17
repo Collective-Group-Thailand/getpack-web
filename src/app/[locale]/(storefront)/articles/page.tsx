@@ -147,7 +147,7 @@ export default async function ArticlesPage({
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {articles.data.map((article, index) => {
             const name = pick(currentLocale, article.titleTh, article.titleEn);
-            const src = storeImageSrc(article.coverUrl);
+            const src = storeImageSrc(article.coverUrl, "thumb");
             return (
               <ProductCard
                 key={article.slug}

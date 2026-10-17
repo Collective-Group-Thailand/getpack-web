@@ -59,7 +59,7 @@ export async function ProductGrid({
         // availability, and a campaign badge only for a live promotion.
         const facts = await cardFacts(product);
         const name = pick(locale, product.nameTh, product.nameEn);
-        const src = storeImageSrc(product.imageUrl);
+        const src = storeImageSrc(product.imageUrl, "thumb");
         return (
           <ProductCard
             key={`c-${product.slug}`}
@@ -81,7 +81,7 @@ export async function ProductGrid({
       const { product } = item;
       const text = await priceHintText(hints.get(product.sku));
       const name = pick(locale, product.nameTh, product.nameEn);
-      const src = storeImageSrc(product.imageUrls[0]);
+      const src = storeImageSrc(product.imageUrls[0], "thumb");
       return (
         <ProductCard
           key={`s-${product.sku}`}

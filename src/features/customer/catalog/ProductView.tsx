@@ -24,7 +24,7 @@ import {
   type ProductDetail,
   type ProductType,
 } from "./api.server";
-import { absoluteImageUrl, isRendered, photoVariant, storeImageSrc } from "./images";
+import { absoluteImageUrl, photoVariant, storeImageSrc } from "./images";
 import { pick } from "./localize";
 import { categoryHref, configureHref, productHref, rfqHref } from "./paths";
 import { priceHintText } from "./PriceHint";
@@ -133,11 +133,6 @@ export async function ProductView({
                 empty: t("product.galleryEmpty"),
               }}
             />
-            {product.images.some((image) => isRendered(image.variant)) ? (
-              // An AI-rendered reference photo (D-426), said plainly: the box the customer gets
-              // is made to their spec, and the picture shows the type, not a sample of their run.
-              <p className="text-muted mt-2 text-xs">{t("product.renderedNote")}</p>
-            ) : null}
           </div>
         ) : (
           // No photo yet: the product's own dieline (its first pattern, at its first standard size),

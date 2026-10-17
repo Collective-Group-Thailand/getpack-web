@@ -113,7 +113,39 @@ export function NotificationSettings({
         <h2 id="notify-matrix" className="text-lg font-semibold">
           {t("matrix")}
         </h2>
-        <div className="bg-surface border-border mt-4 overflow-x-auto rounded-xl border" aria-busy={saving || undefined}>
+        {/* A phone gets a card per category with one row per channel — four switch columns do not
+            fit 390 px and made the page scroll sideways (customer walk, round 8); from md the matrix. */}
+        <ul className="mt-4 flex flex-col gap-3 md:hidden" aria-busy={saving || undefined}>
+          {CATEGORIES.map((category) => (
+            <li key={category} className="bg-surface border-border rounded-xl border p-4">
+              <h3 className="font-medium">{t(`categories.${category}.label`)}</h3>
+              <p className="text-muted text-xs">{t(`categories.${category}.hint`)}</p>
+              <ul className="divide-border mt-3 divide-y">
+                {CHANNELS.map((channel) => {
+                  const locked = category === "transactional" && channel === "email";
+                  const needsLine = channel === "line" && !linked.has("line");
+                  return (
+                    <li key={channel} className="flex items-center justify-between gap-4 py-2.5">
+                      <Switch
+                        checked={locked || enabled(channel, category)}
+                        disabled={locked || needsLine}
+                        onCheckedChange={(value) => void set(channel, category, value)}
+                        labelPosition="start"
+                        className="w-full"
+                        label={t(`channels.${channel}`)}
+                        description={needsLine ? t("notLinked") : undefined}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </li>
+          ))}
+        </ul>
+        <div
+          className="bg-surface border-border mt-4 hidden overflow-x-auto rounded-xl border md:block"
+          aria-busy={saving || undefined}
+        >
           <table className="w-full text-sm">
             <caption className="sr-only">{t("matrix")}</caption>
             <thead className="bg-bg-subtle text-muted text-xs">
