@@ -225,7 +225,10 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
         <SlipSection payment={data} onChange={() => void payment.refetch()} />
       ) : null}
 
-      {data.groupId && (!FINAL.has(data.status) || data.status === "failed") ? (
+      {/* Not while a slip is being checked: a second method now would pay twice (customer walk, round 8). */}
+      {data.groupId &&
+      (!FINAL.has(data.status) || data.status === "failed") &&
+      data.status !== "awaiting_verification" ? (
         <section aria-labelledby="pay-other">
           <h2 id="pay-other" className="text-sm font-medium">
             {t("otherMethods")}
@@ -250,6 +253,21 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
 }
 
 /** "scb_savings" → "ธนาคารไทยพาณิชย์ · ออมทรัพย์"; an unknown code shows nothing rather than the code. */
+/** Now in Asia/Bangkok as `datetime-local` wants it (`YYYY-MM-DDTHH:mm`); the slip's own time can be corrected. */
+function bangkokLocalNow(): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Bangkok",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "00";
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour") === "24" ? "00" : get("hour")}:${get("minute")}`;
+}
+
 function bankLine(accountType: string, label: (key: string) => string | null): string | null {
   const [bank, ...rest] = accountType.toLowerCase().split(/[_-]/);
   const bankName = bank ? label(`receiverBanks.${bank}`) : null;
@@ -262,7 +280,13 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
   const format = useFormat();
   const [file, setFile] = useState<File | null>(null);
   const [amount, setAmount] = useState(payment.cashAmount);
+  // The transfer was usually made a moment ago: the field starts at now (Bangkok), to the minute,
+  // instead of the browser's empty "mm/dd/yyyy, --:--" (customer walk, round 8).
+  // A transfer made a moment ago needs no typing: the field fills with now (Bangkok) on first focus
+  // (not on render — the server's minute and the browser's would not match on hydration) and an
+  // untouched field is sent as now.
   const [at, setAt] = useState("");
+  const defaulted = useRef(false);
   const [sending, setSending] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const key = useRef(newKey());
@@ -284,7 +308,8 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
         body: {
           fileId: uploaded.id,
           declaredAmount: `${whole}.${fraction.padEnd(2, "0")}`,
-          transferredAt: `${at}:00+07:00`,
+          // Left empty, the transfer was just made: now.
+          transferredAt: `${at || bangkokLocalNow()}:00+07:00`,
         },
       });
       key.current = newKey();
@@ -361,8 +386,18 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
                 className="tabular-nums"
               />
             </Field>
-            <Field label={t("transferredAt")}>
-              <Input type="datetime-local" value={at} onChange={(event) => setAt(event.target.value)} />
+            <Field label={t("transferredAt")} hint={t("transferredAtHint")}>
+              <Input
+                type="datetime-local"
+                value={at}
+                onChange={(event) => setAt(event.target.value)}
+                onFocus={() => {
+                  if (!at && !defaulted.current) {
+                    defaulted.current = true;
+                    setAt(bangkokLocalNow());
+                  }
+                }}
+              />
             </Field>
           </div>
           {failure ? (

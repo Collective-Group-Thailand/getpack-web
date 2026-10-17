@@ -1,7 +1,7 @@
 {
   "title": "Shipping",
   "plan": {
-    "title": "Ready to ship",
+    "title": "Finished jobs, waiting for a shipment",
     "body": "Create a shipment per destination; split it across several if needed.",
     "meta": "{good} good of {ordered} ordered",
     "blocked": {

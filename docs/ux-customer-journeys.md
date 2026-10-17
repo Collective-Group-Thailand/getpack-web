@@ -101,3 +101,18 @@ every product, style and stock item got its AI-rendered photo (D-426).
 | 7.4 | Every row of the stock details is called "คุณสมบัติ". | Each row is labelled by its kind: วัสดุ, ทรง, สี, ฝา, ความจุ. |
 | 7.5 | On a phone the configurator bar cuts the total off ("รวม ฿5,178.00 · …"). | The price itself opens the details; the bar has room for the whole total. |
 | 7.6 | The footer is a screenful of links on a phone. | Four disclosures below `sm`. |
+
+## Round 8 — after buying, on a phone
+
+**Walked as** customer 0800000101 at 390 px: บัญชี → คำสั่งซื้อ → the order waiting payment → ชำระงวดนี้ → the payment
+page (QR, transfer with slip, a slip being checked) → the shipping order → การแจ้งเตือน → ข้อความ → ติดตาม.
+
+| # | Finding (as the customer) | Fix |
+|---|---|---|
+| 8.1 | The notification settings are a four-column table; on a phone the browser column is off the screen and the page scrolls sideways. | A card per category with one switch row per channel below `md`; the matrix from `md`. |
+| 8.2 | Two identical "ชำระงวดนี้" buttons — the deposit that is due and the balance that is not — I could not tell which one the factory waits for. | The due (or overdue) instalment keeps the primary button; a later one reads "ชำระล่วงหน้า" as a secondary button. |
+| 8.3 | The slip form's date field is an empty "mm/dd/yyyy, --:--" — I just transferred, why am I typing the time? | Tapping the field fills it with now (Bangkok); left empty it is sent as now; the hint says so. |
+| 8.4 | While my slip is being checked the page still offers "เปลี่ยนวิธีชำระเงิน" — I could pay twice. | The other methods are hidden while a payment is awaiting verification. |
+| 8.5 | The transfer page says "โอนเข้าบัญชีตามที่ระบุในใบแจ้งหนี้" and shows no account. | Not a screen defect: the UAT database has no `payments.slip_receiver_accounts` setting. Finance sets it (admin → settings) before launch; the page then lists bank, account number and name. |
+
+Also checked, no change needed: the orders list, the order page and its timeline, artwork upload, the shipping order's confirm / claim / reorder actions, messages, tracking — none scroll sideways, none dead-end.
