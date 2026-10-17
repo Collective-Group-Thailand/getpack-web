@@ -252,7 +252,6 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
   );
 }
 
-/** "scb_savings" → "ธนาคารไทยพาณิชย์ · ออมทรัพย์"; an unknown code shows nothing rather than the code. */
 /** Now in Asia/Bangkok as `datetime-local` wants it (`YYYY-MM-DDTHH:mm`); the slip's own time can be corrected. */
 function bangkokLocalNow(): string {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -268,7 +267,37 @@ function bangkokLocalNow(): string {
   return `${get("year")}-${get("month")}-${get("day")}T${get("hour") === "24" ? "00" : get("hour")}:${get("minute")}`;
 }
 
+/**
+ * Thai bank codes (Bank of Thailand) → the `receiverBanks` keys. Slip2Go, which checks the slips,
+ * names a receiving account as "01" + the bank's three-digit code (`01014` = SCB) — the form the
+ * setting `payments.slip_receiver_accounts` stores (D-061).
+ */
+const BANK_CODES: Record<string, string> = {
+  "002": "bbl",
+  "004": "kbank",
+  "006": "ktb",
+  "011": "ttb",
+  "014": "scb",
+  "022": "cimb",
+  "024": "uob",
+  "025": "bay",
+  "030": "gsb",
+  "034": "baac",
+  "067": "tisco",
+  "069": "kkp",
+  "073": "lhb",
+};
+
+/**
+ * The bank a customer transfers to: "01014" (Slip2Go) or "scb_savings" → "ธนาคารไทยพาณิชย์ (· ออมทรัพย์)";
+ * an unknown code shows nothing rather than the code.
+ */
 function bankLine(accountType: string, label: (key: string) => string | null): string | null {
+  const slip2go = /^\d{2}(\d{3})$/.exec(accountType.trim());
+  if (slip2go) {
+    const key = BANK_CODES[slip2go[1]!];
+    return key ? label(`receiverBanks.${key}`) : null;
+  }
   const [bank, ...rest] = accountType.toLowerCase().split(/[_-]/);
   const bankName = bank ? label(`receiverBanks.${bank}`) : null;
   const typeName = rest.length > 0 ? label(`receiverAccountTypes.${rest.join("_")}`) : null;
@@ -280,8 +309,6 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
   const format = useFormat();
   const [file, setFile] = useState<File | null>(null);
   const [amount, setAmount] = useState(payment.cashAmount);
-  // The transfer was usually made a moment ago: the field starts at now (Bangkok), to the minute,
-  // instead of the browser's empty "mm/dd/yyyy, --:--" (customer walk, round 8).
   // A transfer made a moment ago needs no typing: the field fills with now (Bangkok) on first focus
   // (not on render — the server's minute and the browser's would not match on hydration) and an
   // untouched field is sent as now.
