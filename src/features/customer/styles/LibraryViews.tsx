@@ -38,7 +38,7 @@ export async function LibraryViews({
                 )}
               >
                 {view.label}
-                <span className="tabular-nums opacity-80">{t("count", { count: view.count })}</span>
+                <span className={cn("tabular-nums", on && "text-muted")}>{t("count", { count: view.count })}</span>
               </Link>
             </li>
           );

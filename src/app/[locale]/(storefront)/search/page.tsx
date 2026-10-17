@@ -75,7 +75,7 @@ export default async function SearchPage({
                   ? styleHref(hit.key, label)
                   : productHref(hit.key),
           icon: (kind === "article" ? "article" : kind === "style" ? "layers" : "box") as IconName,
-          image: storeImageSrc(hit.imageUrl),
+          image: storeImageSrc(hit.imageUrl, "thumb"),
         };
       });
 

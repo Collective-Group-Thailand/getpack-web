@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (getpack-api 0.72.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (getpack-api 0.73.1) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -27334,7 +27334,7 @@ export interface paths {
         };
         /**
          * Get a catalogue image
-         * @description Served only while an active catalogue row or published CMS content references the file and its malware scan is clean (contract §3 "Files"); anything else is 404. Cacheable for a day.
+         * @description Served only while an active catalogue row or published CMS content references the file and its malware scan is clean (contract §3 "Files"); anything else is 404. `size=thumb` serves the 640 px WebP thumbnail (the original when there is none) — for cards and lists. Cacheable for a day.
          *
          *     Implements: D-005.
          */
@@ -75209,6 +75209,8 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /** @enum {string} */
+        StoreImageSize: "full" | "thumb";
         StoreInstalmentDto: {
             /**
              * Format: uuid
@@ -283967,7 +283969,10 @@ export interface operations {
     };
     "store.catalog.getImage": {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description `thumb`: the WebP thumbnail (640 px wide) for cards; default the original */
+                size?: components["schemas"]["StoreImageSize"];
+            };
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
