@@ -3,7 +3,13 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getCatalogueTree, getProduct, getRfqForm, getStyle } from "@/features/customer/catalog/api.server";
+import {
+  getCatalogueTree,
+  getProduct,
+  getRfqForm,
+  getStockProduct,
+  getStyle,
+} from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { categorySegment, productHref, rfqHref } from "@/features/customer/catalog/paths";
 import { styleHref } from "@/features/customer/styles/paths";
@@ -20,7 +26,7 @@ type Params = { category: string };
 /** A calculation id from the configurator, checked for its shape only — the API decides the rest. */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type Search = { type?: string; from?: string; calc?: string; base?: string; style?: string };
+type Search = { type?: string; from?: string; sku?: string; calc?: string; base?: string; style?: string };
 /** A style code as the API writes it (`PK-TE-01`, `PK-TE-01-K7QD`). */
 const STYLE_CODE = /^[A-Z0-9][A-Z0-9-]{2,39}$/;
 
@@ -60,6 +66,8 @@ export default async function Page({
   ]);
   if (!category) notFound();
   const product = query.from ? await getProduct(query.from) : null;
+  // A stock item asked about from the home shelf or its page while stock is quote-only (A-16).
+  const stock = query.sku ? await getStockProduct(query.sku) : null;
   // The variant a style page asked about: kept only when the base lists it among its shown variants.
   const styleBase =
     STYLE_CODE.test(query.base ?? "") && STYLE_CODE.test(query.style ?? "") ? await getStyle(query.base!) : null;
@@ -67,6 +75,7 @@ export default async function Page({
   const type =
     category.types.find((candidate) => candidate.code === query.type) ??
     category.types.find((candidate) => candidate.code === product?.productTypeCode) ??
+    (stock ? category.types.find((candidate) => candidate.code === "standard_product") : undefined) ??
     category.types.find((candidate) => chosenVariant && candidate.code === styleBase?.productTypeCode) ??
     (category.types.length === 1 ? category.types[0] : undefined);
   const form = type ? await getRfqForm(type.code) : null;
@@ -132,7 +141,22 @@ export default async function Page({
             <RfqForm
               form={withProductChoices(form!, product, tCatalog)}
               signedIn={Boolean(readAccessToken(jar))}
-              fromProduct={product ? { slug: product.slug, name: pick(locale, product.nameTh, product.nameEn) } : null}
+              fromProduct={
+                product
+                  ? { slug: product.slug, name: pick(locale, product.nameTh, product.nameEn) }
+                  : stock
+                    ? { slug: stock.sku, name: pick(locale, stock.nameTh, stock.nameEn) }
+                    : null
+              }
+              initialNotes={
+                stock
+                  ? t("stockNote", {
+                      name: pick(locale, stock.nameTh, stock.nameEn),
+                      sku: stock.sku,
+                      minimum: stock.minOrderQty,
+                    })
+                  : ""
+              }
               calculationId={product && UUID.test(query.calc ?? "") ? query.calc! : null}
               style={
                 chosenVariant && styleBase

@@ -90,21 +90,34 @@ export async function SiteFooter() {
           </p>
         </div>
 
+        {/* Phone: the four columns fold into one list of disclosures, so the footer is a few
+            lines rather than a screenful of links (UI pass 2026-10-17). Native <details>: no
+            JavaScript, keyboard and screen reader behaviour for free. */}
+        <div className="divide-border border-border divide-y border-y sm:hidden">
+          {columns.map((column) => (
+            <details key={column.key} className="group">
+              <summary className="focus-visible:ring-focus-ring flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 text-[13px] font-semibold outline-none focus-visible:ring-2 [&::-webkit-details-marker]:hidden">
+                <h2 className="text-[13px] font-semibold tracking-normal">{t(`${column.key}.heading`)}</h2>
+                <Icon
+                  name="chevron-down"
+                  size={18}
+                  aria-hidden="true"
+                  className="text-muted shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                />
+              </summary>
+              <nav aria-label={t(`${column.key}.heading`)} className="pb-3">
+                <FooterLinks column={column} label={(key) => t(`${column.key}.${key}`)} />
+              </nav>
+            </details>
+          ))}
+        </div>
+
         {columns.map((column) => (
-          <nav key={column.key} aria-label={t(`${column.key}.heading`)}>
+          <nav key={column.key} aria-label={t(`${column.key}.heading`)} className="hidden sm:block">
             <h2 className="text-[13px] font-semibold tracking-normal">{t(`${column.key}.heading`)}</h2>
-            <ul className="mt-3 flex flex-col gap-1.5">
-              {column.links.map((link) => (
-                <li key={link.key}>
-                  <Link
-                    href={link.href}
-                    className="text-muted hover:text-fg focus-visible:ring-focus-ring rounded-sm text-[0.90625rem] leading-loose outline-none focus-visible:ring-2"
-                  >
-                    {t(`${column.key}.${link.key}`)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-3">
+              <FooterLinks column={column} label={(key) => t(`${column.key}.${key}`)} />
+            </div>
           </nav>
         ))}
       </div>
@@ -150,5 +163,28 @@ export async function SiteFooter() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterLinks({
+  column,
+  label,
+}: {
+  column: { links: readonly { key: string; href: string }[] };
+  label: (key: string) => string;
+}) {
+  return (
+    <ul className="flex flex-col gap-1.5">
+      {column.links.map((link) => (
+        <li key={link.key}>
+          <Link
+            href={link.href}
+            className="text-muted hover:text-fg focus-visible:ring-focus-ring rounded-sm text-[0.90625rem] leading-loose outline-none focus-visible:ring-2"
+          >
+            {label(link.key)}
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }

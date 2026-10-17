@@ -151,6 +151,33 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
   payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
 
+## Catalogue photos, the home stock shelf, phone polish — 2026-10-17
+
+Product owner: "ใส่รูปสินค้าจริงที่ stitch generate ขึ้นมาให้ครบถ้วนทุกรายการ … เอารายการสินค้าสต็อกไปอยู่ในหน้าหลัก
+เพื่อให้ลูกค้ากดสั่งได้ง่ายๆ". Contract adopted at getpack-api **v0.69.0** (v0.68.0 style/product photos, v0.69.0
+stock photos; D-426).
+
+- **Photos everywhere a customer browses.** Every catalogue product (42), style base (122) and stock product (101, 63
+  looks) has an AI-rendered reference photo. Product and stock pages take the localised alt from the image's
+  `variant` and say under the gallery that the picture is an AI render (product: "ภาพจำลองประเภทสินค้า … งานจริงผลิต
+  ตามสเปกที่คุณเลือก"; stock: "ภาพตัวอย่าง … สินค้าจริงอาจต่างเล็กน้อย"). Style cards, variant cards and the variant
+  picker lead with the style's photo (through the BFF, `storeImageSrc`).
+- **The home stock shelf** (`StockShelf`, after the trust row): type chips with counts, eight cards, a swipe row on a
+  phone and a 4-column grid from `md`. When `standard_product` prices instantly each card shows the API's per-unit
+  price and total at the minimum and a one-tap "ใส่ตะกร้า {MOQ}" (a guest signs in first, then the item goes in);
+  until then (UAT: the type's pricing validation is unsigned, A-16) the shelf, the stock page and its button ask for
+  a price — "ขอราคา" → `/rfq/standard-product?sku=`, the RFQ naming the product with its SKU and minimum in the note.
+  The cart step is shared with the stock page (`useAddStockToCart`).
+- **Stock page details** label each attribute by its kind (วัสดุ, ทรง, สี, ฝา …) instead of "คุณสมบัติ" on every row.
+- **Phone configurator.** The price in the bottom bar is the button into the details sheet, so the bar no longer
+  squeezes a third button and the total ("รวม ฿5,178.00 · 300 ชิ้น") is shown whole; completed steps already fold
+  to one line with their summary.
+- **Phone footer.** The four link columns fold into native `<details>` disclosures below `sm`; from `sm` up the
+  columns are as before.
+
+Checked at 1280 px and 390 px against the UAT database: home, /products, /styles, a stock product page, the RFQ
+`?sku=` flow, /configure — no sideways scroll. tsgo clean, ESLint clean, Vitest 151 files / 1219 tests.
+
 ## Customer journeys — 2026-10-16
 
 The partner programme's method (`docs/ux-partner-journeys.md`) applied to everything a customer sees — storefront,

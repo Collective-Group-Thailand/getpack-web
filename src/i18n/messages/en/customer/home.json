@@ -36,6 +36,21 @@
       "body": "Every stage visible, with QC photos before the box is closed"
     }
   },
+  "stock": {
+    "title": "Ready to ship, order now",
+    "body": "Mailers, boxes, bottles, cups and packing supplies in stock — nothing to design, no production wait. Add to the cart right here",
+    "all": "See all {count} ready-to-ship items",
+    "filter": "Ready-to-ship types",
+    "allTypes": "All",
+    "ready": "Ready to ship",
+    "price": "{price} / {unit}",
+    "add": "Add {quantity} {unit} to cart",
+    "inCart": "In your cart",
+    "total": "{total} in all · {minimum} · VAT included",
+    "askPrice": "Ask for a price",
+    "bodyQuote": "Mailers, boxes, bottles, cups and packing supplies in stock — nothing to design, no production wait. Send the quantity you need and the team quotes it",
+    "titleQuote": "Ready to ship, no production wait"
+  },
   "mosaic": {
     "label": "Work we have made"
   },
