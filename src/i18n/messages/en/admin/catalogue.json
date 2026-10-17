@@ -459,6 +459,10 @@
     "geometry-conditions": {
       "title": "Geometry conditions",
       "description": "A band table read by one box dimension; patterns use conditions in their slots."
+    },
+    "readiness": {
+      "title": "Catalogue readiness",
+      "description": "Products, stock and styles still missing a photograph, a price or publication — as lists to work through"
     }
   },
   "sectionTitles": {
@@ -816,7 +820,7 @@
     "images": {
       "menu": "Product images",
       "title": "Images of {name}",
-      "intro": "The first photo is the cover customers see on the card. A new upload becomes the cover in place of the AI render; shown to customers once its scan is clean",
+      "intro": "The first photo is the cover customers see on the card. A new upload becomes the cover in place of the reference image; shown to customers once its scan is clean",
       "open": "Open",
       "remove": "Remove",
       "none": "No images yet",
@@ -827,15 +831,15 @@
       "wrongType": "{name} is not PNG, JPEG or WebP",
       "cover": "Cover",
       "sourcePhoto": "Photograph",
-      "sourceRender": "AI render",
+      "sourceRender": "Reference image",
       "photoNo": "Photo {no}",
       "moveEarlier": "Move photo {no} earlier",
       "moveLater": "Move photo {no} later",
       "makeCover": "Make cover",
       "removeNo": "Remove photo {no}",
       "orderHint": "Drag to reorder, or use the arrows. Removed files are kept under the retention policy",
-      "rendersLeft": "A photograph is in, but {count} AI render(s) remain in the gallery, so the storefront still shows its “AI-generated” note",
-      "removeRenders": "Remove all {count} AI render(s)"
+      "rendersLeft": "A photograph is in, but {count} reference image(s) remain in the gallery",
+      "removeRenders": "Remove all {count} reference image(s)"
     },
     "options": {
       "menu": "Customer options",
@@ -966,6 +970,49 @@
       "invalid": "Fill in every number.",
       "order": "The upper bound must not be below the lower.",
       "overlap": "Bands overlap."
+    }
+  },
+  "readiness": {
+    "total": "{count} in all",
+    "allDone": "Everything here is complete",
+    "none": "Nothing in this list",
+    "more": "Showing {shown} of {count} — the rest appear as these are done",
+    "types": {
+      "title": "Product types and pricing mode",
+      "intro": "A type that prices instantly turns “Ask for a price” into “Add to cart” for every product of that type at once. Switch the mode on the product types page",
+      "manage": "Manage product types",
+      "ready": "{count} type(s) have their calculator shipped but still ask for a quote — sign off and switch them to instant",
+      "products": "{count} active",
+      "instant": "Instant",
+      "canSwitch": "Ready to switch",
+      "quoteOnly": "Quote only"
+    },
+    "products": {
+      "title": "Catalogue products"
+    },
+    "stock": {
+      "title": "Stock products"
+    },
+    "styles": {
+      "title": "Style library"
+    },
+    "lists": {
+      "referenceOnly": "Reference image only",
+      "noImage": "No image",
+      "noPhoto": "No card photo",
+      "quoteOnly": "No instant price",
+      "notActive": "Not active",
+      "notPublishable": "Not publishable",
+      "hidden": "Hidden"
+    },
+    "hints": {
+      "referenceOnly": "Every image here is a reference image; upload a photograph and it becomes the cover",
+      "noImage": "Customers see an illustration; upload one in the product's images dialog",
+      "noPhoto": "The card shows the rendered dieline; upload one in the storefront tab",
+      "quoteOnly": "The product type is in quote mode, so customers ask for a quotation",
+      "notActive": "Draft or inactive, so not on the storefront",
+      "notPublishable": "No variant passes the publication checks; see the readiness tab",
+      "hidden": "Hidden by curation; never published until unhidden"
     }
   }
 }

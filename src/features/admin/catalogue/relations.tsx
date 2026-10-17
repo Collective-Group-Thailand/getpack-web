@@ -273,7 +273,7 @@ interface ProductImage {
   variant?: Record<string, unknown> | null;
 }
 
-/** What `variant` says the image is (D-426): a photograph uploaded here, an AI render, or unsaid. */
+/** What `variant` says the image is (D-426): a photograph uploaded here, a reference render, or unsaid. */
 const imageSource = (image: ProductImage): "getpack" | "ai-render" | null => {
   const source = image.variant?.source;
   return source === "getpack" || source === "ai-render" ? source : null;
@@ -352,8 +352,8 @@ function ImagesDialog({ def, row, onClose, onDone }: DialogProps) {
       onSubmit={async () => undefined}
     >
       {hasPhotograph && renders.length > 0 ? (
-        // A real photograph is in: the renders it was meant to replace are still in the gallery and
-        // keep the storefront's "AI render" note on — say so, with the one action that clears it.
+        // A real photograph is in: the renders it was meant to replace are still in the gallery —
+        // say so, with the one action that clears them.
         <div className="border-warning/40 bg-warning-subtle flex flex-wrap items-center gap-3 rounded-md border p-3 text-sm">
           <Icon name="sparkles" size={18} aria-hidden="true" className="shrink-0" />
           <p className="min-w-0 flex-1">{t("images.rendersLeft", { count: renders.length })}</p>

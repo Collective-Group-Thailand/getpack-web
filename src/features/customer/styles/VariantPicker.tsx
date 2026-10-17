@@ -119,9 +119,6 @@ export function VariantPicker({
             <Icon name="box" size={64} className="text-subtle" aria-hidden="true" />
           )}
         </div>
-        {!show3d && photo && style.photo?.source === "ai-render" ? (
-          <p className="text-muted text-xs">{t("detail.renderedNote")}</p>
-        ) : null}
         {!show3d ? (
           <Button variant="secondary" iconStart="box" onClick={() => setShow3d(true)} disabled={!variant}>
             {t("detail.show3d")}

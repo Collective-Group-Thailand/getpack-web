@@ -51,6 +51,7 @@ export function TablesIndex({ zone }: { zone: "catalogue" | "cms" }) {
   const extra: Partial<Record<Section, Entry[]>> =
     zone === "catalogue"
       ? {
+          products: [{ key: "readiness", href: "/catalogue/readiness", icon: "checklist", permission: "catalog.read" }],
           geography: [{ key: "import", href: "/catalogue/import", icon: "spreadsheet", permission: "catalog.import" }],
         }
       : {};
