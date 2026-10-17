@@ -625,7 +625,7 @@ export const storeCatalogHandlers: HttpHandler[] = [
       .filter((entry): entry is Schemas["StoreSearchHitDto"] => entry !== null)
       .sort((a, b) => b.score - a.score)
       // As the API: the best 8 of each kind, then 40 in all.
-      .filter((entry, index, all) => all.filter((other) => other.kind === entry.kind).indexOf(entry) < 8)
+      .filter((entry, _index, all) => all.filter((other) => other.kind === entry.kind).indexOf(entry) < 8)
       .slice(0, 40);
     return HttpResponse.json({ q, hits } satisfies Schemas["StoreSearchResultDto"]);
   }),

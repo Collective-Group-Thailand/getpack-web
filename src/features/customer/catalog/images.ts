@@ -6,10 +6,13 @@
  * `/v1/store/*`, so the same path under `/bff` is served through it. An absolute URL (a CDN,
  * once there is one) is used as it is.
  */
-export function storeImageSrc(url: string | null | undefined): string | null {
+export function storeImageSrc(url: string | null | undefined, size: "full" | "thumb" = "full"): string | null {
   if (!url) return null;
   if (/^https?:\/\//.test(url)) return url;
-  return url.startsWith("/v1/store/") ? `/bff${url}` : null;
+  if (!url.startsWith("/v1/store/")) return null;
+  // A card draws the API's 400 px WebP thumbnail (`store.catalog.getImage?size=thumb`, a tenth of the
+  // bytes); galleries and anything shown large keep the original.
+  return `/bff${url}${size === "thumb" && url.startsWith("/v1/store/catalog/images/") ? "?size=thumb" : ""}`;
 }
 
 /** The same image as an absolute URL, for structured data and Open Graph. */

@@ -810,7 +810,7 @@ export async function StockShelfSection({
       href: stockProductHref(product.sku),
       name: pick(locale, product.nameTh, product.nameEn),
       type,
-      image: storeImageSrc(product.imageUrls[0]),
+      image: storeImageSrc(product.imageUrls[0], "thumb"),
       unit,
       minimum: tCatalog("minOrder", { quantity: format.number(product.minOrderQty), unit }),
       minOrderQty: product.minOrderQty,

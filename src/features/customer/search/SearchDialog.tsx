@@ -119,7 +119,7 @@ export default function SearchDialog({ open, onOpenChange }: { open: boolean; on
           label,
           group: t(`search.groups.${kind}`),
           icon: kind === "article" ? "article" : kind === "style" ? "layers" : "box",
-          image: storeImageSrc(hit.imageUrl),
+          image: storeImageSrc(hit.imageUrl, "thumb"),
           onSelect: () => go(href),
         });
       }
