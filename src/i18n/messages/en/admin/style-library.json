@@ -426,5 +426,21 @@
     "requests": "Requests",
     "published": "Added",
     "structuralEmpty": "None"
+  },
+  "photo": {
+    "title": "Card photo",
+    "intro": "What customers see on the style's card, its variant cards and the configurator preview. Without one, the rendered dieline thumbnail is used",
+    "none": "No photo — the rendered thumbnail is used",
+    "sourcePhoto": "Photograph",
+    "sourceRender": "AI render",
+    "renderHint": "This is an AI-generated reference. Upload a real photograph to replace it; the storefront then drops its “AI-generated” note",
+    "drop": "Drop a PNG / JPEG / WebP here, or",
+    "browse": "choose a photo",
+    "uploading": "Uploading…",
+    "tooLarge": "{name} is over 20 MB",
+    "wrongType": "{name} is not a PNG, JPEG or WebP",
+    "remove": "Remove the photo, use the rendered thumbnail",
+    "saved": "Photo saved",
+    "failed": "The photo could not be saved"
   }
 }

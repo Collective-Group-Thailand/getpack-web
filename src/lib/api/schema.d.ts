@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (getpack-api 0.69.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (getpack-api 0.70.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -2566,6 +2566,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/catalog/catalog-products/{id}/images/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Reorder a catalogue product's images
+         * @description Every current image once, in the order the storefront shows them; the first is the cover (D-426). Guarded by the product ETag.
+         *
+         *     Implements: D-005, D-426.
+         */
+        put: operations["admin.catalogProducts.reorderImages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/catalog/catalog-products/{id}/options": {
         parameters: {
             query?: never;
@@ -4595,6 +4617,28 @@ export interface paths {
          *     Implements: D-005.
          */
         delete: operations["admin.catalogStockProducts.removeImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/stock-products/{id}/images/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Reorder a stock product's photos
+         * @description Every current photo once, in the order the storefront shows them; the first is the cover (D-426). Guarded by the product ETag.
+         *
+         *     Implements: D-005, D-426.
+         */
+        put: operations["admin.catalogStockProducts.reorderImages"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -16174,6 +16218,36 @@ export interface paths {
          */
         post: operations["admin.styles.verifyReference"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/styles/{styleId}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set the photo on a style's card
+         * @description A photograph uploaded here (`source: getpack`) replaces the AI-rendered reference (D-426) on the style's card, its variants and the configurator preview; served to customers once the file's scan is clean. Needs `If-Match` from `admin.styles.get`. Audited.
+         *
+         *     Implements: D-241, D-242, D-243, D-426.
+         *
+         *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        put: operations["admin.styles.setPhoto"];
+        post?: never;
+        /**
+         * Remove the photo from a style's card
+         * @description The card goes back to the rendered thumbnail; the stored file is kept (retention policy). Audited.
+         *
+         *     Implements: D-241, D-242, D-243, D-426.
+         */
+        delete: operations["admin.styles.clearPhoto"];
         options?: never;
         head?: never;
         patch?: never;
@@ -36499,6 +36573,8 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ae007
              */
             patternId: string | null;
+            /** @description The photo customers see on the style's card (D-426); null: the rendered thumbnail */
+            photo: components["schemas"]["AdminStylePhotoDto"] | null;
             /** @example instant_after_signoff */
             pricingPathAtLaunch: string | null;
             /**
@@ -36592,6 +36668,8 @@ export interface components {
             namesApproval: components["schemas"]["StyleNamesApprovalDto"];
             /** @example กล่องฝาเสียบ (ปรับฝาบน-ล่างได้) */
             nameTh: string;
+            /** @description The photo customers see on the style's card (D-426); null: the rendered thumbnail */
+            photo: components["schemas"]["AdminStylePhotoDto"] | null;
             /**
              * @description Null: no pricing path yet
              * @example folding_carton
@@ -36639,6 +36717,19 @@ export interface components {
             version: number;
             /** @example 1 */
             wave: number;
+        };
+        AdminStylePhotoDto: {
+            alt: components["schemas"]["LocalisedLabelDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ae001
+             */
+            fileId: string;
+            /**
+             * @description `getpack`: a photograph uploaded here; `ai-render`: an AI-rendered reference
+             * @example getpack
+             */
+            source: string;
         };
         AdminStyleVariantDto: {
             /** @example PK-TE-01-K7QD */
@@ -41125,9 +41216,11 @@ export interface components {
             /** @example 0 */
             sort: number;
             /**
-             * @description Which material / colour / combination the image shows (legacy imagesets)
+             * @description What the image is: `kind: photo` with `source` (`getpack`: a photograph uploaded here; `ai-render`: an AI-rendered reference, D-426) and `alt {th,en}`; plus which material / colour / combination it shows (legacy imagesets)
              * @example {
-             *       "material": "art-card-350"
+             *       "kind": "photo",
+             *       "material": "art-card-350",
+             *       "source": "getpack"
              *     }
              */
             variant: {
@@ -69053,6 +69146,14 @@ export interface components {
              */
             ids: string[];
         };
+        ReorderImagesDto: {
+            /**
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-00000000c012"
+             *     ]
+             */
+            imageIds: string[];
+        };
         ReorderOrderDto: {
             /**
              * @description From `store.claims.previewReorder` with the same quantity and artwork choice: refused with 409 `orders.reorder_repriced` when today’s price differs from the preview
@@ -72193,6 +72294,21 @@ export interface components {
             /** @example false */
             enabled: boolean;
         };
+        SetStylePhotoDto: {
+            /** @example Tuck-end carton, photographed sample */
+            altEn?: string;
+            /**
+             * @description Alt text; the base's Thai name without it
+             * @example กล่องฝาเสียบ ตัวอย่างจริง
+             */
+            altTh?: string;
+            /**
+             * Format: uuid
+             * @description Uploaded image file (purpose `image`)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ae001
+             */
+            fileId: string;
+        };
         SetTemplateDesignDto: {
             /**
              * Format: uuid
@@ -74508,6 +74624,16 @@ export interface components {
             id: string;
             /** @example 0 */
             sort: number;
+            /**
+             * @description What the image is (D-426): `source` `getpack` for a photograph uploaded here, `ai-render` for an AI-rendered reference; `alt {th,en}`. Null for an older upload.
+             * @example {
+             *       "kind": "photo",
+             *       "source": "getpack"
+             *     }
+             */
+            variant: {
+                [key: string]: unknown;
+            } | null;
         };
         StoreArticleCardDto: {
             /**
@@ -98900,6 +99026,185 @@ export interface operations {
             };
         };
     };
+    "admin.catalogProducts.reorderImages": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderImagesDto"];
+            };
+        };
+        responses: {
+            /** @description The catalogue product */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "defaultDifficultyLevelId": null,
+                     *       "descriptionEn": "Reverse tuck-end folding box",
+                     *       "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
+                     *       "images": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c012",
+                     *           "sort": 0,
+                     *           "variant": {
+                     *             "material": "art-card-350"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "isCombination": false,
+                     *       "nameEn": "Tuck-end box",
+                     *       "nameTh": "กล่องฝาเสียบ",
+                     *       "options": [
+                     *         {
+                     *           "isDefault": true,
+                     *           "kind": "material",
+                     *           "optionId": "0192f3a0-7c1e-7d2a-9b1f-00000000c010",
+                     *           "sort": 0
+                     *         }
+                     *       ],
+                     *       "patterns": [
+                     *         {
+                     *           "factorNd": 1,
+                     *           "factorNl": 1,
+                     *           "factorNw": 1,
+                     *           "patternCode": "RTE-01",
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
+                     *           "sort": 0
+                     *         }
+                     *       ],
+                     *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
+                     *       "quantityDefault": null,
+                     *       "quantityMax": null,
+                     *       "quantityMin": null,
+                     *       "quantityPresets": [],
+                     *       "referenceConfiguration": null,
+                     *       "seoPageId": null,
+                     *       "slug": "tuck-end-box",
+                     *       "sort": 10,
+                     *       "status": "active",
+                     *       "templateAvailability": "drawing",
+                     *       "updatedAt": "2026-09-25T10:00:00+07:00",
+                     *       "videoUrl": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CatalogProductDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.catalogProducts.replaceOptions": {
         parameters: {
             query?: never;
@@ -114702,7 +115007,11 @@ export interface operations {
                      *             {
                      *               "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000e004",
                      *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
-                     *               "sort": 0
+                     *               "sort": 0,
+                     *               "variant": {
+                     *                 "kind": "photo",
+                     *                 "source": "getpack"
+                     *               }
                      *             }
                      *           ],
                      *           "isFoodGrade": true,
@@ -114831,7 +115140,11 @@ export interface operations {
                      *         {
                      *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000e004",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
-                     *           "sort": 0
+                     *           "sort": 0,
+                     *           "variant": {
+                     *             "kind": "photo",
+                     *             "source": "getpack"
+                     *           }
                      *         }
                      *       ],
                      *       "isFoodGrade": true,
@@ -114968,7 +115281,11 @@ export interface operations {
                      *         {
                      *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000e004",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
-                     *           "sort": 0
+                     *           "sort": 0,
+                     *           "variant": {
+                     *             "kind": "photo",
+                     *             "source": "getpack"
+                     *           }
                      *         }
                      *       ],
                      *       "isFoodGrade": true,
@@ -115101,7 +115418,11 @@ export interface operations {
                      *         {
                      *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000e004",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
-                     *           "sort": 0
+                     *           "sort": 0,
+                     *           "variant": {
+                     *             "kind": "photo",
+                     *             "source": "getpack"
+                     *           }
                      *         }
                      *       ],
                      *       "isFoodGrade": true,
@@ -115273,7 +115594,11 @@ export interface operations {
                      *         {
                      *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000e004",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
-                     *           "sort": 0
+                     *           "sort": 0,
+                     *           "variant": {
+                     *             "kind": "photo",
+                     *             "source": "getpack"
+                     *           }
                      *         }
                      *       ],
                      *       "isFoodGrade": true,
@@ -115435,7 +115760,11 @@ export interface operations {
                      *         {
                      *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000e004",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
-                     *           "sort": 0
+                     *           "sort": 0,
+                     *           "variant": {
+                     *             "kind": "photo",
+                     *             "source": "getpack"
+                     *           }
                      *         }
                      *       ],
                      *       "isFoodGrade": true,
@@ -115594,7 +115923,11 @@ export interface operations {
                      *         {
                      *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000e004",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
-                     *           "sort": 0
+                     *           "sort": 0,
+                     *           "variant": {
+                     *             "kind": "photo",
+                     *             "source": "getpack"
+                     *           }
                      *         }
                      *       ],
                      *       "isFoodGrade": true,
@@ -115613,6 +115946,172 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["StockProductDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogStockProducts.reorderImages": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderImagesDto"];
+            };
+        };
+        responses: {
+            /** @description The stock product */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "attributes": [
+                     *         {
+                     *           "attribute": "colour",
+                     *           "valueCode": "clear",
+                     *           "valueId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001"
+                     *         }
+                     *       ],
+                     *       "capacityMl": 250,
+                     *       "description": "ขวดใส ฝาเกลียว 28 มม.",
+                     *       "heightMm": 150,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *       "images": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000e004",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
+                     *           "sort": 0,
+                     *           "variant": {
+                     *             "kind": "photo",
+                     *             "source": "getpack"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "isFoodGrade": true,
+                     *       "lengthMm": 60,
+                     *       "minOrderQty": 100,
+                     *       "nameEn": "PET bottle 250 ml",
+                     *       "nameTh": "ขวด PET 250 มล.",
+                     *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
+                     *       "seoPageId": null,
+                     *       "sku": "PKO-BTL-0250",
+                     *       "status": "active",
+                     *       "unit": "piece",
+                     *       "updatedAt": "2026-09-25T10:00:00+07:00",
+                     *       "weightG": 22.5,
+                     *       "widthMm": 60
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StockProductDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -199112,6 +199611,7 @@ export interface operations {
                      *             "marketingAt": null,
                      *             "prepressAt": null
                      *           },
+                     *           "photo": null,
                      *           "productTypeCode": "folding_carton",
                      *           "publishedAt": null,
                      *           "recipeApproved": false,
@@ -199241,6 +199741,7 @@ export interface operations {
                      *         "prepressAt": null
                      *       },
                      *       "patternId": null,
+                     *       "photo": null,
                      *       "pricingPathAtLaunch": "instant_after_signoff",
                      *       "productTypeCode": "folding_carton",
                      *       "publishedAt": null,
@@ -199400,6 +199901,7 @@ export interface operations {
                      *         "prepressAt": null
                      *       },
                      *       "patternId": null,
+                     *       "photo": null,
                      *       "pricingPathAtLaunch": "instant_after_signoff",
                      *       "productTypeCode": "folding_carton",
                      *       "publishedAt": null,
@@ -199586,6 +200088,7 @@ export interface operations {
                      *         "prepressAt": null
                      *       },
                      *       "patternId": null,
+                     *       "photo": null,
                      *       "pricingPathAtLaunch": "instant_after_signoff",
                      *       "productTypeCode": "folding_carton",
                      *       "publishedAt": null,
@@ -199752,6 +200255,7 @@ export interface operations {
                      *         "prepressAt": null
                      *       },
                      *       "patternId": null,
+                     *       "photo": null,
                      *       "pricingPathAtLaunch": "instant_after_signoff",
                      *       "productTypeCode": "folding_carton",
                      *       "publishedAt": null,
@@ -199880,6 +200384,372 @@ export interface operations {
             };
         };
     };
+    "admin.styles.setPhoto": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                styleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetStylePhotoDto"];
+            };
+        };
+        responses: {
+            /** @description The base */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "category": "folding_carton",
+                     *       "code": "PK-TE-01",
+                     *       "complexity": "M",
+                     *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
+                     *       "descriptionEn": null,
+                     *       "descriptionTh": null,
+                     *       "family": "tuck_end",
+                     *       "featured": false,
+                     *       "hidden": false,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
+                     *       "materialClass": "paperboard",
+                     *       "nameEn": "Tuck-end carton (configurable ends)",
+                     *       "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
+                     *       "namesApproval": {
+                     *         "marketingAt": null,
+                     *         "prepressAt": null
+                     *       },
+                     *       "patternId": null,
+                     *       "photo": null,
+                     *       "pricingPathAtLaunch": "instant_after_signoff",
+                     *       "productTypeCode": "folding_carton",
+                     *       "publishedAt": null,
+                     *       "reasonCounts": [
+                     *         {
+                     *           "count": 228,
+                     *           "reason": "no_recipe"
+                     *         },
+                     *         {
+                     *           "count": 228,
+                     *           "reason": "names_not_approved"
+                     *         },
+                     *         {
+                     *           "count": 228,
+                     *           "reason": "not_makeable"
+                     *         }
+                     *       ],
+                     *       "recipeApproved": false,
+                     *       "recipeVersion": null,
+                     *       "recipes": [],
+                     *       "referenceCode": null,
+                     *       "referenceVerifiedAt": null,
+                     *       "sort": 0,
+                     *       "sourceProductType": "folding",
+                     *       "status": "active",
+                     *       "synonyms": [],
+                     *       "useCases": [],
+                     *       "variantAxes": [
+                     *         "tuck_top",
+                     *         "tuck_bottom",
+                     *         "hang",
+                     *         "window"
+                     *       ],
+                     *       "variants": {
+                     *         "active": 228,
+                     *         "publishable": 0,
+                     *         "total": 228
+                     *       },
+                     *       "version": 1,
+                     *       "wave": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminStyleBaseDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.styles.clearPhoto": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                styleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The base */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "category": "folding_carton",
+                     *       "code": "PK-TE-01",
+                     *       "complexity": "M",
+                     *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
+                     *       "descriptionEn": null,
+                     *       "descriptionTh": null,
+                     *       "family": "tuck_end",
+                     *       "featured": false,
+                     *       "hidden": false,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
+                     *       "materialClass": "paperboard",
+                     *       "nameEn": "Tuck-end carton (configurable ends)",
+                     *       "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
+                     *       "namesApproval": {
+                     *         "marketingAt": null,
+                     *         "prepressAt": null
+                     *       },
+                     *       "patternId": null,
+                     *       "photo": null,
+                     *       "pricingPathAtLaunch": "instant_after_signoff",
+                     *       "productTypeCode": "folding_carton",
+                     *       "publishedAt": null,
+                     *       "reasonCounts": [
+                     *         {
+                     *           "count": 228,
+                     *           "reason": "no_recipe"
+                     *         },
+                     *         {
+                     *           "count": 228,
+                     *           "reason": "names_not_approved"
+                     *         },
+                     *         {
+                     *           "count": 228,
+                     *           "reason": "not_makeable"
+                     *         }
+                     *       ],
+                     *       "recipeApproved": false,
+                     *       "recipeVersion": null,
+                     *       "recipes": [],
+                     *       "referenceCode": null,
+                     *       "referenceVerifiedAt": null,
+                     *       "sort": 0,
+                     *       "sourceProductType": "folding",
+                     *       "status": "active",
+                     *       "synonyms": [],
+                     *       "useCases": [],
+                     *       "variantAxes": [
+                     *         "tuck_top",
+                     *         "tuck_bottom",
+                     *         "hang",
+                     *         "window"
+                     *       ],
+                     *       "variants": {
+                     *         "active": 228,
+                     *         "publishable": 0,
+                     *         "total": 228
+                     *       },
+                     *       "version": 1,
+                     *       "wave": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminStyleBaseDetailDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.styles.approveRecipe": {
         parameters: {
             query?: never;
@@ -199925,6 +200795,7 @@ export interface operations {
                      *         "prepressAt": null
                      *       },
                      *       "patternId": null,
+                     *       "photo": null,
                      *       "pricingPathAtLaunch": "instant_after_signoff",
                      *       "productTypeCode": "folding_carton",
                      *       "publishedAt": null,
