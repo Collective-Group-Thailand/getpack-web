@@ -151,6 +151,25 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
   ready, rollup backfill. Not tried in the browser (no data in the UAT database): company memo, memo withdraw,
   payment allocation, coupon export, proposal evidence. `admin.artwork.addMockup` has no screen (D-254).
 
+## Photo curation in the admin — 2026-10-17
+
+Product owner: "ปิดและแก้ไขช่องโหว่เลยครับ" — the admin could upload a photo but it went to the end of the gallery, could
+not be reordered, and the style library had no photo field at all, so an AI render stayed the cover. Contract adopted at
+getpack-api **v0.70.0**.
+
+- **Catalogue and stock product images** (`catalogue/relations.tsx` `ImagesDialog`): a thumbnail grid in storefront
+  order (`FileImage`, through `admin.files.download`), the first ringed as "รูปหลัก", every image badged "รูปจริง" /
+  "ภาพ AI" from its `variant.source`. Reorder by drag or by the arrows (`reorderImages`), "ตั้งเป็นรูปหลัก" on any other
+  image, remove one by one. An upload sends no `sort`, so the API puts it first as a getpack photograph. When a photograph
+  is in and renders remain, a callout says the storefront still shows its "AI" note, with one button that removes all
+  the renders.
+- **Style library** (`StyleWorkspace` → ข้อมูลหน้าร้าน): a "รูปบนการ์ด" panel — the current photo with its source badge,
+  a hint when it is a render, drop a PNG/JPEG/WebP to replace it (`admin.styles.setPhoto`), "เอารูปออก ใช้ภาพโครงกล่องแทน"
+  (`clearPhoto`).
+
+tsgo clean, ESLint clean, Vitest 151 files / 1219 tests. Both screens opened against the UAT database; the thumbnails
+themselves need a reachable file host (the sandbox's fake storage URL is not), so they were checked as placeholders.
+
 ## Catalogue photos, the home stock shelf, phone polish — 2026-10-17
 
 Product owner: "ใส่รูปสินค้าจริงที่ stitch generate ขึ้นมาให้ครบถ้วนทุกรายการ … เอารายการสินค้าสต็อกไปอยู่ในหน้าหลัก
