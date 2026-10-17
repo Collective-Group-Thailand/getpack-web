@@ -8,6 +8,7 @@ import { uploadFile } from "@/features/shared/files/upload";
 import { ifMatch } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import type { DataTableColumn } from "@/ui/components/DataTable";
@@ -19,10 +20,13 @@ import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { SearchInput } from "@/ui/components/SearchInput";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, FormDialog, FormError, problemMessage, useCan } from "../console";
 import { FileButton } from "../logistics/files";
 import { getRow, listRows, loose, rowLabel, type CatalogueRow } from "./api";
+import { FileImage } from "./FileImage";
 import { listFor } from "./resources";
 import type { TableDef } from "./tables";
 import { useRefs } from "./useRefs";
@@ -262,16 +266,82 @@ function RefListDialog({
 
 /* ------------------------------------------------------------------------------ images */
 
-/** A product's photos: added from an upload (purpose `image`), removed one by one; the file itself is kept. */
+interface ProductImage {
+  id: string;
+  fileId: string;
+  sort: number;
+  variant?: Record<string, unknown> | null;
+}
+
+/** What `variant` says the image is (D-426): a photograph uploaded here, an AI render, or unsaid. */
+const imageSource = (image: ProductImage): "getpack" | "ai-render" | null => {
+  const source = image.variant?.source;
+  return source === "getpack" || source === "ai-render" ? source : null;
+};
+
+const sorted = (images: readonly ProductImage[]) => images.slice().sort((a, b) => a.sort - b.sort);
+
+/**
+ * A product's photos as the storefront will show them: the first is the cover. A photo uploaded
+ * here leads (the API puts it first, tagged a getpack photograph), so a real photograph replaces
+ * the AI-rendered reference as the cover; the renders left behind are flagged so curation can drop
+ * them in one go. Reordered by drag or by the arrows (`reorderImages`); the file itself is kept.
+ */
 function ImagesDialog({ def, row, onClose, onDone }: DialogProps) {
   const t = useTranslations("catalogue.relations");
   const name = useName(row);
-  const [images, setImages] = useState(((row.images as { id: string; fileId: string; sort: number }[]) ?? []).slice());
-  const [busy, setBusy] = useState(false);
+  const [images, setImages] = useState<ProductImage[]>(() => sorted((row.images as ProductImage[] | undefined) ?? []));
+  const [busy, setBusy] = useState<"upload" | "order" | "remove" | null>(null);
+  const [dragging, setDragging] = useState<string | null>(null);
   const save = (next: CatalogueRow) => {
-    setImages(((next.images as { id: string; fileId: string; sort: number }[]) ?? []).slice());
+    setImages(sorted((next.images as ProductImage[] | undefined) ?? []));
     onDone();
   };
+  const api = loose(adminBrowserApis().contract);
+
+  async function run(kind: NonNullable<typeof busy>, work: () => Promise<{ data?: unknown }>) {
+    setBusy(kind);
+    try {
+      const { data } = await work();
+      save(data as CatalogueRow);
+    } catch (error) {
+      toast.error(problemMessage(error, t("failed")));
+    } finally {
+      setBusy(null);
+    }
+  }
+  const reorder = (ids: string[]) =>
+    run(
+      "order",
+      () =>
+        guarded(def, row.id, (headers) =>
+          api.PUT(`${def.path}/{id}/images/order`, {
+            params: { path: { id: row.id } },
+            body: { imageIds: ids },
+            headers,
+          }),
+        ) as Promise<{ data?: unknown }>,
+    );
+  const move = (from: number, to: number) => {
+    if (to < 0 || to >= images.length || from === to) return;
+    const ids = images.map((image) => image.id);
+    const [id] = ids.splice(from, 1);
+    ids.splice(to, 0, id!);
+    void reorder(ids);
+  };
+  const remove = (ids: string[]) =>
+    run("remove", async () => {
+      let data: unknown;
+      for (const imageId of ids)
+        ({ data } = (await guarded(def, row.id, (headers) =>
+          api.DELETE(`${def.path}/{id}/images/{imageId}`, { params: { path: { id: row.id, imageId } }, headers }),
+        )) as { data?: unknown });
+      return { data };
+    });
+
+  const renders = images.filter((image) => imageSource(image) === "ai-render");
+  const hasPhotograph = images.some((image) => imageSource(image) === "getpack");
+
   return (
     <FormDialog
       size="lg"
@@ -281,69 +351,130 @@ function ImagesDialog({ def, row, onClose, onDone }: DialogProps) {
       onClose={onClose}
       onSubmit={async () => undefined}
     >
-      <ul className="flex flex-col gap-2">
-        {images
-          .slice()
-          .sort((a, b) => a.sort - b.sort)
-          .map((image, index) => (
-            <li key={image.id} className="border-border flex items-center gap-2 rounded-md border p-2 text-sm">
-              <span className="text-muted w-8 tabular-nums">{index + 1}</span>
-              <FileButton size="sm" variant="ghost" iconStart="images" fileId={image.fileId}>
-                {t("images.open")}
-              </FileButton>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="ms-auto"
-                onClick={async () => {
-                  try {
-                    const { data } = (await guarded(def, row.id, (headers) =>
-                      loose(adminBrowserApis().contract).DELETE(`${def.path}/{id}/images/{imageId}`, {
-                        params: { path: { id: row.id, imageId: image.id } },
-                        headers,
-                      }),
-                    )) as { data?: unknown };
-                    save(data as CatalogueRow);
-                  } catch (error) {
-                    toast.error(problemMessage(error, t("failed")));
-                  }
-                }}
-              >
-                {t("images.remove")}
-              </Button>
+      {hasPhotograph && renders.length > 0 ? (
+        // A real photograph is in: the renders it was meant to replace are still in the gallery and
+        // keep the storefront's "AI render" note on — say so, with the one action that clears it.
+        <div className="border-warning/40 bg-warning-subtle flex flex-wrap items-center gap-3 rounded-md border p-3 text-sm">
+          <Icon name="sparkles" size={18} aria-hidden="true" className="shrink-0" />
+          <p className="min-w-0 flex-1">{t("images.rendersLeft", { count: renders.length })}</p>
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={busy === "remove"}
+            disabled={busy !== null && busy !== "remove"}
+            onClick={() => void remove(renders.map((image) => image.id))}
+          >
+            {t("images.removeRenders", { count: renders.length })}
+          </Button>
+        </div>
+      ) : null}
+
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-busy={busy === "order" || undefined}>
+        {images.map((image, index) => {
+          const source = imageSource(image);
+          const label = t("images.photoNo", { no: index + 1 });
+          return (
+            <li
+              key={image.id}
+              draggable={busy === null}
+              onDragStart={(event) => {
+                setDragging(image.id);
+                event.dataTransfer.effectAllowed = "move";
+              }}
+              onDragEnd={() => setDragging(null)}
+              onDragOver={(event) => {
+                if (dragging && dragging !== image.id) event.preventDefault();
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                if (!dragging) return;
+                const from = images.findIndex((candidate) => candidate.id === dragging);
+                setDragging(null);
+                move(from, index);
+              }}
+              className={cn(
+                "border-border bg-surface flex flex-col overflow-hidden rounded-md border",
+                dragging === image.id && "opacity-50",
+                index === 0 && "ring-primary ring-2",
+              )}
+            >
+              <div className="relative">
+                <FileImage fileId={image.fileId} alt={label} className="aspect-square w-full" />
+                <div className="absolute inset-x-2 top-2 flex flex-wrap gap-1">
+                  {index === 0 ? <Badge tone="primary">{t("images.cover")}</Badge> : null}
+                  {source === "getpack" ? (
+                    <Badge tone="success">{t("images.sourcePhoto")}</Badge>
+                  ) : source === "ai-render" ? (
+                    <Badge tone="warning">{t("images.sourceRender")}</Badge>
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 p-1.5">
+                <IconButton
+                  name="arrow-left"
+                  label={t("images.moveEarlier", { no: index + 1 })}
+                  size="sm"
+                  variant="ghost"
+                  disabled={index === 0 || busy !== null}
+                  onClick={() => move(index, index - 1)}
+                />
+                <IconButton
+                  name="arrow-right"
+                  label={t("images.moveLater", { no: index + 1 })}
+                  size="sm"
+                  variant="ghost"
+                  disabled={index === images.length - 1 || busy !== null}
+                  onClick={() => move(index, index + 1)}
+                />
+                {index > 0 ? (
+                  <Button size="sm" variant="ghost" disabled={busy !== null} onClick={() => move(index, 0)}>
+                    {t("images.makeCover")}
+                  </Button>
+                ) : null}
+                <span className="ms-auto flex items-center">
+                  <FileButton size="sm" variant="ghost" iconStart="external" fileId={image.fileId}>
+                    <span className="sr-only">{t("images.open")}</span>
+                  </FileButton>
+                  <IconButton
+                    name="trash"
+                    label={t("images.removeNo", { no: index + 1 })}
+                    size="sm"
+                    variant="ghost"
+                    disabled={busy !== null}
+                    onClick={() => void remove([image.id])}
+                  />
+                </span>
+              </div>
             </li>
-          ))}
-        {images.length === 0 ? <li className="text-muted text-sm">{t("images.none")}</li> : null}
+          );
+        })}
+        {images.length === 0 ? <li className="text-muted col-span-full text-sm">{t("images.none")}</li> : null}
       </ul>
+      <p className="text-muted text-xs">{t("images.orderHint")}</p>
       <FileDropzone
         accept="image/png,image/jpeg,image/webp"
         multiple
         maxBytes={20 * 1024 * 1024}
-        disabled={busy}
+        disabled={busy !== null}
         onFiles={async (files) => {
-          setBusy(true);
-          try {
-            let sort = Math.max(0, ...images.map((image) => image.sort));
+          // No `sort`: the API puts each upload first, so the last file dropped is the cover.
+          await run("upload", async () => {
+            let data: unknown;
             for (const file of files) {
               const uploaded = await uploadFile("admin", file, "image");
-              sort += 10;
-              const { data } = (await guarded(def, row.id, (headers) =>
-                loose(adminBrowserApis().contract).POST(`${def.path}/{id}/images`, {
+              ({ data } = (await guarded(def, row.id, (headers) =>
+                api.POST(`${def.path}/{id}/images`, {
                   params: { path: { id: row.id } },
-                  body: { fileId: uploaded.id, sort },
+                  body: { fileId: uploaded.id },
                   headers,
                 }),
-              )) as { data?: unknown };
-              save(data as CatalogueRow);
+              )) as { data?: unknown });
             }
-          } catch (error) {
-            toast.error(problemMessage(error, t("failed")));
-          } finally {
-            setBusy(false);
-          }
+            return { data };
+          });
         }}
         labels={{
-          prompt: busy ? t("images.uploading") : t("images.drop"),
+          prompt: busy === "upload" ? t("images.uploading") : t("images.drop"),
           browse: t("images.browse"),
           tooLarge: (file) => t("images.tooLarge", { name: file }),
           wrongType: (file) => t("images.wrongType", { name: file }),
