@@ -10,7 +10,6 @@ import { stockQuoteBody, useAddStockToCart } from "@/features/customer/catalog/s
 import { useFormat } from "@/features/shared/format/useFormat";
 import { browserApi } from "@/lib/api/browser";
 import { Link, useRouter } from "@/i18n/navigation";
-import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { ProductCard } from "@/ui/components/ProductCard";
 import { cn } from "@/ui/lib/cn";
@@ -68,7 +67,8 @@ export function StockShelf({
   const [added, setAdded] = useState<ReadonlySet<string>>(new Set());
   const [pending, setPending] = useState<ShelfItem | null>(null);
   const format = useFormat();
-  const shown = (type ? items.filter((item) => item.type === type) : items).slice(0, 8);
+  // Two full rows: eight at four columns, ten at five, twelve at six (the extra ones only from `lg` / `xl`).
+  const shown = (type ? items.filter((item) => item.type === type) : items).slice(0, 12);
   // What each card on show costs at its minimum — the API's price, as on the product's page.
   const prices = useQueries({
     queries: shown.map((item) => ({
@@ -128,7 +128,7 @@ export function StockShelf({
       {/* A phone swipes one row; wider screens see the shelf as a grid. */}
       <ul
         aria-live="polite"
-        className="-mx-5 grid snap-x snap-mandatory auto-cols-[72%] grid-flow-col gap-4 overflow-x-auto px-5 pb-2 sm:auto-cols-[44%] md:mx-0 md:grid-flow-row md:grid-cols-4 md:overflow-visible md:px-0"
+        className="-mx-5 grid snap-x snap-mandatory auto-cols-[46%] grid-flow-col gap-3 overflow-x-auto px-5 pb-2 sm:auto-cols-[31%] md:mx-0 md:grid-flow-row md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-5 xl:grid-cols-6"
       >
         {shown.map((item, index) => {
           const inCart = added.has(item.id);
@@ -137,7 +137,7 @@ export function StockShelf({
             <ProductCard
               key={item.id}
               as="li"
-              className="snap-start"
+              className={cn("snap-start", index >= 8 && (index >= 10 ? "md:hidden xl:flex" : "md:hidden lg:flex"))}
               aspect="square"
               title={<Link href={item.href}>{item.name}</Link>}
               topLine={item.type}
@@ -160,7 +160,6 @@ export function StockShelf({
                 ) : undefined
               }
               meta={step?.grossAmount ? undefined : item.minimum}
-              badges={<Badge tone="primary">{t("ready")}</Badge>}
               actions={
                 !instant ? (
                   <Button asChild size="sm" variant="secondary" iconStart="chat" className="w-full">

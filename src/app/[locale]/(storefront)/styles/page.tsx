@@ -190,38 +190,53 @@ export default async function StylesPage({
             </Button>
           </form>
 
-          {SIDEBAR.map((facet) => {
-            const values = list.facets[facet];
-            if (values.length === 0) return null;
-            return (
-              <section key={facet} aria-labelledby={`facet-${facet}`}>
-                <h2 id={`facet-${facet}`} className="mb-2 text-sm font-medium">
-                  {t(`facets.${facet}`)}
-                </h2>
-                <ul className="flex flex-col gap-0.5">
-                  {values.slice(0, 12).map(({ value, count }) => {
-                    const on = query[facet] === value;
-                    return (
-                      <li key={value}>
-                        <Link
-                          href={listHref(query, { [facet]: on ? undefined : value })}
-                          aria-current={on ? "true" : undefined}
-                          rel="nofollow"
-                          className={cn(
-                            "focus-visible:ring-focus-ring flex justify-between gap-2 rounded-md px-2 py-1 text-sm outline-none focus-visible:ring-2",
-                            on ? "bg-primary-subtle text-primary-subtle-fg font-medium" : "hover:bg-bg-subtle",
-                          )}
-                        >
-                          <span>{facetLabel(words, facet, value)}</span>
-                          <span className="text-muted tabular-nums">{count}</span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            );
-          })}
+          {/* On a phone the facets fold away behind one toggle, so the cards come first (CSS only). */}
+          <input id="style-filters" type="checkbox" className="peer sr-only" />
+          <label
+            htmlFor="style-filters"
+            className="border-border rounded-control -mt-3 flex items-center justify-between border px-3 py-2 text-sm font-medium peer-focus-visible:ring-2 md:hidden"
+          >
+            {t("list.filters")}
+            {SIDEBAR.some((facet) => query[facet]) ? (
+              <span className="text-primary tabular-nums">
+                {t("list.count", { count: SIDEBAR.filter((facet) => query[facet]).length })}
+              </span>
+            ) : null}
+          </label>
+          <div className="hidden min-w-0 flex-col gap-6 peer-checked:flex md:flex">
+            {SIDEBAR.map((facet) => {
+              const values = list.facets[facet];
+              if (values.length === 0) return null;
+              return (
+                <section key={facet} aria-labelledby={`facet-${facet}`}>
+                  <h2 id={`facet-${facet}`} className="mb-2 text-sm font-medium">
+                    {t(`facets.${facet}`)}
+                  </h2>
+                  <ul className="flex flex-col gap-0.5">
+                    {values.slice(0, 12).map(({ value, count }) => {
+                      const on = query[facet] === value;
+                      return (
+                        <li key={value}>
+                          <Link
+                            href={listHref(query, { [facet]: on ? undefined : value })}
+                            aria-current={on ? "true" : undefined}
+                            rel="nofollow"
+                            className={cn(
+                              "focus-visible:ring-focus-ring flex justify-between gap-2 rounded-md px-2 py-1 text-sm outline-none focus-visible:ring-2",
+                              on ? "bg-primary-subtle text-primary-subtle-fg font-medium" : "hover:bg-bg-subtle",
+                            )}
+                          >
+                            <span>{facetLabel(words, facet, value)}</span>
+                            <span className="text-muted tabular-nums">{count}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              );
+            })}
+          </div>
         </aside>
 
         <div className="flex min-w-0 flex-col gap-4">
