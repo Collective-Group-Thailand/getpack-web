@@ -11,6 +11,11 @@ export interface VirtualGridProps<T> {
   renderItem: (item: T, index: number) => React.ReactNode;
   /** The narrowest a column may be, in CSS pixels: the grid fits as many as the width allows. */
   minColumnWidth: number;
+  /**
+   * Columns kept however narrow the width (a phone shows two compact cards side by side rather
+   * than one card the width of the screen). Default 1.
+   */
+  minColumns?: number;
   /** Gap between cells, in CSS pixels (the grid's `gap`). */
   gap?: number;
   /** A row's height before one has been measured. */
@@ -46,6 +51,7 @@ export function VirtualGrid<T>({
   itemKey,
   renderItem,
   minColumnWidth,
+  minColumns = 1,
   gap = 16,
   estimatedRowHeight,
   initialItems = 12,
@@ -65,7 +71,7 @@ export function VirtualGrid<T>({
     if (!el) return;
     const observer = new ResizeObserver(() => {
       const width = el.clientWidth;
-      setColumns(Math.max(1, Math.floor((width + gap) / (minColumnWidth + gap))));
+      setColumns(Math.max(minColumns, Math.floor((width + gap) / (minColumnWidth + gap))));
       // Before the switch, the auto-fill grid's first cell gives the row height; after it, the first row.
       const sample = rowRef.current ?? (el.firstElementChild as HTMLElement | null);
       if (sample) setRowHeight(sample.getBoundingClientRect().height || estimatedRowHeight);
@@ -73,7 +79,7 @@ export function VirtualGrid<T>({
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [gap, minColumnWidth, estimatedRowHeight]);
+  }, [gap, minColumnWidth, minColumns, estimatedRowHeight]);
 
   const rows = Math.ceil(items.length / columns);
   const stride = rowHeight + gap;
@@ -127,7 +133,10 @@ export function VirtualGrid<T>({
         role="list"
         aria-label={label}
         className={cn("grid", className)}
-        style={{ gridTemplateColumns: `repeat(auto-fill, minmax(min(${minColumnWidth}px, 100%), 1fr))`, gap }}
+        style={{
+          gridTemplateColumns: `repeat(auto-fill, minmax(min(${minColumnWidth}px, calc((100% - ${gap * (minColumns - 1)}px) / ${minColumns})), 1fr))`,
+          gap,
+        }}
       >
         {items.slice(0, initialItems).map(cell)}
       </div>

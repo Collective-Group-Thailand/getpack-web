@@ -60,8 +60,10 @@ export function StyleResults({ initial, nextCursor, query, signedIn, signInHref 
         items={items}
         itemKey={(item) => item.code}
         label={t("grid")}
-        minColumnWidth={230}
-        estimatedRowHeight={330}
+        minColumnWidth={190}
+        minColumns={2}
+        gap={14}
+        estimatedRowHeight={290}
         initialItems={12}
         renderItem={(item) =>
           "node" in item ? item.node : <StyleCardView style={item.style} signedIn={signedIn} signInHref={signInHref} />

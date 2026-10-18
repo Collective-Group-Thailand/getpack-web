@@ -60,8 +60,10 @@ export function VariantResults({
         items={items}
         itemKey={(item) => item.code}
         label={t("variantGrid")}
-        minColumnWidth={210}
-        estimatedRowHeight={300}
+        minColumnWidth={190}
+        minColumns={2}
+        gap={14}
+        estimatedRowHeight={280}
         initialItems={12}
         renderItem={(item) => ("node" in item ? item.node : <VariantCardView card={item.card} />)}
       />

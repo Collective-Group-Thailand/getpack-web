@@ -8,8 +8,8 @@ import { illustrationOf } from "./illustration";
 import { previewSrc, styleHref } from "./paths";
 import { topicsOf } from "./topics";
 
-/** How many option chips a card shows before "+N". */
-const CHIPS = 3;
+/** How many option chips a card shows before "+N" — one line, so every card in a row keeps one height. */
+const CHIPS = 2;
 
 /** A card's words, prepared by whoever renders it (the server for the first page, the browser after). */
 export interface StyleCardWords {
@@ -84,14 +84,16 @@ export function StyleCardFace({
       }
       details={
         words.chips.length ? (
-          <ul className="flex flex-wrap gap-1" aria-label={words.variants}>
+          <ul className="flex flex-nowrap gap-1 overflow-hidden" aria-label={words.variants}>
             {words.chips.map((chip) => (
-              <li key={chip}>
-                <Badge size="sm">{chip}</Badge>
+              <li key={chip} className="min-w-0">
+                <Badge size="sm" className="max-w-full truncate">
+                  {chip}
+                </Badge>
               </li>
             ))}
             {words.moreChips ? (
-              <li>
+              <li className="shrink-0">
                 <Badge size="sm" className="tabular-nums">
                   {words.moreChips}
                 </Badge>
