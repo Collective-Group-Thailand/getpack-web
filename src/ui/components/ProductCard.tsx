@@ -41,7 +41,10 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   aspect?: "landscape" | "square";
   /** Badges over the image's top-left corner ("ราคาทันที", "ขอใบเสนอราคา"). */
   badges?: React.ReactNode;
-  /** A campaign badge, top-right, apart from the mode badge (UX audit: "badge โปรโมชันมุมขวาบน"). */
+  /**
+   * A campaign badge, top-right, apart from the mode badge (UX audit: "badge โปรโมชันมุมขวาบน") —
+   * on a narrow card (a phone's two columns) it drops to the picture's foot, so the two never collide.
+   */
   promoBadge?: React.ReactNode;
   /** Revealed on hover and focus at the foot of the picture ("ดูราคา"); the whole card is the link. */
   hoverCta?: React.ReactNode;
@@ -90,7 +93,9 @@ export function ProductCard({
     >
       <div
         className={cn(
-          "relative overflow-hidden",
+          // `shrink-0`: in a row of fixed height (a virtual grid) a card with more text must not
+          // squeeze its picture — every plate in a row stays the same size.
+          "@container relative shrink-0 overflow-hidden",
           aspect === "square" ? "aspect-square" : "aspect-[4/3]",
           image
             ? "bg-bg-subtle"
@@ -128,9 +133,13 @@ export function ProductCard({
             )}
           </div>
         )}
-        {badges ? <div className="absolute start-3 top-3 flex flex-wrap gap-1">{badges}</div> : null}
+        {badges ? (
+          <div className="absolute start-2.5 top-2.5 flex flex-wrap gap-1 [&>*]:h-5 [&>*]:px-2 [&>*]:text-[0.6875rem] [&>*]:font-medium">
+            {badges}
+          </div>
+        ) : null}
         {promoBadge ? (
-          <div className="absolute end-3 top-3 flex max-w-[55%] flex-wrap justify-end gap-1 [&>*]:max-w-full">
+          <div className="absolute end-2.5 top-2.5 flex max-w-[55%] flex-wrap justify-end gap-1 @max-[13rem]:top-auto @max-[13rem]:bottom-2.5 @max-[13rem]:max-w-[80%] [&>*]:h-5 [&>*]:max-w-full [&>*]:px-2 [&>*]:text-[0.6875rem] [&>*]:font-medium">
             {promoBadge}
           </div>
         ) : null}
@@ -146,15 +155,23 @@ export function ProductCard({
           </div>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-1 p-4 md:px-5 md:pt-4.5 md:pb-5">
-        {topLine ? <p className="text-muted text-xs">{topLine}</p> : null}
-        <Heading className="text-[1.0625rem] leading-snug font-bold [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
+      <div className="flex flex-1 flex-col gap-0.5 p-3">
+        {topLine ? <p className="text-muted truncate text-[0.6875rem] tracking-wide">{topLine}</p> : null}
+        <Heading className="line-clamp-2 text-sm leading-snug font-semibold md:text-[0.9375rem] [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
           {title}
         </Heading>
-        {price ? <p className="mt-auto pt-2 text-base tabular-nums">{price}</p> : null}
-        {meta ? <p className="text-muted text-xs">{meta}</p> : null}
         {details ? <div className="pt-1">{details}</div> : null}
-        {actions ? <div className="relative z-10 mt-2 flex flex-wrap items-center gap-1">{actions}</div> : null}
+        {/* Price, the quiet line and the actions sit at the card's foot, so across a row they line
+            up whatever the title's length (one line or two). */}
+        {price || meta || actions ? (
+          <div className="mt-auto flex flex-col gap-0.5 pt-2">
+            {price ? <p className="text-sm tabular-nums">{price}</p> : null}
+            {meta ? <p className="text-muted line-clamp-2 text-xs">{meta}</p> : null}
+            {actions ? (
+              <div className="relative z-10 -ms-1.5 mt-1 flex flex-wrap items-center gap-1">{actions}</div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </Component>
   );

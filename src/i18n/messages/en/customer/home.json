@@ -42,7 +42,6 @@
     "all": "See all {count} ready-to-ship items",
     "filter": "Ready-to-ship types",
     "allTypes": "All",
-    "ready": "Ready to ship",
     "price": "{price} / {unit}",
     "add": "Add {quantity} {unit} to cart",
     "inCart": "In your cart",
