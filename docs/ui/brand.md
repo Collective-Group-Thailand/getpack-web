@@ -72,7 +72,9 @@ for anything outside the app; the proxy serves both on every host (`ROOT_ASSETS`
 (`og-image.tsx`) draws it from the same paths.
 
 The favicon / app icon (`src/app/icon.svg`) is the mark alone: the white "g" with its green notch on a dark-green
-`#0B3F2F` tile. Still to come from the brand kit: the master vector file (replace the traced paths), the favicon
+`#0B3F2F` tile. The same tile as files: `src/app/favicon.ico` (16, 32 and 48 px, each drawn from the
+vector at its size, for browsers and tools that only ask for `/favicon.ico`) and `src/app/apple-icon.png` (180 px,
+square corners — iOS rounds them — for "Add to Home Screen"). Still to come from the brand kit: the master vector file (replace the traced paths), the favicon
 set and the print/PDF variants.
 
 ## Typography
