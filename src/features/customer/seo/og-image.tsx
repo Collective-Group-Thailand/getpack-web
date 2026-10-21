@@ -4,6 +4,15 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 import { BRAND_COMPANY, BRAND_NAME } from "@/ui/brand";
+import {
+  LOGO_COLORS,
+  LOGO_DOT,
+  LOGO_G_PATH,
+  LOGO_INK_PATH,
+  LOGO_NOTCH_PATH,
+  LOGO_TRACE_TRANSFORM,
+  LOGO_VIEWBOX,
+} from "@/ui/brand/logo-paths";
 
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 
@@ -82,23 +91,20 @@ export async function renderOgCard(card: OgCard): Promise<ImageResponse> {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 16,
-              background: PRIMARY,
-              color: SURFACE,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 34,
-              fontWeight: 700,
-            }}
+          {/* The logo, at the same colours as on the site's light page. */}
+          <svg
+            viewBox={`${LOGO_VIEWBOX.x} ${LOGO_VIEWBOX.y} ${LOGO_VIEWBOX.width} ${LOGO_VIEWBOX.height}`}
+            width={Math.round((52 * LOGO_VIEWBOX.width) / LOGO_VIEWBOX.height)}
+            height={52}
+            aria-label={BRAND_NAME}
           >
-            {BRAND_NAME.charAt(0)}
-          </div>
-          <div style={{ fontSize: 40, fontWeight: 700, letterSpacing: -1 }}>{BRAND_NAME}</div>
+            <g transform={LOGO_TRACE_TRANSFORM}>
+              <path fill={LOGO_COLORS.ink} d={LOGO_INK_PATH} />
+              <path fill={LOGO_COLORS.g} d={LOGO_G_PATH} />
+            </g>
+            <path fill={LOGO_COLORS.notch} d={LOGO_NOTCH_PATH} />
+            <circle fill={LOGO_COLORS.dot} cx={LOGO_DOT.cx} cy={LOGO_DOT.cy} r={LOGO_DOT.r} />
+          </svg>
           {card.eyebrow ? (
             <div
               style={{

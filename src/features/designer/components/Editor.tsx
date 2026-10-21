@@ -737,7 +737,7 @@ export default function Editor({
         <div className="bg-canvas text-fg flex h-dvh flex-col">
           <header className="bg-neutral text-neutral-fg flex h-14 shrink-0 items-center gap-2 px-3">
             <NextLink href={nav.home} aria-label={tCommon("nav.home")} className="flex shrink-0 items-center gap-2">
-              <BrandLogo height={30} />
+              <BrandLogo height={22} tone="mono" />
             </NextLink>
 
             <input

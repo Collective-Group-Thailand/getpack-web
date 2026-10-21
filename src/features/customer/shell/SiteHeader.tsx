@@ -198,11 +198,11 @@ export async function SiteHeader() {
                 </ul>
               </section>
             </MobileProductsMenu>
-            <Brand href="/" height={40} priority className="hidden lg:flex" />
+            <Brand href="/" height={28} className="hidden lg:flex" />
           </div>
 
           <div className="flex items-center justify-center">
-            <Brand href="/" height={36} priority className="lg:hidden" />
+            <Brand href="/" height={24} className="lg:hidden" />
             <nav aria-label={t("nav.primary")} className="hidden items-center justify-center gap-6 lg:flex xl:gap-9">
               {links.map(([href, label]) => (
                 <Link key={href} href={href} className={navLink}>

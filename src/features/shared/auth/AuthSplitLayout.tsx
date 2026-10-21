@@ -94,11 +94,8 @@ export function AuthSplitLayout({
 }
 
 function BrandLockup() {
-  return (
-    // On the green panel the oval melts into it and the cream wordmark stands alone; on the dark
-    // panel the whole oval shows. Either way the logo is used as supplied.
-    <BrandLogo height={44} />
-  );
+  // The one-colour logo in the panel's text colour: the greens would sink into the green panel.
+  return <BrandLogo height={32} tone="mono" />;
 }
 
 /** A flat carton's outline with its fold lines dashed — getpack's own drawing, decorative. */

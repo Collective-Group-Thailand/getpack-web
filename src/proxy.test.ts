@@ -126,6 +126,7 @@ describe("root assets", () => {
     for (const host of ["getpack.co", "admin.getpack.co", "partner.getpack.co"]) {
       expect(rewriteTarget(await proxy(request(host, "/icon.svg")))).toBeNull();
       expect(rewriteTarget(await proxy(request(host, "/brand/getpack-logo.png")))).toBeNull();
+      expect(rewriteTarget(await proxy(request(host, "/brand/getpack-logo.svg")))).toBeNull();
     }
   });
 });
