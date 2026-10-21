@@ -26,6 +26,22 @@
     color-scheme: dark;
   }
 
+  /*
+   * The logo's letters and "g" (src/ui/brand/Brand.tsx): the supplied near-black and dark green on
+   * light pages, the page's foreground on the dark theme, where those two would vanish.
+   */
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .brand-logo {
+      --logo-ink: var(--color-fg);
+      --logo-g: var(--color-fg);
+    }
+  }
+
+  html[data-theme="dark"] .brand-logo {
+    --logo-ink: var(--color-fg);
+    --logo-g: var(--color-fg);
+  }
+
   body {
     background-color: var(--color-bg);
     color: var(--color-fg);

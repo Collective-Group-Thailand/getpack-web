@@ -47,7 +47,7 @@ export async function SharedDesign({ shared, token }: { shared: SharedDesignData
     <div className="bg-canvas text-fg flex min-h-dvh flex-col">
       <header className="bg-neutral text-neutral-fg flex h-14 items-center gap-3 px-4">
         <Link href="/" aria-label={t("home")}>
-          <BrandLogo height={30} />
+          <BrandLogo height={22} tone="mono" />
         </Link>
         <span className="text-sm">{t(`badges.${shared.scope}`)}</span>
       </header>

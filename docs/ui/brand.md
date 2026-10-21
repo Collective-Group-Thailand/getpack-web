@@ -55,16 +55,25 @@ Usage rules (D-180, linted where a rule can see them):
 
 ## Logo
 
-The logo is the **getpack** wordmark on a green oval — `public/brand/getpack-logo.png` (478 × 240, transparent
-outside the oval), supplied by the product owner on 2026-10-16. Its green is `primary-600` `#0F5F4E`, its letters
-`paper-50` `#F6F3EE`. `src/ui/brand/Brand.tsx`: `BrandLogo` (the image, `alt` = `BRAND_NAME`, height in px, width
-2:1) and `Brand` (the logo as the link home). Sizes in use: storefront header 40, admin and partner bars 32, the
-designer bars 30, the footer 44, sign-in panel 44. The proxy serves the file
-on every host (`ROOT_ASSETS`).
+The logo is the **getpack.** wordmark, supplied by the product owner on 2026-10-21 (it replaces the green-oval
+logo of 2026-10-16): letters `#262626`, a dark-green "g" `#0B3F2F` with a bright-green L-shaped notch `#12AB21` on
+its top right, and a green full stop `#008F2C`, on white. The vector data is `src/ui/brand/logo-paths.ts`, traced
+from the supplied 348 × 204 px image (the notch and the full stop redrawn as exact shapes); box 302 × 71, about
+4.25 : 1.
 
-The favicon / app icon (`src/app/icon.svg`) is the square companion mark: a lower-case g with the crease line, in the
-logo's green and cream. Still to come from the brand kit: the vector logo (swap `LOGO.src` for the SVG), the
-favicon set and the print/PDF variants.
+`src/ui/brand/Brand.tsx`: `BrandLogo` draws it inline (`role="img"`, label `BRAND_NAME`, height in px) and `Brand`
+is the logo as the link home. Inline so it follows the theme: on the dark theme the letters and the g turn to the
+page foreground (`.brand-logo` in `src/ui/styles/base.css`); the two greens never change. `tone="mono"` is the
+one-colour logo (every part in the surrounding text colour) for coloured surfaces — the sign-in panel and the
+designer bars, where the greens would sink into the background. Sizes in use:
+storefront header 28 (24 on a phone), admin and partner bars 24, footer 30, sign-in panel 32, designer bars 22,
+not-found pages 32. `public/brand/getpack-logo.svg` and `.png` (1021 × 240, transparent) are the same logo as files
+for anything outside the app; the proxy serves both on every host (`ROOT_ASSETS`). The share card
+(`og-image.tsx`) draws it from the same paths.
+
+The favicon / app icon (`src/app/icon.svg`) is the mark alone: the white "g" with its green notch on a dark-green
+`#0B3F2F` tile. Still to come from the brand kit: the master vector file (replace the traced paths), the favicon
+set and the print/PDF variants.
 
 ## Typography
 

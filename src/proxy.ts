@@ -58,7 +58,8 @@ const ROOT_ASSETS = new Set([
   // it must not be rewritten onto a zone segment or the browser refuses to register it.
   "/sw.js",
   "/manifest.webmanifest",
-  // The logo (`src/ui/brand/Brand.tsx`) is in every zone's header.
+  // The logo as files (`src/ui/brand/Brand.tsx` draws it inline; these are for emails and documents).
+  "/brand/getpack-logo.svg",
   "/brand/getpack-logo.png",
 ]);
 

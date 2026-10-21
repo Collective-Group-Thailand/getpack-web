@@ -80,7 +80,7 @@ export async function SiteFooter() {
     <footer className="max-w-nav mx-auto mt-16 w-full px-5 pb-10 md:px-8 xl:px-12">
       <div className="border-border grid gap-10 border-t pt-9 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-12">
         <div>
-          <BrandLogo height={44} />
+          <BrandLogo height={30} />
           <p className="text-muted mt-2.5 max-w-[26em] text-[13px] leading-relaxed">
             {t("tagline")} {t("by", { company: BRAND_COMPANY })}
           </p>
