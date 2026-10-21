@@ -54,6 +54,7 @@ const intlMiddleware = createMiddleware(routing);
 const ROOT_ASSETS = new Set([
   "/favicon.ico",
   "/icon.svg",
+  "/apple-icon.png",
   // The service worker must be served from the root or its scope is not the whole origin, and
   // it must not be rewritten onto a zone segment or the browser refuses to register it.
   "/sw.js",
