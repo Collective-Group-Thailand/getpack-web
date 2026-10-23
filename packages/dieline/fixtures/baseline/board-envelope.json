@@ -1,13 +1,13 @@
 {
   "definition": "0fef5e9dc063fe",
   "c6 · board-350": {
-    "build": "060b5ddad534e2",
+    "build": "18002eff89cbef",
     "hinges": "0563c397937051",
     "validate": "15202279b28c9e",
     "closed": "1c6f0844aa0ab4"
   },
   "c6 · board-450": {
-    "build": "060b5ddad534e2",
+    "build": "18002eff89cbef",
     "hinges": "0563c397937051",
     "validate": "15202279b28c9e",
     "closed": "1c6f0844aa0ab4"
@@ -25,37 +25,37 @@
     "closed": "1a3f140460b567"
   },
   "c5 · board-350": {
-    "build": "03d28676c87558",
+    "build": "11237c568493e2",
     "hinges": "0563c397937051",
     "validate": "15202279b28c9e",
     "closed": "1d1c118adefa19"
   },
   "c5 · board-450": {
-    "build": "03d28676c87558",
+    "build": "11237c568493e2",
     "hinges": "0563c397937051",
     "validate": "15202279b28c9e",
     "closed": "1d1c118adefa19"
   },
   "c6 · board-350 · length=min": {
-    "build": "1416391bdbaae7",
+    "build": "0cf1398ba21550",
     "hinges": "0563c397937051",
     "validate": "15202279b28c9e",
     "closed": "0944ae3bce787c"
   },
   "c6 · board-350 · length=max": {
-    "build": "13897f9bda0102",
+    "build": "1a0a4d37c4cd14",
     "hinges": "0563c397937051",
     "validate": "15202279b28c9e",
     "closed": "0779ada7ff119e"
   },
   "c6 · board-350 · length<min": {
-    "build": "03d4a30d33ba38",
+    "build": "15d2ac8d4774fb",
     "hinges": "0563c397937051",
     "validate": "0991d0b539713d",
     "closed": "198cd05542fd20"
   },
   "c6 · board-350 · length>max": {
-    "build": "06963f02a3807a",
+    "build": "07d559856e5b12",
     "hinges": "0563c397937051",
     "validate": "0342ab00bc9bf5",
     "closed": "0fd13bbdf17201"
@@ -85,13 +85,13 @@
     "closed": "0d0dd7442cdc5c"
   },
   "c6 · board-350 · lock=friction": {
-    "build": "060b5ddad534e2",
+    "build": "18002eff89cbef",
     "hinges": "0563c397937051",
     "validate": "15202279b28c9e",
     "closed": "1c6f0844aa0ab4"
   },
   "c6 · board-350 · lock=slit": {
-    "build": "112baf0a055137",
+    "build": "0539c920635b97",
     "hinges": "0563c397937051",
     "validate": "15202279b28c9e",
     "closed": "1c6f0844aa0ab4"

@@ -1,61 +1,61 @@
 {
   "definition": "0e6a5c3c2fd586",
   "d30 · label-film": {
-    "build": "064bb7f4f68ff9",
+    "build": "0d2a2191e03d9d",
     "hinges": "15e0da69fcb93a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "d30 · board-350": {
-    "build": "064bb7f4f68ff9",
+    "build": "0d2a2191e03d9d",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "d50 · label-film": {
-    "build": "02e64876cbc234",
+    "build": "01fc62189a6a89",
     "hinges": "15e0da69fcb93a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "d50 · board-350": {
-    "build": "02e64876cbc234",
+    "build": "01fc62189a6a89",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "d80 · label-film": {
-    "build": "0815139fb9a265",
+    "build": "1baa651352c0d1",
     "hinges": "15e0da69fcb93a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "d80 · board-350": {
-    "build": "0815139fb9a265",
+    "build": "1baa651352c0d1",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "d30 · label-film · diameter=min": {
-    "build": "0e0e75f8a05be4",
+    "build": "0bc115e21559cb",
     "hinges": "15e0da69fcb93a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "d30 · label-film · diameter=max": {
-    "build": "033bc97f64a375",
+    "build": "057ae5eee38be1",
     "hinges": "15e0da69fcb93a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "d30 · label-film · diameter<min": {
-    "build": "12ecd975589201",
+    "build": "05a5c1290e02e2",
     "hinges": "15e0da69fcb93a",
     "validate": "1521b7792e280f",
     "closed": "15e0da69fcb93a"
   },
   "d30 · label-film · diameter>max": {
-    "build": "0103af88f1bf5e",
+    "build": "134e9f8f01bfd1",
     "hinges": "15e0da69fcb93a",
     "validate": "1d44afcdeca0cf",
     "closed": "15e0da69fcb93a"

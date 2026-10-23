@@ -18,12 +18,18 @@ import type { BoxStyleDef, MaterialSpec, ParamValues } from "./types";
  * A deliberate change is accepted with `vitest -u` and explained in PROGRESS.
  */
 
-/** Object keys sorted, arrays kept in order: key order is not behaviour, array order is. */
+/**
+ * Object keys sorted, arrays kept in order: key order is not behaviour, array order is. Numbers
+ * are rounded to 1e-6 mm: the last bits of a trig result differ between machines, a micrometre
+ * of geometry does not.
+ */
 function canonical(value: unknown): string {
   return JSON.stringify(value, (_k, v: unknown) =>
-    v && typeof v === "object" && !Array.isArray(v)
-      ? Object.fromEntries(Object.entries(v as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : 1)))
-      : v,
+    typeof v === "number"
+      ? Math.round(v * 1e6) / 1e6 || 0
+      : v && typeof v === "object" && !Array.isArray(v)
+        ? Object.fromEntries(Object.entries(v as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : 1)))
+        : v,
   );
 }
 

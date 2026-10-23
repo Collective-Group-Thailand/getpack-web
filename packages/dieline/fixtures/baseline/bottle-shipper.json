@@ -1,218 +1,218 @@
 {
   "definition": "009e448e4398de",
   "s · flute-e": {
-    "build": "1a6789180b4c7e",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "121df100a6ae2d",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-b": {
-    "build": "140d582ee66ec2",
+    "build": "148e9f0673997d",
     "hinges": "1fe5323c22f268",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-bc": {
-    "build": "18a73b190dcd53",
+    "build": "14508d8801df96",
     "hinges": "08717629ec315a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "m · flute-e": {
-    "build": "1b38a66c870421",
-    "hinges": "1d6291313bcbd8",
+    "build": "0ead3fec43e286",
+    "hinges": "18d57c5a431aa2",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "m · flute-b": {
-    "build": "0839f02faf52db",
-    "hinges": "0069a2b8968f9a",
+    "build": "00594ff9cf0d2d",
+    "hinges": "07071293dab654",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "m · flute-bc": {
-    "build": "12dd3adfeb8406",
-    "hinges": "15921c9871e867",
+    "build": "1ce37e84b4ad0a",
+    "hinges": "134b985d29e9a0",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "l · flute-e": {
-    "build": "0292142828c514",
-    "hinges": "1e9ed2e919bee3",
+    "build": "18ffb8236c988e",
+    "hinges": "0a9117d29e0bc6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "l · flute-b": {
-    "build": "14d41dcfb3750d",
-    "hinges": "1bb485e656e5bd",
+    "build": "15f65f1df4133a",
+    "hinges": "127d572b96f717",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "l · flute-bc": {
-    "build": "098f902f79b6e2",
-    "hinges": "14979cbb40e02d",
+    "build": "1ffd72a54fd042",
+    "hinges": "02b09f071b5386",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · length=min": {
-    "build": "16c0f91ef32af9",
-    "hinges": "128c33c789360b",
+    "build": "0c9b8b010ff1d7",
+    "hinges": "0b6ba3b306c391",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · length=max": {
-    "build": "001a323d731244",
-    "hinges": "122a724376cbc2",
+    "build": "1b2be0fdc8aeeb",
+    "hinges": "1b8070908a5cf6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · length<min": {
-    "build": "04d90ea3ae69c6",
-    "hinges": "1482431f418a69",
+    "build": "1a9bd25e281331",
+    "hinges": "07969302c19060",
     "validate": "1d59e5efb9b70f",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · length>max": {
-    "build": "01389078ac4554",
-    "hinges": "0519b04bc039fd",
+    "build": "015ef0d69e4321",
+    "hinges": "1c9536d9123773",
     "validate": "172fd4acb099a6",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · width=min": {
-    "build": "0ab996780ff7b9",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "0e1d5146af200e",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · width=max": {
-    "build": "1f72712bd1f192",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "17dec62aff6aa2",
+    "hinges": "06b44e78fda8f6",
     "validate": "11012829abcee7",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · width<min": {
-    "build": "1cea2c6a8bbe10",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "00a97f604eac29",
+    "hinges": "06b44e78fda8f6",
     "validate": "037e334237469a",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · width>max": {
-    "build": "1c978fc5477d32",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "0b03147068ee49",
+    "hinges": "06b44e78fda8f6",
     "validate": "1c9408b0d83315",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · height=min": {
-    "build": "0e7d6d95a3ffd7",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "0f6a0275895177",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · height=max": {
-    "build": "1ea1051a81110c",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "095663d1c3a6d7",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · height<min": {
-    "build": "00935a2ea112a6",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "1296b4a430c6fd",
+    "hinges": "06b44e78fda8f6",
     "validate": "07ed049500a1de",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · height>max": {
-    "build": "0b1930850dbcd8",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "182642976e8d34",
+    "hinges": "06b44e78fda8f6",
     "validate": "03a3717a152c4a",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · glueWidth=min": {
-    "build": "1b241bdeabae3b",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "169906ea86e9f0",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · glueWidth=max": {
-    "build": "0a6a88364bcecf",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "0d7f6996d2d106",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · glueWidth<min": {
-    "build": "1e07fdde7bd20f",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "07b1992f09af25",
+    "hinges": "06b44e78fda8f6",
     "validate": "1048c2ed5cf584",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · glueWidth>max": {
-    "build": "1fa28caaf808c6",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "0e40c3b4d1a055",
+    "hinges": "06b44e78fda8f6",
     "validate": "17e3d349f15997",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · glueSide=left": {
-    "build": "1a6789180b4c7e",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "121df100a6ae2d",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · glueSide=right": {
-    "build": "05affacd2ac557",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "0831bf8e748580",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · grain=across": {
-    "build": "1a6789180b4c7e",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "121df100a6ae2d",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · grain=along": {
-    "build": "1dd03963ec34af",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "0e2ae9a4fffcd5",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · partition=1x2": {
-    "build": "0be2430b2411e7",
-    "hinges": "0ef762e67fab19",
+    "build": "1022ef8bd9662f",
+    "hinges": "194771f686e815",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · partition=2x2": {
-    "build": "0cee8196531c1f",
-    "hinges": "18e1596f4fa283",
+    "build": "1149e4cc5029c2",
+    "hinges": "1f1150efb5cd5c",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · partition=2x3": {
-    "build": "1a6789180b4c7e",
-    "hinges": "1abe9fa0a3d5cc",
+    "build": "121df100a6ae2d",
+    "hinges": "06b44e78fda8f6",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · partition=3x3": {
-    "build": "0ddb867afe4cc3",
-    "hinges": "0d543894e389ad",
+    "build": "11546dba29370d",
+    "hinges": "076027e9c2f6de",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · partition=3x4": {
-    "build": "1738d44df722d6",
-    "hinges": "145c5019569bfb",
+    "build": "11c8f960270314",
+    "hinges": "17004af467f69d",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · partition=4x4": {
-    "build": "0d24c43d4d8c30",
-    "hinges": "1b6e58385f8581",
+    "build": "109297ffb260e7",
+    "hinges": "0a50bf9d8271c8",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "s · flute-e · partition=4x6": {
-    "build": "01fb31040360d1",
-    "hinges": "1402375fe1718f",
+    "build": "0317f4821622c6",
+    "hinges": "02c396ed3ee2d8",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   }

@@ -1,110 +1,110 @@
 {
   "definition": "09532744071c29",
   "16oz · board-350": {
-    "build": "1cc09588be17b9",
-    "hinges": "050f61bba600d1",
+    "build": "19b0c6653b0019",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "022b106d3ee9c1"
   },
   "16oz · board-450": {
-    "build": "1cc09588be17b9",
-    "hinges": "050f61bba600d1",
+    "build": "19b0c6653b0019",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "022b106d3ee9c1"
   },
   "26oz · board-350": {
-    "build": "04714fe64afe40",
-    "hinges": "10e0d4865153a2",
+    "build": "0db9f75aacb88a",
+    "hinges": "1bed766b41d7f0",
     "validate": "15202279b28c9e",
     "closed": "006c5eaa942382"
   },
   "26oz · board-450": {
-    "build": "04714fe64afe40",
-    "hinges": "10e0d4865153a2",
+    "build": "0db9f75aacb88a",
+    "hinges": "1bed766b41d7f0",
     "validate": "15202279b28c9e",
     "closed": "006c5eaa942382"
   },
   "32oz · board-350": {
-    "build": "0258ce1ade3f3c",
-    "hinges": "04bb05a7924dfd",
+    "build": "0244f7844a946b",
+    "hinges": "029e33fb56d116",
     "validate": "15202279b28c9e",
     "closed": "1941ac3f84ea5b"
   },
   "32oz · board-450": {
-    "build": "0258ce1ade3f3c",
-    "hinges": "04bb05a7924dfd",
+    "build": "0244f7844a946b",
+    "hinges": "029e33fb56d116",
     "validate": "15202279b28c9e",
     "closed": "1941ac3f84ea5b"
   },
   "16oz · board-350 · length=min": {
-    "build": "07ed3d38067aec",
-    "hinges": "050f61bba600d1",
+    "build": "0fbe0f84f747d2",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "07d46465cea83a"
   },
   "16oz · board-350 · length=max": {
-    "build": "07869333195741",
-    "hinges": "050f61bba600d1",
+    "build": "15c559b4176134",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "0ca36f3843bb3c"
   },
   "16oz · board-350 · length<min": {
-    "build": "0e4eeba0a2324f",
-    "hinges": "050f61bba600d1",
+    "build": "061e27cbe35777",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "0a1d3653daaaea",
     "closed": "098bcdb4ea5091"
   },
   "16oz · board-350 · length>max": {
-    "build": "1392368151ab65",
-    "hinges": "050f61bba600d1",
+    "build": "02d98a12be1fa5",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "1c53525acc0206",
     "closed": "1d3d3b874d14b9"
   },
   "16oz · board-350 · width=min": {
-    "build": "081e7a6d5e6052",
-    "hinges": "050f61bba600d1",
+    "build": "0e51812546d1ae",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "000b991f537f81"
   },
   "16oz · board-350 · width=max": {
-    "build": "1e6a96ec35fd91",
-    "hinges": "050f61bba600d1",
+    "build": "045acc2df8d737",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "0ab9b800de765f"
   },
   "16oz · board-350 · width<min": {
-    "build": "1ad18ded2840f8",
-    "hinges": "050f61bba600d1",
+    "build": "00be007aeccb6c",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "05d92891346b3d",
     "closed": "18f54cca6d7816"
   },
   "16oz · board-350 · width>max": {
-    "build": "0016c1934e2c38",
-    "hinges": "050f61bba600d1",
+    "build": "1d708e6c96a262",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "1edb9e2dbb6720",
     "closed": "10e70f67d8a581"
   },
   "16oz · board-350 · height=min": {
-    "build": "0fda6cfd3301a8",
-    "hinges": "1462765b4da162",
+    "build": "0580b0d7c8ef00",
+    "hinges": "027822794b38fd",
     "validate": "15202279b28c9e",
     "closed": "1b4dea876ebb5a"
   },
   "16oz · board-350 · height=max": {
-    "build": "1da22895bf39a3",
-    "hinges": "039bfe398c4509",
+    "build": "1f858e390bf07b",
+    "hinges": "138e16afc794a1",
     "validate": "15202279b28c9e",
     "closed": "18b960de41a66b"
   },
   "16oz · board-350 · height<min": {
-    "build": "0722d4bae56479",
-    "hinges": "1c09d789c60925",
+    "build": "01e0cbe463c8c3",
+    "hinges": "1a3a6386106c29",
     "validate": "029e1a6147be92",
     "closed": "0ec49ee08dc68b"
   },
   "16oz · board-350 · height>max": {
-    "build": "10a922bbd1d2aa",
-    "hinges": "1cfa08dcaaa484",
+    "build": "0462274932bdb3",
+    "hinges": "114d0e950efa43",
     "validate": "0ee6176d79b403",
     "closed": "01495393614e50"
   },
@@ -115,50 +115,50 @@
     "closed": "083340ce3de4b6"
   },
   "16oz · board-350 · taper=max": {
-    "build": "065ffef4985ff6",
-    "hinges": "07b2deeeb83073",
+    "build": "100563aa4f13d4",
+    "hinges": "147b1723c09ce3",
     "validate": "1e14460f1eddc4",
     "closed": "0fbc688e454cb8"
   },
   "16oz · board-350 · taper<min": {
-    "build": "17c1b6ac147528",
-    "hinges": "0348964cfdfe7f",
+    "build": "0a74f76eb19c66",
+    "hinges": "1cf56ebcac9665",
     "validate": "0b0c01f42f097d",
     "closed": "15cd7b3c2e089a"
   },
   "16oz · board-350 · taper>max": {
-    "build": "14187e667366b1",
-    "hinges": "1e3d90df0334c1",
+    "build": "01e2506f0c9bac",
+    "hinges": "0cdef450876444",
     "validate": "1de6413d257e49",
     "closed": "1386cfe354a1ef"
   },
   "16oz · board-350 · pailHandle=none": {
-    "build": "1cc09588be17b9",
-    "hinges": "050f61bba600d1",
+    "build": "19b0c6653b0019",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "022b106d3ee9c1"
   },
   "16oz · board-350 · pailHandle=die_cut": {
-    "build": "13b4722deacfb8",
-    "hinges": "050f61bba600d1",
+    "build": "0142898f9518fb",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "022b106d3ee9c1"
   },
   "16oz · board-350 · pailHandle=insert": {
-    "build": "1b844d2862a8b5",
-    "hinges": "050f61bba600d1",
+    "build": "0f7d38fbba983e",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "022b106d3ee9c1"
   },
   "16oz · board-350 · grain=across": {
-    "build": "1cc09588be17b9",
-    "hinges": "050f61bba600d1",
+    "build": "19b0c6653b0019",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "022b106d3ee9c1"
   },
   "16oz · board-350 · grain=along": {
-    "build": "1cc09588be17b9",
-    "hinges": "050f61bba600d1",
+    "build": "19b0c6653b0019",
+    "hinges": "0ee3c9b132e5f0",
     "validate": "15202279b28c9e",
     "closed": "022b106d3ee9c1"
   }

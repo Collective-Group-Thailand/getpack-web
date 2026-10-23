@@ -1,7 +1,7 @@
 {
   "definition": "0c1104f77c15d7",
   "kids · flute-e": {
-    "build": "18c1b3e4b6f00e",
+    "build": "116ad68c0c8c2c",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
@@ -19,7 +19,7 @@
     "closed": "07d22ca0026308"
   },
   "adult · flute-e": {
-    "build": "0fff8f51b9c80d",
+    "build": "0719eedbf5d9bc",
     "hinges": "069af8a5734e58",
     "validate": "15202279b28c9e",
     "closed": "103fed094a2b39"
@@ -37,7 +37,7 @@
     "closed": "0e0c7c214df038"
   },
   "boot · flute-e": {
-    "build": "19fe486cecf0c0",
+    "build": "0e1b78e6e97b33",
     "hinges": "161709a8d7654a",
     "validate": "15202279b28c9e",
     "closed": "1af9e97bc640a9"
@@ -55,121 +55,121 @@
     "closed": "1184c7bc8546c3"
   },
   "kids · flute-e · length=min": {
-    "build": "13dff11cbb66c3",
+    "build": "07c9ddc1ead283",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "1c280a15d27d46"
   },
   "kids · flute-e · length=max": {
-    "build": "080236bf639522",
+    "build": "157d1539f8bb28",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "136d74bea62450"
   },
   "kids · flute-e · length<min": {
-    "build": "0a5d02435a1951",
+    "build": "17c0d4e750fb16",
     "hinges": "1515d668e0f824",
     "validate": "1846c0f686a38e",
     "closed": "13ca5a8c657a17"
   },
   "kids · flute-e · length>max": {
-    "build": "009a418fdbf875",
+    "build": "0fde5dc7e8b604",
     "hinges": "1515d668e0f824",
     "validate": "03ea242ed01a34",
     "closed": "016dd96c52b143"
   },
   "kids · flute-e · width=min": {
-    "build": "09676938915e9f",
+    "build": "170d5963c18f01",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "1b1048217e7b2a"
   },
   "kids · flute-e · width=max": {
-    "build": "0431c9b40d485c",
+    "build": "052cd8456624d2",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "1eeeb67ed5d0eb"
   },
   "kids · flute-e · width<min": {
-    "build": "017cbc10a2b65b",
+    "build": "051b8b6327d85a",
     "hinges": "1515d668e0f824",
     "validate": "037e334237469a",
     "closed": "1f273ab8a78837"
   },
   "kids · flute-e · width>max": {
-    "build": "1751e46ba1fa51",
+    "build": "00b7f0a85adb01",
     "hinges": "1515d668e0f824",
     "validate": "12d95301466f9d",
     "closed": "161919a9e5dc05"
   },
   "kids · flute-e · height=min": {
-    "build": "1959050bdbb019",
+    "build": "02086a1122ef04",
     "hinges": "1c7f36bc5f8670",
     "validate": "15202279b28c9e",
     "closed": "0956a33f7358de"
   },
   "kids · flute-e · height=max": {
-    "build": "0c2740bf85246b",
+    "build": "1b1dd13f1e92fa",
     "hinges": "198122f7ad44fd",
     "validate": "15202279b28c9e",
     "closed": "028ec3952596a3"
   },
   "kids · flute-e · height<min": {
-    "build": "15af6fdbd87ed3",
+    "build": "17041df4e30e7c",
     "hinges": "1c30e2ee7453c1",
     "validate": "06391c767bb884",
     "closed": "148d064aa488a8"
   },
   "kids · flute-e · height>max": {
-    "build": "06be857db2cb7f",
+    "build": "0d0802f9faafc0",
     "hinges": "0d7cf46d5adfed",
     "validate": "0ee6176d79b403",
     "closed": "1780ffa5e0df39"
   },
   "kids · flute-e · lid=partial": {
-    "build": "0ddcab49412604",
+    "build": "1a7ce06795a05c",
     "hinges": "14f930b9b2a0d0",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
   },
   "kids · flute-e · lid=full": {
-    "build": "18c1b3e4b6f00e",
+    "build": "116ad68c0c8c2c",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
   },
   "kids · flute-e · lidDepth=min": {
-    "build": "18c1b3e4b6f00e",
+    "build": "116ad68c0c8c2c",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
   },
   "kids · flute-e · lidDepth=max": {
-    "build": "18c1b3e4b6f00e",
+    "build": "116ad68c0c8c2c",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
   },
   "kids · flute-e · lidDepth<min": {
-    "build": "18c1b3e4b6f00e",
+    "build": "116ad68c0c8c2c",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
   },
   "kids · flute-e · lidDepth>max": {
-    "build": "18c1b3e4b6f00e",
+    "build": "116ad68c0c8c2c",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
   },
   "kids · flute-e · grain=across": {
-    "build": "18c1b3e4b6f00e",
+    "build": "116ad68c0c8c2c",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
   },
   "kids · flute-e · grain=along": {
-    "build": "03d3e9fe51ee77",
+    "build": "1b0e1fa40fec59",
     "hinges": "1515d668e0f824",
     "validate": "15202279b28c9e",
     "closed": "19aaab7a275661"
