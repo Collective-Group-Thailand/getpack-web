@@ -20,11 +20,11 @@ function flatten(value: Messages, prefix = ""): string[] {
 describe("messages", () => {
   it("has the same keys in every locale", async () => {
     const [th, en] = await Promise.all(routing.locales.map((locale) => loadAllMessages(locale)));
-    const thKeys = flatten(th).sort();
-    const enKeys = flatten(en).sort();
+    const thKeys = new Set(flatten(th));
+    const enKeys = new Set(flatten(en));
 
-    expect(thKeys.filter((key) => !enKeys.includes(key))).toEqual([]);
-    expect(enKeys.filter((key) => !thKeys.includes(key))).toEqual([]);
+    expect([...thKeys].filter((key) => !enKeys.has(key)).sort()).toEqual([]);
+    expect([...enKeys].filter((key) => !thKeys.has(key)).sort()).toEqual([]);
   });
 
   it("has no empty strings", async () => {
