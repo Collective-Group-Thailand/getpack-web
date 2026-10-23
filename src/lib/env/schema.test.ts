@@ -77,6 +77,12 @@ describe("serverEnvSchema", () => {
 describe("clientEnvSchema", () => {
   const schema = clientEnvSchema();
 
+  it("treats an empty value as unset for every optional key (a Docker ARG with no value)", () => {
+    const keys = Object.keys(schema.shape);
+    const env = parseEnv(schema, Object.fromEntries(keys.map((key) => [key, ""])), "client");
+    for (const key of keys) expect(env[key as keyof typeof env]).toBeUndefined();
+  });
+
   it("accepts an empty browser environment", () => {
     expect(parseEnv(schema, {}, "client").NEXT_PUBLIC_GTM_ID).toBeUndefined();
   });
