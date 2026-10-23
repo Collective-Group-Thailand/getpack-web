@@ -1,0 +1,22 @@
+# Build context for the production image (Dockerfile). Keep what `next build` reads; drop the rest.
+.git
+.github
+**/node_modules
+.next
+**/.env
+**/.env.*
+!.env.example
+*.log
+.DS_Store
+coverage
+test-results
+playwright-report
+storybook-static
+.lighthouseci
+lighthouse
+legacy
+docs/legacy
+e2e
+*.tsbuildinfo
+.vscode
+.claude
