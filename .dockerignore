@@ -1,4 +1,5 @@
 # Build context for the production image (Dockerfile). Keep what `next build` reads; drop the rest.
+# e2e/ and scripts/ stay in: `next build` type-checks every **/*.ts, and tests/scripts import across them.
 .git
 .github
 **/node_modules
@@ -16,8 +17,6 @@ storybook-static
 lighthouse
 legacy
 docs/legacy
-e2e
-scripts
 *.tsbuildinfo
 .vscode
 .claude
