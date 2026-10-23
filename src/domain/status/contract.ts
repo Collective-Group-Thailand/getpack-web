@@ -162,6 +162,15 @@ export type PayableStatus = Schemas["PayableStatus"];
 /** A customer document — tax invoice, receipt, credit note. A voided document keeps its number (accounting-design §4). **Source: contract** (B5.2). */
 export type DocumentStatus = Schemas["CustomerDocumentStatus"];
 
+/** e-Tax Invoice by Email of a tax document (D-430). **Source: contract** (v0.75). */
+export type ETaxStatus = Schemas["ETaxStatus"];
+
+/** One e-Tax e-mail of a document (D-430). **Source: contract** (v0.75). */
+export type ETaxSubmissionStatus = Schemas["ETaxSubmissionStatus"];
+
+/** A customer's request to correct the buyer on a tax document (D-431). **Source: contract** (v0.75). */
+export type DocumentCorrectionStatus = Schemas["DocumentCorrectionStatus"];
+
 /** A partner factory: at least one site visit before trial → active (D-011, D-041). **Source: contract** (B2.2). */
 export type FactoryStatus = Schemas["FactoryStatus"];
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { isValidThaiTaxId } from "@/domain/tax-id";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
@@ -18,6 +18,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
+import { NativeSelect } from "@/ui/components/NativeSelect";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
@@ -340,5 +341,159 @@ export function TaxInvoiceForm({
         {t("submit")}
       </Button>
     </form>
+  );
+}
+
+type ErpInvoice = Schemas["ErpSalesInvoiceSummaryDto"];
+
+/**
+ * D-433: a factory that keeps its books in getpack's ERP issues its tax invoice to getpack from there — drafted
+ * from the statement's lines, issued under the factory's own number, its PDF attached — or hands over an invoice
+ * to getpack it already issued in the ERP. Nothing to key in or upload; the amounts must equal the statement's.
+ */
+export function ErpTaxInvoice({
+  statementId,
+  bsNumber,
+  gross,
+  grossAmount,
+  canIssue,
+}: {
+  statementId: string;
+  bsNumber: string;
+  /** Formatted, for the confirmation. */
+  gross: string;
+  /** The statement's gross as the API writes it, to find matching ERP invoices. */
+  grossAmount: string;
+  /** May draft and issue invoices in the ERP (`factory_receivables.manage`). */
+  canIssue: boolean;
+}) {
+  const t = useTranslations("partnerBilling.erp");
+  const format = useFormat();
+  const { factoryId } = useFactory();
+  const [refresh] = useRefresh();
+  const [mode, setMode] = useState<"issue" | "handOver">(canIssue ? "issue" : "handOver");
+  const [issueDate, setIssueDate] = useState(bangkokToday());
+  const [invoices, setInvoices] = useState<ErpInvoice[] | null>(null);
+  const [invoiceId, setInvoiceId] = useState("");
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    if (mode !== "handOver" || invoices) return;
+    let alive = true;
+    browserApi()
+      .GET("/v1/partner/factories/{factoryId}/erp/sales-invoices", {
+        params: { path: { factoryId }, query: { status: "open", perPage: 100 } },
+      })
+      .then(({ data }) => {
+        if (!alive) return;
+        const matching = (data?.data ?? []).filter((row) => row.invoiceNo && row.total === grossAmount);
+        setInvoices(matching);
+        setInvoiceId(matching[0]?.id ?? "");
+      })
+      .catch(() => alive && setInvoices([]));
+    return () => {
+      alive = false;
+    };
+  }, [mode, invoices, factoryId, grossAmount]);
+
+  const chosen = invoices?.find((row) => row.id === invoiceId) ?? null;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {canIssue ? (
+        <SegmentedControl
+          label={t("mode")}
+          value={mode}
+          onValueChange={(value) => setMode(value as "issue" | "handOver")}
+          options={[
+            { value: "issue", label: t("issue") },
+            { value: "handOver", label: t("handOver") },
+          ]}
+        />
+      ) : null}
+      {mode === "issue" ? (
+        <div className="flex flex-col gap-3">
+          <p className="text-muted text-sm">{t("issueBody")}</p>
+          <Field label={t("issueDate")} hint={t("issueDateHint")}>
+            <Input
+              type="date"
+              className="sm:max-w-xs"
+              value={issueDate}
+              onChange={(event) => setIssueDate(event.target.value)}
+            />
+          </Field>
+          <div>
+            <Button iconStart="receipt" disabled={!issueDate} onClick={() => setConfirming(true)}>
+              {t("issueAction")}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <p className="text-muted text-sm">{t("handOverBody", { amount: gross })}</p>
+          {invoices === null ? (
+            <p className="text-muted text-sm">{t("loading")}</p>
+          ) : invoices.length === 0 ? (
+            <p className="text-sm">{t("noMatching")}</p>
+          ) : (
+            <Field label={t("invoice")}>
+              <NativeSelect
+                value={invoiceId}
+                onValueChange={setInvoiceId}
+                options={invoices.map((row) => ({
+                  value: row.id,
+                  label: t("invoiceOption", {
+                    no: row.invoiceNo ?? "",
+                    customer: row.customer.name,
+                    date: format.date(row.issueDate),
+                    amount: format.thb(row.total),
+                  }),
+                }))}
+              />
+            </Field>
+          )}
+          <div>
+            <Button iconStart="send" disabled={!chosen} onClick={() => setConfirming(true)}>
+              {t("handOverAction")}
+            </Button>
+          </div>
+        </div>
+      )}
+      <ConfirmAction
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={
+          mode === "issue" ? t("issueTitle", { no: bsNumber }) : t("handOverTitle", { no: chosen?.invoiceNo ?? "" })
+        }
+        description={
+          mode === "issue"
+            ? t("issueConfirm", { no: bsNumber, amount: gross, date: format.date(issueDate) })
+            : t("handOverConfirm", { no: chosen?.invoiceNo ?? "", statement: bsNumber, amount: gross })
+        }
+        confirmLabel={mode === "issue" ? t("issueAction") : t("handOverAction")}
+        confirmationPhrase={mode === "issue" ? bsNumber : undefined}
+        onConfirm={async ({ idempotencyKey }) => {
+          const params = { path: { factoryId, statementId }, header: { "Idempotency-Key": idempotencyKey } };
+          try {
+            const result =
+              mode === "issue"
+                ? await browserApi().POST("/v1/partner/factories/{factoryId}/erp/getpack-billing/{statementId}/issue", {
+                    params,
+                    body: { issueDate },
+                  })
+                : await browserApi().POST(
+                    "/v1/partner/factories/{factoryId}/erp/getpack-billing/{statementId}/hand-over",
+                    { params, body: { invoiceId } },
+                  );
+            toast.success(t("done", { no: result.data?.vendorInvoiceNo ?? "" }));
+            setConfirming(false);
+            refresh();
+          } catch (error) {
+            toast.error(problemMessage(error, t("failed")));
+            throw error;
+          }
+        }}
+      />
+    </div>
   );
 }

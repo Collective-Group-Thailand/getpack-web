@@ -230,6 +230,15 @@ export function issue(input: IssueInput): Doc {
     receivable: null,
     pdfReady: true,
     voidReason: null,
+    // D-430, D-431: e-Tax by Email is off in the mock; nothing replaced or awaiting a correction.
+    eTaxStatus: ["tr", "cn", "dn"].includes(input.docType) ? "submitted" : "not_applicable",
+    eTax: [],
+    replaces: null,
+    replacedBy: null,
+    replacementReason: null,
+    replacementNote: null,
+    cancelledPdfReady: false,
+    correction: null,
   };
   documents.push(doc);
   taxedVat.set(doc.id, input.taxed ?? { vat: input.vat, base: net });

@@ -26,7 +26,8 @@
       "close": "Period close",
       "reports": "Financial reports",
       "audit": "Auditor"
-    }
+    },
+    "corrections": "Correction requests"
   },
   "common": {
     "system": "System",
@@ -383,7 +384,10 @@
       "voidBody": "Void {number} for {amount}. The number is kept with the reason and its journals are reversed.",
       "voidReason": "Reason for voiding",
       "voidDone": "{number} voided",
-      "voidFailed": "Could not void the document"
+      "voidFailed": "Could not void the document",
+      "cancelledCopy": "Cancelled copy",
+      "replace": "Cancel and reissue",
+      "resendETax": "Resend e-Tax"
     },
     "resend": {
       "title": "Send {number} to the customer again",
@@ -409,6 +413,74 @@
       "issue": "Issue debit note",
       "issued": "Debit note issued",
       "failed": "Could not issue the debit note"
+    },
+    "replace": {
+      "title": "Cancel {number} and issue a new tax invoice",
+      "description": "For a wrong buyer (name, address, tax id or branch). A new number of the same series is issued with the original's date and amounts and the note “cancels and replaces the original” (ป.86/2542 ข้อ 25); nothing is posted again. Wrong amounts are a credit or debit note instead.",
+      "reason": "Reason",
+      "reasons": {
+        "buyer_name": "Wrong buyer name",
+        "buyer_address": "Wrong buyer address",
+        "buyer_tax_id": "Wrong tax id or branch",
+        "other": "Other"
+      },
+      "fields": {
+        "name": "Name",
+        "taxId": "Tax id",
+        "branchCode": "Branch",
+        "address": "Address"
+      },
+      "buyerName": "Buyer name",
+      "buyerTaxId": "Tax id",
+      "buyerTaxIdHint": "13 digits; empty for an individual without one",
+      "buyerBranch": "Branch",
+      "buyerBranchHint": "5 digits; 00000 = head office",
+      "buyerAddress": "Address",
+      "note": "Note",
+      "noteHint": "Printed after the reason on the new document",
+      "review": "Review",
+      "confirmTitle": "Cancel and reissue?",
+      "confirmBody": "{number} is cancelled (its number kept) with a copy stamped “cancelled”; the new one goes to the customer and e-Tax as usual. Type the document number to confirm.",
+      "confirm": "Cancel and reissue",
+      "done": "Issued {number}",
+      "failed": "Could not reissue",
+      "replacedTitle": "This document was cancelled and reissued",
+      "replacedBody": "New document: <link>{number}</link>",
+      "replacesTitle": "Reissued for a cancelled document",
+      "replacesBody": "Replaces <link>{number}</link> — reason: {reason}",
+      "pendingTitle": "The customer asked to correct the buyer on this document",
+      "pendingOpen": "Open the request"
+    },
+    "etax": {
+      "title": "e-Tax Invoice by Email",
+      "description": "A PDF/A-3 with the ETDA XML inside, e-mailed to the buyer and copied to the time-stamping service",
+      "off": "e-Tax sending is off (switched on after the e-Tax by Email registration)",
+      "none": "No e-Tax e-mail yet",
+      "kind": "Kind",
+      "kinds": {
+        "inv": "Tax invoice",
+        "crn": "Credit note",
+        "dbn": "Debit note",
+        "civ": "Cancellation"
+      },
+      "subject": "Subject",
+      "to": "To",
+      "status": "Status",
+      "sentAt": "Sent",
+      "errors": {
+        "etax": {
+          "no_buyer_email": "No buyer e-mail",
+          "sender_not_set": "Registered sender not set",
+          "file_too_large": "File over 3 MB",
+          "send_failed": "Refused by the e-mail provider (retried automatically)"
+        }
+      },
+      "resendTitle": "Resend the e-Tax e-mail of {number}",
+      "resendBody": "Send a failed e-mail again, or give another buyer address to resend one already sent",
+      "resendTo": "Buyer e-mail",
+      "resendToHint": "Empty to use the buyer's address",
+      "resend": "Resend",
+      "resent": "e-Tax e-mail queued"
     }
   },
   "creditNotes": {
@@ -994,7 +1066,8 @@
       "sources": {
         "e_tax": "e-Tax invoice",
         "pdf_upload": "PDF file",
-        "manual": "Recorded by Finance"
+        "manual": "Recorded by Finance",
+        "erp": "Factory ERP"
       },
       "vat": "VAT",
       "lines": "Lines",
@@ -2855,5 +2928,34 @@
       "file": "File",
       "download": "Download"
     }
+  },
+  "corrections": {
+    "title": "Buyer correction requests",
+    "description": "Customers ask to correct the name, address, tax id or branch on a tax invoice. Approving cancels and reissues it (ป.86/2542 ข้อ 25).",
+    "pending": "Pending",
+    "all": "All",
+    "empty": "No requests",
+    "document": "Document",
+    "reason": "Reason",
+    "requestedBy": "Requested by",
+    "requestedAt": "Requested",
+    "status": "Status",
+    "detailTitle": "Correction of {number}",
+    "requested": "Requested by {name} on {at}",
+    "compare": "Buyer",
+    "printed": "Printed",
+    "asked": "Requested",
+    "documents": "Documents",
+    "replacement": "New document",
+    "approve": "Approve and reissue",
+    "decline": "Decline",
+    "approveTitle": "Approve the request?",
+    "approveBody": "{number} is cancelled and issued again with the requested buyer, same date and amounts",
+    "declineTitle": "Decline the request?",
+    "declineBody": "The customer sees your reason",
+    "declineNote": "Reason",
+    "approved": "Approved and reissued",
+    "declined": "Declined",
+    "failed": "Could not save"
   }
 }

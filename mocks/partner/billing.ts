@@ -338,6 +338,7 @@ export function toVendorInvoiceDto(store: Store, statement: StatementModel, invo
   return {
     id: invoice.id,
     vendorId: store.factory.id,
+    erpInvoiceId: null,
     vendorName: store.factory.legalName,
     bsNumber: statement.bsNumber,
     vendorInvoiceNo: invoice.invoiceNo,

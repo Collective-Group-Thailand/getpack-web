@@ -127,6 +127,7 @@ import {
   Split,
   Square,
   SquareDashed,
+  Signature,
   Stamp,
   Star,
   Sun,
@@ -305,6 +306,7 @@ export const ICONS = {
   shield: ShieldCheck,
   "shield-alert": ShieldAlert,
   scale: Scale,
+  signature: Signature,
   stamp: Stamp,
   handshake: Handshake,
 

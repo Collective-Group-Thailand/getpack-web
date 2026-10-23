@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { SignOutButton } from "@/features/shared/auth/SignOutButton";
@@ -139,6 +140,10 @@ export function AdminTopbar({
                 </Badge>
               ))}
             </div>
+            <Link href="/my-signature" className="text-primary mt-3 flex items-center gap-2 text-sm hover:underline">
+              <Icon name="signature" size={16} aria-hidden />
+              {t("mySignature")}
+            </Link>
             <div className="mt-3">
               <SignOutButton zone="admin" />
             </div>

@@ -101,6 +101,25 @@
     "issued": "Issued",
     "void": "Void"
   },
+  "eTax": {
+    "not_applicable": "No e-Tax",
+    "pending": "e-Tax queued",
+    "submitted": "e-Tax sent",
+    "accepted": "Time-stamped",
+    "rejected": "Rejected",
+    "failed": "e-Tax failed"
+  },
+  "eTaxSubmission": {
+    "queued": "Queued",
+    "sent": "Sent",
+    "failed": "Failed"
+  },
+  "documentCorrection": {
+    "pending": "Pending",
+    "approved": "Corrected",
+    "rejected": "Declined",
+    "withdrawn": "Withdrawn"
+  },
   "factory": {
     "applied": "Applied",
     "underReview": "Under review",

@@ -330,7 +330,8 @@
   "payables": {
     "invoice_duplicate": "บันทึกใบแจ้งหนี้ซ้ำ",
     "invoice_mismatch": "ใบกำกับภาษีไม่ตรงกัน",
-    "statement_not_confirmable": "ใบวางบิลเปลี่ยนสถานะไม่ได้"
+    "statement_not_confirmable": "ใบวางบิลเปลี่ยนสถานะไม่ได้",
+    "erp_invoice_not_allowed": "ออกใบกำกับภาษีจาก ERP ไม่ได้"
   },
   "payments": {
     "group_not_payable": "ชำระเงินไม่ได้",
@@ -402,7 +403,10 @@
     "certificate_invalid": "หนังสือรับรองไม่อยู่ในสถานะที่แก้ไขได้",
     "document_not_voidable": "ยกเลิกเอกสารไม่ได้",
     "nothing_to_write_off": "ตัดหนี้สูญไม่ได้",
-    "reason_invalid": "เหตุผลไม่ถูกต้อง"
+    "reason_invalid": "เหตุผลไม่ถูกต้อง",
+    "correction_decided": "คำขอนี้พิจารณาแล้ว",
+    "document_not_replaceable": "ยกเลิกและออกใหม่ไม่ได้",
+    "correction_pending": "มีคำขอแก้ไขรออยู่แล้ว"
   },
   "referrals": {
     "already_attributed": "ใช้รหัสแนะนำแล้ว",
@@ -587,5 +591,13 @@
   "guarantee": {
     "version_pending": "มีฉบับรออนุมัติอยู่แล้ว",
     "version_not_proposed": "ฉบับนี้ไม่ได้รออนุมัติแล้ว"
+  },
+  "documents": {
+    "image_not_usable": "ใช้รูปนี้ไม่ได้",
+    "signatory_exists": "เป็นผู้ลงนามอยู่แล้ว",
+    "signatory_not_eligible": "แต่งตั้งเป็นผู้ลงนามไม่ได้"
+  },
+  "etax": {
+    "nothing_to_send": "ไม่มีอีเมล e-Tax ที่ต้องส่งใหม่"
   }
 }

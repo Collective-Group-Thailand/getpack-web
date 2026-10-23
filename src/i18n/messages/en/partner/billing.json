@@ -107,7 +107,8 @@
     "sources": {
       "pdf_upload": "PDF file",
       "e_tax": "e-Tax Invoice",
-      "manual": "Recorded by Finance"
+      "manual": "Recorded by Finance",
+      "erp": "Factory ERP"
     },
     "invoiceAfterConfirm": "Attach the tax invoice (usually after confirming the amounts)",
     "linesTitle": "Statement lines",
@@ -118,7 +119,9 @@
       "vat": "VAT",
       "net": "Net"
     },
-    "periodDay": "Run of {date}"
+    "periodDay": "Run of {date}",
+    "erpTitle": "From the factory's ERP",
+    "orUpload": "Or record a tax invoice issued elsewhere below"
   },
   "payouts": {
     "title": "Payouts",
@@ -289,5 +292,26 @@
     "invoice": "Your tax invoice",
     "noInvoice": "Not attached",
     "attachNow": "Attach your tax invoice"
+  },
+  "erp": {
+    "mode": "How to send the tax invoice",
+    "issue": "Issue a new one in the ERP",
+    "handOver": "Send one already issued",
+    "issueBody": "The ERP drafts a tax invoice to getpack from this statement's lines, issues it under the factory's own number, attaches its PDF and sends it to getpack Finance straight away — nothing to type or upload again.",
+    "issueDate": "Tax invoice date",
+    "issueDateHint": "The tax point, normally today",
+    "issueAction": "Issue and send to getpack",
+    "issueTitle": "Issue the tax invoice for statement {no}",
+    "issueConfirm": "A tax invoice to getpack for {amount}, dated {date}, will be issued for statement {no} and sent to getpack at once. An issued invoice cannot be edited — only voided or corrected with a credit note.",
+    "handOverBody": "Choose a tax invoice to getpack already issued in the ERP. Its total must equal the statement's ({amount}).",
+    "loading": "Loading ERP invoices…",
+    "noMatching": "No ERP invoice matches this statement's total",
+    "invoice": "ERP tax invoice",
+    "invoiceOption": "{no} · {customer} · {date} · {amount}",
+    "handOverAction": "Send this one to getpack",
+    "handOverTitle": "Send tax invoice {no} to getpack",
+    "handOverConfirm": "Tax invoice {no} for {amount} becomes the tax invoice of statement {statement}, with its PDF.",
+    "done": "Tax invoice {no} sent to getpack",
+    "failed": "Could not send the tax invoice"
   }
 }

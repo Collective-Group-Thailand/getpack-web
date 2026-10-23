@@ -45,6 +45,7 @@ function groupsFor(company: AccountCompany | null): Group[] {
       items: [
         { key: "orders", href: "/account/orders", icon: "package" },
         { key: "instalments", href: "/account/instalments", icon: "wallet" },
+        { key: "documents", href: "/account/documents", icon: "document" },
         { key: "quotes", href: "/account/quotes", icon: "receipt" },
         { key: "rfqs", href: "/account/rfqs", icon: "inbox" },
         { key: "messages", href: "/account/messages", icon: "chat" },

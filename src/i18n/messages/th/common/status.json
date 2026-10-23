@@ -101,6 +101,25 @@
     "issued": "ออกเอกสารแล้ว",
     "void": "ยกเลิกเอกสาร"
   },
+  "eTax": {
+    "not_applicable": "ไม่ส่ง e-Tax",
+    "pending": "รอส่ง e-Tax",
+    "submitted": "ส่ง e-Tax แล้ว",
+    "accepted": "ประทับเวลาแล้ว",
+    "rejected": "ถูกปฏิเสธ",
+    "failed": "ส่ง e-Tax ไม่สำเร็จ"
+  },
+  "eTaxSubmission": {
+    "queued": "รอส่ง",
+    "sent": "ส่งแล้ว",
+    "failed": "ส่งไม่สำเร็จ"
+  },
+  "documentCorrection": {
+    "pending": "รอพิจารณา",
+    "approved": "แก้ไขแล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "withdrawn": "ถอนคำขอ"
+  },
   "factory": {
     "applied": "สมัครแล้ว",
     "underReview": "กำลังพิจารณา",

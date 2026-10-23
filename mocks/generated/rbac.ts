@@ -1,12 +1,12 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: getpack-api docs/rbac.md at v0.66.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
+ * Source: getpack-api docs/rbac.md at v0.75.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
  *
  * The permissions each D-140 staff role and factory role holds in getpack-api, verbatim. The mock
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "0d9f98f", tag: "v0.66.0" } as const;
+export const RBAC_SOURCE = { commit: "7e81cff", tag: "v0.75.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
@@ -71,6 +71,8 @@ export const STAFF_PERMISSIONS = [
   "design_services.manage",
   "discount_memos.read",
   "discount_memos.request",
+  "document_branding.manage",
+  "document_branding.read",
   "document_series.manage",
   "document_series.read",
   "drawings.generate",
@@ -138,6 +140,7 @@ export const STAFF_PERMISSIONS = [
   "quotes.manage",
   "quotes.read",
   "receivables.debit_notes.issue",
+  "receivables.documents.replace",
   "receivables.manage",
   "receivables.read",
   "receivables.write_off.request",
@@ -264,6 +267,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "design_services.manage",
     "discount_memos.read",
     "discount_memos.request",
+    "document_branding.manage",
+    "document_branding.read",
     "document_series.manage",
     "document_series.read",
     "drawings.generate",
@@ -331,6 +336,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "quotes.manage",
     "quotes.read",
     "receivables.debit_notes.issue",
+    "receivables.documents.replace",
     "receivables.manage",
     "receivables.read",
     "receivables.write_off.request",
@@ -396,6 +402,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "close.read",
     "companies.read",
     "discount_memos.read",
+    "document_branding.manage",
+    "document_branding.read",
     "factory_buy_prices.read",
     "files.read",
     "files.upload",
@@ -549,6 +557,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "samples.manage",
     "samples.read",
     "seo.manage",
+    "settings.change",
     "settings.read",
     "shipments.manage",
     "shipments.read",
@@ -665,6 +674,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "rfqs.read",
     "samples.manage",
     "samples.read",
+    "settings.change",
+    "settings.read",
     "shipments.manage",
     "shipments.read",
     "shipping_rates.read",
@@ -689,6 +700,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "prepress.review",
     "production.read",
     "samples.read",
+    "settings.change",
+    "settings.read",
     "structural_requests.design",
     "studio_catalog.manage",
     "styles.approve_names",
@@ -718,6 +731,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "credit_notes.request",
     "customers.read",
     "discount_memos.read",
+    "document_branding.read",
     "document_series.read",
     "factory_buy_prices.read",
     "files.read",
@@ -782,6 +796,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "credit_notes.request",
     "customers.read",
     "discount_memos.read",
+    "document_branding.manage",
+    "document_branding.read",
     "document_series.manage",
     "document_series.read",
     "factory_buy_prices.read",
@@ -813,6 +829,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "promotions.read",
     "quotes.read",
     "receivables.debit_notes.issue",
+    "receivables.documents.replace",
     "receivables.manage",
     "receivables.read",
     "receivables.write_off.request",
@@ -821,6 +838,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "reports.export",
     "reports.schedule",
     "samples.read",
+    "settings.change",
     "settings.read",
     "settings.read_sensitive",
     "shipments.read",
@@ -868,6 +886,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "reports.schedule",
     "reviews.moderate",
     "seo.manage",
+    "settings.change",
+    "settings.read",
     "studio_catalog.approve",
     "studio_catalog.manage",
     "styles.approve_names",
@@ -889,6 +909,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "orders.read",
     "partners.read",
     "reports.export",
+    "settings.change",
     "settings.read",
   ],
   partner_manager: [
@@ -927,6 +948,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "reports.schedule",
     "rfqs.read",
     "samples.read",
+    "settings.change",
     "settings.read",
     "shipments.read",
     "shipping_rates.read",
@@ -950,6 +972,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "companies.read",
     "customers.read",
     "discount_memos.read",
+    "document_branding.read",
     "document_series.read",
     "files.read",
     "fixed_assets.read",
