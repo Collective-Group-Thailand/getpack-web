@@ -17,6 +17,7 @@ lighthouse
 legacy
 docs/legacy
 e2e
+scripts
 *.tsbuildinfo
 .vscode
 .claude
