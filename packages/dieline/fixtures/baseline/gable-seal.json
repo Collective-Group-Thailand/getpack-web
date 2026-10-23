@@ -1,463 +1,463 @@
 {
   "definition": "194e6d0d86664b",
   "cake · board-350": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-450": {
-    "build": "0293c65b3115d1",
+    "build": "1fde2f36e7ef8c",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "05285ed63503f3"
   },
   "cake · flute-e": {
-    "build": "18d6b17dd57011",
+    "build": "0bd01bbd227939",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "0cc8a6461b4cea"
   },
   "gift · board-350": {
-    "build": "11ff79857f742b",
+    "build": "0c4c832e6e7706",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "1acba0a679e160"
   },
   "gift · board-450": {
-    "build": "04a916c9f11293",
+    "build": "146d988b944899",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "146849150bafb2"
   },
   "gift · flute-e": {
-    "build": "0a26a40c095cb4",
+    "build": "02ad9bd225f1a6",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "0d8268a2d033f7"
   },
   "cake · board-350 · length=min": {
-    "build": "1b263b7f64aa88",
+    "build": "1c60d4dbbde1d2",
     "hinges": "0f476eb21701b6",
     "validate": "0fbfde45c8200a",
     "closed": "13c113c2656074"
   },
   "cake · board-350 · length=max": {
-    "build": "04ac0d1e2e989d",
+    "build": "1a4c5580a5e894",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "1136adabbe3455"
   },
   "cake · board-350 · length<min": {
-    "build": "1b0cb4b4a1edda",
+    "build": "1f0b3e823de66e",
     "hinges": "0f476eb21701b6",
     "validate": "1ac0f387f9565a",
     "closed": "113bdc335daf1d"
   },
   "cake · board-350 · length>max": {
-    "build": "0524e07d5aa739",
+    "build": "198b91490a9a01",
     "hinges": "0f476eb21701b6",
     "validate": "0342ab00bc9bf5",
     "closed": "0a84662b39ab45"
   },
   "cake · board-350 · width=min": {
-    "build": "0a298d5c93bb0c",
+    "build": "005997dce2754c",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "0b7143702cb289"
   },
   "cake · board-350 · width=max": {
-    "build": "0e565de717c9ca",
+    "build": "0bb37ed59c6aa5",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "002677e18c535e"
   },
   "cake · board-350 · width<min": {
-    "build": "17625e1dd5547a",
+    "build": "1839effe03ebb7",
     "hinges": "0f476eb21701b6",
     "validate": "19a93c4f03bfb9",
     "closed": "0fefc8cddcc39c"
   },
   "cake · board-350 · width>max": {
-    "build": "1c23d1dd29bf3a",
+    "build": "10333ee7c81084",
     "hinges": "0f476eb21701b6",
     "validate": "12d95301466f9d",
     "closed": "0768d37d9ab6a9"
   },
   "cake · board-350 · height=min": {
-    "build": "00fd3af32dd95e",
+    "build": "078374ae5c0717",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "1d513269d7bc6c"
   },
   "cake · board-350 · height=max": {
-    "build": "1cc8436a09d07f",
+    "build": "0e3e74ff4ae672",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "010fc9070c29db"
   },
   "cake · board-350 · height<min": {
-    "build": "122df8ca8d16e6",
+    "build": "11067dd4f3d519",
     "hinges": "0f476eb21701b6",
     "validate": "04687d714f274f",
     "closed": "1cc820349c612c"
   },
   "cake · board-350 · height>max": {
-    "build": "107b305b5e0960",
+    "build": "159d17f88b63b1",
     "hinges": "0f476eb21701b6",
     "validate": "1368bab973bcd3",
     "closed": "1e4911e329d118"
   },
   "cake · board-350 · handleHeight=min": {
-    "build": "10250af7078565",
+    "build": "125fe374ba4896",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · handleHeight=max": {
-    "build": "0c963bcf8fd25a",
+    "build": "1979072b942210",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · handleHeight<min": {
-    "build": "1e735991533b29",
+    "build": "14be6b3534af77",
     "hinges": "0f476eb21701b6",
     "validate": "197e7f8ddbeb76",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · handleHeight>max": {
-    "build": "13717417bcda62",
+    "build": "1a4fe13703bfba",
     "hinges": "0f476eb21701b6",
     "validate": "07562eed4e4bfd",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · glueWidth=min": {
-    "build": "10ef6e3ca77707",
+    "build": "0a04782a532a41",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · glueWidth=max": {
-    "build": "0c3de300397365",
+    "build": "0f82c000864a80",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · glueWidth<min": {
-    "build": "0494439b20dc40",
+    "build": "15b68d905fa4f3",
     "hinges": "0f476eb21701b6",
     "validate": "1048c2ed5cf584",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · glueWidth>max": {
-    "build": "0cc9ab994ab9c7",
+    "build": "06fdd5526a1680",
     "hinges": "0f476eb21701b6",
     "validate": "17e3d349f15997",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · glueSide=left": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · glueSide=right": {
-    "build": "1e72188380963b",
+    "build": "05375de56f2d25",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · grain=across": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · grain=along": {
-    "build": "12207c34340d94",
+    "build": "14987f4cd2dc69",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=none": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rect": {
-    "build": "141fd0323e003b",
+    "build": "0d169d1bc73780",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rounded": {
-    "build": "14c45605f338ed",
+    "build": "04e8edeeb5f993",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=ellipse": {
-    "build": "0eecd4af7ec88e",
+    "build": "192b745f95d183",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowPanel=front": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowPanel=back": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowPanel=right": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowPanel=left": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowPanel=lid": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowWidth=min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowWidth=max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowWidth<min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowWidth>max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowHeight=min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowHeight=max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowHeight<min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowHeight>max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowOffsetX=min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowOffsetX=max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowOffsetX<min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowOffsetX>max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowOffsetY=min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowOffsetY=max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowOffsetY<min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowOffsetY>max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowRadius=min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowRadius=max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowRadius<min": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · windowRadius>max": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rect@front": {
-    "build": "141fd0323e003b",
+    "build": "0d169d1bc73780",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rect@back": {
-    "build": "083618692a9931",
+    "build": "08e863b61bd043",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rect@right": {
-    "build": "19651b58fc2b61",
+    "build": "1ccfe8e52b4b47",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rect@left": {
-    "build": "1287b271b6bcba",
+    "build": "02b00414cad303",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rect@lid": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "0f8e4b1550d257",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rect:oversized": {
-    "build": "0ec4ae90477a7b",
+    "build": "0bc29158246ea9",
     "hinges": "0f476eb21701b6",
     "validate": "15d5ae4dea7f7e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rounded@front": {
-    "build": "14c45605f338ed",
+    "build": "04e8edeeb5f993",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rounded@back": {
-    "build": "1311570ab643ea",
+    "build": "0b90b56fedaf5b",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rounded@right": {
-    "build": "103e522cf10817",
+    "build": "047f1ce6675449",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rounded@left": {
-    "build": "149d92814415d4",
+    "build": "07722f7c3f98ac",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rounded@lid": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "0f8e4b1550d257",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=rounded:oversized": {
-    "build": "02d75aed8d657b",
+    "build": "19632bd8032c3d",
     "hinges": "0f476eb21701b6",
     "validate": "15d5ae4dea7f7e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=ellipse@front": {
-    "build": "0eecd4af7ec88e",
+    "build": "192b745f95d183",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=ellipse@back": {
-    "build": "1f5cd88f856505",
+    "build": "097c861b7a4510",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=ellipse@right": {
-    "build": "0cafc578a27e59",
+    "build": "1571a15845a25f",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=ellipse@left": {
-    "build": "0a6cc0ce890ddf",
+    "build": "0bcaa46c331e35",
     "hinges": "0f476eb21701b6",
     "validate": "15202279b28c9e",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=ellipse@lid": {
-    "build": "06ca1a833a9c55",
+    "build": "0e1a70171e27fd",
     "hinges": "0f476eb21701b6",
     "validate": "0f8e4b1550d257",
     "closed": "017f4e5a4fbbe7"
   },
   "cake · board-350 · window=ellipse:oversized": {
-    "build": "0a9f4c28493e3b",
+    "build": "077d62f6115c37",
     "hinges": "0f476eb21701b6",
     "validate": "15d5ae4dea7f7e",
     "closed": "017f4e5a4fbbe7"

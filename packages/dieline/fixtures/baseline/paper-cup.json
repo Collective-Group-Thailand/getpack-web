@@ -1,133 +1,133 @@
 {
   "definition": "186817549b098b",
   "8oz · label-film": {
-    "build": "0bccc29723d0f1",
+    "build": "1294706ef1a346",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "8oz · board-350": {
-    "build": "0bccc29723d0f1",
+    "build": "1294706ef1a346",
     "hinges": "15e0da69fcb93a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "12oz · label-film": {
-    "build": "0c99bf81db2550",
+    "build": "0e524d3531762a",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "12oz · board-350": {
-    "build": "0c99bf81db2550",
+    "build": "0e524d3531762a",
     "hinges": "15e0da69fcb93a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "16oz · label-film": {
-    "build": "0aa7ab4ca782e1",
+    "build": "01c36bcb40466a",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "16oz · board-350": {
-    "build": "0aa7ab4ca782e1",
+    "build": "01c36bcb40466a",
     "hinges": "15e0da69fcb93a",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · topDiameter=min": {
-    "build": "03d54a0d23ca97",
+    "build": "0f3cc65272f1f2",
     "hinges": "15e0da69fcb93a",
     "validate": "136418e2cd6e0b",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · topDiameter=max": {
-    "build": "178b48c1da4af2",
+    "build": "021859179bd1e5",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · topDiameter<min": {
-    "build": "1e0f0166ba78de",
+    "build": "19b1a990c6cd50",
     "hinges": "15e0da69fcb93a",
     "validate": "0f985389415cf6",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · topDiameter>max": {
-    "build": "18f1cd05f92932",
+    "build": "1b81bcbb7b3a5b",
     "hinges": "15e0da69fcb93a",
     "validate": "1cbfb92ada68bb",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · bottomDiameter=min": {
-    "build": "1b257cab3cf8a6",
+    "build": "06bd097dc67454",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · bottomDiameter=max": {
-    "build": "0c8953c3b4d694",
+    "build": "143feab82f60a3",
     "hinges": "15e0da69fcb93a",
     "validate": "136418e2cd6e0b",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · bottomDiameter<min": {
-    "build": "03825927653826",
+    "build": "175d8db6b217c2",
     "hinges": "15e0da69fcb93a",
     "validate": "09ff2ac3d83c47",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · bottomDiameter>max": {
-    "build": "1b7eb93d31e81d",
+    "build": "0f01192a0a4044",
     "hinges": "15e0da69fcb93a",
     "validate": "1e5e324ccb45fc",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · height=min": {
-    "build": "05be37e77a4af2",
+    "build": "1dae483720b741",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · height=max": {
-    "build": "0055ef93317ed3",
+    "build": "0aeeb3b8f6e737",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · height<min": {
-    "build": "0efa8d71051c71",
+    "build": "0173ad186cb48b",
     "hinges": "15e0da69fcb93a",
     "validate": "0dfacfab4d4fc6",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · height>max": {
-    "build": "14a6fbeb24842c",
+    "build": "0eaeb463ef6621",
     "hinges": "15e0da69fcb93a",
     "validate": "0ee6176d79b403",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · overlap=min": {
-    "build": "12e6d27694d3ce",
+    "build": "05d6859d8ea701",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · overlap=max": {
-    "build": "07df5ce4972da8",
+    "build": "0d4fddee2a40eb",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · overlap<min": {
-    "build": "0682d166acb8bd",
+    "build": "0b3df5d8780efb",
     "hinges": "15e0da69fcb93a",
     "validate": "032d1b613177e3",
     "closed": "15e0da69fcb93a"
   },
   "8oz · label-film · overlap>max": {
-    "build": "146acb1ba61991",
+    "build": "1d790961d171cf",
     "hinges": "15e0da69fcb93a",
     "validate": "03cfff900a94d0",
     "closed": "15e0da69fcb93a"

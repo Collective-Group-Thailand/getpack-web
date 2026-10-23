@@ -151,7 +151,7 @@
     "closed": "15e0da69fcb93a"
   },
   "s · label-film · pouchFeatures=window": {
-    "build": "0adfda8b0ed594",
+    "build": "167ed676aa1c01",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
@@ -169,7 +169,7 @@
     "closed": "15e0da69fcb93a"
   },
   "s · label-film · pouchFeatures=hang_hole+window": {
-    "build": "181943505340ae",
+    "build": "1f87adb467dd6c",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
@@ -181,7 +181,7 @@
     "closed": "15e0da69fcb93a"
   },
   "s · label-film · pouchFeatures=tear_notch+window": {
-    "build": "0abc2ef54dd4f3",
+    "build": "13595af1341001",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
@@ -193,13 +193,13 @@
     "closed": "15e0da69fcb93a"
   },
   "s · label-film · pouchFeatures=window+zipper": {
-    "build": "186562229a4088",
+    "build": "1a1f6ef1696c78",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "s · label-film · pouchFeatures=hang_hole+tear_notch+window": {
-    "build": "0bc11e764a3a28",
+    "build": "033af377063af1",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
@@ -211,19 +211,19 @@
     "closed": "15e0da69fcb93a"
   },
   "s · label-film · pouchFeatures=hang_hole+window+zipper": {
-    "build": "0e2c5ca690cd49",
+    "build": "0ff663af27c28d",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "s · label-film · pouchFeatures=tear_notch+window+zipper": {
-    "build": "1734e63350a2c6",
+    "build": "0a411b1624501f",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"
   },
   "s · label-film · pouchFeatures=hang_hole+tear_notch+window+zipper": {
-    "build": "073a3b96c2819e",
+    "build": "1ab1332b35fd1a",
     "hinges": "15e0da69fcb93a",
     "validate": "177ada375a3441",
     "closed": "15e0da69fcb93a"

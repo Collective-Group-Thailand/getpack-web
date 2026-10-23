@@ -1,211 +1,211 @@
 {
   "definition": "130517f2f627bf",
   "four · board-350": {
-    "build": "03059cbb4f29a4",
+    "build": "0ca358b4a39eb4",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-450": {
-    "build": "17d9b6f0c977aa",
-    "hinges": "06ddf5d1de3370",
+    "build": "1aec9b05d7d96e",
+    "hinges": "068c812552c7cf",
     "validate": "15202279b28c9e",
     "closed": "0da9d842c3f6fa"
   },
   "two · board-350": {
-    "build": "128e2c80fa45c3",
+    "build": "12732d6a84933f",
     "hinges": "1ae0e2bf71acb4",
     "validate": "15202279b28c9e",
     "closed": "04758f72443ddc"
   },
   "two · board-450": {
-    "build": "140bc48bb1b092",
-    "hinges": "06180a8517aeb7",
+    "build": "1d37a808b4674a",
+    "hinges": "13990ce3a18873",
     "validate": "15202279b28c9e",
     "closed": "1973405bac668b"
   },
   "four · board-350 · length=min": {
-    "build": "0faae27ca14646",
+    "build": "005b2fdb6f3d6f",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "13b3ae0481b7fb"
   },
   "four · board-350 · length=max": {
-    "build": "039accfd2cf451",
+    "build": "1783e5d4c17802",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "1e48cbc4166f91"
   },
   "four · board-350 · length<min": {
-    "build": "01f8c6172ca79a",
+    "build": "15ee0aae9f2bac",
     "hinges": "11ef5f5006e74b",
     "validate": "0fb7f3f0fdb9f3",
     "closed": "1f80ace88fbce9"
   },
   "four · board-350 · length>max": {
-    "build": "01044dcb66a127",
+    "build": "0e966fbb688664",
     "hinges": "11ef5f5006e74b",
     "validate": "18ac139afd7d5a",
     "closed": "17d07aeeeb357e"
   },
   "four · board-350 · width=min": {
-    "build": "15a7ac9baa3fa7",
+    "build": "0c83f4010c43de",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "0167758adf0a9e"
   },
   "four · board-350 · width=max": {
-    "build": "1f2f3235c8b74c",
+    "build": "12d0e2eaee5bd5",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "1283ecd80b8dab"
   },
   "four · board-350 · width<min": {
-    "build": "0795303f38fbc2",
+    "build": "0dd6d18aa74191",
     "hinges": "11ef5f5006e74b",
     "validate": "03a8255358f934",
     "closed": "192d2be6586359"
   },
   "four · board-350 · width>max": {
-    "build": "1e9d5edc791ac0",
+    "build": "09eb0d44525c82",
     "hinges": "11ef5f5006e74b",
     "validate": "044b293b1c425e",
     "closed": "0d108bafbe2031"
   },
   "four · board-350 · height=min": {
-    "build": "112c84e2f77173",
+    "build": "0993226c79293e",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "0381480896808d"
   },
   "four · board-350 · height=max": {
-    "build": "1286334da60d1c",
+    "build": "1f7d8fdf81a35b",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "1ceefd031f2f78"
   },
   "four · board-350 · height<min": {
-    "build": "1feb5084369060",
+    "build": "0d7dd55ddf648a",
     "hinges": "11ef5f5006e74b",
     "validate": "10f3b3d3f76c55",
     "closed": "1a5ba829cd3860"
   },
   "four · board-350 · height>max": {
-    "build": "0336a11a31a64a",
+    "build": "14039d1379e93f",
     "hinges": "11ef5f5006e74b",
     "validate": "09ad7ac5cc16ab",
     "closed": "1a1f0f300adf9b"
   },
   "four · board-350 · handleHeight=min": {
-    "build": "1b179144f04100",
+    "build": "1e2a07b8fe7e3e",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · handleHeight=max": {
-    "build": "0d7fc2f541daad",
+    "build": "12217c38113fd7",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · handleHeight<min": {
-    "build": "18f21eaa24881e",
+    "build": "0e1189dff1a575",
     "hinges": "11ef5f5006e74b",
     "validate": "197e7f8ddbeb76",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · handleHeight>max": {
-    "build": "18f470a224e665",
+    "build": "0bb7f40f8b1427",
     "hinges": "11ef5f5006e74b",
     "validate": "07562eed4e4bfd",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · glueWidth=min": {
-    "build": "0b5f90b4c7e319",
+    "build": "050ae88e6c30e4",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · glueWidth=max": {
-    "build": "1e4003454489b7",
+    "build": "1e33914fddfba5",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · glueWidth<min": {
-    "build": "048ac5878d751f",
+    "build": "0e18ea9221b883",
     "hinges": "11ef5f5006e74b",
     "validate": "1048c2ed5cf584",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · glueWidth>max": {
-    "build": "01d10d222b8af2",
+    "build": "19437b659e9f31",
     "hinges": "11ef5f5006e74b",
     "validate": "17e3d349f15997",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · glueSide=left": {
-    "build": "03059cbb4f29a4",
+    "build": "0ca358b4a39eb4",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · glueSide=right": {
-    "build": "15199ca7ae0b8e",
+    "build": "0c81b687e40004",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · grain=across": {
-    "build": "03059cbb4f29a4",
+    "build": "0ca358b4a39eb4",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · grain=along": {
-    "build": "1e045a00e8283a",
+    "build": "1d0126e3ad7ab4",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · partition=1x2": {
-    "build": "1bb0a299433f5a",
+    "build": "02ca3334bf7978",
     "hinges": "1ae0e2bf71acb4",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · partition=2x2": {
-    "build": "03059cbb4f29a4",
+    "build": "0ca358b4a39eb4",
     "hinges": "11ef5f5006e74b",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · partition=2x3": {
-    "build": "0ce7fd8b1ab67e",
+    "build": "074cfb240ffc6e",
     "hinges": "0d755fe4de3730",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · partition=3x3": {
-    "build": "0ebe1ce440d516",
+    "build": "186b57ff558898",
     "hinges": "050d449031feb8",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · partition=3x4": {
-    "build": "07912db3929492",
+    "build": "18335021b59d0a",
     "hinges": "1407a65646057c",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · partition=4x4": {
-    "build": "05626e9a6aa0f5",
+    "build": "177e43fc87eedf",
     "hinges": "04a6c311d6f32f",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"
   },
   "four · board-350 · partition=4x6": {
-    "build": "1fd6a0938b37aa",
+    "build": "1dd3ab5f4086cc",
     "hinges": "1fd5556acf5a47",
     "validate": "15202279b28c9e",
     "closed": "133fdb69ee0f06"

@@ -1,110 +1,110 @@
 {
   "definition": "0163d925342fc5",
   "s · board-350": {
-    "build": "0bfec74fdd960c",
-    "hinges": "1dd00f63d85369",
+    "build": "0ba9e9d19fb625",
+    "hinges": "1e4d246d0dadbd",
     "validate": "15202279b28c9e",
     "closed": "05e85c87f1f8e4"
   },
   "s · board-450": {
-    "build": "0bfec74fdd960c",
-    "hinges": "1dd00f63d85369",
+    "build": "0ba9e9d19fb625",
+    "hinges": "1e4d246d0dadbd",
     "validate": "15202279b28c9e",
     "closed": "05e85c87f1f8e4"
   },
   "m · board-350": {
-    "build": "01009790f0d063",
-    "hinges": "090e44f963c56b",
+    "build": "1aa6561fac31a9",
+    "hinges": "1a29d03ce682e6",
     "validate": "15202279b28c9e",
     "closed": "04b8681f6994c5"
   },
   "m · board-450": {
-    "build": "01009790f0d063",
-    "hinges": "090e44f963c56b",
+    "build": "1aa6561fac31a9",
+    "hinges": "1a29d03ce682e6",
     "validate": "15202279b28c9e",
     "closed": "04b8681f6994c5"
   },
   "l · board-350": {
-    "build": "059618fa08b8ca",
-    "hinges": "13882e6bb58bad",
+    "build": "1d8dfa95e2d996",
+    "hinges": "1f686e83a44c0d",
     "validate": "15202279b28c9e",
     "closed": "1ce3c22df6fe21"
   },
   "l · board-450": {
-    "build": "059618fa08b8ca",
-    "hinges": "13882e6bb58bad",
+    "build": "1d8dfa95e2d996",
+    "hinges": "1f686e83a44c0d",
     "validate": "15202279b28c9e",
     "closed": "1ce3c22df6fe21"
   },
   "s · board-350 · length=min": {
-    "build": "19b4e15c73982a",
-    "hinges": "1dd00f63d85369",
+    "build": "1d07bc4886a57e",
+    "hinges": "1e4d246d0dadbd",
     "validate": "15202279b28c9e",
     "closed": "02de8a9bb45025"
   },
   "s · board-350 · length=max": {
-    "build": "1fade804c71fa3",
-    "hinges": "1dd00f63d85369",
+    "build": "105272ee461112",
+    "hinges": "1e4d246d0dadbd",
     "validate": "15202279b28c9e",
     "closed": "101e595f95f733"
   },
   "s · board-350 · length<min": {
-    "build": "12b00b3d0c8502",
-    "hinges": "1dd00f63d85369",
+    "build": "0e22fd458b20a3",
+    "hinges": "1e4d246d0dadbd",
     "validate": "094e7d939a8746",
     "closed": "0f7828c5f6d479"
   },
   "s · board-350 · length>max": {
-    "build": "1912b9b113805b",
-    "hinges": "1dd00f63d85369",
+    "build": "05ba224b8f029e",
+    "hinges": "1e4d246d0dadbd",
     "validate": "00bf7c7030daa0",
     "closed": "114bfa1c695c99"
   },
   "s · board-350 · width=min": {
-    "build": "0e7b4590d7c8b6",
-    "hinges": "1dd00f63d85369",
+    "build": "05b1f23d7829ac",
+    "hinges": "1e4d246d0dadbd",
     "validate": "15202279b28c9e",
     "closed": "039053291c5c36"
   },
   "s · board-350 · width=max": {
-    "build": "1cb2dcf4d6b287",
-    "hinges": "1dd00f63d85369",
+    "build": "1a1d4555e53fb2",
+    "hinges": "1e4d246d0dadbd",
     "validate": "15202279b28c9e",
     "closed": "0eee554fed3012"
   },
   "s · board-350 · width<min": {
-    "build": "0990bcc89a5c88",
-    "hinges": "1dd00f63d85369",
+    "build": "01704fa66b7bf2",
+    "hinges": "1e4d246d0dadbd",
     "validate": "07ca21869e35a8",
     "closed": "1e2da1bd00d205"
   },
   "s · board-350 · width>max": {
-    "build": "02e4547f25d205",
-    "hinges": "1dd00f63d85369",
+    "build": "0ccf0962bd9733",
+    "hinges": "1e4d246d0dadbd",
     "validate": "17ecbcd743d993",
     "closed": "1a8a804c87d196"
   },
   "s · board-350 · height=min": {
-    "build": "0a3f37be2bad17",
-    "hinges": "0965272e290de4",
+    "build": "14e8de62e40957",
+    "hinges": "1403f7c03cb806",
     "validate": "15202279b28c9e",
     "closed": "0304065ed40610"
   },
   "s · board-350 · height=max": {
-    "build": "19cb81c20a23c6",
-    "hinges": "00b9c7ec4f85da",
+    "build": "0e8a99f81be6cb",
+    "hinges": "1050d1b84dd2af",
     "validate": "15202279b28c9e",
     "closed": "1607e6b5e8909b"
   },
   "s · board-350 · height<min": {
-    "build": "0557e0b47f33b1",
-    "hinges": "1d3e68a1410ca1",
+    "build": "08fe2cb6edb0e1",
+    "hinges": "115195d872b2f9",
     "validate": "029e1a6147be92",
     "closed": "11a40bf2efa400"
   },
   "s · board-350 · height>max": {
-    "build": "08bf85317c7194",
-    "hinges": "1b0bfd4eb66706",
+    "build": "16351bc3ebc0b2",
+    "hinges": "00865d5e6acd2e",
     "validate": "1ab4a866b54622",
     "closed": "0ce2c336302b78"
   },
@@ -115,32 +115,32 @@
     "closed": "036be5a5409a61"
   },
   "s · board-350 · taper=max": {
-    "build": "12ac1295b71ba2",
-    "hinges": "0285b9e4bc62e3",
+    "build": "13dab09696bb27",
+    "hinges": "111fa329a8946a",
     "validate": "1e14460f1eddc4",
     "closed": "1acd055f2c9d8c"
   },
   "s · board-350 · taper<min": {
-    "build": "0e9c6e42af6f58",
-    "hinges": "0f3d51900cbd0b",
+    "build": "19f770da340cf9",
+    "hinges": "0de05f10c79899",
     "validate": "0b0c01f42f097d",
     "closed": "01879ba5860528"
   },
   "s · board-350 · taper>max": {
-    "build": "0c93921a15e2a9",
-    "hinges": "037e40ad17f916",
+    "build": "179c3c884eace0",
+    "hinges": "02d63dde6f2ddf",
     "validate": "1de6413d257e49",
     "closed": "12fe52046bf1ed"
   },
   "s · board-350 · grain=across": {
-    "build": "0bfec74fdd960c",
-    "hinges": "1dd00f63d85369",
+    "build": "0ba9e9d19fb625",
+    "hinges": "1e4d246d0dadbd",
     "validate": "15202279b28c9e",
     "closed": "05e85c87f1f8e4"
   },
   "s · board-350 · grain=along": {
-    "build": "0bfec74fdd960c",
-    "hinges": "1dd00f63d85369",
+    "build": "0ba9e9d19fb625",
+    "hinges": "1e4d246d0dadbd",
     "validate": "15202279b28c9e",
     "closed": "05e85c87f1f8e4"
   }
