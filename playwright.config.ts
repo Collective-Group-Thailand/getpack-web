@@ -186,18 +186,24 @@ export default defineConfig({
           },
         ]
       : []),
-    {
-      // A production build locally as well as in CI. The security assertions in
-      // e2e/zones.spec.ts are about what ships — and `pnpm dev` legitimately has a different
-      // CSP, because Turbopack's injected styles cannot be nonced — so testing the dev server
-      // would give false confidence in both directions.
-      command: `pnpm build && pnpm start -p ${PORT}`,
-      url: baseURL,
-      reuseExistingServer: !process.env.CI,
-      timeout: 180_000,
-      // `next start` runs with NODE_ENV=production, where the env schema has no defaults —
-      // which is the point of the schema, so the suite supplies real values.
-      env: REAL_BACKEND ? realEnv : zoneEnv,
-    },
+    // The visual project reads Storybook only; building the app for it would cost CI minutes.
+    ...(runningVisualProject
+      ? []
+      : [
+          {
+            // A production build locally as well as in CI. The security assertions in
+            // e2e/zones.spec.ts are about what ships — and `pnpm dev` legitimately has a different
+            // CSP, because Turbopack's injected styles cannot be nonced — so testing the dev server
+            // would give false confidence in both directions.
+            command: `pnpm build && pnpm start -p ${PORT}`,
+            url: baseURL,
+            reuseExistingServer: !process.env.CI,
+            // The build is part of the wait: a cold CI build (type check included) takes minutes.
+            timeout: process.env.CI ? 900_000 : 300_000,
+            // `next start` runs with NODE_ENV=production, where the env schema has no defaults —
+            // which is the point of the schema, so the suite supplies real values.
+            env: REAL_BACKEND ? realEnv : zoneEnv,
+          },
+        ]),
   ],
 });
