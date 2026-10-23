@@ -41,6 +41,12 @@ const optionalText = z
   .or(z.literal("").transform(() => undefined));
 
 /**
+ * An optional key with its own format, where empty is unset as for `optionalText` — a Docker
+ * `ARG` with no value reaches the build as `KEY=""`.
+ */
+const optional = <T extends z.ZodType>(schema: T) => schema.optional().or(z.literal("").transform(() => undefined));
+
+/**
  * Comma-separated allow-list of the zones this deployment answers for (00-master-plan.md
  * §2: the same image can be deployed twice with `ZONES` restricting each copy). Unset means
  * all three.
@@ -118,17 +124,17 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
 export function clientEnvSchema() {
   return z.object({
     /** S3/CDN origin for product imagery, artwork thumbnails and proofs. */
-    NEXT_PUBLIC_ASSET_BASE_URL: originUrl.optional(),
+    NEXT_PUBLIC_ASSET_BASE_URL: optional(originUrl),
 
     /** Realtime carries ids only; the client refetches through the API (conventions §5). */
-    NEXT_PUBLIC_REALTIME_DRIVER: z.enum(["sse", "pusher"]).optional(),
+    NEXT_PUBLIC_REALTIME_DRIVER: optional(z.enum(["sse", "pusher"])),
     NEXT_PUBLIC_REALTIME_KEY: optionalText,
     NEXT_PUBLIC_REALTIME_CLUSTER: optionalText,
-    NEXT_PUBLIC_REALTIME_HOST: hostValue.optional(),
+    NEXT_PUBLIC_REALTIME_HOST: optional(hostValue),
 
     /** Firebase web config — customer sign-in with Google/Apple (F1 1.2). */
     NEXT_PUBLIC_FIREBASE_API_KEY: optionalText,
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: hostValue.optional(),
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: optional(hostValue),
     NEXT_PUBLIC_FIREBASE_PROJECT_ID: optionalText,
     NEXT_PUBLIC_FIREBASE_APP_ID: optionalText,
     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: optionalText,
@@ -151,20 +157,17 @@ export function clientEnvSchema() {
      * `1`, and only with a browser DSN and analytics consent. Do not turn on before counsel and
      * the U2.0 data-terms answer, and a new consent version (PROGRESS, U5.0).
      */
-    NEXT_PUBLIC_REPLAY_ENABLED: z.enum(["0", "1"]).optional(),
+    NEXT_PUBLIC_REPLAY_ENABLED: optional(z.enum(["0", "1"])),
     /**
      * getpack Assistant (U5.5): its code is built in only when `1`. D-218 keeps it off at launch;
      * even built in, getpack-api decides per customer (`assistant.enabled`, the D-306 gate).
      */
-    NEXT_PUBLIC_ASSISTANT: z.enum(["0", "1"]).optional(),
+    NEXT_PUBLIC_ASSISTANT: optional(z.enum(["0", "1"])),
     /** Share of consented visits recorded, 0–1 (default 0.1). */
-    NEXT_PUBLIC_REPLAY_SAMPLE_RATE: z
-      .string()
-      .regex(/^(0(\.\d+)?|1(\.0+)?)$/)
-      .optional(),
+    NEXT_PUBLIC_REPLAY_SAMPLE_RATE: optional(z.string().regex(/^(0(\.\d+)?|1(\.0+)?)$/)),
 
     /** Shown in the admin topbar so nobody mistakes UAT for production (F1 1.3). */
-    NEXT_PUBLIC_ENV_BADGE: z.enum(["uat", "prod"]).optional(),
+    NEXT_PUBLIC_ENV_BADGE: optional(z.enum(["uat", "prod"])),
   });
 }
 
