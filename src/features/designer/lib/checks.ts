@@ -47,13 +47,7 @@ export interface PrintRule {
 }
 
 export type FixKind =
-  | "move_inside"
-  | "extend_to_bleed"
-  | "min_text"
-  | "min_stroke"
-  | "min_code"
-  | "nearest_spot"
-  | "in_gamut";
+  "move_inside" | "extend_to_bleed" | "min_text" | "min_stroke" | "min_code" | "nearest_spot" | "in_gamut";
 
 export interface DesignIssue {
   ruleId: RuleId;

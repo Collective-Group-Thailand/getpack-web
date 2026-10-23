@@ -60,7 +60,11 @@ export default async function QuotationPage({ params }: Props) {
           })}
         </Callout>
       ) : null}
-      {doc.rejectReason ? <Callout tone="danger" title={t("rejectedTitle")}>{doc.rejectReason}</Callout> : null}
+      {doc.rejectReason ? (
+        <Callout tone="danger" title={t("rejectedTitle")}>
+          {doc.rejectReason}
+        </Callout>
+      ) : null}
       <Card padding="md">
         <DescriptionList
           columns={2}

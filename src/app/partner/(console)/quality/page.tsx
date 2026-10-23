@@ -31,7 +31,9 @@ export default async function QualityChecksPage({
 }) {
   const query = await searchParams;
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "all";
-  const kind = KINDS.includes(query.kind as (typeof KINDS)[number]) ? (query.kind as Schemas["ErpCheckKind"]) : undefined;
+  const kind = KINDS.includes(query.kind as (typeof KINDS)[number])
+    ? (query.kind as Schemas["ErpCheckKind"])
+    : undefined;
   const page = pageOf(query.page);
   const [t, tKind, format, context] = await Promise.all([
     getTranslations("partnerInsight.checks"),
@@ -77,7 +79,11 @@ export default async function QualityChecksPage({
       <ViewTabs
         label={t("views.label")}
         current={view}
-        items={VIEWS.map((key) => ({ key, href: `/quality${queryOf({ view: key === "all" ? undefined : key, kind })}`, label: t(`views.${key}`) }))}
+        items={VIEWS.map((key) => ({
+          key,
+          href: `/quality${queryOf({ view: key === "all" ? undefined : key, kind })}`,
+          label: t(`views.${key}`),
+        }))}
       />
       <ViewTabs
         label={t("kindLabel")}
@@ -106,20 +112,40 @@ export default async function QualityChecksPage({
             rowTone={(row) => (row.result === "fail" ? "danger" : row.result === "pending" ? "warning" : undefined)}
             empty={<EmptyState icon="clipboard-check" title={t("empty")} description={t("emptyBody")} />}
             columns={[
-              { key: "no", header: t("qcNo"), primary: true, cell: (row) => <span className="font-mono">{row.qcNo}</span> },
+              {
+                key: "no",
+                header: t("qcNo"),
+                primary: true,
+                cell: (row) => <span className="font-mono">{row.qcNo}</span>,
+              },
               { key: "k", header: t("kind"), cell: (row) => tKind(row.kind) },
               {
                 key: "what",
                 header: t("what"),
                 cell: (row) =>
-                  [row.item?.name, row.productionOrder?.number, row.goodsReceipt?.number, row.lotNo ? t("lot", { lot: row.lotNo }) : null]
+                  [
+                    row.item?.name,
+                    row.productionOrder?.number,
+                    row.goodsReceipt?.number,
+                    row.lotNo ? t("lot", { lot: row.lotNo }) : null,
+                  ]
                     .filter(Boolean)
                     .join(" · ") || "—",
               },
-              { key: "q", header: t("qty"), align: "end", hideOnPhone: true, cell: (row) => (row.inspectedQty ? formatQty(row.inspectedQty, format.locale) : "—") },
+              {
+                key: "q",
+                header: t("qty"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => (row.inspectedQty ? formatQty(row.inspectedQty, format.locale) : "—"),
+              },
               { key: "by", header: t("inspector"), hideOnPhone: true, cell: (row) => row.inspector.name },
               { key: "at", header: t("at"), hideOnPhone: true, cell: (row) => format.dateTime(row.inspectedAt) },
-              { key: "r", header: t("result"), cell: (row) => <StatusChip map={ERP_CHECK_RESULT} value={row.result} /> },
+              {
+                key: "r",
+                header: t("result"),
+                cell: (row) => <StatusChip map={ERP_CHECK_RESULT} value={row.result} />,
+              },
             ]}
           />
           <Pager

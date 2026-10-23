@@ -42,7 +42,9 @@ export default async function Page() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10">
       <JsonLd data={page.breadcrumb} />
-      <JsonLd data={webPageSchema({ name: t("title"), description: t("intro"), url: page.url, locale: page.language })} />
+      <JsonLd
+        data={webPageSchema({ name: t("title"), description: t("intro"), url: page.url, locale: page.language })}
+      />
       <header className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="text-muted">{t("intro")}</p>

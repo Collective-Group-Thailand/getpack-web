@@ -293,7 +293,9 @@ function EditTaxProfile({
           <dt className="text-muted">{t("taxId")}</dt>
           <dd className="tabular-nums">{formatTaxId(profile.taxId)}</dd>
           <dt className="text-muted">{t("branch")}</dt>
-          <dd>{profile.branchType === "head_office" ? t("headOffice") : t("branchNo", { code: profile.branchCode })}</dd>
+          <dd>
+            {profile.branchType === "head_office" ? t("headOffice") : t("branchNo", { code: profile.branchCode })}
+          </dd>
         </dl>
         <p className="text-muted mt-2 text-xs">{t("fixedHint")}</p>
       </div>

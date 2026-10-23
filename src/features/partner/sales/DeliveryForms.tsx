@@ -42,7 +42,9 @@ export function DeliveryForm({ order, locale }: { order: SalesOrder; locale: str
   const [qty, setQty] = useState<Record<string, string>>(() =>
     Object.fromEntries(open.map((row) => [row.line.id, trimZeros(row.left)])),
   );
-  const [deliverOn, setDeliverOn] = useState(order.deliveryDate && order.deliveryDate > bangkokToday() ? order.deliveryDate : bangkokToday());
+  const [deliverOn, setDeliverOn] = useState(
+    order.deliveryDate && order.deliveryDate > bangkokToday() ? order.deliveryDate : bangkokToday(),
+  );
   const [vehicle, setVehicle] = useState("");
   const [shipTo, setShipTo] = useState(order.shipToAddress ?? "");
   const [note, setNote] = useState("");
@@ -94,7 +96,10 @@ export function DeliveryForm({ order, locale }: { order: SalesOrder; locale: str
     <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
       <ol className="flex flex-col gap-3">
         {open.map(({ line, left }) => (
-          <li key={line.id} className="border-border bg-surface grid gap-3 rounded-xl border p-3 md:grid-cols-[1fr_14rem] md:p-4">
+          <li
+            key={line.id}
+            className="border-border bg-surface grid gap-3 rounded-xl border p-3 md:grid-cols-[1fr_14rem] md:p-4"
+          >
             <div className="flex flex-col">
               <span className="font-medium">{line.description || line.item?.name}</span>
               <span className="text-muted text-sm">
@@ -120,10 +125,18 @@ export function DeliveryForm({ order, locale }: { order: SalesOrder; locale: str
       </ol>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("deliverOn")}>
-          <Input type="date" value={deliverOn} onChange={(event) => setDeliverOn(event.target.value || bangkokToday())} />
+          <Input
+            type="date"
+            value={deliverOn}
+            onChange={(event) => setDeliverOn(event.target.value || bangkokToday())}
+          />
         </Field>
         <Field label={t("vehicle")}>
-          <Input value={vehicle} placeholder={t("vehiclePlaceholder")} onChange={(event) => setVehicle(event.target.value)} />
+          <Input
+            value={vehicle}
+            placeholder={t("vehiclePlaceholder")}
+            onChange={(event) => setVehicle(event.target.value)}
+          />
         </Field>
       </div>
       <Field label={t("shipTo")}>

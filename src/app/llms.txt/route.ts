@@ -75,7 +75,12 @@ export async function GET(): Promise<Response> {
   if (entries.length > 0) {
     lines.push("", `## ${t("llms.faqHeading")}`, "");
     for (const faq of entries) {
-      lines.push(`### ${pick(locale, faq.questionTh, faq.questionEn)}`, "", pick(locale, faq.answerTh, faq.answerEn), "");
+      lines.push(
+        `### ${pick(locale, faq.questionTh, faq.questionEn)}`,
+        "",
+        pick(locale, faq.answerTh, faq.answerEn),
+        "",
+      );
     }
   }
 

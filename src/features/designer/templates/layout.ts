@@ -44,7 +44,10 @@ export interface Slot {
 export interface TemplateLayout {
   palette: Record<ColourRole, string>;
   fonts: Record<FontRole, string>;
-  background?: { colour?: ColourRole; pattern?: Omit<PatternSettings, "color" | "background"> & { colour: ColourRole; on: ColourRole } };
+  background?: {
+    colour?: ColourRole;
+    pattern?: Omit<PatternSettings, "color" | "background"> & { colour: ColourRole; on: ColourRole };
+  };
   slots: Slot[];
 }
 
@@ -124,7 +127,7 @@ export function reflow(
     const face = faceForRole(d, slot.face);
     if (!face) continue;
     const b = faceBounds(face);
-    const turn = ((options.upright?.[face.id] ?? 0) % 360 + 360) % 360;
+    const turn = (((options.upright?.[face.id] ?? 0) % 360) + 360) % 360;
     const sideways = turn === 90 || turn === 270;
     // The face's safe area in its upright frame.
     const fw = (sideways ? b.height : b.width) - 2 * options.safeMm;
@@ -140,8 +143,21 @@ export function reflow(
       x: b.x + b.width / 2 + lx * Math.cos(r) - ly * Math.sin(r),
       y: b.y + b.height / 2 + lx * Math.sin(r) + ly * Math.cos(r),
     };
-    const templateRole: TemplateRole = { slot: slot.id, role: slot.role, colour: slot.colour, ...(slot.font ? { font: slot.font } : {}) };
-    const common = { rotation: turn, scaleX: 1, scaleY: 1, opacity: 1, clipFaceId: face.id, name: slot.id, templateRole };
+    const templateRole: TemplateRole = {
+      slot: slot.id,
+      role: slot.role,
+      colour: slot.colour,
+      ...(slot.font ? { font: slot.font } : {}),
+    };
+    const common = {
+      rotation: turn,
+      scaleX: 1,
+      scaleY: 1,
+      opacity: 1,
+      clipFaceId: face.id,
+      name: slot.id,
+      templateRole,
+    };
     const fill = layout.palette[slot.colour];
 
     if (slot.kind === "text") {
@@ -214,7 +230,8 @@ export function applyBrand(content: DesignContent, brand: BrandStyle): DesignCon
     if (!role) return el;
     const colour = brand.palette[role.colour];
     if (role.role === "logo" && brand.logo && (el.type === "rect" || el.type === "circle" || el.type === "image")) {
-      const ratio = brand.logo.naturalWidth && brand.logo.naturalHeight ? brand.logo.naturalWidth / brand.logo.naturalHeight : 1;
+      const ratio =
+        brand.logo.naturalWidth && brand.logo.naturalHeight ? brand.logo.naturalWidth / brand.logo.naturalHeight : 1;
       const width = Math.min(el.width, el.height * ratio);
       const height = width / ratio;
       return {
@@ -222,7 +239,9 @@ export function applyBrand(content: DesignContent, brand: BrandStyle): DesignCon
         type: "image",
         src: brand.logo.src,
         ...(brand.logo.assetId ? { assetId: brand.logo.assetId } : {}),
-        ...(brand.logo.naturalWidth ? { naturalWidth: brand.logo.naturalWidth, naturalHeight: brand.logo.naturalHeight } : {}),
+        ...(brand.logo.naturalWidth
+          ? { naturalWidth: brand.logo.naturalWidth, naturalHeight: brand.logo.naturalHeight }
+          : {}),
         x: el.x + (el.width - width) / 2,
         y: el.y + (el.height - height) / 2,
         width,

@@ -314,7 +314,14 @@ export const useEditor = create<EditorState>((set, get) => ({
     const copies = clipboard.map((e) => {
       const { side: _side, ...rest } = e;
       void _side;
-      return { ...rest, ...(inside ? { side: "inside" } : {}), id: nanoid(8), x: e.x + 10, y: e.y + 10, locked: false } as DesignElement;
+      return {
+        ...rest,
+        ...(inside ? { side: "inside" } : {}),
+        id: nanoid(8),
+        x: e.x + 10,
+        y: e.y + 10,
+        locked: false,
+      } as DesignElement;
     });
     get().commit((c) => ({ ...c, elements: [...c.elements, ...copies] }));
     set({ selectedIds: copies.map((e) => e.id), selectedId: copies.at(-1)?.id ?? null, clipboard: copies });

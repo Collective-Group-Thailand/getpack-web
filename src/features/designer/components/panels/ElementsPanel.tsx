@@ -317,7 +317,8 @@ function DataBlocks() {
         fontFamily: "Sarabun",
         fill: "#000000",
         groupId: nanoid(6),
-        measure: (text, size) => measureText({ text, fontSize: size, fontFamily: "Sarabun", fontStyle: "normal" }).width,
+        measure: (text, size) =>
+          measureText({ text, fontSize: size, fontFamily: "Sarabun", fontStyle: "normal" }).width,
       },
     );
     for (const el of elements) addElement(el);

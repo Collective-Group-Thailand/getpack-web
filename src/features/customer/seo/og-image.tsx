@@ -23,7 +23,9 @@ export const OG_SIZE = { width: 1200, height: 630 } as const;
  */
 async function fonts() {
   const dir = join(process.cwd(), "src/features/customer/seo/fonts");
-  const [bold, regular] = await Promise.all(["anuphan-700.ttf", "anuphan-400.ttf"].map((name) => readFile(join(dir, name))));
+  const [bold, regular] = await Promise.all(
+    ["anuphan-700.ttf", "anuphan-400.ttf"].map((name) => readFile(join(dir, name))),
+  );
   return [
     { name: "Anuphan", data: bold!, weight: 700 as const, style: "normal" as const },
     { name: "Anuphan", data: regular!, weight: 400 as const, style: "normal" as const },
@@ -58,85 +60,116 @@ const KRAFT = "#DCCDB3";
  */
 export async function renderOgCard(card: OgCard): Promise<ImageResponse> {
   return new ImageResponse(
-    (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: "64px 72px",
+        background: PAPER,
+        color: INK,
+        fontFamily: "Anuphan",
+        position: "relative",
+      }}
+    >
+      {/* A box, drawn as three faces, in the corner — the product, not a photo of one. */}
       <div
         style={{
-          width: "100%",
-          height: "100%",
+          position: "absolute",
+          right: -70,
+          bottom: -80,
+          width: 400,
+          height: 400,
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "64px 72px",
-          background: PAPER,
-          color: INK,
-          fontFamily: "Anuphan",
-          position: "relative",
+          transform: "rotate(-8deg)",
         }}
       >
-        {/* A box, drawn as three faces, in the corner — the product, not a photo of one. */}
         <div
           style={{
             position: "absolute",
-            right: -70,
-            bottom: -80,
-            width: 400,
-            height: 400,
-            display: "flex",
-            transform: "rotate(-8deg)",
+            left: 40,
+            top: 110,
+            width: 300,
+            height: 240,
+            background: KRAFT,
+            borderRadius: 16,
           }}
-        >
-          <div style={{ position: "absolute", left: 40, top: 110, width: 300, height: 240, background: KRAFT, borderRadius: 16 }} />
-          <div style={{ position: "absolute", left: 40, top: 60, width: 300, height: 60, background: "#C8A97B", borderRadius: 12 }} />
-          <div style={{ position: "absolute", left: 60, top: 150, width: 130, height: 18, background: PRIMARY, borderRadius: 9, opacity: 0.85 }} />
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          {/* The logo, at the same colours as on the site's light page. */}
-          <svg
-            viewBox={`${LOGO_VIEWBOX.x} ${LOGO_VIEWBOX.y} ${LOGO_VIEWBOX.width} ${LOGO_VIEWBOX.height}`}
-            width={Math.round((52 * LOGO_VIEWBOX.width) / LOGO_VIEWBOX.height)}
-            height={52}
-            aria-label={BRAND_NAME}
-          >
-            <g transform={LOGO_TRACE_TRANSFORM}>
-              <path fill={LOGO_COLORS.ink} d={LOGO_INK_PATH} />
-              <path fill={LOGO_COLORS.g} d={LOGO_G_PATH} />
-            </g>
-            <path fill={LOGO_COLORS.notch} d={LOGO_NOTCH_PATH} />
-            <circle fill={LOGO_COLORS.dot} cx={LOGO_DOT.cx} cy={LOGO_DOT.cy} r={LOGO_DOT.r} />
-          </svg>
-          {card.eyebrow ? (
-            <div
-              style={{
-                marginLeft: 12,
-                padding: "6px 16px",
-                borderRadius: 999,
-                background: SURFACE,
-                color: MUTED,
-                fontSize: 24,
-                fontWeight: 400,
-              }}
-            >
-              {card.eyebrow}
-            </div>
-          ) : null}
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 740 }}>
-          <div style={{ fontSize: card.title.length > 40 ? 54 : 64, fontWeight: 700, lineHeight: 1.15, letterSpacing: -1.5 }}>
-            {card.title}
-          </div>
-          {card.subtitle ? (
-            <div style={{ fontSize: 30, fontWeight: 400, color: MUTED, lineHeight: 1.4 }}>{card.subtitle}</div>
-          ) : null}
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 24, color: MUTED }}>
-          <div style={{ width: 10, height: 10, borderRadius: 5, background: PRIMARY }} />
-          <div>{BRAND_COMPANY}</div>
-        </div>
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: 40,
+            top: 60,
+            width: 300,
+            height: 60,
+            background: "#C8A97B",
+            borderRadius: 12,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: 60,
+            top: 150,
+            width: 130,
+            height: 18,
+            background: PRIMARY,
+            borderRadius: 9,
+            opacity: 0.85,
+          }}
+        />
       </div>
-    ),
+
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        {/* The logo, at the same colours as on the site's light page. */}
+        <svg
+          viewBox={`${LOGO_VIEWBOX.x} ${LOGO_VIEWBOX.y} ${LOGO_VIEWBOX.width} ${LOGO_VIEWBOX.height}`}
+          width={Math.round((52 * LOGO_VIEWBOX.width) / LOGO_VIEWBOX.height)}
+          height={52}
+          aria-label={BRAND_NAME}
+        >
+          <g transform={LOGO_TRACE_TRANSFORM}>
+            <path fill={LOGO_COLORS.ink} d={LOGO_INK_PATH} />
+            <path fill={LOGO_COLORS.g} d={LOGO_G_PATH} />
+          </g>
+          <path fill={LOGO_COLORS.notch} d={LOGO_NOTCH_PATH} />
+          <circle fill={LOGO_COLORS.dot} cx={LOGO_DOT.cx} cy={LOGO_DOT.cy} r={LOGO_DOT.r} />
+        </svg>
+        {card.eyebrow ? (
+          <div
+            style={{
+              marginLeft: 12,
+              padding: "6px 16px",
+              borderRadius: 999,
+              background: SURFACE,
+              color: MUTED,
+              fontSize: 24,
+              fontWeight: 400,
+            }}
+          >
+            {card.eyebrow}
+          </div>
+        ) : null}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 740 }}>
+        <div
+          style={{ fontSize: card.title.length > 40 ? 54 : 64, fontWeight: 700, lineHeight: 1.15, letterSpacing: -1.5 }}
+        >
+          {card.title}
+        </div>
+        {card.subtitle ? (
+          <div style={{ fontSize: 30, fontWeight: 400, color: MUTED, lineHeight: 1.4 }}>{card.subtitle}</div>
+        ) : null}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 24, color: MUTED }}>
+        <div style={{ width: 10, height: 10, borderRadius: 5, background: PRIMARY }} />
+        <div>{BRAND_COMPANY}</div>
+      </div>
+    </div>,
     { ...OG_SIZE, fonts: await fonts() },
   );
 }

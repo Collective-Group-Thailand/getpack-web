@@ -13,7 +13,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SupportAccessPage() {
   const [t, context] = await Promise.all([getTranslations("partnerInsight.support"), factoryContext()]);
   const { contract } = await partnerServerApis();
-  const read = await attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/support-grants", { params: { path: { factoryId: context.factoryId } } })).data!);
+  const read = await attempt(
+    async () =>
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/erp/support-grants", {
+          params: { path: { factoryId: context.factoryId } },
+        })
+      ).data!,
+  );
   return (
     <PartnerPage title={t("title")} description={t("body")}>
       {read.data ? <SupportGrants grants={read.data} /> : <PageError error={read.error} />}

@@ -26,16 +26,33 @@ export default async function ProfitPage({ searchParams }: { searchParams: Promi
   const query = await searchParams;
   const month = query.month && MONTH.test(query.month) ? query.month : thisMonth();
   const by: By = BY.includes(query.by as By) ? (query.by as By) : "getpack_job";
-  const [t, format, context] = await Promise.all([getTranslations("partnerInsight.profit"), getFormat(), factoryContext()]);
+  const [t, format, context] = await Promise.all([
+    getTranslations("partnerInsight.profit"),
+    getFormat(),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const read = await attempt(
-    async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/insight/profitability", { params: { path: { factoryId: context.factoryId }, query: { month, by } } })).data!,
+    async () =>
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/erp/insight/profitability", {
+          params: { path: { factoryId: context.factoryId }, query: { month, by } },
+        })
+      ).data!,
   );
   const noCost = by === "getpack_job" ? (read.data?.rows.filter((r) => Number(r.cost) === 0).length ?? 0) : 0;
   const pct = (v: string | null) => (v === null ? "—" : format.percent(v, 1));
   return (
     <PartnerPage full title={t("title")} description={t("body")}>
-      <ViewTabs label={t("by")} current={by} items={BY.map((key) => ({ key, href: `/insight/profit${queryOf({ month, by: key === "getpack_job" ? undefined : key })}`, label: t(`views.${key}`) }))} />
+      <ViewTabs
+        label={t("by")}
+        current={by}
+        items={BY.map((key) => ({
+          key,
+          href: `/insight/profit${queryOf({ month, by: key === "getpack_job" ? undefined : key })}`,
+          label: t(`views.${key}`),
+        }))}
+      />
       <form className="flex flex-wrap items-end gap-2" action="/insight/profit">
         {by !== "getpack_job" ? <input type="hidden" name="by" value={by} /> : null}
         <label className="flex flex-col gap-1 text-sm">
@@ -66,7 +83,9 @@ export default async function ProfitPage({ searchParams }: { searchParams: Promi
             caption={t("title")}
             rows={read.data.rows}
             rowKey={(row) => row.key.id}
-            {...(by === "getpack_job" ? { rowHref: (row: { key: { id: string } }) => `/insight/costs/${row.key.id}` } : {})}
+            {...(by === "getpack_job"
+              ? { rowHref: (row: { key: { id: string } }) => `/insight/costs/${row.key.id}` }
+              : {})}
             rowTone={(row) => (Number(row.grossProfit) < 0 ? "danger" : undefined)}
             empty={<EmptyState icon="trend-up" title={t("empty")} description={t("emptyBody")} />}
             columns={[
@@ -96,7 +115,12 @@ export default async function ProfitPage({ searchParams }: { searchParams: Promi
                   ),
               },
               { key: "g", header: t("grossProfit"), align: "end", cell: (row) => format.thb(row.grossProfit) },
-              { key: "p", header: t("pct"), align: "end", cell: (row) => (by === "getpack_job" && Number(row.cost) === 0 ? "—" : pct(row.grossProfitPct)) },
+              {
+                key: "p",
+                header: t("pct"),
+                align: "end",
+                cell: (row) => (by === "getpack_job" && Number(row.cost) === 0 ? "—" : pct(row.grossProfitPct)),
+              },
             ]}
           />
           <p className="text-muted text-sm">{by === "getpack_job" ? t("noteGetpack") : t("note")}</p>

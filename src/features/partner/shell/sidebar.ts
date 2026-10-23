@@ -6,7 +6,8 @@ import type { IconName } from "@/ui/icons";
  * of those, only what the user's roles at this factory work with. "เพิ่มเติม" stays on a phone,
  * where the bottom bar has five places.
  */
-export type SidebarGroupKey = "daily" | "insight" | "sales" | "supply" | "plan" | "quality" | "finance" | "ledger" | "factory";
+export type SidebarGroupKey =
+  "daily" | "insight" | "sales" | "supply" | "plan" | "quality" | "finance" | "ledger" | "factory";
 
 export type SidebarItemKey =
   | "today"
@@ -101,9 +102,27 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
   claims: { key: "claims", href: "/claims", icon: "shield-alert", group: "daily", permission: "factory_claims.read" },
   // E4 (D-359 – D-362): the factory's own customers — leads and deals, quotations, orders, delivery notes.
   crm: { key: "crm", href: "/crm", icon: "users", group: "sales", permission: "factory_sales.read" },
-  quotations: { key: "quotations", href: "/quotations", icon: "document", group: "sales", permission: "factory_sales.read" },
-  salesOrders: { key: "salesOrders", href: "/sales-orders", icon: "cart", group: "sales", permission: "factory_sales.read" },
-  deliveries: { key: "deliveries", href: "/deliveries", icon: "truck", group: "sales", permission: "factory_sales.read" },
+  quotations: {
+    key: "quotations",
+    href: "/quotations",
+    icon: "document",
+    group: "sales",
+    permission: "factory_sales.read",
+  },
+  salesOrders: {
+    key: "salesOrders",
+    href: "/sales-orders",
+    icon: "cart",
+    group: "sales",
+    permission: "factory_sales.read",
+  },
+  deliveries: {
+    key: "deliveries",
+    href: "/deliveries",
+    icon: "truck",
+    group: "sales",
+    permission: "factory_sales.read",
+  },
   // getpack Factory ERP (E1, D-316): the factory's own stock, buying and trading partners.
   stock: { key: "stock", href: "/stock", icon: "warehouse", group: "supply", permission: "factory_inventory.read" },
   purchasing: {
@@ -176,19 +195,85 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
   tax: { key: "tax", href: "/tax", icon: "stamp", group: "finance", permission: "factory_tax.read" },
   // E6 (D-385 – D-396): the factory's own books — periods and the close, journals, statements, assets, bank.
   ledger: { key: "ledger", href: "/ledger", icon: "checklist", group: "ledger", permission: "factory_ledger.read" },
-  ledgerJournals: { key: "ledgerJournals", href: "/ledger/journals", icon: "list-ordered", group: "ledger", permission: "factory_ledger.read" },
-  ledgerReports: { key: "ledgerReports", href: "/ledger/reports", icon: "chart", group: "ledger", permission: "factory_ledger.read" },
-  ledgerAccounts: { key: "ledgerAccounts", href: "/ledger/accounts", icon: "layers", group: "ledger", permission: "factory_ledger.read" },
-  ledgerAssets: { key: "ledgerAssets", href: "/ledger/assets", icon: "building", group: "ledger", permission: "factory_ledger.read" },
-  ledgerBank: { key: "ledgerBank", href: "/ledger/bank", icon: "credit-card", group: "ledger", permission: "factory_ledger.read" },
+  ledgerJournals: {
+    key: "ledgerJournals",
+    href: "/ledger/journals",
+    icon: "list-ordered",
+    group: "ledger",
+    permission: "factory_ledger.read",
+  },
+  ledgerReports: {
+    key: "ledgerReports",
+    href: "/ledger/reports",
+    icon: "chart",
+    group: "ledger",
+    permission: "factory_ledger.read",
+  },
+  ledgerAccounts: {
+    key: "ledgerAccounts",
+    href: "/ledger/accounts",
+    icon: "layers",
+    group: "ledger",
+    permission: "factory_ledger.read",
+  },
+  ledgerAssets: {
+    key: "ledgerAssets",
+    href: "/ledger/assets",
+    icon: "building",
+    group: "ledger",
+    permission: "factory_ledger.read",
+  },
+  ledgerBank: {
+    key: "ledgerBank",
+    href: "/ledger/bank",
+    icon: "credit-card",
+    group: "ledger",
+    permission: "factory_ledger.read",
+  },
   // E5 (D-376 – D-378): the owner's dashboard, job costs, gross profit and OEE.
-  insight: { key: "insight", href: "/insight", icon: "dashboard", group: "insight", permission: "factory_insight.read" },
-  insightCosts: { key: "insightCosts", href: "/insight/costs", icon: "calculator", group: "insight", permission: "factory_insight.read" },
-  insightProfit: { key: "insightProfit", href: "/insight/profit", icon: "trend-up", group: "insight", permission: "factory_insight.read" },
-  insightOee: { key: "insightOee", href: "/insight/oee", icon: "activity", group: "insight", permission: "factory_insight.read" },
+  insight: {
+    key: "insight",
+    href: "/insight",
+    icon: "dashboard",
+    group: "insight",
+    permission: "factory_insight.read",
+  },
+  insightCosts: {
+    key: "insightCosts",
+    href: "/insight/costs",
+    icon: "calculator",
+    group: "insight",
+    permission: "factory_insight.read",
+  },
+  insightProfit: {
+    key: "insightProfit",
+    href: "/insight/profit",
+    icon: "trend-up",
+    group: "insight",
+    permission: "factory_insight.read",
+  },
+  insightOee: {
+    key: "insightOee",
+    href: "/insight/oee",
+    icon: "activity",
+    group: "insight",
+    permission: "factory_insight.read",
+  },
   // E5 (D-372 – D-374): the factory's own checks, NCRs and the checklists they use.
-  qualityChecks: { key: "qualityChecks", href: "/quality", icon: "clipboard-check", group: "quality", permission: "factory_quality.read" },
-  ncrs: { key: "ncrs", href: "/quality/ncrs", icon: "shield-alert", group: "quality", permission: "factory_quality.read" },
+  qualityChecks: {
+    key: "qualityChecks",
+    href: "/quality",
+    icon: "clipboard-check",
+    group: "quality",
+    permission: "factory_quality.read",
+  },
+  ncrs: {
+    key: "ncrs",
+    href: "/quality/ncrs",
+    icon: "shield-alert",
+    group: "quality",
+    permission: "factory_quality.read",
+  },
   qualityTemplates: {
     key: "qualityTemplates",
     href: "/quality/templates",
@@ -289,7 +374,20 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "documents",
     ...EVERYONE,
   ],
-  factory_operator: ["today", "alerts", "floor", "kiosk", "jobs", "planning", "maintenance", "qualityChecks", "ncrs", "people", "documents", ...EVERYONE],
+  factory_operator: [
+    "today",
+    "alerts",
+    "floor",
+    "kiosk",
+    "jobs",
+    "planning",
+    "maintenance",
+    "qualityChecks",
+    "ncrs",
+    "people",
+    "documents",
+    ...EVERYONE,
+  ],
   // QC and shipping open on their own queue (`/qc`, `/ship`): "งานวันนี้" would lead back to it.
   factory_qc: ["qc", "qualityChecks", "ncrs", "qualityTemplates", "samples", "claims", ...EVERYONE],
   factory_shipping: ["ship", ...EVERYONE],
@@ -338,9 +436,29 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "documents",
     ...EVERYONE,
   ],
-  factory_purchaser: ["today", "alerts", "purchasing", "rfqs", "stock", "tradingPartners", "payables", "documents", ...EVERYONE],
+  factory_purchaser: [
+    "today",
+    "alerts",
+    "purchasing",
+    "rfqs",
+    "stock",
+    "tradingPartners",
+    "payables",
+    "documents",
+    ...EVERYONE,
+  ],
   // E3 (D-357): the maintenance crew — orders, plans, machines and the spare parts in stock.
-  factory_maintenance: ["today", "alerts", "maintenance", "machines", "ncrs", "people", "stock", "documents", ...EVERYONE],
+  factory_maintenance: [
+    "today",
+    "alerts",
+    "maintenance",
+    "machines",
+    "ncrs",
+    "people",
+    "stock",
+    "documents",
+    ...EVERYONE,
+  ],
   // E4 (D-371): the sales desk — its customers and deals through to delivery, and what they owe.
   factory_sales: [
     "today",
@@ -388,7 +506,17 @@ const DESKS: readonly SidebarItemKey[] = [
   "alerts",
 ];
 
-const GROUP_ORDER: SidebarGroupKey[] = ["daily", "insight", "sales", "supply", "plan", "quality", "finance", "ledger", "factory"];
+const GROUP_ORDER: SidebarGroupKey[] = [
+  "daily",
+  "insight",
+  "sales",
+  "supply",
+  "plan",
+  "quality",
+  "finance",
+  "ledger",
+  "factory",
+];
 
 const itemOf = (key: SidebarItemKey): SidebarItem => ({ key, href: ITEMS[key].href, icon: ITEMS[key].icon });
 

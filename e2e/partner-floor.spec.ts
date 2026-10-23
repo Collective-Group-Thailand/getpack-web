@@ -104,7 +104,10 @@ test.describe("a job from acceptance to delivery (F001)", () => {
       if (round === 1) await gotoHydrated(page, `${HOSTS.partner}/ship`);
       // "สร้างการจัดส่ง" opens the trip's sheet (round 2, B3); creating it also packs it, so the
       // labels and packing list exist when the sheet closes.
-      await page.getByRole("button", { name: /^สร้างการจัดส่ง/ }).first().click();
+      await page
+        .getByRole("button", { name: /^สร้างการจัดส่ง/ })
+        .first()
+        .click();
       const sheet = page.getByRole("dialog", { name: "สร้างการจัดส่ง" });
       await sheet.getByLabel(/^น้ำหนัก/).fill("12");
       if (round === 0) await expectAxeClean(page);

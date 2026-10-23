@@ -13,20 +13,39 @@ export type MoreGroup = {
 };
 
 /** The phone's full menu with a filter on top — about fifty entries for an owner. */
-export function MoreMenu({ groups, label, placeholder, empty }: { groups: MoreGroup[]; label: string; placeholder: string; empty: string }) {
+export function MoreMenu({
+  groups,
+  label,
+  placeholder,
+  empty,
+}: {
+  groups: MoreGroup[];
+  label: string;
+  placeholder: string;
+  empty: string;
+}) {
   const [query, setQuery] = useState("");
   const needle = query.trim().toLocaleLowerCase();
   const shown = groups
     .map((group) => ({
       ...group,
       items: needle
-        ? group.items.filter((item) => `${item.title} ${item.meta ?? ""} ${group.title}`.toLocaleLowerCase().includes(needle))
+        ? group.items.filter((item) =>
+            `${item.title} ${item.meta ?? ""} ${group.title}`.toLocaleLowerCase().includes(needle),
+          )
         : group.items,
     }))
     .filter((group) => group.items.length > 0);
   return (
     <>
-      <Input type="search" inputSize="lg" aria-label={label} placeholder={placeholder} value={query} onChange={(e) => setQuery(e.target.value)} />
+      <Input
+        type="search"
+        inputSize="lg"
+        aria-label={label}
+        placeholder={placeholder}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
       {shown.length === 0 ? <p className="text-muted">{empty}</p> : null}
       {shown.map((group) => (
         <section key={group.key} aria-labelledby={`more-${group.key}`} className="flex flex-col gap-2">

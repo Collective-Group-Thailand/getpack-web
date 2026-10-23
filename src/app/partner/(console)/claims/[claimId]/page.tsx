@@ -78,14 +78,20 @@ export default async function ClaimPage({ params }: Props) {
             ...(claim.claimedQuantity !== null
               ? [{ term: t("quantity"), description: format.number(claim.claimedQuantity) }]
               : []),
-            ...(claim.claimedAmount ? [{ term: t("claimedAmount"), description: format.thb(claim.claimedAmount) }] : []),
+            ...(claim.claimedAmount
+              ? [{ term: t("claimedAmount"), description: format.thb(claim.claimedAmount) }]
+              : []),
             {
               term: t("reference"),
               description: (
                 <span className="flex flex-wrap gap-x-2">
                   {claim.orderCode ? <span>{claim.orderCode}</span> : null}
                   {claim.jobId && claim.jobNo ? (
-                    <Link href={`/jobs/${claim.jobId}`} className="text-primary underline underline-offset-2" aria-label={t("openJob", { no: claim.jobNo })}>
+                    <Link
+                      href={`/jobs/${claim.jobId}`}
+                      className="text-primary underline underline-offset-2"
+                      aria-label={t("openJob", { no: claim.jobNo })}
+                    >
                       {claim.jobNo}
                     </Link>
                   ) : null}

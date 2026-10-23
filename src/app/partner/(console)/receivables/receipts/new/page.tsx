@@ -16,7 +16,11 @@ export default async function NewReceiptPage({
 }: {
   searchParams: Promise<{ customer?: string; invoice?: string }>;
 }) {
-  const [query, t, context] = await Promise.all([searchParams, getTranslations("partnerSales.receipts"), factoryContext()]);
+  const [query, t, context] = await Promise.all([
+    searchParams,
+    getTranslations("partnerSales.receipts"),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const customers = await attempt(async () => erpCustomers(contract, context.factoryId));
   return (

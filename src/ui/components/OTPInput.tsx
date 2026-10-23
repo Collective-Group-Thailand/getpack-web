@@ -100,7 +100,10 @@ export function OTPInput({
 
   const active = Math.min(value.length, length - 1);
   return (
-    <div className={cn("relative grid gap-2 sm:gap-2.5", className)} style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}>
+    <div
+      className={cn("relative grid gap-2 sm:gap-2.5", className)}
+      style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}
+    >
       {Array.from({ length }, (_, index) => (
         <span
           key={index}

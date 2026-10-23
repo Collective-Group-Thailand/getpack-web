@@ -14,7 +14,11 @@ export async function generateMetadata(): Promise<Metadata> {
 /** A manual journal (D-389), new or — with `?edit=` — a draft being changed. */
 export default async function NewJournalPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
   const { edit } = await searchParams;
-  const [t, tj, context] = await Promise.all([getTranslations("partnerLedger.form"), getTranslations("partnerLedger.journal"), factoryContext()]);
+  const [t, tj, context] = await Promise.all([
+    getTranslations("partnerLedger.form"),
+    getTranslations("partnerLedger.journal"),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const back = { href: "/ledger/journals", label: tj("back") };
   if (!canAt(context, "factory_ledger.post"))
@@ -27,7 +31,10 @@ export default async function NewJournalPage({ searchParams }: { searchParams: P
     accountOptions(contract, context.factoryId),
     edit
       ? attempt(async () => {
-          const { data, response } = await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}", { params: { path: { factoryId: context.factoryId, entryId: edit } } });
+          const { data, response } = await contract.GET(
+            "/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}",
+            { params: { path: { factoryId: context.factoryId, entryId: edit } } },
+          );
           return { journal: data!, etag: response.headers.get("etag") };
         })
       : Promise.resolve(null),
@@ -40,7 +47,10 @@ export default async function NewJournalPage({ searchParams }: { searchParams: P
     );
   return (
     <PartnerPage wide title={draft ? t("editTitle") : t("title")} description={t("body")} back={back}>
-      <JournalForm accounts={accounts} {...(draft?.data ? { journal: draft.data.journal, etag: draft.data.etag } : {})} />
+      <JournalForm
+        accounts={accounts}
+        {...(draft?.data ? { journal: draft.data.journal, etag: draft.data.etag } : {})}
+      />
     </PartnerPage>
   );
 }

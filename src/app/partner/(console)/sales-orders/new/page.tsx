@@ -20,7 +20,12 @@ export default async function NewSalesOrderPage({ searchParams }: { searchParams
   ]);
   const pickers = await salesPickers(context.factoryId);
   return (
-    <PartnerPage wide title={t("newTitle")} description={t("newBody")} back={{ href: "/sales-orders", label: t("title") }}>
+    <PartnerPage
+      wide
+      title={t("newTitle")}
+      description={t("newBody")}
+      back={{ href: "/sales-orders", label: t("title") }}
+    >
       {pickers.data ? (
         <SalesDocForm
           kind="salesOrder"

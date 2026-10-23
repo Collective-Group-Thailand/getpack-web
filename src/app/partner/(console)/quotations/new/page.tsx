@@ -24,7 +24,12 @@ export default async function NewQuotationPage({
   ]);
   const pickers = await salesPickers(context.factoryId);
   return (
-    <PartnerPage wide title={t("newTitle")} description={t("newBody")} back={{ href: "/quotations", label: t("title") }}>
+    <PartnerPage
+      wide
+      title={t("newTitle")}
+      description={t("newBody")}
+      back={{ href: "/quotations", label: t("title") }}
+    >
       {pickers.data ? (
         <SalesDocForm
           kind="quotation"

@@ -37,7 +37,12 @@ export function QuoteAnswer({ token, quoteNo }: { token: string; quoteNo: string
       if (mode === "accept")
         await browserApi().POST("/v1/store/quote-links/{token}/actions/accept", {
           params: { path: { token } },
-          body: { name: name.trim(), position: position.trim() || null, customerPoNo: poNo.trim() || null, agree: true },
+          body: {
+            name: name.trim(),
+            position: position.trim() || null,
+            customerPoNo: poNo.trim() || null,
+            agree: true,
+          },
         });
       else
         await browserApi().POST("/v1/store/quote-links/{token}/actions/decline", {
@@ -80,11 +85,20 @@ export function QuoteAnswer({ token, quoteNo }: { token: string; quoteNo: string
               <Input value={poNo} onChange={(e) => setPoNo(e.target.value)} />
             </Field>
           </div>
-          <Checkbox checked={agree} onCheckedChange={(on) => setAgree(on === true)} label={t("agree", { no: quoteNo })} />
+          <Checkbox
+            checked={agree}
+            onCheckedChange={(on) => setAgree(on === true)}
+            label={t("agree", { no: quoteNo })}
+          />
         </>
       ) : (
         <Field label={t("reason")}>
-          <Textarea rows={3} value={reason} placeholder={t("reasonPlaceholder")} onChange={(e) => setReason(e.target.value)} />
+          <Textarea
+            rows={3}
+            value={reason}
+            placeholder={t("reasonPlaceholder")}
+            onChange={(e) => setReason(e.target.value)}
+          />
         </Field>
       )}
       {error ? <p className="text-danger text-sm">{error}</p> : null}

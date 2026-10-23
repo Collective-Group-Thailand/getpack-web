@@ -161,7 +161,10 @@ export default async function PriceListPage({ params, searchParams }: Props) {
       ) : null}
 
       {open ? (
-        <Callout tone={open.status === "draft" ? "warning" : "info"} title={t(`openNotice.${open.status === "draft" ? "draft" : "sent"}`)}>
+        <Callout
+          tone={open.status === "draft" ? "warning" : "info"}
+          title={t(`openNotice.${open.status === "draft" ? "draft" : "sent"}`)}
+        >
           <span className="flex flex-col gap-2">
             <span className="flex flex-wrap items-center gap-2">
               <StatusChip map={PROPOSAL_STATUS} value={open.status} />
@@ -169,7 +172,12 @@ export default async function PriceListPage({ params, searchParams }: Props) {
             </span>
             <span>{t(`openNotice.${open.status === "draft" ? "draftNext" : "sentNext"}`)}</span>
             <span>
-              <Button asChild size="md" variant={open.status === "draft" ? "primary" : "secondary"} iconStart={open.status === "draft" ? "edit" : "eye"}>
+              <Button
+                asChild
+                size="md"
+                variant={open.status === "draft" ? "primary" : "secondary"}
+                iconStart={open.status === "draft" ? "edit" : "eye"}
+              >
                 <Link href={openHref}>{open.status === "draft" ? t("cta.continueDraft") : t("cta.viewOpen")}</Link>
               </Button>
             </span>
@@ -215,9 +223,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
                 </nav>
               ) : null}
             </div>
-            <p className="text-muted">
-              {t("version.parts", { filled, total: definitions.length })}
-            </p>
+            <p className="text-muted">{t("version.parts", { filled, total: definitions.length })}</p>
             {version.factoryAcceptedAt ? (
               <p>{t("version.accepted", { date: format.dateTime(version.factoryAcceptedAt) })}</p>
             ) : null}
@@ -328,15 +334,15 @@ export default async function PriceListPage({ params, searchParams }: Props) {
 
       {prices.mode === "factory_price_list" ? (
         open ? null : (
-        <PartnerSection id="propose" title={t("propose.title")} description={t("propose.body")}>
-          {canPropose ? (
-            <Card padding="md">
-              <CreateProposal productTypeId={productTypeId} typeName={name} />
-            </Card>
-          ) : (
-            <p className="text-muted">{t("readOnly")}</p>
-          )}
-        </PartnerSection>
+          <PartnerSection id="propose" title={t("propose.title")} description={t("propose.body")}>
+            {canPropose ? (
+              <Card padding="md">
+                <CreateProposal productTypeId={productTypeId} typeName={name} />
+              </Card>
+            ) : (
+              <p className="text-muted">{t("readOnly")}</p>
+            )}
+          </PartnerSection>
         )
       ) : (
         <PartnerSection title={t("rateCardMode.title")}>

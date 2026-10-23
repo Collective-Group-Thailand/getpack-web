@@ -43,7 +43,8 @@ export function finishMask(
     ctx.scale(el.scaleX, el.scaleY);
     if (el.type === "rect") {
       ctx.beginPath();
-      if (el.cornerRadius > 0 && typeof ctx.roundRect === "function") ctx.roundRect(0, 0, el.width, el.height, el.cornerRadius);
+      if (el.cornerRadius > 0 && typeof ctx.roundRect === "function")
+        ctx.roundRect(0, 0, el.width, el.height, el.cornerRadius);
       else ctx.rect(0, 0, el.width, el.height);
       ctx.fill();
     } else if (el.type === "circle") {

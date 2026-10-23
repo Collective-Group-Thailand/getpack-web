@@ -367,19 +367,11 @@ export function OrderSheet({
         <Button disabled={!ready || phase !== null || blocked} onClick={() => void order("checkout")}>
           {t("orderNow")}
         </Button>
-        <Button
-          variant="secondary"
-          disabled={!ready || phase !== null || blocked}
-          onClick={() => void order("cart")}
-        >
+        <Button variant="secondary" disabled={!ready || phase !== null || blocked} onClick={() => void order("cart")}>
           {t("addToCart")}
         </Button>
         {companyBuyer ? (
-          <Button
-            variant="ghost"
-            disabled={!ready || phase !== null || blocked}
-            onClick={() => void order("approval")}
-          >
+          <Button variant="ghost" disabled={!ready || phase !== null || blocked} onClick={() => void order("approval")}>
             {t("sendForApproval")}
           </Button>
         ) : null}

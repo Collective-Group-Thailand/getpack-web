@@ -22,7 +22,11 @@ const VIEWS = ["active", "overdue", "closed", "all"] as const;
 type View = (typeof VIEWS)[number];
 
 /** Nonconformance reports (D-374): what is open, overdue and done. */
-export default async function NcrsPage({ searchParams }: { searchParams: Promise<{ view?: string; q?: string; page?: string }> }) {
+export default async function NcrsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; q?: string; page?: string }>;
+}) {
   const query = await searchParams;
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "active";
   const page = pageOf(query.page);
@@ -42,14 +46,21 @@ export default async function NcrsPage({ searchParams }: { searchParams: Promise
             query: {
               page,
               perPage: 25,
-              ...(view === "active" ? { status: "active" } : view === "closed" ? { status: "closed" } : view === "overdue" ? { overdue: true } : {}),
+              ...(view === "active"
+                ? { status: "active" }
+                : view === "closed"
+                  ? { status: "closed" }
+                  : view === "overdue"
+                    ? { overdue: true }
+                    : {}),
               ...(query.q ? { q: query.q } : {}),
             },
           },
         })
       ).data!,
   );
-  const href = (next: Record<string, string | number | undefined>) => `/quality/ncrs${queryOf({ view: view === "active" ? undefined : view, q: query.q, ...next })}`;
+  const href = (next: Record<string, string | number | undefined>) =>
+    `/quality/ncrs${queryOf({ view: view === "active" ? undefined : view, q: query.q, ...next })}`;
   return (
     <PartnerPage
       full
@@ -63,8 +74,24 @@ export default async function NcrsPage({ searchParams }: { searchParams: Promise
         ) : null
       }
     >
-      <ViewTabs label={t("views.label")} current={view} items={VIEWS.map((key) => ({ key, href: `/quality/ncrs${queryOf({ view: key === "active" ? undefined : key })}`, label: t(`views.${key}`) }))} />
-      <SearchBar id="ncr-search" action="/quality/ncrs" hidden={{ view: view === "active" ? undefined : view }} q={query.q} label={t("search")} placeholder={t("searchPlaceholder")} button={t("searchButton")} />
+      <ViewTabs
+        label={t("views.label")}
+        current={view}
+        items={VIEWS.map((key) => ({
+          key,
+          href: `/quality/ncrs${queryOf({ view: key === "active" ? undefined : key })}`,
+          label: t(`views.${key}`),
+        }))}
+      />
+      <SearchBar
+        id="ncr-search"
+        action="/quality/ncrs"
+        hidden={{ view: view === "active" ? undefined : view }}
+        q={query.q}
+        label={t("search")}
+        placeholder={t("searchPlaceholder")}
+        button={t("searchButton")}
+      />
       {list.data ? (
         <>
           <PartnerTable
@@ -72,13 +99,24 @@ export default async function NcrsPage({ searchParams }: { searchParams: Promise
             rows={list.data.data}
             rowKey={(row) => row.id}
             rowHref={(row) => `/quality/ncrs/${row.id}`}
-            rowTone={(row) => (row.overdue ? "danger" : row.severity === "critical" && row.status === "open" ? "warning" : undefined)}
+            rowTone={(row) =>
+              row.overdue ? "danger" : row.severity === "critical" && row.status === "open" ? "warning" : undefined
+            }
             empty={<EmptyState icon="shield-check" title={t("empty")} description={t("emptyBody")} />}
             columns={[
-              { key: "no", header: t("ncrNo"), primary: true, cell: (row) => <span className="font-mono">{row.ncrNo}</span> },
+              {
+                key: "no",
+                header: t("ncrNo"),
+                primary: true,
+                cell: (row) => <span className="font-mono">{row.ncrNo}</span>,
+              },
               { key: "title", header: t("titleColumn"), cell: (row) => row.title },
               { key: "src", header: t("source"), hideOnPhone: true, cell: (row) => tSource(row.source) },
-              { key: "sev", header: t("severity"), cell: (row) => <StatusChip map={ERP_NCR_SEVERITY} value={row.severity} /> },
+              {
+                key: "sev",
+                header: t("severity"),
+                cell: (row) => <StatusChip map={ERP_NCR_SEVERITY} value={row.severity} />,
+              },
               { key: "own", header: t("owner"), hideOnPhone: true, cell: (row) => row.owner?.name ?? "—" },
               {
                 key: "due",
@@ -93,7 +131,13 @@ export default async function NcrsPage({ searchParams }: { searchParams: Promise
               { key: "st", header: t("status"), cell: (row) => <StatusChip map={ERP_NCR_STATUS} value={row.status} /> },
             ]}
           />
-          <Pager page={page} perPage={list.data.meta.perPage} total={list.data.meta.total} hrefFor={(p) => href({ page: p })} labels={{ nav: t("pages"), previous: t("previous"), next: t("next"), page: (n) => t("page", { n }) }} />
+          <Pager
+            page={page}
+            perPage={list.data.meta.perPage}
+            total={list.data.meta.total}
+            hrefFor={(p) => href({ page: p })}
+            labels={{ nav: t("pages"), previous: t("previous"), next: t("next"), page: (n) => t("page", { n }) }}
+          />
         </>
       ) : (
         <PageError error={list.error} />

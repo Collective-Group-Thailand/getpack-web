@@ -85,13 +85,7 @@ export function LayersPanel() {
 
   return (
     <div className="space-y-3">
-      <ul
-        role="tree"
-        aria-label={t("label")}
-        aria-multiselectable="true"
-        onKeyDown={onKeyDown}
-        className="space-y-0.5"
-      >
+      <ul role="tree" aria-label={t("label")} aria-multiselectable="true" onKeyDown={onKeyDown} className="space-y-0.5">
         {rows.map((row, index) =>
           row.kind === "side" ? (
             <li
@@ -126,7 +120,9 @@ export function LayersPanel() {
               }}
               className={cn(
                 "focus-visible:ring-focus-ring flex cursor-default items-center gap-2 rounded-md py-1.5 ps-5 pe-2 text-sm outline-none focus-visible:ring-2",
-                selectedIds.includes(row.el.id) ? "bg-primary-subtle text-primary-subtle-fg" : "hover:bg-surface-subtle",
+                selectedIds.includes(row.el.id)
+                  ? "bg-primary-subtle text-primary-subtle-fg"
+                  : "hover:bg-surface-subtle",
               )}
             >
               <Icon name={ICON[row.el.type]} size={16} aria-hidden="true" className="shrink-0" />

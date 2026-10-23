@@ -12,11 +12,20 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** A billing note grouping a customer's invoices (D-365); `?customer=` preselects the customer. */
 export default async function NewBillingPage({ searchParams }: { searchParams: Promise<{ customer?: string }> }) {
-  const [query, t, context] = await Promise.all([searchParams, getTranslations("partnerSales.billing"), factoryContext()]);
+  const [query, t, context] = await Promise.all([
+    searchParams,
+    getTranslations("partnerSales.billing"),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const customers = await attempt(async () => erpCustomers(contract, context.factoryId));
   return (
-    <PartnerPage wide title={t("newTitle")} description={t("newBody")} back={{ href: "/receivables?view=billing", label: t("back") }}>
+    <PartnerPage
+      wide
+      title={t("newTitle")}
+      description={t("newBody")}
+      back={{ href: "/receivables?view=billing", label: t("back") }}
+    >
       {customers.data ? (
         <BillingForm
           customers={customers.data.map((c) => ({ id: c.id, code: c.code, name: c.name }))}

@@ -55,7 +55,10 @@ export default async function StudioPage({
 
   // A new design's seed is its identity: another `?style=&l=&w=&h=` (the sample link, a style
   // page) on the same route mounts a fresh studio instead of keeping the old one's state (round 2, B6).
-  const seedKey = id === "new" ? ["style", "l", "w", "h", "sv", "rv", "product", "template"].map((k) => text(query[k]) ?? "").join(":") : id;
+  const seedKey =
+    id === "new"
+      ? ["style", "l", "w", "h", "sv", "rv", "product", "template"].map((k) => text(query[k]) ?? "").join(":")
+      : id;
 
   return (
     <Studio

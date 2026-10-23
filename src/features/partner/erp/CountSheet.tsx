@@ -32,7 +32,9 @@ const milli = (v: string) => {
 const fromMilli = (n: bigint) => {
   const sign = n < 0n ? "-" : n > 0n ? "+" : "";
   const a = n < 0n ? -n : n;
-  const frac = String(a % 1000n).padStart(3, "0").replace(/0+$/, "");
+  const frac = String(a % 1000n)
+    .padStart(3, "0")
+    .replace(/0+$/, "");
   return `${sign}${a / 1000n}${frac ? `.${frac}` : ""}`;
 };
 
@@ -42,7 +44,15 @@ const fromMilli = (n: bigint) => {
  * adjustment with its reason; items kept by lot are counted lot by lot on the single-item form. Printable for the
  * walk round the store.
  */
-export function CountSheet({ items, warehouses, locale }: { items: PickItem[]; warehouses: Warehouse[]; locale: string }) {
+export function CountSheet({
+  items,
+  warehouses,
+  locale,
+}: {
+  items: PickItem[];
+  warehouses: Warehouse[];
+  locale: string;
+}) {
   const t = useTranslations("partnerErp.count");
   const tCommon = useTranslations("partnerErp.common");
   const tMove = useTranslations("partnerErp.move");
@@ -128,10 +138,19 @@ export function CountSheet({ items, warehouses, locale }: { items: PickItem[]; w
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 md:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)] print:hidden">
         <Field label={tCommon("warehouse")}>
-          <Select value={warehouseId} onValueChange={(v) => (setWarehouseId(v), setCounted({}))} options={warehouses.map((w) => ({ value: w.id, label: w.name, description: w.code }))} />
+          <Select
+            value={warehouseId}
+            onValueChange={(v) => (setWarehouseId(v), setCounted({}))}
+            options={warehouses.map((w) => ({ value: w.id, label: w.name, description: w.code }))}
+          />
         </Field>
         <Field label={t("search")}>
-          <Input type="search" value={query} placeholder={t("searchPlaceholder")} onChange={(e) => setQuery(e.target.value)} />
+          <Input
+            type="search"
+            value={query}
+            placeholder={t("searchPlaceholder")}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </Field>
       </div>
       <div className="flex flex-wrap items-center gap-4 print:hidden">
@@ -178,8 +197,11 @@ export function CountSheet({ items, warehouses, locale }: { items: PickItem[]; w
                     {l.lots ? <span className="text-muted block text-xs">{t("byLot")}</span> : null}
                   </td>
                   {!blind ? (
-                    <td className="px-3 py-2 text-end tabular-nums whitespace-nowrap">
-                      {formatQty(l.row.onHand, locale)} {tCommon.has(`units.${l.row.item.baseUnit}` as never) ? tCommon(`units.${l.row.item.baseUnit}` as never) : l.row.item.baseUnit}
+                    <td className="px-3 py-2 text-end whitespace-nowrap tabular-nums">
+                      {formatQty(l.row.onHand, locale)}{" "}
+                      {tCommon.has(`units.${l.row.item.baseUnit}` as never)
+                        ? tCommon(`units.${l.row.item.baseUnit}` as never)
+                        : l.row.item.baseUnit}
                     </td>
                   ) : null}
                   <td className="px-3 py-2">
@@ -194,7 +216,12 @@ export function CountSheet({ items, warehouses, locale }: { items: PickItem[]; w
                     />
                   </td>
                   {!blind ? (
-                    <td className={cn("px-3 py-2 text-end font-medium tabular-nums", l.diff === null ? "text-muted" : l.diff === 0n ? "text-success" : "text-warning-subtle-fg")}>
+                    <td
+                      className={cn(
+                        "px-3 py-2 text-end font-medium tabular-nums",
+                        l.diff === null ? "text-muted" : l.diff === 0n ? "text-success" : "text-warning-subtle-fg",
+                      )}
+                    >
                       {l.diff === null ? "—" : l.diff === 0n ? t("match") : fromMilli(l.diff)}
                     </td>
                   ) : null}
@@ -208,9 +235,21 @@ export function CountSheet({ items, warehouses, locale }: { items: PickItem[]; w
         {t("summary", { counted: entered.length, total: lines.length, changed: changed.length })}
       </p>
       <Field label={tMove("reason")} required requiredLabel={tCommon("required")} className="print:hidden">
-        <Textarea rows={2} value={reason} placeholder={t("reasonPlaceholder")} onChange={(e) => setReason(e.target.value)} />
+        <Textarea
+          rows={2}
+          value={reason}
+          placeholder={t("reasonPlaceholder")}
+          onChange={(e) => setReason(e.target.value)}
+        />
       </Field>
-      <Button size="xl" iconStart="save" loading={busy} disabled={!entered.length} onClick={() => void submit()} className="self-start print:hidden">
+      <Button
+        size="xl"
+        iconStart="save"
+        loading={busy}
+        disabled={!entered.length}
+        onClick={() => void submit()}
+        className="self-start print:hidden"
+      >
         {t("submit", { count: entered.length })}
       </Button>
     </div>

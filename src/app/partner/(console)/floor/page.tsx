@@ -61,7 +61,9 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
   }
   for (const group of groups) {
     group.operations.sort((a, b) => a.operation.seq - b.operation.seq);
-    const running = group.operations.findIndex((e) => e.operation.status === "in_progress" || e.operation.status === "paused");
+    const running = group.operations.findIndex(
+      (e) => e.operation.status === "in_progress" || e.operation.status === "paused",
+    );
     if (running > 0) group.operations.unshift(...group.operations.splice(running, 1));
   }
   const tKiosk = await getTranslations("partnerOps.kiosk");
@@ -106,7 +108,10 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-muted text-sm">
-                        <Link href={`/planning/orders/${order.id}`} className="font-mono underline-offset-4 hover:underline">
+                        <Link
+                          href={`/planning/orders/${order.id}`}
+                          className="font-mono underline-offset-4 hover:underline"
+                        >
                           {order.moNo}
                         </Link>{" "}
                         · {order.title}
@@ -118,11 +123,15 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
                         {[
                           tCommon("inUnit", {
                             qty: formatQty(order.quantity, locale),
-                            unit: tCommon.has(`units.${order.unit}` as never) ? tCommon(`units.${order.unit}` as never) : order.unit,
+                            unit: tCommon.has(`units.${order.unit}` as never)
+                              ? tCommon(`units.${order.unit}` as never)
+                              : order.unit,
                           }),
                           order.dueOn ? t("due", { date: format.date(order.dueOn) }) : null,
                           card.operation.machine?.name ?? null,
-                          card.operation.plannedMinutes > 0 ? tPlan("detail.minutes", { n: card.operation.plannedMinutes }) : null,
+                          card.operation.plannedMinutes > 0
+                            ? tPlan("detail.minutes", { n: card.operation.plannedMinutes })
+                            : null,
                         ]
                           .filter(Boolean)
                           .join(" · ")}
@@ -138,27 +147,46 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
                     <OperationButtons
                       orderId={order.id}
                       operation={card.operation}
-                      unit={tCommon.has(`units.${order.unit}` as never) ? tCommon(`units.${order.unit}` as never) : order.unit}
+                      unit={
+                        tCommon.has(`units.${order.unit}` as never)
+                          ? tCommon(`units.${order.unit}` as never)
+                          : order.unit
+                      }
                       defaultGood={order.quantity}
                     />
                   ) : null}
                   {later.length ? (
                     <details className="text-sm">
                       <summary className="text-muted cursor-pointer select-none">
-                        {t("nextSteps", { list: later.slice(0, 3).map((item) => `${item.operation.seq}. ${item.operation.name}`).join(" · "), count: later.length })}
+                        {t("nextSteps", {
+                          list: later
+                            .slice(0, 3)
+                            .map((item) => `${item.operation.seq}. ${item.operation.name}`)
+                            .join(" · "),
+                          count: later.length,
+                        })}
                       </summary>
                       <ol className="mt-2 flex flex-col gap-3">
                         {later.map((item) => (
-                          <li key={item.operation.id} className="border-border flex flex-col gap-2 rounded-lg border p-3">
+                          <li
+                            key={item.operation.id}
+                            className="border-border flex flex-col gap-2 rounded-lg border p-3"
+                          >
                             <p className="font-medium">
                               {item.operation.seq}. {item.operation.name}
-                              {item.operation.machine ? <span className="text-muted"> · {item.operation.machine.name}</span> : null}
+                              {item.operation.machine ? (
+                                <span className="text-muted"> · {item.operation.machine.name}</span>
+                              ) : null}
                             </p>
                             {canRecord ? (
                               <OperationButtons
                                 orderId={order.id}
                                 operation={item.operation}
-                                unit={tCommon.has(`units.${order.unit}` as never) ? tCommon(`units.${order.unit}` as never) : order.unit}
+                                unit={
+                                  tCommon.has(`units.${order.unit}` as never)
+                                    ? tCommon(`units.${order.unit}` as never)
+                                    : order.unit
+                                }
                                 defaultGood={order.quantity}
                               />
                             ) : null}

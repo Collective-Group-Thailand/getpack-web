@@ -71,7 +71,10 @@ export function CallOffActions({
   return (
     <div className="flex flex-col gap-4">
       {agreement.status === "active" ? (
-        <section aria-labelledby="release" className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
+        <section
+          aria-labelledby="release"
+          className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4"
+        >
           <h2 id="release" className="font-semibold">
             {t("releaseTitle")}
           </h2>

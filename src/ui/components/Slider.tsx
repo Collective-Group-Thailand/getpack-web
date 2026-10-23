@@ -26,8 +26,8 @@ export function Slider({ className, valueText, "aria-label": ariaLabel, ...props
       disabled={props.disabled ?? groupProps.disabled}
       {...props}
     >
-      <SliderPrimitive.Track className="bg-neutral-subtle relative h-1.5 w-full grow rounded-control">
-        <SliderPrimitive.Range className="bg-primary absolute h-full rounded-control" />
+      <SliderPrimitive.Track className="bg-neutral-subtle rounded-control relative h-1.5 w-full grow">
+        <SliderPrimitive.Range className="bg-primary rounded-control absolute h-full" />
       </SliderPrimitive.Track>
       <SliderPrimitive.Thumb
         // The thumb is the control, so the name and description belong on it, not on the root.

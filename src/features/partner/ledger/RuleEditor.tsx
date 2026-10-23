@@ -25,7 +25,15 @@ type Template = Schemas["ErpGlTemplateDto"];
 type TemplateLine = Schemas["ErpGlTemplateLineDto"];
 type Preview = Schemas["ErpGlPreviewDto"];
 
-const TAX_CODES = ["output_vat", "output_vat_not_due", "input_vat", "input_vat_pending", "wht_receivable", "wht_pnd3", "wht_pnd53"] as const;
+const TAX_CODES = [
+  "output_vat",
+  "output_vat_not_due",
+  "input_vat",
+  "input_vat_pending",
+  "wht_receivable",
+  "wht_pnd3",
+  "wht_pnd53",
+] as const;
 const OPS = ["eq", "ne", "gt", "gte", "lt", "lte"] as const;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const NONE = "-";
@@ -62,7 +70,20 @@ const lineOf = (l: TemplateLine): Line => ({
   ...(l.dimensions ? { dimensions: l.dimensions } : {}),
 });
 
-const emptyLine = (): Line => ({ forEach: "", whenField: "", whenOp: "eq", whenValue: "", mode: "fixed", accountCode: "", accountPath: "", side: "debit", amount: "", description: "", taxCode: "", taxBase: "" });
+const emptyLine = (): Line => ({
+  forEach: "",
+  whenField: "",
+  whenOp: "eq",
+  whenValue: "",
+  mode: "fixed",
+  accountCode: "",
+  accountPath: "",
+  side: "debit",
+  amount: "",
+  description: "",
+  taxCode: "",
+  taxBase: "",
+});
 
 const templateOf = (description: string, lines: Line[]): Template => ({
   description: description.trim(),
@@ -89,8 +110,18 @@ export function PreviewResult({ preview }: { preview: Preview }) {
     <div className="border-border flex flex-col gap-2 rounded-lg border p-3" aria-live="polite">
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-sm font-semibold">{t("previewTitle")}</h3>
-        {preview.sampleNo ? <span className="text-muted text-sm">{t("previewSample", { no: preview.sampleNo, date: preview.sampleAt ? format.date(preview.sampleAt) : "" })}</span> : <span className="text-muted text-sm">{t("previewNone")}</span>}
-        {preview.lines.length ? <Badge tone={preview.balanced ? "success" : "danger"}>{preview.balanced ? t("balanced") : t("unbalanced")}</Badge> : null}
+        {preview.sampleNo ? (
+          <span className="text-muted text-sm">
+            {t("previewSample", { no: preview.sampleNo, date: preview.sampleAt ? format.date(preview.sampleAt) : "" })}
+          </span>
+        ) : (
+          <span className="text-muted text-sm">{t("previewNone")}</span>
+        )}
+        {preview.lines.length ? (
+          <Badge tone={preview.balanced ? "success" : "danger"}>
+            {preview.balanced ? t("balanced") : t("unbalanced")}
+          </Badge>
+        ) : null}
       </div>
       {preview.lines.length ? (
         <>
@@ -108,7 +139,9 @@ export function PreviewResult({ preview }: { preview: Preview }) {
                 <tr key={i} className="border-border border-t">
                   <td className="py-1">
                     <span className="font-mono">{l.accountCode}</span> {l.accountName ?? ""}
-                    {l.taxCode ? <span className="text-muted ms-1 text-xs">{t(`taxCodes.${l.taxCode}` as never)}</span> : null}
+                    {l.taxCode ? (
+                      <span className="text-muted ms-1 text-xs">{t(`taxCodes.${l.taxCode}` as never)}</span>
+                    ) : null}
                   </td>
                   <td className="py-1 text-end tabular-nums">{l.side === "debit" ? format.thb(l.amount) : ""}</td>
                   <td className="py-1 text-end tabular-nums">{l.side === "credit" ? format.thb(l.amount) : ""}</td>
@@ -160,7 +193,10 @@ export function RuleEditor({
   const { factoryId } = useFactory();
   const { run, busy } = useRun();
   const [open, setOpen] = useState(false);
-  const start = () => ({ description: current?.template.description ?? "", lines: current?.template.lines.map(lineOf) ?? [emptyLine()] });
+  const start = () => ({
+    description: current?.template.description ?? "",
+    lines: current?.template.lines.map(lineOf) ?? [emptyLine()],
+  });
   const [description, setDescription] = useState(start().description);
   const [lines, setLines] = useState<Line[]>(start().lines);
   const [effectiveFrom, setEffectiveFrom] = useState(todayInBangkok());
@@ -175,10 +211,23 @@ export function RuleEditor({
   const fields = rule.variables.filter((v) => v.kind !== "list" && v.kind !== "account");
   const amounts = rule.variables.filter((v) => v.kind === "amount");
   const fixedOptions = accounts.map((a) => ({ value: a.id, label: a.label }));
-  const docOptions = documentAccounts.map((a) => ({ value: a.id, label: a.label, ...(a.hint ? { description: a.hint } : {}) }));
-  const listOptions = [{ value: NONE, label: t("once") }, ...lists.map((v) => ({ value: v.path, label: v.label, description: v.path }))];
-  const fieldOptions = [{ value: NONE, label: t("always") }, ...fields.map((v) => ({ value: v.path, label: v.label, description: v.path }))];
-  const taxOptions = [{ value: NONE, label: t("noTax") }, ...TAX_CODES.map((c) => ({ value: c, label: t(`taxCodes.${c}`) }))];
+  const docOptions = documentAccounts.map((a) => ({
+    value: a.id,
+    label: a.label,
+    ...(a.hint ? { description: a.hint } : {}),
+  }));
+  const listOptions = [
+    { value: NONE, label: t("once") },
+    ...lists.map((v) => ({ value: v.path, label: v.label, description: v.path })),
+  ];
+  const fieldOptions = [
+    { value: NONE, label: t("always") },
+    ...fields.map((v) => ({ value: v.path, label: v.label, description: v.path })),
+  ];
+  const taxOptions = [
+    { value: NONE, label: t("noTax") },
+    ...TAX_CODES.map((c) => ({ value: c, label: t(`taxCodes.${c}`) })),
+  ];
   const opOptions = OPS.map((o) => ({ value: o, label: t(`ops.${o}`) }));
   const set = (i: number, patch: Partial<Line>) => {
     setLines(lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
@@ -196,7 +245,10 @@ export function RuleEditor({
     setLines(s.lines);
     setPreview(null);
   };
-  const ready = () => description.trim() !== "" && lines.length > 0 && lines.every((l) => l.amount.trim() !== "" && (l.mode === "fixed" ? l.accountCode : l.accountPath));
+  const ready = () =>
+    description.trim() !== "" &&
+    lines.length > 0 &&
+    lines.every((l) => l.amount.trim() !== "" && (l.mode === "fixed" ? l.accountCode : l.accountPath));
 
   async function tryIt(): Promise<Preview | null> {
     if (!ready()) {
@@ -205,7 +257,12 @@ export function RuleEditor({
     }
     setTrying(true);
     try {
-      const result = await erpPost<Preview>(factoryId, "/ledger/rules/{ruleId}/actions/preview", { ruleId: rule.id }, { template: templateOf(description, lines) });
+      const result = await erpPost<Preview>(
+        factoryId,
+        "/ledger/rules/{ruleId}/actions/preview",
+        { ruleId: rule.id },
+        { template: templateOf(description, lines) },
+      );
       setPreview(result);
       return result;
     } catch {
@@ -220,7 +277,16 @@ export function RuleEditor({
     if (!ready() || !DAY.test(effectiveFrom) || reason.trim().length < 3) return toast.error(t("invalid"));
     const checked = await tryIt();
     if (!checked || checked.problems.length) return;
-    const saved = await run(() => erpPost<Rule>(factoryId, "/ledger/rules/{ruleId}/versions", { ruleId: rule.id }, { template: templateOf(description, lines), effectiveFrom, reason: reason.trim() }), t("proposed"));
+    const saved = await run(
+      () =>
+        erpPost<Rule>(
+          factoryId,
+          "/ledger/rules/{ruleId}/versions",
+          { ruleId: rule.id },
+          { template: templateOf(description, lines), effectiveFrom, reason: reason.trim() },
+        ),
+      t("proposed"),
+    );
     if (saved) {
       setOpen(false);
       setReason("");
@@ -242,7 +308,11 @@ export function RuleEditor({
     <div className="flex flex-col gap-4">
       <p className="text-muted text-sm">{t("editBody")}</p>
       <Field label={t("entryText")} hint={t("entryTextHint")} required>
-        <Input value={description} maxLength={300} onChange={(e) => (setDescription(e.target.value), setPreview(null))} />
+        <Input
+          value={description}
+          maxLength={300}
+          onChange={(e) => (setDescription(e.target.value), setPreview(null))}
+        />
       </Field>
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-1 text-sm font-medium">{t("lines")}</legend>
@@ -251,9 +321,27 @@ export function RuleEditor({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-sm font-semibold">{t("line", { n: i + 1 })}</span>
               <div className="flex gap-1">
-                <IconButton name="chevron-up" label={t("moveUp")} variant="ghost" disabled={i === 0} onClick={() => move(i, -1)} />
-                <IconButton name="chevron-down" label={t("moveDown")} variant="ghost" disabled={i === lines.length - 1} onClick={() => move(i, 1)} />
-                <IconButton name="trash" label={t("removeLine")} variant="ghost" disabled={lines.length <= 1} onClick={() => setLines(lines.filter((_, j) => j !== i))} />
+                <IconButton
+                  name="chevron-up"
+                  label={t("moveUp")}
+                  variant="ghost"
+                  disabled={i === 0}
+                  onClick={() => move(i, -1)}
+                />
+                <IconButton
+                  name="chevron-down"
+                  label={t("moveDown")}
+                  variant="ghost"
+                  disabled={i === lines.length - 1}
+                  onClick={() => move(i, 1)}
+                />
+                <IconButton
+                  name="trash"
+                  label={t("removeLine")}
+                  variant="ghost"
+                  disabled={lines.length <= 1}
+                  onClick={() => setLines(lines.filter((_, j) => j !== i))}
+                />
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
@@ -271,11 +359,23 @@ export function RuleEditor({
               </Field>
               {line.mode === "fixed" ? (
                 <Field label={t("account")}>
-                  <Select value={line.accountCode || null} options={fixedOptions} placeholder={tc("accountPlaceholder")} onValueChange={(v) => set(i, { accountCode: v })} aria-label={t("account")} />
+                  <Select
+                    value={line.accountCode || null}
+                    options={fixedOptions}
+                    placeholder={tc("accountPlaceholder")}
+                    onValueChange={(v) => set(i, { accountCode: v })}
+                    aria-label={t("account")}
+                  />
                 </Field>
               ) : (
                 <Field label={t("documentAccount")}>
-                  <Select value={line.accountPath || null} options={docOptions} placeholder={tc("accountPlaceholder")} onValueChange={(v) => set(i, { accountPath: v })} aria-label={t("documentAccount")} />
+                  <Select
+                    value={line.accountPath || null}
+                    options={docOptions}
+                    placeholder={tc("accountPlaceholder")}
+                    onValueChange={(v) => set(i, { accountPath: v })}
+                    aria-label={t("documentAccount")}
+                  />
                 </Field>
               )}
               <Field label={t("side")}>
@@ -291,38 +391,80 @@ export function RuleEditor({
                 />
               </Field>
               <Field label={t("amount")} hint={t("amountHint")} required>
-                <Input value={line.amount} list={`amounts-${rule.id}`} className="font-mono" maxLength={200} onChange={(e) => set(i, { amount: e.target.value })} />
+                <Input
+                  value={line.amount}
+                  list={`amounts-${rule.id}`}
+                  className="font-mono"
+                  maxLength={200}
+                  onChange={(e) => set(i, { amount: e.target.value })}
+                />
               </Field>
               {lists.length ? (
                 <Field label={t("repeat")}>
-                  <Select value={line.forEach || NONE} options={listOptions} onValueChange={(v) => set(i, { forEach: v === NONE ? "" : v })} aria-label={t("repeat")} />
+                  <Select
+                    value={line.forEach || NONE}
+                    options={listOptions}
+                    onValueChange={(v) => set(i, { forEach: v === NONE ? "" : v })}
+                    aria-label={t("repeat")}
+                  />
                 </Field>
               ) : null}
               <Field label={t("condition")}>
                 <div className="flex flex-wrap gap-2">
                   <div className="min-w-48 flex-1">
-                    <Select value={line.whenField || NONE} options={fieldOptions} onValueChange={(v) => set(i, { whenField: v === NONE ? "" : v })} aria-label={t("condition")} />
+                    <Select
+                      value={line.whenField || NONE}
+                      options={fieldOptions}
+                      onValueChange={(v) => set(i, { whenField: v === NONE ? "" : v })}
+                      aria-label={t("condition")}
+                    />
                   </div>
                   {line.whenField ? (
                     <>
                       <div className="w-36">
-                        <Select value={line.whenOp} options={opOptions} onValueChange={(v) => set(i, { whenOp: v })} aria-label={t("condition")} />
+                        <Select
+                          value={line.whenOp}
+                          options={opOptions}
+                          onValueChange={(v) => set(i, { whenOp: v })}
+                          aria-label={t("condition")}
+                        />
                       </div>
-                      <Input className="w-28" value={line.whenValue} aria-label={t("value")} placeholder={t("value")} onChange={(e) => set(i, { whenValue: e.target.value })} />
+                      <Input
+                        className="w-28"
+                        value={line.whenValue}
+                        aria-label={t("value")}
+                        placeholder={t("value")}
+                        onChange={(e) => set(i, { whenValue: e.target.value })}
+                      />
                     </>
                   ) : null}
                 </div>
               </Field>
               <Field label={t("taxCode")}>
-                <Select value={line.taxCode || NONE} options={taxOptions} onValueChange={(v) => set(i, { taxCode: v === NONE ? "" : v })} aria-label={t("taxCode")} />
+                <Select
+                  value={line.taxCode || NONE}
+                  options={taxOptions}
+                  onValueChange={(v) => set(i, { taxCode: v === NONE ? "" : v })}
+                  aria-label={t("taxCode")}
+                />
               </Field>
               {line.taxCode ? (
                 <Field label={t("taxBase")}>
-                  <Input value={line.taxBase} list={`amounts-${rule.id}`} className="font-mono" maxLength={200} onChange={(e) => set(i, { taxBase: e.target.value })} />
+                  <Input
+                    value={line.taxBase}
+                    list={`amounts-${rule.id}`}
+                    className="font-mono"
+                    maxLength={200}
+                    onChange={(e) => set(i, { taxBase: e.target.value })}
+                  />
                 </Field>
               ) : null}
               <Field label={t("lineText")}>
-                <Input value={line.description} maxLength={200} onChange={(e) => set(i, { description: e.target.value })} />
+                <Input
+                  value={line.description}
+                  maxLength={200}
+                  onChange={(e) => set(i, { description: e.target.value })}
+                />
               </Field>
             </div>
           </div>
@@ -343,10 +485,20 @@ export function RuleEditor({
       </fieldset>
       <div className="grid gap-3 md:grid-cols-[12rem_1fr]">
         <Field label={t("effectiveFrom")} required>
-          <Input type="date" value={effectiveFrom} min={todayInBangkok()} onChange={(e) => setEffectiveFrom(e.target.value)} />
+          <Input
+            type="date"
+            value={effectiveFrom}
+            min={todayInBangkok()}
+            onChange={(e) => setEffectiveFrom(e.target.value)}
+          />
         </Field>
         <Field label={t("reason")} required>
-          <Input value={reason} maxLength={500} placeholder={t("reasonPlaceholder")} onChange={(e) => setReason(e.target.value)} />
+          <Input
+            value={reason}
+            maxLength={500}
+            placeholder={t("reasonPlaceholder")}
+            onChange={(e) => setReason(e.target.value)}
+          />
         </Field>
       </div>
       {preview ? <PreviewResult preview={preview} /> : null}
@@ -376,9 +528,38 @@ export function RuleVersionActions({ ruleId, version: v }: { ruleId: string; ver
     <SalesActions
       offered={v.nextActions}
       actions={[
-        { key: "erp_rule_version.approve", kind: "post", path: path("approve"), params, title: t("approveTitle", { n: v.versionNo }), description: t("approveBody", { date: format.date(v.effectiveFrom) }), body: () => ({}), done: t("approveDone"), primary: true },
-        { key: "erp_rule_version.reject", kind: "post", path: path("reject"), params, title: t("rejectTitle", { n: v.versionNo }), description: t("rejectBody"), reason: { label: tc("noteLabel") }, body: (note: string) => ({ note }), done: t("rejectDone") },
-        { key: "erp_rule_version.withdraw", kind: "post", path: path("withdraw"), params, title: t("withdrawTitle", { n: v.versionNo }), description: t("withdrawBody"), body: () => ({}), done: t("withdrawDone") },
+        {
+          key: "erp_rule_version.approve",
+          kind: "post",
+          path: path("approve"),
+          params,
+          title: t("approveTitle", { n: v.versionNo }),
+          description: t("approveBody", { date: format.date(v.effectiveFrom) }),
+          body: () => ({}),
+          done: t("approveDone"),
+          primary: true,
+        },
+        {
+          key: "erp_rule_version.reject",
+          kind: "post",
+          path: path("reject"),
+          params,
+          title: t("rejectTitle", { n: v.versionNo }),
+          description: t("rejectBody"),
+          reason: { label: tc("noteLabel") },
+          body: (note: string) => ({ note }),
+          done: t("rejectDone"),
+        },
+        {
+          key: "erp_rule_version.withdraw",
+          kind: "post",
+          path: path("withdraw"),
+          params,
+          title: t("withdrawTitle", { n: v.versionNo }),
+          description: t("withdrawBody"),
+          body: () => ({}),
+          done: t("withdrawDone"),
+        },
       ]}
     />
   );

@@ -13,7 +13,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** Stock task "count" (getpack Factory ERP E1; D-321, D-324). */
-export default async function StockCountPage({ searchParams }: { searchParams: Promise<{ item?: string; view?: string }> }) {
+export default async function StockCountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ item?: string; view?: string }>;
+}) {
   const [query, t, tStock, tCount, locale, context] = await Promise.all([
     searchParams,
     getTranslations("partnerErp.move"),

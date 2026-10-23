@@ -78,7 +78,11 @@ export default async function BillingNotePage({ params }: Props) {
             },
             { key: "d", header: tCommon("date"), cell: (row) => format.date(row.issueDate) },
             { key: "due", header: tCommon("due"), cell: (row) => format.date(row.dueDate) },
-            { key: "s", header: tCommon("status"), cell: (row) => <StatusChip map={ERP_SALES_INVOICE_STATUS} value={row.invoice.status} /> },
+            {
+              key: "s",
+              header: tCommon("status"),
+              cell: (row) => <StatusChip map={ERP_SALES_INVOICE_STATUS} value={row.invoice.status} />,
+            },
             { key: "a", header: tCommon("amount"), align: "end", cell: (row) => format.thb(row.amount) },
           ]}
         />

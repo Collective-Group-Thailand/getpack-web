@@ -59,16 +59,34 @@ export default async function CrmPage({
 
   let body: React.ReactNode;
   if (view === "pipeline") {
-    const p = await attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/pipeline", { params: { path } })).data!);
+    const p = await attempt(
+      async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/pipeline", { params: { path } })).data!,
+    );
     body = p.data ? (
       <>
         <StatStrip
           label={t("pipeline.summary")}
           items={[
             { key: "open", label: t("pipeline.openValue"), value: format.thb(p.data.openValue) },
-            { key: "w", label: t("pipeline.weighted"), value: format.thb(p.data.openWeighted), hint: t("pipeline.weightedHint") },
-            { key: "soon", label: t("pipeline.closingSoon"), value: p.data.closingSoon, href: href("opportunities", { stage: "open" }) },
-            { key: "due", label: t("pipeline.myDue"), value: p.data.myDue, href: href("activities"), tone: p.data.myDue ? "warning" : "neutral" },
+            {
+              key: "w",
+              label: t("pipeline.weighted"),
+              value: format.thb(p.data.openWeighted),
+              hint: t("pipeline.weightedHint"),
+            },
+            {
+              key: "soon",
+              label: t("pipeline.closingSoon"),
+              value: p.data.closingSoon,
+              href: href("opportunities", { stage: "open" }),
+            },
+            {
+              key: "due",
+              label: t("pipeline.myDue"),
+              value: p.data.myDue,
+              href: href("activities"),
+              tone: p.data.myDue ? "warning" : "neutral",
+            },
           ]}
         />
         <PartnerSection title={t("pipeline.byStage")}>
@@ -94,7 +112,12 @@ export default async function CrmPage({
             rowKey={(row) => row.salesperson?.id ?? "none"}
             empty={<EmptyState icon="users" title={t("pipeline.empty")} />}
             columns={[
-              { key: "p", header: tCommon("salesperson"), primary: true, cell: (row) => row.salesperson?.name ?? tCommon("noSalesperson") },
+              {
+                key: "p",
+                header: tCommon("salesperson"),
+                primary: true,
+                cell: (row) => row.salesperson?.name ?? tCommon("noSalesperson"),
+              },
               { key: "n", header: t("pipeline.open"), align: "end", cell: (row) => row.open },
               { key: "v", header: t("pipeline.openValue"), align: "end", cell: (row) => format.thb(row.value) },
               { key: "w", header: t("pipeline.weighted"), align: "end", cell: (row) => format.thb(row.weighted) },
@@ -110,7 +133,10 @@ export default async function CrmPage({
       async () =>
         (
           await contract.GET("/v1/partner/factories/{factoryId}/erp/leads", {
-            params: { path, query: { perPage: PER_PAGE, page, stage: (query.stage as "open") ?? "open", ...(q ? { q } : {}) } },
+            params: {
+              path,
+              query: { perPage: PER_PAGE, page, stage: (query.stage as "open") ?? "open", ...(q ? { q } : {}) },
+            },
           })
         ).data!,
     );
@@ -124,14 +150,39 @@ export default async function CrmPage({
           empty={<EmptyState icon="user-plus" title={t("leads.empty")} description={t("leads.emptyBody")} />}
           columns={[
             { key: "n", header: t("leads.name"), primary: true, cell: (row) => row.name },
-            { key: "c", header: t("leads.contact"), hideOnPhone: true, cell: (row) => [row.contactName, row.phone].filter(Boolean).join(" · ") || "—" },
+            {
+              key: "c",
+              header: t("leads.contact"),
+              hideOnPhone: true,
+              cell: (row) => [row.contactName, row.phone].filter(Boolean).join(" · ") || "—",
+            },
             { key: "s", header: t("leads.source"), hideOnPhone: true, cell: (row) => tSource(row.source) },
-            { key: "v", header: t("leads.value"), align: "end", cell: (row) => (row.expectedValue ? format.thb(row.expectedValue) : "—") },
-            { key: "p", header: tCommon("salesperson"), hideOnPhone: true, cell: (row) => row.salesperson?.name ?? tCommon("noSalesperson") },
-            { key: "st", header: tCommon("status"), cell: (row) => <StatusChip map={ERP_LEAD_STAGE} value={row.stage} /> },
+            {
+              key: "v",
+              header: t("leads.value"),
+              align: "end",
+              cell: (row) => (row.expectedValue ? format.thb(row.expectedValue) : "—"),
+            },
+            {
+              key: "p",
+              header: tCommon("salesperson"),
+              hideOnPhone: true,
+              cell: (row) => row.salesperson?.name ?? tCommon("noSalesperson"),
+            },
+            {
+              key: "st",
+              header: tCommon("status"),
+              cell: (row) => <StatusChip map={ERP_LEAD_STAGE} value={row.stage} />,
+            },
           ]}
         />
-        <Pager page={page} perPage={PER_PAGE} total={list.data.meta.total} hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })} labels={labels} />
+        <Pager
+          page={page}
+          perPage={PER_PAGE}
+          total={list.data.meta.total}
+          hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })}
+          labels={labels}
+        />
       </>
     ) : (
       <PageError error={list.error} />
@@ -141,7 +192,10 @@ export default async function CrmPage({
       async () =>
         (
           await contract.GET("/v1/partner/factories/{factoryId}/erp/opportunities", {
-            params: { path, query: { perPage: PER_PAGE, page, stage: (query.stage as "open") ?? "open", ...(q ? { q } : {}) } },
+            params: {
+              path,
+              query: { perPage: PER_PAGE, page, stage: (query.stage as "open") ?? "open", ...(q ? { q } : {}) },
+            },
           })
         ).data!,
     );
@@ -152,17 +206,40 @@ export default async function CrmPage({
           rows={list.data.data}
           rowKey={(row) => row.id}
           rowHref={(row) => `/crm/opportunities/${row.id}`}
-          empty={<EmptyState icon="handshake" title={t("opportunities.empty")} description={t("opportunities.emptyBody")} />}
+          empty={
+            <EmptyState icon="handshake" title={t("opportunities.empty")} description={t("opportunities.emptyBody")} />
+          }
           columns={[
             { key: "t", header: t("opportunities.title"), primary: true, cell: (row) => row.title },
             { key: "c", header: tCommon("customer"), cell: (row) => row.customer?.name ?? row.lead?.name ?? "—" },
             { key: "v", header: t("opportunities.value"), align: "end", cell: (row) => format.thb(row.value) },
-            { key: "p", header: t("opportunities.chance"), align: "end", hideOnPhone: true, cell: (row) => `${row.probabilityPct}%` },
-            { key: "d", header: t("opportunities.close"), hideOnPhone: true, cell: (row) => (row.expectedCloseOn ? format.date(row.expectedCloseOn) : "—") },
-            { key: "st", header: tCommon("status"), cell: (row) => <StatusChip map={ERP_OPPORTUNITY_STAGE} value={row.stage} /> },
+            {
+              key: "p",
+              header: t("opportunities.chance"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => `${row.probabilityPct}%`,
+            },
+            {
+              key: "d",
+              header: t("opportunities.close"),
+              hideOnPhone: true,
+              cell: (row) => (row.expectedCloseOn ? format.date(row.expectedCloseOn) : "—"),
+            },
+            {
+              key: "st",
+              header: tCommon("status"),
+              cell: (row) => <StatusChip map={ERP_OPPORTUNITY_STAGE} value={row.stage} />,
+            },
           ]}
         />
-        <Pager page={page} perPage={PER_PAGE} total={list.data.meta.total} hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })} labels={labels} />
+        <Pager
+          page={page}
+          perPage={PER_PAGE}
+          total={list.data.meta.total}
+          hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })}
+          labels={labels}
+        />
       </>
     ) : (
       <PageError error={list.error} />
@@ -186,7 +263,14 @@ export default async function CrmPage({
     );
   } else {
     const [report, people] = await Promise.all([
-      attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/sales/report", { params: { path, query: { month } } })).data!),
+      attempt(
+        async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/sales/report", {
+              params: { path, query: { month } },
+            })
+          ).data!,
+      ),
       attempt(async () => erpSalespeople(contract, context.factoryId)),
     ]);
     body = report.data ? (
@@ -206,7 +290,12 @@ export default async function CrmPage({
           items={[
             { key: "net", label: t("report.invoicedNet"), value: format.thb(report.data.invoicedNet) },
             { key: "target", label: t("report.target"), value: format.thb(report.data.targetNet) },
-            { key: "gp", label: t("report.grossProfit"), value: format.thb(report.data.grossProfit), hint: t("report.grossProfitHint") },
+            {
+              key: "gp",
+              label: t("report.grossProfit"),
+              value: format.thb(report.data.grossProfit),
+              hint: t("report.grossProfitHint"),
+            },
             { key: "com", label: t("report.commission"), value: format.thb(report.data.commission) },
           ]}
         />
@@ -216,11 +305,32 @@ export default async function CrmPage({
           rowKey={(row) => row.salesperson?.id ?? "none"}
           empty={<EmptyState icon="chart" title={t("report.empty")} />}
           columns={[
-            { key: "p", header: tCommon("salesperson"), primary: true, cell: (row) => row.salesperson?.name ?? tCommon("noSalesperson") },
-            { key: "t", header: t("report.target"), align: "end", cell: (row) => (row.targetNet ? format.thb(row.targetNet) : "—") },
+            {
+              key: "p",
+              header: tCommon("salesperson"),
+              primary: true,
+              cell: (row) => row.salesperson?.name ?? tCommon("noSalesperson"),
+            },
+            {
+              key: "t",
+              header: t("report.target"),
+              align: "end",
+              cell: (row) => (row.targetNet ? format.thb(row.targetNet) : "—"),
+            },
             { key: "n", header: t("report.invoicedNet"), align: "end", cell: (row) => format.thb(row.invoicedNet) },
-            { key: "a", header: t("report.achievement"), align: "end", cell: (row) => (row.achievementPct ? `${formatPlain(row.achievementPct, locale, 1)}%` : "—") },
-            { key: "c", header: t("report.collected"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.collected) },
+            {
+              key: "a",
+              header: t("report.achievement"),
+              align: "end",
+              cell: (row) => (row.achievementPct ? `${formatPlain(row.achievementPct, locale, 1)}%` : "—"),
+            },
+            {
+              key: "c",
+              header: t("report.collected"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => format.thb(row.collected),
+            },
             { key: "m", header: t("report.commission"), align: "end", cell: (row) => format.thb(row.commission) },
           ]}
         />
@@ -253,9 +363,21 @@ export default async function CrmPage({
         ) : undefined
       }
     >
-      <ViewTabs label={t("views.label")} current={view} items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))} />
+      <ViewTabs
+        label={t("views.label")}
+        current={view}
+        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
+      />
       {view === "leads" || view === "opportunities" ? (
-        <SearchBar id="crm-q" action="/crm" hidden={{ view }} q={q} label={t("searchLabel")} placeholder={t("searchPlaceholder")} button={tCommon("search")} />
+        <SearchBar
+          id="crm-q"
+          action="/crm"
+          hidden={{ view }}
+          q={q}
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          button={tCommon("search")}
+        />
       ) : null}
       {body}
     </PartnerPage>

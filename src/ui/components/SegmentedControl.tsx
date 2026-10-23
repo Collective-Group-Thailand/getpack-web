@@ -49,7 +49,10 @@ export function SegmentedControl<T extends string = string>({
         if (next) onValueChange(next as T);
       }}
       aria-label={label}
-      className={cn("border-border bg-surface-subtle rounded-control inline-flex max-w-full gap-0.5 border p-0.5", className)}
+      className={cn(
+        "border-border bg-surface-subtle rounded-control inline-flex max-w-full gap-0.5 border p-0.5",
+        className,
+      )}
     >
       {options.map((option) => (
         <ToggleGroup.Item
@@ -67,7 +70,11 @@ export function SegmentedControl<T extends string = string>({
             // Design language v3: the chosen segment is an ink hairline and semibold — no shadow.
             "data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:border-fg data-[state=on]:font-semibold",
             "disabled:pointer-events-none disabled:opacity-50",
-            size === "sm" ? "min-h-7 px-2 text-xs" : size === "xl" ? "min-h-11 px-4 py-1 text-base" : "min-h-9 px-3 py-1 text-sm",
+            size === "sm"
+              ? "min-h-7 px-2 text-xs"
+              : size === "xl"
+                ? "min-h-11 px-4 py-1 text-base"
+                : "min-h-9 px-3 py-1 text-sm",
           )}
         >
           {option.icon ? <Icon name={option.icon} size={size === "xl" ? 18 : 16} /> : null}

@@ -75,9 +75,14 @@ export default async function PurchaseOrderPage({ params }: Props) {
                       line: w.lineNo,
                       pct: w.changePct ? formatPlain(w.changePct, locale, 2) : "",
                     })
-                  : tSourcing(w.code === "supplier_suspended" ? "warnings.supplier_suspended" : "warnings.supplier_not_approved", {
-                      line: w.lineNo,
-                    })}
+                  : tSourcing(
+                      w.code === "supplier_suspended"
+                        ? "warnings.supplier_suspended"
+                        : "warnings.supplier_not_approved",
+                      {
+                        line: w.lineNo,
+                      },
+                    )}
               </li>
             ))}
           </ul>

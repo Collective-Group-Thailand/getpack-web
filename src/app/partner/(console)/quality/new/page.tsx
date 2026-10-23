@@ -17,9 +17,19 @@ const KINDS = ["incoming", "in_process", "final", "other"];
 export default async function NewCheckPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string; productionOrderId?: string; goodsReceiptId?: string; itemId?: string; templateId?: string }>;
+  searchParams: Promise<{
+    kind?: string;
+    productionOrderId?: string;
+    goodsReceiptId?: string;
+    itemId?: string;
+    templateId?: string;
+  }>;
 }) {
-  const [query, t, context] = await Promise.all([searchParams, getTranslations("partnerInsight.checks.start"), factoryContext()]);
+  const [query, t, context] = await Promise.all([
+    searchParams,
+    getTranslations("partnerInsight.checks.start"),
+    factoryContext(),
+  ]);
   const pickers = await qualityPickers(context.factoryId);
   const back = { href: "/quality", label: t("back") };
   return (

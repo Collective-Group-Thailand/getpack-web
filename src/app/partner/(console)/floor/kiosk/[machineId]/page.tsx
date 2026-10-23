@@ -112,53 +112,53 @@ export default async function KioskPage({ params }: { params: Promise<{ machineI
 
   return (
     <KioskScreen>
-    <PartnerPage
-      title={machine.name}
-      description={t("queued", { n: machine.queued })}
-      back={back}
-      actions={
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusChip map={ERP_MACHINE_STATE} value={machine.state} />
-          <KioskRefresh />
-          <KioskFullScreenButton />
-          {canReport && !blocked ? (
-            <Button asChild size="xl" variant="destructive-solid" iconStart="wrench">
-              <Link href={`/maintenance/new?machine=${machine.id}`}>{t("reportBreakdown")}</Link>
-            </Button>
-          ) : null}
-        </div>
-      }
-    >
-      {blocked && machine.openMaintenance ? (
-        <Callout tone="danger" icon="wrench">
-          <Link href={`/maintenance/${machine.openMaintenance.id}`} className="underline-offset-4 hover:underline">
-            {t("down", { title: machine.openMaintenance.title, no: machine.openMaintenance.mtNo })}
-          </Link>
-        </Callout>
-      ) : null}
+      <PartnerPage
+        title={machine.name}
+        description={t("queued", { n: machine.queued })}
+        back={back}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusChip map={ERP_MACHINE_STATE} value={machine.state} />
+            <KioskRefresh />
+            <KioskFullScreenButton />
+            {canReport && !blocked ? (
+              <Button asChild size="xl" variant="destructive-solid" iconStart="wrench">
+                <Link href={`/maintenance/new?machine=${machine.id}`}>{t("reportBreakdown")}</Link>
+              </Button>
+            ) : null}
+          </div>
+        }
+      >
+        {blocked && machine.openMaintenance ? (
+          <Callout tone="danger" icon="wrench">
+            <Link href={`/maintenance/${machine.openMaintenance.id}`} className="underline-offset-4 hover:underline">
+              {t("down", { title: machine.openMaintenance.title, no: machine.openMaintenance.mtNo })}
+            </Link>
+          </Callout>
+        ) : null}
 
-      <PartnerSection title={t("now")}>
-        {current ? (
-          <div className="border-primary bg-surface rounded-2xl border-2 p-4 md:p-6">{card(current, true)}</div>
-        ) : (
-          <p className="text-muted text-lg">{t("nothingNow")}</p>
-        )}
-      </PartnerSection>
+        <PartnerSection title={t("now")}>
+          {current ? (
+            <div className="border-primary bg-surface rounded-2xl border-2 p-4 md:p-6">{card(current, true)}</div>
+          ) : (
+            <p className="text-muted text-lg">{t("nothingNow")}</p>
+          )}
+        </PartnerSection>
 
-      <PartnerSection title={t("nextTitle")}>
-        {next.length ? (
-          <ol className="flex flex-col gap-3">
-            {next.map((item) => (
-              <li key={item.operation.id} className="border-border bg-surface rounded-xl border p-4">
-                {card(item, false)}
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <EmptyState icon="check" title={t("noNext")} description={t("noNextBody")} />
-        )}
-      </PartnerSection>
-    </PartnerPage>
+        <PartnerSection title={t("nextTitle")}>
+          {next.length ? (
+            <ol className="flex flex-col gap-3">
+              {next.map((item) => (
+                <li key={item.operation.id} className="border-border bg-surface rounded-xl border p-4">
+                  {card(item, false)}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <EmptyState icon="check" title={t("noNext")} description={t("noNextBody")} />
+          )}
+        </PartnerSection>
+      </PartnerPage>
     </KioskScreen>
   );
 }

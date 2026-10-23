@@ -187,7 +187,10 @@ test.describe("keyboard paths", () => {
     await expect(page.locator("canvas").first()).toBeVisible();
 
     // Reopen it from the Box tool, so there is a trigger for focus to return to.
-    await page.getByRole("navigation", { name: "เครื่องมือออกแบบ" }).getByRole("button", { name: "กล่อง", exact: true }).click();
+    await page
+      .getByRole("navigation", { name: "เครื่องมือออกแบบ" })
+      .getByRole("button", { name: "กล่อง", exact: true })
+      .click();
     const trigger = page.getByRole("button", { name: "ตั้งค่ากล่อง" }).first();
     await trigger.click();
     await expect(dialog).toBeVisible();

@@ -50,7 +50,8 @@ export default async function ReceivablesPage({
   let body: React.ReactNode;
   if (view === "aging") {
     const aging = await attempt(
-      async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/receivables/aging", { params: { path } })).data!,
+      async () =>
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/receivables/aging", { params: { path } })).data!,
     );
     body = aging.data ? (
       <>
@@ -67,7 +68,14 @@ export default async function ReceivablesPage({
             },
             { key: "soon", label: t("aging.dueSoon"), value: format.thb(aging.data.dueSoon) },
             ...(aging.data.refundsDue !== "0.00"
-              ? [{ key: "refunds", label: t("aging.refundsDue"), value: format.thb(aging.data.refundsDue), tone: "warning" as const }]
+              ? [
+                  {
+                    key: "refunds",
+                    label: t("aging.refundsDue"),
+                    value: format.thb(aging.data.refundsDue),
+                    tone: "warning" as const,
+                  },
+                ]
               : []),
           ]}
         />
@@ -80,12 +88,41 @@ export default async function ReceivablesPage({
           empty={<EmptyState icon="coins" title={t("aging.empty")} />}
           columns={[
             { key: "c", header: tCommon("customer"), primary: true, cell: (row) => row.customer.name },
-            { key: "cur", header: t("aging.current"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.buckets.current) },
-            { key: "b1", header: t("aging.d1_30"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.buckets.d1_30) },
-            { key: "b2", header: t("aging.d31_60"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.buckets.d31_60) },
-            { key: "b3", header: t("aging.d61_90"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.buckets.d61_90) },
+            {
+              key: "cur",
+              header: t("aging.current"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => format.thb(row.buckets.current),
+            },
+            {
+              key: "b1",
+              header: t("aging.d1_30"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => format.thb(row.buckets.d1_30),
+            },
+            {
+              key: "b2",
+              header: t("aging.d31_60"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => format.thb(row.buckets.d31_60),
+            },
+            {
+              key: "b3",
+              header: t("aging.d61_90"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => format.thb(row.buckets.d61_90),
+            },
             { key: "b4", header: t("aging.over90"), align: "end", cell: (row) => format.thb(row.buckets.over90) },
-            { key: "t", header: t("aging.total"), align: "end", cell: (row) => <strong>{format.thb(row.buckets.total)}</strong> },
+            {
+              key: "t",
+              header: t("aging.total"),
+              align: "end",
+              cell: (row) => <strong>{format.thb(row.buckets.total)}</strong>,
+            },
           ]}
         />
       </>
@@ -118,13 +155,34 @@ export default async function ReceivablesPage({
             },
             { key: "kind", header: t("table.kind"), cell: (row) => t(`kinds.${row.kind}`) },
             { key: "c", header: tCommon("customer"), cell: (row) => row.customer.name },
-            { key: "d", header: tCommon("date"), className: "whitespace-nowrap", cell: (row) => format.date(row.receivedOn) },
+            {
+              key: "d",
+              header: tCommon("date"),
+              className: "whitespace-nowrap",
+              cell: (row) => format.date(row.receivedOn),
+            },
             { key: "a", header: tCommon("amount"), align: "end", cell: (row) => format.thb(row.amount) },
-            { key: "w", header: t("table.wht"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.whtAmount) },
-            { key: "s", header: tCommon("status"), cell: (row) => <StatusChip map={ERP_RECEIPT_STATUS} value={row.status} /> },
+            {
+              key: "w",
+              header: t("table.wht"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => format.thb(row.whtAmount),
+            },
+            {
+              key: "s",
+              header: tCommon("status"),
+              cell: (row) => <StatusChip map={ERP_RECEIPT_STATUS} value={row.status} />,
+            },
           ]}
         />
-        <Pager page={page} perPage={PER_PAGE} total={list.data.meta.total} hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })} labels={labels} />
+        <Pager
+          page={page}
+          perPage={PER_PAGE}
+          total={list.data.meta.total}
+          hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })}
+          labels={labels}
+        />
       </>
     ) : (
       <PageError error={list.error} />
@@ -154,7 +212,12 @@ export default async function ReceivablesPage({
               cell: (row) => <span className="font-mono whitespace-nowrap">{row.billingNo}</span>,
             },
             { key: "c", header: tCommon("customer"), cell: (row) => row.customer.name },
-            { key: "d", header: tCommon("date"), className: "whitespace-nowrap", cell: (row) => format.date(row.billingDate) },
+            {
+              key: "d",
+              header: tCommon("date"),
+              className: "whitespace-nowrap",
+              cell: (row) => format.date(row.billingDate),
+            },
             {
               key: "col",
               header: t("table.collectOn"),
@@ -162,10 +225,20 @@ export default async function ReceivablesPage({
               cell: (row) => (row.collectOn ? format.date(row.collectOn) : "—"),
             },
             { key: "a", header: tCommon("amount"), align: "end", cell: (row) => format.thb(row.total) },
-            { key: "s", header: tCommon("status"), cell: (row) => <StatusChip map={ERP_RECEIPT_STATUS} value={row.status} /> },
+            {
+              key: "s",
+              header: tCommon("status"),
+              cell: (row) => <StatusChip map={ERP_RECEIPT_STATUS} value={row.status} />,
+            },
           ]}
         />
-        <Pager page={page} perPage={PER_PAGE} total={list.data.meta.total} hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })} labels={labels} />
+        <Pager
+          page={page}
+          perPage={PER_PAGE}
+          total={list.data.meta.total}
+          hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })}
+          labels={labels}
+        />
       </>
     ) : (
       <PageError error={list.error} />

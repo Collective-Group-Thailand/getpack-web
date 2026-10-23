@@ -23,7 +23,11 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
 
   if (resolved.kind === "category") {
     const name = pick(locale, resolved.category.nameTh, resolved.category.nameEn);
-    return renderOgCard({ eyebrow: t("breadcrumbs.products"), title: name, subtitle: t("meta.categoryDescription", { name }) });
+    return renderOgCard({
+      eyebrow: t("breadcrumbs.products"),
+      title: name,
+      subtitle: t("meta.categoryDescription", { name }),
+    });
   }
 
   if (resolved.kind === "product") {

@@ -20,7 +20,14 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
 import { erpPost, erpSave } from "./api";
-import { type Fulfilment, newSalesLine, type SalesLine, type SalesLineErrors, SalesLinesEditor, type Unit } from "./SalesLinesEditor";
+import {
+  type Fulfilment,
+  newSalesLine,
+  type SalesLine,
+  type SalesLineErrors,
+  SalesLinesEditor,
+  type Unit,
+} from "./SalesLinesEditor";
 import type { SalesPickers } from "./types";
 
 type VatMode = Schemas["ErpVatMode"];
@@ -136,14 +143,15 @@ export function SalesDocForm({
 
   function check(): boolean {
     const next: SalesLineErrors = {};
-    if (!headerOnly) lines.forEach((line, index) => {
-      const error: SalesLineErrors[number] = {};
-      if (!line.itemId && !line.description.trim()) error.item = t("lineNeedsItem");
-      const q = plainNumber(line.quantity);
-      if (!QTY_PATTERN.test(q) || isZero(q)) error.quantity = t("quantityInvalid");
-      if (!PRICE_PATTERN.test(plainNumber(line.price))) error.price = t("priceInvalid");
-      if (Object.keys(error).length) next[index] = error;
-    });
+    if (!headerOnly)
+      lines.forEach((line, index) => {
+        const error: SalesLineErrors[number] = {};
+        if (!line.itemId && !line.description.trim()) error.item = t("lineNeedsItem");
+        const q = plainNumber(line.quantity);
+        if (!QTY_PATTERN.test(q) || isZero(q)) error.quantity = t("quantityInvalid");
+        if (!PRICE_PATTERN.test(plainNumber(line.price))) error.price = t("priceInvalid");
+        if (Object.keys(error).length) next[index] = error;
+      });
     setErrors(next);
     setCustomerError(customerId ? undefined : t("customerRequired"));
     return Boolean(customerId) && !Object.keys(next).length;
@@ -189,7 +197,12 @@ export function SalesDocForm({
         ...common,
       };
     return initial
-      ? { issueDate: date, customerPoNo: customerPoNo.trim() || null, ...(headerOnly ? {} : { lines: linesOut }), ...common }
+      ? {
+          issueDate: date,
+          customerPoNo: customerPoNo.trim() || null,
+          ...(headerOnly ? {} : { lines: linesOut }),
+          ...common,
+        }
       : { customerId, issueDate: date, customerPoNo: customerPoNo.trim() || null, lines: linesOut, ...common };
   }
 
@@ -274,7 +287,13 @@ export function SalesDocForm({
           </Field>
         ) : null}
         <Field label={t("paymentTerms")}>
-          <NumberInput min={0} max={365} unit={t("days")} value={terms} onChange={(event) => setTerms(event.target.value)} />
+          <NumberInput
+            min={0}
+            max={365}
+            unit={t("days")}
+            value={terms}
+            onChange={(event) => setTerms(event.target.value)}
+          />
         </Field>
         {kind === "quotation" ? (
           <Field label={t("leadTime")}>
@@ -342,7 +361,12 @@ export function SalesDocForm({
         </Field>
       ) : null}
       <Field label={t("note")}>
-        <Textarea rows={2} value={note} placeholder={t("notePlaceholder")} onChange={(event) => setNote(event.target.value)} />
+        <Textarea
+          rows={2}
+          value={note}
+          placeholder={t("notePlaceholder")}
+          onChange={(event) => setNote(event.target.value)}
+        />
       </Field>
       <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
         {t("save")}

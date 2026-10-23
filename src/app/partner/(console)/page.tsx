@@ -227,7 +227,8 @@ export default async function PartnerHomePage() {
       section: item.section,
       href: inboxHref(item),
       icon: inboxIcon(item.kind),
-      tone: item.tone === "danger" ? "danger" : item.tone === "warning" && item.section !== "soon" ? "warning" : undefined,
+      tone:
+        item.tone === "danger" ? "danger" : item.tone === "warning" && item.section !== "soon" ? "warning" : undefined,
       title: ti(`kinds.${item.kind}` as "kinds.alerts", {
         number:
           (item.kind === "tax_due" || item.kind === "period_to_close") && item.document?.number
@@ -287,7 +288,12 @@ export default async function PartnerHomePage() {
         </p>
       )}
       {SECTIONS.filter((section) => bySection(section).length).map((section) => (
-        <PartnerSection key={section} id={section} title={ti(`sections.${section}`)} description={ti(`sectionHints.${section}`)}>
+        <PartnerSection
+          key={section}
+          id={section}
+          title={ti(`sections.${section}`)}
+          description={ti(`sectionHints.${section}`)}
+        >
           <RowList label={ti(`sections.${section}`)}>
             {bySection(section).map((task) => (
               <Row

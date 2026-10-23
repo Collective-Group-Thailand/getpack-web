@@ -48,7 +48,9 @@ export default async function JournalPage({ params }: { params: Promise<{ entryI
   ]);
   const { contract } = await partnerServerApis();
   const read = await attempt(async () => {
-    const { data, response } = await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}", { params: { path: { factoryId: context.factoryId, entryId } } });
+    const { data, response } = await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/journals/{entryId}", {
+      params: { path: { factoryId: context.factoryId, entryId } },
+    });
     return { journal: data!, etag: response.headers.get("etag") };
   });
   const back = { href: "/ledger/journals", label: t("back") };
@@ -62,18 +64,32 @@ export default async function JournalPage({ params }: { params: Promise<{ entryI
   // An account opens its general ledger for the entry's month.
   const [y, m] = j.entryDate.split("-").map(Number) as [number, number];
   const monthEnd = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
-  const glHref = (code: string) => `/ledger/reports?tab=gl&account=${code}&from=${j.entryDate.slice(0, 7)}-01&to=${monthEnd}`;
+  const glHref = (code: string) =>
+    `/ledger/reports?tab=gl&account=${code}&from=${j.entryDate.slice(0, 7)}-01&to=${monthEnd}`;
   // The rule that posted it opens its versions (D-398).
   const ruleId = j.ruleKey
     ? (
-        await attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/rules", { params: { path: { factoryId: context.factoryId } } })).data!)
+        await attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/rules", {
+                params: { path: { factoryId: context.factoryId } },
+              })
+            ).data!,
+        )
       ).data?.find((r) => r.key === j.ruleKey)?.id
     : undefined;
   const doc = (d: { type: string; id: string; number: string | null } | null) => {
     if (!d) return null;
     const label = `${tc.has(`sources.${d.type}` as never) ? tc(`sources.${d.type}` as never) : d.type} ${d.number ?? ""}`;
     const href = SOURCE_HREF[d.type]?.(d.id);
-    return href ? <Link href={href} className="text-link">{label}</Link> : label;
+    return href ? (
+      <Link href={href} className="text-link">
+        {label}
+      </Link>
+    ) : (
+      label
+    );
   };
   const dims = (l: Line) =>
     [
@@ -92,7 +108,18 @@ export default async function JournalPage({ params }: { params: Promise<{ entryI
     [tf("kind"), tc(`kinds.${j.kind}` as never)],
     ...(j.source ? ([[tf("source"), doc(j.source)]] as [string, React.ReactNode][]) : []),
     ...(j.ruleKey
-      ? ([[tf("rule"), ruleId ? <Link key="rule" href={`/ledger/accounts/rules/${ruleId}`} className="text-link">{j.ruleKey}</Link> : j.ruleKey]] as [string, React.ReactNode][])
+      ? ([
+          [
+            tf("rule"),
+            ruleId ? (
+              <Link key="rule" href={`/ledger/accounts/rules/${ruleId}`} className="text-link">
+                {j.ruleKey}
+              </Link>
+            ) : (
+              j.ruleKey
+            ),
+          ],
+        ] as [string, React.ReactNode][])
       : []),
     ...(j.reverses ? ([[t("reverses"), doc(j.reverses)]] as [string, React.ReactNode][]) : []),
     ...(j.reversedBy ? ([[t("reversedBy"), doc(j.reversedBy)]] as [string, React.ReactNode][]) : []),
@@ -125,14 +152,40 @@ export default async function JournalPage({ params }: { params: Promise<{ entryI
           rows={j.lines}
           rowKey={(row) => String(row.lineNo)}
           columns={[
-            { key: "a", header: tc("account"), primary: true, cell: (row) => (
-                <Link href={glHref(row.account.code)} className="text-link underline-offset-4 hover:underline" title={t("accountMonth")}>
+            {
+              key: "a",
+              header: tc("account"),
+              primary: true,
+              cell: (row) => (
+                <Link
+                  href={glHref(row.account.code)}
+                  className="text-link underline-offset-4 hover:underline"
+                  title={t("accountMonth")}
+                >
                   <span className="font-mono">{row.account.code}</span> {row.account.name}
                 </Link>
-              ) },
-            { key: "d", header: tc("description"), hideOnPhone: true, cell: (row) => <span className="text-sm">{[row.description, dims(row)].filter(Boolean).join(" — ") || "—"}</span> },
-            { key: "dr", header: tc("debit"), align: "end", cell: (row) => (row.debit === "0.00" ? "" : format.thb(row.debit)) },
-            { key: "cr", header: tc("credit"), align: "end", cell: (row) => (row.credit === "0.00" ? "" : format.thb(row.credit)) },
+              ),
+            },
+            {
+              key: "d",
+              header: tc("description"),
+              hideOnPhone: true,
+              cell: (row) => (
+                <span className="text-sm">{[row.description, dims(row)].filter(Boolean).join(" — ") || "—"}</span>
+              ),
+            },
+            {
+              key: "dr",
+              header: tc("debit"),
+              align: "end",
+              cell: (row) => (row.debit === "0.00" ? "" : format.thb(row.debit)),
+            },
+            {
+              key: "cr",
+              header: tc("credit"),
+              align: "end",
+              cell: (row) => (row.credit === "0.00" ? "" : format.thb(row.credit)),
+            },
           ]}
         />
         <p className="text-end text-sm font-medium">

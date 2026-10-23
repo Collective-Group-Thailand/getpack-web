@@ -34,8 +34,14 @@ export function JournalActions({ journal: j, etag }: { journal: Journal; etag: s
         etag={etag}
         actions={[
           { key: "erp_journal.edit", kind: "link", href: `/ledger/journals/new?edit=${j.id}` },
-          { ...post("erp_journal.submit", "submit", t("submitTitle"), t("submitBody"), t("submitDone")), primary: true },
-          { ...post("erp_journal.approve", "approve", t("approveTitle"), t("approveBody"), t("approveDone")), primary: true },
+          {
+            ...post("erp_journal.submit", "submit", t("submitTitle"), t("submitBody"), t("submitDone")),
+            primary: true,
+          },
+          {
+            ...post("erp_journal.approve", "approve", t("approveTitle"), t("approveBody"), t("approveDone")),
+            primary: true,
+          },
           post("erp_journal.reject", "reject", t("rejectTitle"), t("rejectBody"), t("rejectDone"), true),
           {
             key: "erp_journal.delete",
@@ -49,7 +55,9 @@ export function JournalActions({ journal: j, etag }: { journal: Journal; etag: s
           },
         ]}
       />
-      {j.nextActions.some((a) => a.key === "erp_journal.reverse" && !a.disabledReason) ? <ReverseJournal journal={j} /> : null}
+      {j.nextActions.some((a) => a.key === "erp_journal.reverse" && !a.disabledReason) ? (
+        <ReverseJournal journal={j} />
+      ) : null}
     </div>
   );
 }
@@ -74,7 +82,10 @@ export function PeriodActions({ period }: { period: Period }) {
       offered={period.nextActions}
       actions={[
         transition("erp_period.soft_close", "soft_close", t("softClose", { month: period.month }), t("softCloseBody")),
-        { ...transition("erp_period.close", "close", t("close", { month: period.month }), t("closeBody")), primary: true },
+        {
+          ...transition("erp_period.close", "close", t("close", { month: period.month }), t("closeBody")),
+          primary: true,
+        },
         transition("erp_period.lock", "lock", t("lock", { month: period.month }), t("lockBody")),
         transition("erp_period.reopen", "reopen", t("reopen", { month: period.month }), t("reopenBody"), true),
         {
@@ -147,7 +158,15 @@ export function BankLineActions({ line }: { line: Line }) {
             body: (reason: string) => ({ reason }),
             done: t("ignored"),
           },
-          { key: "erp_bank_line.unmatch", kind: "post", path: "/ledger/bank-lines/{lineId}/actions/unmatch", params: { lineId: line.id }, title: t("unmatchTitle"), description: t("unmatchBody"), done: t("unmatched") },
+          {
+            key: "erp_bank_line.unmatch",
+            kind: "post",
+            path: "/ledger/bank-lines/{lineId}/actions/unmatch",
+            params: { lineId: line.id },
+            title: t("unmatchTitle"),
+            description: t("unmatchBody"),
+            done: t("unmatched"),
+          },
         ]}
       />
     </div>

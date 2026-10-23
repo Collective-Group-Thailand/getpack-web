@@ -58,7 +58,9 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
   const canRecord = canAt(context, "factory_production.record") && running;
   const canReturn = mo.nextActions.some((a) => a.key === "erp_mo.return");
 
-  const nowId = [...mo.operations].sort((a, b) => a.seq - b.seq).find((op) => op.status !== "done" && op.status !== "skipped")?.id;
+  const nowId = [...mo.operations]
+    .sort((a, b) => a.seq - b.seq)
+    .find((op) => op.status !== "done" && op.status !== "skipped")?.id;
   return (
     <PartnerPage
       wide
@@ -225,7 +227,11 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
                 </div>
                 {canRecord || (op.milestoneSync === "failed" && (op.status === "done" || op.status === "skipped")) ? (
                   // The step to work on now shows its buttons; a later one keeps them folded (out of order is possible, not invited).
-                  op.id === nowId || op.status === "done" || op.status === "skipped" || op.status === "in_progress" || op.status === "paused" ? (
+                  op.id === nowId ||
+                  op.status === "done" ||
+                  op.status === "skipped" ||
+                  op.status === "in_progress" ||
+                  op.status === "paused" ? (
                     <OperationButtons
                       orderId={mo.id}
                       operation={op}

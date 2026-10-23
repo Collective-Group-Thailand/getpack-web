@@ -11,11 +11,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** A new opportunity for a customer (`?customer=`) or a lead (`?lead=`, D-359). */
-export default async function NewOpportunityPage({ searchParams }: { searchParams: Promise<{ customer?: string; lead?: string }> }) {
+export default async function NewOpportunityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ customer?: string; lead?: string }>;
+}) {
   const [query, t, context] = await Promise.all([searchParams, getTranslations("partnerSales.crm"), factoryContext()]);
   const { contract } = await partnerServerApis();
   const read = await attempt(async () => {
-    const [people, customers] = await Promise.all([erpSalespeople(contract, context.factoryId), erpCustomers(contract, context.factoryId)]);
+    const [people, customers] = await Promise.all([
+      erpSalespeople(contract, context.factoryId),
+      erpCustomers(contract, context.factoryId),
+    ]);
     return { people, customers: customers.map((c) => ({ id: c.id, code: c.code, name: c.name })) };
   });
   return (
@@ -24,7 +31,10 @@ export default async function NewOpportunityPage({ searchParams }: { searchParam
         <OpportunityForm
           people={read.data.people}
           customers={read.data.customers}
-          preset={{ ...(query.customer ? { customerId: query.customer } : {}), ...(query.lead ? { leadId: query.lead } : {}) }}
+          preset={{
+            ...(query.customer ? { customerId: query.customer } : {}),
+            ...(query.lead ? { leadId: query.lead } : {}),
+          }}
         />
       ) : (
         <PageError error={read.error} />

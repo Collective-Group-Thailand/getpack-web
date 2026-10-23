@@ -52,7 +52,11 @@ export function useRun(namespace = "partnerLedger.common") {
   const t = useTranslations(namespace);
   const [refresh] = useRefresh();
   const [busy, setBusy] = useState(false);
-  async function run<T>(work: () => Promise<T>, done: string | ((result: T) => string), after: "refresh" | "none" = "refresh"): Promise<T | undefined> {
+  async function run<T>(
+    work: () => Promise<T>,
+    done: string | ((result: T) => string),
+    after: "refresh" | "none" = "refresh",
+  ): Promise<T | undefined> {
     setBusy(true);
     try {
       const result = await work();
@@ -77,7 +81,15 @@ type Line = { accountCode: string; side: "debit" | "credit"; amount: string; des
 const emptyLine = (side: "debit" | "credit"): Line => ({ accountCode: "", side, amount: "", description: "" });
 
 /** D-389: a manual journal — balanced lines on postable accounts; saved as a draft or submitted for approval. */
-export function JournalForm({ accounts, journal, etag }: { accounts: AccountOption[]; journal?: Journal; etag?: string | null }) {
+export function JournalForm({
+  accounts,
+  journal,
+  etag,
+}: {
+  accounts: AccountOption[];
+  journal?: Journal;
+  etag?: string | null;
+}) {
   const t = useTranslations("partnerLedger.form");
   const tc = useTranslations("partnerLedger.common");
   const format = useFormat();
@@ -98,8 +110,13 @@ export function JournalForm({ accounts, journal, etag }: { accounts: AccountOpti
       : [emptyLine("debit"), emptyLine("credit")],
   );
   const control = new Set(accounts.filter((a) => a.control).map((a) => a.id));
-  const options = accounts.map((a) => ({ value: a.id, label: a.label, ...(a.control ? { description: t("controlHint"), disabled: true } : {}) }));
-  const total = (side: "debit" | "credit") => lines.filter((l) => l.side === side).reduce((s, l) => s + (satang(l.amount) ?? 0n), 0n);
+  const options = accounts.map((a) => ({
+    value: a.id,
+    label: a.label,
+    ...(a.control ? { description: t("controlHint"), disabled: true } : {}),
+  }));
+  const total = (side: "debit" | "credit") =>
+    lines.filter((l) => l.side === side).reduce((s, l) => s + (satang(l.amount) ?? 0n), 0n);
   const debit = total("debit");
   const credit = total("credit");
   const set = (i: number, patch: Partial<Line>) => setLines(lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
@@ -116,7 +133,12 @@ export function JournalForm({ accounts, journal, etag }: { accounts: AccountOpti
   async function save(submit: boolean) {
     if (!description.trim()) return toast.error(t("needDescription"));
     const ready = lines.filter((l) => l.accountCode || l.amount);
-    if (ready.length < 2 || ready.some((l) => !l.accountCode || control.has(l.accountCode) || satang(l.amount) === null || satang(l.amount) === 0n))
+    if (
+      ready.length < 2 ||
+      ready.some(
+        (l) => !l.accountCode || control.has(l.accountCode) || satang(l.amount) === null || satang(l.amount) === 0n,
+      )
+    )
       return toast.error(t("needLines"));
     if (!DAY.test(date) || (autoReverseOn && !DAY.test(autoReverseOn))) return toast.error(tc("failed"));
     const body = {
@@ -124,7 +146,12 @@ export function JournalForm({ accounts, journal, etag }: { accounts: AccountOpti
       description: description.trim(),
       autoReverseOn: autoReverseOn || null,
       submit,
-      lines: ready.map((l) => ({ accountCode: l.accountCode, side: l.side, amount: fromSatang(satang(l.amount)!), description: l.description.trim() || null })),
+      lines: ready.map((l) => ({
+        accountCode: l.accountCode,
+        side: l.side,
+        amount: fromSatang(satang(l.amount)!),
+        description: l.description.trim() || null,
+      })),
     };
     const saved = await run(
       () =>
@@ -153,9 +180,18 @@ export function JournalForm({ accounts, journal, etag }: { accounts: AccountOpti
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium">{t("lines")}</legend>
         {lines.map((line, i) => (
-          <div key={i} className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(14rem,2fr)_9rem_10rem_minmax(8rem,1fr)_auto] md:items-end md:border-0 md:p-0">
+          <div
+            key={i}
+            className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(14rem,2fr)_9rem_10rem_minmax(8rem,1fr)_auto] md:items-end md:border-0 md:p-0"
+          >
             <Field label={tc("account")} labelHidden={i > 0}>
-              <Select value={line.accountCode || null} options={options} placeholder={tc("accountPlaceholder")} onValueChange={(v) => set(i, { accountCode: v })} aria-label={tc("account")} />
+              <Select
+                value={line.accountCode || null}
+                options={options}
+                placeholder={tc("accountPlaceholder")}
+                onValueChange={(v) => set(i, { accountCode: v })}
+                aria-label={tc("account")}
+              />
             </Field>
             <Field label={t("side")} labelHidden={i > 0}>
               <SegmentedControl
@@ -169,18 +205,41 @@ export function JournalForm({ accounts, journal, etag }: { accounts: AccountOpti
                 ]}
               />
             </Field>
-            <Field label={tc("amount")} labelHidden={i > 0} error={line.amount && satang(line.amount) === null ? tc("invalidAmount") : undefined}>
-              <Input inputMode="decimal" value={line.amount} onChange={(e) => set(i, { amount: e.target.value })} className="text-end" />
+            <Field
+              label={tc("amount")}
+              labelHidden={i > 0}
+              error={line.amount && satang(line.amount) === null ? tc("invalidAmount") : undefined}
+            >
+              <Input
+                inputMode="decimal"
+                value={line.amount}
+                onChange={(e) => set(i, { amount: e.target.value })}
+                className="text-end"
+              />
             </Field>
             <Field label={t("lineDescription")} labelHidden={i > 0}>
-              <Input value={line.description} maxLength={300} onChange={(e) => set(i, { description: e.target.value })} />
+              <Input
+                value={line.description}
+                maxLength={300}
+                onChange={(e) => set(i, { description: e.target.value })}
+              />
             </Field>
-            <IconButton name="trash" label={t("removeLine")} variant="ghost" disabled={lines.length <= 2} onClick={() => setLines(lines.filter((_, j) => j !== i))} />
+            <IconButton
+              name="trash"
+              label={t("removeLine")}
+              variant="ghost"
+              disabled={lines.length <= 2}
+              onClick={() => setLines(lines.filter((_, j) => j !== i))}
+            />
           </div>
         ))}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="flex flex-wrap gap-2">
-            <Button variant="secondary" iconStart="plus" onClick={() => setLines([...lines, emptyLine(debit > credit ? "credit" : "debit")])}>
+            <Button
+              variant="secondary"
+              iconStart="plus"
+              onClick={() => setLines([...lines, emptyLine(debit > credit ? "credit" : "debit")])}
+            >
               {t("addLine")}
             </Button>
             {debit !== credit ? (
@@ -189,14 +248,27 @@ export function JournalForm({ accounts, journal, etag }: { accounts: AccountOpti
               </Button>
             ) : null}
           </span>
-          <p className={debit === credit && debit > 0n ? "text-success text-sm font-medium" : "text-warning text-sm font-medium"} aria-live="polite">
+          <p
+            className={
+              debit === credit && debit > 0n ? "text-success text-sm font-medium" : "text-warning text-sm font-medium"
+            }
+            aria-live="polite"
+          >
             {t("totals", { debit: format.thb(fromSatang(debit)), credit: format.thb(fromSatang(credit)) })} ·{" "}
-            {debit === credit && debit > 0n ? t("balanced") : t("unbalanced", { diff: format.thb(fromSatang(debit > credit ? debit - credit : credit - debit)) })}
+            {debit === credit && debit > 0n
+              ? t("balanced")
+              : t("unbalanced", { diff: format.thb(fromSatang(debit > credit ? debit - credit : credit - debit)) })}
           </p>
         </div>
       </fieldset>
       <div className="flex flex-wrap gap-2">
-        <Button size="lg" iconStart="send" loading={busy} disabled={debit !== credit || debit === 0n} onClick={() => void save(true)}>
+        <Button
+          size="lg"
+          iconStart="send"
+          loading={busy}
+          disabled={debit !== credit || debit === 0n}
+          onClick={() => void save(true)}
+        >
           {t("submit")}
         </Button>
         <Button size="lg" variant="secondary" iconStart="save" loading={busy} onClick={() => void save(false)}>
@@ -222,7 +294,14 @@ export function ReverseJournal({ journal }: { journal: Journal }) {
   async function reverse() {
     if (reason.trim().length < 3 || !DAY.test(date)) return;
     const done = await run(
-      () => erpPost<Journal>(factoryId, "/ledger/journals/{entryId}/actions/reverse", { entryId: journal.id }, { documentDate: date, reason: reason.trim() }, { idempotencyKey: key }),
+      () =>
+        erpPost<Journal>(
+          factoryId,
+          "/ledger/journals/{entryId}/actions/reverse",
+          { entryId: journal.id },
+          { documentDate: date, reason: reason.trim() },
+          { idempotencyKey: key },
+        ),
       t("reverseDone"),
       "none",
     );
@@ -242,7 +321,13 @@ export function ReverseJournal({ journal }: { journal: Journal }) {
           description={t("reverseBody")}
           closeLabel={tc("close")}
           footer={
-            <Button variant="destructive" iconStart="undo" loading={busy} disabled={reason.trim().length < 3} onClick={() => void reverse()}>
+            <Button
+              variant="destructive"
+              iconStart="undo"
+              loading={busy}
+              disabled={reason.trim().length < 3}
+              onClick={() => void reverse()}
+            >
               {t("reverseTitle", { no: journal.entryNo ?? "" })}
             </Button>
           }
@@ -273,7 +358,11 @@ export function ExportJournals({ month }: { month: string }) {
       iconStart="download"
       loading={busy}
       onClick={async () => {
-        const link = await run(() => erpPost<{ url: string; rows: number }>(factoryId, "/ledger/exports/journals", {}, { month }), (r) => t("exportDone", { rows: r.rows }), "none");
+        const link = await run(
+          () => erpPost<{ url: string; rows: number }>(factoryId, "/ledger/exports/journals", {}, { month }),
+          (r) => t("exportDone", { rows: r.rows }),
+          "none",
+        );
         if (link) window.location.assign(link.url);
       }}
     >
@@ -287,7 +376,15 @@ export function ExportJournals({ month }: { month: string }) {
 type RecLine = { accountCode: string; side: "debit" | "credit"; amount: string };
 
 /** D-389: a recurring journal (or accrual) — balanced lines posted on its day each month. */
-export function RecurringDialog({ accounts, recurring, onClose }: { accounts: AccountOption[]; recurring?: Recurring; onClose: () => void }) {
+export function RecurringDialog({
+  accounts,
+  recurring,
+  onClose,
+}: {
+  accounts: AccountOption[];
+  recurring?: Recurring;
+  onClose: () => void;
+}) {
   const t = useTranslations("partnerLedger.recurring");
   const tc = useTranslations("partnerLedger.common");
   const tf = useTranslations("partnerLedger.form");
@@ -301,7 +398,11 @@ export function RecurringDialog({ accounts, recurring, onClose }: { accounts: Ac
   const [autoReverse, setAutoReverse] = useState(recurring?.autoReverse ?? false);
   const [stopped, setStopped] = useState(recurring?.status === "inactive");
   const [lines, setLines] = useState<RecLine[]>(
-    recurring?.lines.map((l) => ({ accountCode: l.accountCode, side: l.side as "debit" | "credit", amount: l.amount })) ?? [
+    recurring?.lines.map((l) => ({
+      accountCode: l.accountCode,
+      side: l.side as "debit" | "credit",
+      amount: l.amount,
+    })) ?? [
       { accountCode: "", side: "debit", amount: "" },
       { accountCode: "", side: "credit", amount: "" },
     ],
@@ -312,7 +413,13 @@ export function RecurringDialog({ accounts, recurring, onClose }: { accounts: Ac
 
   async function save() {
     const n = Number(day);
-    if (!name.trim() || !description.trim() || !(n >= 1 && n <= 28) || lines.some((l) => !l.accountCode || !satang(l.amount)) || sum("debit") !== sum("credit"))
+    if (
+      !name.trim() ||
+      !description.trim() ||
+      !(n >= 1 && n <= 28) ||
+      lines.some((l) => !l.accountCode || !satang(l.amount)) ||
+      sum("debit") !== sum("credit")
+    )
       return toast.error(tf("needLines"));
     const body = {
       name: name.trim(),
@@ -327,7 +434,14 @@ export function RecurringDialog({ accounts, recurring, onClose }: { accounts: Ac
     const done = await run(
       () =>
         recurring
-          ? erpSave("PUT", factoryId, "/ledger/recurring-journals/{recurringId}", { recurringId: recurring.id }, body, null)
+          ? erpSave(
+              "PUT",
+              factoryId,
+              "/ledger/recurring-journals/{recurringId}",
+              { recurringId: recurring.id },
+              body,
+              null,
+            )
           : erpPost(factoryId, "/ledger/recurring-journals", {}, body),
       t("saved"),
     );
@@ -370,7 +484,13 @@ export function RecurringDialog({ accounts, recurring, onClose }: { accounts: Ac
         {lines.map((line, i) => (
           <div key={i} className="grid gap-2 md:grid-cols-[2fr_9rem_9rem_auto] md:items-end">
             <Field label={tc("account")} labelHidden={i > 0}>
-              <Select value={line.accountCode || null} options={options} placeholder={tc("accountPlaceholder")} onValueChange={(v) => set(i, { accountCode: v })} aria-label={tc("account")} />
+              <Select
+                value={line.accountCode || null}
+                options={options}
+                placeholder={tc("accountPlaceholder")}
+                onValueChange={(v) => set(i, { accountCode: v })}
+                aria-label={tc("account")}
+              />
             </Field>
             <Field label={tf("side")} labelHidden={i > 0}>
               <SegmentedControl
@@ -385,40 +505,101 @@ export function RecurringDialog({ accounts, recurring, onClose }: { accounts: Ac
               />
             </Field>
             <Field label={tc("amount")} labelHidden={i > 0}>
-              <Input inputMode="decimal" value={line.amount} onChange={(e) => set(i, { amount: e.target.value })} className="text-end" />
+              <Input
+                inputMode="decimal"
+                value={line.amount}
+                onChange={(e) => set(i, { amount: e.target.value })}
+                className="text-end"
+              />
             </Field>
-            <IconButton name="trash" label={tf("removeLine")} variant="ghost" disabled={lines.length <= 2} onClick={() => setLines(lines.filter((_, j) => j !== i))} />
+            <IconButton
+              name="trash"
+              label={tf("removeLine")}
+              variant="ghost"
+              disabled={lines.length <= 2}
+              onClick={() => setLines(lines.filter((_, j) => j !== i))}
+            />
           </div>
         ))}
-        <Button variant="secondary" iconStart="plus" className="self-start" onClick={() => setLines([...lines, { accountCode: "", side: "debit", amount: "" }])}>
+        <Button
+          variant="secondary"
+          iconStart="plus"
+          className="self-start"
+          onClick={() => setLines([...lines, { accountCode: "", side: "debit", amount: "" }])}
+        >
           {tf("addLine")}
         </Button>
-        <Checkbox label={t("autoReverse")} checked={autoReverse} onCheckedChange={(on) => setAutoReverse(on === true)} />
-        {recurring ? <Checkbox label={t("stopped")} checked={stopped} onCheckedChange={(on) => setStopped(on === true)} /> : null}
+        <Checkbox
+          label={t("autoReverse")}
+          checked={autoReverse}
+          onCheckedChange={(on) => setAutoReverse(on === true)}
+        />
+        {recurring ? (
+          <Checkbox label={t("stopped")} checked={stopped} onCheckedChange={(on) => setStopped(on === true)} />
+        ) : null}
       </div>
     </Dialog>
   );
 }
 
 /** The recurring list's add / edit buttons. */
-export function RecurringButton({ accounts, recurring, label }: { accounts: AccountOption[]; recurring?: Recurring; label: string }) {
+export function RecurringButton({
+  accounts,
+  recurring,
+  label,
+}: {
+  accounts: AccountOption[];
+  recurring?: Recurring;
+  label: string;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button size={recurring ? "sm" : "lg"} variant={recurring ? "secondary" : "primary"} iconStart={recurring ? "edit" : "plus"} onClick={() => setOpen(true)}>
+      <Button
+        size={recurring ? "sm" : "lg"}
+        variant={recurring ? "secondary" : "primary"}
+        iconStart={recurring ? "edit" : "plus"}
+        onClick={() => setOpen(true)}
+      >
         {label}
       </Button>
-      {open ? <RecurringDialog accounts={accounts} {...(recurring ? { recurring } : {})} onClose={() => setOpen(false)} /> : null}
+      {open ? (
+        <RecurringDialog accounts={accounts} {...(recurring ? { recurring } : {})} onClose={() => setOpen(false)} />
+      ) : null}
     </>
   );
 }
 
 // ============================================================================================= settings
 
-const METHOD_ORDER = ["cash", "bank", "receivables", "payables", "grir", "inputVat", "inputVatUndue", "outputVat", "whtPnd3", "whtPnd53", "whtReceivable", "wip", "finishedGoods", "cogs", "sales"];
+const METHOD_ORDER = [
+  "cash",
+  "bank",
+  "receivables",
+  "payables",
+  "grir",
+  "inputVat",
+  "inputVatUndue",
+  "outputVat",
+  "whtPnd3",
+  "whtPnd53",
+  "whtReceivable",
+  "wip",
+  "finishedGoods",
+  "cogs",
+  "sales",
+];
 
 /** D-387: fiscal year, ledger start, CPA; and catch-up of documents not yet in the books (D-388). */
-export function LedgerSettingsForm({ settings, etag, canConfigure }: { settings: Settings; etag: string | null; canConfigure: boolean }) {
+export function LedgerSettingsForm({
+  settings,
+  etag,
+  canConfigure,
+}: {
+  settings: Settings;
+  etag: string | null;
+  canConfigure: boolean;
+}) {
   const t = useTranslations("partnerLedger.settings");
   const tc = useTranslations("partnerLedger.common");
   const tk = useTranslations("partnerLedger.reports.itemKinds");
@@ -438,7 +619,10 @@ export function LedgerSettingsForm({ settings, etag, canConfigure }: { settings:
             value={month}
             disabled={!canConfigure}
             onValueChange={setMonth}
-            options={Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: t(`months.${i + 1}` as never) }))}
+            options={Array.from({ length: 12 }, (_, i) => ({
+              value: String(i + 1),
+              label: t(`months.${i + 1}` as never),
+            }))}
             aria-label={t("fiscalYearStart")}
           />
         </Field>
@@ -449,7 +633,12 @@ export function LedgerSettingsForm({ settings, etag, canConfigure }: { settings:
           <Input value={cpa} maxLength={200} disabled={!canConfigure} onChange={(e) => setCpa(e.target.value)} />
         </Field>
         <Field label={t("cpaContact")}>
-          <Input value={contact} maxLength={300} disabled={!canConfigure} onChange={(e) => setContact(e.target.value)} />
+          <Input
+            value={contact}
+            maxLength={300}
+            disabled={!canConfigure}
+            onChange={(e) => setContact(e.target.value)}
+          />
         </Field>
       </div>
       {canConfigure ? (
@@ -467,7 +656,9 @@ export function LedgerSettingsForm({ settings, etag, canConfigure }: { settings:
                     "/ledger/settings",
                     {},
                     {
-                      ...(Number(month) !== settings.fiscalYearStartMonth ? { fiscalYearStartMonth: Number(month) } : {}),
+                      ...(Number(month) !== settings.fiscalYearStartMonth
+                        ? { fiscalYearStartMonth: Number(month) }
+                        : {}),
                       ledgerStartOn: start,
                       cpaName: cpa.trim() || null,
                       cpaContact: contact.trim() || null,
@@ -522,7 +713,12 @@ export function LedgerSettingsForm({ settings, etag, canConfigure }: { settings:
               loading={busy}
               onClick={async () => {
                 await run(
-                  () => erpPost<{ posted: number; skipped: number; failed: string[] }>(factoryId, "/ledger/actions/catch-up", {}),
+                  () =>
+                    erpPost<{ posted: number; skipped: number; failed: string[] }>(
+                      factoryId,
+                      "/ledger/actions/catch-up",
+                      {},
+                    ),
                   (r) => t("catchUpDone", { posted: r.posted, skipped: r.skipped, failed: r.failed.length }),
                 );
                 setConfirm(false);
@@ -544,7 +740,31 @@ export function LedgerSettingsForm({ settings, etag, canConfigure }: { settings:
 const KINDS = ["create", "update", "deactivate", "reactivate"] as const;
 const TYPES = ["asset", "liability", "equity", "revenue", "cost_of_sales", "expense"] as const;
 const CASH_FLOWS = ["operating", "investing", "financing", "cash", "equity", "non_cash"] as const;
-const LINES = ["cash", "trade_receivables", "other_receivables", "inventory", "tax_assets", "other_current_assets", "ppe", "accumulated_depreciation", "trade_payables", "tax_liabilities", "accrued_expenses", "customer_advances", "other_current_liabilities", "long_term_loans", "capital", "retained_earnings", "revenue", "other_income", "cost_of_sales", "manufacturing_overhead", "selling_admin", "finance_cost", "income_tax"] as const;
+const LINES = [
+  "cash",
+  "trade_receivables",
+  "other_receivables",
+  "inventory",
+  "tax_assets",
+  "other_current_assets",
+  "ppe",
+  "accumulated_depreciation",
+  "trade_payables",
+  "tax_liabilities",
+  "accrued_expenses",
+  "customer_advances",
+  "other_current_liabilities",
+  "long_term_loans",
+  "capital",
+  "retained_earnings",
+  "revenue",
+  "other_income",
+  "cost_of_sales",
+  "manufacturing_overhead",
+  "selling_admin",
+  "finance_cost",
+  "income_tax",
+] as const;
 
 /** D-386: propose a chart change — someone else approves it. */
 export function ProposeAccountChange({ accounts }: { accounts: Account[] }) {
@@ -565,7 +785,9 @@ export function ProposeAccountChange({ accounts }: { accounts: Account[] }) {
   const [line, setLine] = useState<string>("selling_admin");
   const [reason, setReason] = useState("");
   const target = accounts.find((a) => a.id === accountId);
-  const headings = accounts.filter((a) => !a.isPostable).map((a) => ({ value: a.code, label: `${a.code} ${a.nameTh}` }));
+  const headings = accounts
+    .filter((a) => !a.isPostable)
+    .map((a) => ({ value: a.code, label: `${a.code} ${a.nameTh}` }));
 
   function pick(id: string) {
     setAccountId(id);
@@ -582,18 +804,38 @@ export function ProposeAccountChange({ accounts }: { accounts: Account[] }) {
 
   async function propose() {
     const edits = kind === "create" || kind === "update";
-    if (reason.trim().length < 3 || (kind !== "create" && !accountId) || (kind === "create" && !ACCOUNT_CODE.test(code.trim())) || (edits && (!nameTh.trim() || !nameEn.trim())))
+    if (
+      reason.trim().length < 3 ||
+      (kind !== "create" && !accountId) ||
+      (kind === "create" && !ACCOUNT_CODE.test(code.trim())) ||
+      (edits && (!nameTh.trim() || !nameEn.trim()))
+    )
       return toast.error(t("invalid"));
     const done = await run(
       () =>
-        erpPost(factoryId, "/ledger/account-changes", {}, {
-          kind,
-          ...(kind !== "create" ? { accountId } : {}),
-          ...(edits
-            ? { proposed: { ...(kind === "create" ? { code: code.trim() } : {}), nameTh: nameTh.trim(), nameEn: nameEn.trim(), accountType: type, parentCode: parent, cashFlowClass: cashFlow, statementLine: line } }
-            : {}),
-          reason: reason.trim(),
-        }),
+        erpPost(
+          factoryId,
+          "/ledger/account-changes",
+          {},
+          {
+            kind,
+            ...(kind !== "create" ? { accountId } : {}),
+            ...(edits
+              ? {
+                  proposed: {
+                    ...(kind === "create" ? { code: code.trim() } : {}),
+                    nameTh: nameTh.trim(),
+                    nameEn: nameEn.trim(),
+                    accountType: type,
+                    parentCode: parent,
+                    cashFlowClass: cashFlow,
+                    statementLine: line,
+                  },
+                }
+              : {}),
+            reason: reason.trim(),
+          },
+        ),
       t("proposed"),
     );
     if (done) setOpen(false);
@@ -620,13 +862,27 @@ export function ProposeAccountChange({ accounts }: { accounts: Account[] }) {
         >
           <div className="grid gap-3">
             <Field label={t("kind")}>
-              <SegmentedControl label={t("kind")} size="md" value={kind} onValueChange={(v) => setKind(v as (typeof KINDS)[number])} options={KINDS.map((k) => ({ value: k, label: t(`kinds.${k}`) }))} />
+              <SegmentedControl
+                label={t("kind")}
+                size="md"
+                value={kind}
+                onValueChange={(v) => setKind(v as (typeof KINDS)[number])}
+                options={KINDS.map((k) => ({ value: k, label: t(`kinds.${k}`) }))}
+              />
             </Field>
             {kind !== "create" ? (
               <Field label={t("target")} required>
                 <Select
                   value={accountId}
-                  options={accounts.filter((a) => (kind === "reactivate" ? a.status === "inactive" : kind === "deactivate" ? a.status === "active" : true)).map((a) => ({ value: a.id, label: `${a.code} ${a.nameTh}` }))}
+                  options={accounts
+                    .filter((a) =>
+                      kind === "reactivate"
+                        ? a.status === "inactive"
+                        : kind === "deactivate"
+                          ? a.status === "active"
+                          : true,
+                    )
+                    .map((a) => ({ value: a.id, label: `${a.code} ${a.nameTh}` }))}
                   placeholder={tc("accountPlaceholder")}
                   onValueChange={pick}
                   aria-label={t("target")}
@@ -637,7 +893,13 @@ export function ProposeAccountChange({ accounts }: { accounts: Account[] }) {
               <>
                 <div className="grid gap-3 md:grid-cols-[8rem_1fr_1fr]">
                   <Field label={t("code")} required>
-                    <Input value={kind === "create" ? code : (target?.code ?? "")} disabled={kind !== "create"} maxLength={20} onChange={(e) => setCode(e.target.value.toUpperCase())} className="font-mono" />
+                    <Input
+                      value={kind === "create" ? code : (target?.code ?? "")}
+                      disabled={kind !== "create"}
+                      maxLength={20}
+                      onChange={(e) => setCode(e.target.value.toUpperCase())}
+                      className="font-mono"
+                    />
                   </Field>
                   <Field label={t("nameTh")} required>
                     <Input value={nameTh} maxLength={200} onChange={(e) => setNameTh(e.target.value)} />
@@ -648,16 +910,37 @@ export function ProposeAccountChange({ accounts }: { accounts: Account[] }) {
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   <Field label={t("type")}>
-                    <Select value={type} onValueChange={setType} options={TYPES.map((x) => ({ value: x, label: tc(`types.${x}`) }))} aria-label={t("type")} />
+                    <Select
+                      value={type}
+                      onValueChange={setType}
+                      options={TYPES.map((x) => ({ value: x, label: tc(`types.${x}`) }))}
+                      aria-label={t("type")}
+                    />
                   </Field>
                   <Field label={t("parent")}>
-                    <Select value={parent} onValueChange={setParent} options={headings} placeholder={tc("none")} aria-label={t("parent")} />
+                    <Select
+                      value={parent}
+                      onValueChange={setParent}
+                      options={headings}
+                      placeholder={tc("none")}
+                      aria-label={t("parent")}
+                    />
                   </Field>
                   <Field label={t("cashFlow")}>
-                    <Select value={cashFlow} onValueChange={setCashFlow} options={CASH_FLOWS.map((x) => ({ value: x, label: t(`cashFlows.${x}`) }))} aria-label={t("cashFlow")} />
+                    <Select
+                      value={cashFlow}
+                      onValueChange={setCashFlow}
+                      options={CASH_FLOWS.map((x) => ({ value: x, label: t(`cashFlows.${x}`) }))}
+                      aria-label={t("cashFlow")}
+                    />
                   </Field>
                   <Field label={t("line")}>
-                    <Select value={line} onValueChange={setLine} options={LINES.map((x) => ({ value: x, label: tl(x) }))} aria-label={t("line")} />
+                    <Select
+                      value={line}
+                      onValueChange={setLine}
+                      options={LINES.map((x) => ({ value: x, label: tl(x) }))}
+                      aria-label={t("line")}
+                    />
                   </Field>
                 </div>
               </>
@@ -706,7 +989,19 @@ export function MarkFiled({ filing }: { filing: Filing }) {
               onClick={async () => {
                 const done = await run(
                   () =>
-                    erpPost(factoryId, "/ledger/tax-filings", {}, { form: filing.form, month: filing.month, filedOn, reference: reference.trim() || null, amount: plainNumber(amount) }, { idempotencyKey: key }),
+                    erpPost(
+                      factoryId,
+                      "/ledger/tax-filings",
+                      {},
+                      {
+                        form: filing.form,
+                        month: filing.month,
+                        filedOn,
+                        reference: reference.trim() || null,
+                        amount: plainNumber(amount),
+                      },
+                      { idempotencyKey: key },
+                    ),
                   t("filedDone"),
                 );
                 if (done) setOpen(false);
@@ -724,7 +1019,12 @@ export function MarkFiled({ filing }: { filing: Filing }) {
               <Input value={reference} maxLength={100} onChange={(e) => setReference(e.target.value)} />
             </Field>
             <Field label={t("filedAmount")}>
-              <Input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-end" />
+              <Input
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="text-end"
+              />
             </Field>
           </div>
         </Dialog>

@@ -46,7 +46,10 @@ test("focuses a face upright and leaves it with Escape", async ({ page }) => {
   await newDesign(page);
 
   await openRail(page, "กล่อง");
-  await page.getByRole("region", { name: "กล่อง", exact: true }).getByRole("button", { name: "ด้านหน้า", exact: true }).click();
+  await page
+    .getByRole("region", { name: "กล่อง", exact: true })
+    .getByRole("button", { name: "ด้านหน้า", exact: true })
+    .click();
   await expect(page.getByRole("status").filter({ hasText: "กำลังแก้: ด้านหน้า" })).toBeVisible();
 
   // A heading added now lands on the focused face.

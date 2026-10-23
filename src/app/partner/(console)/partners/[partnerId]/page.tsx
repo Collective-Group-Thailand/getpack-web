@@ -94,23 +94,21 @@ export default async function TradingPartnerPage({ params }: Props) {
   // What is open with this partner: what we owe them (supplier invoices) and what they owe us (sales invoices).
   const [payables, receivables] = await Promise.all([
     partner.kind !== "customer" && canAt(context, "factory_ap.read")
-      ? attempt(
-          async () =>
-            (
-              await contract.GET("/v1/partner/factories/{factoryId}/erp/supplier-invoices", {
-                params: { path, query: { supplierId: partner.id, perPage: 100 } },
-              })
-            ).data!.data.filter((inv) => dec(inv.outstanding) > 0),
+      ? attempt(async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/supplier-invoices", {
+              params: { path, query: { supplierId: partner.id, perPage: 100 } },
+            })
+          ).data!.data.filter((inv) => dec(inv.outstanding) > 0),
         ).then((r) => r.data)
       : null,
     partner.kind !== "supplier" && canAt(context, "factory_receivables.read")
-      ? attempt(
-          async () =>
-            (
-              await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-invoices", {
-                params: { path, query: { customerId: partner.id, perPage: 100 } },
-              })
-            ).data!.data.filter((inv) => dec(inv.openAmount) > 0),
+      ? attempt(async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-invoices", {
+              params: { path, query: { customerId: partner.id, perPage: 100 } },
+            })
+          ).data!.data.filter((inv) => dec(inv.openAmount) > 0),
         ).then((r) => r.data)
       : null,
   ]);
@@ -118,7 +116,10 @@ export default async function TradingPartnerPage({ params }: Props) {
   const unit = (code: string) => tCommon(`units.${code}` as never);
   const canEdit = canAt(context, "factory_trading_partners.manage");
 
-  const [tSales, tOpen] = await Promise.all([getTranslations("partnerSales.partner"), getTranslations("partnerErp.partners.open")]);
+  const [tSales, tOpen] = await Promise.all([
+    getTranslations("partnerSales.partner"),
+    getTranslations("partnerErp.partners.open"),
+  ]);
   return (
     <PartnerPage
       wide
@@ -164,17 +165,43 @@ export default async function TradingPartnerPage({ params }: Props) {
             items={[
               ...(payables?.length
                 ? [
-                    { key: "ap", label: tOpen("weOwe"), value: format.thb(sum(payables.map((i) => i.outstanding))), hint: tOpen("invoices", { count: payables.length }), href: `/payables${queryOf({ q: partner.name })}` },
+                    {
+                      key: "ap",
+                      label: tOpen("weOwe"),
+                      value: format.thb(sum(payables.map((i) => i.outstanding))),
+                      hint: tOpen("invoices", { count: payables.length }),
+                      href: `/payables${queryOf({ q: partner.name })}`,
+                    },
                     ...(payables.some((i) => i.overdue)
-                      ? [{ key: "apLate", label: tOpen("overdue"), value: format.thb(sum(payables.filter((i) => i.overdue).map((i) => i.outstanding))), tone: "danger" as const }]
+                      ? [
+                          {
+                            key: "apLate",
+                            label: tOpen("overdue"),
+                            value: format.thb(sum(payables.filter((i) => i.overdue).map((i) => i.outstanding))),
+                            tone: "danger" as const,
+                          },
+                        ]
                       : []),
                   ]
                 : []),
               ...(receivables?.length
                 ? [
-                    { key: "ar", label: tOpen("theyOwe"), value: format.thb(sum(receivables.map((i) => i.openAmount))), hint: tOpen("invoices", { count: receivables.length }), href: `/receivables${queryOf({ q: partner.name })}` },
+                    {
+                      key: "ar",
+                      label: tOpen("theyOwe"),
+                      value: format.thb(sum(receivables.map((i) => i.openAmount))),
+                      hint: tOpen("invoices", { count: receivables.length }),
+                      href: `/receivables${queryOf({ q: partner.name })}`,
+                    },
                     ...(receivables.some((i) => i.overdue)
-                      ? [{ key: "arLate", label: tOpen("overdue"), value: format.thb(sum(receivables.filter((i) => i.overdue).map((i) => i.openAmount))), tone: "danger" as const }]
+                      ? [
+                          {
+                            key: "arLate",
+                            label: tOpen("overdue"),
+                            value: format.thb(sum(receivables.filter((i) => i.overdue).map((i) => i.openAmount))),
+                            tone: "danger" as const,
+                          },
+                        ]
                       : []),
                   ]
                 : []),

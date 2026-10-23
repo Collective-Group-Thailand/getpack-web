@@ -15,11 +15,20 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** One production order's cost (D-376), operation by operation. */
 export default async function JobCostPage({ params }: { params: Promise<{ orderId: string }> }) {
-  const [{ orderId }, t, format, context] = await Promise.all([params, getTranslations("partnerInsight.costs"), getFormat(), factoryContext()]);
+  const [{ orderId }, t, format, context] = await Promise.all([
+    params,
+    getTranslations("partnerInsight.costs"),
+    getFormat(),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const read = await attempt(
     async () =>
-      (await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders/{orderId}/cost", { params: { path: { factoryId: context.factoryId, orderId } } })).data!,
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders/{orderId}/cost", {
+          params: { path: { factoryId: context.factoryId, orderId } },
+        })
+      ).data!,
   );
   const back = { href: "/insight/costs", label: t("title") };
   if (!read.data)
@@ -34,7 +43,10 @@ export default async function JobCostPage({ params }: { params: Promise<{ orderI
       full
       title={`${c.productionOrder.number} · ${c.title}`}
       back={back}
-      description={t("orderBody", { good: formatQty(c.goodQty, format.locale), scrap: formatQty(c.scrapQty, format.locale) })}
+      description={t("orderBody", {
+        good: formatQty(c.goodQty, format.locale),
+        scrap: formatQty(c.scrapQty, format.locale),
+      })}
       meta={
         <Link className="text-link text-sm underline" href={`/planning/orders/${c.productionOrder.id}`}>
           {t("openOrder")}
@@ -48,10 +60,19 @@ export default async function JobCostPage({ params }: { params: Promise<{ orderI
           { key: "mc", label: t("machine"), value: format.thb(c.machine) },
           { key: "l", label: t("labour"), value: format.thb(c.labour) },
           { key: "o", label: t("overhead"), value: format.thb(c.overhead) },
-          { key: "t", label: t("total"), value: format.thb(c.total), hint: c.unitCost ? t("perUnit", { cost: format.thb(Number(c.unitCost).toFixed(4)) }) : undefined, tone: "success" },
+          {
+            key: "t",
+            label: t("total"),
+            value: format.thb(c.total),
+            hint: c.unitCost ? t("perUnit", { cost: format.thb(Number(c.unitCost).toFixed(4)) }) : undefined,
+            tone: "success",
+          },
         ]}
       />
-      <PartnerSection title={t("operations")} description={t("minutes", { run: c.runMinutes, planned: c.plannedMinutes })}>
+      <PartnerSection
+        title={t("operations")}
+        description={t("minutes", { run: c.runMinutes, planned: c.plannedMinutes })}
+      >
         <PartnerTable
           caption={t("operations")}
           rows={c.operations}
@@ -61,7 +82,13 @@ export default async function JobCostPage({ params }: { params: Promise<{ orderI
             { key: "m", header: t("machineName"), cell: (row) => row.machine?.name ?? "—" },
             { key: "p", header: t("planned"), align: "end", cell: (row) => format.number(row.plannedMinutes) },
             { key: "r", header: t("run"), align: "end", cell: (row) => format.number(row.runMinutes) },
-            { key: "rate", header: t("rate"), align: "end", hideOnPhone: true, cell: (row) => (row.machineRate ? format.thb(row.machineRate) : t("noRate")) },
+            {
+              key: "rate",
+              header: t("rate"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => (row.machineRate ? format.thb(row.machineRate) : t("noRate")),
+            },
             { key: "c", header: t("machine"), align: "end", cell: (row) => format.thb(row.machineCost) },
           ]}
         />

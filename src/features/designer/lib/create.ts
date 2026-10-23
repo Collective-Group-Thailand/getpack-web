@@ -121,7 +121,7 @@ export function newCode(
  */
 export function colourSpaceOf(bytes: Uint8Array, mimeType: string): "rgb" | "cmyk" {
   if (mimeType !== "image/jpeg") return "rgb";
-  for (let i = 2; i + 9 < bytes.length; ) {
+  for (let i = 2; i + 9 < bytes.length;) {
     if (bytes[i] !== 0xff) return "rgb";
     const marker = bytes[i + 1]!;
     const length = (bytes[i + 2]! << 8) | bytes[i + 3]!;

@@ -15,7 +15,11 @@ export async function generateMetadata(): Promise<Metadata> {
  * A new draft invoice (D-363): from a sales order (`?so=`) or a delivery note (`?do=`) — what was delivered and
  * not yet invoiced — or typed line by line for a sale with no order.
  */
-export default async function NewInvoicePage({ searchParams }: { searchParams: Promise<{ so?: string; do?: string }> }) {
+export default async function NewInvoicePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ so?: string; do?: string }>;
+}) {
   const [query, t, locale, context] = await Promise.all([
     searchParams,
     getTranslations("partnerSales.invoices"),
@@ -52,7 +56,11 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: P
       <PartnerPage
         wide
         title={t("newTitle")}
-        description={source.data ? t("fromOrder", { no: source.data.order.soNo, customer: source.data.order.customer.name }) : undefined}
+        description={
+          source.data
+            ? t("fromOrder", { no: source.data.order.soNo, customer: source.data.order.customer.name })
+            : undefined
+        }
         back={back}
       >
         {source.data ? (

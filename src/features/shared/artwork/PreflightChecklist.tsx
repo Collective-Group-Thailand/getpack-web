@@ -52,7 +52,8 @@ export function checklistRows(results: readonly CheckResult[], locale: string): 
     };
   };
   const others = [...new Set(results.map((result) => result.check))].filter(
-    (check) => !CORE_CHECKS.includes(check) && results.some((result) => result.check === check && result.outcome === "fail"),
+    (check) =>
+      !CORE_CHECKS.includes(check) && results.some((result) => result.check === check && result.outcome === "fail"),
   );
   return [...CORE_CHECKS.map(rowOf), ...others.map(rowOf)];
 }
@@ -81,7 +82,7 @@ export function PreflightChecklist({
 }) {
   const t = useTranslations("common.preflight");
   return (
-    <ul className="divide-border border-border divide-y rounded-control border">
+    <ul className="divide-border border-border rounded-control divide-y border">
       {rows.map((row) => (
         <li key={row.check} className="flex items-start gap-3 px-3.5 py-3 text-sm">
           <span className={cn("mt-0.5 grid size-6 shrink-0 place-items-center rounded-full", MARK[row.state].tone)}>

@@ -24,7 +24,11 @@ export default async function EditLeadPage({ params }: { params: Promise<{ leadI
     attempt(async () => erpSalespeople(contract, context.factoryId)),
   ]);
   return (
-    <PartnerPage wide title={t("editLead")} back={{ href: `/crm/leads/${leadId}`, label: read.data?.lead.name ?? t("title") }}>
+    <PartnerPage
+      wide
+      title={t("editLead")}
+      back={{ href: `/crm/leads/${leadId}`, label: read.data?.lead.name ?? t("title") }}
+    >
       {read.data && people.data ? (
         <LeadForm lead={read.data.lead} etag={read.data.etag} people={people.data} />
       ) : (

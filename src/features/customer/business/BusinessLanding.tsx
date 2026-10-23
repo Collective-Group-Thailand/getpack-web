@@ -23,7 +23,9 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
   return (
     <div className="flex flex-col gap-14">
       <JsonLd data={page.breadcrumb} />
-      <JsonLd data={webPageSchema({ name: t("metaTitle"), description: t("intro"), url: page.url, locale: page.language })} />
+      <JsonLd
+        data={webPageSchema({ name: t("metaTitle"), description: t("intro"), url: page.url, locale: page.language })}
+      />
       <JsonLd
         data={serviceSchema({
           name: t("metaTitle"),

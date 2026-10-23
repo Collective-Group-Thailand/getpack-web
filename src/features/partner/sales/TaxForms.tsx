@@ -22,7 +22,16 @@ import { SalesActions } from "./SalesActions";
 
 type Suggestion = Schemas["ErpWhtSuggestionDto"];
 type IncomeType = Schemas["ErpWhtIncomeType"];
-const INCOME: IncomeType[] = ["hire_of_work", "service", "transport", "advertising", "rent", "fees_commission", "prize", "other"];
+const INCOME: IncomeType[] = [
+  "hire_of_work",
+  "service",
+  "transport",
+  "advertising",
+  "rent",
+  "fees_commission",
+  "prize",
+  "other",
+];
 const USUAL: Record<IncomeType, string> = {
   hire_of_work: "3",
   service: "3",
@@ -72,7 +81,8 @@ export function WhtCertificateForm({ suggestion }: { suggestion: Suggestion }) {
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [key] = useState(newIdempotencyKey);
-  const update = (index: number, patch: Partial<Line>) => setLines(lines.map((l, i) => (i === index ? { ...l, ...patch } : l)));
+  const update = (index: number, patch: Partial<Line>) =>
+    setLines(lines.map((l, i) => (i === index ? { ...l, ...patch } : l)));
 
   async function save() {
     if (lines.some((l) => !MONEY.test(plainNumber(l.baseAmount)) || !MONEY.test(plainNumber(l.whtAmount)))) {
@@ -142,16 +152,38 @@ export function WhtCertificateForm({ suggestion }: { suggestion: Suggestion }) {
                 />
               </Field>
               <Field label={t("description")}>
-                <Input value={line.description} onChange={(event) => update(index, { description: event.target.value })} />
+                <Input
+                  value={line.description}
+                  onChange={(event) => update(index, { description: event.target.value })}
+                />
               </Field>
               <Field label={t("rate")}>
-                <NumberInput step="any" min={0} max={100} unit="%" value={line.ratePct} onChange={(event) => update(index, { ratePct: event.target.value })} />
+                <NumberInput
+                  step="any"
+                  min={0}
+                  max={100}
+                  unit="%"
+                  value={line.ratePct}
+                  onChange={(event) => update(index, { ratePct: event.target.value })}
+                />
               </Field>
               <Field label={t("base")}>
-                <NumberInput step="any" min={0} unit="฿" value={line.baseAmount} onChange={(event) => update(index, { baseAmount: event.target.value })} />
+                <NumberInput
+                  step="any"
+                  min={0}
+                  unit="฿"
+                  value={line.baseAmount}
+                  onChange={(event) => update(index, { baseAmount: event.target.value })}
+                />
               </Field>
               <Field label={t("wht")}>
-                <NumberInput step="any" min={0} unit="฿" value={line.whtAmount} onChange={(event) => update(index, { whtAmount: event.target.value })} />
+                <NumberInput
+                  step="any"
+                  min={0}
+                  unit="฿"
+                  value={line.whtAmount}
+                  onChange={(event) => update(index, { whtAmount: event.target.value })}
+                />
               </Field>
             </div>
           </li>
@@ -162,7 +194,17 @@ export function WhtCertificateForm({ suggestion }: { suggestion: Suggestion }) {
         iconStart="plus"
         className="self-start"
         onClick={() =>
-          setLines([...lines, { key: `w-${(seq += 1)}`, incomeType: "service", description: "", ratePct: "3", baseAmount: "", whtAmount: "" }])
+          setLines([
+            ...lines,
+            {
+              key: `w-${(seq += 1)}`,
+              incomeType: "service",
+              description: "",
+              ratePct: "3",
+              baseAmount: "",
+              whtAmount: "",
+            },
+          ])
         }
       >
         {t("add")}
@@ -222,7 +264,12 @@ export function TaxExports({ month }: { month: string }) {
     setBusy(`${report}.${fmt}`);
     const tab = window.open("", "_blank");
     try {
-      const result = await erpPost<{ url: string; rows: number }>(factoryId, "/tax/exports", {}, { report, month, format: fmt });
+      const result = await erpPost<{ url: string; rows: number }>(
+        factoryId,
+        "/tax/exports",
+        {},
+        { report, month, format: fmt },
+      );
       if (tab) tab.location.href = result.url;
       else window.location.assign(result.url);
       toast.success(t("ready", { rows: result.rows }));

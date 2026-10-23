@@ -34,7 +34,12 @@ export default async function NewRfqPage({ searchParams }: { searchParams: Promi
     return { items, suppliers, pr };
   });
   return (
-    <PartnerPage wide title={t("newTitle")} description={t("newBody")} back={{ href: "/purchasing/rfqs", label: t("title") }}>
+    <PartnerPage
+      wide
+      title={t("newTitle")}
+      description={t("newBody")}
+      back={{ href: "/purchasing/rfqs", label: t("title") }}
+    >
       {read.data ? (
         <RfqForm
           items={read.data.items.filter((i) => i.status === "active")}

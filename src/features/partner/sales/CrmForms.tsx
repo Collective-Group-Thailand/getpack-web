@@ -31,7 +31,17 @@ type Source = Schemas["ErpLeadSource"];
 type ActivityKind = Schemas["ErpActivityKind"];
 type People = { id: string; name: string }[];
 type Customers = { id: string; code: string; name: string }[];
-const SOURCES: Source[] = ["phone", "line", "facebook", "website", "walk_in", "referral", "exhibition", "getpack", "other"];
+const SOURCES: Source[] = [
+  "phone",
+  "line",
+  "facebook",
+  "website",
+  "walk_in",
+  "referral",
+  "exhibition",
+  "getpack",
+  "other",
+];
 const OPEN_LEAD = ["new", "contacted", "qualified"] as const;
 const OPEN_OPP = ["prospecting", "proposal", "negotiation"] as const;
 const KINDS: ActivityKind[] = ["call", "visit", "meeting", "line", "email", "task", "note"];
@@ -76,7 +86,9 @@ export function LeadForm({ lead, etag, people }: { lead?: Lead; etag?: string | 
     lineId: lead?.lineId ?? "",
     address: lead?.address ?? "",
     source: (lead?.source ?? "phone") as Source,
-    stage: (lead && (OPEN_LEAD as readonly string[]).includes(lead.stage) ? lead.stage : "new") as (typeof OPEN_LEAD)[number],
+    stage: (lead && (OPEN_LEAD as readonly string[]).includes(lead.stage)
+      ? lead.stage
+      : "new") as (typeof OPEN_LEAD)[number],
     expectedValue: lead?.expectedValue ?? "",
     salespersonId: lead?.salesperson?.id ?? "",
     note: lead?.note ?? "",
@@ -134,7 +146,11 @@ export function LeadForm({ lead, etag, people }: { lead?: Lead; etag?: string | 
           <Input type="email" value={v.email} onChange={(e) => set({ email: e.target.value })} />
         </Field>
         <Field label={t("source")}>
-          <Select value={v.source} onValueChange={(source) => set({ source: source as Source })} options={SOURCES.map((s) => ({ value: s, label: tSource(s) }))} />
+          <Select
+            value={v.source}
+            onValueChange={(source) => set({ source: source as Source })}
+            options={SOURCES.map((s) => ({ value: s, label: tSource(s) }))}
+          />
         </Field>
         <Field label={t("stage")}>
           <Select
@@ -144,7 +160,13 @@ export function LeadForm({ lead, etag, people }: { lead?: Lead; etag?: string | 
           />
         </Field>
         <Field label={t("expectedValue")}>
-          <NumberInput step="any" min={0} unit="฿" value={v.expectedValue} onChange={(e) => set({ expectedValue: e.target.value })} />
+          <NumberInput
+            step="any"
+            min={0}
+            unit="฿"
+            value={v.expectedValue}
+            onChange={(e) => set({ expectedValue: e.target.value })}
+          />
         </Field>
         <Field label={tCommon("salesperson")}>
           <Select
@@ -159,7 +181,12 @@ export function LeadForm({ lead, etag, people }: { lead?: Lead; etag?: string | 
         <Textarea rows={2} value={v.address} onChange={(e) => set({ address: e.target.value })} />
       </Field>
       <Field label={t("note")}>
-        <Textarea rows={3} value={v.note} placeholder={t("notePlaceholder")} onChange={(e) => set({ note: e.target.value })} />
+        <Textarea
+          rows={3}
+          value={v.note}
+          placeholder={t("notePlaceholder")}
+          onChange={(e) => set({ note: e.target.value })}
+        />
       </Field>
       <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
         {t("save")}
@@ -191,7 +218,9 @@ export function OpportunityForm({
   const [v, setV] = useState({
     title: opportunity?.title ?? "",
     customerId: opportunity?.customer?.id ?? preset.customerId ?? "",
-    stage: (opportunity && (OPEN_OPP as readonly string[]).includes(opportunity.stage) ? opportunity.stage : "prospecting") as (typeof OPEN_OPP)[number],
+    stage: (opportunity && (OPEN_OPP as readonly string[]).includes(opportunity.stage)
+      ? opportunity.stage
+      : "prospecting") as (typeof OPEN_OPP)[number],
     value: opportunity?.value ?? "",
     probabilityPct: opportunity ? String(opportunity.probabilityPct) : "",
     expectedCloseOn: opportunity?.expectedCloseOn ?? "",
@@ -221,7 +250,14 @@ export function OpportunityForm({
     const result = await run(
       () =>
         opportunity
-          ? erpSave<{ id: string }>("PUT", factoryId, "/opportunities/{opportunityId}", { opportunityId: opportunity.id }, body, etag)
+          ? erpSave<{ id: string }>(
+              "PUT",
+              factoryId,
+              "/opportunities/{opportunityId}",
+              { opportunityId: opportunity.id },
+              body,
+              etag,
+            )
           : erpPost<{ id: string }>(factoryId, "/opportunities", {}, body),
       t("saved"),
     );
@@ -258,7 +294,13 @@ export function OpportunityForm({
           <NumberInput step="any" min={0} unit="฿" value={v.value} onChange={(e) => set({ value: e.target.value })} />
         </Field>
         <Field label={t("probability")} hint={t("probabilityHint")}>
-          <NumberInput min={0} max={100} unit="%" value={v.probabilityPct} onChange={(e) => set({ probabilityPct: e.target.value })} />
+          <NumberInput
+            min={0}
+            max={100}
+            unit="%"
+            value={v.probabilityPct}
+            onChange={(e) => set({ probabilityPct: e.target.value })}
+          />
         </Field>
         <Field label={t("expectedCloseOn")}>
           <Input type="date" value={v.expectedCloseOn} onChange={(e) => set({ expectedCloseOn: e.target.value })} />
@@ -369,7 +411,10 @@ export function LeadActions({ lead, customers }: { lead: Lead; customers: Custom
                 value={existing || null}
                 placeholder={t("newCustomer")}
                 onValueChange={setExisting}
-                options={[{ value: "", label: t("newCustomer") }, ...customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))]}
+                options={[
+                  { value: "", label: t("newCustomer") },
+                  ...customers.map((c) => ({ value: c.id, label: c.name, description: c.code })),
+                ]}
               />
             </Field>
             {!existing ? (
@@ -378,7 +423,13 @@ export function LeadActions({ lead, customers }: { lead: Lead; customers: Custom
                   <Input inputMode="numeric" maxLength={13} value={taxId} onChange={(e) => setTaxId(e.target.value)} />
                 </Field>
                 <Field label={t("terms")}>
-                  <NumberInput min={0} max={365} unit={t("days")} value={terms} onChange={(e) => setTerms(e.target.value)} />
+                  <NumberInput
+                    min={0}
+                    max={365}
+                    unit={t("days")}
+                    value={terms}
+                    onChange={(e) => setTerms(e.target.value)}
+                  />
                 </Field>
               </div>
             ) : null}
@@ -395,7 +446,10 @@ export function OpportunityActions({ opportunity }: { opportunity: Opportunity }
   const t = useTranslations("partnerSales.crm.opportunityActions");
   const format = useFormat();
   const params = { opportunityId: opportunity.id };
-  const query = new URLSearchParams({ opportunity: opportunity.id, ...(opportunity.customer ? { customer: opportunity.customer.id } : {}) });
+  const query = new URLSearchParams({
+    opportunity: opportunity.id,
+    ...(opportunity.customer ? { customer: opportunity.customer.id } : {}),
+  });
   return (
     <SalesActions
       offered={opportunity.nextActions}
@@ -464,14 +518,19 @@ export function Activities({
     setError(undefined);
     const ok = await run(
       () =>
-        erpPost(factoryId, "/activities", {}, {
-          kind,
-          subject: subjectText.trim(),
-          ...subject,
-          ...(assigneeId ? { assigneeId } : {}),
-          dueAt: done || !due ? null : new Date(`${due}:00+07:00`).toISOString(),
-          done,
-        }),
+        erpPost(
+          factoryId,
+          "/activities",
+          {},
+          {
+            kind,
+            subject: subjectText.trim(),
+            ...subject,
+            ...(assigneeId ? { assigneeId } : {}),
+            dueAt: done || !due ? null : new Date(`${due}:00+07:00`).toISOString(),
+            done,
+          },
+        ),
       t("added"),
     );
     if (ok !== undefined) {
@@ -491,12 +550,24 @@ export function Activities({
   return (
     <div className="flex flex-col gap-4">
       {canManage && subject ? (
-        <form onSubmit={(event) => void add(event)} className="border-border bg-surface grid gap-3 rounded-xl border p-3 md:grid-cols-[10rem_1fr_14rem] md:p-4" noValidate>
+        <form
+          onSubmit={(event) => void add(event)}
+          className="border-border bg-surface grid gap-3 rounded-xl border p-3 md:grid-cols-[10rem_1fr_14rem] md:p-4"
+          noValidate
+        >
           <Field label={t("kind")}>
-            <Select value={kind} onValueChange={(k) => setKind(k as ActivityKind)} options={KINDS.map((k) => ({ value: k, label: tKinds(k) }))} />
+            <Select
+              value={kind}
+              onValueChange={(k) => setKind(k as ActivityKind)}
+              options={KINDS.map((k) => ({ value: k, label: tKinds(k) }))}
+            />
           </Field>
           <Field label={t("subject")} error={error}>
-            <Input value={subjectText} placeholder={t("subjectPlaceholder")} onChange={(e) => setSubjectText(e.target.value)} />
+            <Input
+              value={subjectText}
+              placeholder={t("subjectPlaceholder")}
+              onChange={(e) => setSubjectText(e.target.value)}
+            />
           </Field>
           <Field label={t("due")}>
             <Input type="datetime-local" value={due} disabled={done} onChange={(e) => setDue(e.target.value)} />
@@ -540,7 +611,13 @@ export function Activities({
                 </span>
               </span>
               {!a.doneAt && canManage ? (
-                <Button size="sm" variant="secondary" iconStart="check" disabled={busy} onClick={() => void complete(a)}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  iconStart="check"
+                  disabled={busy}
+                  onClick={() => void complete(a)}
+                >
                   {t("complete")}
                 </Button>
               ) : null}
@@ -573,21 +650,37 @@ export function TargetForm({ people, month }: { people: People; month: string })
     setError(undefined);
     const ok = await run(
       () =>
-        erpSave("PUT", factoryId, "/sales/targets", {}, {
-          salespersonId,
-          month,
-          targetNet: plainNumber(target),
-          ...(pct ? { commissionPct: plainNumber(pct) } : {}),
-        }, null),
+        erpSave(
+          "PUT",
+          factoryId,
+          "/sales/targets",
+          {},
+          {
+            salespersonId,
+            month,
+            targetNet: plainNumber(target),
+            ...(pct ? { commissionPct: plainNumber(pct) } : {}),
+          },
+          null,
+        ),
       t("saved"),
     );
     if (ok !== undefined) refresh();
   }
 
   return (
-    <form onSubmit={(event) => void save(event)} className="grid items-end gap-3 md:grid-cols-[1fr_12rem_9rem_auto]" noValidate>
+    <form
+      onSubmit={(event) => void save(event)}
+      className="grid items-end gap-3 md:grid-cols-[1fr_12rem_9rem_auto]"
+      noValidate
+    >
       <Field label={t("person")} error={error}>
-        <Select value={salespersonId || null} placeholder={t("personPlaceholder")} onValueChange={setSalespersonId} options={people.map((p) => ({ value: p.id, label: p.name }))} />
+        <Select
+          value={salespersonId || null}
+          placeholder={t("personPlaceholder")}
+          onValueChange={setSalespersonId}
+          options={people.map((p) => ({ value: p.id, label: p.name }))}
+        />
       </Field>
       <Field label={t("target")}>
         <NumberInput step="any" min={0} unit="฿" value={target} onChange={(e) => setTarget(e.target.value)} />

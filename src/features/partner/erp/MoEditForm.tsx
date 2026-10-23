@@ -30,7 +30,17 @@ const NONE = "-";
  * Change a production order (D-340): its title, dates, priority and note at any time while it is open; while it is
  * still planned also the quantity, the materials and the steps (a getpack job's steps follow the job and stay).
  */
-export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: string | null; items: Item[]; machines: Machine[] }) {
+export function MoEditForm({
+  order,
+  etag,
+  items,
+  machines,
+}: {
+  order: Mo;
+  etag: string | null;
+  items: Item[];
+  machines: Machine[];
+}) {
   const t = useTranslations("partnerFactory.orders.edit");
   const tCommon = useTranslations("partnerErp.common");
   const { factoryId } = useFactory();
@@ -45,24 +55,46 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
   const [priority, setPriority] = useState(String(order.priority));
   const [note, setNote] = useState(order.note ?? "");
   const [materials, setMaterials] = useState<MaterialRow[]>(() =>
-    order.materials.map((m) => ({ key: key(), itemId: m.item.id, requiredQty: String(Number(m.requiredQty)), note: m.note ?? "" })),
+    order.materials.map((m) => ({
+      key: key(),
+      itemId: m.item.id,
+      requiredQty: String(Number(m.requiredQty)),
+      note: m.note ?? "",
+    })),
   );
   const [operations, setOperations] = useState<OperationRow[]>(() =>
-    order.operations.map((o) => ({ key: key(), name: o.name, machineId: o.machine?.id ?? "", plannedMinutes: String(o.plannedMinutes) })),
+    order.operations.map((o) => ({
+      key: key(),
+      name: o.name,
+      machineId: o.machine?.id ?? "",
+      plannedMinutes: String(o.plannedMinutes),
+    })),
   );
   const [error, setError] = useState<string>();
   const itemOptions = items.map((i) => ({ value: i.id, label: i.name, description: i.sku }));
-  const machineOptions = [{ value: NONE, label: t("anyMachine") }, ...machines.map((m) => ({ value: m.id, label: m.name }))];
-  const setMaterial = (i: number, patch: Partial<MaterialRow>) => setMaterials(materials.map((m, j) => (j === i ? { ...m, ...patch } : m)));
-  const setOperation = (i: number, patch: Partial<OperationRow>) => setOperations(operations.map((o, j) => (j === i ? { ...o, ...patch } : o)));
+  const machineOptions = [
+    { value: NONE, label: t("anyMachine") },
+    ...machines.map((m) => ({ value: m.id, label: m.name })),
+  ];
+  const setMaterial = (i: number, patch: Partial<MaterialRow>) =>
+    setMaterials(materials.map((m, j) => (j === i ? { ...m, ...patch } : m)));
+  const setOperation = (i: number, patch: Partial<OperationRow>) =>
+    setOperations(operations.map((o, j) => (j === i ? { ...o, ...patch } : o)));
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
     if (!title.trim()) return setError(t("titleRequired"));
-    if (planned && (!QTY_PATTERN.test(plainNumber(quantity)) || isZero(plainNumber(quantity)))) return setError(tCommon("qtyPlaceholder"));
-    if (planned && materials.some((m) => !m.itemId || !QTY_PATTERN.test(plainNumber(m.requiredQty)) || isZero(plainNumber(m.requiredQty))))
+    if (planned && (!QTY_PATTERN.test(plainNumber(quantity)) || isZero(plainNumber(quantity))))
+      return setError(tCommon("qtyPlaceholder"));
+    if (
+      planned &&
+      materials.some(
+        (m) => !m.itemId || !QTY_PATTERN.test(plainNumber(m.requiredQty)) || isZero(plainNumber(m.requiredQty)),
+      )
+    )
       return setError(t("materialInvalid"));
-    if (planned && !getpack && operations.some((o) => !o.name.trim() || !/^\d{1,6}$/.test(o.plannedMinutes))) return setError(t("operationInvalid"));
+    if (planned && !getpack && operations.some((o) => !o.name.trim() || !/^\d{1,6}$/.test(o.plannedMinutes)))
+      return setError(t("operationInvalid"));
     setError(undefined);
     const saved = await call(
       async () =>
@@ -78,7 +110,11 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
               ...(planned
                 ? {
                     quantity: plainNumber(quantity),
-                    materials: materials.map((m) => ({ itemId: m.itemId, requiredQty: plainNumber(m.requiredQty), note: m.note.trim() || null })),
+                    materials: materials.map((m) => ({
+                      itemId: m.itemId,
+                      requiredQty: plainNumber(m.requiredQty),
+                      note: m.note.trim() || null,
+                    })),
                     ...(getpack
                       ? {}
                       : {
@@ -130,20 +166,44 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
           <legend className="mb-1 font-semibold">{t("materials")}</legend>
           <p className="text-muted text-sm">{t("materialsHint")}</p>
           {materials.map((m, i) => (
-            <div key={m.key} className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(14rem,2fr)_10rem_minmax(8rem,1fr)_auto] md:items-end">
+            <div
+              key={m.key}
+              className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(14rem,2fr)_10rem_minmax(8rem,1fr)_auto] md:items-end"
+            >
               <Field label={tCommon("item")} labelHidden={i > 0}>
-                <Select value={m.itemId || null} placeholder={tCommon("selectItem")} onValueChange={(v) => setMaterial(i, { itemId: v })} options={itemOptions} aria-label={tCommon("item")} />
+                <Select
+                  value={m.itemId || null}
+                  placeholder={tCommon("selectItem")}
+                  onValueChange={(v) => setMaterial(i, { itemId: v })}
+                  options={itemOptions}
+                  aria-label={tCommon("item")}
+                />
               </Field>
               <Field label={t("requiredQty")} labelHidden={i > 0}>
-                <Input inputMode="decimal" className="text-end" value={m.requiredQty} onChange={(e) => setMaterial(i, { requiredQty: e.target.value })} />
+                <Input
+                  inputMode="decimal"
+                  className="text-end"
+                  value={m.requiredQty}
+                  onChange={(e) => setMaterial(i, { requiredQty: e.target.value })}
+                />
               </Field>
               <Field label={t("lineNote")} labelHidden={i > 0}>
                 <Input value={m.note} maxLength={300} onChange={(e) => setMaterial(i, { note: e.target.value })} />
               </Field>
-              <IconButton name="trash" label={t("removeMaterial")} variant="ghost" onClick={() => setMaterials(materials.filter((_, j) => j !== i))} />
+              <IconButton
+                name="trash"
+                label={t("removeMaterial")}
+                variant="ghost"
+                onClick={() => setMaterials(materials.filter((_, j) => j !== i))}
+              />
             </div>
           ))}
-          <Button variant="secondary" iconStart="plus" className="self-start" onClick={() => setMaterials([...materials, { key: key(), itemId: "", requiredQty: "", note: "" }])}>
+          <Button
+            variant="secondary"
+            iconStart="plus"
+            className="self-start"
+            onClick={() => setMaterials([...materials, { key: key(), itemId: "", requiredQty: "", note: "" }])}
+          >
             {t("addMaterial")}
           </Button>
         </fieldset>
@@ -153,20 +213,43 @@ export function MoEditForm({ order, etag, items, machines }: { order: Mo; etag: 
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 font-semibold">{t("operations")}</legend>
           {operations.map((o, i) => (
-            <div key={o.key} className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(12rem,2fr)_minmax(12rem,2fr)_9rem_auto] md:items-end">
+            <div
+              key={o.key}
+              className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(12rem,2fr)_minmax(12rem,2fr)_9rem_auto] md:items-end"
+            >
               <Field label={t("operationName")} labelHidden={i > 0}>
                 <Input value={o.name} maxLength={100} onChange={(e) => setOperation(i, { name: e.target.value })} />
               </Field>
               <Field label={t("machine")} labelHidden={i > 0}>
-                <Select value={o.machineId || NONE} onValueChange={(v) => setOperation(i, { machineId: v === NONE ? "" : v })} options={machineOptions} aria-label={t("machine")} />
+                <Select
+                  value={o.machineId || NONE}
+                  onValueChange={(v) => setOperation(i, { machineId: v === NONE ? "" : v })}
+                  options={machineOptions}
+                  aria-label={t("machine")}
+                />
               </Field>
               <Field label={t("minutes")} labelHidden={i > 0}>
-                <Input inputMode="numeric" className="text-end" value={o.plannedMinutes} onChange={(e) => setOperation(i, { plannedMinutes: e.target.value })} />
+                <Input
+                  inputMode="numeric"
+                  className="text-end"
+                  value={o.plannedMinutes}
+                  onChange={(e) => setOperation(i, { plannedMinutes: e.target.value })}
+                />
               </Field>
-              <IconButton name="trash" label={t("removeOperation")} variant="ghost" onClick={() => setOperations(operations.filter((_, j) => j !== i))} />
+              <IconButton
+                name="trash"
+                label={t("removeOperation")}
+                variant="ghost"
+                onClick={() => setOperations(operations.filter((_, j) => j !== i))}
+              />
             </div>
           ))}
-          <Button variant="secondary" iconStart="plus" className="self-start" onClick={() => setOperations([...operations, { key: key(), name: "", machineId: "", plannedMinutes: "0" }])}>
+          <Button
+            variant="secondary"
+            iconStart="plus"
+            className="self-start"
+            onClick={() => setOperations([...operations, { key: key(), name: "", machineId: "", plannedMinutes: "0" }])}
+          >
             {t("addOperation")}
           </Button>
         </fieldset>

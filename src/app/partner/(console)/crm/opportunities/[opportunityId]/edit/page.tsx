@@ -12,7 +12,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Editing an open opportunity, under `If-Match` (D-359). */
 export default async function EditOpportunityPage({ params }: { params: Promise<{ opportunityId: string }> }) {
-  const [{ opportunityId }, t, context] = await Promise.all([params, getTranslations("partnerSales.crm"), factoryContext()]);
+  const [{ opportunityId }, t, context] = await Promise.all([
+    params,
+    getTranslations("partnerSales.crm"),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const read = await attempt(async () => {
     const [{ data, response }, people, customers] = await Promise.all([
@@ -22,12 +26,26 @@ export default async function EditOpportunityPage({ params }: { params: Promise<
       erpSalespeople(contract, context.factoryId),
       erpCustomers(contract, context.factoryId),
     ]);
-    return { opportunity: data!, etag: response.headers.get("etag"), people, customers: customers.map((c) => ({ id: c.id, code: c.code, name: c.name })) };
+    return {
+      opportunity: data!,
+      etag: response.headers.get("etag"),
+      people,
+      customers: customers.map((c) => ({ id: c.id, code: c.code, name: c.name })),
+    };
   });
   return (
-    <PartnerPage wide title={t("editOpportunity")} back={{ href: `/crm/opportunities/${opportunityId}`, label: read.data?.opportunity.title ?? t("title") }}>
+    <PartnerPage
+      wide
+      title={t("editOpportunity")}
+      back={{ href: `/crm/opportunities/${opportunityId}`, label: read.data?.opportunity.title ?? t("title") }}
+    >
       {read.data ? (
-        <OpportunityForm opportunity={read.data.opportunity} etag={read.data.etag} people={read.data.people} customers={read.data.customers} />
+        <OpportunityForm
+          opportunity={read.data.opportunity}
+          etag={read.data.etag}
+          people={read.data.people}
+          customers={read.data.customers}
+        />
       ) : (
         <PageError error={read.error} />
       )}

@@ -134,7 +134,7 @@ export default async function Page({
           { label: t("breadcrumb") },
         ]}
       />
-      <h1 className="mt-4 text-title leading-tight">{t("heading", { name })}</h1>
+      <h1 className="text-title mt-4 leading-tight">{t("heading", { name })}</h1>
       <p className="text-muted mt-2 max-w-2xl">{t("intro")}</p>
       {share && !shared ? (
         <Callout tone="warning" className="mt-4 max-w-2xl">

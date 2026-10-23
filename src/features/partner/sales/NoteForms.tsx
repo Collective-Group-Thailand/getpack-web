@@ -67,7 +67,9 @@ export function NoteForm({ invoice, kind }: { invoice: Invoice; kind: Kind }) {
   const [busy, setBusy] = useState(false);
   const [key] = useState(newIdempotencyKey);
   const returns = kind === "credit" && reason === "goods_returned";
-  const items = invoice.lines.filter((line) => line.item).map((line) => ({ value: line.item!.id, label: line.item!.name }));
+  const items = invoice.lines
+    .filter((line) => line.item)
+    .map((line) => ({ value: line.item!.id, label: line.item!.name }));
   const update = (index: number, patch: Partial<NoteLine>) =>
     setLines(lines.map((line, i) => (i === index ? { ...line, ...patch } : line)));
 
@@ -76,8 +78,10 @@ export function NoteForm({ invoice, kind }: { invoice: Invoice; kind: Kind }) {
     const next: Record<number, string> = {};
     lines.forEach((line, index) => {
       if (!line.description.trim()) next[index] = t("descriptionRequired");
-      else if (!MONEY.test(plainNumber(line.amount)) || isZero(plainNumber(line.amount))) next[index] = t("amountInvalid");
-      else if (returns && line.itemId && !QTY_PATTERN.test(plainNumber(line.returnQty))) next[index] = t("returnQtyInvalid");
+      else if (!MONEY.test(plainNumber(line.amount)) || isZero(plainNumber(line.amount)))
+        next[index] = t("amountInvalid");
+      else if (returns && line.itemId && !QTY_PATTERN.test(plainNumber(line.returnQty)))
+        next[index] = t("returnQtyInvalid");
     });
     setErrors(next);
     if (Object.keys(next).length) return;
@@ -113,7 +117,11 @@ export function NoteForm({ invoice, kind }: { invoice: Invoice; kind: Kind }) {
   return (
     <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
       <p className="text-muted text-sm">
-        {t("against", { no: invoice.invoiceNo ?? "", total: format.thb(invoice.total), customer: invoice.customer.name })}
+        {t("against", {
+          no: invoice.invoiceNo ?? "",
+          total: format.thb(invoice.total),
+          customer: invoice.customer.name,
+        })}
       </p>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("reason")}>
@@ -124,7 +132,11 @@ export function NoteForm({ invoice, kind }: { invoice: Invoice; kind: Kind }) {
           />
         </Field>
         <Field label={t("issueDate")}>
-          <Input type="date" value={issueDate} onChange={(event) => setIssueDate(event.target.value || bangkokToday())} />
+          <Input
+            type="date"
+            value={issueDate}
+            onChange={(event) => setIssueDate(event.target.value || bangkokToday())}
+          />
         </Field>
       </div>
       <Field label={t("reasonText")} hint={t("reasonTextHint")}>
@@ -185,7 +197,12 @@ export function NoteForm({ invoice, kind }: { invoice: Invoice; kind: Kind }) {
           </li>
         ))}
       </ol>
-      <Button variant="secondary" iconStart="plus" className="self-start" onClick={() => setLines([...lines, newLine()])}>
+      <Button
+        variant="secondary"
+        iconStart="plus"
+        className="self-start"
+        onClick={() => setLines([...lines, newLine()])}
+      >
         {t("add")}
       </Button>
       <p className="text-muted text-sm">{t("vatNote")}</p>

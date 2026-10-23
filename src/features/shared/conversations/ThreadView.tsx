@@ -224,7 +224,7 @@ export function Composer({
       {files.length > 0 ? (
         <ul className="flex flex-wrap gap-2 text-xs" aria-label={t("attached")}>
           {files.map((file) => (
-            <li key={file.id} className="bg-bg-subtle flex items-center gap-1 rounded-control px-3 py-1">
+            <li key={file.id} className="bg-bg-subtle rounded-control flex items-center gap-1 px-3 py-1">
               <Icon name="paperclip" size={14} />
               {file.name}
               <button

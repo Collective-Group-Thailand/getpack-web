@@ -90,7 +90,12 @@ export default async function TaxPage({
                 rowHref={(row) => SOURCE_HREF[row.kind]?.(row.sourceId) ?? `/tax${queryOf({ month })}`}
                 empty={<EmptyState icon="receipt" title={t("vat.empty")} />}
                 columns={[
-                  { key: "d", header: tCommon("date"), className: "whitespace-nowrap", cell: (row) => format.date(row.date) },
+                  {
+                    key: "d",
+                    header: tCommon("date"),
+                    className: "whitespace-nowrap",
+                    cell: (row) => format.date(row.date),
+                  },
                   {
                     key: "no",
                     header: t("vat.docNo"),
@@ -118,7 +123,9 @@ export default async function TaxPage({
     );
   } else if (view === "vat30") {
     const v = await attempt(
-      async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/tax/vat30", { params: { path, query: { month } } })).data!,
+      async () =>
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/tax/vat30", { params: { path, query: { month } } }))
+          .data!,
     );
     body = v.data ? (
       <>
@@ -146,14 +153,23 @@ export default async function TaxPage({
     );
   } else if (view === "wht") {
     const w = await attempt(
-      async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/tax/wht", { params: { path, query: { month, form } } })).data!,
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/tax/wht", {
+            params: { path, query: { month, form } },
+          })
+        ).data!,
     );
     body = (
       <>
         <ViewTabs
           label={t("wht.forms")}
           current={form}
-          items={(["pnd53", "pnd3"] as const).map((f) => ({ key: f, href: href("wht", { form: f }), label: t(`wht.${f}`) }))}
+          items={(["pnd53", "pnd3"] as const).map((f) => ({
+            key: f,
+            href: href("wht", { form: f }),
+            label: t(`wht.${f}`),
+          }))}
         />
         {w.data ? (
           <PartnerSection
@@ -170,11 +186,21 @@ export default async function TaxPage({
               rowKey={(row) => `${row.certNo}-${row.incomeType}-${row.ratePct}`}
               empty={<EmptyState icon="stamp" title={t("wht.empty")} />}
               columns={[
-                { key: "no", header: t("wht.certNo"), primary: true, cell: (row) => <span className="font-mono">{row.certNo}</span> },
+                {
+                  key: "no",
+                  header: t("wht.certNo"),
+                  primary: true,
+                  cell: (row) => <span className="font-mono">{row.certNo}</span>,
+                },
                 { key: "d", header: tCommon("date"), cell: (row) => format.date(row.paidOn) },
                 { key: "p", header: t("wht.payee"), cell: (row) => row.payeeName },
                 { key: "tax", header: t("vat.taxId"), hideOnPhone: true, cell: (row) => row.payeeTaxId ?? "—" },
-                { key: "i", header: t("wht.income"), hideOnPhone: true, cell: (row) => `${tIncome(row.incomeType)} ${formatPlain(row.ratePct, "th")}%` },
+                {
+                  key: "i",
+                  header: t("wht.income"),
+                  hideOnPhone: true,
+                  cell: (row) => `${tIncome(row.incomeType)} ${formatPlain(row.ratePct, "th")}%`,
+                },
                 { key: "b", header: t("wht.base"), align: "end", cell: (row) => format.thb(row.baseAmount) },
                 { key: "w", header: t("wht.wht"), align: "end", cell: (row) => format.thb(row.whtAmount) },
               ]}
@@ -202,12 +228,21 @@ export default async function TaxPage({
         rowHref={(row) => `/tax/certificates/${row.id}`}
         empty={<EmptyState icon="stamp" title={t("certificates.empty")} description={t("certificates.emptyBody")} />}
         columns={[
-          { key: "no", header: t("wht.certNo"), primary: true, cell: (row) => <span className="font-mono">{row.certNo}</span> },
+          {
+            key: "no",
+            header: t("wht.certNo"),
+            primary: true,
+            cell: (row) => <span className="font-mono">{row.certNo}</span>,
+          },
           { key: "d", header: tCommon("date"), cell: (row) => format.date(row.paidOn) },
           { key: "s", header: t("wht.payee"), cell: (row) => row.supplier.name },
           { key: "f", header: t("certificates.formLabel"), hideOnPhone: true, cell: (row) => t(`wht.${row.form}`) },
           { key: "w", header: t("wht.wht"), align: "end", cell: (row) => format.thb(row.whtAmount) },
-          { key: "st", header: tCommon("status"), cell: (row) => <StatusChip map={ERP_WHT_STATUS} value={row.status} /> },
+          {
+            key: "st",
+            header: tCommon("status"),
+            cell: (row) => <StatusChip map={ERP_WHT_STATUS} value={row.status} />,
+          },
         ]}
       />
     ) : (
@@ -238,11 +273,17 @@ export default async function TaxPage({
           {t("show")}
         </Button>
         <nav aria-label={t("monthNav")} className="flex gap-2">
-          <Link className="text-link text-sm underline" href={href(view, { month: shift(month, -1), form: view === "wht" ? form : undefined })}>
+          <Link
+            className="text-link text-sm underline"
+            href={href(view, { month: shift(month, -1), form: view === "wht" ? form : undefined })}
+          >
             {t("prevMonth")}
           </Link>
           {month < thisMonth() ? (
-            <Link className="text-link text-sm underline" href={href(view, { month: shift(month, 1), form: view === "wht" ? form : undefined })}>
+            <Link
+              className="text-link text-sm underline"
+              href={href(view, { month: shift(month, 1), form: view === "wht" ? form : undefined })}
+            >
               {t("nextMonth")}
             </Link>
           ) : null}

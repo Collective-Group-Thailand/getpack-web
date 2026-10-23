@@ -76,9 +76,12 @@ describe("getpack Factory ERP E4 mock", () => {
         body: { salesOrderId: so.id },
       })
     ).data!;
-    await api("storekeeper").POST("/v1/partner/factories/{factoryId}/erp/delivery-notes/{deliveryNoteId}/actions/issue", {
-      params: { path: { ...path, deliveryNoteId: dn.id }, header: key(4) },
-    });
+    await api("storekeeper").POST(
+      "/v1/partner/factories/{factoryId}/erp/delivery-notes/{deliveryNoteId}/actions/issue",
+      {
+        params: { path: { ...path, deliveryNoteId: dn.id }, header: key(4) },
+      },
+    );
     const after = (
       await api("sales").GET("/v1/partner/factories/{factoryId}/erp/sales-orders/{salesOrderId}", {
         params: { path: { ...path, salesOrderId: so.id } },

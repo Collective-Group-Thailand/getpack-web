@@ -29,9 +29,30 @@ export default async function OpportunityPage({ params }: { params: Promise<{ op
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const [read, activities, quotes, people] = await Promise.all([
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/opportunities/{opportunityId}", { params: { path: { ...path, opportunityId } } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/activities", { params: { path, query: { opportunityId, perPage: 100, view: "all" } } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/quotations", { params: { path, query: { opportunityId, perPage: 50 } } })).data!),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/opportunities/{opportunityId}", {
+            params: { path: { ...path, opportunityId } },
+          })
+        ).data!,
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/activities", {
+            params: { path, query: { opportunityId, perPage: 100, view: "all" } },
+          })
+        ).data!,
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/quotations", {
+            params: { path, query: { opportunityId, perPage: 50 } },
+          })
+        ).data!,
+    ),
     attempt(async () => erpSalespeople(contract, context.factoryId)),
   ]);
   const back = { href: "/crm?view=opportunities", label: t("title") };
@@ -49,11 +70,30 @@ export default async function OpportunityPage({ params }: { params: Promise<{ op
         <DescriptionList
           columns={2}
           items={[
-            ...(o.customer ? [{ term: tCommon("customer"), description: `${o.customer.name} (${o.customer.code})` }] : []),
-            ...(o.lead ? [{ term: t("lead"), description: <Link className="text-link underline" href={`/crm/leads/${o.lead.id}`}>{o.lead.name}</Link> }] : []),
+            ...(o.customer
+              ? [{ term: tCommon("customer"), description: `${o.customer.name} (${o.customer.code})` }]
+              : []),
+            ...(o.lead
+              ? [
+                  {
+                    term: t("lead"),
+                    description: (
+                      <Link className="text-link underline" href={`/crm/leads/${o.lead.id}`}>
+                        {o.lead.name}
+                      </Link>
+                    ),
+                  },
+                ]
+              : []),
             { term: t("opportunityForm.value"), description: format.thb(o.value) },
-            { term: t("opportunityForm.probability"), description: `${o.probabilityPct}% · ${format.thb(o.weightedValue)}` },
-            { term: t("opportunityForm.expectedCloseOn"), description: o.expectedCloseOn ? format.date(o.expectedCloseOn) : "—" },
+            {
+              term: t("opportunityForm.probability"),
+              description: `${o.probabilityPct}% · ${format.thb(o.weightedValue)}`,
+            },
+            {
+              term: t("opportunityForm.expectedCloseOn"),
+              description: o.expectedCloseOn ? format.date(o.expectedCloseOn) : "—",
+            },
             { term: tCommon("salesperson"), description: o.salesperson?.name ?? tCommon("noSalesperson") },
             ...(o.note ? [{ term: t("opportunityForm.note"), description: o.note }] : []),
             ...(o.lostReason ? [{ term: tCommon("reason"), description: o.lostReason }] : []),

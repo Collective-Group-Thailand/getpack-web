@@ -35,7 +35,13 @@ export const CHECK_KINDS: Kind[] = ["incoming", "in_process", "final", "other"];
 const POINT_TYPES: PointType[] = ["measurement", "pass_fail", "note"];
 const NUM = /^-?\d{1,10}(\.\d{1,4})?$/;
 const QTY = /^\d{1,11}(\.\d{1,3})?$/;
-const SOURCES: Schemas["ErpNcrSource"][] = ["customer_complaint", "internal", "production_order", "goods_receipt", "quality_check"];
+const SOURCES: Schemas["ErpNcrSource"][] = [
+  "customer_complaint",
+  "internal",
+  "production_order",
+  "goods_receipt",
+  "quality_check",
+];
 const SEVERITIES: Schemas["DefectSeverity"][] = ["minor", "major", "critical"];
 const DISPOSITIONS: Schemas["ErpNcrDisposition"][] = ["rework", "scrap", "return_to_supplier", "use_as_is", "hold"];
 
@@ -87,7 +93,15 @@ const newPoint = (patch: Partial<PointDraft> = {}): PointDraft => ({
 });
 
 /** An inspection template (D-373): its kind, item and the ordered checkpoints a check copies. */
-export function TemplateForm({ template, etag, items }: { template?: Template; etag?: string | null; items: Option[] }) {
+export function TemplateForm({
+  template,
+  etag,
+  items,
+}: {
+  template?: Template;
+  etag?: string | null;
+  items: Option[];
+}) {
   const t = useTranslations("partnerInsight.templates");
   const tKind = useTranslations("partnerInsight.kinds");
   const tType = useTranslations("partnerInsight.pointTypes");
@@ -116,7 +130,8 @@ export function TemplateForm({ template, etag, items }: { template?: Template; e
       : [newPoint({ type: "measurement" }), newPoint()],
   );
   const [error, setError] = useState<string>();
-  const update = (i: number, patch: Partial<PointDraft>) => setPoints(points.map((p, j) => (j === i ? { ...p, ...patch } : p)));
+  const update = (i: number, patch: Partial<PointDraft>) =>
+    setPoints(points.map((p, j) => (j === i ? { ...p, ...patch } : p)));
 
   async function save() {
     const bad = points.some(
@@ -150,7 +165,14 @@ export function TemplateForm({ template, etag, items }: { template?: Template; e
     const saved = await run(
       () =>
         template
-          ? erpSave<{ id: string }>("PUT", factoryId, "/inspection-templates/{templateId}", { templateId: template.id }, body, etag)
+          ? erpSave<{ id: string }>(
+              "PUT",
+              factoryId,
+              "/inspection-templates/{templateId}",
+              { templateId: template.id },
+              body,
+              etag,
+            )
           : erpPost<{ id: string }>(factoryId, "/inspection-templates", {}, body),
       t("saved"),
     );
@@ -167,14 +189,21 @@ export function TemplateForm({ template, etag, items }: { template?: Template; e
           <Input value={name} placeholder={t("namePlaceholder")} onChange={(e) => setName(e.target.value)} />
         </Field>
         <Field label={t("kind")}>
-          <Select value={kind} onValueChange={(v) => setKind(v as Kind)} options={CHECK_KINDS.map((k) => ({ value: k, label: tKind(k) }))} />
+          <Select
+            value={kind}
+            onValueChange={(v) => setKind(v as Kind)}
+            options={CHECK_KINDS.map((k) => ({ value: k, label: tKind(k) }))}
+          />
         </Field>
         <Field label={t("item")} hint={t("itemHint")}>
           <Select
             value={itemId || null}
             placeholder={t("anyItem")}
             onValueChange={setItemId}
-            options={[{ value: "", label: t("anyItem") }, ...items.map((i) => ({ value: i.id, label: i.label, description: i.hint ?? undefined }))]}
+            options={[
+              { value: "", label: t("anyItem") },
+              ...items.map((i) => ({ value: i.id, label: i.label, description: i.hint ?? undefined })),
+            ]}
           />
         </Field>
         <Field label={t("sampleHint")}>
@@ -190,45 +219,89 @@ export function TemplateForm({ template, etag, items }: { template?: Template; e
             <div className="mb-2 flex items-center justify-between gap-2">
               <span className="text-muted text-sm font-medium">{t("point", { n: i + 1 })}</span>
               <span className="flex gap-1">
-                <IconButton name="chevron-up" size="sm" label={t("up", { n: i + 1 })} disabled={i === 0} onClick={() => setPoints(points.map((x, j) => (j === i - 1 ? p : j === i ? points[i - 1]! : x)))} />
+                <IconButton
+                  name="chevron-up"
+                  size="sm"
+                  label={t("up", { n: i + 1 })}
+                  disabled={i === 0}
+                  onClick={() => setPoints(points.map((x, j) => (j === i - 1 ? p : j === i ? points[i - 1]! : x)))}
+                />
                 {points.length > 1 ? (
-                  <IconButton name="trash" size="sm" label={t("remove", { n: i + 1 })} onClick={() => setPoints(points.filter((_, j) => j !== i))} />
+                  <IconButton
+                    name="trash"
+                    size="sm"
+                    label={t("remove", { n: i + 1 })}
+                    onClick={() => setPoints(points.filter((_, j) => j !== i))}
+                  />
                 ) : null}
               </span>
             </div>
             <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
               <Field label={t("pointName")}>
-                <Input value={p.name} placeholder={t("pointNamePlaceholder")} onChange={(e) => update(i, { name: e.target.value })} />
+                <Input
+                  value={p.name}
+                  placeholder={t("pointNamePlaceholder")}
+                  onChange={(e) => update(i, { name: e.target.value })}
+                />
               </Field>
               <Field label={t("pointType")}>
-                <Select value={p.type} onValueChange={(v) => update(i, { type: v as PointType })} options={POINT_TYPES.map((x) => ({ value: x, label: tType(x) }))} />
+                <Select
+                  value={p.type}
+                  onValueChange={(v) => update(i, { type: v as PointType })}
+                  options={POINT_TYPES.map((x) => ({ value: x, label: tType(x) }))}
+                />
               </Field>
             </div>
             {p.type === "measurement" ? (
               <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
                 <Field label={t("unit")}>
-                  <Input value={p.unit} placeholder={t("unitPlaceholder")} onChange={(e) => update(i, { unit: e.target.value })} />
+                  <Input
+                    value={p.unit}
+                    placeholder={t("unitPlaceholder")}
+                    onChange={(e) => update(i, { unit: e.target.value })}
+                  />
                 </Field>
                 <Field label={t("min")}>
-                  <NumberInput step="any" value={p.minValue} onChange={(e) => update(i, { minValue: e.target.value })} />
+                  <NumberInput
+                    step="any"
+                    value={p.minValue}
+                    onChange={(e) => update(i, { minValue: e.target.value })}
+                  />
                 </Field>
                 <Field label={t("max")}>
-                  <NumberInput step="any" value={p.maxValue} onChange={(e) => update(i, { maxValue: e.target.value })} />
+                  <NumberInput
+                    step="any"
+                    value={p.maxValue}
+                    onChange={(e) => update(i, { maxValue: e.target.value })}
+                  />
                 </Field>
                 <Field label={t("target")}>
-                  <NumberInput step="any" value={p.targetValue} onChange={(e) => update(i, { targetValue: e.target.value })} />
+                  <NumberInput
+                    step="any"
+                    value={p.targetValue}
+                    onChange={(e) => update(i, { targetValue: e.target.value })}
+                  />
                 </Field>
               </div>
             ) : null}
             <div className="mt-3">
               <Field label={t("instruction")}>
-                <Input value={p.instruction} placeholder={t("instructionPlaceholder")} onChange={(e) => update(i, { instruction: e.target.value })} />
+                <Input
+                  value={p.instruction}
+                  placeholder={t("instructionPlaceholder")}
+                  onChange={(e) => update(i, { instruction: e.target.value })}
+                />
               </Field>
             </div>
           </li>
         ))}
       </ol>
-      <Button variant="secondary" iconStart="plus" className="self-start" onClick={() => setPoints([...points, newPoint()])}>
+      <Button
+        variant="secondary"
+        iconStart="plus"
+        className="self-start"
+        onClick={() => setPoints([...points, newPoint()])}
+      >
         {t("addPoint")}
       </Button>
       {template ? (
@@ -294,7 +367,9 @@ export function CheckStartForm({
           {
             kind,
             ...(templateId ? { templateId } : {}),
-            ...(kind === "incoming" && receiptId ? { goodsReceiptId: receiptId, lineNo: Number.parseInt(lineNo, 10) || 1 } : {}),
+            ...(kind === "incoming" && receiptId
+              ? { goodsReceiptId: receiptId, lineNo: Number.parseInt(lineNo, 10) || 1 }
+              : {}),
             ...(kind !== "incoming" && orderId ? { productionOrderId: orderId } : {}),
             ...(itemId ? { itemId } : {}),
             lotNo: lotNo.trim() || null,
@@ -324,7 +399,12 @@ export function CheckStartForm({
         {kind === "incoming" ? (
           <>
             <Field label={t("receipt")} hint={t("receiptHint")}>
-              <Select value={receiptId || null} placeholder={t("choose")} onValueChange={setReceiptId} options={receipts.map((r) => ({ value: r.id, label: r.label, description: r.hint ?? undefined }))} />
+              <Select
+                value={receiptId || null}
+                placeholder={t("choose")}
+                onValueChange={setReceiptId}
+                options={receipts.map((r) => ({ value: r.id, label: r.label, description: r.hint ?? undefined }))}
+              />
             </Field>
             <Field label={t("lineNo")}>
               <NumberInput min={1} step={1} value={lineNo} onChange={(e) => setLineNo(e.target.value)} />
@@ -336,7 +416,10 @@ export function CheckStartForm({
               value={orderId || null}
               placeholder={t("noOrder")}
               onValueChange={setOrderId}
-              options={[{ value: "", label: t("noOrder") }, ...orders.map((o) => ({ value: o.id, label: o.label, description: o.hint ?? undefined }))]}
+              options={[
+                { value: "", label: t("noOrder") },
+                ...orders.map((o) => ({ value: o.id, label: o.label, description: o.hint ?? undefined })),
+              ]}
             />
           </Field>
         )}
@@ -345,7 +428,10 @@ export function CheckStartForm({
             value={itemId || null}
             placeholder={t("fromDocument")}
             onValueChange={setItemId}
-            options={[{ value: "", label: t("fromDocument") }, ...items.map((i) => ({ value: i.id, label: i.label, description: i.hint ?? undefined }))]}
+            options={[
+              { value: "", label: t("fromDocument") },
+              ...items.map((i) => ({ value: i.id, label: i.label, description: i.hint ?? undefined })),
+            ]}
           />
         </Field>
         <Field label={t("template")} hint={usable.length ? undefined : t("noTemplate")}>
@@ -353,7 +439,10 @@ export function CheckStartForm({
             value={templateId || null}
             placeholder={t("withoutTemplate")}
             onValueChange={setTemplateId}
-            options={[{ value: "", label: t("withoutTemplate") }, ...usable.map((x) => ({ value: x.id, label: x.label }))]}
+            options={[
+              { value: "", label: t("withoutTemplate") },
+              ...usable.map((x) => ({ value: x.id, label: x.label })),
+            ]}
           />
         </Field>
         <Field label={t("lotNo")}>
@@ -383,16 +472,22 @@ export function CheckRecordForm({ check, etag, canEdit }: { check: Check; etag: 
   const { factoryId } = useFactory();
   const router = useRouter();
   const { run, busy } = useSave();
-  const [values, setValues] = useState(() =>
-    Object.fromEntries(
-      check.checkpoints.map((p) => [p.seq, { measured: trimZeros(p.measured), outcome: p.outcome ?? "", note: p.note ?? "" }]),
-    ) as Record<number, { measured: string; outcome: string; note: string }>,
+  const [values, setValues] = useState(
+    () =>
+      Object.fromEntries(
+        check.checkpoints.map((p) => [
+          p.seq,
+          { measured: trimZeros(p.measured), outcome: p.outcome ?? "", note: p.note ?? "" },
+        ]),
+      ) as Record<number, { measured: string; outcome: string; note: string }>,
   );
   const [accepted, setAccepted] = useState(trimZeros(check.acceptedQty));
   const [rejected, setRejected] = useState(trimZeros(check.rejectedQty) || "0");
   const [inspected, setInspected] = useState(trimZeros(check.inspectedQty));
   const [remarks, setRemarks] = useState(check.remarks ?? "");
-  const [photos, setPhotos] = useState<{ id: string; name: string }[]>(check.photos.map((p) => ({ id: p.fileId, name: p.name })));
+  const [photos, setPhotos] = useState<{ id: string; name: string }[]>(
+    check.photos.map((p) => ({ id: p.fileId, name: p.name })),
+  );
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string>();
   const set = (seq: number, patch: Partial<{ measured: string; outcome: string; note: string }>) =>
@@ -404,7 +499,10 @@ export function CheckRecordForm({ check, etag, canEdit }: { check: Check; etag: 
   };
 
   async function save() {
-    const badNumber = check.checkpoints.some((p) => p.type === "measurement" && values[p.seq]!.measured.trim() && !NUM.test(plainNumber(values[p.seq]!.measured)));
+    const badNumber = check.checkpoints.some(
+      (p) =>
+        p.type === "measurement" && values[p.seq]!.measured.trim() && !NUM.test(plainNumber(values[p.seq]!.measured)),
+    );
     const badQty = [accepted, rejected, inspected].some((q) => q.trim() && !QTY.test(plainNumber(q)));
     if (badNumber || badQty) {
       setError(t("invalid"));
@@ -468,8 +566,17 @@ export function CheckRecordForm({ check, etag, canEdit }: { check: Check; etag: 
                 ) : null}
               </div>
               {p.type === "measurement" ? (
-                <Field label={t("reading")} hint={ok === null ? undefined : ok ? tOutcome("pass") : tOutcome("fail")} error={ok === false ? t("outOfSpec") : undefined}>
-                  <NumberInput step="any" unit={p.unit ?? undefined} value={v.measured} onChange={(e) => set(p.seq, { measured: e.target.value })} />
+                <Field
+                  label={t("reading")}
+                  hint={ok === null ? undefined : ok ? tOutcome("pass") : tOutcome("fail")}
+                  error={ok === false ? t("outOfSpec") : undefined}
+                >
+                  <NumberInput
+                    step="any"
+                    unit={p.unit ?? undefined}
+                    value={v.measured}
+                    onChange={(e) => set(p.seq, { measured: e.target.value })}
+                  />
                 </Field>
               ) : p.type === "pass_fail" ? (
                 <SegmentedControl
@@ -551,7 +658,14 @@ export function CheckActions({ check }: { check: Check }) {
   async function override() {
     if (reason.trim().length < 3) return;
     const done = await run(
-      () => erpPost(factoryId, "/quality-checks/{checkId}/actions/override", params, { result, reason: reason.trim() }, { idempotencyKey: key }),
+      () =>
+        erpPost(
+          factoryId,
+          "/quality-checks/{checkId}/actions/override",
+          params,
+          { result, reason: reason.trim() },
+          { idempotencyKey: key },
+        ),
       t("overridden"),
     );
     if (done) {
@@ -598,7 +712,12 @@ export function CheckActions({ check }: { check: Check }) {
               options={(["pass", "conditional", "fail"] as const).map((r) => ({ value: r, label: tResult(r) }))}
             />
             <Field label={t("reason")} required>
-              <Textarea rows={2} value={reason} placeholder={t("reasonPlaceholder")} onChange={(e) => setReason(e.target.value)} />
+              <Textarea
+                rows={2}
+                value={reason}
+                placeholder={t("reasonPlaceholder")}
+                onChange={(e) => setReason(e.target.value)}
+              />
             </Field>
           </div>
         </Dialog>
@@ -633,7 +752,9 @@ export function NcrForm({
   const { factoryId } = useFactory();
   const router = useRouter();
   const { run, busy } = useSave();
-  const [source, setSource] = useState<Schemas["ErpNcrSource"]>(initial.checkId ? "quality_check" : "customer_complaint");
+  const [source, setSource] = useState<Schemas["ErpNcrSource"]>(
+    initial.checkId ? "quality_check" : "customer_complaint",
+  );
   const [severity, setSeverity] = useState<Schemas["DefectSeverity"]>("minor");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -649,7 +770,11 @@ export function NcrForm({
   const [key] = useState(newIdempotencyKey);
 
   async function save() {
-    if (title.trim().length < 3 || description.trim().length < 3 || (quantity.trim() && !QTY.test(plainNumber(quantity)))) {
+    if (
+      title.trim().length < 3 ||
+      description.trim().length < 3 ||
+      (quantity.trim() && !QTY.test(plainNumber(quantity)))
+    ) {
       setError(t("invalid"));
       return;
     }
@@ -685,7 +810,15 @@ export function NcrForm({
 
   const pick = (label: string, value: string, set: (v: string) => void, options: Option[], none: string) => (
     <Field label={label}>
-      <Select value={value || null} placeholder={none} onValueChange={set} options={[{ value: "", label: none }, ...options.map((o) => ({ value: o.id, label: o.label, description: o.hint ?? undefined }))]} />
+      <Select
+        value={value || null}
+        placeholder={none}
+        onValueChange={set}
+        options={[
+          { value: "", label: none },
+          ...options.map((o) => ({ value: o.id, label: o.label, description: o.hint ?? undefined })),
+        ]}
+      />
     </Field>
   );
 
@@ -693,15 +826,30 @@ export function NcrForm({
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 md:grid-cols-2">
         <Field label={t("source")}>
-          <Select value={source} onValueChange={(v) => setSource(v as Schemas["ErpNcrSource"])} options={SOURCES.map((s) => ({ value: s, label: tSource(s) }))} />
+          <Select
+            value={source}
+            onValueChange={(v) => setSource(v as Schemas["ErpNcrSource"])}
+            options={SOURCES.map((s) => ({ value: s, label: tSource(s) }))}
+          />
         </Field>
-        <SegmentedControl label={t("severity")} size="md" value={severity} onValueChange={setSeverity} options={SEVERITIES.map((s) => ({ value: s, label: tSeverity(s) }))} />
+        <SegmentedControl
+          label={t("severity")}
+          size="md"
+          value={severity}
+          onValueChange={setSeverity}
+          options={SEVERITIES.map((s) => ({ value: s, label: tSeverity(s) }))}
+        />
       </div>
       <Field label={t("title")} required>
         <Input value={title} placeholder={t("titlePlaceholder")} onChange={(e) => setTitle(e.target.value)} />
       </Field>
       <Field label={t("description")} required>
-        <Textarea rows={3} value={description} placeholder={t("descriptionPlaceholder")} onChange={(e) => setDescription(e.target.value)} />
+        <Textarea
+          rows={3}
+          value={description}
+          placeholder={t("descriptionPlaceholder")}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </Field>
       <div className="grid gap-3 md:grid-cols-2">
         {pick(t("item"), itemId, setItemId, items, t("none"))}
@@ -766,25 +914,57 @@ export function NcrWorkForm({ ncr, etag, people }: { ncr: Ncr; etag: string | nu
 
   return (
     <div className="flex flex-col gap-4">
-      <SegmentedControl label={t("severity")} size="md" value={severity} onValueChange={setSeverity} options={SEVERITIES.map((s) => ({ value: s, label: tSeverity(s) }))} />
+      <SegmentedControl
+        label={t("severity")}
+        size="md"
+        value={severity}
+        onValueChange={setSeverity}
+        options={SEVERITIES.map((s) => ({ value: s, label: tSeverity(s) }))}
+      />
       <Field label={t("rootCause")}>
-        <Textarea rows={2} value={rootCause} placeholder={t("rootCausePlaceholder")} onChange={(e) => setRootCause(e.target.value)} />
+        <Textarea
+          rows={2}
+          value={rootCause}
+          placeholder={t("rootCausePlaceholder")}
+          onChange={(e) => setRootCause(e.target.value)}
+        />
       </Field>
       <Field label={t("corrective")}>
-        <Textarea rows={2} value={corrective} placeholder={t("correctivePlaceholder")} onChange={(e) => setCorrective(e.target.value)} />
+        <Textarea
+          rows={2}
+          value={corrective}
+          placeholder={t("correctivePlaceholder")}
+          onChange={(e) => setCorrective(e.target.value)}
+        />
       </Field>
       <Field label={t("preventive")}>
-        <Textarea rows={2} value={preventive} placeholder={t("preventivePlaceholder")} onChange={(e) => setPreventive(e.target.value)} />
+        <Textarea
+          rows={2}
+          value={preventive}
+          placeholder={t("preventivePlaceholder")}
+          onChange={(e) => setPreventive(e.target.value)}
+        />
       </Field>
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label={t("owner")}>
-          <Select value={ownerId || null} placeholder={t("noOwner")} onValueChange={setOwnerId} options={people.map((p) => ({ value: p.id, label: p.label }))} />
+          <Select
+            value={ownerId || null}
+            placeholder={t("noOwner")}
+            onValueChange={setOwnerId}
+            options={people.map((p) => ({ value: p.id, label: p.label }))}
+          />
         </Field>
         <Field label={t("due")}>
           <Input type="date" value={due} onChange={(e) => setDue(e.target.value)} />
         </Field>
         <Field label={t("quantity")}>
-          <NumberInput min={0} step="any" disabled={ncr.disposition === "scrap"} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          <NumberInput
+            min={0}
+            step="any"
+            disabled={ncr.disposition === "scrap"}
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
         </Field>
       </div>
       <Button size="lg" iconStart="save" loading={busy} className="self-start" onClick={() => void save()}>
@@ -809,7 +989,14 @@ export function NcrActions({ ncr }: { ncr: Ncr }) {
 
   async function dispose() {
     const done = await run(
-      () => erpPost(factoryId, "/ncrs/{ncrId}/actions/dispose", params, { disposition, note: note.trim() || null }, { idempotencyKey: key }),
+      () =>
+        erpPost(
+          factoryId,
+          "/ncrs/{ncrId}/actions/dispose",
+          params,
+          { disposition, note: note.trim() || null },
+          { idempotencyKey: key },
+        ),
       t("disposed"),
     );
     if (done) {
@@ -882,12 +1069,20 @@ export function NcrActions({ ncr }: { ncr: Ncr }) {
         >
           <div className="grid gap-3">
             <Field label={t("disposition")}>
-              <Select value={disposition} onValueChange={(v) => setDisposition(v as Schemas["ErpNcrDisposition"])} options={DISPOSITIONS.map((d) => ({ value: d, label: tDisposition(d) }))} />
+              <Select
+                value={disposition}
+                onValueChange={(v) => setDisposition(v as Schemas["ErpNcrDisposition"])}
+                options={DISPOSITIONS.map((d) => ({ value: d, label: tDisposition(d) }))}
+              />
             </Field>
             {disposition === "scrap" ? (
               <p className="text-warning text-sm">
                 {ncr.item && ncr.quantity && ncr.warehouse
-                  ? t("scrapWarning", { qty: trimZeros(ncr.quantity), item: ncr.item.name, warehouse: ncr.warehouse.name })
+                  ? t("scrapWarning", {
+                      qty: trimZeros(ncr.quantity),
+                      item: ncr.item.name,
+                      warehouse: ncr.warehouse.name,
+                    })
                   : t("scrapNeeds")}
               </p>
             ) : null}
