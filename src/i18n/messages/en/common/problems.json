@@ -330,7 +330,8 @@
   "payables": {
     "invoice_duplicate": "Invoice already recorded",
     "invoice_mismatch": "Invoice does not match",
-    "statement_not_confirmable": "Statement cannot change"
+    "statement_not_confirmable": "Statement cannot change",
+    "erp_invoice_not_allowed": "Cannot issue from the ERP"
   },
   "payments": {
     "group_not_payable": "Not payable",
@@ -402,7 +403,10 @@
     "certificate_invalid": "Certificate already settled",
     "document_not_voidable": "Document cannot be voided",
     "nothing_to_write_off": "Nothing to write off",
-    "reason_invalid": "Unknown reason"
+    "reason_invalid": "Unknown reason",
+    "correction_decided": "Request already decided",
+    "document_not_replaceable": "Document cannot be reissued",
+    "correction_pending": "Correction already requested"
   },
   "referrals": {
     "already_attributed": "Already referred",
@@ -587,5 +591,13 @@
   "guarantee": {
     "version_pending": "A version already waits for approval",
     "version_not_proposed": "This version is no longer waiting for approval"
+  },
+  "documents": {
+    "image_not_usable": "Image cannot be used",
+    "signatory_exists": "Already a signatory",
+    "signatory_not_eligible": "Cannot be a signatory"
+  },
+  "etax": {
+    "nothing_to_send": "No e-Tax e-mail to send"
   }
 }

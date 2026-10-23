@@ -70,6 +70,7 @@ const MENU_ICONS: Record<string, IconName> = {
   finance: "wallet",
   users: "users",
   settings: "settings",
+  document_branding: "signature",
   feature_flags: "flag",
   notification_templates: "mail",
   notification_routes: "route",
@@ -101,6 +102,7 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
     entries: [
       "users",
       "settings",
+      "document_branding",
       "feature_flags",
       "notification_templates",
       "notification_routes",

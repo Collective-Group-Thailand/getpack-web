@@ -35,6 +35,7 @@ import { QueueTabs } from "../console/queues";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { StatusChip } from "../console/StatusChip";
+import { ETaxPanel, ReplaceDialog, ReplacementNotice, ResendETaxDialog } from "./document-corrections";
 import { DOC_TYPES, documentsList, type CustomerDocument } from "./resources";
 import { DocumentLink, fieldErrorsOf, SourceJournals } from "./shared";
 import { invalidateMoney } from "./slips";
@@ -156,10 +157,10 @@ export function DocumentsRegister({ initial }: { initial: InitialPage<CustomerDo
   );
 }
 
-type Action = "void" | "resend" | "debit";
+type Action = "void" | "resend" | "debit" | "replace" | "resend_etax";
 
 /** The verbs of `customer_document.*` this page performs. */
-const DOCUMENT_VERBS: ReadonlySet<string> = new Set(["resend", "void"]);
+const DOCUMENT_VERBS: ReadonlySet<string> = new Set(["resend", "void", "replace", "resend_etax"]);
 
 /**
  * One customer document as issued: seller and buyer, lines, VAT and withholding, what it deducts,
@@ -186,11 +187,15 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
       ).data!,
   });
 
-  async function openPdf(download: boolean) {
+  async function openPdf(download: boolean, cancelled = false) {
     try {
-      const { data } = await adminBrowserApis().contract.GET("/v1/admin/customer-documents/{documentId}/pdf", {
-        params: { path: { documentId } },
-      });
+      const { data } = cancelled
+        ? await adminBrowserApis().contract.GET("/v1/admin/customer-documents/{documentId}/cancelled-pdf", {
+            params: { path: { documentId } },
+          })
+        : await adminBrowserApis().contract.GET("/v1/admin/customer-documents/{documentId}/pdf", {
+            params: { path: { documentId } },
+          });
       if (!data) return;
       const link = document.createElement("a");
       link.href = data.url;
@@ -239,6 +244,11 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
             >
               {t("download")}
             </Button>
+            {doc.cancelledPdfReady ? (
+              <Button variant="secondary" iconStart="ban" onClick={() => void openPdf(false, true)}>
+                {t("cancelledCopy")}
+              </Button>
+            ) : null}
             {isTaxInvoice && (canCredit || canDebit) ? (
               <DropdownMenu
                 label={t("more")}
@@ -275,7 +285,17 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
             <NextActionBar
               actions={doc.nextActions}
               supported={DOCUMENT_VERBS}
-              labelOf={(verb) => (verb === "resend" ? t("resend") : verb === "void" ? t("void") : undefined)}
+              labelOf={(verb) =>
+                verb === "resend"
+                  ? t("resend")
+                  : verb === "void"
+                    ? t("void")
+                    : verb === "replace"
+                      ? t("replace")
+                      : verb === "resend_etax"
+                        ? t("resendETax")
+                        : undefined
+              }
               onAction={(verb) => setAction(verb as Action)}
             />
           </>
@@ -287,6 +307,7 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
           {doc.voidReason}
         </Callout>
       ) : null}
+      <ReplacementNotice doc={doc} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Section title={t("seller")}>
@@ -389,6 +410,8 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
         <SourceJournals sourceType="customer_document" sourceId={doc.id} />
       </Section>
 
+      <ETaxPanel doc={doc} />
+
       <Section title={t("deliveries")}>
         <Deliveries documentId={doc.id} />
       </Section>
@@ -424,6 +447,18 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
       ) : null}
       {action === "resend" ? <Resend doc={doc} onClose={() => setAction(null)} /> : null}
       {action === "debit" ? <DebitNote doc={doc} onClose={() => setAction(null)} /> : null}
+      {action === "resend_etax" ? <ResendETaxDialog doc={doc} onClose={() => setAction(null)} /> : null}
+      {action === "replace" ? (
+        <ReplaceDialog
+          doc={doc}
+          onClose={() => setAction(null)}
+          onReplaced={(next) => {
+            setAction(null);
+            void queryClient.invalidateQueries({ queryKey: key });
+            router.push(`/finance/documents/${next.id}`);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

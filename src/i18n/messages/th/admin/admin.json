@@ -23,7 +23,8 @@
     "searchMenu": "ค้นหาเมนู",
     "searchMenuPlaceholder": "ค้นหาเมนู (กด /)",
     "noMenuMatch": "ไม่พบเมนูที่ตรงกัน",
-    "menuSearchKey": "ไปที่ช่องค้นหาเมนู"
+    "menuSearchKey": "ไปที่ช่องค้นหาเมนู",
+    "mySignature": "ลายเซ็นของฉัน"
   },
   "menu": {
     "dashboard": "ภาพรวม",
@@ -52,6 +53,7 @@
     "analytics": "รายงานและวิเคราะห์",
     "reports": "รายงาน",
     "settings": "ตั้งค่าระบบ",
+    "document_branding": "โลโก้และลายเซ็นเอกสาร",
     "cs_calculators": "คำนวณราคา (CS)",
     "discount_memos": "บันทึกขอส่วนลด",
     "feature_flags": "เปิด/ปิดฟีเจอร์",

@@ -618,6 +618,7 @@ function statementInvoices({ store, statement }: ReturnType<typeof statementsAll
   return (statementStates.get(statement.id)?.invoices ?? []).map((invoice): Invoice => ({
     id: invoice.id,
     vendorId: store.factory.id,
+    erpInvoiceId: null,
     vendorName: store.factory.legalName,
     bsNumber: statement.bsNumber,
     vendorInvoiceNo: invoice.invoiceNo,
@@ -666,6 +667,7 @@ function recordBill(vendor: Vendor, input: Schemas["RecordBillDto"], recordedBy:
   const invoice: Invoice = {
     id: mockId("vbl", bills.length + 1),
     vendorId: vendor.id,
+    erpInvoiceId: null,
     vendorName: vendor.legalName,
     bsNumber: null,
     vendorInvoiceNo: input.vendorInvoiceNo,

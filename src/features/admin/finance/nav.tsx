@@ -39,6 +39,7 @@ export const FINANCE_NAV: readonly { group: string; items: readonly NavItem[] }[
     items: [
       { key: "documents", href: "/finance/documents", icon: "document", anyOf: ["receivables.read"] },
       { key: "creditNotes", href: "/finance/credit-notes", icon: "file-check", anyOf: ["receivables.read"] },
+      { key: "corrections", href: "/finance/corrections", icon: "edit", anyOf: ["receivables.read"] },
       { key: "receivables", href: "/finance/receivables", icon: "coins", anyOf: ["receivables.read"] },
     ],
   },

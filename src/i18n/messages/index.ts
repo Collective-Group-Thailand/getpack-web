@@ -88,6 +88,7 @@ const NAMESPACES = [
   "partnerSales",
   "partnerInsight",
   "partnerLedger",
+  "docBranding",
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -175,6 +176,8 @@ export const ZONE_NAMESPACES = {
     "advisor",
     // The designer, for prepress opening a design read-only or as a copy (F4 C.2).
     "designer",
+    // D-428/D-429: shared with the partner zone (logo, seal, signatories, my signature).
+    "docBranding",
   ],
   partner: [
     "common",
@@ -196,6 +199,7 @@ export const ZONE_NAMESPACES = {
     "partnerSales",
     "partnerInsight",
     "partnerLedger",
+    "docBranding",
   ],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 
@@ -272,6 +276,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     partnerSales: () => import("./th/partner/sales.json"),
     partnerInsight: () => import("./th/partner/insight.json"),
     partnerLedger: () => import("./th/partner/ledger.json"),
+    docBranding: () => import("./th/common/document-branding.json"),
   },
   en: {
     common: () => import("./en/common/common.json"),
@@ -343,6 +348,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     partnerSales: () => import("./en/partner/sales.json"),
     partnerInsight: () => import("./en/partner/insight.json"),
     partnerLedger: () => import("./en/partner/ledger.json"),
+    docBranding: () => import("./en/common/document-branding.json"),
   },
 };
 

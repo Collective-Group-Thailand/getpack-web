@@ -23,7 +23,8 @@
     "searchMenu": "Find a menu",
     "searchMenuPlaceholder": "Find a menu (press /)",
     "noMenuMatch": "No menu matches",
-    "menuSearchKey": "Jump to the menu search"
+    "menuSearchKey": "Jump to the menu search",
+    "mySignature": "My signature"
   },
   "menu": {
     "dashboard": "Overview",
@@ -52,6 +53,7 @@
     "analytics": "Analytics",
     "reports": "Reports",
     "settings": "Settings",
+    "document_branding": "Document branding",
     "cs_calculators": "CS calculators",
     "discount_memos": "Discount memos",
     "feature_flags": "Feature flags",

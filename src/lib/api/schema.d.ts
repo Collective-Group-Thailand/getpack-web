@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (getpack-api 0.73.1) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (getpack-api 0.75.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -6884,6 +6884,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/customer-documents/{documentId}/actions/replace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a tax document and issue it again with a corrected buyer
+         * @description D-431 (ป.86/2542 ข้อ 25): a new number of the same series, the original’s date and amounts, the corrected buyer and the note "เป็นการยกเลิกและออกใบกำกับภาษีฉบับใหม่แทนฉบับเดิมเลขที่ …"; the original keeps its number, void, with a copy stamped "ยกเลิก". The ledger does not move; the receivable and the WHT certificate to collect follow the new document. With e-Tax by Email on, the cancellation (CIV) and the new invoice are e-mailed. Answers a pending customer request on the document. Returns the new document. Requires `Idempotency-Key`.
+         *
+         *     Implements: D-431, D-430.
+         */
+        post: operations["admin.customerDocuments.replace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/customer-documents/{documentId}/actions/resend": {
         parameters: {
             query?: never;
@@ -6906,6 +6928,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/customer-documents/{documentId}/actions/resend-etax": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send the e-Tax e-mail again
+         * @description D-430: a failed e-Tax e-mail (no buyer e-mail, provider refused) is queued now; with `to` it goes to that address (also re-sending one already sent). Audited.
+         *
+         *     Implements: D-430.
+         */
+        post: operations["admin.customerDocuments.resendETax"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/customer-documents/{documentId}/actions/void": {
         parameters: {
             query?: never;
@@ -6917,11 +6961,33 @@ export interface paths {
         put?: never;
         /**
          * Void an invoice or a debit note
-         * @description Only an IV or DN nothing was collected on: its number stays with the reason and its journals are reversed (§4). Tax invoices and receipts are corrected by credit notes. Requires `Idempotency-Key`.
+         * @description Only an IV or DN nothing was collected on: its number stays with the reason and its journals are reversed (§4). Tax invoices and receipts are corrected by credit notes (amounts) or `replace` (buyer, D-431). Requires `Idempotency-Key`.
          *
          *     Implements: D-010, D-092, D-033.
          */
         post: operations["admin.customerDocuments.void"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customer-documents/{documentId}/cancelled-pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the cancelled copy of a replaced document
+         * @description D-431: the original stamped "ยกเลิก" with the reason (5-minute link).
+         *
+         *     Implements: D-431.
+         */
+        get: operations["admin.customerDocuments.cancelledPdf"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7902,6 +7968,228 @@ export interface paths {
          *     Implements: D-052, D-162.
          */
         post: operations["admin.discountMemos.withdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-branding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getpack’s document branding
+         * @description The logo and company seal on getpack’s documents, the signatories with their signatures, which signatory signs each kind of document and where the seal is stamped, and the latest changes. Everything is kept as a history: a document is rendered with the logo, seal and signature in force when it was issued, so issued documents never change when these do (D-428, D-429).
+         *
+         *     Implements: D-428, D-429.
+         */
+        get: operations["admin.documentBranding.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-branding/marks/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set or remove the logo or the company seal
+         * @description An uploaded image (purpose `brand_mark`) re-encoded as PNG; a seal’s paper is made transparent. Documents issued from now on carry it. Audited. Everything is kept as a history: a document is rendered with the logo, seal and signature in force when it was issued, so issued documents never change when these do (D-428, D-429).
+         *
+         *     Implements: D-428.
+         *
+         *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        put: operations["admin.documentBranding.setMark"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-branding/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A sample document with the branding as it is now
+         * @description A PDF marked "ตัวอย่าง" (5-minute link).
+         *
+         *     Implements: D-428, D-429.
+         */
+        post: operations["admin.documentBranding.preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-branding/rules/{docKind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Who signs a kind of document, and whether the seal is stamped
+         * @description From now on. getpack issues tax invoices, receipts, invoices, credit and debit notes, quotations, 50 ทวิ certificates and statements. Audited. Everything is kept as a history: a document is rendered with the logo, seal and signature in force when it was issued, so issued documents never change when these do (D-428, D-429).
+         *
+         *     Implements: D-429.
+         */
+        put: operations["admin.documentBranding.setRule"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-branding/signatories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Name a signatory
+         * @description An active staff member who may sign getpack’s documents, with the position printed under the signature. Only they can upload their signature (`admin.me.updateSignature`). Audited.
+         *
+         *     Implements: D-429.
+         */
+        post: operations["admin.documentBranding.addSignatory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-branding/signatories/{signatoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a signatory
+         * @description From now on their signature is not printed (documents already issued keep it). Audited.
+         *
+         *     Implements: D-429.
+         */
+        delete: operations["admin.documentBranding.removeSignatory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-branding/signatory-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Staff who may be named signatory
+         * @description Active staff matching the name or e-mail, 20 at most.
+         *
+         *     Implements: D-429.
+         */
+        get: operations["admin.documentBranding.candidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Customers’ correction requests
+         * @description D-431: newest first; `status=pending` is Finance’s queue.
+         *
+         *     Implements: D-431.
+         */
+        get: operations["admin.documentCorrections.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-corrections/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A correction request
+         * @description D-431: the buyer as printed and as requested.
+         *
+         *     Implements: D-431.
+         */
+        get: operations["admin.documentCorrections.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/document-corrections/{requestId}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve or decline a correction request
+         * @description D-431: approving cancels the document and issues it again with the buyer (as requested, or as corrected in `buyer`); declining needs a `note` the customer sees. Requires `Idempotency-Key`. Audited.
+         *
+         *     Implements: D-431.
+         */
+        post: operations["admin.documentCorrections.decide"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10620,6 +10908,52 @@ export interface paths {
          *     Implements: D-183.
          */
         patch: operations["admin.me.updatePreferences"];
+        trace?: never;
+    };
+    "/v1/admin/me/signatures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Where I sign getpack’s documents
+         * @description The signatory entries naming me, my current signature and the kinds of document it is printed on.
+         *
+         *     Implements: D-429.
+         */
+        get: operations["admin.me.signatures"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/me/signatures/{signatoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set my signature
+         * @description Only the signatory sets their own signature; an administrator names signatories but never uploads for them. Documents issued from now on print it (D-429). Audited.
+         *
+         *     Implements: D-429.
+         *
+         *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        put: operations["admin.me.updateSignature"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/admin/milestone-routes": {
@@ -18267,6 +18601,162 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/document-branding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My factory’s document branding
+         * @description The logo and seal on the factory’s ERP documents, its signatories and who signs what. Everything is kept as a history: a document is rendered with the logo, seal and signature in force when it was issued, so issued documents never change when these do (D-428, D-429).
+         *
+         *     Implements: D-428, D-429.
+         */
+        get: operations["partner.documentBranding.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/document-branding/marks/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set or remove my factory’s logo or seal
+         * @description An image uploaded for the factory or by me (purpose `brand_mark`); the logo is also the ERP settings’ document logo. Owner only by default. Audited.
+         *
+         *     Implements: D-428.
+         *
+         *     **Files:** upload first — `partner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        put: operations["partner.documentBranding.setMark"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/document-branding/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A sample document of my factory with the branding as it is now
+         * @description A PDF marked "ร่าง" (5-minute link).
+         *
+         *     Implements: D-428, D-429.
+         */
+        post: operations["partner.documentBranding.preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/document-branding/rules/{docKind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Who signs a kind of my factory’s documents, and whether the seal is stamped
+         * @description From now on. Audited. Everything is kept as a history: a document is rendered with the logo, seal and signature in force when it was issued, so issued documents never change when these do (D-428, D-429).
+         *
+         *     Implements: D-429.
+         */
+        put: operations["partner.documentBranding.setRule"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/document-branding/signatories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Name a signatory of my factory
+         * @description An active member of the factory; only they upload their signature (`partner.me.updateSignature`). Audited.
+         *
+         *     Implements: D-429.
+         */
+        post: operations["partner.documentBranding.addSignatory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/document-branding/signatories/{signatoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a signatory of my factory
+         * @description From now on their signature is not printed. Audited.
+         *
+         *     Implements: D-429.
+         */
+        delete: operations["partner.documentBranding.removeSignatory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/document-branding/signatory-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Members of my factory who may be named signatory
+         * @description Active members matching the name or e-mail, 20 at most.
+         *
+         *     Implements: D-429.
+         */
+        get: operations["partner.documentBranding.candidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/erp/activities": {
         parameters: {
             query?: never;
@@ -18797,6 +19287,50 @@ export interface paths {
          *     Implements: D-356.
          */
         patch: operations["partner.erpDocuments.updateFolder"];
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/getpack-billing/{statementId}/hand-over": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hand an issued ERP invoice to getpack as a statement’s tax invoice
+         * @description D-433: an invoice to getpack already issued in my ERP becomes the statement’s tax invoice (source `erp`) with its PDF — no upload. Its amounts must equal the statement’s. Requires `Idempotency-Key`.
+         *
+         *     Implements: D-433, D-090.
+         */
+        post: operations["partner.erpSalesInvoices.handOverToGetpack"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/erp/getpack-billing/{statementId}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue my tax invoice to getpack from the ERP for a billing statement
+         * @description D-433: for a confirmed statement, the ERP drafts and issues an invoice to getpack under my own number (the statement’s lines; getpack becomes a customer once, from its registered data), renders its PDF and submits it as the statement’s tax invoice (source `erp`). The amounts must equal the statement’s (409 `payables.erp_invoice_not_allowed` says why not). Requires `Idempotency-Key`.
+         *
+         *     Implements: D-433, D-090.
+         */
+        post: operations["partner.erpSalesInvoices.issueToGetpack"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/partner/factories/{factoryId}/erp/goods-receipts": {
@@ -25451,6 +25985,52 @@ export interface paths {
         patch: operations["partner.me.updatePreferences"];
         trace?: never;
     };
+    "/v1/partner/me/signatures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Where I sign my factory’s documents
+         * @description The signatory entries naming me in my factories, my current signature and what it is printed on.
+         *
+         *     Implements: D-429.
+         */
+        get: operations["partner.me.signatures"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/me/signatures/{signatoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set my signature
+         * @description Only the signatory sets their own signature; an administrator names signatories but never uploads for them. Documents issued from now on print it (D-429). Audited.
+         *
+         *     Implements: D-429.
+         *
+         *     **Files:** upload first — `partner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        put: operations["partner.me.updateSignature"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/notifications": {
         parameters: {
             query?: never;
@@ -29373,6 +29953,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/documents/{documentId}/cancelled-pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the cancelled copy of a replaced document
+         * @description D-431: the original stamped "ยกเลิก" with the reason; my own documents or my company’s.
+         *
+         *     Implements: D-431.
+         */
+        get: operations["store.documents.cancelledPdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/documents/{documentId}/corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask to correct the buyer on my tax document
+         * @description D-431: name, address, tax id or branch printed wrong. Finance approves — the document is cancelled and issued again under a new number with the same date and amounts — or declines with a reason. One open request per document (409 `receivables.correction_pending`). My own documents, or my company’s with `company_documents.read`.
+         *
+         *     Implements: D-431.
+         */
+        post: operations["store.documents.requestCorrection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/documents/{documentId}/pdf": {
         parameters: {
             query?: never;
@@ -29389,6 +30013,28 @@ export interface paths {
         get: operations["store.documents.pdf"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/documents/corrections/{requestId}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw my correction request
+         * @description While it is still pending (409 `receivables.correction_decided` after).
+         *
+         *     Implements: D-431.
+         */
+        post: operations["store.documents.withdrawCorrection"];
         delete?: never;
         options?: never;
         head?: never;
@@ -33696,6 +34342,19 @@ export interface components {
             /** @example เพิ่มขั้นตอนเคลือบ UV */
             reason: string;
             steps: components["schemas"]["RouteStepInputDto"][];
+        };
+        AddSignatoryDto: {
+            /**
+             * @description Printed under the signature
+             * @example กรรมการผู้จัดการ
+             */
+            position: string;
+            /**
+             * Format: uuid
+             * @description An active staff member (getpack) or an active member of the factory
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d3001
+             */
+            userId: string;
         };
         AddStockImageDto: {
             /**
@@ -39828,6 +40487,23 @@ export interface components {
         };
         /** @enum {string} */
         BranchType: "head_office" | "branch";
+        BrandingHistoryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-23T10:06:00+07:00
+             */
+            at: string;
+            /** @example คุณสมหญิง (การเงิน) */
+            by: string;
+            /** @example rule */
+            change: components["schemas"]["DocumentBrandingChange"];
+            /** @example tax_invoice */
+            detail: string;
+        };
+        BrandingPreviewDto: {
+            /** @example tax_invoice */
+            docKind: components["schemas"]["DocumentSigningKind"];
+        };
         BrandKitDto: {
             /**
              * Format: uuid
@@ -39883,6 +40559,28 @@ export interface components {
         BrandKitLogoRole: "primary" | "secondary" | "mark";
         /** @enum {string} */
         BrandKitStatus: "active" | "archived";
+        BrandMarkDto: {
+            /**
+             * Format: uuid
+             * @description The processed PNG used on documents
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d1001
+             */
+            fileId: string;
+            /** @example logo */
+            kind: components["schemas"]["DocumentBrandMarkKind"];
+            /**
+             * Format: date-time
+             * @example 2026-10-23T10:00:00+07:00
+             */
+            setAt: string;
+            /** @example คุณสมหญิง (การเงิน) */
+            setBy: string;
+            /**
+             * @description Signed URL (5 minutes)
+             * @example https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake
+             */
+            url: string | null;
+        };
         BsTotalsDto: {
             /** @example 150000.00 */
             assets: string;
@@ -43369,6 +44067,43 @@ export interface components {
             /** @description Each basis; null where a caliper is needed and unknown */
             sizes: components["schemas"]["BasisSizesDto"];
         };
+        CorrectedBuyerDto: {
+            /** @example 123 ถนนตัวอย่าง แขวงตัวอย่าง เขตตัวอย่าง กรุงเทพมหานคร 10110 */
+            address: string | null;
+            /**
+             * @description 5 digits; 00000 = head office
+             * @example 00000
+             */
+            branchCode: string | null;
+            /**
+             * @description Where e-Tax e-mails go (D-430)
+             * @example ap@customer.example
+             */
+            documentEmail?: string | null;
+            /** @example บริษัท ลูกค้าตัวอย่าง จำกัด */
+            name: string;
+            /**
+             * @description 13 digits; null for an individual without one
+             * @example 0000500000000
+             */
+            taxId: string | null;
+        };
+        CorrectionDocumentDto: {
+            /** @example TR256910-00001 */
+            docNumber: string;
+            /** @example tr */
+            docType: components["schemas"]["CustomerDocumentType"];
+            /**
+             * Format: date
+             * @example 2026-10-05
+             */
+            documentDate: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000520001
+             */
+            id: string;
+        };
         CorrugateAssemblyDto: {
             /**
              * @description Pieces per box, when the assembly takes sizes
@@ -46630,12 +47365,19 @@ export interface components {
             amountDue: string;
             buyer: components["schemas"]["DocumentPartyDto"];
             /**
+             * @description D-431: the cancelled copy (stamped "ยกเลิก") can be downloaded
+             * @example false
+             */
+            cancelledPdfReady: boolean;
+            /**
              * @description Cash received (receipts): gross − withholding
              * @example 1070.00
              */
             cashAmount: string;
             /** @example null */
             cnKind: components["schemas"]["CreditNoteKind"] | null;
+            /** @description D-431: the latest correction request of the document */
+            correction: components["schemas"]["DocumentCorrectionRefDto"] | null;
             /** @example THB */
             currency: string;
             /**
@@ -46661,6 +47403,13 @@ export interface components {
              * @example null
              */
             dueDate: string | null;
+            /** @description D-430: the e-Tax e-mails of the document (and its cancellation) */
+            eTax: components["schemas"]["ETaxDeliveryDto"][];
+            /**
+             * @description D-430: e-Tax by Email of a tax document — `pending` queued, `submitted` e-mailed to the buyer and ETDA, `failed` could not be sent (see `eTax`), `not_applicable` not a tax document or sending is off
+             * @example submitted
+             */
+            eTaxStatus: components["schemas"]["ETaxStatus"];
             /** @example 1070.00 */
             grossAmount: string;
             /** @example G2610-00001 */
@@ -46722,6 +47471,17 @@ export interface components {
             /** @example scb */
             receiptVia: components["schemas"]["ReceiptVia"] | null;
             receivable: components["schemas"]["DocumentReceivableDto"] | null;
+            /** @description D-431: the document that replaced this one */
+            replacedBy: components["schemas"]["DocumentRefDto"] | null;
+            /** @example null */
+            replacementNote: string | null;
+            /**
+             * @description D-431: why this document replaced another
+             * @example null
+             */
+            replacementReason: components["schemas"]["DocumentCorrectionReason"] | null;
+            /** @description D-431: the document this one cancels and replaces */
+            replaces: components["schemas"]["DocumentRefDto"] | null;
             /** @description The issuing entity (D-092) */
             seller: components["schemas"]["DocumentPartyDto"];
             /** @example issued */
@@ -47054,6 +47814,20 @@ export interface components {
              * @example major
              */
             severity?: components["schemas"]["ClaimSeverity"];
+        };
+        DecideCorrectionDto: {
+            /**
+             * @description true cancels the document and issues it again with the buyer
+             * @example true
+             */
+            approve: boolean;
+            /** @description Finance’s correction of the requested buyer (default: as requested) */
+            buyer?: components["schemas"]["CorrectedBuyerDto"] | null;
+            /**
+             * @description Required to reject
+             * @example null
+             */
+            note?: string | null;
         };
         DecideHeldAgentCommissionDto: {
             /** @example release */
@@ -48556,6 +49330,78 @@ export interface components {
              */
             note: string;
         };
+        /** @enum {string} */
+        DocumentBrandingChange: "logo" | "seal" | "signatory_added" | "signatory_removed" | "signature" | "rule";
+        DocumentBrandingDto: {
+            /** @description Latest changes first (40) */
+            history: components["schemas"]["BrandingHistoryDto"][];
+            logo: components["schemas"]["BrandMarkDto"] | null;
+            /** @description One per kind of document the owner issues */
+            rules: components["schemas"]["SigningRuleDto"][];
+            seal: components["schemas"]["BrandMarkDto"] | null;
+            signatories: components["schemas"]["SignatoryDto"][];
+        };
+        /** @enum {string} */
+        DocumentBrandMarkKind: "logo" | "seal";
+        DocumentCorrectionDto: {
+            /** @description As requested (approved: as issued) */
+            buyer: components["schemas"]["DocumentPartyDto"];
+            /**
+             * Format: date-time
+             * @example 2026-10-06T09:00:00+07:00
+             */
+            createdAt: string;
+            /** @description As printed on the document now */
+            currentBuyer: components["schemas"]["DocumentPartyDto"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            decidedBy: components["schemas"]["PersonRefDto"] | null;
+            /** @example null */
+            decisionNote: string | null;
+            document: components["schemas"]["CorrectionDocumentDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e1001
+             */
+            id: string;
+            /** @example ย้ายสำนักงานแล้ว */
+            note: string | null;
+            /** @example buyer_address */
+            reason: components["schemas"]["DocumentCorrectionReason"];
+            /** @description The reissued document once approved */
+            replacement: components["schemas"]["DocumentRefDto"] | null;
+            requestedBy: components["schemas"]["PersonRefDto"];
+            /** @example pending */
+            status: components["schemas"]["DocumentCorrectionStatus"];
+        };
+        /**
+         * @description D-431: why this document replaced another
+         * @enum {string}
+         */
+        DocumentCorrectionReason: "buyer_name" | "buyer_address" | "buyer_tax_id" | "other";
+        DocumentCorrectionRefDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-06T09:00:00+07:00
+             */
+            createdAt: string;
+            /** @example null */
+            decisionNote: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e1001
+             */
+            id: string;
+            /** @example buyer_address */
+            reason: components["schemas"]["DocumentCorrectionReason"];
+            /** @example pending */
+            status: components["schemas"]["DocumentCorrectionStatus"];
+        };
+        /** @enum {string} */
+        DocumentCorrectionStatus: "pending" | "approved" | "rejected" | "withdrawn";
         DocumentDeliveryDto: {
             /** @example email */
             channel: components["schemas"]["NotificationChannel"];
@@ -48582,6 +49428,8 @@ export interface components {
         };
         /** @enum {string} */
         DocumentDeliveryKind: "issued" | "resent";
+        /** @enum {string} */
+        DocumentOwnerKind: "entity" | "factory";
         DocumentPartyDto: {
             /** @example 99/9 ถนนตัวอย่าง แขวงทดสอบ เขตทดสอบ กรุงเทพมหานคร 10000 */
             address: string | null;
@@ -48650,6 +49498,8 @@ export interface components {
             /** @example yearly */
             resetPeriod: components["schemas"]["SequenceReset"];
         };
+        /** @enum {string} */
+        DocumentSigningKind: "tax_invoice" | "receipt" | "invoice" | "credit_note" | "debit_note" | "quotation" | "sales_order" | "delivery_note" | "billing_note" | "wht_certificate" | "statement";
         /** @enum {string} */
         DocumentType: "qt" | "iv" | "tr" | "rc" | "cn" | "dn" | "po" | "gr" | "bs" | "pv" | "wt" | "jv" | "order_group" | "job" | "claim" | "shipment" | "rfq" | "support_ticket" | "rfq_basket";
         DownloadDielineDto: {
@@ -52149,6 +52999,14 @@ export interface components {
             /** @example ให้ทีม getpack ช่วยตรวจตัวเลขต้นทุน */
             reason: string;
         };
+        ErpHandOverInvoiceDto: {
+            /**
+             * Format: uuid
+             * @description An issued ERP invoice to getpack
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f1001
+             */
+            invoiceId: string;
+        };
         ErpInboxCountsDto: {
             /** @example 2 */
             approve: number;
@@ -52285,6 +53143,14 @@ export interface components {
         };
         /** @enum {string} */
         ErpIssuedStatus: "draft" | "issued" | "voided";
+        ErpIssueGetpackInvoiceDto: {
+            /**
+             * Format: date
+             * @description The tax point; default today
+             * @example 2026-10-23
+             */
+            issueDate?: string;
+        };
         /**
          * @description `issue` takes stock out to production or use; `return` brings unused stock back
          * @enum {string}
@@ -57355,6 +58221,45 @@ export interface components {
             scrap: string;
             user: components["schemas"]["PersonRefDto"];
         };
+        ETaxDeliveryDto: {
+            /** @example 1 */
+            attempts: number;
+            /**
+             * @description The ETDA time-stamping copy (`e_tax.email_cc`)
+             * @example csemail@example.test
+             */
+            cc: string;
+            /** @example inv */
+            kind: components["schemas"]["ETaxSubmissionKind"];
+            /**
+             * @description `etax.no_buyer_email`, `etax.sender_not_set`, `etax.file_too_large` or `etax.send_failed`
+             * @example null
+             */
+            lastError: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-05T10:01:00+07:00
+             */
+            sentAt: string | null;
+            /** @example sent */
+            status: components["schemas"]["ETaxSubmissionStatus"];
+            /**
+             * @description The subject ETDA reads
+             * @example [05102569][INV][TR256910-00001]
+             */
+            subject: string;
+            /** @example buyer@example.test */
+            to: string | null;
+        };
+        /**
+         * @description D-430: e-Tax by Email of a tax document — `pending` queued, `submitted` e-mailed to the buyer and ETDA, `failed` could not be sent (see `eTax`), `not_applicable` not a tax document or sending is off
+         * @enum {string}
+         */
+        ETaxStatus: "not_applicable" | "pending" | "submitted" | "accepted" | "rejected" | "failed";
+        /** @enum {string} */
+        ETaxSubmissionKind: "inv" | "dbn" | "crn" | "civ";
+        /** @enum {string} */
+        ETaxSubmissionStatus: "queued" | "sent" | "failed";
         EvalCaseResultDto: {
             /** @example rt-106 */
             id: string;
@@ -58494,7 +59399,7 @@ export interface components {
          * @description Decides retention, accepted types and size limit
          * @enum {string}
          */
-        FilePurpose: "artwork" | "proof" | "slip" | "evidence" | "document" | "import" | "avatar" | "image" | "design_asset" | "dieline";
+        FilePurpose: "artwork" | "proof" | "slip" | "evidence" | "document" | "import" | "avatar" | "image" | "design_asset" | "brand_mark" | "signature" | "dieline";
         /** @enum {string} */
         FileRetentionClass: "transient" | "standard" | "customer_content" | "financial_record";
         /**
@@ -62216,6 +63121,35 @@ export interface components {
             rewardPoints: number;
             /** @example rewarded */
             status: components["schemas"]["ReferralStatus"];
+        };
+        MySignatoryDto: {
+            /** @example นายสมชาย ใจดี */
+            displayName: string;
+            /** @example true */
+            hasSignature: boolean;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d2001
+             */
+            id: string;
+            owner: components["schemas"]["SignatoryOwnerDto"];
+            /** @example กรรมการผู้จัดการ */
+            position: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-23T10:05:00+07:00
+             */
+            signatureUpdatedAt: string | null;
+            /** @example https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake */
+            signatureUrl: string | null;
+            /**
+             * @description The kinds of document that print my signature now
+             * @example [
+             *       "tax_invoice",
+             *       "receipt"
+             *     ]
+             */
+            signs: components["schemas"]["DocumentSigningKind"][];
         };
         /** @enum {string} */
         NationalDayKind: "holiday" | "extra_working_day";
@@ -69830,6 +70764,14 @@ export interface components {
             /** @example Please quote the three tiers (fake) */
             note?: string;
         };
+        RequestCorrectionDto: {
+            /** @description The buyer as it should read */
+            buyer: components["schemas"]["CorrectedBuyerDto"];
+            /** @example ย้ายสำนักงานแล้ว */
+            note?: string | null;
+            /** @example buyer_address */
+            reason: components["schemas"]["DocumentCorrectionReason"];
+        };
         RequestCreditLimitDto: {
             /** @example paid_orders */
             basis: components["schemas"]["CreditEligibilityBasis"];
@@ -69948,6 +70890,13 @@ export interface components {
         };
         /** @enum {string} */
         RequiredBefore: "none" | "production" | "shipping";
+        ResendETaxDto: {
+            /**
+             * @description Another buyer address (also re-sends one already sent); default the buyer’s
+             * @example ap@customer.example
+             */
+            to?: string | null;
+        };
         ResolutionActionDto: {
             /** @example reproduction_job */
             action: components["schemas"]["ClaimAction"];
@@ -72233,6 +73182,14 @@ export interface components {
              */
             targetDate?: string | null;
         };
+        SetBrandMarkDto: {
+            /**
+             * Format: uuid
+             * @description An image I uploaded (purpose `brand_mark`; for a factory also one uploaded for the factory), scanned clean. `null` removes the mark from now on. A seal photographed on white paper gets its paper made transparent.
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d1001
+             */
+            fileId: string | null;
+        };
         SetCapacityDto: {
             /** @example sheets */
             capacityUnit: components["schemas"]["CapacityUnit"];
@@ -72401,6 +73358,19 @@ export interface components {
         SetRouteEnabledDto: {
             /** @example false */
             enabled: boolean;
+        };
+        SetSigningRuleDto: {
+            /**
+             * Format: uuid
+             * @description Who signs this kind of document; null leaves the signature line blank
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d2001
+             */
+            signatoryId: string | null;
+            /**
+             * @description Stamp the company seal on this kind of document
+             * @example true
+             */
+            stampSeal: boolean;
         };
         SetStylePhotoDto: {
             /** @example Tuck-end carton, photographed sample */
@@ -73294,6 +74264,84 @@ export interface components {
              * @example 2026-09-25T10:00:00+07:00
              */
             updatedAt: string;
+        };
+        SignatoryCandidateDto: {
+            /** @example somchai@getpack.example */
+            email: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d3001
+             */
+            id: string;
+            /** @example สมชาย ใจดี */
+            name: string;
+        };
+        SignatoryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-23T10:00:00+07:00
+             */
+            addedAt: string;
+            /**
+             * @description Printed under the signature
+             * @example นายสมชาย ใจดี
+             */
+            displayName: string;
+            /** @example somchai@getpack.example */
+            email: string | null;
+            /**
+             * @description The signatory has uploaded a signature
+             * @example true
+             */
+            hasSignature: boolean;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d2001
+             */
+            id: string;
+            /** @example กรรมการผู้จัดการ */
+            position: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-23T10:05:00+07:00
+             */
+            signatureUpdatedAt: string | null;
+            /** @example https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake */
+            signatureUrl: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d3001
+             */
+            userId: string;
+            /** @example สมชาย ใจดี */
+            userName: string;
+        };
+        SignatoryOwnerDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d4001
+             */
+            id: string;
+            /** @example entity */
+            kind: components["schemas"]["DocumentOwnerKind"];
+            /** @example บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด */
+            name: string;
+        };
+        SigningRuleDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-23T10:06:00+07:00
+             */
+            changedAt: string | null;
+            /** @example tax_invoice */
+            docKind: components["schemas"]["DocumentSigningKind"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d2001
+             */
+            signatoryId: string | null;
+            /** @example true */
+            stampSeal: boolean;
         };
         SiteVisitDto: {
             /**
@@ -80020,6 +81068,21 @@ export interface components {
              */
             shareWithCustomer?: boolean;
         };
+        UpdateMySignatureDto: {
+            /**
+             * @description Printed under the signature in brackets
+             * @example นายสมชาย ใจดี
+             */
+            displayName: string;
+            /**
+             * Format: uuid
+             * @description My signature image (purpose `signature`), scanned clean; `null` withdraws it, absent keeps the current one. Signed on white paper is fine: the paper is made transparent.
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d1001
+             */
+            fileId?: string | null;
+            /** @example กรรมการผู้จัดการ */
+            position: string;
+        };
         UpdateOnboardingStepDto: {
             /** @example เอกสารครบ */
             notes?: string | null;
@@ -80773,6 +81836,12 @@ export interface components {
             bsNumber: string | null;
             /**
              * Format: uuid
+             * @description D-433: the factory’s own ERP invoice this tax invoice is (source `erp`)
+             * @example null
+             */
+            erpInvoiceId: string | null;
+            /**
+             * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a0003
              */
             fileId: string | null;
@@ -80830,7 +81899,7 @@ export interface components {
             whtCategory: components["schemas"]["WhtCategory"];
         };
         /** @enum {string} */
-        VendorInvoiceSource: "e_tax" | "pdf_upload" | "manual";
+        VendorInvoiceSource: "e_tax" | "pdf_upload" | "manual" | "erp";
         /** @enum {string} */
         VendorInvoiceStatus: "recorded" | "validated" | "rejected" | "void";
         /** @enum {string} */
@@ -94869,6 +95938,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "bsNumber": "DEVBS-26-00001",
+                     *       "erpInvoiceId": null,
                      *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
                      *       "grossAmount": "8517.20",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530004",
@@ -133807,8 +134877,10 @@ export interface operations {
                      *             "name": "ลูกค้า ตัวอย่าง (fake)",
                      *             "taxId": null
                      *           },
+                     *           "cancelledPdfReady": false,
                      *           "cashAmount": "1070.00",
                      *           "cnKind": null,
+                     *           "correction": null,
                      *           "currency": "THB",
                      *           "deductedPriorAmount": "0.00",
                      *           "discountAmount": "0.00",
@@ -133817,6 +134889,8 @@ export interface operations {
                      *           "docType": "tr",
                      *           "documentDate": "2026-10-05",
                      *           "dueDate": null,
+                     *           "eTax": [],
+                     *           "eTaxStatus": "not_applicable",
                      *           "grossAmount": "1070.00",
                      *           "groupCode": "G2610-00001",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
@@ -133852,6 +134926,10 @@ export interface operations {
                      *           "reason": null,
                      *           "receiptVia": "scb",
                      *           "receivable": null,
+                     *           "replacedBy": null,
+                     *           "replacementNote": null,
+                     *           "replacementReason": null,
+                     *           "replaces": null,
                      *           "seller": {
                      *             "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
                      *             "branchCode": "00000",
@@ -133965,8 +135043,10 @@ export interface operations {
                      *         "name": "ลูกค้า ตัวอย่าง (fake)",
                      *         "taxId": null
                      *       },
+                     *       "cancelledPdfReady": false,
                      *       "cashAmount": "1070.00",
                      *       "cnKind": null,
+                     *       "correction": null,
                      *       "currency": "THB",
                      *       "deductedPriorAmount": "0.00",
                      *       "discountAmount": "0.00",
@@ -133975,6 +135055,8 @@ export interface operations {
                      *       "docType": "tr",
                      *       "documentDate": "2026-10-05",
                      *       "dueDate": null,
+                     *       "eTax": [],
+                     *       "eTaxStatus": "not_applicable",
                      *       "grossAmount": "1070.00",
                      *       "groupCode": "G2610-00001",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
@@ -134010,6 +135092,10 @@ export interface operations {
                      *       "reason": null,
                      *       "receiptVia": "scb",
                      *       "receivable": null,
+                     *       "replacedBy": null,
+                     *       "replacementNote": null,
+                     *       "replacementReason": null,
+                     *       "replaces": null,
                      *       "seller": {
                      *         "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
                      *         "branchCode": "00000",
@@ -134058,6 +135144,199 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerDocuments.replace": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestCorrectionDto"];
+            };
+        };
+        responses: {
+            /** @description The new document */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "amountDue": "0.00",
+                     *       "buyer": {
+                     *         "address": null,
+                     *         "branchCode": null,
+                     *         "name": "ลูกค้า ตัวอย่าง (fake)",
+                     *         "taxId": null
+                     *       },
+                     *       "cancelledPdfReady": false,
+                     *       "cashAmount": "1070.00",
+                     *       "cnKind": null,
+                     *       "correction": null,
+                     *       "currency": "THB",
+                     *       "deductedPriorAmount": "0.00",
+                     *       "discountAmount": "0.00",
+                     *       "docKind": "instalment",
+                     *       "docNumber": "TR256910-00001",
+                     *       "docType": "tr",
+                     *       "documentDate": "2026-10-05",
+                     *       "dueDate": null,
+                     *       "eTax": [],
+                     *       "eTaxStatus": "not_applicable",
+                     *       "grossAmount": "1070.00",
+                     *       "groupCode": "G2610-00001",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
+                     *       "isFullForm": false,
+                     *       "isTaxInvoice": true,
+                     *       "issuedAt": "2026-10-05T10:00:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "description": "งวดที่ 1 มัดจำ 50% — คำสั่งซื้อ O2610-00001",
+                     *           "discountAmount": "0.00",
+                     *           "grossAmount": "1070.00",
+                     *           "lineNo": 1,
+                     *           "netAmount": "1000.00",
+                     *           "quantity": "1.000",
+                     *           "vatAmount": "70.00",
+                     *           "whtAmount": "0.00"
+                     *         }
+                     *       ],
+                     *       "netAmount": "1000.00",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "customer_document.resend"
+                     *         }
+                     *       ],
+                     *       "orderCode": "O2610-00001",
+                     *       "orderGroupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *       "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
+                     *       "originalDocument": null,
+                     *       "paymentId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
+                     *       "pdfReady": true,
+                     *       "reason": null,
+                     *       "receiptVia": "scb",
+                     *       "receivable": null,
+                     *       "replacedBy": null,
+                     *       "replacementNote": null,
+                     *       "replacementReason": null,
+                     *       "replaces": null,
+                     *       "seller": {
+                     *         "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ตัวอย่าง จำกัด (fake)",
+                     *         "taxId": "0000000000000"
+                     *       },
+                     *       "status": "issued",
+                     *       "taxNature": "hire_of_work",
+                     *       "vatAmount": "70.00",
+                     *       "vatRatePct": "7.0000",
+                     *       "voidReason": null,
+                     *       "whtAmount": "0.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerDocumentDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `numbering.series_missing`, `receivables.document_not_replaceable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -134209,6 +135488,196 @@ export interface operations {
             };
         };
     };
+    "admin.customerDocuments.resendETax": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResendETaxDto"];
+            };
+        };
+        responses: {
+            /** @description Document */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "amountDue": "0.00",
+                     *       "buyer": {
+                     *         "address": null,
+                     *         "branchCode": null,
+                     *         "name": "ลูกค้า ตัวอย่าง (fake)",
+                     *         "taxId": null
+                     *       },
+                     *       "cancelledPdfReady": false,
+                     *       "cashAmount": "1070.00",
+                     *       "cnKind": null,
+                     *       "correction": null,
+                     *       "currency": "THB",
+                     *       "deductedPriorAmount": "0.00",
+                     *       "discountAmount": "0.00",
+                     *       "docKind": "instalment",
+                     *       "docNumber": "TR256910-00001",
+                     *       "docType": "tr",
+                     *       "documentDate": "2026-10-05",
+                     *       "dueDate": null,
+                     *       "eTax": [],
+                     *       "eTaxStatus": "not_applicable",
+                     *       "grossAmount": "1070.00",
+                     *       "groupCode": "G2610-00001",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
+                     *       "isFullForm": false,
+                     *       "isTaxInvoice": true,
+                     *       "issuedAt": "2026-10-05T10:00:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "description": "งวดที่ 1 มัดจำ 50% — คำสั่งซื้อ O2610-00001",
+                     *           "discountAmount": "0.00",
+                     *           "grossAmount": "1070.00",
+                     *           "lineNo": 1,
+                     *           "netAmount": "1000.00",
+                     *           "quantity": "1.000",
+                     *           "vatAmount": "70.00",
+                     *           "whtAmount": "0.00"
+                     *         }
+                     *       ],
+                     *       "netAmount": "1000.00",
+                     *       "nextActions": [
+                     *         {
+                     *           "disabledReason": null,
+                     *           "irreversible": false,
+                     *           "key": "customer_document.resend"
+                     *         }
+                     *       ],
+                     *       "orderCode": "O2610-00001",
+                     *       "orderGroupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *       "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
+                     *       "originalDocument": null,
+                     *       "paymentId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
+                     *       "pdfReady": true,
+                     *       "reason": null,
+                     *       "receiptVia": "scb",
+                     *       "receivable": null,
+                     *       "replacedBy": null,
+                     *       "replacementNote": null,
+                     *       "replacementReason": null,
+                     *       "replaces": null,
+                     *       "seller": {
+                     *         "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ตัวอย่าง จำกัด (fake)",
+                     *         "taxId": "0000000000000"
+                     *       },
+                     *       "status": "issued",
+                     *       "taxNature": "hire_of_work",
+                     *       "vatAmount": "70.00",
+                     *       "vatRatePct": "7.0000",
+                     *       "voidReason": null,
+                     *       "whtAmount": "0.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerDocumentDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `etax.nothing_to_send` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.customerDocuments.void": {
         parameters: {
             query?: never;
@@ -134249,8 +135718,10 @@ export interface operations {
                      *         "name": "ลูกค้า ตัวอย่าง (fake)",
                      *         "taxId": null
                      *       },
+                     *       "cancelledPdfReady": false,
                      *       "cashAmount": "1070.00",
                      *       "cnKind": null,
+                     *       "correction": null,
                      *       "currency": "THB",
                      *       "deductedPriorAmount": "0.00",
                      *       "discountAmount": "0.00",
@@ -134259,6 +135730,8 @@ export interface operations {
                      *       "docType": "iv",
                      *       "documentDate": "2026-10-05",
                      *       "dueDate": null,
+                     *       "eTax": [],
+                     *       "eTaxStatus": "not_applicable",
                      *       "grossAmount": "1070.00",
                      *       "groupCode": "G2610-00001",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
@@ -134294,6 +135767,10 @@ export interface operations {
                      *       "reason": null,
                      *       "receiptVia": "scb",
                      *       "receivable": null,
+                     *       "replacedBy": null,
+                     *       "replacementNote": null,
+                     *       "replacementReason": null,
+                     *       "replaces": null,
                      *       "seller": {
                      *         "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
                      *         "branchCode": "00000",
@@ -134362,6 +135839,112 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerDocuments.cancelledPdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed URL */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-05T10:05:00+07:00",
+                     *       "url": "https://getpack-files.s3.example.com/…&X-Amz-Expires=300"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DownloadUrlDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -142102,6 +143685,1304 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentBranding.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Branding */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentBranding.setMark": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                kind: components["schemas"]["DocumentBrandMarkKind"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetBrandMarkDto"];
+            };
+        };
+        responses: {
+            /** @description Branding */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.image_not_usable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentBranding.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandingPreviewDto"];
+            };
+        };
+        responses: {
+            /** @description Link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-23T10:10:00+07:00",
+                     *       "fileName": "preview-tax_invoice.pdf",
+                     *       "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentBranding.setRule": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                docKind: components["schemas"]["DocumentSigningKind"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetSigningRuleDto"];
+            };
+        };
+        responses: {
+            /** @description Branding */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.signatory_not_eligible`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentBranding.addSignatory": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddSignatoryDto"];
+            };
+        };
+        responses: {
+            /** @description Branding */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.signatory_exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.signatory_not_eligible`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentBranding.removeSignatory": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                signatoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Branding */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentBranding.candidates": {
+        parameters: {
+            query?: {
+                /** @description Part of the name or e-mail */
+                q?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description People */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "email": "somchai@getpack.example",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *         "name": "สมชาย ใจดี"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["SignatoryCandidateDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentCorrections.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["DocumentCorrectionStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "buyer": {
+                     *             "address": "123 ถนนใหม่ กรุงเทพมหานคร 10110",
+                     *             "branchCode": "00000",
+                     *             "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *             "taxId": "0000500000000"
+                     *           },
+                     *           "createdAt": "2026-10-06T09:00:00+07:00",
+                     *           "currentBuyer": {
+                     *             "address": "9 ถนนเดิม กรุงเทพมหานคร 10500",
+                     *             "branchCode": "00000",
+                     *             "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *             "taxId": "0000500000000"
+                     *           },
+                     *           "decidedAt": null,
+                     *           "decidedBy": null,
+                     *           "decisionNote": null,
+                     *           "document": {
+                     *             "docNumber": "TR256910-00001",
+                     *             "docType": "tr",
+                     *             "documentDate": "2026-10-05",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001"
+                     *           },
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *           "note": "ย้ายสำนักงานแล้ว",
+                     *           "reason": "buyer_address",
+                     *           "replacement": null,
+                     *           "requestedBy": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e2001",
+                     *             "name": "ลูกค้า ตัวอย่าง"
+                     *           },
+                     *           "status": "pending"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["DocumentCorrectionDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentCorrections.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Request */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "123 ถนนใหม่ กรุงเทพมหานคร 10110",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *         "taxId": "0000500000000"
+                     *       },
+                     *       "createdAt": "2026-10-06T09:00:00+07:00",
+                     *       "currentBuyer": {
+                     *         "address": "9 ถนนเดิม กรุงเทพมหานคร 10500",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *         "taxId": "0000500000000"
+                     *       },
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "document": {
+                     *         "docNumber": "TR256910-00001",
+                     *         "docType": "tr",
+                     *         "documentDate": "2026-10-05",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *       "note": "ย้ายสำนักงานแล้ว",
+                     *       "reason": "buyer_address",
+                     *       "replacement": null,
+                     *       "requestedBy": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e2001",
+                     *         "name": "ลูกค้า ตัวอย่าง"
+                     *       },
+                     *       "status": "pending"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentCorrectionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.documentCorrections.decide": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideCorrectionDto"];
+            };
+        };
+        responses: {
+            /** @description Request */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "123 ถนนใหม่ กรุงเทพมหานคร 10110",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *         "taxId": "0000500000000"
+                     *       },
+                     *       "createdAt": "2026-10-06T09:00:00+07:00",
+                     *       "currentBuyer": {
+                     *         "address": "9 ถนนเดิม กรุงเทพมหานคร 10500",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *         "taxId": "0000500000000"
+                     *       },
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "document": {
+                     *         "docNumber": "TR256910-00001",
+                     *         "docType": "tr",
+                     *         "documentDate": "2026-10-05",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *       "note": "ย้ายสำนักงานแล้ว",
+                     *       "reason": "buyer_address",
+                     *       "replacement": null,
+                     *       "requestedBy": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e2001",
+                     *         "name": "ลูกค้า ตัวอย่าง"
+                     *       },
+                     *       "status": "approved"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentCorrectionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `receivables.correction_decided`, `receivables.document_not_replaceable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -160114,6 +162995,220 @@ export interface operations {
             };
         };
     };
+    "admin.me.signatures": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description My signatory entries */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "displayName": "นายสมชาย ใจดี",
+                     *         "hasSignature": true,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *         "owner": {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001",
+                     *           "kind": "entity",
+                     *           "name": "บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด"
+                     *         },
+                     *         "position": "กรรมการผู้จัดการ",
+                     *         "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *         "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *         "signs": [
+                     *           "tax_invoice",
+                     *           "receipt"
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["MySignatoryDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.me.updateSignature": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                signatoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMySignatureDto"];
+            };
+        };
+        responses: {
+            /** @description My signatory entries */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "displayName": "นายสมชาย ใจดี",
+                     *         "hasSignature": true,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *         "owner": {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001",
+                     *           "kind": "entity",
+                     *           "name": "บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด"
+                     *         },
+                     *         "position": "กรรมการผู้จัดการ",
+                     *         "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *         "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *         "signs": [
+                     *           "tax_invoice",
+                     *           "receipt"
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["MySignatoryDto"][];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.image_not_usable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.milestoneRoutes.list": {
         parameters: {
             query?: never;
@@ -166156,8 +169251,10 @@ export interface operations {
                      *         "name": "ลูกค้า ตัวอย่าง (fake)",
                      *         "taxId": null
                      *       },
+                     *       "cancelledPdfReady": false,
                      *       "cashAmount": "1070.00",
                      *       "cnKind": null,
+                     *       "correction": null,
                      *       "currency": "THB",
                      *       "deductedPriorAmount": "0.00",
                      *       "discountAmount": "0.00",
@@ -166166,6 +169263,8 @@ export interface operations {
                      *       "docType": "dn",
                      *       "documentDate": "2026-10-05",
                      *       "dueDate": null,
+                     *       "eTax": [],
+                     *       "eTaxStatus": "not_applicable",
                      *       "grossAmount": "1070.00",
                      *       "groupCode": "G2610-00001",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
@@ -166201,6 +169300,10 @@ export interface operations {
                      *       "reason": null,
                      *       "receiptVia": "scb",
                      *       "receivable": null,
+                     *       "replacedBy": null,
+                     *       "replacementNote": null,
+                     *       "replacementReason": null,
+                     *       "replaces": null,
                      *       "seller": {
                      *         "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
                      *         "branchCode": "00000",
@@ -204117,6 +207220,7 @@ export interface operations {
                      *       "data": [
                      *         {
                      *           "bsNumber": "DEVBS-26-00001",
+                     *           "erpInvoiceId": null,
                      *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
                      *           "grossAmount": "8517.20",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-000000530004",
@@ -204229,6 +207333,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "bsNumber": "DEVBS-26-00001",
+                     *       "erpInvoiceId": null,
                      *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
                      *       "grossAmount": "8517.20",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530004",
@@ -204348,6 +207453,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "bsNumber": "DEVBS-26-00001",
+                     *       "erpInvoiceId": null,
                      *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
                      *       "grossAmount": "8517.20",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530004",
@@ -204939,6 +208045,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "bsNumber": null,
+                     *       "erpInvoiceId": null,
                      *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
                      *       "grossAmount": "8517.20",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530004",
@@ -206378,8 +209485,10 @@ export interface operations {
                      *             "name": "ลูกค้า ตัวอย่าง (fake)",
                      *             "taxId": null
                      *           },
+                     *           "cancelledPdfReady": false,
                      *           "cashAmount": "1070.00",
                      *           "cnKind": null,
+                     *           "correction": null,
                      *           "currency": "THB",
                      *           "deductedPriorAmount": "0.00",
                      *           "discountAmount": "0.00",
@@ -206388,6 +209497,8 @@ export interface operations {
                      *           "docType": "tr",
                      *           "documentDate": "2026-10-05",
                      *           "dueDate": null,
+                     *           "eTax": [],
+                     *           "eTaxStatus": "not_applicable",
                      *           "grossAmount": "1070.00",
                      *           "groupCode": "G2610-00001",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
@@ -206423,6 +209534,10 @@ export interface operations {
                      *           "reason": null,
                      *           "receiptVia": "scb",
                      *           "receivable": null,
+                     *           "replacedBy": null,
+                     *           "replacementNote": null,
+                     *           "replacementReason": null,
+                     *           "replaces": null,
                      *           "seller": {
                      *             "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
                      *             "branchCode": "00000",
@@ -208803,6 +211918,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "bsNumber": "DEVBS-26-00001",
+                     *       "erpInvoiceId": null,
                      *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
                      *       "grossAmount": "8517.20",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530004",
@@ -213640,6 +216756,934 @@ export interface operations {
             };
         };
     };
+    "partner.documentBranding.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Branding */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.documentBranding.setMark": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                kind: components["schemas"]["DocumentBrandMarkKind"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetBrandMarkDto"];
+            };
+        };
+        responses: {
+            /** @description Branding */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.image_not_usable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.documentBranding.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandingPreviewDto"];
+            };
+        };
+        responses: {
+            /** @description Link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-23T10:10:00+07:00",
+                     *       "fileName": "preview-tax_invoice.pdf",
+                     *       "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErpPdfLinkDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.documentBranding.setRule": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                docKind: components["schemas"]["DocumentSigningKind"];
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetSigningRuleDto"];
+            };
+        };
+        responses: {
+            /** @description Branding */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.signatory_not_eligible`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.documentBranding.addSignatory": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddSignatoryDto"];
+            };
+        };
+        responses: {
+            /** @description Branding */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.signatory_exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.signatory_not_eligible`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.documentBranding.removeSignatory": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                signatoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Branding */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "history": [
+                     *         {
+                     *           "at": "2026-10-23T10:06:00+07:00",
+                     *           "by": "คุณสมหญิง (การเงิน)",
+                     *           "change": "rule",
+                     *           "detail": "tax_invoice"
+                     *         }
+                     *       ],
+                     *       "logo": {
+                     *         "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1001",
+                     *         "kind": "logo",
+                     *         "setAt": "2026-10-23T10:00:00+07:00",
+                     *         "setBy": "คุณสมหญิง (การเงิน)",
+                     *         "url": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake"
+                     *       },
+                     *       "rules": [
+                     *         {
+                     *           "changedAt": "2026-10-23T10:06:00+07:00",
+                     *           "docKind": "tax_invoice",
+                     *           "signatoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "stampSeal": true
+                     *         }
+                     *       ],
+                     *       "seal": null,
+                     *       "signatories": [
+                     *         {
+                     *           "addedAt": "2026-10-23T10:00:00+07:00",
+                     *           "displayName": "นายสมชาย ใจดี",
+                     *           "email": "somchai@getpack.example",
+                     *           "hasSignature": true,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *           "position": "กรรมการผู้จัดการ",
+                     *           "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *           "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *           "userId": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *           "userName": "สมชาย ใจดี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentBrandingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.documentBranding.candidates": {
+        parameters: {
+            query?: {
+                /** @description Part of the name or e-mail */
+                q?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description People */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "email": "somchai@factory.example",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d3001",
+                     *         "name": "สมชาย ใจดี"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["SignatoryCandidateDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.erpCrm.listActivities": {
         parameters: {
             query?: {
@@ -217668,6 +221712,288 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.handOverToGetpack": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpHandOverInvoiceDto"];
+            };
+        };
+        responses: {
+            /** @description The submitted tax invoice */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bsNumber": "DEVBS-26-00001",
+                     *       "erpInvoiceId": null,
+                     *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
+                     *       "grossAmount": "8517.20",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530004",
+                     *       "inputVatStatus": "pending_document",
+                     *       "invoiceDate": "2026-10-21",
+                     *       "isTaxInvoice": true,
+                     *       "lines": [],
+                     *       "netAmount": "7960.00",
+                     *       "rejectionReason": null,
+                     *       "sellerBranchCode": "00000",
+                     *       "sellerTaxId": "0000000000001",
+                     *       "source": "erp",
+                     *       "status": "recorded",
+                     *       "vatAmount": "557.20",
+                     *       "vendorId": "0192f3a0-7c1e-7d2a-9b1f-000000530006",
+                     *       "vendorInvoiceNo": "IV2610-0099",
+                     *       "vendorName": "โรงพิมพ์ตัวอย่าง (fake)"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `payables.erp_invoice_not_allowed`, `payables.invoice_duplicate` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.erpSalesInvoices.issueToGetpack": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ErpIssueGetpackInvoiceDto"];
+            };
+        };
+        responses: {
+            /** @description The submitted tax invoice */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bsNumber": "DEVBS-26-00001",
+                     *       "erpInvoiceId": null,
+                     *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0003",
+                     *       "grossAmount": "8517.20",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530004",
+                     *       "inputVatStatus": "pending_document",
+                     *       "invoiceDate": "2026-10-21",
+                     *       "isTaxInvoice": true,
+                     *       "lines": [],
+                     *       "netAmount": "7960.00",
+                     *       "rejectionReason": null,
+                     *       "sellerBranchCode": "00000",
+                     *       "sellerTaxId": "0000000000001",
+                     *       "source": "erp",
+                     *       "status": "recorded",
+                     *       "vatAmount": "557.20",
+                     *       "vendorId": "0192f3a0-7c1e-7d2a-9b1f-000000530006",
+                     *       "vendorInvoiceNo": "IV2610-0099",
+                     *       "vendorName": "โรงพิมพ์ตัวอย่าง (fake)"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorInvoiceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `payables.erp_invoice_not_allowed`, `payables.invoice_duplicate` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `erp.nothing_to_invoice`, `erp.seller_incomplete`, `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -271586,6 +275912,220 @@ export interface operations {
             };
         };
     };
+    "partner.me.signatures": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description My signatory entries */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "displayName": "นายสมชาย ใจดี",
+                     *         "hasSignature": true,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *         "owner": {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001",
+                     *           "kind": "entity",
+                     *           "name": "บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด"
+                     *         },
+                     *         "position": "กรรมการผู้จัดการ",
+                     *         "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *         "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *         "signs": [
+                     *           "tax_invoice",
+                     *           "receipt"
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["MySignatoryDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.me.updateSignature": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                signatoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMySignatureDto"];
+            };
+        };
+        responses: {
+            /** @description My signatory entries */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "displayName": "นายสมชาย ใจดี",
+                     *         "hasSignature": true,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d2001",
+                     *         "owner": {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001",
+                     *           "kind": "entity",
+                     *           "name": "บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด"
+                     *         },
+                     *         "position": "กรรมการผู้จัดการ",
+                     *         "signatureUpdatedAt": "2026-10-23T10:05:00+07:00",
+                     *         "signatureUrl": "https://files.example.test/financial_record/2026/10/0192f3a0?X-Amz-Signature=fake",
+                     *         "signs": [
+                     *           "tax_invoice",
+                     *           "receipt"
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["MySignatoryDto"][];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `documents.image_not_usable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.notifications.list": {
         parameters: {
             query?: {
@@ -297755,6 +302295,10 @@ export interface operations {
             query?: {
                 /** @description A company the customer may read documents of (company_documents.read) */
                 companyId?: string;
+                /** @description One kind of document */
+                docType?: components["schemas"]["CustomerDocumentType"];
+                /** @description Documents dated on or after */
+                from?: string;
                 order?: components["schemas"]["SortOrder"];
                 /** @description Only the documents of this order (all its instalments and notes) */
                 orderId?: string;
@@ -297764,6 +302308,8 @@ export interface operations {
                 q?: string;
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
                 sort?: string;
+                /** @description Documents dated on or before */
+                to?: string;
             };
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
@@ -297795,8 +302341,10 @@ export interface operations {
                      *             "name": "ลูกค้า ตัวอย่าง (fake)",
                      *             "taxId": null
                      *           },
+                     *           "cancelledPdfReady": false,
                      *           "cashAmount": "1070.00",
                      *           "cnKind": null,
+                     *           "correction": null,
                      *           "currency": "THB",
                      *           "deductedPriorAmount": "0.00",
                      *           "discountAmount": "0.00",
@@ -297805,6 +302353,8 @@ export interface operations {
                      *           "docType": "tr",
                      *           "documentDate": "2026-10-05",
                      *           "dueDate": null,
+                     *           "eTax": [],
+                     *           "eTaxStatus": "not_applicable",
                      *           "grossAmount": "1070.00",
                      *           "groupCode": "G2610-00001",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
@@ -297840,6 +302390,10 @@ export interface operations {
                      *           "reason": null,
                      *           "receiptVia": "scb",
                      *           "receivable": null,
+                     *           "replacedBy": null,
+                     *           "replacementNote": null,
+                     *           "replacementReason": null,
+                     *           "replaces": null,
                      *           "seller": {
                      *             "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
                      *             "branchCode": "00000",
@@ -297963,8 +302517,10 @@ export interface operations {
                      *         "name": "ลูกค้า ตัวอย่าง (fake)",
                      *         "taxId": null
                      *       },
+                     *       "cancelledPdfReady": false,
                      *       "cashAmount": "1070.00",
                      *       "cnKind": null,
+                     *       "correction": null,
                      *       "currency": "THB",
                      *       "deductedPriorAmount": "0.00",
                      *       "discountAmount": "0.00",
@@ -297973,6 +302529,8 @@ export interface operations {
                      *       "docType": "tr",
                      *       "documentDate": "2026-10-05",
                      *       "dueDate": null,
+                     *       "eTax": [],
+                     *       "eTaxStatus": "not_applicable",
                      *       "grossAmount": "1070.00",
                      *       "groupCode": "G2610-00001",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001",
@@ -298008,6 +302566,10 @@ export interface operations {
                      *       "reason": null,
                      *       "receiptVia": "scb",
                      *       "receivable": null,
+                     *       "replacedBy": null,
+                     *       "replacementNote": null,
+                     *       "replacementReason": null,
+                     *       "replaces": null,
                      *       "seller": {
                      *         "address": "99/9 ถนนตัวอย่าง กรุงเทพมหานคร 10000",
                      *         "branchCode": "00000",
@@ -298056,6 +302618,264 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.documents.cancelledPdf": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed URL */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-05T10:05:00+07:00",
+                     *       "url": "https://getpack-files.s3.example.com/…&X-Amz-Expires=300"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DownloadUrlDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.documents.requestCorrection": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid; required from U-B5. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestCorrectionDto"];
+            };
+        };
+        responses: {
+            /** @description Request */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "123 ถนนใหม่ กรุงเทพมหานคร 10110",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *         "taxId": "0000500000000"
+                     *       },
+                     *       "createdAt": "2026-10-06T09:00:00+07:00",
+                     *       "currentBuyer": {
+                     *         "address": "9 ถนนเดิม กรุงเทพมหานคร 10500",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *         "taxId": "0000500000000"
+                     *       },
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "document": {
+                     *         "docNumber": "TR256910-00001",
+                     *         "docType": "tr",
+                     *         "documentDate": "2026-10-05",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *       "note": "ย้ายสำนักงานแล้ว",
+                     *       "reason": "buyer_address",
+                     *       "replacement": null,
+                     *       "requestedBy": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e2001",
+                     *         "name": "ลูกค้า ตัวอย่าง"
+                     *       },
+                     *       "status": "pending"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentCorrectionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `receivables.correction_pending`, `receivables.document_not_replaceable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -298152,6 +302972,141 @@ export interface operations {
                 };
             };
             /** @description Problem: `file.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.documents.withdrawCorrection": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Request */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buyer": {
+                     *         "address": "123 ถนนใหม่ กรุงเทพมหานคร 10110",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *         "taxId": "0000500000000"
+                     *       },
+                     *       "createdAt": "2026-10-06T09:00:00+07:00",
+                     *       "currentBuyer": {
+                     *         "address": "9 ถนนเดิม กรุงเทพมหานคร 10500",
+                     *         "branchCode": "00000",
+                     *         "name": "บริษัท ลูกค้าตัวอย่าง จำกัด",
+                     *         "taxId": "0000500000000"
+                     *       },
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionNote": null,
+                     *       "document": {
+                     *         "docNumber": "TR256910-00001",
+                     *         "docType": "tr",
+                     *         "documentDate": "2026-10-05",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000520001"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *       "note": "ย้ายสำนักงานแล้ว",
+                     *       "reason": "buyer_address",
+                     *       "replacement": null,
+                     *       "requestedBy": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e2001",
+                     *         "name": "ลูกค้า ตัวอย่าง"
+                     *       },
+                     *       "status": "withdrawn"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentCorrectionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `receivables.correction_decided` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

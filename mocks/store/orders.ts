@@ -347,6 +347,15 @@ export function toDocuments(order: MockOrder): Schemas["CustomerDocumentDto"][] 
         pdfReady: true,
         voidReason: null,
         issuedAt: document.issuedAt,
+        // D-430, D-431: e-Tax by Email and replacement (the mock has neither switched on nor any correction).
+        eTaxStatus: "submitted",
+        eTax: [],
+        replaces: null,
+        replacedBy: null,
+        replacementReason: null,
+        replacementNote: null,
+        cancelledPdfReady: false,
+        correction: null,
       };
     });
 }

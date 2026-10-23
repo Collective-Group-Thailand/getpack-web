@@ -174,6 +174,14 @@ export default async function SettingsPage() {
           </Link>
         </PartnerSection>
       ) : null}
+      <PartnerSection title={t("documents")} description={t("documentsBody")}>
+        <Link
+          href={canAt(context, "factory_profile.read") ? "/settings/documents" : "/settings/documents#my-signature"}
+          className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
+        >
+          {t("documentsLink")}
+        </Link>
+      </PartnerSection>
       {canAt(context, "factory_support.grant") ? (
         <PartnerSection title={t("support")} description={t("supportBody")}>
           <Link href="/settings/support" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">

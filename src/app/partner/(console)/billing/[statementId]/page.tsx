@@ -4,8 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { BILLING_STATEMENT_STATUS, INPUT_VAT_STATUS, VENDOR_INVOICE_STATUS } from "@/domain/status";
 import { blockedReason, offered } from "@/features/partner/account/offered";
 import { PartnerFileButton } from "@/features/partner/account/files";
-import { ConfirmStatement, DisputeStatement, TaxInvoiceForm } from "@/features/partner/billing/actions";
-import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { ConfirmStatement, DisputeStatement, ErpTaxInvoice, TaxInvoiceForm } from "@/features/partner/billing/actions";
+import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
@@ -66,6 +66,11 @@ export default async function StatementPage({ params }: Props) {
     .map((action) => blockedReason(action, tProblems))
     .filter((reason): reason is string => reason !== null);
   const open = (action: typeof confirm) => Boolean(action && !action.disabledReason);
+  // D-433: a factory on getpack's ERP issues (or hands over) its invoice to getpack from there.
+  const fromErp =
+    statement.status === "confirmed" &&
+    canAt(context, "factory_payables.manage") &&
+    canAt(context, "factory_receivables.read");
 
   return (
     <PartnerPage
@@ -237,14 +242,32 @@ export default async function StatementPage({ params }: Props) {
               </div>
             </details>
           ) : (
-            <Card padding="md">
-              <TaxInvoiceForm
-                statementId={statement.id}
-                taxId={context.factory?.taxId ?? ""}
-                branchCode={context.factory?.branchCode ?? "00000"}
-                expected={{ net: statement.totals.net, vat: statement.totals.vat }}
-              />
-            </Card>
+            <>
+              {fromErp ? (
+                <Card padding="md" className="flex flex-col gap-3">
+                  <h3 className="flex items-center gap-2 font-semibold">
+                    <Icon name="receipt" size={18} />
+                    {t("erpTitle")}
+                  </h3>
+                  <ErpTaxInvoice
+                    statementId={statement.id}
+                    bsNumber={statement.bsNumber}
+                    gross={format.thb(statement.totals.gross)}
+                    grossAmount={statement.totals.gross}
+                    canIssue={canAt(context, "factory_receivables.manage")}
+                  />
+                </Card>
+              ) : null}
+              {fromErp ? <p className="text-muted text-sm">{t("orUpload")}</p> : null}
+              <Card padding="md">
+                <TaxInvoiceForm
+                  statementId={statement.id}
+                  taxId={context.factory?.taxId ?? ""}
+                  branchCode={context.factory?.branchCode ?? "00000"}
+                  expected={{ net: statement.totals.net, vat: statement.totals.vat }}
+                />
+              </Card>
+            </>
           )}
         </PartnerSection>
       ) : null}
