@@ -23,10 +23,37 @@ test("orbiting a 150-object design in 3D under a 4× CPU throttle", async ({ pag
     await page.request.get(`${HOSTS.customer}/bff/v1/store/designer/catalog?product=tuck-end-box`)
   ).json();
   const elements = Array.from({ length: OBJECTS }, (_, i) => {
-    const base = { id: `p${i}`, x: 20 + (i % 15) * 12, y: 60 + Math.floor(i / 15) * 14, rotation: 0, scaleX: 1, scaleY: 1, opacity: 1 };
+    const base = {
+      id: `p${i}`,
+      x: 20 + (i % 15) * 12,
+      y: 60 + Math.floor(i / 15) * 14,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      opacity: 1,
+    };
     return i % 2
-      ? { ...base, type: "rect", width: 8, height: 8, fill: "#1f6f78", stroke: "#000000", strokeWidth: 0, cornerRadius: 0 }
-      : { ...base, type: "text", text: `P${i}`, fontSize: 4, fontFamily: "Sarabun", fontStyle: "normal", fill: "#c0392b", align: "left", width: 12 };
+      ? {
+          ...base,
+          type: "rect",
+          width: 8,
+          height: 8,
+          fill: "#1f6f78",
+          stroke: "#000000",
+          strokeWidth: 0,
+          cornerRadius: 0,
+        }
+      : {
+          ...base,
+          type: "text",
+          text: `P${i}`,
+          fontSize: 4,
+          fontFamily: "Sarabun",
+          fontStyle: "normal",
+          fill: "#c0392b",
+          align: "left",
+          width: 12,
+        };
   });
   const created = await page.request.post(`${HOSTS.customer}/bff/v1/store/designs`, {
     headers,
@@ -76,7 +103,10 @@ test("orbiting a 150-object design in 3D under a 4× CPU throttle", async ({ pag
   await page.mouse.move(box.x + box.width * 0.3, box.y + box.height / 2);
   await page.mouse.down();
   for (let i = 0; i < 60; i++) {
-    await page.mouse.move(box.x + box.width * (0.3 + 0.4 * Math.sin(i / 6)), box.y + box.height * (0.5 + 0.1 * Math.cos(i / 5)));
+    await page.mouse.move(
+      box.x + box.width * (0.3 + 0.4 * Math.sin(i / 6)),
+      box.y + box.height * (0.5 + 0.1 * Math.cos(i / 5)),
+    );
   }
   await page.mouse.up();
   const seconds = (Date.now() - started) / 1000;

@@ -11,8 +11,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** Raises an NCR (D-374): a customer complaint, something found inside, or a supplier's goods. */
-export default async function NewNcrPage({ searchParams }: { searchParams: Promise<{ checkId?: string; productionOrderId?: string; itemId?: string }> }) {
-  const [query, t, context] = await Promise.all([searchParams, getTranslations("partnerInsight.ncrs.form"), factoryContext()]);
+export default async function NewNcrPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkId?: string; productionOrderId?: string; itemId?: string }>;
+}) {
+  const [query, t, context] = await Promise.all([
+    searchParams,
+    getTranslations("partnerInsight.ncrs.form"),
+    factoryContext(),
+  ]);
   const pickers = await qualityPickers(context.factoryId);
   return (
     <PartnerPage title={t("pageTitle")} description={t("pageBody")} back={{ href: "/quality/ncrs", label: t("back") }}>

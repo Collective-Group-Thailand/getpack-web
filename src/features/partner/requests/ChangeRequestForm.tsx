@@ -29,7 +29,13 @@ const TOPICS = [
   "other",
 ] as const satisfies readonly ChangeRequestTopic[];
 /** Topics about one product type; the others (zones, payout terms, anything else) are factory-wide. */
-const TYPED = new Set<ChangeRequestTopic>(["capability", "capacity", "tolerance", "participation_tier", "pricing_arrangement"]);
+const TYPED = new Set<ChangeRequestTopic>([
+  "capability",
+  "capacity",
+  "tolerance",
+  "participation_tier",
+  "pricing_arrangement",
+]);
 
 /**
  * "Please change this" to the Partner team (`partner.changeRequests.create`). The factory never

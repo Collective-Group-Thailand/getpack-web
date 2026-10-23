@@ -28,7 +28,11 @@ const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 const thisMonth = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 7);
 
 /** Journals (D-389): every entry with its document, the ones awaiting approval, and the recurring journals. */
-export default async function JournalsPage({ searchParams }: { searchParams: Promise<{ view?: string; q?: string; page?: string; month?: string; account?: string }> }) {
+export default async function JournalsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; q?: string; page?: string; month?: string; account?: string }>;
+}) {
   const query = await searchParams;
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "all";
   const page = pageOf(query.page);
@@ -44,7 +48,15 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
   const path = { factoryId: context.factoryId };
   const canPost = canAt(context, "factory_ledger.post");
   const filter =
-    view === "pending" ? { status: "pending_approval" as const } : view === "draft" ? { status: "draft" as const } : view === "manual" ? { kind: "manual" as const } : view === "auto" ? { kind: "auto" as const } : {};
+    view === "pending"
+      ? { status: "pending_approval" as const }
+      : view === "draft"
+        ? { status: "draft" as const }
+        : view === "manual"
+          ? { kind: "manual" as const }
+          : view === "auto"
+            ? { kind: "auto" as const }
+            : {};
   const [list, recurring, accounts] = await Promise.all([
     view === "recurring"
       ? Promise.resolve(null)
@@ -52,14 +64,34 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
           async () =>
             (
               await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/journals", {
-                params: { path, query: { page, perPage: 25, ...filter, ...(month ? { month } : {}), ...(query.account ? { accountCode: query.account } : {}), ...(query.q ? { q: query.q } : {}) } },
+                params: {
+                  path,
+                  query: {
+                    page,
+                    perPage: 25,
+                    ...filter,
+                    ...(month ? { month } : {}),
+                    ...(query.account ? { accountCode: query.account } : {}),
+                    ...(query.q ? { q: query.q } : {}),
+                  },
+                },
               })
             ).data!,
         ),
-    view === "recurring" ? attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/recurring-journals", { params: { path } })).data!) : Promise.resolve(null),
+    view === "recurring"
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/recurring-journals", {
+                params: { path },
+              })
+            ).data!,
+        )
+      : Promise.resolve(null),
     view === "recurring" && canPost ? accountOptions(contract, context.factoryId) : Promise.resolve([]),
   ]);
-  const href = (next: Record<string, string | number | undefined>) => `/ledger/journals${queryOf({ view: view === "all" ? undefined : view, q: query.q, month, account: query.account, ...next })}`;
+  const href = (next: Record<string, string | number | undefined>) =>
+    `/ledger/journals${queryOf({ view: view === "all" ? undefined : view, q: query.q, month, account: query.account, ...next })}`;
   return (
     <PartnerPage
       full
@@ -76,9 +108,21 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
         </div>
       }
     >
-      <ViewTabs label={t("views.label")} current={view} items={VIEWS.map((key) => ({ key, href: `/ledger/journals${queryOf({ view: key === "all" ? undefined : key })}`, label: t(`views.${key}`) }))} />
+      <ViewTabs
+        label={t("views.label")}
+        current={view}
+        items={VIEWS.map((key) => ({
+          key,
+          href: `/ledger/journals${queryOf({ view: key === "all" ? undefined : key })}`,
+          label: t(`views.${key}`),
+        }))}
+      />
       {recurring ? (
-        <PartnerSection title={t("recurringTitle")} description={t("recurringBody")} actions={canPost ? <RecurringButton accounts={accounts} label={t("recurringNew")} /> : null}>
+        <PartnerSection
+          title={t("recurringTitle")}
+          description={t("recurringBody")}
+          actions={canPost ? <RecurringButton accounts={accounts} label={t("recurringNew")} /> : null}
+        >
           {recurring.data ? (
             <PartnerTable
               caption={t("recurringTitle")}
@@ -95,7 +139,9 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
                   header: tc("status"),
                   cell: (row) => (
                     <span className="flex flex-wrap gap-1">
-                      <Badge tone={row.status === "active" ? "success" : "neutral"}>{row.status === "active" ? t("active") : t("inactive")}</Badge>
+                      <Badge tone={row.status === "active" ? "success" : "neutral"}>
+                        {row.status === "active" ? t("active") : t("inactive")}
+                      </Badge>
                       {row.autoReverse ? <Badge tone="info">{t("autoReverse")}</Badge> : null}
                     </span>
                   ),
@@ -105,7 +151,9 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
                   header: "",
                   cell: (row) => (
                     <div className="flex flex-wrap gap-2">
-                      {row.nextActions.some((a) => a.key === "erp_recurring.edit") ? <RecurringButton accounts={accounts} recurring={row} label={t("editRecurring")} /> : null}
+                      {row.nextActions.some((a) => a.key === "erp_recurring.edit") ? (
+                        <RecurringButton accounts={accounts} recurring={row} label={t("editRecurring")} />
+                      ) : null}
                       <SalesActions
                         offered={row.nextActions.filter((a) => a.key === "erp_recurring.run")}
                         actions={[
@@ -131,7 +179,15 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
         </PartnerSection>
       ) : (
         <>
-          <SearchBar id="journal-search" action="/ledger/journals" hidden={{ view: view === "all" ? undefined : view, month, account: query.account }} q={query.q} label={t("search")} placeholder={t("searchPlaceholder")} button={t("searchButton")} />
+          <SearchBar
+            id="journal-search"
+            action="/ledger/journals"
+            hidden={{ view: view === "all" ? undefined : view, month, account: query.account }}
+            q={query.q}
+            label={t("search")}
+            placeholder={t("searchPlaceholder")}
+            button={t("searchButton")}
+          />
           <form action="/ledger/journals" className="flex flex-wrap items-end gap-2">
             {view !== "all" ? <input type="hidden" name="view" value={view} /> : null}
             {query.q ? <input type="hidden" name="q" value={query.q} /> : null}
@@ -141,13 +197,22 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
             </label>
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium">{t("accountFilter")}</span>
-              <Input name="account" defaultValue={query.account} inputMode="numeric" placeholder={t("accountPlaceholder")} className="w-32 font-mono" />
+              <Input
+                name="account"
+                defaultValue={query.account}
+                inputMode="numeric"
+                placeholder={t("accountPlaceholder")}
+                className="w-32 font-mono"
+              />
             </label>
             <Button type="submit" variant="secondary">
               {t("filter")}
             </Button>
             {month || query.account ? (
-              <Link className="text-link text-sm underline" href={`/ledger/journals${queryOf({ view: view === "all" ? undefined : view, q: query.q })}`}>
+              <Link
+                className="text-link text-sm underline"
+                href={`/ledger/journals${queryOf({ view: view === "all" ? undefined : view, q: query.q })}`}
+              >
                 {t("clearFilter")}
               </Link>
             ) : null}
@@ -162,16 +227,52 @@ export default async function JournalsPage({ searchParams }: { searchParams: Pro
                 rowTone={(row) => (row.status === "pending_approval" ? "warning" : undefined)}
                 empty={<EmptyState icon="list-ordered" title={t("empty")} description={t("emptyBody")} />}
                 columns={[
-                  { key: "no", header: t("entryNo"), primary: true, cell: (row) => <span className="font-mono whitespace-nowrap">{row.entryNo ?? "—"}</span> },
-                  { key: "d", header: tc("date"), className: "whitespace-nowrap", cell: (row) => format.date(row.entryDate) },
+                  {
+                    key: "no",
+                    header: t("entryNo"),
+                    primary: true,
+                    cell: (row) => <span className="font-mono whitespace-nowrap">{row.entryNo ?? "—"}</span>,
+                  },
+                  {
+                    key: "d",
+                    header: tc("date"),
+                    className: "whitespace-nowrap",
+                    cell: (row) => format.date(row.entryDate),
+                  },
                   { key: "ds", header: tc("description"), cell: (row) => row.description },
-                  { key: "k", header: t("kind"), hideOnPhone: true, className: "whitespace-nowrap", cell: (row) => tc(`kinds.${row.kind}` as never) },
-                  { key: "src", header: t("source"), hideOnPhone: true, cell: (row) => (row.source ? <span className="font-mono text-sm">{row.source.number}</span> : "—") },
+                  {
+                    key: "k",
+                    header: t("kind"),
+                    hideOnPhone: true,
+                    className: "whitespace-nowrap",
+                    cell: (row) => tc(`kinds.${row.kind}` as never),
+                  },
+                  {
+                    key: "src",
+                    header: t("source"),
+                    hideOnPhone: true,
+                    cell: (row) => (row.source ? <span className="font-mono text-sm">{row.source.number}</span> : "—"),
+                  },
                   { key: "a", header: tc("amount"), align: "end", cell: (row) => format.thb(row.totalDebit) },
-                  { key: "s", header: tc("status"), cell: (row) => <StatusChip map={JOURNAL_STATUS} value={row.status} /> },
+                  {
+                    key: "s",
+                    header: tc("status"),
+                    cell: (row) => <StatusChip map={JOURNAL_STATUS} value={row.status} />,
+                  },
                 ]}
               />
-              <Pager page={page} perPage={list.data.meta.perPage} total={list.data.meta.total} hrefFor={(p) => href({ page: p })} labels={{ nav: tc("pages"), previous: tc("previous"), next: tc("next"), page: (n) => tc("page", { n }) }} />
+              <Pager
+                page={page}
+                perPage={list.data.meta.perPage}
+                total={list.data.meta.total}
+                hrefFor={(p) => href({ page: p })}
+                labels={{
+                  nav: tc("pages"),
+                  previous: tc("previous"),
+                  next: tc("next"),
+                  page: (n) => tc("page", { n }),
+                }}
+              />
             </>
           ) : list ? (
             <PageError error={list.error} />

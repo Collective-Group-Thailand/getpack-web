@@ -55,16 +55,15 @@ export default async function DeliveriesPage({
   // What is still to deliver: confirmed orders not fully delivered — where a new delivery note starts.
   const toDeliver =
     view === "draft" && canAt(context, "factory_delivery.manage")
-      ? (
-          await attempt(
-            async () =>
-              (
-                await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-orders", {
-                  params: { path: { factoryId: context.factoryId }, query: { status: "open", perPage: 20 } },
-                })
-              ).data!.data.filter((so) => so.status === "confirmed" || so.status === "partially_delivered"),
+      ? ((
+          await attempt(async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-orders", {
+                params: { path: { factoryId: context.factoryId }, query: { status: "open", perPage: 20 } },
+              })
+            ).data!.data.filter((so) => so.status === "confirmed" || so.status === "partially_delivered"),
           )
-        ).data ?? []
+        ).data ?? [])
       : [];
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/deliveries${queryOf({ view: next === "draft" ? undefined : next, ...extra })}`;

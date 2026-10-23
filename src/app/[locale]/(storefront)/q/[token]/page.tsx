@@ -88,7 +88,7 @@ export default async function QuoteLinkPage({ params }: { params: Promise<{ toke
             {quote.lines.map((line) => (
               <tr key={line.id} className="border-border border-b">
                 <td className="py-2">{line.description || line.item?.name}</td>
-                <td className="py-2 text-end tabular-nums whitespace-nowrap">
+                <td className="py-2 text-end whitespace-nowrap tabular-nums">
                   {Number(line.quantity).toLocaleString("th-TH")} {tUnits(line.unit as never)}
                 </td>
                 <td className="py-2 text-end tabular-nums">{format.thb(line.unitPrice)}</td>
@@ -123,11 +123,16 @@ export default async function QuoteLinkPage({ params }: { params: Promise<{ toke
       ) : (
         <p className="bg-surface border-border rounded-xl border p-4 font-medium" role="status">
           {quote.status === "accepted"
-            ? t("acceptedBy", { name: quote.acceptedName ?? "", at: quote.acceptedAt ? format.dateTime(quote.acceptedAt) : "" })
+            ? t("acceptedBy", {
+                name: quote.acceptedName ?? "",
+                at: quote.acceptedAt ? format.dateTime(quote.acceptedAt) : "",
+              })
             : t(`closed.${quote.status}`)}
         </p>
       )}
-      {quote.sellerContact ? <p className="text-muted text-sm">{t("contact", { contact: quote.sellerContact })}</p> : null}
+      {quote.sellerContact ? (
+        <p className="text-muted text-sm">{t("contact", { contact: quote.sellerContact })}</p>
+      ) : null}
     </div>
   );
 }

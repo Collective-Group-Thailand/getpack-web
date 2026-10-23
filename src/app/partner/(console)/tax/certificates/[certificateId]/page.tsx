@@ -49,9 +49,19 @@ export default async function CertificatePage({ params }: Props) {
     );
   const c = read.data;
   return (
-    <PartnerPage full title={c.certNo} description={tTax(`wht.${c.form}`)} back={back} meta={<StatusChip map={ERP_WHT_STATUS} value={c.status} />}>
+    <PartnerPage
+      full
+      title={c.certNo}
+      description={tTax(`wht.${c.form}`)}
+      back={back}
+      meta={<StatusChip map={ERP_WHT_STATUS} value={c.status} />}
+    >
       <WhtActions certificate={c} />
-      {c.voidReason ? <Callout tone="danger" title={t("voidedTitle")}>{c.voidReason}</Callout> : null}
+      {c.voidReason ? (
+        <Callout tone="danger" title={t("voidedTitle")}>
+          {c.voidReason}
+        </Callout>
+      ) : null}
       <Card padding="md">
         <DescriptionList
           columns={2}

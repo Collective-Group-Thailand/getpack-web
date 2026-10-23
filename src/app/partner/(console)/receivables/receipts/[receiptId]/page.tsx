@@ -56,7 +56,11 @@ export default async function ReceiptPage({ params }: Props) {
       meta={<StatusChip map={ERP_RECEIPT_STATUS} value={rc.status} />}
     >
       <ReceiptActions receipt={rc} />
-      {rc.cancelReason ? <Callout tone="danger" title={t("cancelledTitle")}>{rc.cancelReason}</Callout> : null}
+      {rc.cancelReason ? (
+        <Callout tone="danger" title={t("cancelledTitle")}>
+          {rc.cancelReason}
+        </Callout>
+      ) : null}
       <Card padding="md">
         <DescriptionList
           columns={2}
@@ -66,7 +70,12 @@ export default async function ReceiptPage({ params }: Props) {
             { term: t("form.method"), description: tMethods(rc.method) },
             ...(rc.reference ? [{ term: t("form.reference"), description: rc.reference }] : []),
             ...(rc.chequeNo
-              ? [{ term: t("form.chequeNo"), description: `${rc.chequeNo} ${rc.chequeBank ?? ""} ${rc.chequeDate ? format.date(rc.chequeDate) : ""}` }]
+              ? [
+                  {
+                    term: t("form.chequeNo"),
+                    description: `${rc.chequeNo} ${rc.chequeBank ?? ""} ${rc.chequeDate ? format.date(rc.chequeDate) : ""}`,
+                  },
+                ]
               : []),
             { term: t("form.amount"), description: `${format.thb(rc.amount)} (${rc.amountInWords})` },
             ...(rc.whtAmount !== "0.00"
@@ -97,7 +106,12 @@ export default async function ReceiptPage({ params }: Props) {
                 </Link>
               ),
             },
-            { key: "total", header: t("table.invoiceTotal"), align: "end", cell: (row) => format.thb(row.invoice.total) },
+            {
+              key: "total",
+              header: t("table.invoiceTotal"),
+              align: "end",
+              cell: (row) => format.thb(row.invoice.total),
+            },
             { key: "amount", header: t("table.settled"), align: "end", cell: (row) => format.thb(row.amount) },
           ]}
         />

@@ -174,7 +174,10 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
       ) : null}
       {perPart
         ? parts.map((part) => (
-            <fieldset key={part.subPatternId} className="bg-surface border-border flex flex-col gap-4 rounded-lg border p-4">
+            <fieldset
+              key={part.subPatternId}
+              className="bg-surface border-border flex flex-col gap-4 rounded-lg border p-4"
+            >
               <legend className="px-1 text-sm font-semibold">{part.name}</legend>
               {printHint}
               {groups.filter(isPrint).map((group) => {

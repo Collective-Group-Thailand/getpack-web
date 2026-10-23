@@ -216,7 +216,11 @@ export function itemListSchema(items: readonly ListItemInput[], name?: string) {
 }
 
 /** A glossary: every term with its definition, as a `DefinedTermSet`. */
-export function definedTermSetSchema(input: { name: string; url: string; terms: readonly { term: string; definition: string }[] }) {
+export function definedTermSetSchema(input: {
+  name: string;
+  url: string;
+  terms: readonly { term: string; definition: string }[];
+}) {
   return {
     "@context": "https://schema.org",
     "@type": "DefinedTermSet",

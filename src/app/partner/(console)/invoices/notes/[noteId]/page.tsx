@@ -58,7 +58,11 @@ export default async function NotePage({ params }: Props) {
       meta={<StatusChip map={ERP_ISSUED_STATUS} value={note.status} />}
     >
       <NoteActions note={note} />
-      {note.voidReason ? <Callout tone="danger" title={t("voidedTitle")}>{note.voidReason}</Callout> : null}
+      {note.voidReason ? (
+        <Callout tone="danger" title={t("voidedTitle")}>
+          {note.voidReason}
+        </Callout>
+      ) : null}
       <Card padding="md">
         <DescriptionList
           columns={2}
@@ -73,7 +77,10 @@ export default async function NotePage({ params }: Props) {
               ),
             },
             { term: t("issueDate"), description: format.date(note.issueDate) },
-            { term: t("reason"), description: `${tReasons(note.reason)}${note.reasonText ? ` — ${note.reasonText}` : ""}` },
+            {
+              term: t("reason"),
+              description: `${tReasons(note.reason)}${note.reasonText ? ` — ${note.reasonText}` : ""}`,
+            },
             { term: t("originalValue"), description: format.thb(note.originalValue) },
             { term: t("correctValue"), description: format.thb(note.correctValue) },
             { term: t("difference"), description: format.thb(note.difference) },

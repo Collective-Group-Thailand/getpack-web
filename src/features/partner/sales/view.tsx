@@ -10,7 +10,10 @@ import type { Schemas } from "@/lib/api/types";
  * unit, price, discount, amount) and the totals the API worked out — never added up here.
  */
 
-type LineLike = Pick<Schemas["ErpSalesLineDto"], "id" | "description" | "quantity" | "unit" | "unitPrice" | "discountPct" | "amount"> & {
+type LineLike = Pick<
+  Schemas["ErpSalesLineDto"],
+  "id" | "description" | "quantity" | "unit" | "unitPrice" | "discountPct" | "amount"
+> & {
   item: { name: string; sku: string } | null;
 };
 

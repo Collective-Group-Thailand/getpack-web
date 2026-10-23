@@ -197,7 +197,9 @@ export async function PriceTable({
                         // Names may wrap (a machine name); ranges and numbers stay on one line.
                         className={cn(
                           "border-border text-fg border-b px-3 py-2",
-                          pair.kind === "range" || NUMERIC.includes(pair.column.type) ? "whitespace-nowrap" : "min-w-28",
+                          pair.kind === "range" || NUMERIC.includes(pair.column.type)
+                            ? "whitespace-nowrap"
+                            : "min-w-28",
                         )}
                       >
                         {appliesText(pair, row)}

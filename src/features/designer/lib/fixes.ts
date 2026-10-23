@@ -46,7 +46,9 @@ export function applyFix(content: DesignContent, issue: DesignIssue, ctx: FixCon
     case "min_text": {
       const minPt = threshold(ctx.rules, "min_text_size", "minPt");
       if (!el || el.type !== "text" || minPt === null) return content;
-      return patchOne(content, el.id, { fontSize: Math.ceil((minPt / PT_PER_MM / (Math.abs(el.scaleY) || 1)) * 100) / 100 });
+      return patchOne(content, el.id, {
+        fontSize: Math.ceil((minPt / PT_PER_MM / (Math.abs(el.scaleY) || 1)) * 100) / 100,
+      });
     }
     case "min_stroke": {
       const minPt = threshold(ctx.rules, "hairline", "minStrokePt");
@@ -96,7 +98,9 @@ export function applyFix(content: DesignContent, issue: DesignIssue, ctx: FixCon
       const bleedMm = threshold(ctx.rules, "bleed", "bleedMm");
       if (!el || bleedMm === null || el.rotation % 360 !== 0 || !("width" in el)) return content;
       const box = boxOf(ctx.cornersOf(el));
-      const outline = ctx.outlines.map(boxOf).find((o) => box.x >= o.x - 1e-6 && box.x + box.width <= o.x + o.width + 1e-6);
+      const outline = ctx.outlines
+        .map(boxOf)
+        .find((o) => box.x >= o.x - 1e-6 && box.x + box.width <= o.x + o.width + 1e-6);
       if (!outline) return content;
       let [x0, y0, x1, y1] = [box.x, box.y, box.x + box.width, box.y + box.height];
       const reach = bleedMm + 0.01;
@@ -129,7 +133,13 @@ const rgb = (hex: string): [number, number, number] | null => {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 };
 const hex = ([r, g, b]: [number, number, number]) =>
-  `#${[r, g, b].map((c) => Math.round(Math.max(0, Math.min(255, c))).toString(16).padStart(2, "0")).join("")}`;
+  `#${[r, g, b]
+    .map((c) =>
+      Math.round(Math.max(0, Math.min(255, c)))
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
 
 /** The colour pulled towards its own grey until it is inside what process inks print. */
 export function intoGamut(colour: string): string {
@@ -151,7 +161,8 @@ export function intoGamut(colour: string): string {
 export function limitColours(content: DesignContent, max: number): DesignContent {
   const uses = new Map<string, number>();
   const count = (c: unknown) => {
-    if (typeof c === "string" && c !== "" && c !== "transparent") uses.set(c.toLowerCase(), (uses.get(c.toLowerCase()) ?? 0) + 1);
+    if (typeof c === "string" && c !== "" && c !== "transparent")
+      uses.set(c.toLowerCase(), (uses.get(c.toLowerCase()) ?? 0) + 1);
   };
   for (const el of content.elements)
     for (const k of ["fill", "stroke", "background"] as const) count((el as unknown as Record<string, unknown>)[k]);
@@ -160,7 +171,10 @@ export function limitColours(content: DesignContent, max: number): DesignContent
     count(content.pattern.background);
   }
   if (spotColours(content.elements, content.pattern).size <= max) return content;
-  const kept = [...uses.entries()].sort((a, b) => b[1] - a[1]).slice(0, max).map(([c]) => c);
+  const kept = [...uses.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, max)
+    .map(([c]) => c);
   const nearest = (c: unknown): unknown => {
     if (typeof c !== "string" || c === "" || c === "transparent" || kept.includes(c.toLowerCase())) return c;
     const from = rgb(c);
@@ -175,7 +189,11 @@ export function limitColours(content: DesignContent, max: number): DesignContent
     pattern:
       content.pattern.kind === "none"
         ? content.pattern
-        : { ...content.pattern, color: String(nearest(content.pattern.color)), background: String(nearest(content.pattern.background)) },
+        : {
+            ...content.pattern,
+            color: String(nearest(content.pattern.color)),
+            background: String(nearest(content.pattern.background)),
+          },
     elements: content.elements.map((el) => {
       const patch: Record<string, unknown> = {};
       for (const k of ["fill", "stroke", "background"] as const) {

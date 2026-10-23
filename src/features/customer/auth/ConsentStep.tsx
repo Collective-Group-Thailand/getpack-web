@@ -141,7 +141,9 @@ export function ConsentStep({
             description={t("marketingHint")}
           />
           <details className="ps-7">
-            <summary className="text-muted cursor-pointer text-sm underline underline-offset-2">{t("customise")}</summary>
+            <summary className="text-muted cursor-pointer text-sm underline underline-offset-2">
+              {t("customise")}
+            </summary>
             <ul className="mt-2 flex flex-col gap-2">
               {marketing.map((consent) => (
                 <li key={consent.purpose}>

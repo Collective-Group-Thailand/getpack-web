@@ -18,7 +18,8 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterAll(() => server.close());
 
 const BASE = "http://api.mock";
-const customer = (persona?: string) => createApiClient({ baseUrl: BASE, accessToken: accessToken("customer", persona) });
+const customer = (persona?: string) =>
+  createApiClient({ baseUrl: BASE, accessToken: accessToken("customer", persona) });
 const staff = (persona: string) => createApiClient({ baseUrl: BASE, accessToken: accessToken("staff", persona) });
 const key = () => ({ "Idempotency-Key": newIdempotencyKey() });
 
@@ -32,7 +33,10 @@ async function ask(sessionId: string, text: string, persona?: string) {
 
 describe("the assistant's turns (D-304)", () => {
   it("answers from a tool and says which", async () => {
-    const { data: session } = await customer().POST("/v1/store/assistant/sessions", { params: { header: key() }, body: {} });
+    const { data: session } = await customer().POST("/v1/store/assistant/sessions", {
+      params: { header: key() },
+      body: {},
+    });
     const turn = await ask(session!.id, "กล่องฝาเสียบราคาเท่าไหร่");
     expect(turn.outcome).toBe("answered");
     expect(turn.tools).toEqual([{ name: "get_quote", ok: true }]);
@@ -51,7 +55,10 @@ describe("the assistant's turns (D-304)", () => {
   });
 
   it("hands off to CS on request, and never answers a guess", async () => {
-    const { data: session } = await customer().POST("/v1/store/assistant/sessions", { params: { header: key() }, body: {} });
+    const { data: session } = await customer().POST("/v1/store/assistant/sessions", {
+      params: { header: key() },
+      body: {},
+    });
     expect((await ask(session!.id, "ขอคุยกับเจ้าหน้าที่")).outcome).toBe("handed_off");
     expect((await ask(session!.id, "พรุ่งนี้ฝนตกไหม")).outcome).toBe("blocked_unsupported_fact");
   });

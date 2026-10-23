@@ -271,11 +271,7 @@ export function GoodsReceiptForm({
                     />
                   </Field>
                 ) : null}
-                <Field
-                  label={tRecv("rejected")}
-                  hint={tRecv("rejectedHint")}
-                  error={poErrors[`${line.id}:rejected`]}
-                >
+                <Field label={tRecv("rejected")} hint={tRecv("rejectedHint")} error={poErrors[`${line.id}:rejected`]}>
                   <NumberInput
                     min={0}
                     step="any"

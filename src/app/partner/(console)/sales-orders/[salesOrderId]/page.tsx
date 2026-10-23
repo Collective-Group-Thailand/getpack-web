@@ -2,11 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import {
-  ERP_DELIVERY_STATUS,
-  ERP_SALES_INVOICE_STATUS,
-  ERP_SALES_ORDER_STATUS,
-} from "@/domain/status";
+import { ERP_DELIVERY_STATUS, ERP_SALES_INVOICE_STATUS, ERP_SALES_ORDER_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain, formatQty } from "@/features/partner/erp/format";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
@@ -40,10 +36,9 @@ export default async function SalesOrderPage({ params }: Props) {
   ]);
   const { contract } = await partnerServerApis();
   const read = await attempt(async () => {
-    const { data, response } = await contract.GET(
-      "/v1/partner/factories/{factoryId}/erp/sales-orders/{salesOrderId}",
-      { params: { path: { factoryId: context.factoryId, salesOrderId } } },
-    );
+    const { data, response } = await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-orders/{salesOrderId}", {
+      params: { path: { factoryId: context.factoryId, salesOrderId } },
+    });
     return { doc: data!, etag: response.headers.get("etag") };
   });
   const back = { href: "/sales-orders", label: t("title") };
@@ -111,9 +106,7 @@ export default async function SalesOrderPage({ params }: Props) {
                 : t("noLimit"),
             },
             ...(doc.shipToAddress ? [{ term: t("facts.shipTo"), description: doc.shipToAddress }] : []),
-            ...(doc.creditOverrideReason
-              ? [{ term: t("facts.override"), description: doc.creditOverrideReason }]
-              : []),
+            ...(doc.creditOverrideReason ? [{ term: t("facts.override"), description: doc.creditOverrideReason }] : []),
             ...(doc.note ? [{ term: t("facts.note"), description: doc.note }] : []),
             ...(doc.cancelReason || doc.closeReason
               ? [{ term: tCommon("reason"), description: doc.cancelReason ?? doc.closeReason }]
@@ -121,7 +114,10 @@ export default async function SalesOrderPage({ params }: Props) {
           ]}
         />
       </Card>
-      <PartnerSection title={t("linesTitle")} description={t("progress", { pct: formatPlain(doc.deliveredPct, locale, 0) })}>
+      <PartnerSection
+        title={t("linesTitle")}
+        description={t("progress", { pct: formatPlain(doc.deliveredPct, locale, 0) })}
+      >
         <SalesLinesTable
           caption={t("linesTitle")}
           lines={doc.lines}

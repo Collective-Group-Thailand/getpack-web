@@ -65,7 +65,9 @@ export default async function ProposalPage({ params, searchParams }: Props) {
     : null;
   const list = prices.lists.data?.find((candidate) => candidate.id === item.priceListId);
   // Back to the price list it changes, where the factory came from.
-  const listBack = list?.productTypeCode ? { href: `/prices/${list.productTypeCode}`, label: t("backList", { type: name }) } : back;
+  const listBack = list?.productTypeCode
+    ? { href: `/prices/${list.productTypeCode}`, label: t("backList", { type: name }) }
+    : back;
 
   return (
     <PartnerPage

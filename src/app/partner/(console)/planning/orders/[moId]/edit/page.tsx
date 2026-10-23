@@ -18,7 +18,9 @@ export default async function EditProductionOrderPage({ params }: { params: Prom
   const path = { factoryId: context.factoryId };
   const read = await attempt(async () => {
     const [order, items, overview] = await Promise.all([
-      contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders/{moId}", { params: { path: { ...path, moId } } }),
+      contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders/{moId}", {
+        params: { path: { ...path, moId } },
+      }),
       erpItems(contract, context.factoryId),
       contract.GET("/v1/partner/factories/{factoryId}/erp/planning/overview", { params: { path } }),
     ]);

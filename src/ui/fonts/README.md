@@ -3,13 +3,13 @@
 No runtime Google Fonts in any zone. These five files are committed, served by Next from the
 app's own origin, and loaded with `next/font/local` in `index.ts`.
 
-| Role            | Family                             | File                         | Size    |
-| --------------- | ---------------------------------- | ---------------------------- | ------- |
+| Role            | Family                             | File                         | Size                                                                        |
+| --------------- | ---------------------------------- | ---------------------------- | --------------------------------------------------------------------------- |
 | (unused)        | Noto Sans Thai (variable, 100–900) | `noto-sans-thai-latin.woff2` | 30.0 KB — not loaded since the 2026-10-06 UX audit (Anuphan is the UI face) |
-| (unused)        | Noto Sans Thai (variable, 100–900) | `noto-sans-thai-thai.woff2`  | 26.3 KB — not loaded |
-| Display (h1–h4) | Anuphan (variable, 100–700)        | `anuphan-latin.woff2`        | 34.3 KB |
-| Display (h1–h4) | Anuphan (variable, 100–700)        | `anuphan-thai.woff2`         | 18.5 KB |
-| Mono (codes)    | JetBrains Mono (variable, 100–800) | `jetbrains-mono-latin.woff2` | 39.5 KB |
+| (unused)        | Noto Sans Thai (variable, 100–900) | `noto-sans-thai-thai.woff2`  | 26.3 KB — not loaded                                                        |
+| Display (h1–h4) | Anuphan (variable, 100–700)        | `anuphan-latin.woff2`        | 34.3 KB                                                                     |
+| Display (h1–h4) | Anuphan (variable, 100–700)        | `anuphan-thai.woff2`         | 18.5 KB                                                                     |
+| Mono (codes)    | JetBrains Mono (variable, 100–800) | `jetbrains-mono-latin.woff2` | 39.5 KB                                                                     |
 
 **149 KB total**, against the 180 KB budgeted in ADR-0001.
 

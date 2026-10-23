@@ -45,7 +45,12 @@ function useOpenInvoices(customerId: string, refund = false) {
   useEffect(() => {
     if (!customerId) return;
     let live = true;
-    erpGet<{ data: InvoiceRow[] }>(factoryId, "/sales-invoices", {}, { customerId, perPage: "100", ...(refund ? {} : { status: "open" }) })
+    erpGet<{ data: InvoiceRow[] }>(
+      factoryId,
+      "/sales-invoices",
+      {},
+      { customerId, perPage: "100", ...(refund ? {} : { status: "open" }) },
+    )
       .then((page) => {
         if (live)
           setRows({
@@ -122,7 +127,11 @@ export function ReceiptForm({
       .filter((a) => a.amount && satang(a.amount) > 0n);
     if (!customerId) return setError(t("customerRequired"));
     if (!allocations.length) return setError(t("allocationRequired"));
-    if (allocations.some((a) => !MONEY.test(a.amount)) || !MONEY.test(plainNumber(cash)) || (wht && !MONEY.test(plainNumber(wht))))
+    if (
+      allocations.some((a) => !MONEY.test(a.amount)) ||
+      !MONEY.test(plainNumber(cash)) ||
+      (wht && !MONEY.test(plainNumber(wht)))
+    )
       return setError(t("amountInvalid"));
     setError(undefined);
     setBusy(true);
@@ -138,10 +147,16 @@ export function ReceiptForm({
           method,
           reference: reference.trim() || null,
           ...(method === "cheque"
-            ? { chequeNo: chequeNo.trim() || null, chequeBank: chequeBank.trim() || null, chequeDate: chequeDate || null }
+            ? {
+                chequeNo: chequeNo.trim() || null,
+                chequeBank: chequeBank.trim() || null,
+                chequeDate: chequeDate || null,
+              }
             : {}),
           amount: plainNumber(cash),
-          ...(!refund && wht ? { whtAmount: plainNumber(wht), whtCertNo: whtCertNo.trim() || null, whtCertDate: whtCertDate || null } : {}),
+          ...(!refund && wht
+            ? { whtAmount: plainNumber(wht), whtCertNo: whtCertNo.trim() || null, whtCertDate: whtCertDate || null }
+            : {}),
           note: note.trim() || null,
           allocations,
         },
@@ -190,7 +205,10 @@ export function ReceiptForm({
           <p className="text-muted text-sm">{t("pickCustomer")}</p>
         ) : invoices.length ? (
           invoices.map((row) => (
-            <div key={row.id} className="border-border bg-surface grid items-center gap-2 rounded-xl border p-3 md:grid-cols-[1fr_12rem]">
+            <div
+              key={row.id}
+              className="border-border bg-surface grid items-center gap-2 rounded-xl border p-3 md:grid-cols-[1fr_12rem]"
+            >
               <Checkbox
                 checked={row.id in alloc}
                 onCheckedChange={(on) => {
@@ -220,7 +238,11 @@ export function ReceiptForm({
       </fieldset>
       <div className="grid gap-4 md:grid-cols-3">
         <Field label={t("receivedOn")}>
-          <Input type="date" value={receivedOn} onChange={(event) => setReceivedOn(event.target.value || bangkokToday())} />
+          <Input
+            type="date"
+            value={receivedOn}
+            onChange={(event) => setReceivedOn(event.target.value || bangkokToday())}
+          />
         </Field>
         <Field label={t("method")}>
           <Select
@@ -230,7 +252,11 @@ export function ReceiptForm({
           />
         </Field>
         <Field label={t("reference")}>
-          <Input value={reference} placeholder={t("referencePlaceholder")} onChange={(event) => setReference(event.target.value)} />
+          <Input
+            value={reference}
+            placeholder={t("referencePlaceholder")}
+            onChange={(event) => setReference(event.target.value)}
+          />
         </Field>
         {method === "cheque" ? (
           <>
@@ -364,10 +390,19 @@ export function BillingForm({
       </fieldset>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("billingDate")}>
-          <Input type="date" value={billingDate} onChange={(event) => setBillingDate(event.target.value || bangkokToday())} />
+          <Input
+            type="date"
+            value={billingDate}
+            onChange={(event) => setBillingDate(event.target.value || bangkokToday())}
+          />
         </Field>
         <Field label={t("collectOn")} hint={t("collectOnHint")}>
-          <Input type="date" min={billingDate} value={collectOn} onChange={(event) => setCollectOn(event.target.value)} />
+          <Input
+            type="date"
+            min={billingDate}
+            value={collectOn}
+            onChange={(event) => setCollectOn(event.target.value)}
+          />
         </Field>
       </div>
       <Field label={t("note")}>

@@ -44,7 +44,8 @@ export async function lineLabeller(definitions: PriceComponentDef[], references:
   const applies = (component: Schemas["PriceComponent"], values: Values | null) =>
     pairDimensions(columnsOf(definitions, component).dimensions)
       .flatMap((pair) => {
-        if (pair.kind === "single") return [`${label(pair.column.key)} ${cell(pair.column, values?.[pair.column.key])}`];
+        if (pair.kind === "single")
+          return [`${label(pair.column.key)} ${cell(pair.column, values?.[pair.column.key])}`];
         const range = rangeText(pair, values ?? {}, cell, "");
         return range ? [`${rangeLabel(label(pair.lower.key))} ${range}`] : [];
       })

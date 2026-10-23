@@ -16,7 +16,9 @@ export async function pageContext(pathname: string, pageName: string) {
     getLocale(),
     getTranslations("catalog.breadcrumbs"),
   ]);
-  const locale = (routing.locales as readonly string[]).includes(rawLocale) ? (rawLocale as Locale) : routing.defaultLocale;
+  const locale = (routing.locales as readonly string[]).includes(rawLocale)
+    ? (rawLocale as Locale)
+    : routing.defaultLocale;
   const url = `${origin}${localePath(pathname, locale)}`;
   const crumbs: Crumb[] = [{ name: tCatalog("home"), url: `${origin}${localePath("/", locale)}` }, { name: pageName }];
   return {

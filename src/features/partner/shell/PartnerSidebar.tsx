@@ -89,7 +89,10 @@ export function PartnerSidebar({
   const label = (key: string) => t(`items.${key}` as never);
   const shown = needle
     ? groups
-        .map((group) => ({ ...group, items: group.items.filter((item) => label(item.key).toLocaleLowerCase("th").includes(needle)) }))
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => label(item.key).toLocaleLowerCase("th").includes(needle)),
+        }))
         .filter((group) => group.items.length)
     : groups;
   const first = shown[0]?.items[0];
@@ -102,7 +105,12 @@ export function PartnerSidebar({
       </div>
       {many ? (
         <div className="relative px-1">
-          <Icon name="search" size={16} className="text-muted pointer-events-none absolute start-4 top-1/2 -translate-y-1/2" aria-hidden="true" />
+          <Icon
+            name="search"
+            size={16}
+            className="text-muted pointer-events-none absolute start-4 top-1/2 -translate-y-1/2"
+            aria-hidden="true"
+          />
           <input
             ref={search}
             type="search"

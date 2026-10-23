@@ -26,7 +26,10 @@ export async function erpCustomers(contract: Contract, factoryId: string): Promi
   return out.filter((partner) => partner.status === "active");
 }
 
-export async function erpSalespeople(contract: Contract, factoryId: string): Promise<Schemas["ErpSalespersonOptionDto"][]> {
+export async function erpSalespeople(
+  contract: Contract,
+  factoryId: string,
+): Promise<Schemas["ErpSalespersonOptionDto"][]> {
   return (
     (
       await contract.GET("/v1/partner/factories/{factoryId}/erp/salespeople", {

@@ -18,13 +18,20 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TemplatesPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   const query = await searchParams;
   const archived = query.view === "archived";
-  const [t, tKind, context] = await Promise.all([getTranslations("partnerInsight.templates"), getTranslations("partnerInsight.kinds"), factoryContext()]);
+  const [t, tKind, context] = await Promise.all([
+    getTranslations("partnerInsight.templates"),
+    getTranslations("partnerInsight.kinds"),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const list = await attempt(
     async () =>
       (
         await contract.GET("/v1/partner/factories/{factoryId}/erp/inspection-templates", {
-          params: { path: { factoryId: context.factoryId }, query: { perPage: 100, status: archived ? "archived" : "active" } },
+          params: {
+            path: { factoryId: context.factoryId },
+            query: { perPage: 100, status: archived ? "archived" : "active" },
+          },
         })
       ).data!,
   );
@@ -55,7 +62,9 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
           caption={t("title")}
           rows={list.data.data}
           rowKey={(row) => row.id}
-          rowHref={(row) => (canManage ? `/quality/templates/${row.id}` : `/quality/new?kind=${row.kind}&templateId=${row.id}`)}
+          rowHref={(row) =>
+            canManage ? `/quality/templates/${row.id}` : `/quality/new?kind=${row.kind}&templateId=${row.id}`
+          }
           empty={<EmptyState icon="checklist" title={t("empty")} description={t("emptyBody")} />}
           columns={[
             { key: "n", header: t("name"), primary: true, cell: (row) => row.name },

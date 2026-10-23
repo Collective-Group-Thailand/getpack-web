@@ -83,7 +83,12 @@ export function blockLines(block: DataBlock, words: BlockWords): { title: string
   const m = block.details;
   return {
     title,
-    body: [m.name, m.address, m.phone ? `${words.phone} ${m.phone}` : "", m.fdaNumber ? `${words.fda} ${m.fdaNumber}` : ""]
+    body: [
+      m.name,
+      m.address,
+      m.phone ? `${words.phone} ${m.phone}` : "",
+      m.fdaNumber ? `${words.fda} ${m.fdaNumber}` : "",
+    ]
       .filter(Boolean)
       .join("\n"),
   };
@@ -104,7 +109,18 @@ export function blockElements(
   const base = { rotation: 0, scaleX: 1, scaleY: 1, opacity: 1, groupId: options.groupId, align: "left" as const };
   const lines = wrapText(body, options.widthMm, options.fontSizeMm, options.measure);
   return [
-    { ...base, type: "text", x: at.x, y: at.y, text: title, fontSize: titleSize, fontFamily: options.fontFamily, fontStyle: "bold", fill: options.fill, name: title },
+    {
+      ...base,
+      type: "text",
+      x: at.x,
+      y: at.y,
+      text: title,
+      fontSize: titleSize,
+      fontFamily: options.fontFamily,
+      fontStyle: "bold",
+      fill: options.fill,
+      name: title,
+    },
     {
       ...base,
       type: "text",

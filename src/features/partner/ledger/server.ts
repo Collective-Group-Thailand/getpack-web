@@ -21,7 +21,15 @@ const quiet = async <T>(read: () => Promise<T>, fallback: T): Promise<T> => {
 /** Every account of the chart (postable ones for pickers), across pages. */
 export async function ledgerAccounts(contract: Contract, factoryId: string, postable = true) {
   return quiet(async () => {
-    const out: { id: string; code: string; nameTh: string; isControl: boolean; isPostable: boolean; status: string; accountType: string }[] = [];
+    const out: {
+      id: string;
+      code: string;
+      nameTh: string;
+      isControl: boolean;
+      isPostable: boolean;
+      status: string;
+      accountType: string;
+    }[] = [];
     for (let page = 1; page <= 5; page++) {
       const { data } = await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/accounts", {
         params: { path: { factoryId }, query: { page, perPage: 100, ...(postable ? { postable: true } : {}) } },

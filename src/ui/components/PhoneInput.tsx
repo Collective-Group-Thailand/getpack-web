@@ -65,7 +65,15 @@ function ThaiFlag() {
  * the field's own label and hint already say which number is wanted, and a screen reader
  * reading "plus sixty-six" before an empty field is noise.
  */
-export function PhoneInput({ value, onChange, onBlur, disabled, placeholder, size = "md", className }: PhoneInputProps) {
+export function PhoneInput({
+  value,
+  onChange,
+  onBlur,
+  disabled,
+  placeholder,
+  size = "md",
+  className,
+}: PhoneInputProps) {
   const fieldProps = useFieldProps();
   const isDisabled = disabled ?? fieldProps.disabled;
 

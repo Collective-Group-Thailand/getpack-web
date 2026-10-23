@@ -77,7 +77,10 @@ async function portTaken(): Promise<boolean> {
 function configFor(name: string): { path: string; cleanup: () => void } {
   if (PORT === 3200) return { path: `lighthouse/${name}.json`, cleanup: () => undefined };
   const path = `lighthouse/.port-${PORT}-${name}.json`;
-  writeFileSync(join(ROOT, path), readFileSync(join(ROOT, `lighthouse/${name}.json`), "utf8").replaceAll(":3200/", `:${PORT}/`));
+  writeFileSync(
+    join(ROOT, path),
+    readFileSync(join(ROOT, `lighthouse/${name}.json`), "utf8").replaceAll(":3200/", `:${PORT}/`),
+  );
   return { path, cleanup: () => rmSync(join(ROOT, path), { force: true }) };
 }
 

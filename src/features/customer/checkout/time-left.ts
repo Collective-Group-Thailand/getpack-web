@@ -3,8 +3,7 @@
  * there are hours, "14:05 นาที" in the last hour — never "1439:14".
  */
 export type TimeLeft =
-  | { kind: "hours"; hours: number; minutes: number }
-  | { kind: "minutes"; minutes: number; seconds: string };
+  { kind: "hours"; hours: number; minutes: number } | { kind: "minutes"; minutes: number; seconds: string };
 
 export function timeLeft(ms: number): TimeLeft {
   const total = Math.max(0, Math.floor(ms / 1000));

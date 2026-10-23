@@ -540,7 +540,12 @@ function LinkSourcing({
             </Button>
           ) : null}
           {canManage ? (
-            <Button size="sm" variant="ghost" iconStart="layers" onClick={() => setOpen(open === "breaks" ? null : "breaks")}>
+            <Button
+              size="sm"
+              variant="ghost"
+              iconStart="layers"
+              onClick={() => setOpen(open === "breaks" ? null : "breaks")}
+            >
               {t("editBreaks")}
             </Button>
           ) : null}
@@ -574,7 +579,12 @@ function LinkSourcing({
         }}
       >
         <Field label={t("reviewOn")}>
-          <Input type="date" min={bangkokToday()} value={reviewOn} onChange={(event) => setReviewOn(event.target.value)} />
+          <Input
+            type="date"
+            min={bangkokToday()}
+            value={reviewOn}
+            onChange={(event) => setReviewOn(event.target.value)}
+          />
         </Field>
       </ConfirmAction>
       <ConfirmAction
@@ -713,12 +723,19 @@ function BreaksForm({
           variant="secondary"
           iconStart="plus"
           disabled={rows.length >= 20}
-          onClick={() => setRows([...rows, { key: Math.max(0, ...rows.map((r) => r.key)) + 1, minQty: "", unitPrice: "" }])}
+          onClick={() =>
+            setRows([...rows, { key: Math.max(0, ...rows.map((r) => r.key)) + 1, minQty: "", unitPrice: "" }])
+          }
         >
           {t("addBreak")}
         </Button>
         <Field label={t("validUntil")}>
-          <Input type="date" min={bangkokToday()} value={validUntil} onChange={(event) => setValidUntil(event.target.value)} />
+          <Input
+            type="date"
+            min={bangkokToday()}
+            value={validUntil}
+            onChange={(event) => setValidUntil(event.target.value)}
+          />
         </Field>
         <Button type="submit" size="sm" iconStart="save" loading={busy}>
           {t("saveBreaks")}

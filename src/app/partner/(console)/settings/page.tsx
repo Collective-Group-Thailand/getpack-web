@@ -22,7 +22,16 @@ import { Icon } from "@/ui/icons";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 
 /** What the factory agreed with getpack, kept on its onboarding steps — read here after go-live, changed by request. */
-const PROFILE_STEPS = ["application", "kyc", "bank_account", "capability", "capacity", "delivery_zones", "payout_policy", "agreement"] as const;
+const PROFILE_STEPS = [
+  "application",
+  "kyc",
+  "bank_account",
+  "capability",
+  "capacity",
+  "delivery_zones",
+  "payout_policy",
+  "agreement",
+] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerAccount.settings"))("title") };
@@ -184,7 +193,10 @@ export default async function SettingsPage() {
       </PartnerSection>
       {canAt(context, "factory_support.grant") ? (
         <PartnerSection title={t("support")} description={t("supportBody")}>
-          <Link href="/settings/support" className="text-primary inline-flex min-h-11 items-center underline md:min-h-10">
+          <Link
+            href="/settings/support"
+            className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
+          >
             {t("supportLink")}
           </Link>
         </PartnerSection>

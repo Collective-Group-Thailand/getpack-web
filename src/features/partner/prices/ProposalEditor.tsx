@@ -385,9 +385,7 @@ export function ProposalEditor({
                   return (
                     <span className="flex flex-col">
                       <span className="font-medium">{tComponents(line.component)}</span>
-                      <span className="text-muted text-sm">
-                        {appliesOf(line.component, values)}
-                      </span>
+                      <span className="text-muted text-sm">{appliesOf(line.component, values)}</span>
                     </span>
                   );
                 },

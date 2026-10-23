@@ -19,12 +19,27 @@ export async function generateMetadata(): Promise<Metadata> {
 /** One period (D-390): the close checklist, its status and the transitions offered. */
 export default async function PeriodPage({ params }: { params: Promise<{ periodId: string }> }) {
   const { periodId } = await params;
-  const [t, tc, format, context] = await Promise.all([getTranslations("partnerLedger.period"), getTranslations("partnerLedger.common"), getFormat(), factoryContext()]);
+  const [t, tc, format, context] = await Promise.all([
+    getTranslations("partnerLedger.period"),
+    getTranslations("partnerLedger.common"),
+    getFormat(),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const [periods, checklist] = await Promise.all([
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/periods", { params: { path } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/periods/{periodId}/checklist", { params: { path: { ...path, periodId } } })).data!),
+    attempt(
+      async () =>
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/periods", { params: { path } })).data!,
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/periods/{periodId}/checklist", {
+            params: { path: { ...path, periodId } },
+          })
+        ).data!,
+    ),
   ]);
   const period = periods.data?.find((p) => p.id === periodId);
   if (!period || !checklist.data)
@@ -57,7 +72,9 @@ export default async function PeriodPage({ params }: { params: Promise<{ periodI
       meta={<StatusChip map={PERIOD_STATUS} value={period.status} size="md" />}
     >
       <PeriodActions period={period} />
-      <p className={c.canClose ? "text-success font-medium" : "text-warning font-medium"}>{c.canClose ? t("canClose") : t("cannotClose")}</p>
+      <p className={c.canClose ? "text-success font-medium" : "text-warning font-medium"}>
+        {c.canClose ? t("canClose") : t("cannotClose")}
+      </p>
       <PartnerSection title={t("checks")}>
         <PartnerTable
           caption={t("checks")}
@@ -65,11 +82,41 @@ export default async function PeriodPage({ params }: { params: Promise<{ periodI
           rowKey={(row) => row.key}
           rowTone={(row) => (row.ok ? undefined : row.blocking ? "danger" : "warning")}
           columns={[
-            { key: "n", header: t("checks"), primary: true, cell: (row) => <span>{t(`names.${row.key}` as never)}</span> },
-            { key: "e", header: t("expected"), align: "end", hideOnPhone: true, cell: (row) => (row.expected === null ? "—" : format.thb(row.expected)) },
-            { key: "a", header: t("actual"), align: "end", hideOnPhone: true, cell: (row) => (row.actual === null ? "—" : format.thb(row.actual)) },
-            { key: "d", header: t("difference"), align: "end", cell: (row) => (row.difference === null ? "—" : format.thb(row.difference)) },
-            { key: "s", header: tc("status"), cell: (row) => <Badge tone={row.ok ? "success" : row.blocking ? "danger" : "warning"}>{row.ok ? (row.blocking ? t("ok") : t("info")) : t("fail")}</Badge> },
+            {
+              key: "n",
+              header: t("checks"),
+              primary: true,
+              cell: (row) => <span>{t(`names.${row.key}` as never)}</span>,
+            },
+            {
+              key: "e",
+              header: t("expected"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => (row.expected === null ? "—" : format.thb(row.expected)),
+            },
+            {
+              key: "a",
+              header: t("actual"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => (row.actual === null ? "—" : format.thb(row.actual)),
+            },
+            {
+              key: "d",
+              header: t("difference"),
+              align: "end",
+              cell: (row) => (row.difference === null ? "—" : format.thb(row.difference)),
+            },
+            {
+              key: "s",
+              header: tc("status"),
+              cell: (row) => (
+                <Badge tone={row.ok ? "success" : row.blocking ? "danger" : "warning"}>
+                  {row.ok ? (row.blocking ? t("ok") : t("info")) : t("fail")}
+                </Badge>
+              ),
+            },
             {
               key: "x",
               header: tc("description"),
@@ -93,7 +140,9 @@ export default async function PeriodPage({ params }: { params: Promise<{ periodI
             },
           ]}
         />
-        {c.openProductionOrders ? <p className="text-muted text-sm">{t("openOrders", { n: c.openProductionOrders })}</p> : null}
+        {c.openProductionOrders ? (
+          <p className="text-muted text-sm">{t("openOrders", { n: c.openProductionOrders })}</p>
+        ) : null}
       </PartnerSection>
       <Button asChild variant="secondary" iconStart="list-ordered" className="self-start">
         <Link href={`/ledger/journals?month=${period.month}`}>{t("journals", { month: monthLabel })}</Link>

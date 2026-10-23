@@ -43,7 +43,10 @@ export function CouponFrame({
       <span aria-hidden="true" className="bg-surface absolute top-7 -left-2.5 size-5 rounded-full" />
       <span aria-hidden="true" className="bg-surface absolute top-7 -right-2.5 size-5 rounded-full" />
       <div className="flex items-start gap-3">
-        <span className="bg-accent text-accent-fg grid size-10 shrink-0 place-items-center rounded-full" aria-hidden="true">
+        <span
+          className="bg-accent text-accent-fg grid size-10 shrink-0 place-items-center rounded-full"
+          aria-hidden="true"
+        >
           <Icon name={icon} size={20} />
         </span>
         <div className="min-w-0 flex-1">
@@ -77,5 +80,10 @@ export function CouponSavingRow({ name, amount }: { name: React.ReactNode; amoun
 
 /** The dashed rule that separates the frame's savings from its codes. */
 export function CouponDivider({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) {
-  return <ul className={cn("border-accent/40 mt-3 flex flex-col gap-1 border-t border-dashed pt-3 text-sm", className)} {...props} />;
+  return (
+    <ul
+      className={cn("border-accent/40 mt-3 flex flex-col gap-1 border-t border-dashed pt-3 text-sm", className)}
+      {...props}
+    />
+  );
 }

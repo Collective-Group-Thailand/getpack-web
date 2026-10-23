@@ -62,7 +62,12 @@ function flapOn(p: Pt, q: Pt, inside: Pt, depth: number, inset = depth): Pt[] {
   const mid: Pt = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
   if ((inside[0] - mid[0]) * n[0] + (inside[1] - mid[1]) * n[1] > 0) n = [-n[0], -n[1]];
   const k = Math.min(inset, len / 2 - 1);
-  return [p, q, [q[0] + n[0] * depth - u[0] * k, q[1] + n[1] * depth - u[1] * k], [p[0] + n[0] * depth + u[0] * k, p[1] + n[1] * depth + u[1] * k]];
+  return [
+    p,
+    q,
+    [q[0] + n[0] * depth - u[0] * k, q[1] + n[1] * depth - u[1] * k],
+    [p[0] + n[0] * depth + u[0] * k, p[1] + n[1] * depth + u[1] * k],
+  ];
 }
 
 export const taperedTray: BodyModule = {
@@ -90,39 +95,121 @@ export const taperedTray: BodyModule = {
     const handle = str(ctx.v, "pailHandle", "none");
     const centre: Pt = [L / 2, W / 2];
     // The walls' top corners, sheet frame (y down): back above the base, front below, left and right beside.
-    const back: Pt[] = [[L, 0], [0, 0], [-k, -s], [L + k, -s]];
-    const front: Pt[] = [[0, W], [L, W], [L + k, W + s], [-k, W + s]];
-    const left: Pt[] = [[0, 0], [0, W], [-s, W + k], [-s, -k]];
-    const right: Pt[] = [[L, W], [L, 0], [L + s, -k], [L + s, W + k]];
+    const back: Pt[] = [
+      [L, 0],
+      [0, 0],
+      [-k, -s],
+      [L + k, -s],
+    ];
+    const front: Pt[] = [
+      [0, W],
+      [L, W],
+      [L + k, W + s],
+      [-k, W + s],
+    ];
+    const left: Pt[] = [
+      [0, 0],
+      [0, W],
+      [-s, W + k],
+      [-s, -k],
+    ];
+    const right: Pt[] = [
+      [L, W],
+      [L, 0],
+      [L + s, -k],
+      [L + s, W + k],
+    ];
     const top = dEnd > 0;
-    const wall = (id: string, label: "wall_back" | "wall_front" | "wall_left" | "wall_right", pts: Pt[], holes: Contour[] = []) =>
+    const wall = (
+      id: string,
+      label: "wall_back" | "wall_front" | "wall_left" | "wall_right",
+      pts: Pt[],
+      holes: Contour[] = [],
+    ) =>
       // Base crease, a side edge (creased where a glue flap hangs), the top edge (creased under a top flap), the other side.
-      face(id, label, "wall", polygon(pts, ["crease", label === "wall_back" || label === "wall_front" ? "crease" : "cut", top ? "crease" : "cut", label === "wall_back" || label === "wall_front" ? "crease" : "cut"]), { holes });
+      face(
+        id,
+        label,
+        "wall",
+        polygon(pts, [
+          "crease",
+          label === "wall_back" || label === "wall_front" ? "crease" : "cut",
+          top ? "crease" : "cut",
+          label === "wall_back" || label === "wall_front" ? "crease" : "cut",
+        ]),
+        { holes },
+      );
     // Wire-handle holes 15 mm below the end walls' rim, at their middle.
     const pin = (x: number) => (handle === "insert" ? [ellipse(x, W / 2, 2.5, 2.5)] : []);
     const faces = [
-      face("base", "base", "base", polygon([[0, 0], [L, 0], [L, W], [0, W]], "crease")),
+      face(
+        "base",
+        "base",
+        "base",
+        polygon(
+          [
+            [0, 0],
+            [L, 0],
+            [L, W],
+            [0, W],
+          ],
+          "crease",
+        ),
+      ),
       wall("wall-back", "wall_back", back),
       wall("wall-front", "wall_front", front),
       wall("wall-left", "wall_left", left, pin(-s + 15)),
       wall("wall-right", "wall_right", right, pin(L + s - 15)),
       // Glue flaps on the long walls' side edges, folded inside the end walls.
-      face("glue-back-left", "glue_flap", "glue_flap", polygon(flapOn([0, 0], [-k, -s], [L / 2, -s / 2], g), ["crease", "cut", "cut", "cut"])),
-      face("glue-back-right", "glue_flap", "glue_flap", polygon(flapOn([L, 0], [L + k, -s], [L / 2, -s / 2], g), ["crease", "cut", "cut", "cut"])),
-      face("glue-front-left", "glue_flap", "glue_flap", polygon(flapOn([0, W], [-k, W + s], [L / 2, W + s / 2], g), ["crease", "cut", "cut", "cut"])),
-      face("glue-front-right", "glue_flap", "glue_flap", polygon(flapOn([L, W], [L + k, W + s], [L / 2, W + s / 2], g), ["crease", "cut", "cut", "cut"])),
+      face(
+        "glue-back-left",
+        "glue_flap",
+        "glue_flap",
+        polygon(flapOn([0, 0], [-k, -s], [L / 2, -s / 2], g), ["crease", "cut", "cut", "cut"]),
+      ),
+      face(
+        "glue-back-right",
+        "glue_flap",
+        "glue_flap",
+        polygon(flapOn([L, 0], [L + k, -s], [L / 2, -s / 2], g), ["crease", "cut", "cut", "cut"]),
+      ),
+      face(
+        "glue-front-left",
+        "glue_flap",
+        "glue_flap",
+        polygon(flapOn([0, W], [-k, W + s], [L / 2, W + s / 2], g), ["crease", "cut", "cut", "cut"]),
+      ),
+      face(
+        "glue-front-right",
+        "glue_flap",
+        "glue_flap",
+        polygon(flapOn([L, W], [L + k, W + s], [L / 2, W + s / 2], g), ["crease", "cut", "cut", "cut"]),
+      ),
     ];
     if (top) {
       // A finger slot 10 mm in from each long flap's meeting edge.
-      const slot = (y: number) =>
-        handle === "die_cut" ? [roundedRectangle(L / 2 - 30, y - 6, 60, 12, 6)] : [];
+      const slot = (y: number) => (handle === "die_cut" ? [roundedRectangle(L / 2 - 30, y - 6, 60, 12, 6)] : []);
       const backFlap = flapOn([-k, -s], [L + k, -s], centre, dLong, dLong * 0.25);
       const frontFlap = flapOn([L + k, W + s], [-k, W + s], centre, dLong, dLong * 0.25);
       faces.push(
-        face("top-back", "top_flap", "flap", polygon(backFlap, ["crease", "cut", "cut", "cut"]), { holes: slot(-s - dLong + 16) }),
-        face("top-front", "top_flap", "flap", polygon(frontFlap, ["crease", "cut", "cut", "cut"]), { holes: slot(W + s + dLong - 16) }),
-        face("top-left", "dust_flap", "dust_flap", polygon(flapOn([-s, W + k], [-s, -k], centre, dEnd), ["crease", "cut", "cut", "cut"])),
-        face("top-right", "dust_flap", "dust_flap", polygon(flapOn([L + s, -k], [L + s, W + k], centre, dEnd), ["crease", "cut", "cut", "cut"])),
+        face("top-back", "top_flap", "flap", polygon(backFlap, ["crease", "cut", "cut", "cut"]), {
+          holes: slot(-s - dLong + 16),
+        }),
+        face("top-front", "top_flap", "flap", polygon(frontFlap, ["crease", "cut", "cut", "cut"]), {
+          holes: slot(W + s + dLong - 16),
+        }),
+        face(
+          "top-left",
+          "dust_flap",
+          "dust_flap",
+          polygon(flapOn([-s, W + k], [-s, -k], centre, dEnd), ["crease", "cut", "cut", "cut"]),
+        ),
+        face(
+          "top-right",
+          "dust_flap",
+          "dust_flap",
+          polygon(flapOn([L + s, -k], [L + s, W + k], centre, dEnd), ["crease", "cut", "cut", "cut"]),
+        ),
       );
     }
     return assemble(ctx.styleId, [piece("blank", "blank", faces)]);

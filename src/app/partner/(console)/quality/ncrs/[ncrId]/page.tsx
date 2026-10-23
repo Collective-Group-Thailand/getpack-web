@@ -67,23 +67,60 @@ export default async function NcrPage({ params }: { params: Promise<{ ncrId: str
           items={[
             { term: t("source"), description: tSource(ncr.source) },
             { term: t("descriptionLabel"), description: ncr.description },
-            ...(ncr.check ? [{ term: t("check"), description: <Link className="text-link underline" href={`/quality/${ncr.check.id}`}>{ncr.check.number}</Link> }] : []),
+            ...(ncr.check
+              ? [
+                  {
+                    term: t("check"),
+                    description: (
+                      <Link className="text-link underline" href={`/quality/${ncr.check.id}`}>
+                        {ncr.check.number}
+                      </Link>
+                    ),
+                  },
+                ]
+              : []),
             ...(ncr.item ? [{ term: t("item"), description: `${ncr.item.name} (${ncr.item.sku})` }] : []),
             ...(ncr.quantity ? [{ term: t("quantity"), description: formatQty(ncr.quantity, format.locale) }] : []),
             ...(ncr.warehouse ? [{ term: t("warehouse"), description: ncr.warehouse.name }] : []),
-            ...(ncr.productionOrder ? [{ term: t("order"), description: <Link className="text-link underline" href={`/planning/orders/${ncr.productionOrder.id}`}>{ncr.productionOrder.number}</Link> }] : []),
+            ...(ncr.productionOrder
+              ? [
+                  {
+                    term: t("order"),
+                    description: (
+                      <Link className="text-link underline" href={`/planning/orders/${ncr.productionOrder.id}`}>
+                        {ncr.productionOrder.number}
+                      </Link>
+                    ),
+                  },
+                ]
+              : []),
             ...(ncr.goodsReceipt ? [{ term: t("receipt"), description: ncr.goodsReceipt.number }] : []),
             ...(ncr.supplier ? [{ term: t("supplier"), description: ncr.supplier.name }] : []),
             ...(ncr.customer ? [{ term: t("customer"), description: ncr.customer.name }] : []),
             ...(ncr.machine ? [{ term: t("machine"), description: ncr.machine.name }] : []),
             ...(ncr.disposition
-              ? [{ term: t("disposition"), description: `${tDisposition(ncr.disposition)}${ncr.dispositionNote ? ` — ${ncr.dispositionNote}` : ""}` }]
+              ? [
+                  {
+                    term: t("disposition"),
+                    description: `${tDisposition(ncr.disposition)}${ncr.dispositionNote ? ` — ${ncr.dispositionNote}` : ""}`,
+                  },
+                ]
               : []),
             ...(ncr.rootCause ? [{ term: t("rootCause"), description: ncr.rootCause }] : []),
             ...(ncr.correctiveAction ? [{ term: t("corrective"), description: ncr.correctiveAction }] : []),
             ...(ncr.preventiveAction ? [{ term: t("preventive"), description: ncr.preventiveAction }] : []),
-            { term: t("owner"), description: `${ncr.owner?.name ?? "—"} · ${t("dueOn", { date: format.date(ncr.actionDueOn) })}` },
-            ...(ncr.verifiedBy ? [{ term: t("verified"), description: `${ncr.verifiedBy.name} · ${format.dateTime(ncr.verifiedAt)}${ncr.verificationNote ? ` — ${ncr.verificationNote}` : ""}` }] : []),
+            {
+              term: t("owner"),
+              description: `${ncr.owner?.name ?? "—"} · ${t("dueOn", { date: format.date(ncr.actionDueOn) })}`,
+            },
+            ...(ncr.verifiedBy
+              ? [
+                  {
+                    term: t("verified"),
+                    description: `${ncr.verifiedBy.name} · ${format.dateTime(ncr.verifiedAt)}${ncr.verificationNote ? ` — ${ncr.verificationNote}` : ""}`,
+                  },
+                ]
+              : []),
             ...(ncr.closedAt ? [{ term: t("closedAt"), description: format.dateTime(ncr.closedAt) }] : []),
             ...(ncr.cancelReason ? [{ term: t("cancelReason"), description: ncr.cancelReason }] : []),
             { term: t("raised"), description: `${ncr.createdBy} · ${format.dateTime(ncr.createdAt)}` },

@@ -33,8 +33,13 @@ test("the studio and getpack-api find the same document rules for the same versi
   await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 30_000 });
 
   // Entering ④ runs getpack-api's checks on the saved version; the run the studio got is the server's answer.
-  const response = page.waitForResponse((r) => r.url().endsWith(`/studio/${id}/checks`) && r.request().method() === "POST");
-  await page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" }).getByRole("button", { name: /ตรวจงาน/ }).click();
+  const response = page.waitForResponse(
+    (r) => r.url().endsWith(`/studio/${id}/checks`) && r.request().method() === "POST",
+  );
+  await page
+    .getByRole("navigation", { name: "ขั้นตอนการออกแบบ" })
+    .getByRole("button", { name: /ตรวจงาน/ })
+    .click();
   await expect(page.getByRole("button", { name: /บาร์โค้ดใช้ไม่ได้/ })).toHaveCount(1, { timeout: 30_000 });
   const run = await (await response).json();
   expect(run.findings, JSON.stringify(run)).toBeDefined();

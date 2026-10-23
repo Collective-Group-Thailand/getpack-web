@@ -36,10 +36,9 @@ export default async function InvoicePage({ params }: Props) {
   ]);
   const { contract } = await partnerServerApis();
   const read = await attempt(async () => {
-    const { data, response } = await contract.GET(
-      "/v1/partner/factories/{factoryId}/erp/sales-invoices/{invoiceId}",
-      { params: { path: { factoryId: context.factoryId, invoiceId } } },
-    );
+    const { data, response } = await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-invoices/{invoiceId}", {
+      params: { path: { factoryId: context.factoryId, invoiceId } },
+    });
     return { doc: data!, etag: response.headers.get("etag") };
   });
   const back = { href: "/invoices", label: t("title") };
@@ -54,7 +53,9 @@ export default async function InvoicePage({ params }: Props) {
     ...(doc.debitedAmount !== "0.00" ? [{ label: t("debited"), value: doc.debitedAmount }] : []),
     ...(doc.creditedAmount !== "0.00" ? [{ label: t("credited"), value: `-${doc.creditedAmount}` }] : []),
     ...(doc.receivedAmount !== "0.00" ? [{ label: t("received"), value: `-${doc.receivedAmount}` }] : []),
-    ...(doc.status !== "draft" && doc.status !== "voided" ? [{ label: tCommon("open"), value: doc.openAmount, strong: true }] : []),
+    ...(doc.status !== "draft" && doc.status !== "voided"
+      ? [{ label: tCommon("open"), value: doc.openAmount, strong: true }]
+      : []),
   ];
 
   return (
@@ -71,7 +72,11 @@ export default async function InvoicePage({ params }: Props) {
       }
     >
       <InvoiceActions invoice={doc} etag={etag} />
-      {doc.voidReason ? <Callout tone="danger" title={t("voidedTitle")}>{doc.voidReason}</Callout> : null}
+      {doc.voidReason ? (
+        <Callout tone="danger" title={t("voidedTitle")}>
+          {doc.voidReason}
+        </Callout>
+      ) : null}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card padding="md">
           <DescriptionList
@@ -135,7 +140,9 @@ export default async function InvoicePage({ params }: Props) {
       <PartnerSection title={t("linesTitle")}>
         <SalesLinesTable caption={t("linesTitle")} lines={doc.lines} />
         <SalesTotals doc={doc} extra={settledRows} />
-        {doc.status !== "draft" ? <p className="text-muted text-end text-sm">{tCommon("inWords", { words: doc.totalInWords })}</p> : null}
+        {doc.status !== "draft" ? (
+          <p className="text-muted text-end text-sm">{tCommon("inWords", { words: doc.totalInWords })}</p>
+        ) : null}
       </PartnerSection>
       <div className="grid gap-6 lg:grid-cols-2">
         <PartnerSection title={t("receiptsTitle")}>
@@ -169,7 +176,9 @@ export default async function InvoicePage({ params }: Props) {
                   key={n.id}
                   href={`/invoices/notes/${n.id}`}
                   icon="receipt"
-                  title={<span className="font-mono">{n.noteNo ?? `${t(`noteKinds.${n.kind}`)} ${tCommon("draftNo")}`}</span>}
+                  title={
+                    <span className="font-mono">{n.noteNo ?? `${t(`noteKinds.${n.kind}`)} ${tCommon("draftNo")}`}</span>
+                  }
                   meta={<StatusChip map={ERP_ISSUED_STATUS} value={n.status} />}
                   aside={format.thb(n.total)}
                 />

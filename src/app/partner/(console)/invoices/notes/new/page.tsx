@@ -10,8 +10,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** A credit (`?kind=credit`) or debit note against an issued invoice (`?invoice=`, D-364). */
-export default async function NewNotePage({ searchParams }: { searchParams: Promise<{ invoice?: string; kind?: string }> }) {
-  const [query, t, context] = await Promise.all([searchParams, getTranslations("partnerSales.notes"), factoryContext()]);
+export default async function NewNotePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ invoice?: string; kind?: string }>;
+}) {
+  const [query, t, context] = await Promise.all([
+    searchParams,
+    getTranslations("partnerSales.notes"),
+    factoryContext(),
+  ]);
   const kind = query.kind === "debit" ? "debit" : "credit";
   const { contract } = await partnerServerApis();
   const read = query.invoice

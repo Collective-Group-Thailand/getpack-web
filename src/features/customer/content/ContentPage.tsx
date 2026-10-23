@@ -30,7 +30,9 @@ export function ContentPage({
 }) {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 md:px-8 md:py-12">
-      {jsonLd?.map((data, index) => <JsonLd key={index} data={data} />)}
+      {jsonLd?.map((data, index) => (
+        <JsonLd key={index} data={data} />
+      ))}
       <Breadcrumbs label={crumbLabel} items={crumbs.map((crumb) => ({ label: crumb.name, href: crumb.url }))} />
       <header className="mt-6 max-w-3xl">
         <h1 className="text-3xl leading-tight md:text-4xl">{title}</h1>
@@ -50,15 +52,7 @@ export function ContentPage({
 }
 
 /** A titled block of prose. */
-export function ContentSection({
-  id,
-  title,
-  children,
-}: {
-  id?: string;
-  title: string;
-  children: React.ReactNode;
-}) {
+export function ContentSection({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
     <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className="scroll-mt-24">
       <h2 id={id ? `${id}-title` : undefined} className="text-xl font-semibold md:text-2xl">

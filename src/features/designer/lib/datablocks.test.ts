@@ -33,7 +33,10 @@ describe("Thai line breaking (U4.4 data blocks)", () => {
 
   it("sets a nutrition block as a grouped bold title and its lines", () => {
     const els = blockElements(
-      { kind: "nutrition", facts: { serving: "30 ก.", energyKcal: "120 กิโลแคลอรี", fatG: "5 ก.", sugarG: "8 ก.", sodiumMg: "90 มก." } },
+      {
+        kind: "nutrition",
+        facts: { serving: "30 ก.", energyKcal: "120 กิโลแคลอรี", fatG: "5 ก.", sugarG: "8 ก.", sodiumMg: "90 มก." },
+      },
       WORDS,
       { x: 10, y: 10 },
       { widthMm: 60, fontSizeMm: 2, fontFamily: "Sarabun", fill: "#000000", groupId: "g1", measure },

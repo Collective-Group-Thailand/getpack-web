@@ -111,7 +111,11 @@ export function InvoiceFromDeliveries({
       </fieldset>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("issueDate")} hint={t("issueDateHint")}>
-          <Input type="date" value={issueDate} onChange={(event) => setIssueDate(event.target.value || bangkokToday())} />
+          <Input
+            type="date"
+            value={issueDate}
+            onChange={(event) => setIssueDate(event.target.value || bangkokToday())}
+          />
         </Field>
       </div>
       <SegmentedControl

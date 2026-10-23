@@ -163,7 +163,9 @@ export default async function GoodsReceiptPage({ params }: Props) {
                 <p className="flex flex-wrap items-center gap-2 font-medium">
                   <span>{tRecv(`kinds.${c.kind}` as never)}</span>
                   <span className="tabular-nums">{format.thb(c.amount)}</span>
-                  <Badge tone={c.atReceipt ? "neutral" : "info"}>{c.atReceipt ? tRecv("atReceipt") : tRecv("later")}</Badge>
+                  <Badge tone={c.atReceipt ? "neutral" : "info"}>
+                    {c.atReceipt ? tRecv("atReceipt") : tRecv("later")}
+                  </Badge>
                 </p>
                 <p className="text-muted text-sm">
                   {[
@@ -187,10 +189,7 @@ export default async function GoodsReceiptPage({ params }: Props) {
           <p className="text-muted">{tRecv("noCharges")}</p>
         )}
         {canCharge && canAt(context, "factory_procurement.manage") ? (
-          <AddChargeForm
-            receiptId={r.id}
-            partners={(partners?.data ?? []).filter((p) => p.status === "active")}
-          />
+          <AddChargeForm receiptId={r.id} partners={(partners?.data ?? []).filter((p) => p.status === "active")} />
         ) : null}
       </PartnerSection>
       <PostedEntries sourceId={r.id} />

@@ -202,7 +202,9 @@ describe("partner sidebar by role (round 2, Phase 1)", () => {
   });
 
   it("gives quality, insight and people to the roles D-382 grants them (E5)", () => {
-    expect(items("factory_owner")).toEqual(expect.arrayContaining(["insight", "qualityTemplates", "people", "supportAccess"]));
+    expect(items("factory_owner")).toEqual(
+      expect.arrayContaining(["insight", "qualityTemplates", "people", "supportAccess"]),
+    );
     expect(items("factory_planner")).not.toContain("supportAccess");
     expect(items("factory_sales")).not.toContain("qualityChecks");
     expect(items("factory_shipping")).not.toContain("insight");

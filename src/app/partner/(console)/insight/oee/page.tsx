@@ -15,7 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const bangkokDay = (offset: number) => new Date(Date.now() + 7 * 3_600_000 + offset * 86_400_000).toISOString().slice(0, 10);
+const bangkokDay = (offset: number) =>
+  new Date(Date.now() + 7 * 3_600_000 + offset * 86_400_000).toISOString().slice(0, 10);
 
 /**
  * OEE (D-377): per machine, availability (running ÷ planned time from the shifts or the calendar), performance
@@ -33,7 +34,12 @@ export default async function OeePage({ searchParams }: { searchParams: Promise<
   ]);
   const { contract } = await partnerServerApis();
   const read = await attempt(
-    async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/insight/oee", { params: { path: { factoryId: context.factoryId }, query: { from, to } } })).data!,
+    async () =>
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/erp/insight/oee", {
+          params: { path: { factoryId: context.factoryId }, query: { from, to } },
+        })
+      ).data!,
   );
   const pct = (v: string) => format.percent(v, 1);
   // A machine (or day) that never ran has nothing to measure: a dash, not a red 0%.
@@ -53,7 +59,9 @@ export default async function OeePage({ searchParams }: { searchParams: Promise<
         <Button type="submit" variant="secondary">
           {t("show")}
         </Button>
-        {read.data?.oeePct ? <p className="ms-auto text-lg font-semibold">{t("overall", { pct: pct(read.data.oeePct) })}</p> : null}
+        {read.data?.oeePct ? (
+          <p className="ms-auto text-lg font-semibold">{t("overall", { pct: pct(read.data.oeePct) })}</p>
+        ) : null}
       </form>
       {read.data ? (
         read.data.machines.length ? (
@@ -65,17 +73,43 @@ export default async function OeePage({ searchParams }: { searchParams: Promise<
               rowTone={(row) => (row.runMinutes > 0 && Number(row.oeePct) < 50 ? "warning" : undefined)}
               columns={[
                 { key: "m", header: t("machine"), primary: true, cell: (row) => row.machine.name },
-                { key: "run", header: t("run"), align: "end", hideOnPhone: true, cell: (row) => t("minutes", { run: format.number(row.runMinutes), planned: format.number(row.plannedMinutes) }) },
+                {
+                  key: "run",
+                  header: t("run"),
+                  align: "end",
+                  hideOnPhone: true,
+                  cell: (row) =>
+                    t("minutes", { run: format.number(row.runMinutes), planned: format.number(row.plannedMinutes) }),
+                },
                 { key: "a", header: t("availability"), align: "end", cell: (row) => ran(row, row.availabilityPct) },
                 { key: "p", header: t("performance"), align: "end", cell: (row) => ran(row, row.performancePct) },
                 { key: "q", header: t("quality"), align: "end", cell: (row) => ran(row, row.qualityPct) },
-                { key: "o", header: t("oee"), align: "end", cell: (row) => (row.runMinutes > 0 ? <span className={`font-semibold ${tone(row.oeePct)}`}>{pct(row.oeePct)}</span> : "—") },
-                { key: "g", header: t("good"), align: "end", hideOnPhone: true, cell: (row) => formatQty(row.good, format.locale) },
+                {
+                  key: "o",
+                  header: t("oee"),
+                  align: "end",
+                  cell: (row) =>
+                    row.runMinutes > 0 ? (
+                      <span className={`font-semibold ${tone(row.oeePct)}`}>{pct(row.oeePct)}</span>
+                    ) : (
+                      "—"
+                    ),
+                },
+                {
+                  key: "g",
+                  header: t("good"),
+                  align: "end",
+                  hideOnPhone: true,
+                  cell: (row) => formatQty(row.good, format.locale),
+                },
                 {
                   key: "l",
                   header: t("losses"),
                   hideOnPhone: true,
-                  cell: (row) => row.losses.map((l) => t("loss", { reason: tReason(l.reason), minutes: format.number(l.minutes) })).join(", ") || "—",
+                  cell: (row) =>
+                    row.losses
+                      .map((l) => t("loss", { reason: tReason(l.reason), minutes: format.number(l.minutes) }))
+                      .join(", ") || "—",
                 },
               ]}
             />
@@ -89,11 +123,31 @@ export default async function OeePage({ searchParams }: { searchParams: Promise<
                     rowKey={(row) => row.day}
                     columns={[
                       { key: "d", header: t("day"), primary: true, cell: (row) => format.date(row.day) },
-                      { key: "r", header: t("run"), align: "end", cell: (row) => t("minutes", { run: format.number(row.runMinutes), planned: format.number(row.plannedMinutes) }) },
-                      { key: "a", header: t("availability"), align: "end", cell: (row) => ran(row, row.availabilityPct) },
+                      {
+                        key: "r",
+                        header: t("run"),
+                        align: "end",
+                        cell: (row) =>
+                          t("minutes", {
+                            run: format.number(row.runMinutes),
+                            planned: format.number(row.plannedMinutes),
+                          }),
+                      },
+                      {
+                        key: "a",
+                        header: t("availability"),
+                        align: "end",
+                        cell: (row) => ran(row, row.availabilityPct),
+                      },
                       { key: "p", header: t("performance"), align: "end", cell: (row) => ran(row, row.performancePct) },
                       { key: "q", header: t("quality"), align: "end", cell: (row) => ran(row, row.qualityPct) },
-                      { key: "o", header: t("oee"), align: "end", cell: (row) => (row.runMinutes > 0 ? <span className={tone(row.oeePct)}>{pct(row.oeePct)}</span> : "—") },
+                      {
+                        key: "o",
+                        header: t("oee"),
+                        align: "end",
+                        cell: (row) =>
+                          row.runMinutes > 0 ? <span className={tone(row.oeePct)}>{pct(row.oeePct)}</span> : "—",
+                      },
                     ]}
                   />
                 </PartnerSection>

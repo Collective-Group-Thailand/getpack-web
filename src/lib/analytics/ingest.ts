@@ -95,7 +95,9 @@ function map(name: FunnelEvent, props: AnalyticsProperties): Mapped | null {
 function studioProperties(props: AnalyticsProperties): Record<string, string> {
   return {
     ...(props.printMethod ? { printMethod: props.printMethod } : {}),
-    ...(props.styleFamily && /^[a-z][a-z0-9_]{0,59}$/.test(props.styleFamily) ? { styleFamily: props.styleFamily } : {}),
+    ...(props.styleFamily && /^[a-z][a-z0-9_]{0,59}$/.test(props.styleFamily)
+      ? { styleFamily: props.styleFamily }
+      : {}),
   };
 }
 

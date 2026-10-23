@@ -51,7 +51,14 @@ export function FilePickButton({
           if (files.length) onFiles(files);
         }}
       />
-      <Button type="button" variant={variant} iconStart={icon} disabled={disabled} loading={loading} onClick={() => input.current?.click()}>
+      <Button
+        type="button"
+        variant={variant}
+        iconStart={icon}
+        disabled={disabled}
+        loading={loading}
+        onClick={() => input.current?.click()}
+      >
         {label}
       </Button>
     </>

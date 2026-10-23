@@ -214,7 +214,11 @@ export function QuotationActions({ quotation, etag }: { quotation: Quotation; et
         >
           <div className="grid gap-3">
             <Field label={t("acceptName")} error={nameError} required requiredLabel={tCommon("required")}>
-              <Input value={name} placeholder={t("acceptNamePlaceholder")} onChange={(event) => setName(event.target.value)} />
+              <Input
+                value={name}
+                placeholder={t("acceptNamePlaceholder")}
+                onChange={(event) => setName(event.target.value)}
+              />
             </Field>
             <Field label={t("acceptPosition")}>
               <Input value={position} onChange={(event) => setPosition(event.target.value)} />

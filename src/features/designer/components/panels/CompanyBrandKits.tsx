@@ -224,8 +224,7 @@ function KitEditor({
           params: { path: { companyId, kitId: kit.id }, header: { "If-Match": response.headers.get("etag") ?? "" } },
           body: body_,
         });
-      }
-      else
+      } else
         await browserApi().POST("/v1/store/companies/{companyId}/brand-kits", {
           params: { path: { companyId } },
           body: body_,

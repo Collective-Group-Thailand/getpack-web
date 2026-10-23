@@ -76,7 +76,15 @@ export function MachineRates({ rates, canEdit }: { rates: Rate[]; canEdit: boole
       return;
     }
     const done = await run(
-      () => erpSave("PUT", factoryId, "/machine-rates/{machineId}", { machineId }, { hourlyRate: plainNumber(value), note: note.trim() || null }, null),
+      () =>
+        erpSave(
+          "PUT",
+          factoryId,
+          "/machine-rates/{machineId}",
+          { machineId },
+          { hourlyRate: plainNumber(value), note: note.trim() || null },
+          null,
+        ),
       t("saved"),
     );
     if (done) setEditing(null);
@@ -93,7 +101,14 @@ export function MachineRates({ rates, canEdit }: { rates: Rate[]; canEdit: boole
           {editing === r.machine.id ? (
             <div className="flex flex-wrap items-end gap-2">
               <Field label={t("rate")}>
-                <NumberInput min={0} step="any" unit={t("perHour")} value={value} onChange={(e) => setValue(e.target.value)} className="w-36" />
+                <NumberInput
+                  min={0}
+                  step="any"
+                  unit={t("perHour")}
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  className="w-36"
+                />
               </Field>
               <Field label={t("note")}>
                 <Input value={note} onChange={(e) => setNote(e.target.value)} className="w-48" />
@@ -107,7 +122,13 @@ export function MachineRates({ rates, canEdit }: { rates: Rate[]; canEdit: boole
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <span className="tabular-nums">{r.hourlyRate ? t("value", { rate: format.thb(r.hourlyRate) }) : <Badge tone="warning">{t("notSet")}</Badge>}</span>
+              <span className="tabular-nums">
+                {r.hourlyRate ? (
+                  t("value", { rate: format.thb(r.hourlyRate) })
+                ) : (
+                  <Badge tone="warning">{t("notSet")}</Badge>
+                )}
+              </span>
               {canEdit ? (
                 <Button
                   size="sm"
@@ -151,7 +172,14 @@ export function ShiftDialog({ shift, onClose }: { shift?: Shift; onClose: () => 
       setError(t("invalid"));
       return;
     }
-    const body = { name: name.trim(), startTime: start, endTime: end, days, note: note.trim() || null, ...(shift ? { status: archived ? "archived" : "active" } : {}) };
+    const body = {
+      name: name.trim(),
+      startTime: start,
+      endTime: end,
+      days,
+      note: note.trim() || null,
+      ...(shift ? { status: archived ? "archived" : "active" } : {}),
+    };
     const done = await run(
       () =>
         shift
@@ -194,7 +222,9 @@ export function ShiftDialog({ shift, onClose }: { shift?: Shift; onClose: () => 
                 key={d}
                 label={tDay(String(d))}
                 checked={days.includes(d)}
-                onCheckedChange={(on) => setDays(on === true ? [...new Set([...days, d])] : days.filter((x) => x !== d))}
+                onCheckedChange={(on) =>
+                  setDays(on === true ? [...new Set([...days, d])] : days.filter((x) => x !== d))
+                }
               />
             ))}
           </div>
@@ -202,7 +232,9 @@ export function ShiftDialog({ shift, onClose }: { shift?: Shift; onClose: () => 
         <Field label={t("note")}>
           <Input value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
-        {shift ? <Checkbox label={t("archive")} checked={archived} onCheckedChange={(on) => setArchived(on === true)} /> : null}
+        {shift ? (
+          <Checkbox label={t("archive")} checked={archived} onCheckedChange={(on) => setArchived(on === true)} />
+        ) : null}
         {error ? <p className="text-danger text-sm">{error}</p> : null}
       </div>
     </Dialog>
@@ -225,8 +257,12 @@ export function ShiftManager({ shifts, canEdit }: { shifts: Shift[]; canEdit: bo
                   {s.name} {s.status === "archived" ? <Badge tone="neutral">{t("archived")}</Badge> : null}
                 </p>
                 <p className="text-muted text-sm">
-                  {t("hours", { start: s.startTime, end: s.endTime, hours: (s.minutes / 60).toFixed(1).replace(/\.0$/, "") })} ·{" "}
-                  {s.days.map((d) => tDay(String(d))).join(" ")}
+                  {t("hours", {
+                    start: s.startTime,
+                    end: s.endTime,
+                    hours: (s.minutes / 60).toFixed(1).replace(/\.0$/, ""),
+                  })}{" "}
+                  · {s.days.map((d) => tDay(String(d))).join(" ")}
                   {s.note ? ` · ${s.note}` : ""}
                 </p>
               </div>
@@ -279,7 +315,15 @@ export function SkillManager({
       return;
     }
     await run(
-      () => erpSave("PUT", factoryId, "/operator-skills", {}, { userId, machineId, level, certifiedOn: certified || null }, null),
+      () =>
+        erpSave(
+          "PUT",
+          factoryId,
+          "/operator-skills",
+          {},
+          { userId, machineId, level, certifiedOn: certified || null },
+          null,
+        ),
       t("saved"),
     );
   }
@@ -297,13 +341,17 @@ export function SkillManager({
                   {s.certifiedOn ? ` · ${t("certified", { date: format.date(s.certifiedOn) })}` : ""}
                 </p>
               </div>
-              <Badge tone={s.level === "expert" ? "success" : s.level === "competent" ? "info" : "neutral"}>{tLevel(s.level)}</Badge>
+              <Badge tone={s.level === "expert" ? "success" : s.level === "competent" ? "info" : "neutral"}>
+                {tLevel(s.level)}
+              </Badge>
               {canEdit ? (
                 <IconButton
                   name="trash"
                   size="sm"
                   label={t("remove", { name: s.user.name, machine: s.machine.name })}
-                  onClick={() => void run(() => erpDelete(factoryId, "/operator-skills/{skillId}", { skillId: s.id }), t("removed"))}
+                  onClick={() =>
+                    void run(() => erpDelete(factoryId, "/operator-skills/{skillId}", { skillId: s.id }), t("removed"))
+                  }
                 />
               ) : null}
             </li>
@@ -315,13 +363,27 @@ export function SkillManager({
       {canEdit ? (
         <div className="border-border grid gap-3 rounded-xl border p-4 md:grid-cols-4">
           <Field label={t("person")}>
-            <Select value={userId || null} placeholder={t("choose")} onValueChange={setUserId} options={people.map((p) => ({ value: p.id, label: p.label }))} />
+            <Select
+              value={userId || null}
+              placeholder={t("choose")}
+              onValueChange={setUserId}
+              options={people.map((p) => ({ value: p.id, label: p.label }))}
+            />
           </Field>
           <Field label={t("machine")}>
-            <Select value={machineId || null} placeholder={t("choose")} onValueChange={setMachineId} options={machines.map((m) => ({ value: m.id, label: m.label }))} />
+            <Select
+              value={machineId || null}
+              placeholder={t("choose")}
+              onValueChange={setMachineId}
+              options={machines.map((m) => ({ value: m.id, label: m.label }))}
+            />
           </Field>
           <Field label={t("level")}>
-            <Select value={level} onValueChange={(v) => setLevel(v as Level)} options={(["learner", "competent", "expert"] as const).map((l) => ({ value: l, label: tLevel(l) }))} />
+            <Select
+              value={level}
+              onValueChange={(v) => setLevel(v as Level)}
+              options={(["learner", "competent", "expert"] as const).map((l) => ({ value: l, label: tLevel(l) }))}
+            />
           </Field>
           <Field label={t("certifiedOn")}>
             <Input type="date" value={certified} onChange={(e) => setCertified(e.target.value)} />
@@ -355,7 +417,10 @@ export function SupportGrants({ grants }: { grants: Grant[] }) {
       toast.error(t("invalid"));
       return;
     }
-    const done = await run(() => erpPost(factoryId, "/support-grants", {}, { reason: reason.trim(), days: n }, { idempotencyKey: key }), t("granted"));
+    const done = await run(
+      () => erpPost(factoryId, "/support-grants", {}, { reason: reason.trim(), days: n }, { idempotencyKey: key }),
+      t("granted"),
+    );
     if (done) {
       setReason("");
       setKey(newIdempotencyKey());
@@ -389,10 +454,21 @@ export function SupportGrants({ grants }: { grants: Grant[] }) {
       ) : (
         <div className="border-border grid gap-3 rounded-xl border p-4 sm:grid-cols-[1fr_10rem]">
           <Field label={t("reason")} hint={t("reasonHint")}>
-            <Textarea rows={2} value={reason} placeholder={t("reasonPlaceholder")} onChange={(e) => setReason(e.target.value)} />
+            <Textarea
+              rows={2}
+              value={reason}
+              placeholder={t("reasonPlaceholder")}
+              onChange={(e) => setReason(e.target.value)}
+            />
           </Field>
           <Field label={t("days")} hint={t("daysHint")}>
-            <SegmentedControl label={t("days")} size="md" value={days} onValueChange={setDays} options={["1", "3", "7"].map((d) => ({ value: d, label: t("dayCount", { n: Number(d) }) }))} />
+            <SegmentedControl
+              label={t("days")}
+              size="md"
+              value={days}
+              onValueChange={setDays}
+              options={["1", "3", "7"].map((d) => ({ value: d, label: t("dayCount", { n: Number(d) }) }))}
+            />
           </Field>
           <Button iconStart="shield" loading={busy} className="self-start" onClick={() => void grant()}>
             {t("grant")}
@@ -405,10 +481,17 @@ export function SupportGrants({ grants }: { grants: Grant[] }) {
             <li key={g.id} className="flex flex-col gap-1 px-4 py-3">
               <p className="flex flex-wrap items-center gap-2 font-medium">
                 {g.reason}
-                <Badge tone={g.active ? "warning" : "neutral"}>{g.active ? t("active") : g.revokedAt ? t("revokedBadge") : t("expired")}</Badge>
+                <Badge tone={g.active ? "warning" : "neutral"}>
+                  {g.active ? t("active") : g.revokedAt ? t("revokedBadge") : t("expired")}
+                </Badge>
               </p>
               <p className="text-muted text-sm">
-                {t("line", { by: g.grantedBy, at: format.dateTime(g.createdAt), until: format.dateTime(g.expiresAt), views: g.viewCount })}
+                {t("line", {
+                  by: g.grantedBy,
+                  at: format.dateTime(g.createdAt),
+                  until: format.dateTime(g.expiresAt),
+                  views: g.viewCount,
+                })}
               </p>
               {g.views.length ? (
                 <ul className="text-muted list-disc ps-5 text-sm">

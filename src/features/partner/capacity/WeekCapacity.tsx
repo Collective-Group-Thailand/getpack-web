@@ -85,7 +85,12 @@ export function WeekCapacity({
               <Input inputMode="numeric" value={value} onChange={(e) => setValue(e.target.value)} />
             </Field>
             <Field label={t("reason")}>
-              <Input value={reason} maxLength={200} placeholder={t("reasonPlaceholder")} onChange={(e) => setReason(e.target.value)} />
+              <Input
+                value={reason}
+                maxLength={200}
+                placeholder={t("reasonPlaceholder")}
+                onChange={(e) => setReason(e.target.value)}
+              />
             </Field>
           </div>
         </Dialog>

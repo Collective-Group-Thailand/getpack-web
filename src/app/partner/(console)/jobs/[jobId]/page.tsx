@@ -104,7 +104,10 @@ export default async function JobPage({ params }: Props) {
             async () =>
               (
                 await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders", {
-                  params: { path: { factoryId: context.factoryId }, query: { q: job.jobNo, source: "getpack_job", perPage: 5 } },
+                  params: {
+                    path: { factoryId: context.factoryId },
+                    query: { q: job.jobNo, source: "getpack_job", perPage: 5 },
+                  },
                 })
               ).data!.data.find((order) => order.title.startsWith(job.jobNo)) ?? null,
           )
@@ -162,7 +165,10 @@ export default async function JobPage({ params }: Props) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">{t("erpTitle")}</h2>
             {mo ? (
-              <Link href={`/planning/orders/${mo.id}`} className="text-primary text-sm font-medium underline underline-offset-2">
+              <Link
+                href={`/planning/orders/${mo.id}`}
+                className="text-primary text-sm font-medium underline underline-offset-2"
+              >
                 {t("erpOpen", { no: mo.moNo })}
               </Link>
             ) : null}

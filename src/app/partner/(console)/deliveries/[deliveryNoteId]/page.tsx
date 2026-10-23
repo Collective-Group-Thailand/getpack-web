@@ -85,7 +85,10 @@ export default async function DeliveryPage({ params }: Props) {
               ? [
                   {
                     term: t("facts.delivered"),
-                    description: t("receivedLine", { name: doc.receivedBy ?? "", at: format.dateTime(doc.deliveredAt) }),
+                    description: t("receivedLine", {
+                      name: doc.receivedBy ?? "",
+                      at: format.dateTime(doc.deliveredAt),
+                    }),
                   },
                 ]
               : []),

@@ -47,7 +47,7 @@ export function MobileBottomNav() {
                 {/* One-line labels, the current tab on a sage-tinted control (the "Mobile — navbar" board). */}
                 <span
                   className={cn(
-                    "grid h-7 w-12 place-items-center rounded-control",
+                    "rounded-control grid h-7 w-12 place-items-center",
                     current && "bg-primary-subtle text-primary-subtle-fg",
                   )}
                 >

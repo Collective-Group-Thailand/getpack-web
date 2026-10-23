@@ -223,7 +223,12 @@ test.describe("cart and checkout", () => {
       await route.fulfill({
         status: 502,
         contentType: "application/problem+json",
-        body: JSON.stringify({ type: "about:blank", title: "Bad gateway", status: 502, code: "payments.provider_error" }),
+        body: JSON.stringify({
+          type: "about:blank",
+          title: "Bad gateway",
+          status: 502,
+          code: "payments.provider_error",
+        }),
       });
     });
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
@@ -232,7 +237,8 @@ test.describe("cart and checkout", () => {
     await expect(page).toHaveURL(/\/account\/orders.*payment=not_started/);
     await expect(page.getByText("สร้างคำสั่งซื้อแล้ว แต่ยังเริ่มชำระเงินไม่สำเร็จ")).toBeVisible();
     expect(keys.length).toBeGreaterThan(0);
-    for (const key of keys) expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    for (const key of keys)
+      expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
     await page.unroute("**/bff/v1/store/order-groups/*/payments");
   });
 

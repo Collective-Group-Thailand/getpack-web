@@ -58,8 +58,7 @@ export default async function SignInPage({
       }
       topEnd={
         <span className="text-muted">
-          {t("panel.newHere")}{" "}
-          <span className="text-fg font-semibold">{t("panel.newHereAction")}</span>
+          {t("panel.newHere")} <span className="text-fg font-semibold">{t("panel.newHereAction")}</span>
         </span>
       }
     >

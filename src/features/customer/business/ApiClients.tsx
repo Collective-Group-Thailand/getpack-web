@@ -80,7 +80,10 @@ export function ApiClients({ companyId, initial }: { companyId: string; initial:
 
   return (
     <div className="flex flex-col gap-8">
-      <section aria-labelledby="api-issue" className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
+      <section
+        aria-labelledby="api-issue"
+        className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4"
+      >
         <h2 id="api-issue" className="font-semibold">
           {t("issueTitle")}
         </h2>

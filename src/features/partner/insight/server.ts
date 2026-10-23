@@ -22,9 +22,13 @@ const quiet = async <T>(read: () => Promise<T>, fallback: T): Promise<T> => {
 };
 
 export async function erpMachines(contract: Contract, factoryId: string): Promise<Option[]> {
-  const { data } = await contract.GET("/v1/partner/factories/{factoryId}/erp/machine-rates", { params: { path: { factoryId } } });
+  const { data } = await contract.GET("/v1/partner/factories/{factoryId}/erp/machine-rates", {
+    params: { path: { factoryId } },
+  });
   if (data) return data.map((r) => ({ id: r.machine.id, label: r.machine.name }));
-  const machines = await contract.GET("/v1/partner/factories/{factoryId}/erp/machines", { params: { path: { factoryId } } });
+  const machines = await contract.GET("/v1/partner/factories/{factoryId}/erp/machines", {
+    params: { path: { factoryId } },
+  });
   return (machines.data ?? []).map((m) => ({ id: m.id, label: m.name }));
 }
 
@@ -34,9 +38,33 @@ export async function qualityPickers(factoryId: string) {
   return attempt(async () => {
     const [items, templates, orders, receipts, machines, people, customers, suppliers, warehouses] = await Promise.all([
       quiet(() => erpItems(contract, factoryId), []),
-      quiet(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/inspection-templates", { params: { path, query: { perPage: 100 } } })).data?.data ?? [], []),
-      quiet(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders", { params: { path, query: { perPage: 100 } } })).data?.data ?? [], []),
-      quiet(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/goods-receipts", { params: { path, query: { perPage: 50 } } })).data?.data ?? [], []),
+      quiet(
+        async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/inspection-templates", {
+              params: { path, query: { perPage: 100 } },
+            })
+          ).data?.data ?? [],
+        [],
+      ),
+      quiet(
+        async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders", {
+              params: { path, query: { perPage: 100 } },
+            })
+          ).data?.data ?? [],
+        [],
+      ),
+      quiet(
+        async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/goods-receipts", {
+              params: { path, query: { perPage: 50 } },
+            })
+          ).data?.data ?? [],
+        [],
+      ),
       quiet(() => erpMachines(contract, factoryId), []),
       quiet(() => erpSalespeople(contract, factoryId), []),
       quiet(() => erpCustomers(contract, factoryId), []),
@@ -54,7 +82,9 @@ export async function qualityPickers(factoryId: string) {
       people: people.map((p) => ({ id: p.id, label: p.name })),
       customers: customers.map((c) => ({ id: c.id, label: c.name, hint: c.code })),
       suppliers: suppliers.filter((s) => s.status === "active").map((s) => ({ id: s.id, label: s.name, hint: s.code })),
-      warehouses: warehouses.filter((w) => w.status === "active").map((w) => ({ id: w.id, label: w.name, hint: w.code })),
+      warehouses: warehouses
+        .filter((w) => w.status === "active")
+        .map((w) => ({ id: w.id, label: w.name, hint: w.code })),
     };
   });
 }

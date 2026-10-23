@@ -31,11 +31,7 @@ export default async function EditRfqPage({ params }: { params: Promise<{ rfqId:
   });
   const back = { href: `/purchasing/rfqs/${rfqId}`, label: t("title") };
   return (
-    <PartnerPage
-      wide
-      title={read.data ? t("editTitle", { no: read.data.rfq.rfqNo }) : t("title")}
-      back={back}
-    >
+    <PartnerPage wide title={read.data ? t("editTitle", { no: read.data.rfq.rfqNo }) : t("title")} back={back}>
       {read.data ? (
         <RfqForm
           rfq={read.data.rfq}

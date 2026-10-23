@@ -47,16 +47,33 @@ export function CategoryButton({ accounts, category }: { accounts: AccountOption
   const options = accounts.filter((a) => !a.control).map((a) => ({ value: a.id, label: a.label }));
   const pick = (label: string, value: string | null, set: (v: string) => void) => (
     <Field label={label} required>
-      <Select value={value} options={options} placeholder={tc("accountPlaceholder")} onValueChange={set} aria-label={label} />
+      <Select
+        value={value}
+        options={options}
+        placeholder={tc("accountPlaceholder")}
+        onValueChange={set}
+        aria-label={label}
+      />
     </Field>
   );
 
   async function save() {
     const n = Number(life);
-    if (!name.trim() || !(n >= 1 && n <= 600) || !asset || !accumulated || !expense || !gainLoss) return toast.error(t("invalid"));
-    const body = { name: name.trim(), usefulLifeMonths: n, assetAccountCode: asset, accumulatedAccountCode: accumulated, expenseAccountCode: expense, gainLossAccountCode: gainLoss };
+    if (!name.trim() || !(n >= 1 && n <= 600) || !asset || !accumulated || !expense || !gainLoss)
+      return toast.error(t("invalid"));
+    const body = {
+      name: name.trim(),
+      usefulLifeMonths: n,
+      assetAccountCode: asset,
+      accumulatedAccountCode: accumulated,
+      expenseAccountCode: expense,
+      gainLossAccountCode: gainLoss,
+    };
     const done = await run(
-      () => (category ? erpSave("PUT", factoryId, "/ledger/asset-categories/{categoryId}", { categoryId: category.id }, body, null) : erpPost(factoryId, "/ledger/asset-categories", {}, body)),
+      () =>
+        category
+          ? erpSave("PUT", factoryId, "/ledger/asset-categories/{categoryId}", { categoryId: category.id }, body, null)
+          : erpPost(factoryId, "/ledger/asset-categories", {}, body),
       t("saved"),
     );
     if (done) setOpen(false);
@@ -64,7 +81,12 @@ export function CategoryButton({ accounts, category }: { accounts: AccountOption
 
   return (
     <>
-      <Button size={category ? "sm" : "md"} variant="secondary" iconStart={category ? "edit" : "plus"} onClick={() => setOpen(true)}>
+      <Button
+        size={category ? "sm" : "md"}
+        variant="secondary"
+        iconStart={category ? "edit" : "plus"}
+        onClick={() => setOpen(true)}
+      >
         {category ? t("editCategory") : t("newCategory")}
       </Button>
       {open ? (
@@ -120,20 +142,34 @@ export function AssetButton({ categories, machines }: { categories: Category[]; 
   const money = (v: string) => (v ? plainNumber(v) : undefined);
 
   async function save() {
-    if (!categoryId || !name.trim() || !DAY.test(acquiredOn) || !satang(cost) || (salvage && satang(salvage) === null) || (opening && satang(opening) === null)) return toast.error(t("invalid"));
+    if (
+      !categoryId ||
+      !name.trim() ||
+      !DAY.test(acquiredOn) ||
+      !satang(cost) ||
+      (salvage && satang(salvage) === null) ||
+      (opening && satang(opening) === null)
+    )
+      return toast.error(t("invalid"));
     const done = await run(
       () =>
-        erpPost(factoryId, "/ledger/fixed-assets", {}, {
-          categoryId,
-          name: name.trim(),
-          acquiredOn,
-          cost: plainNumber(cost),
-          ...(money(salvage) ? { salvageValue: money(salvage) } : {}),
-          ...(life ? { usefulLifeMonths: Number(life) } : {}),
-          ...(start ? { depreciationStart: start } : {}),
-          ...(money(opening) ? { openingAccumulated: money(opening) } : {}),
-          machineId,
-        }, { idempotencyKey: key }),
+        erpPost(
+          factoryId,
+          "/ledger/fixed-assets",
+          {},
+          {
+            categoryId,
+            name: name.trim(),
+            acquiredOn,
+            cost: plainNumber(cost),
+            ...(money(salvage) ? { salvageValue: money(salvage) } : {}),
+            ...(life ? { usefulLifeMonths: Number(life) } : {}),
+            ...(start ? { depreciationStart: start } : {}),
+            ...(money(opening) ? { openingAccumulated: money(opening) } : {}),
+            machineId,
+          },
+          { idempotencyKey: key },
+        ),
       t("registered"),
     );
     if (done) setOpen(false);
@@ -162,7 +198,12 @@ export function AssetButton({ categories, machines }: { categories: Category[]; 
               <Input value={name} maxLength={200} onChange={(e) => setName(e.target.value)} />
             </Field>
             <Field label={t("category")} required>
-              <Select value={categoryId} options={categories.map((c) => ({ value: c.id, label: c.name, description: `${c.usefulLifeMonths}` }))} onValueChange={setCategoryId} aria-label={t("category")} />
+              <Select
+                value={categoryId}
+                options={categories.map((c) => ({ value: c.id, label: c.name, description: `${c.usefulLifeMonths}` }))}
+                onValueChange={setCategoryId}
+                aria-label={t("category")}
+              />
             </Field>
             <Field label={t("acquiredOn")} required>
               <Input type="date" value={acquiredOn} onChange={(e) => setAcquiredOn(e.target.value)} />
@@ -171,20 +212,41 @@ export function AssetButton({ categories, machines }: { categories: Category[]; 
               <Input inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} className="text-end" />
             </Field>
             <Field label={t("salvage")}>
-              <Input inputMode="decimal" value={salvage} onChange={(e) => setSalvage(e.target.value)} className="text-end" />
+              <Input
+                inputMode="decimal"
+                value={salvage}
+                onChange={(e) => setSalvage(e.target.value)}
+                className="text-end"
+              />
             </Field>
             <Field label={t("life")}>
-              <Input inputMode="numeric" value={life} placeholder={String(categories.find((c) => c.id === categoryId)?.usefulLifeMonths ?? "")} onChange={(e) => setLife(e.target.value)} />
+              <Input
+                inputMode="numeric"
+                value={life}
+                placeholder={String(categories.find((c) => c.id === categoryId)?.usefulLifeMonths ?? "")}
+                onChange={(e) => setLife(e.target.value)}
+              />
             </Field>
             <Field label={t("start")} hint={t("startHint")}>
               <Input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
             </Field>
             <Field label={t("opening")} hint={t("openingHint")}>
-              <Input inputMode="decimal" value={opening} onChange={(e) => setOpening(e.target.value)} className="text-end" />
+              <Input
+                inputMode="decimal"
+                value={opening}
+                onChange={(e) => setOpening(e.target.value)}
+                className="text-end"
+              />
             </Field>
             {machines.length ? (
               <Field label={t("machine")}>
-                <Select value={machineId} options={machines.map((m) => ({ value: m.id, label: m.label }))} placeholder={tc("none")} onValueChange={setMachineId} aria-label={t("machine")} />
+                <Select
+                  value={machineId}
+                  options={machines.map((m) => ({ value: m.id, label: m.label }))}
+                  placeholder={tc("none")}
+                  onValueChange={setMachineId}
+                  aria-label={t("machine")}
+                />
               </Field>
             ) : null}
           </div>
@@ -226,7 +288,13 @@ export function DisposeAsset({ asset, etag, banks }: { asset: Asset; etag: strin
                 if (!DAY.test(date) || satang(proceeds || "0") === null) return toast.error(t("invalid"));
                 const done = await run(
                   () =>
-                    erpPost(factoryId, "/ledger/fixed-assets/{assetId}/actions/dispose", { assetId: asset.id }, { disposedOn: date, proceeds: plainNumber(proceeds || "0"), bankAccountId: bankId }, { idempotencyKey: key, etag }),
+                    erpPost(
+                      factoryId,
+                      "/ledger/fixed-assets/{assetId}/actions/dispose",
+                      { assetId: asset.id },
+                      { disposedOn: date, proceeds: plainNumber(proceeds || "0"), bankAccountId: bankId },
+                      { idempotencyKey: key, etag },
+                    ),
                   t("disposed"),
                 );
                 if (done) setOpen(false);
@@ -241,11 +309,21 @@ export function DisposeAsset({ asset, etag, banks }: { asset: Asset; etag: strin
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </Field>
             <Field label={t("proceeds")}>
-              <Input inputMode="decimal" value={proceeds} onChange={(e) => setProceeds(e.target.value)} className="text-end" />
+              <Input
+                inputMode="decimal"
+                value={proceeds}
+                onChange={(e) => setProceeds(e.target.value)}
+                className="text-end"
+              />
             </Field>
             {banks.length ? (
               <Field label={t("bank")}>
-                <Select value={bankId} options={banks.map((b) => ({ value: b.id, label: b.label }))} onValueChange={setBankId} aria-label={t("bank")} />
+                <Select
+                  value={bankId}
+                  options={banks.map((b) => ({ value: b.id, label: b.label }))}
+                  onValueChange={setBankId}
+                  aria-label={t("bank")}
+                />
               </Field>
             ) : null}
           </div>
@@ -281,7 +359,17 @@ export function RunDepreciation({ month }: { month: string }) {
               iconStart="calculator"
               loading={busy}
               onClick={async () => {
-                const done = await run(() => erpPost<{ total: string }>(factoryId, "/ledger/depreciation-runs", {}, { month }, { idempotencyKey: key }), (r) => t("runDone", { total: format.thb(r.total) }));
+                const done = await run(
+                  () =>
+                    erpPost<{ total: string }>(
+                      factoryId,
+                      "/ledger/depreciation-runs",
+                      {},
+                      { month },
+                      { idempotencyKey: key },
+                    ),
+                  (r) => t("runDone", { total: format.thb(r.total) }),
+                );
                 if (done) setOpen(false);
               }}
             >
@@ -313,9 +401,18 @@ export function BankAccountButton({ bank }: { bank?: Bank }) {
 
   async function save() {
     if (!name.trim() || !bankName.trim() || !/^\d{4}$/.test(last4)) return toast.error(t("invalid"));
-    const body = { name: name.trim(), bankName: bankName.trim(), accountNoLast4: last4, isDefault, ...(bank ? { status: inactive ? "inactive" : "active" } : {}) };
+    const body = {
+      name: name.trim(),
+      bankName: bankName.trim(),
+      accountNoLast4: last4,
+      isDefault,
+      ...(bank ? { status: inactive ? "inactive" : "active" } : {}),
+    };
     const done = await run(
-      () => (bank ? erpSave("PUT", factoryId, "/ledger/bank-accounts/{bankAccountId}", { bankAccountId: bank.id }, body, null) : erpPost(factoryId, "/ledger/bank-accounts", {}, body)),
+      () =>
+        bank
+          ? erpSave("PUT", factoryId, "/ledger/bank-accounts/{bankAccountId}", { bankAccountId: bank.id }, body, null)
+          : erpPost(factoryId, "/ledger/bank-accounts", {}, body),
       t("saved"),
     );
     if (done) setOpen(false);
@@ -323,7 +420,12 @@ export function BankAccountButton({ bank }: { bank?: Bank }) {
 
   return (
     <>
-      <Button size={bank ? "sm" : "lg"} variant={bank ? "secondary" : "primary"} iconStart={bank ? "edit" : "plus"} onClick={() => setOpen(true)}>
+      <Button
+        size={bank ? "sm" : "lg"}
+        variant={bank ? "secondary" : "primary"}
+        iconStart={bank ? "edit" : "plus"}
+        onClick={() => setOpen(true)}
+      >
         {bank ? t("editAccount") : t("newAccount")}
       </Button>
       {open ? (
@@ -347,11 +449,19 @@ export function BankAccountButton({ bank }: { bank?: Bank }) {
                 <Input value={bankName} maxLength={50} onChange={(e) => setBankName(e.target.value)} />
               </Field>
               <Field label={t("last4")} required>
-                <Input inputMode="numeric" maxLength={4} value={last4} onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))} className="font-mono" />
+                <Input
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={last4}
+                  onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))}
+                  className="font-mono"
+                />
               </Field>
             </div>
             <Checkbox label={t("isDefault")} checked={isDefault} onCheckedChange={(on) => setIsDefault(on === true)} />
-            {bank ? <Checkbox label={t("inactive")} checked={inactive} onCheckedChange={(on) => setInactive(on === true)} /> : null}
+            {bank ? (
+              <Checkbox label={t("inactive")} checked={inactive} onCheckedChange={(on) => setInactive(on === true)} />
+            ) : null}
           </div>
         </Dialog>
       ) : null}
@@ -360,9 +470,15 @@ export function BankAccountButton({ bank }: { bank?: Bank }) {
 }
 
 /** Parses pasted rows "date,amount,description,reference" (one per line). */
-function parseRows(text: string): { rows: { txnDate: string; amount: string; description: string; reference: string | null }[]; bad: number | null } {
+function parseRows(text: string): {
+  rows: { txnDate: string; amount: string; description: string; reference: string | null }[];
+  bad: number | null;
+} {
   const rows = [];
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
   for (const [i, line] of lines.entries()) {
     const [date, amount, description, ...rest] = line.split(",").map((x) => x.trim());
     const value = plainNumber(amount ?? "");
@@ -397,7 +513,14 @@ export function ImportStatement({ bank }: { bank: Bank }) {
       body = { rows };
     }
     const done = await run(
-      () => erpPost<{ imported: number; duplicates: number; autoMatched: number }>(factoryId, "/ledger/bank-accounts/{bankAccountId}/statements", { bankAccountId: bank.id }, body, { idempotencyKey: key }),
+      () =>
+        erpPost<{ imported: number; duplicates: number; autoMatched: number }>(
+          factoryId,
+          "/ledger/bank-accounts/{bankAccountId}/statements",
+          { bankAccountId: bank.id },
+          body,
+          { idempotencyKey: key },
+        ),
       (r) => t("imported", r),
     );
     if (done) {
@@ -429,12 +552,23 @@ export function ImportStatement({ bank }: { bank: Bank }) {
           <div className="grid gap-3">
             <Field label={t("file")}>
               <span className="flex flex-wrap items-center gap-2">
-                <FilePickButton label={t("chooseCsv")} accept=".csv,text/csv" icon="document" onFiles={([chosen]) => setFile(chosen ?? null)} />
+                <FilePickButton
+                  label={t("chooseCsv")}
+                  accept=".csv,text/csv"
+                  icon="document"
+                  onFiles={([chosen]) => setFile(chosen ?? null)}
+                />
                 {file ? <span className="text-muted text-sm">{file.name}</span> : null}
               </span>
             </Field>
             <Field label={t("paste")}>
-              <Textarea rows={6} value={text} placeholder={t("pastePlaceholder")} onChange={(e) => setText(e.target.value)} className="font-mono text-sm" />
+              <Textarea
+                rows={6}
+                value={text}
+                placeholder={t("pastePlaceholder")}
+                onChange={(e) => setText(e.target.value)}
+                className="font-mono text-sm"
+              />
             </Field>
           </div>
         </Dialog>
@@ -455,7 +589,14 @@ export function MatchBankLine({ line }: { line: Line }) {
   const out = line.amount.startsWith("-");
   const match = async (targetType: string, targetId?: string | null) => {
     const done = await run(
-      () => erpPost(factoryId, "/ledger/bank-lines/{lineId}/actions/match", { lineId: line.id }, { targetType, ...(targetId ? { targetId } : {}) }, { idempotencyKey: key }),
+      () =>
+        erpPost(
+          factoryId,
+          "/ledger/bank-lines/{lineId}/actions/match",
+          { lineId: line.id },
+          { targetType, ...(targetId ? { targetId } : {}) },
+          { idempotencyKey: key },
+        ),
       t("matched"),
     );
     if (done) setOpen(false);
@@ -480,7 +621,10 @@ export function MatchBankLine({ line }: { line: Line }) {
               {line.candidates.length ? (
                 <ul className="border-border divide-border divide-y rounded-lg border">
                   {line.candidates.map((c) => (
-                    <li key={c.targetId ?? c.targetNo} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                    <li
+                      key={c.targetId ?? c.targetNo}
+                      className="flex items-center justify-between gap-2 px-3 py-2 text-sm"
+                    >
                       <span>
                         {t(`targets.${c.targetType}` as never)} <span className="font-mono">{c.targetNo}</span>
                       </span>
@@ -494,7 +638,12 @@ export function MatchBankLine({ line }: { line: Line }) {
                 <p className="text-muted text-sm">{t("noCandidates")}</p>
               )}
             </section>
-            <Button variant="secondary" iconStart={out ? "receipt" : "coins"} loading={busy} onClick={() => void match(out ? "bank_fee" : "interest")}>
+            <Button
+              variant="secondary"
+              iconStart={out ? "receipt" : "coins"}
+              loading={busy}
+              onClick={() => void match(out ? "bank_fee" : "interest")}
+            >
               {out ? t("asFee") : t("asInterest")}
             </Button>
           </div>

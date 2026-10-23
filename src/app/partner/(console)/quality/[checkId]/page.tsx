@@ -65,10 +65,26 @@ export default async function CheckPage({ params }: { params: Promise<{ checkId:
           items={[
             ...(check.item ? [{ term: t("item"), description: `${check.item.name} (${check.item.sku})` }] : []),
             ...(check.productionOrder
-              ? [{ term: t("order"), description: <Link className="text-link underline" href={`/planning/orders/${check.productionOrder.id}`}>{check.productionOrder.number}</Link> }]
+              ? [
+                  {
+                    term: t("order"),
+                    description: (
+                      <Link className="text-link underline" href={`/planning/orders/${check.productionOrder.id}`}>
+                        {check.productionOrder.number}
+                      </Link>
+                    ),
+                  },
+                ]
               : []),
             ...(check.operation ? [{ term: t("operation"), description: check.operation }] : []),
-            ...(check.goodsReceipt ? [{ term: t("receipt"), description: `${check.goodsReceipt.number}${check.lineNo ? ` · ${t("line", { n: check.lineNo })}` : ""}` }] : []),
+            ...(check.goodsReceipt
+              ? [
+                  {
+                    term: t("receipt"),
+                    description: `${check.goodsReceipt.number}${check.lineNo ? ` · ${t("line", { n: check.lineNo })}` : ""}`,
+                  },
+                ]
+              : []),
             ...(check.supplier ? [{ term: t("supplier"), description: check.supplier.name }] : []),
             ...(check.template ? [{ term: t("template"), description: check.template.name }] : []),
             ...(check.lotNo ? [{ term: t("lotNo"), description: check.lotNo }] : []),
@@ -83,7 +99,9 @@ export default async function CheckPage({ params }: { params: Promise<{ checkId:
               }),
             },
             ...(check.remarks ? [{ term: t("remarks"), description: check.remarks }] : []),
-            ...(check.photos.length ? [{ term: t("photos"), description: check.photos.map((p) => p.name).join(", ") }] : []),
+            ...(check.photos.length
+              ? [{ term: t("photos"), description: check.photos.map((p) => p.name).join(", ") }]
+              : []),
           ]}
         />
       </Card>
@@ -92,7 +110,10 @@ export default async function CheckPage({ params }: { params: Promise<{ checkId:
           <ul className="flex flex-wrap gap-2">
             {check.ncrs.map((n) => (
               <li key={n.id}>
-                <Link className="border-border hover:bg-surface-subtle inline-flex min-h-11 items-center gap-2 rounded-lg border px-3" href={`/quality/ncrs/${n.id}`}>
+                <Link
+                  className="border-border hover:bg-surface-subtle inline-flex min-h-11 items-center gap-2 rounded-lg border px-3"
+                  href={`/quality/ncrs/${n.id}`}
+                >
                   <span className="font-mono">{n.ncrNo}</span>
                   <StatusChip map={ERP_NCR_STATUS} value={n.status} />
                 </Link>
@@ -121,12 +142,31 @@ export default async function CheckPage({ params }: { params: Promise<{ checkId:
                       ? t("passFail")
                       : t("noteOnly"),
               },
-              { key: "m", header: t("reading"), align: "end", cell: (row) => (row.measured ? `${trimZeros(row.measured)} ${row.unit ?? ""}` : "—") },
+              {
+                key: "m",
+                header: t("reading"),
+                align: "end",
+                cell: (row) => (row.measured ? `${trimZeros(row.measured)} ${row.unit ?? ""}` : "—"),
+              },
               {
                 key: "o",
                 header: t("outcome"),
                 cell: (row) =>
-                  row.outcome ? <span className={row.outcome === "fail" ? "text-danger font-semibold" : row.outcome === "pass" ? "text-success" : undefined}>{tOutcome(row.outcome)}</span> : "—",
+                  row.outcome ? (
+                    <span
+                      className={
+                        row.outcome === "fail"
+                          ? "text-danger font-semibold"
+                          : row.outcome === "pass"
+                            ? "text-success"
+                            : undefined
+                      }
+                    >
+                      {tOutcome(row.outcome)}
+                    </span>
+                  ) : (
+                    "—"
+                  ),
               },
               { key: "note", header: t("note"), hideOnPhone: true, cell: (row) => row.note ?? "" },
             ]}

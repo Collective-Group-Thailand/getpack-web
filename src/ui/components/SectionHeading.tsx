@@ -33,10 +33,7 @@ export function SectionHeading({
       <div className="max-w-2xl">
         <Heading
           id={id}
-          className={cn(
-            "text-2xl leading-tight font-semibold md:text-3xl",
-            inverse && "text-fg-inverse",
-          )}
+          className={cn("text-2xl leading-tight font-semibold md:text-3xl", inverse && "text-fg-inverse")}
         >
           {title}
         </Heading>

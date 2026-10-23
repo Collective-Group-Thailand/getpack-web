@@ -19,10 +19,19 @@ export async function generateMetadata(): Promise<Metadata> {
  * machines and yesterday's OEE, quality and follow-ups — each figure opening the list behind it.
  */
 export default async function DashboardPage() {
-  const [t, format, context] = await Promise.all([getTranslations("partnerInsight.dashboard"), getFormat(), factoryContext()]);
+  const [t, format, context] = await Promise.all([
+    getTranslations("partnerInsight.dashboard"),
+    getFormat(),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const read = await attempt(
-    async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/dashboard", { params: { path: { factoryId: context.factoryId } } })).data!,
+    async () =>
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/erp/dashboard", {
+          params: { path: { factoryId: context.factoryId } },
+        })
+      ).data!,
   );
   if (!read.data)
     return (
@@ -82,7 +91,9 @@ export default async function DashboardPage() {
               key: "sales",
               label: t("salesOwn"),
               value: format.thb(d.sales.invoicedNet),
-              hint: d.sales.achievementPct ? t("ofTarget", { pct: pct(d.sales.achievementPct), target: format.thb(d.sales.target) }) : t("noTarget"),
+              hint: d.sales.achievementPct
+                ? t("ofTarget", { pct: pct(d.sales.achievementPct), target: format.thb(d.sales.target) })
+                : t("noTarget"),
               tone: d.sales.achievementPct && Number(d.sales.achievementPct) >= 100 ? "success" : "neutral",
               href: "/insight/profit?by=customer",
             },
@@ -90,7 +101,10 @@ export default async function DashboardPage() {
               key: "ar",
               label: t("receivables"),
               value: format.thb(d.receivables.open),
-              hint: Number(d.receivables.overdue) > 0 ? t("overdue", { amount: format.thb(d.receivables.overdue), n: d.receivables.overdueInvoices }) : t("noneOverdue"),
+              hint:
+                Number(d.receivables.overdue) > 0
+                  ? t("overdue", { amount: format.thb(d.receivables.overdue), n: d.receivables.overdueInvoices })
+                  : t("noneOverdue"),
               tone: Number(d.receivables.overdue) > 0 ? "danger" : "success",
               href: "/receivables",
             },
@@ -98,11 +112,21 @@ export default async function DashboardPage() {
               key: "ap",
               label: t("payables"),
               value: format.thb(d.payables.dueThisWeek),
-              hint: Number(d.payables.overdueAmount) > 0 ? t("apOverdue", { amount: format.thb(d.payables.overdueAmount) }) : t("apWeek", { n: d.payables.dueThisWeekCount }),
+              hint:
+                Number(d.payables.overdueAmount) > 0
+                  ? t("apOverdue", { amount: format.thb(d.payables.overdueAmount) })
+                  : t("apWeek", { n: d.payables.dueThisWeekCount }),
               tone: Number(d.payables.overdueAmount) > 0 ? "warning" : "neutral",
               href: "/payables",
             },
-            { key: "stock", label: t("stockValue"), value: format.thb(d.stock.value), hint: t("lowItems", { n: d.stock.lowItems }), tone: d.stock.lowItems ? "warning" : "neutral", href: "/stock" },
+            {
+              key: "stock",
+              label: t("stockValue"),
+              value: format.thb(d.stock.value),
+              hint: t("lowItems", { n: d.stock.lowItems }),
+              tone: d.stock.lowItems ? "warning" : "neutral",
+              href: "/stock",
+            },
           ]}
         />
       </PartnerSection>
@@ -110,8 +134,21 @@ export default async function DashboardPage() {
         <StatStrip
           label={t("operations")}
           items={[
-            { key: "wip", label: t("inProgress"), value: format.number(d.production.inProgress), hint: t("completed", { n: d.production.completedThisMonth }), href: "/planning" },
-            { key: "late", label: t("late"), value: format.number(d.production.late), tone: d.production.late ? "danger" : "success", hint: d.production.late ? t("lateHint") : t("onTime"), href: "/planning" },
+            {
+              key: "wip",
+              label: t("inProgress"),
+              value: format.number(d.production.inProgress),
+              hint: t("completed", { n: d.production.completedThisMonth }),
+              href: "/planning",
+            },
+            {
+              key: "late",
+              label: t("late"),
+              value: format.number(d.production.late),
+              tone: d.production.late ? "danger" : "success",
+              hint: d.production.late ? t("lateHint") : t("onTime"),
+              href: "/planning",
+            },
             {
               key: "machines",
               label: t("machines"),
@@ -148,7 +185,12 @@ export default async function DashboardPage() {
             rowHref={(row) => `/planning/orders/${row.order.id}`}
             rowTone={() => "danger"}
             columns={[
-              { key: "no", header: t("order"), primary: true, cell: (row) => <span className="font-mono">{row.order.number}</span> },
+              {
+                key: "no",
+                header: t("order"),
+                primary: true,
+                cell: (row) => <span className="font-mono">{row.order.number}</span>,
+              },
               { key: "title", header: t("orderTitle"), cell: (row) => row.title },
               { key: "due", header: t("due"), cell: (row) => format.date(row.dueOn) },
             ]}
@@ -164,8 +206,18 @@ export default async function DashboardPage() {
             rowHref={(row) => `/stock/items/${row.item.id}`}
             columns={[
               { key: "i", header: t("item"), primary: true, cell: (row) => row.item.name },
-              { key: "a", header: t("available"), align: "end", cell: (row) => formatQty(row.available, format.locale) },
-              { key: "r", header: t("reorderPoint"), align: "end", cell: (row) => formatQty(row.reorderPoint, format.locale) },
+              {
+                key: "a",
+                header: t("available"),
+                align: "end",
+                cell: (row) => formatQty(row.available, format.locale),
+              },
+              {
+                key: "r",
+                header: t("reorderPoint"),
+                align: "end",
+                cell: (row) => formatQty(row.reorderPoint, format.locale),
+              },
             ]}
           />
         </PartnerSection>

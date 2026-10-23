@@ -22,23 +22,37 @@ export async function generateMetadata(): Promise<Metadata> {
 const VIEWS = ["shifts", "skills", "log"] as const;
 type View = (typeof VIEWS)[number];
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const bangkokDay = (offset: number) => new Date(Date.now() + 7 * 3_600_000 + offset * 86_400_000).toISOString().slice(0, 10);
+const bangkokDay = (offset: number) =>
+  new Date(Date.now() + 7 * 3_600_000 + offset * 86_400_000).toISOString().slice(0, 10);
 
 /** People-lite (D-380): the shifts, who can run which machine, and who did what on the floor. */
-export default async function PeoplePage({ searchParams }: { searchParams: Promise<{ view?: string; from?: string; to?: string }> }) {
+export default async function PeoplePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; from?: string; to?: string }>;
+}) {
   const query = await searchParams;
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "shifts";
-  const [t, format, context] = await Promise.all([getTranslations("partnerInsight.people"), getFormat(), factoryContext()]);
+  const [t, format, context] = await Promise.all([
+    getTranslations("partnerInsight.people"),
+    getFormat(),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const canManage = canAt(context, "factory_people.manage");
   let body: React.ReactNode;
   if (view === "shifts") {
-    const read = await attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/shifts", { params: { path } })).data!);
+    const read = await attempt(
+      async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/shifts", { params: { path } })).data!,
+    );
     body = read.data ? <ShiftManager shifts={read.data} canEdit={canManage} /> : <PageError error={read.error} />;
   } else if (view === "skills") {
     const [skills, people, machines] = await Promise.all([
-      attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/operator-skills", { params: { path } })).data!),
+      attempt(
+        async () =>
+          (await contract.GET("/v1/partner/factories/{factoryId}/erp/operator-skills", { params: { path } })).data!,
+      ),
       attempt(async () => erpSalespeople(contract, context.factoryId)),
       attempt(async () => erpMachines(contract, context.factoryId)),
     ]);
@@ -55,7 +69,14 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
   } else {
     const to = query.to && DAY.test(query.to) ? query.to : bangkokDay(0);
     const from = query.from && DAY.test(query.from) ? query.from : bangkokDay(-6);
-    const read = await attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/work-log", { params: { path, query: { from, to } } })).data!);
+    const read = await attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/work-log", {
+            params: { path, query: { from, to } },
+          })
+        ).data!,
+    );
     body = (
       <>
         <form className="flex flex-wrap items-end gap-2" action="/people">
@@ -84,7 +105,13 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
               { key: "o", header: t("operations"), align: "end", cell: (row) => format.number(row.operations) },
               { key: "r", header: t("runMinutes"), align: "end", cell: (row) => format.number(row.runMinutes) },
               { key: "g", header: t("good"), align: "end", cell: (row) => formatQty(row.good, format.locale) },
-              { key: "s", header: t("scrap"), align: "end", hideOnPhone: true, cell: (row) => formatQty(row.scrap, format.locale) },
+              {
+                key: "s",
+                header: t("scrap"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => formatQty(row.scrap, format.locale),
+              },
               { key: "m", header: t("machines"), hideOnPhone: true, cell: (row) => row.machines.join(", ") },
             ]}
           />
@@ -96,7 +123,15 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
   }
   return (
     <PartnerPage full title={t("title")} description={t("body")}>
-      <ViewTabs label={t("views.label")} current={view} items={VIEWS.map((key) => ({ key, href: `/people${queryOf({ view: key === "shifts" ? undefined : key })}`, label: t(`views.${key}`) }))} />
+      <ViewTabs
+        label={t("views.label")}
+        current={view}
+        items={VIEWS.map((key) => ({
+          key,
+          href: `/people${queryOf({ view: key === "shifts" ? undefined : key })}`,
+          label: t(`views.${key}`),
+        }))}
+      />
       {body}
     </PartnerPage>
   );

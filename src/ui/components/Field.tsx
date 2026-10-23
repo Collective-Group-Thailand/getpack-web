@@ -173,11 +173,7 @@ export function FormSection({
 }) {
   return (
     <section
-      className={cn(
-        "space-y-4",
-        card && "border-border bg-surface rounded-card border px-5 py-5 md:px-6",
-        className,
-      )}
+      className={cn("space-y-4", card && "border-border bg-surface rounded-card border px-5 py-5 md:px-6", className)}
     >
       <div>
         <h3 className={cn("font-semibold", card ? "flex items-center gap-2.5 text-[17px] font-bold" : "text-base")}>

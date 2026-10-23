@@ -86,7 +86,10 @@ export const shapedHeader: FeatureModule = {
       return [
         issue(
           "header.with_hang",
-          t("หัวโชว์กับหูแขวนใช้ขอบแผงหลังเดียวกัน เลือกอย่างใดอย่างหนึ่ง", "A header and a hang tab both stand on the back panel — choose one"),
+          t(
+            "หัวโชว์กับหูแขวนใช้ขอบแผงหลังเดียวกัน เลือกอย่างใดอย่างหนึ่ง",
+            "A header and a hang tab both stand on the back panel — choose one",
+          ),
           "headerShape",
         ),
       ];

@@ -22,16 +22,44 @@ const thisMonth = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice
 
 /** The factory's books at a glance (D-385 – D-392): cash, what waits, the periods and their close, the month's returns. */
 export default async function LedgerPage() {
-  const [t, tc, format, context] = await Promise.all([getTranslations("partnerLedger.overview"), getTranslations("partnerLedger.common"), getFormat(), factoryContext()]);
+  const [t, tc, format, context] = await Promise.all([
+    getTranslations("partnerLedger.overview"),
+    getTranslations("partnerLedger.common"),
+    getFormat(),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const month = thisMonth();
   const [periods, cash, pl, pending, filings] = await Promise.all([
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/periods", { params: { path } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/cash-position", { params: { path } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/reports/profit-and-loss", { params: { path, query: { month } } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/journals", { params: { path, query: { status: "pending_approval", perPage: 1 } } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/tax-filings", { params: { path } })).data!),
+    attempt(
+      async () =>
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/periods", { params: { path } })).data!,
+    ),
+    attempt(
+      async () =>
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/cash-position", { params: { path } })).data!,
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/reports/profit-and-loss", {
+            params: { path, query: { month } },
+          })
+        ).data!,
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/journals", {
+            params: { path, query: { status: "pending_approval", perPage: 1 } },
+          })
+        ).data!,
+    ),
+    attempt(
+      async () =>
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/tax-filings", { params: { path } })).data!,
+    ),
   ]);
   // Months to come are opened ahead but have nothing to do yet: the list stops at this month.
   const shown = (periods.data ?? []).filter((p) => p.month <= month).reverse();
@@ -58,9 +86,26 @@ export default async function LedgerPage() {
         label={t("totals")}
         items={[
           { key: "cash", label: t("cash"), value: cash.data ? format.thb(cash.data.total) : "—", href: "/ledger/bank" },
-          { key: "bank", label: t("unreconciled"), value: format.number(unreconciled), tone: unreconciled ? "warning" : "success", href: "/ledger/bank" },
-          { key: "np", label: t("netProfit"), value: pl.data ? format.thb(pl.data.netProfit) : "—", href: `/ledger/reports?tab=pl&month=${month}` },
-          { key: "pend", label: t("pending"), value: format.number(pending.data?.meta.total ?? 0), tone: pending.data?.meta.total ? "warning" : "neutral", href: "/ledger/journals?view=pending" },
+          {
+            key: "bank",
+            label: t("unreconciled"),
+            value: format.number(unreconciled),
+            tone: unreconciled ? "warning" : "success",
+            href: "/ledger/bank",
+          },
+          {
+            key: "np",
+            label: t("netProfit"),
+            value: pl.data ? format.thb(pl.data.netProfit) : "—",
+            href: `/ledger/reports?tab=pl&month=${month}`,
+          },
+          {
+            key: "pend",
+            label: t("pending"),
+            value: format.number(pending.data?.meta.total ?? 0),
+            tone: pending.data?.meta.total ? "warning" : "neutral",
+            href: "/ledger/journals?view=pending",
+          },
         ]}
       />
       <PartnerSection title={t("periods")} description={t("periodsBody")}>
@@ -88,7 +133,12 @@ export default async function LedgerPage() {
               { key: "fy", header: t("fiscalYear"), hideOnPhone: true, cell: (row) => row.fiscalYear },
               { key: "n", header: t("entries"), align: "end", cell: (row) => format.number(row.entries) },
               { key: "s", header: tc("status"), cell: (row) => <StatusChip map={PERIOD_STATUS} value={row.status} /> },
-              { key: "c", header: t("checklist"), hideOnPhone: true, cell: () => <span className="text-link text-sm">{t("checklist")}</span> },
+              {
+                key: "c",
+                header: t("checklist"),
+                hideOnPhone: true,
+                cell: () => <span className="text-link text-sm">{t("checklist")}</span>,
+              },
             ]}
           />
         ) : (
@@ -101,7 +151,11 @@ export default async function LedgerPage() {
             caption={t("tax")}
             rows={filings.data}
             rowKey={(row) => `${row.form}-${row.month}`}
-            rowTone={(row) => (!row.filed && row.dueOn < new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10) ? "danger" : undefined)}
+            rowTone={(row) =>
+              !row.filed && row.dueOn < new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10)
+                ? "danger"
+                : undefined
+            }
             empty={<EmptyState icon="stamp" title={t("noFilings")} />}
             columns={[
               {
@@ -114,11 +168,29 @@ export default async function LedgerPage() {
                   </Link>
                 ),
               },
-              { key: "m", header: tc("month"), cell: (row) => <span className="whitespace-nowrap">{monthLabel(row.month)}</span> },
+              {
+                key: "m",
+                header: tc("month"),
+                cell: (row) => <span className="whitespace-nowrap">{monthLabel(row.month)}</span>,
+              },
               { key: "d", header: t("dueOn"), hideOnPhone: true, cell: (row) => format.date(row.dueOn) },
               { key: "l", header: t("ledgerAmount"), align: "end", cell: (row) => format.thb(row.ledgerAmount) },
-              { key: "doc", header: t("documentsAmount"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.documentsAmount) },
-              { key: "r", header: "", cell: (row) => <Badge tone={row.reconciled ? "success" : "warning"}>{row.reconciled ? t("reconciled") : t("notReconciled")}</Badge> },
+              {
+                key: "doc",
+                header: t("documentsAmount"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => format.thb(row.documentsAmount),
+              },
+              {
+                key: "r",
+                header: "",
+                cell: (row) => (
+                  <Badge tone={row.reconciled ? "success" : "warning"}>
+                    {row.reconciled ? t("reconciled") : t("notReconciled")}
+                  </Badge>
+                ),
+              },
               {
                 key: "s",
                 header: tc("status"),

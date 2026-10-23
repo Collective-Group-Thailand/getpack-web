@@ -25,13 +25,12 @@ export default async function StockIssuePage({ searchParams }: { searchParams: P
     erpPickers(context.factoryId),
     // Material for production is issued against its order (D-341): the orders on the floor come first.
     canAt(context, "factory_planning.read")
-      ? attempt(
-          async () =>
-            (
-              await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders", {
-                params: { path: { factoryId: context.factoryId }, query: { status: "open", perPage: 20 } },
-              })
-            ).data!.data.filter((mo) => mo.status === "released" || mo.status === "in_progress"),
+      ? attempt(async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/production-orders", {
+              params: { path: { factoryId: context.factoryId }, query: { status: "open", perPage: 20 } },
+            })
+          ).data!.data.filter((mo) => mo.status === "released" || mo.status === "in_progress"),
         ).then((r) => r.data ?? [])
       : Promise.resolve([]),
   ]);

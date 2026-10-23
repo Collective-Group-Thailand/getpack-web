@@ -30,11 +30,11 @@ export function Meter({ value, label, valueText, tone = "primary", className, ma
       aria-valuemax={100}
       aria-valuenow={width}
       aria-valuetext={valueText}
-      className={cn("bg-surface-subtle h-2 w-full overflow-hidden rounded-control", className)}
+      className={cn("bg-surface-subtle rounded-control h-2 w-full overflow-hidden", className)}
     >
       <div
         className={cn(
-          "h-full rounded-control",
+          "rounded-control h-full",
           tone === "primary" && "bg-primary",
           tone === "success" && "bg-success",
           tone === "warning" && "bg-warning",
@@ -50,7 +50,7 @@ export function Meter({ value, label, valueText, tone = "primary", className, ma
       {meter}
       <span
         aria-hidden
-        className="bg-fg absolute -top-0.5 h-3 w-0.5 rounded-control"
+        className="bg-fg rounded-control absolute -top-0.5 h-3 w-0.5"
         style={{ left: `calc(${Math.min(100, Math.max(0, marker))}% - 1px)` }}
       />
     </div>

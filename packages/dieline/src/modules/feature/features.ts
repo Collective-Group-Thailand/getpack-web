@@ -170,7 +170,10 @@ export const hangTab: FeatureModule = {
     return { ...base, attachments: [...base.attachments, { face: hanger, span: [back.x0, back.x1] }] };
   },
   hinges: (_ctx, cfg) => ({
-    angles: { [`hanger-${cfg.end as string}`]: 0, ...(cfg.ply === 2 ? { [`hanger-ply-${cfg.end as string}`]: 180 } : {}) },
+    angles: {
+      [`hanger-${cfg.end as string}`]: 0,
+      ...(cfg.ply === 2 ? { [`hanger-ply-${cfg.end as string}`]: 180 } : {}),
+    },
   }),
 };
 
@@ -195,13 +198,18 @@ export const depthScores: FeatureModule = {
       severity: "error",
       param: "depthSteps",
       require: "(depthSteps ?? 3) * (depthStep ?? 50) <= height - 40",
-      message: t("รอยพับลดความสูงลึกเกินกล่อง (เหลือผนังอย่างน้อย 40 มม.)", "The depth scores reach too far down (keep 40 mm of wall)"),
+      message: t(
+        "รอยพับลดความสูงลึกเกินกล่อง (เหลือผนังอย่างน้อย 40 มม.)",
+        "The depth scores reach too far down (keep 40 mm of wall)",
+      ),
     },
   ],
   tubeMarks(ctx, _cfg, p) {
     const n = num(ctx.v, "depthSteps", 3);
     const step = num(ctx.v, "depthStep", 50);
-    return Array.from({ length: n }, (_, i) => line([p.x0, p.y0 + step * (i + 1)], [p.x1, p.y0 + step * (i + 1)], "crease"));
+    return Array.from({ length: n }, (_, i) =>
+      line([p.x0, p.y0 + step * (i + 1)], [p.x1, p.y0 + step * (i + 1)], "crease"),
+    );
   },
 };
 

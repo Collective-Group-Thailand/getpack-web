@@ -24,8 +24,12 @@ export default async function Page() {
   // points — a phone or an email appears here only when the API has one (SEO pass).
   const contactPoints = channels
     ? [
-        ...(channels.phone ? [{ "@type": "ContactPoint", contactType: "customer service", telephone: channels.phone }] : []),
-        ...(channels.email ? [{ "@type": "ContactPoint", contactType: "customer service", email: channels.email }] : []),
+        ...(channels.phone
+          ? [{ "@type": "ContactPoint", contactType: "customer service", telephone: channels.phone }]
+          : []),
+        ...(channels.email
+          ? [{ "@type": "ContactPoint", contactType: "customer service", email: channels.email }]
+          : []),
       ]
     : [];
   return (
@@ -33,7 +37,13 @@ export default async function Page() {
       <JsonLd data={page.breadcrumb} />
       <JsonLd
         data={{
-          ...webPageSchema({ type: "ContactPage", name: t("title"), description: t("intro"), url: page.url, locale: page.language }),
+          ...webPageSchema({
+            type: "ContactPage",
+            name: t("title"),
+            description: t("intro"),
+            url: page.url,
+            locale: page.language,
+          }),
           mainEntity: {
             ...organizationSchema(page.origin),
             ...(contactPoints.length > 0 ? { contactPoint: contactPoints } : {}),
@@ -110,7 +120,7 @@ export default async function Page() {
         {/* The answers a customer can reach without waiting for anyone. */}
         <nav aria-label={t("selfServe")} className="mt-4">
           <p className="text-muted mb-2 text-sm font-semibold">{t("selfServe")}</p>
-          <ul className="border-border bg-surface divide-border divide-y rounded-card border">
+          <ul className="border-border bg-surface divide-border rounded-card divide-y border">
             {(
               [
                 ["track", "/track", "truck"],

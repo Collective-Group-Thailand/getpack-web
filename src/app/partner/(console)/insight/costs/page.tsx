@@ -23,12 +23,26 @@ const thisMonth = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice
 export default async function CostsPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const query = await searchParams;
   const month = query.month && MONTH.test(query.month) ? query.month : thisMonth();
-  const [t, format, context] = await Promise.all([getTranslations("partnerInsight.costs"), getFormat(), factoryContext()]);
+  const [t, format, context] = await Promise.all([
+    getTranslations("partnerInsight.costs"),
+    getFormat(),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const [report, rates] = await Promise.all([
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/insight/costs", { params: { path, query: { month } } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/machine-rates", { params: { path } })).data!),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/insight/costs", {
+            params: { path, query: { month } },
+          })
+        ).data!,
+    ),
+    attempt(
+      async () =>
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/machine-rates", { params: { path } })).data!,
+    ),
   ]);
   return (
     <PartnerPage full title={t("title")} description={t("body")}>
@@ -61,15 +75,43 @@ export default async function CostsPage({ searchParams }: { searchParams: Promis
             rowHref={(row) => `/insight/costs/${row.productionOrder.id}`}
             empty={<EmptyState icon="calculator" title={t("empty")} description={t("emptyBody")} />}
             columns={[
-              { key: "no", header: t("order"), primary: true, cell: (row) => <span className="font-mono whitespace-nowrap">{row.productionOrder.number}</span> },
+              {
+                key: "no",
+                header: t("order"),
+                primary: true,
+                cell: (row) => <span className="font-mono whitespace-nowrap">{row.productionOrder.number}</span>,
+              },
               { key: "ti", header: t("product"), cell: (row) => row.item?.name ?? row.title },
               { key: "g", header: t("good"), align: "end", cell: (row) => formatQty(row.goodQty, format.locale) },
-              { key: "m", header: t("material"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.material) },
-              { key: "mc", header: t("machine"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.machine) },
+              {
+                key: "m",
+                header: t("material"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => format.thb(row.material),
+              },
+              {
+                key: "mc",
+                header: t("machine"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => format.thb(row.machine),
+              },
               { key: "l", header: t("labour"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.labour) },
-              { key: "o", header: t("overhead"), align: "end", hideOnPhone: true, cell: (row) => format.thb(row.overhead) },
+              {
+                key: "o",
+                header: t("overhead"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => format.thb(row.overhead),
+              },
               { key: "t", header: t("total"), align: "end", cell: (row) => format.thb(row.total) },
-              { key: "u", header: t("unitCost"), align: "end", cell: (row) => (row.unitCost ? format.thb(Number(row.unitCost).toFixed(2)) : "—") },
+              {
+                key: "u",
+                header: t("unitCost"),
+                align: "end",
+                cell: (row) => (row.unitCost ? format.thb(Number(row.unitCost).toFixed(2)) : "—"),
+              },
             ]}
           />
         </>

@@ -74,7 +74,10 @@ export function TargetPanel({
   const absolute = (value: string) => (value.startsWith("-") ? value.slice(1) : value);
 
   return (
-    <section aria-labelledby="target-title" className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-4">
+    <section
+      aria-labelledby="target-title"
+      className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-4"
+    >
       <h3 id="target-title" className="font-semibold">
         {t("title", { target: format.thb(target), unit })}
       </h3>

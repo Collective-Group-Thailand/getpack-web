@@ -57,7 +57,11 @@ export interface CheckContext {
 }
 
 /** The live print checks for the design on screen. */
-export function useDesignIssues(dieline: Dieline | null, catalog: DesignerCatalog | null, context: CheckContext): DesignIssue[] {
+export function useDesignIssues(
+  dieline: Dieline | null,
+  catalog: DesignerCatalog | null,
+  context: CheckContext,
+): DesignIssue[] {
   const elements = useEditor((s) => s.content.elements);
   const pattern = useEditor((s) => s.content.pattern);
   const safeMm = catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM;

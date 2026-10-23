@@ -29,8 +29,22 @@ export default async function LeadPage({ params }: { params: Promise<{ leadId: s
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const [read, activities, people, customers] = await Promise.all([
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/leads/{leadId}", { params: { path: { ...path, leadId } } })).data!),
-    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/activities", { params: { path, query: { leadId, perPage: 100, view: "all" } } })).data!),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/leads/{leadId}", {
+            params: { path: { ...path, leadId } },
+          })
+        ).data!,
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/activities", {
+            params: { path, query: { leadId, perPage: 100, view: "all" } },
+          })
+        ).data!,
+    ),
     attempt(async () => erpSalespeople(contract, context.factoryId)),
     attempt(async () => erpCustomers(contract, context.factoryId)),
   ]);
@@ -44,20 +58,45 @@ export default async function LeadPage({ params }: { params: Promise<{ leadId: s
   const lead = read.data;
   return (
     <PartnerPage full title={lead.name} back={back} meta={<StatusChip map={ERP_LEAD_STAGE} value={lead.stage} />}>
-      <LeadActions lead={lead} customers={(customers.data ?? []).map((c) => ({ id: c.id, code: c.code, name: c.name }))} />
+      <LeadActions
+        lead={lead}
+        customers={(customers.data ?? []).map((c) => ({ id: c.id, code: c.code, name: c.name }))}
+      />
       <Card padding="md">
         <DescriptionList
           columns={2}
           items={[
             ...(lead.contactName ? [{ term: t("leadForm.contactName"), description: lead.contactName }] : []),
-            ...(lead.phone ? [{ term: t("leadForm.phone"), description: <a className="text-link underline" href={`tel:${lead.phone}`}>{lead.phone}</a> }] : []),
+            ...(lead.phone
+              ? [
+                  {
+                    term: t("leadForm.phone"),
+                    description: (
+                      <a className="text-link underline" href={`tel:${lead.phone}`}>
+                        {lead.phone}
+                      </a>
+                    ),
+                  },
+                ]
+              : []),
             ...(lead.lineId ? [{ term: t("leadForm.lineId"), description: lead.lineId }] : []),
             ...(lead.email ? [{ term: t("leadForm.email"), description: lead.email }] : []),
             { term: t("leadForm.source"), description: tSource(lead.source) },
             { term: tCommon("salesperson"), description: lead.salesperson?.name ?? tCommon("noSalesperson") },
-            ...(lead.expectedValue ? [{ term: t("leadForm.expectedValue"), description: format.thb(lead.expectedValue) }] : []),
+            ...(lead.expectedValue
+              ? [{ term: t("leadForm.expectedValue"), description: format.thb(lead.expectedValue) }]
+              : []),
             ...(lead.customer
-              ? [{ term: tCommon("customer"), description: <Link className="text-link underline" href={`/partners/${lead.customer.id}`}>{lead.customer.name}</Link> }]
+              ? [
+                  {
+                    term: tCommon("customer"),
+                    description: (
+                      <Link className="text-link underline" href={`/partners/${lead.customer.id}`}>
+                        {lead.customer.name}
+                      </Link>
+                    ),
+                  },
+                ]
               : []),
             ...(lead.address ? [{ term: t("leadForm.address"), description: lead.address }] : []),
             ...(lead.note ? [{ term: t("leadForm.note"), description: lead.note }] : []),

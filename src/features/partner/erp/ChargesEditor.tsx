@@ -56,7 +56,8 @@ export const chargeBody = (row: ChargeRow): Charge => ({
   description: row.description.trim() || null,
 });
 
-export const chargeValid = (row: ChargeRow) => AMOUNT.test(plainNumber(row.amount)) && Number(plainNumber(row.amount)) > 0;
+export const chargeValid = (row: ChargeRow) =>
+  AMOUNT.test(plainNumber(row.amount)) && Number(plainNumber(row.amount)) > 0;
 
 /** One charge's fields: kind, amount, how it spreads, who billed it and their document (D-350). */
 function ChargeFields({

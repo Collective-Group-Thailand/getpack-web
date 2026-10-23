@@ -27,14 +27,20 @@ export function TotalsEstimate({
     const n = Number(plainNumber(v ?? ""));
     return Number.isFinite(n) ? n : 0;
   };
-  const gross = lines.reduce((total, line) => total + Math.round(num(line.quantity) * num(line.price) * (1 - num(line.discountPct) / 100) * 100), 0);
+  const gross = lines.reduce(
+    (total, line) => total + Math.round(num(line.quantity) * num(line.price) * (1 - num(line.discountPct) / 100) * 100),
+    0,
+  );
   if (gross <= 0) return <p className="text-muted text-sm">{fallback}</p>;
   const rate = vatMode === "none" ? 0 : num(vatRatePct) / 100;
   const net = vatMode === "inclusive" ? Math.round(gross / (1 + rate)) : gross;
   const vat = vatMode === "inclusive" ? gross - net : Math.round(net * rate);
   const thb = (n: number) => format.thb((n / 100).toFixed(2));
   return (
-    <dl className="border-border bg-surface ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 rounded-xl border p-3 text-sm" aria-live="polite">
+    <dl
+      className="border-border bg-surface ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 rounded-xl border p-3 text-sm"
+      aria-live="polite"
+    >
       <dt className="text-muted">{t("subtotal")}</dt>
       <dd className="text-end tabular-nums">{thb(net)}</dd>
       {vatMode !== "none" ? (

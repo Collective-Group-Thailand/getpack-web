@@ -26,7 +26,7 @@ export function Switch({ label, description, labelPosition = "end", className, i
       id={switchId}
       aria-describedby={descriptionId}
       className={cn(
-        "bg-neutral-subtle relative h-6 w-11 shrink-0 rounded-control border border-transparent transition-colors",
+        "bg-neutral-subtle rounded-control relative h-6 w-11 shrink-0 border border-transparent transition-colors",
         "duration-fast ease-standard data-[state=checked]:bg-primary",
         "disabled:cursor-not-allowed disabled:opacity-50",
       )}

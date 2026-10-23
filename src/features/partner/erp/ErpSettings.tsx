@@ -37,7 +37,30 @@ const MODULES = [
   "insight",
   "people",
 ] as const;
-const PREFIXES = ["po", "gr", "adj", "trf", "iss", "pr", "ap", "pv", "mo", "rfq", "mt", "qt", "so", "do", "iv", "cn", "dr", "rc", "bn", "wht", "qc", "ncr"] as const;
+const PREFIXES = [
+  "po",
+  "gr",
+  "adj",
+  "trf",
+  "iss",
+  "pr",
+  "ap",
+  "pv",
+  "mo",
+  "rfq",
+  "mt",
+  "qt",
+  "so",
+  "do",
+  "iv",
+  "cn",
+  "dr",
+  "rc",
+  "bn",
+  "wht",
+  "qc",
+  "ncr",
+] as const;
 const POLICIES = ["off", "warn", "enforce"] as const;
 /** Modules that exist today (E1 – E5); the rest are shown as coming and stay as they are. */
 const LIVE = new Set<string>([
@@ -212,19 +235,40 @@ export function ErpSettingsForm({
         <p className="text-muted text-sm">{tSales("body")}</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={tSales("quoteValidDays")} hint={tSales("quoteValidDaysHint")} error={errors.quoteValidDays}>
-            <NumberInput min={1} max={365} step={1} unit={tOps("days")} value={validDays} onChange={(event) => setValidDays(event.target.value)} />
+            <NumberInput
+              min={1}
+              max={365}
+              step={1}
+              unit={tOps("days")}
+              value={validDays}
+              onChange={(event) => setValidDays(event.target.value)}
+            />
           </Field>
           <Field label={tSales("signatory")} hint={tSales("signatoryHint")}>
             <Input value={signatory} onChange={(event) => setSignatory(event.target.value)} />
           </Field>
         </div>
         <Field label={tSales("bank")} hint={tSales("bankHint")}>
-          <Textarea rows={2} value={bank} placeholder={tSales("bankPlaceholder")} onChange={(event) => setBank(event.target.value)} />
+          <Textarea
+            rows={2}
+            value={bank}
+            placeholder={tSales("bankPlaceholder")}
+            onChange={(event) => setBank(event.target.value)}
+          />
         </Field>
         <Field label={tSales("footer")} hint={tSales("footerHint")}>
-          <Textarea rows={2} value={footer} placeholder={tSales("footerPlaceholder")} onChange={(event) => setFooter(event.target.value)} />
+          <Textarea
+            rows={2}
+            value={footer}
+            placeholder={tSales("footerPlaceholder")}
+            onChange={(event) => setFooter(event.target.value)}
+          />
         </Field>
-        <Field label={tSales("logo")} hint={logoId ? tSales("logoSet") : tSales("logoHint")} error={errors.documentLogoFileId}>
+        <Field
+          label={tSales("logo")}
+          hint={logoId ? tSales("logoSet") : tSales("logoHint")}
+          error={errors.documentLogoFileId}
+        >
           <span className="flex flex-wrap items-center gap-2">
             <FilePickButton
               label={logoId ? tSales("logoReplace") : tSales("logoChoose")}
@@ -259,13 +303,33 @@ export function ErpSettingsForm({
         <p className="text-muted text-sm">{t("insight.body")}</p>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label={t("insight.labour")} hint={t("insight.labourHint")} error={errors.labourRatePerHour}>
-            <NumberInput min={0} step="any" unit="฿" value={labour} onChange={(event) => setLabour(event.target.value)} />
+            <NumberInput
+              min={0}
+              step="any"
+              unit="฿"
+              value={labour}
+              onChange={(event) => setLabour(event.target.value)}
+            />
           </Field>
           <Field label={t("insight.overhead")} hint={t("insight.overheadHint")} error={errors.overheadPct}>
-            <NumberInput min={0} max={500} step="any" unit="%" value={overhead} onChange={(event) => setOverhead(event.target.value)} />
+            <NumberInput
+              min={0}
+              max={500}
+              step="any"
+              unit="%"
+              value={overhead}
+              onChange={(event) => setOverhead(event.target.value)}
+            />
           </Field>
           <Field label={t("insight.oeeAlert")} hint={t("insight.oeeAlertHint")} error={errors.oeeAlertPct}>
-            <NumberInput min={0} max={100} step="any" unit="%" value={oeeAlert} onChange={(event) => setOeeAlert(event.target.value)} />
+            <NumberInput
+              min={0}
+              max={100}
+              step="any"
+              unit="%"
+              value={oeeAlert}
+              onChange={(event) => setOeeAlert(event.target.value)}
+            />
           </Field>
         </div>
         <Checkbox
