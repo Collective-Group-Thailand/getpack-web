@@ -1,4 +1,4 @@
-<!-- Synced from getpack-api v0.43.2 by `pnpm docs:sync` — do not edit here; change it in getpack-api. -->
+<!-- Synced from getpack-api v0.75.0 by `pnpm docs:sync` — do not edit here; change it in getpack-api. -->
 # getpack API Contract Conventions (v3) (shared by `getpack-api` and `getpack-web`)
 
 > This file is **identical in both repositories** (`docs/contract/api-conventions.md`). Change it only by a PR to both repos on the same day. The backend owns the contract; the frontend consumes it.
