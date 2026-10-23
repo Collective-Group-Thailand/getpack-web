@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
   // The workspace package is shipped as TypeScript source for local development;
   // publishConfig points the published copy at dist/ instead.
   transpilePackages: ["@getpack/dieline"],
+  // CI and the image build set NEXT_SKIP_TYPECHECK=1: `pnpm typecheck` gates them already (CI's
+  // verify job; deploy runs only after CI passes), and next build's own pass over every file
+  // doubled the build and ran the runner out of memory. A local `pnpm build` still checks.
+  typescript: { ignoreBuildErrors: process.env.NEXT_SKIP_TYPECHECK === "1" },
   async redirects() {
     return [
       // BoxStudio's "My designs" lives under the customer account area now.
