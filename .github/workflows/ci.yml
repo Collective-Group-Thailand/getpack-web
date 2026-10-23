@@ -18,8 +18,10 @@ env:
   ADMIN_HOST: "admin.localhost:3000"
   PARTNER_HOST: "partner.localhost:3000"
   API_INTERNAL_URL: "http://127.0.0.1:4999"
-  # `next build` type-checks the whole app and outgrows Node's default heap on the runner.
-  NODE_OPTIONS: "--max-old-space-size=6144"
+  # `pnpm typecheck` (verify job) is the type gate; next build skips its own pass (next.config.ts).
+  NEXT_SKIP_TYPECHECK: "1"
+  # next build outgrows Node's default heap on the runner.
+  NODE_OPTIONS: "--max-old-space-size=4096"
 
 jobs:
   verify:

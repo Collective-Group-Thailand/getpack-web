@@ -52,7 +52,8 @@ ENV PUBLIC_HOST=$PUBLIC_HOST ADMIN_HOST=$ADMIN_HOST PARTNER_HOST=$PARTNER_HOST A
     NEXT_PUBLIC_LIFF_ID=$NEXT_PUBLIC_LIFF_ID \
     NEXT_PUBLIC_GTM_ID=$NEXT_PUBLIC_GTM_ID \
     NEXT_PUBLIC_VAPID_PUBLIC_KEY=$NEXT_PUBLIC_VAPID_PUBLIC_KEY
-RUN NODE_OPTIONS=--max-old-space-size=4096 pnpm build
+# CI type-checked this commit before the deploy workflow could run (next.config.ts).
+RUN NODE_OPTIONS=--max-old-space-size=4096 NEXT_SKIP_TYPECHECK=1 pnpm build
 
 # --- runtime ---------------------------------------------------------------------------------------
 FROM ${NODE_IMAGE} AS runtime
