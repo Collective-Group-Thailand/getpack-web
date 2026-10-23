@@ -1,6 +1,6 @@
 {
   "name": "@getpack/dieline",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Framework-free box dieline engine for getpack: parametric box styles, caliper compensation, cut/crease/perforation geometry, 3D folding, and SVG / DXF / PDF output.",
   "license": "UNLICENSED",
   "type": "module",
