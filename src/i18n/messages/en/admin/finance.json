@@ -25,9 +25,9 @@
       "assets": "Fixed assets",
       "close": "Period close",
       "reports": "Financial reports",
-      "audit": "Auditor"
-    },
-    "corrections": "Correction requests"
+      "audit": "Auditor",
+      "corrections": "Correction requests"
+    }
   },
   "common": {
     "system": "System",
