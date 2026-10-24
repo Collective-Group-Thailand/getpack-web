@@ -87,6 +87,27 @@ const Preview3D = dynamic(() => import("./Preview3D"), {
   loading: () => <Skeleton className="aspect-square w-full rounded-lg" />,
 });
 
+/**
+ * Whether the visitor has done anything yet — moved the pointer, touched, typed or scrolled.
+ *
+ * The split view shows the model beside the canvas from the start, and ADR-0010 keeps three.js
+ * (~250 KB) out of the first load: the split's model waits for this, which a person at the page
+ * does within a moment and a page load alone never does.
+ */
+function useFirstInteraction(): boolean {
+  const [interacted, setInteracted] = useState(false);
+  useEffect(() => {
+    if (interacted) return;
+    const events = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"] as const;
+    const done = () => setInteracted(true);
+    for (const event of events) window.addEventListener(event, done, { once: true, passive: true });
+    return () => {
+      for (const event of events) window.removeEventListener(event, done);
+    };
+  }, [interacted]);
+  return interacted;
+}
+
 type SideTab = "properties" | "checks" | "preview";
 type MobilePanel = RailId | SideTab;
 
@@ -605,7 +626,10 @@ export default function Editor({
     setActiveStage(stage);
     return () => setActiveStage(null);
   }, [stage]);
-  const show3d = chrome?.views ? view !== "flat" : sideTab === "preview" || mobilePanel === "preview";
+  const interacted = useFirstInteraction();
+  const show3d = chrome?.views
+    ? view === "3d" || (view === "split" && interacted)
+    : sideTab === "preview" || mobilePanel === "preview";
   const artworks = useArtwork(show3d || presenting, stage, canvasDieline, side, view === "split" ? 1024 : 2048);
   const artwork = artworks.outside;
   const finishMasks = artworks.finishes;
@@ -1024,7 +1048,7 @@ export default function Editor({
                         : "flex-1",
                     )}
                   >
-                    {preview}
+                    {show3d ? preview : <Skeleton className="aspect-square w-full rounded-lg" />}
                   </section>
                 ) : null}
               </div>
