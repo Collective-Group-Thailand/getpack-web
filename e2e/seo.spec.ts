@@ -41,13 +41,17 @@ test.describe("crawler files", () => {
   });
 
   test("every URL in the sitemap actually answers", async ({ request }) => {
+    // Every style and its variants are in it now: a few at a time, with room for all of them.
+    test.setTimeout(300_000);
     // A sitemap full of 404s is worse than a short one: it is the crawler's view of the site.
     const body = await (await request.get(`${HOSTS.customer}/sitemap.xml`)).text();
     const locs = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]!);
 
     expect(locs.length).toBeGreaterThan(5);
-    for (const loc of locs) {
-      expect((await request.get(loc)).status(), `${loc} is in the sitemap`).toBeLessThan(400);
+    for (let at = 0; at < locs.length; at += 8) {
+      const batch = locs.slice(at, at + 8);
+      const statuses = await Promise.all(batch.map(async (loc) => (await request.get(loc)).status()));
+      batch.forEach((loc, index) => expect(statuses[index], `${loc} is in the sitemap`).toBeLessThan(400));
     }
   });
 });
