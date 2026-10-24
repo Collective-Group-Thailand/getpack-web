@@ -1,4 +1,5 @@
 import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NextIntlClientProvider } from "next-intl";
 import { faceBounds, findFace, REFERENCE_MATERIALS, SPEC_VERSION } from "@getpack/dieline";
 
@@ -90,14 +91,19 @@ const load =
     useEditor.getState().selectMany(selected);
   };
 
+// Some panels read the API (studio content, assets); with no API here they show their empty states.
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
 const withDesigner: Decorator = (Story) => (
-  <NextIntlClientProvider locale="th" messages={{ common, designer }} timeZone="Asia/Bangkok">
-    <DesignerContext.Provider value={handle}>
-      <div className="bg-surface w-80 p-4">
-        <Story />
-      </div>
-    </DesignerContext.Provider>
-  </NextIntlClientProvider>
+  <QueryClientProvider client={queryClient}>
+    <NextIntlClientProvider locale="th" messages={{ common, designer }} timeZone="Asia/Bangkok">
+      <DesignerContext.Provider value={handle}>
+        <div className="bg-surface w-80 p-4">
+          <Story />
+        </div>
+      </DesignerContext.Provider>
+    </NextIntlClientProvider>
+  </QueryClientProvider>
 );
 
 const meta = {
