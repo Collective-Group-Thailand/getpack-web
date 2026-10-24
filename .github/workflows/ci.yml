@@ -246,11 +246,9 @@ jobs:
     name: visual snapshots (storybook)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Not blocking yet: the Linux baselines (`e2e/__screenshots__/linux/`) were first taken on this
-    # runner on 2026-10-24. Once they hold steady over a few runs, delete this line and the job
-    # becomes a gate. A deliberate change: run `pnpm e2e:visual:update` here, download the artifact
-    # below and commit the Linux set.
-    continue-on-error: true
+    # A gate since the Linux baselines (`e2e/__screenshots__/linux/`, taken on this runner) held over
+    # five runs. A deliberate change: run `pnpm e2e:visual:update` here, download the artifact below
+    # and commit the Linux set.
     steps:
       - uses: actions/checkout@v5
 
