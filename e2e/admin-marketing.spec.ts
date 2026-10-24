@@ -199,14 +199,15 @@ test.describe("referrals (D-136)", () => {
 });
 
 test.describe("loyalty rules (D-130…D-136)", () => {
-  test("are settings, which Marketing reaches from its section", async ({ page }) => {
-    // getpack-api grants Marketing settings.read (mocks/generated/rbac.ts); a role without it has
-    // no entry (MarketingNav's `permission`).
+  test("are settings Marketing reads from its section and does not change", async ({ page }) => {
+    // getpack-api grants Marketing settings.read and settings.change (every owning role holds both),
+    // but a setting is changed only by its owner (D-063): these belong to someone else.
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing`);
     await page.getByRole("navigation", { name: "ส่วนงานการตลาด" }).getByRole("link", { name: "แต้มสะสม" }).click();
     await expect(page).toHaveURL(/\/marketing\/loyalty$/);
     await expect(page.getByRole("heading", { name: /^รางวัลเพื่อนแนะนำ/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: "ตั้งค่าใหม่" })).toHaveCount(0);
   });
 
   test("the setting's owner schedules a new version", async ({ page }) => {
