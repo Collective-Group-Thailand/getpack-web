@@ -246,10 +246,10 @@ jobs:
     name: visual snapshots (storybook)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Not blocking yet: the committed baselines are macOS, and text rasterises differently on
-    # Linux, so every shot would differ for a reason that is not a regression. Generate the
-    # Linux set once on this runner — `pnpm e2e:visual:update`, download the artifact below,
-    # commit `e2e/__screenshots__/linux/` — then delete this line and the job becomes a gate.
+    # Not blocking yet: the Linux baselines (`e2e/__screenshots__/linux/`) were first taken on this
+    # runner on 2026-10-24. Once they hold steady over a few runs, delete this line and the job
+    # becomes a gate. A deliberate change: run `pnpm e2e:visual:update` here, download the artifact
+    # below and commit the Linux set.
     continue-on-error: true
     steps:
       - uses: actions/checkout@v5
