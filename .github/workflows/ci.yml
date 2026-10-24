@@ -127,9 +127,15 @@ jobs:
           retention-days: 7
 
   e2e:
-    name: e2e (Playwright)
+    name: e2e (Playwright ${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # ~470 tests on one worker outgrow one runner's half hour: three shards, each with its own
+    # build and mock API (the suite's state lives in that server), side by side.
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v5
 
@@ -146,12 +152,12 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Playwright
-        run: pnpm e2e
+        run: pnpm e2e --shard=${{ matrix.shard }}/3
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 7
 
@@ -201,7 +207,8 @@ jobs:
   lighthouse:
     name: lighthouse (performance budgets)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Seven URL sets, three runs a URL, on one server: past half an hour on a shared runner.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
 
