@@ -16,7 +16,7 @@ import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
-import { FormDialog, FormError, problemMessage, QueryError, Section, StatusChip, useCan } from "../console";
+import { FormDialog, FormError, problemMessage, QueryError, Section, StatusChip, useActor, useCan } from "../console";
 import { adminBrowserApis } from "../console/api";
 
 type Setting = Schemas["SettingDto"];
@@ -80,7 +80,10 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
   const tSetting = useTranslations(`marketing.loyalty.settings`);
   const format = useFormat();
   const queryClient = useQueryClient();
-  const canChange = useCan("settings.change");
+  const actor = useActor();
+  // settings.change is every owning role's; each may change only the settings it owns (D-063), as
+  // the Settings screen and getpack-api's owner check have it.
+  const canChange = useCan("settings.change") && actor.roles.includes(setting.ownerRole);
   const [editing, setEditing] = useState(false);
   const value = setting.current?.value ?? null;
   const [draft, setDraft] = useState<Record<string, string>>({});
