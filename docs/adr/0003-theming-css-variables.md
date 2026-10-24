@@ -8,7 +8,7 @@ design-system.md §2 requires primitive → semantic → component token tiers, 
 ## Decision
 - Tokens are TypeScript (`src/ui/tokens`). `scripts/build-tokens.ts` emits `src/ui/generated/tokens.css`: a Tailwind v4 `@theme` block (primitives, radius, shadows, motion, type scale, and semantic *aliases* `--color-<name>: var(--sem-<name>)`) plus three `--sem-*` blocks for `:root`, `[data-theme='dark']`, `[data-theme='hc']`, and a `prefers-color-scheme: dark` fallback when no explicit theme is set.
 - Utilities such as `bg-primary`, `text-muted`, `border-border` therefore switch theme at runtime without rebuilding CSS.
-- `ThemeProvider` reads/writes the `pk_theme` cookie (host-only, per zone) so the server can stamp `data-theme` on `<html>` and avoid a flash; admin zone defaults to light, customer zone to system, partner zone offers `hc`.
+- `ThemeProvider` reads/writes the `pk_theme` cookie (host-only, per zone) so the server can stamp `data-theme` on `<html>` and avoid a flash; every zone defaults to light (the customer zone moved from system to light on 2026-10-24), `system` stays a user choice, partner zone offers `hc`.
 - `scripts/check-contrast.ts` converts OKLCH → sRGB (gamut-mapping by chroma reduction, as a browser does) and asserts WCAG 2.2 AA ratios for every declared semantic pair in all three themes — 32 pairs at the end of F0.2; it runs in `pnpm test`, and a semantic colour no pair mentions fails it too.
 
 ## Consequences

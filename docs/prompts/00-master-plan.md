@@ -13,7 +13,7 @@ One Next.js app gives one design system, one set of domain components (status ba
 
 | Zone | Host (env) | Local dev | Audience / token | Upstream API prefix | Default theme | SEO |
 |---|---|---|---|---|---|---|
-| customer | `PUBLIC_HOST` | `localhost:3000` | anonymous + `customer` | `/v1/store/*` | system | indexed, th at `/`, en at `/en` |
+| customer | `PUBLIC_HOST` | `localhost:3000` | anonymous + `customer` | `/v1/store/*` | light | indexed, th at `/`, en at `/en` |
 | admin | `ADMIN_HOST` | `admin.localhost:3000` | `staff` | `/v1/admin/*` | light | `noindex`, no sitemap |
 | partner | `PARTNER_HOST` | `partner.localhost:3000` | `partner` | `/v1/partner/*` | light / high-contrast | `noindex`, installable PWA |
 

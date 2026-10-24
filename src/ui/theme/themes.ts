@@ -21,12 +21,12 @@ export const THEME_COOKIE = "pk_theme";
 export const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 /**
- * Per-zone default when the visitor has not chosen (00-master-plan.md §2): the customer
- * zone follows the OS, admin is a light-first workspace, and the partner PWA starts light
- * with high contrast one tap away.
+ * Per-zone default when the visitor has not chosen (00-master-plan.md §2): every zone starts
+ * light whatever the OS says; dark (and `system`) stay one tap away in the toggle, and the
+ * partner PWA also offers high contrast.
  */
 export const ZONE_DEFAULT_THEME = {
-  customer: "system",
+  customer: "light",
   admin: "light",
   partner: "light",
 } as const satisfies Record<Zone, ThemeChoice>;
