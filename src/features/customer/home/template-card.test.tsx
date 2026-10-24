@@ -47,4 +47,20 @@ describe("a template card (visual review)", () => {
     expect(images).toContain(dieline.thumb.src);
     expect(images).not.toContain(dieline.card.src);
   });
+
+  it("falls back to the style library's own photo (thumbnail size) when the CMS sets none", () => {
+    const photo = { url: "/v1/store/catalog/images/s", alt: { th: "กล่อง", en: "Box" } };
+    const images = card({ style: { ...style, photo } as StyleCard });
+    expect(images).toEqual(["/bff/v1/store/catalog/images/s?size=thumb", dieline.thumb.src]);
+  });
+
+  it("prefers the CMS photo over the style's own photo", () => {
+    const photo = { url: "/v1/store/catalog/images/s", alt: { th: "กล่อง", en: "Box" } };
+    const images = card({
+      style: { ...style, photo } as StyleCard,
+      photo: { src: "/bff/v1/store/catalog/images/cms", alt: "", caption: null },
+    });
+    expect(images).toContain("/bff/v1/store/catalog/images/cms");
+    expect(images).not.toContain("/bff/v1/store/catalog/images/s?size=thumb");
+  });
 });

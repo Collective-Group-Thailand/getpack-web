@@ -1,4 +1,5 @@
 import type { StyleCard } from "@/features/customer/catalog/api.server";
+import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { styleHref } from "@/features/customer/styles/paths";
 import { Link } from "@/i18n/navigation";
@@ -30,7 +31,20 @@ export function Photo({ photo, className, eager = false }: { photo: HomePhoto; c
   );
 }
 
-/** One template: its picture well (a CMS photo, or the family's outline), the dieline tile, its name. */
+/**
+ * The style library's own photo of the style (D-426, `style_bases.photo_file_id`), for a card the CMS gives no
+ * photo: full size on the big card, the worker's WebP thumbnail on the others.
+ */
+export function stylePhoto(style: StyleCard, locale: string, big = false): HomePhoto | null {
+  const src = storeImageSrc(style.photo?.url, big ? "full" : "thumb");
+  if (!style.photo || !src) return null;
+  return { src, alt: pick(locale, style.photo.alt.th, style.photo.alt.en), caption: null };
+}
+
+/**
+ * One template: its picture well, the dieline tile, its name. The picture is the CMS photo set for the card,
+ * else the style's own photo, else the style's dieline on the sage ground.
+ */
 export function TemplateCard({
   style,
   locale,
@@ -53,12 +67,13 @@ export function TemplateCard({
   narrow?: boolean;
 }) {
   const name = pick(locale, style.nameTh, style.nameEn);
+  const picture = photo ?? stylePhoto(style, locale, big);
   return (
     <li className={cn(big && "sm:col-span-2 sm:row-span-2")}>
       <Link href={styleHref(style.code, name)} className="group block outline-none">
         <figure className={cn("bg-sage-subtle relative overflow-hidden", big ? "aspect-square" : "aspect-[4/3]")}>
-          {photo ? (
-            <Photo photo={{ ...photo, alt: "" }} />
+          {picture ? (
+            <Photo photo={{ ...picture, alt: "" }} />
           ) : dieline.card ? (
             // Until the style has a photo, its dieline fills the card on the sage ground.
             // eslint-disable-next-line @next/next/no-img-element -- an inline SVG data URI, nothing to optimise
@@ -72,7 +87,7 @@ export function TemplateCard({
             />
           ) : null}
           {/* The corner thumbnail names the shape over a photo; over the dieline itself it would repeat it. */}
-          {photo && dieline.thumb ? (
+          {picture && dieline.thumb ? (
             <span className="border-border bg-surface rounded-thumb absolute start-2.5 top-2.5 h-[46px] w-16 border p-1">
               {/* eslint-disable-next-line @next/next/no-img-element -- an inline SVG data URI */}
               <img src={dieline.thumb.src} alt="" className="size-full object-contain" />
