@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F2 2.2 — orders and the CS desk, against the mock API.
@@ -25,7 +26,7 @@ async function expectAxeClean(page: Page) {
 }
 
 async function choose(page: Page, label: string | RegExp, option: string | RegExp) {
-  await page.getByRole("combobox", { name: label }).click();
+  await choiceList(page, label).click();
   await page.getByRole("option", { name: option }).first().click();
 }
 
@@ -134,7 +135,7 @@ test.describe("order actions", () => {
     await page.getByRole("menuitem", { name: /ยกเลิกคำสั่งซื้อ/ }).click();
     const dialog = page.getByRole("alertdialog");
     // Only the reasons staff may give (D-060).
-    await page.getByRole("combobox", { name: /เหตุผล/ }).click();
+    await choiceList(page, /เหตุผล/).click();
     await expect(page.getByRole("option", { name: "เปลี่ยนใจ" })).toHaveCount(0);
     await page.keyboard.press("Escape");
     await choose(page, /เหตุผล/, "ลูกค้าขอยกเลิก");

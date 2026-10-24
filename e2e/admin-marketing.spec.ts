@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F2 2.7 — marketing, customers and B2B companies, against the mock API.
@@ -30,7 +31,7 @@ async function expectAxeClean(page: Page) {
 }
 
 async function choose(page: Page, label: string | RegExp, option: string | RegExp) {
-  await page.getByRole("combobox", { name: label }).click();
+  await choiceList(page, label).click();
   await page.getByRole("option", { name: option }).first().click();
 }
 
@@ -198,12 +199,14 @@ test.describe("referrals (D-136)", () => {
 });
 
 test.describe("loyalty rules (D-130…D-136)", () => {
-  test("are settings Marketing does not change", async ({ page }) => {
+  test("are settings, which Marketing reaches from its section", async ({ page }) => {
+    // getpack-api grants Marketing settings.read (mocks/generated/rbac.ts); a role without it has
+    // no entry (MarketingNav's `permission`).
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing`);
-    await expect(
-      page.getByRole("navigation", { name: "ส่วนงานการตลาด" }).getByRole("link", { name: "แต้มสะสม" }),
-    ).toHaveCount(0);
+    await page.getByRole("navigation", { name: "ส่วนงานการตลาด" }).getByRole("link", { name: "แต้มสะสม" }).click();
+    await expect(page).toHaveURL(/\/marketing\/loyalty$/);
+    await expect(page.getByRole("heading", { name: /^รางวัลเพื่อนแนะนำ/ })).toBeVisible();
   });
 
   test("the setting's owner schedules a new version", async ({ page }) => {

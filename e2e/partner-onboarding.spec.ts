@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsPartner, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F5 5.1 — the partner zone's onboarding and price tables, on a phone, against the mock API.
@@ -28,7 +29,7 @@ async function expectAxeClean(page: Page) {
 }
 
 async function choose(page: Page, label: string | RegExp, option: string | RegExp) {
-  await page.getByRole("combobox", { name: label }).click();
+  await choiceList(page, label).click();
   await page.getByRole("option", { name: option }).first().click();
 }
 
@@ -77,7 +78,7 @@ test.describe("an applicant's onboarding wizard (F005)", () => {
     await page.getByRole("button", { name: "ส่งใบสมัคร" }).click();
     await expect(dialog(page)).toContainText("ลูกฟูกใหม่ สาขาบางนา");
     await dialog(page).getByRole("button", { name: "ส่งใบสมัคร" }).click();
-    await expect(page.getByText("ส่งใบสมัครแล้ว ทีมพาร์ตเนอร์จะติดต่อกลับ")).toBeVisible();
+    await expect(page.getByText("ส่งใบสมัครแล้ว ทีมดูแลโรงงานจะติดต่อกลับ")).toBeVisible();
     // The step is submitted, and the factory moves to review on the tracker.
     await expect(page.getByText("ส่งตรวจแล้ว").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "ส่งใบสมัคร" })).toHaveCount(0);
@@ -115,7 +116,7 @@ test.describe("assisted onboarding (F006)", () => {
     await page.getByRole("button", { name: "ยอมรับอัตราทั้งฉบับ" }).click();
     await dialog(page).getByRole("button", { name: "ยอมรับอัตราทั้งฉบับ" }).click();
     await expect(page.getByText("ยอมรับอัตราแล้ว")).toBeVisible();
-    await expect(page.getByText("โรงงานยอมรับแล้ว").first()).toBeVisible();
+    await expect(page.getByText("คุณยอมรับแล้ว").first()).toBeVisible();
 
     // The tier-B list getpack entered for it: signed off, so it applies.
     await gotoHydrated(page, `${HOSTS.partner}/prices`);
@@ -140,17 +141,23 @@ test.describe("a factory price-list proposal (F001)", () => {
     await expectAxeClean(page);
 
     await page.getByLabel(/^เหตุผล/).fill("ค่าแรงขั้นต่ำปรับขึ้น");
-    await page.getByRole("button", { name: "เริ่มร่างข้อเสนอ" }).click();
+    await page.getByRole("button", { name: "เริ่มแก้ราคา" }).click();
     await expect(page).toHaveURL(/\/prices\/proposals\//);
     const proposalId = page.url().split("/").pop()!;
-    await expect(page.getByText("ฉบับร่าง").first()).toBeVisible();
+    await expect(page.getByText("แก้ไว้ ยังไม่ส่ง").first()).toBeVisible();
 
-    await choose(page, "ส่วนประกอบราคา", "ของเสียงานพิมพ์");
-    await choose(page, "บรรทัดในราคาปัจจุบัน", /จำนวนตั้งแต่/);
-    await page.getByLabel(/^แผ่นเผื่อเสีย/).fill("60");
-    await page.getByRole("button", { name: "เพิ่มการแก้ไขบรรทัดนี้" }).click();
-    await expect(page.getByText("เพิ่มในข้อเสนอแล้ว")).toBeVisible();
-    await expect(page.getByRole("list", { name: "บรรทัดในร่างข้อเสนอ" }).getByRole("listitem")).toHaveCount(1);
+    // The price list is a sheet: pick the component, change a number in place, save the draft.
+    await choose(page, "ส่วนของราคา", /^ของเสียงานพิมพ์/);
+    await page
+      .getByRole("textbox", { name: /^แผ่นเผื่อเสีย/ })
+      .first()
+      .fill("60");
+    await page
+      .getByRole("region", { name: "การแก้ที่ยังไม่บันทึก" })
+      .getByRole("button", { name: "บันทึกไว้ก่อน (ยังไม่ส่ง)" })
+      .click();
+    await expect(page.getByText(/^บันทึก 1 บรรทัดไว้แล้ว/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "การเปลี่ยนแปลงในร่างนี้ (1)" })).toBeVisible();
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "ส่งข้อเสนอให้ getpack" }).click();
@@ -175,13 +182,15 @@ test.describe("the partner zone's permissions", () => {
     await expect(page.getByText("คุณไม่มีสิทธิ์เปิดหน้านี้")).toBeVisible();
   });
 
-  test("another factory's proposal is not found, and an unknown step is a 404", async ({ page }) => {
+  test("another factory's proposal is not found, and neither is an unknown step", async ({ page }) => {
     await signInAsPartner(page, "owner");
     // F006's rate card, by id: D-044 says not found, not forbidden.
     await gotoHydrated(page, `${HOSTS.partner}/prices/proposals/00000000-0000-4000-8000-707072000004`);
     await expect(page.getByText("ไม่พบรายการนี้")).toBeVisible();
-    const response = await page.goto(`${HOSTS.partner}/onboarding/not-a-step`);
-    expect(response?.status()).toBe(404);
+    // The console streams its loading skeleton first (`(console)/loading.tsx`), so an unknown step is
+    // a not-found page under a 200 rather than a 404 status — the page, not the code, is what shows.
+    await gotoHydrated(page, `${HOSTS.partner}/onboarding/not-a-step`);
+    await expect(page.getByRole("heading", { name: "ไม่พบหน้านี้" })).toBeVisible();
   });
 
   test("the requests screen asks the Partner team and lists the answers", async ({ page }) => {
@@ -189,7 +198,7 @@ test.describe("the partner zone's permissions", () => {
     await signInAsPartner(page, "planner");
     await gotoHydrated(page, `${HOSTS.partner}/requests`);
     await expect(page.getByText("ปรับกำลังผลิตให้แล้ว มีผลตั้งแต่สัปดาห์หน้า")).toBeVisible();
-    await expect(page.getByText("เจ้าของโรงงานเป็นผู้ส่งคำขอถึงทีมพาร์ตเนอร์")).toBeVisible();
+    await expect(page.getByText("เจ้าของโรงงานเป็นผู้ส่งคำขอถึงทีมดูแลโรงงาน")).toBeVisible();
 
     await signInAsPartner(page, "owner");
     await gotoHydrated(page, `${HOSTS.partner}/requests`);
@@ -197,7 +206,7 @@ test.describe("the partner zone's permissions", () => {
     await choose(page, "เรื่อง", "กำลังผลิต");
     await page.getByLabel(/^รายละเอียด/).fill("ปิดซ่อมเครื่องพิมพ์ 2 วันสัปดาห์หน้า");
     await page.getByRole("button", { name: "ส่งคำขอ" }).click();
-    await expect(page.getByText("ส่งคำขอแล้ว ทีมพาร์ตเนอร์จะตอบกลับ")).toBeVisible();
+    await expect(page.getByText("ส่งคำขอแล้ว ทีมดูแลโรงงานจะตอบกลับ")).toBeVisible();
     await expect(page.getByText("ปิดซ่อมเครื่องพิมพ์ 2 วันสัปดาห์หน้า")).toBeVisible();
     await expectAxeClean(page);
   });

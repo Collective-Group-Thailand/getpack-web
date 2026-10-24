@@ -34,6 +34,8 @@ async function openStudio(page: Page) {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
   // A link that names the box and asks for the design step starts with that box (round 2, B6).
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
+  // The split view's model loads with the first interaction (ADR-0010; Editor's useFirstInteraction).
+  await page.mouse.move(1, 1);
   return STUDIO.exec(page.url())![1]!;
 }
 

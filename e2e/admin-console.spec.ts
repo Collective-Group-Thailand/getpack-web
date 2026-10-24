@@ -2,7 +2,8 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
-import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { adminMenuLink, gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F2 2.1 — the back-office foundation, against the MSW mock of getpack-api B1.3 plus the F2
@@ -24,7 +25,7 @@ async function expectAxeClean(page: Page) {
 
 /** Radix Select: open the trigger named `label`, then pick `option`. */
 async function choose(page: Page, label: string | RegExp, option: string) {
-  await page.getByRole("combobox", { name: label }).click();
+  await choiceList(page, label).click();
   await page.getByRole("option", { name: option, exact: true }).click();
 }
 
@@ -36,27 +37,22 @@ const CS_LIMIT_SETTING = "00000000-0000-4000-8000-736574000003";
 test.describe("the menu follows the entitlements", () => {
   test("a superadmin sees the system screens a CS agent does not", async ({ page }) => {
     await signInAsStaff(page, "superadmin");
-    const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
     for (const name of ["ผู้ใช้และสิทธิ์", "ตั้งค่าระบบ", "บันทึกการใช้งาน", "เปิด/ปิดฟีเจอร์", "คิวเหตุการณ์ระบบ"]) {
-      await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
+      await expect(await adminMenuLink(page, name)).toBeVisible();
     }
   });
 
   test("the auditor reads the audit log and cannot open settings", async ({ page }) => {
     await signInAsStaff(page, "auditor");
-    const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
-    await expect(nav.getByRole("link", { name: "บันทึกการใช้งาน", exact: true })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "เปิด/ปิดฟีเจอร์" })).toHaveCount(0);
+    await expect(await adminMenuLink(page, "บันทึกการใช้งาน")).toBeVisible();
+    await expect(await adminMenuLink(page, "เปิด/ปิดฟีเจอร์")).toHaveCount(0);
   });
 });
 
 test.describe("ops monitor (getpack-api B6.3)", () => {
   test("an admin opens the signals from the menu; a CS agent has no entry", async ({ page, browser }) => {
     await signInAsStaff(page, "admin");
-    await page
-      .getByRole("navigation", { name: "เมนูหลัก" })
-      .getByRole("link", { name: "เฝ้าระวังระบบ", exact: true })
-      .click();
+    await (await adminMenuLink(page, "เฝ้าระวังระบบ")).click();
     await expect(page.getByRole("heading", { level: 1, name: "เฝ้าระวังระบบ" })).toBeVisible();
     // The contract's own example row: dead letters 0 against a threshold of 1.
     const row = page.getByRole("row", { name: /dead letter/ });
@@ -64,9 +60,7 @@ test.describe("ops monitor (getpack-api B6.3)", () => {
 
     const cs = await browser.newPage();
     await signInAsStaff(cs, "cs");
-    await expect(
-      cs.getByRole("navigation", { name: "เมนูหลัก" }).getByRole("link", { name: "เฝ้าระวังระบบ" }),
-    ).toHaveCount(0);
+    await expect(await adminMenuLink(cs, "เฝ้าระวังระบบ")).toHaveCount(0);
     await cs.close();
   });
 });

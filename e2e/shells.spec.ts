@@ -35,19 +35,28 @@ test.describe("admin shell", () => {
       "แคตตาล็อก",
       "ลูกค้า",
       "บริษัทคู่ค้า",
+      "กล่องข้อความลูกค้า",
+      "ราคาและนโยบาย",
+      "ตั้งค่าการจัดส่ง",
+      "ผู้ช่วยเลือกโครงสร้าง",
+      "คลังแบบกล่อง",
+      "รีวิวจากลูกค้า",
       // Screens the API's menu does not list yet, offered by permission (`localItems`).
       "ตัวอย่างสินค้า",
       "คำขอออกแบบโครงสร้าง",
     ];
-    await expect(nav.getByRole("link")).toHaveCount(expected.length);
+    // Past FOLD_FROM entries the groups fold (AdminSidebar); folded entries still count.
+    await expect(nav.getByRole("link", { includeHidden: true })).toHaveCount(expected.length);
     // A link's name may end with its count badge ("คำสั่งซื้อ 34 งานรอ"), so names match from the start.
     const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     for (const name of expected)
-      await expect(nav.getByRole("link", { name: new RegExp(`^${escape(name)}(\\s|\\d|$)`) })).toBeVisible();
+      await expect(
+        nav.getByRole("link", { name: new RegExp(`^${escape(name)}(\\s|\\d|$)`), includeHidden: true }),
+      ).toBeAttached();
 
     // Nothing this staff user was not entitled to.
-    await expect(nav.getByRole("link", { name: "ผู้ใช้และสิทธิ์" })).toHaveCount(0);
-    await expect(nav.getByRole("link", { name: "ตั้งค่าระบบ" })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "ผู้ใช้และสิทธิ์", includeHidden: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "ตั้งค่าระบบ", includeHidden: true })).toHaveCount(0);
   });
 
   test("marks the current page for a screen reader, not just with a colour", async ({ page }) => {
@@ -138,9 +147,9 @@ test.describe("partner shell", () => {
     await signInAsPartner(page);
 
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
-    // Today, jobs, ship and "more" for the planner of a producing factory: billing is not a
-    // planner's (F5 `partnerNav` leaves out what the role cannot open).
-    await expect(nav.getByRole("link")).toHaveCount(4);
+    // Today, jobs, floor, ship and "more" for the planner of a producing factory: billing is not a
+    // planner's (`partnerBottomItems` keeps four of what the role can open).
+    await expect(nav.getByRole("link")).toHaveCount(5);
 
     // design-system.md §5: 48 px is the floor for the partner app; these are 64.
     const box = await nav.getByRole("link", { name: "งานผลิต" }).boundingBox();

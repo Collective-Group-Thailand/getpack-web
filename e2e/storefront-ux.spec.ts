@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { HOSTS } from "../playwright.config";
 import { MOCK_ARTIST_PHONE, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * U5.1–U5.4, U5.6, U5.7 against the mock API: the launchpad, notification deep links, a
@@ -124,7 +125,7 @@ test.describe("U5.4 — the RFQ basket", () => {
   test("two items go into the basket and leave as one submission", async ({ page }) => {
     test.slow();
     await signInAsCustomer(page, "/rfq/rigid-box", COMPANY_BUYER);
-    await page.getByRole("combobox", { name: /รูปแบบการปิด/ }).click();
+    await choiceList(page, /รูปแบบการปิด/).click();
     await page.getByRole("option", { name: "ฝาแม่เหล็ก" }).click();
     await page.getByLabel(/^ยาว/).fill("200");
     await page.getByLabel(/^กว้าง/).fill("150");
@@ -134,7 +135,7 @@ test.describe("U5.4 — the RFQ basket", () => {
     await expect(page.getByText("รายการในตะกร้า (1)")).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/rfq/rigid-box`);
-    await page.getByRole("combobox", { name: /รูปแบบการปิด/ }).click();
+    await choiceList(page, /รูปแบบการปิด/).click();
     await page.getByRole("option", { name: "ลิ้นชัก" }).click();
     await page.getByLabel(/^ยาว/).fill("120");
     await page.getByLabel(/^กว้าง/).fill("80");

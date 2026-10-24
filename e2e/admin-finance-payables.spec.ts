@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F6.2 — payables, payouts and banking, against the MSW mock of the published B5.3 surface. The
@@ -159,7 +160,7 @@ test.describe("vendors and bank-account changes (§8, D-169)", () => {
     const bill = page.getByRole("dialog", { name: /บันทึกบิลของ/ });
     await bill.getByLabel(/^เลขที่บิล/).fill("FL-E2E-0001");
     await bill.getByLabel(/^วันที่บิล/).fill(new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10));
-    await bill.getByRole("combobox", { name: /^บัญชี/ }).click();
+    await choiceList(bill, /^บัญชี/).click();
     await page.getByRole("option", { name: /^5140/ }).click();
     await bill.getByLabel(/^รายละเอียด/).fill("ออกแบบฉลาก (e2e)");
     await bill.getByLabel(/^มูลค่า/).fill("2500");

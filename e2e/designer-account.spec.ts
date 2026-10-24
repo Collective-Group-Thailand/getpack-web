@@ -4,6 +4,7 @@ import { HOSTS } from "../playwright.config";
 import { acceptCookies, MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { addHeading } from "./helpers/designer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F4 Part C end to end: designs in the account instead of the browser.
@@ -183,7 +184,7 @@ test("from a product page: the studio with its live price, which follows quantit
   await expect(price).toBeVisible({ timeout: 15_000 });
   const blank = await price.textContent();
 
-  await dock.getByRole("combobox", { name: "จำนวน" }).click();
+  await choiceList(dock, "จำนวน").click();
   await page.getByRole("option").last().click();
   await expect(price).not.toHaveText(blank!, { timeout: 15_000 });
   const larger = await price.textContent();

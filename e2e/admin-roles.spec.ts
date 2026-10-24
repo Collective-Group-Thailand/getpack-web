@@ -26,10 +26,16 @@ for (const persona of PERSONAS) {
     // (`localItems`, CONTRACT-REQUEST admin.menu-samples); every one of them must open too.
     const LOCAL = ["/samples", "/structural-requests", "/style-intakes"];
     await expect(nav.getByRole("link").first()).toBeVisible();
-    const hrefs = await nav.getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href")!));
-    expect(hrefs.filter((href) => !LOCAL.includes(href) || entries.some((entry) => entry.path === href))).toHaveLength(
-      entries.length,
-    );
+    // Past FOLD_FROM entries the groups fold (AdminSidebar); a folded entry is still in the menu.
+    const hrefs = await nav
+      .getByRole("link", { includeHidden: true })
+      .evaluateAll((links) => links.map((link) => link.getAttribute("href")!));
+    expect(
+      hrefs.filter(
+        (href) =>
+          !LOCAL.includes(href) || entries.some((entry) => (entry.path.replace(/^\/admin/, "") || "/") === href),
+      ),
+    ).toHaveLength(entries.length);
     for (const href of hrefs) {
       await gotoHydrated(page, `${HOSTS.admin}${href}`);
       await expect(page.getByRole("heading", { level: 1 }), href).toBeVisible();

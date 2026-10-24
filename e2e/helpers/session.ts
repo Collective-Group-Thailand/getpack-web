@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 import { HOSTS } from "../../playwright.config";
 
@@ -72,6 +72,19 @@ export async function signInAsStaff(page: Page, persona: Persona = "cs"): Promis
 }
 
 /**
+ * An entry of the admin sidebar by its name. Past a dozen entries the sidebar folds its groups
+ * and offers a menu search (AdminSidebar); this searches the way a person would, so the entry is
+ * shown whichever group it is in. An entry the menu does not hold is still a (count 0) locator.
+ */
+export async function adminMenuLink(page: Page, name: string): Promise<Locator> {
+  const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
+  await expect(nav.getByRole("link").first()).toBeVisible();
+  const search = nav.getByRole("searchbox", { name: "ค้นหาเมนู" });
+  if (await search.count()) await search.fill(name);
+  return nav.getByRole("link", { name, exact: true });
+}
+
+/**
  * The factory personas the mock API knows (`mocks/partner/personas.ts`): one per D-140 factory
  * role at F001, the applicant owner of F005 and the assisted owner of F006. The default,
  * `planner`, is the account the F1 tests were written against.
@@ -107,6 +120,11 @@ export async function signInAsPartner(page: Page, persona: PartnerPersona = "pla
  * `HydrationMark` once React has hydrated — so the next click is not dropped.
  */
 export async function gotoHydrated(page: Page, url: string): Promise<void> {
-  await page.goto(url);
+  // A navigation the app starts itself (a redirect after signing in) can abort this one; once more.
+  await page.goto(url).catch(async (error: Error) => {
+    if (!/ERR_ABORTED|interrupted by another navigation/.test(error.message)) throw error;
+    await page.waitForLoadState("load");
+    await page.goto(url);
+  });
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }

@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F2 2.8 — logistics, claims, the demand dashboard and reports, against the mock API.
@@ -27,7 +28,7 @@ async function expectAxeClean(page: Page) {
 }
 
 async function choose(page: Page, label: string | RegExp, option: string | RegExp) {
-  await page.getByRole("combobox", { name: label }).click();
+  await choiceList(page, label).click();
   await page.getByRole("option", { name: option }).first().click();
 }
 
@@ -125,7 +126,7 @@ test.describe("claims (D-082, D-083)", () => {
     await expect(page.getByText(/ตามกฎ: โรงงาน/)).toBeVisible();
     // The rule behind the liability, and the customer, are on the claim now (U-B0.2).
     await expect(page.getByText(/^กฎ: /)).toBeVisible();
-    await expect(page.getByText("ลูกค้า", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("main").getByText("ลูกค้า", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /^รูปสินค้า 1/ })).toBeVisible();
     await expectAxeClean(page);
 
@@ -227,7 +228,7 @@ test.describe("demand analytics (D-102)", () => {
     // Whether a drop is alarming is the API's call (D-303): the mock's claim journey fell.
     await expect(page.getByText("1 เส้นทางลดลงเกินเกณฑ์ในสัปดาห์ล่าสุด")).toBeVisible();
 
-    await page.getByRole("combobox", { name: "เส้นทาง" }).click();
+    await choiceList(page, "เส้นทาง").click();
     await page.getByRole("option", { name: "T9 · แจ้งปัญหาสินค้า" }).click();
     await expect(page.getByRole("row", { name: /ส่งเรื่อง/ })).toBeVisible();
     const week = page.getByRole("table", { name: "การตรวจรายสัปดาห์" });
@@ -251,7 +252,7 @@ test.describe("operational reports (B6.2)", () => {
     await gotoHydrated(page, `${HOSTS.admin}/reports`);
     await page.getByRole("link", { name: /^รายงานยอดขาย/ }).click();
     await expect(page).toHaveURL(/\/reports\/sales$/);
-    await page.getByRole("combobox", { name: "ช่วงเวลา" }).click();
+    await choiceList(page, "ช่วงเวลา").click();
     await page.getByRole("option", { name: "กำหนดเอง", exact: true }).click();
     await page.getByLabel(/^ตั้งแต่/).fill("2026-09-01");
     await page.getByLabel(/^ถึง/).fill("2026-09-03");
@@ -272,7 +273,7 @@ test.describe("operational reports (B6.2)", () => {
   test("a report ends with the API's totals row", async ({ page }) => {
     await signInAsStaff(page, "finance");
     await gotoHydrated(page, `${HOSTS.admin}/reports/sales`);
-    await page.getByRole("combobox", { name: "ช่วงเวลา" }).click();
+    await choiceList(page, "ช่วงเวลา").click();
     await page.getByRole("option", { name: "กำหนดเอง", exact: true }).click();
     await page.getByLabel(/^ตั้งแต่/).fill("2026-09-01");
     await page.getByLabel(/^ถึง/).fill("2026-09-03");

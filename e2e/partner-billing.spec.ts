@@ -38,8 +38,11 @@ test.describe("billing and payouts (F001)", () => {
     await expectAxeClean(page);
 
     await page
-      .getByRole("link", { name: /รอโรงงานตรวจ/ })
+      .getByRole("list", { name: "วางบิล", exact: true })
+      .getByRole("listitem")
+      .filter({ hasText: "รอคุณตรวจและยืนยัน" })
       .first()
+      .getByRole("link")
       .click();
     await expect(page).toHaveURL(/\/billing\/[0-9a-f-]+$/);
     await expect(page.getByRole("heading", { level: 1, name: /^BS-/ })).toBeVisible();
@@ -79,8 +82,8 @@ test.describe("billing and payouts (F001)", () => {
     await expect(page.getByRole("heading", { level: 1, name: /^PV-/ })).toBeVisible();
     const pvNumber = (await page.getByRole("heading", { level: 1 }).textContent())!;
     // The documents of a paid payout (`partner.payables.payoutDocuments`).
-    await expect(page.getByRole("link", { name: /ใบแจ้งการโอนเงิน/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: /หนังสือรับรองการหักภาษี ณ ที่จ่าย/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /ใบแจ้งการโอนเงิน/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /หนังสือรับรองการหักภาษี ณ ที่จ่าย/ })).toBeVisible();
     await expectAxeClean(page);
 
     await gotoHydrated(page, `${HOSTS.partner}/payouts/statement`);
@@ -101,12 +104,12 @@ test.describe("claims, performance and settings", () => {
     await expect(page.getByRole("heading", { level: 1, name: /^CL-/ })).toBeVisible();
     const claimNo = (await page.getByRole("heading", { level: 1 }).textContent())!;
     await expectAxeClean(page);
-    await page.getByRole("radio", { name: /โต้แย้ง/ }).click();
+    await page.getByRole("radio", { name: "ไม่ยอมรับ", exact: true }).click();
     await page.getByLabel(/^รายละเอียด/).fill("ผลิตตาม Proof ที่ลูกค้าอนุมัติ กล่องแพ็กแน่นก่อนส่ง");
     await page.getByRole("button", { name: "ส่งคำตอบ" }).click();
     await dialog(page).getByRole("button", { name: "ส่งคำตอบ" }).click();
     await expect(page.getByText(`ส่งคำตอบเคลม ${claimNo} แล้ว`)).toBeVisible();
-    await expect(page.getByText("โรงงานโต้แย้งเคลม")).toBeVisible();
+    await expect(page.getByText(/^คุณไม่ยอมรับเคลมนี้/)).toBeVisible();
 
     await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/claims`);
@@ -117,12 +120,14 @@ test.describe("claims, performance and settings", () => {
   test("performance and settings read, add a user, and switch to high contrast", async ({ page }) => {
     await signInAsPartner(page, "owner");
     await gotoHydrated(page, `${HOSTS.partner}/performance`);
-    await expect(page.getByText("รับงานตรงเวลา").first()).toBeVisible();
+    await expect(page.getByText("รับงานตรงเวลา").filter({ visible: true }).first()).toBeVisible();
     await expectAxeClean(page);
 
     await gotoHydrated(page, `${HOSTS.partner}/settings`);
     // The owner's own row is read-only, and there is no owner role to give (D-171).
-    await expect(page.getByText("นี่คือบัญชีของคุณ")).toBeVisible();
+    await expect(page.getByText("นี่คือบัญชีของคุณ").filter({ visible: true })).toBeVisible();
+    // The form folds under its own "เพิ่มผู้ใช้" summary until it is wanted.
+    await page.locator("summary", { hasText: "เพิ่มผู้ใช้" }).click();
     const create = page.locator("form").filter({ has: page.getByRole("button", { name: "เพิ่มผู้ใช้" }) });
     await expect(create.getByRole("checkbox", { name: "เจ้าของโรงงาน" })).toHaveCount(0);
     await create.getByRole("textbox", { name: /^ชื่อ/ }).fill("ฝ่าย QC ใหม่ (ข้อมูลจำลอง)");
@@ -138,7 +143,7 @@ test.describe("claims, performance and settings", () => {
     await create.getByRole("checkbox", { name: /ฝ่ายควบคุมคุณภาพ/ }).click();
     await create.getByRole("button", { name: "เพิ่มผู้ใช้" }).click();
     await expect(page.getByText("เพิ่มผู้ใช้แล้ว แจ้งรหัสผ่านแรกให้เจ้าตัวโดยตรง")).toBeVisible();
-    await expect(page.getByText("qc.new@factory.invalid")).toBeVisible();
+    await expect(page.getByText("qc.new@factory.invalid").filter({ visible: true })).toBeVisible();
     await expect(page.getByText("first-sign-in-2569")).toHaveCount(0);
     await page.getByRole("radio", { name: "4 × 6 นิ้ว" }).click();
     await expect(page.getByText("บันทึกขนาดฉลากแล้ว")).toBeVisible();

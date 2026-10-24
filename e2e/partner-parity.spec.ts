@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
-import { signInAsPartner } from "./helpers/session";
+import { gotoHydrated, signInAsPartner } from "./helpers/session";
 
 /**
  * U2.F7 — partner parity on a phone, against the mock API: the Today counters with samples and
@@ -15,6 +15,15 @@ const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 async function expectAxeClean(page: Page) {
   await page.waitForLoadState("networkidle").catch(() => {});
   await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 10_000 });
+  // A colour still mid-transition (a tab just made current) is not what the page shows.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => undefined)),
+    ),
+  );
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
   expect(
     violations,
@@ -45,7 +54,7 @@ test("the owner sets new working hours from tomorrow and a closure; another role
   await page.getByRole("checkbox", { name: "เสาร์" }).click();
   await page.getByRole("button", { name: "บันทึกเวลาทำการ" }).click();
   await expect(page.getByText(/^บันทึกแล้ว เริ่มใช้ /)).toBeVisible();
-  await expect(page.getByText(/^มีเวลาทำการใหม่ที่จะเริ่ม /)).toBeVisible();
+  await expect(page.getByText(/^เวลาทำการที่ตั้งไว้จะเริ่มใช้ /)).toBeVisible();
 
   const day = new Date(Date.now() + 20 * 86_400_000 + 7 * 3_600_000).toISOString().slice(0, 10);
   await page.getByLabel("วันที่ปิด").fill(day);
@@ -79,7 +88,7 @@ test("the payout calendar, by purchase order and by run", async ({ page }) => {
 
 test("the knowledge base: searched, by category, and an article", async ({ page }) => {
   await signInAsPartner(page, "qc");
-  await page.goto(`${HOSTS.partner}/knowledge?category=qc-photo-standard`);
+  await gotoHydrated(page, `${HOSTS.partner}/knowledge?category=qc-photo-standard`);
   await expect(page.getByRole("heading", { level: 1, name: "คู่มือโรงงาน" })).toBeVisible();
   await expect(page.getByRole("link", { name: "มาตรฐานรูป QC" })).toHaveAttribute("aria-current", "page");
   await expectAxeClean(page);

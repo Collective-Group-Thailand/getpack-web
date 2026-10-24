@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { HOSTS } from "../playwright.config";
 import { MOCK_BUYER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F3 3.3 end to end: two items in the cart, one split across two addresses; a coupon and points;
@@ -78,7 +79,7 @@ test.describe("cart and checkout", () => {
 
     await first.getByRole("spinbutton", { name: "จำนวน" }).fill("400");
     await first.getByRole("button", { name: "เพิ่มที่อยู่ปลายทาง" }).click();
-    await first.getByRole("combobox", { name: "ที่อยู่ที่ 2" }).click();
+    await choiceList(first, "ที่อยู่ที่ 2").click();
     await page.getByRole("option", { name: /โกดังเชียงใหม่/ }).click();
     await first.getByRole("spinbutton", { name: "จำนวน" }).nth(1).fill("600");
     await expect(first.getByText("รวม 1,000 จาก 1,000")).toBeVisible();
@@ -96,9 +97,9 @@ test.describe("cart and checkout", () => {
 
     // A code is applied to the cart (store.cart.applyCode); the preview says what it took off.
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-    await page.getByLabel("โค้ดส่วนลด").fill("getpack10");
+    await page.getByRole("textbox", { name: "โค้ดส่วนลด" }).fill("getpack10");
     await page.getByRole("button", { name: "ใช้โค้ด" }).click();
-    await expect(page.getByText(/ใช้โค้ด GETPACK10 แล้ว/)).toBeVisible();
+    await expect(page.getByRole("list", { name: "โค้ดในตะกร้า" })).toContainText("GETPACK10ใช้ได้");
     await expect(summary).toContainText("ส่วนลด");
 
     await page.getByLabel(/^คะแนนที่ใช้/).fill("10");
@@ -291,13 +292,13 @@ test.describe("cart and checkout", () => {
     await sheet.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับหน้าร้าน");
     await sheet.getByLabel(/^เบอร์ผู้รับ/).fill("0812345678");
     await sheet.getByLabel(/^รหัสไปรษณีย์/).fill("20000");
-    await expect(sheet.getByRole("combobox", { name: /^แขวง\/ตำบล/ })).toContainText("ชลบุรี");
+    await expect(choiceList(sheet, /^แขวง\/ตำบล/)).toContainText("ชลบุรี");
     await sheet.getByLabel(/^บ้านเลขที่ อาคาร ถนน/).fill("5 ถนนทดสอบ");
     await expectNoViolations(page);
     await sheet.getByRole("button", { name: "บันทึกที่อยู่" }).click();
     await expect(sheet).toBeHidden();
     // The new address is one the split can send to at once.
-    await line.getByRole("combobox", { name: "ที่อยู่ที่ 1" }).click();
+    await choiceList(line, "ที่อยู่ที่ 1").click();
     await expect(page.getByRole("option", { name: /หน้าร้าน e2e/ })).toBeVisible();
   });
 

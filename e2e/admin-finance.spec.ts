@@ -120,7 +120,7 @@ test.describe("credit notes (§2, §8)", () => {
     await expect(finance.getByRole("heading", { name: "ขอออกใบลดหนี้" }).first()).toBeVisible();
     await expectAxeClean(finance);
 
-    await finance.getByRole("searchbox").fill("PK-2569-00134");
+    await finance.getByRole("searchbox", { name: "ค้นหาใบกำกับภาษี" }).fill("PK-2569-00134");
     await finance
       .getByRole("button", { name: /PK-2569-00134/ })
       .first()

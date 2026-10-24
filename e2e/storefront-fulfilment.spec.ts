@@ -44,8 +44,9 @@ test.describe.configure({ mode: "serial" });
 test.describe("after production", () => {
   test("the order shows its stages, and the public tracking page shows nothing personal", async ({ page, browser }) => {
     await signInAsCustomer(page, `/account/orders/${ORDER}`, MOCK_RECEIVER_PHONE);
-    const stages = page.getByRole("list", { name: "ความคืบหน้าของคำสั่งซื้อ" });
-    await expect(stages.locator("[aria-current=step]")).toContainText("รับสินค้า");
+    // The factory's own steps, under the order's seven-stage journey (account/orders/[orderId]).
+    const stages = page.getByRole("list", { name: "ขั้นตอนที่โรงงาน" });
+    await expect(stages).toContainText("รับสินค้า · ขั้นตอนปัจจุบัน");
     await expect(stages).toContainText("จัดส่ง · เสร็จแล้ว");
     await page.getByRole("button", { name: "ลิงก์ติดตามสถานะสำหรับแชร์" }).click();
     await expect(page).toHaveURL(/\/track\/trk/);

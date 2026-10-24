@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { HOSTS } from "../playwright.config";
 import { acceptCookies, completeSignIn, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated, MOCK_OTP, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F3 3.2 end to end: configure (3D preview, live price, price breaks, route to RFQ), keep the
@@ -187,7 +188,7 @@ test.describe("requests for quotation", () => {
     await customer.getByRole("button", { name: "ส่งคำขอใบเสนอราคา" }).click();
     await expect(customer.getByText(/ที่ต้องแก้ไข/)).toBeVisible();
 
-    await customer.getByRole("combobox", { name: /รูปแบบการปิด/ }).click();
+    await choiceList(customer, /รูปแบบการปิด/).click();
     await customer.getByRole("option", { name: "ฝาแม่เหล็ก" }).click();
     await customer.getByLabel(/^ยาว/).fill("200");
     await customer.getByLabel(/^กว้าง/).fill("150");

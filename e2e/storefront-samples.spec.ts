@@ -3,7 +3,18 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { signInAsCustomer } from "./helpers/customer";
-import { gotoHydrated, signInAsPartner, signInAsStaff } from "./helpers/session";
+import { adminMenuLink, gotoHydrated, signInAsPartner, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
+
+/** Opens the first sample in `status` from the account's samples table, by its "ดูรายละเอียด" link. */
+async function openSampleWith(page: Page, status: string) {
+  await page
+    .getByRole("row")
+    .filter({ has: page.getByRole("cell", { name: status, exact: true }) })
+    .first()
+    .getByRole("link", { name: /^ดูรายละเอียด/ })
+    .click();
+}
 
 /**
  * U2.F3, the sample arc against the mock API, across the three zones: the customer asks for a
@@ -53,14 +64,14 @@ test("the customer asks for a sample from a saved quotation", async ({ page }) =
 test("CS quotes the requested sample from the sample queue", async ({ page }) => {
   await signInAsStaff(page, "cs_lead");
   await gotoHydrated(page, `${HOSTS.admin}/orders`);
-  await page.getByRole("link", { name: "ตัวอย่างสินค้า" }).click();
+  await (await adminMenuLink(page, "ตัวอย่างสินค้า")).click();
   await expect(page).toHaveURL(/\/samples/);
   await page.getByRole("link", { name: "รอใบเสนอราคา" }).click();
   await page.getByRole("link", { name: "ตัวอย่างไม่พิมพ์" }).first().click();
   await expect(page.getByText("ขอดูโครงสร้างก่อน")).toBeVisible();
   await page.getByRole("button", { name: "เสนอราคาตัวอย่าง" }).click();
   const dialog = page.getByRole("dialog", { name: "เสนอราคาตัวอย่าง" });
-  await dialog.getByRole("combobox", { name: "บริการ" }).click();
+  await choiceList(dialog, "บริการ").click();
   await page.getByRole("option").first().click();
   await dialog.getByRole("textbox", { name: "ราคาขายรวม VAT (บาท)" }).fill("450");
   await dialog.getByRole("textbox", { name: "ทำเสร็จใน (วัน)" }).fill("5");
@@ -72,10 +83,7 @@ test("CS quotes the requested sample from the sample queue", async ({ page }) =>
 
 test("the customer buys a quoted sample through the cart", async ({ page }) => {
   await signInAsCustomer(page, "/account/samples", FOUNDER);
-  await page
-    .getByRole("link", { name: /เสนอราคาแล้ว/ })
-    .first()
-    .click();
+  await openSampleWith(page, "เสนอราคาแล้ว");
   await expect(page.getByRole("heading", { name: "ใบเสนอราคาค่าตัวอย่าง" })).toBeVisible();
   await page.getByRole("button", { name: "ซื้อตัวอย่างนี้" }).click();
   await expect(page).toHaveURL(/\/cart$/);
@@ -105,10 +113,7 @@ test("the factory records a sample's evidence on a phone", async ({ page }) => {
 
 test("the customer checks a delivered sample, approves it and orders the bulk", async ({ page }) => {
   await signInAsCustomer(page, "/account/samples", FOUNDER);
-  await page
-    .getByRole("link", { name: /ถึงแล้ว รอตรวจ/ })
-    .first()
-    .click();
+  await openSampleWith(page, "ถึงแล้ว รอตรวจ");
   await expect(page.getByRole("heading", { name: "หลักฐานจากโรงงาน" })).toBeVisible();
   await expect(page.getByRole("img", { name: "รูปตัวอย่างที่ 1" })).toBeVisible();
 

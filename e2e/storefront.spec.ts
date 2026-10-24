@@ -13,6 +13,15 @@ import { gotoHydrated, MOCK_NEW_CUSTOMER_PHONE, MOCK_OTP } from "./helpers/sessi
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function expectNoViolations(page: Page) {
+  // A card mid-fade under the pointer (ProductCard's hover CTA) is not what the page settles on.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => undefined)),
+    ),
+  );
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
   expect(
     violations,
@@ -228,11 +237,13 @@ test.describe("signing in", () => {
     const accept = sheet.getByRole("button", { name: "ยอมรับและดำเนินการต่อ" });
     await expect(accept).toBeDisabled();
     // Opt-in: nothing optional is ticked for them.
-    await expect(sheet.getByRole("checkbox", { name: "รับข่าวสารและโปรโมชันทาง LINE" })).not.toBeChecked();
+    await expect(sheet.getByRole("checkbox", { name: /^รับข่าวสาร โปรโมชัน/ })).not.toBeChecked();
     await expectNoViolations(page);
 
-    await sheet.getByRole("checkbox", { name: "ข้อกำหนดการใช้บริการ getpack" }).click();
-    await sheet.getByRole("checkbox", { name: "ประกาศความเป็นส่วนตัว" }).click();
+    // The required documents are accepted in one tick (terms and privacy notice, each linked).
+    await sheet
+      .getByRole("checkbox", { name: /^ฉันได้อ่านและยอมรับ ข้อกำหนดการใช้บริการ และ นโยบายความเป็นส่วนตัว/ })
+      .click();
     await accept.click();
 
     await expect(sheet.getByRole("heading", { name: "บอกเราเพิ่มอีกนิด" })).toBeVisible();

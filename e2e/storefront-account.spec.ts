@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { HOSTS } from "../playwright.config";
 import { acceptCookies, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F3 3.4 end to end: the account's overview, orders and one order's page (timeline, instalments,
@@ -62,8 +63,11 @@ test.describe("the account", () => {
     await expect(page.getByText(/รับสินค้า จำนวน 500 เมื่อ/)).toBeVisible();
     await expect(page.getByRole("link", { name: "สั่งซ้ำ PK-2569-00136" })).toBeVisible();
 
-    await page.getByRole("button", { name: /ขอลิงก์ดาวน์โหลด/ }).click();
-    const open = page.getByRole("link", { name: /เปิดเอกสาร/ });
+    await page
+      .getByRole("button", { name: /^ดาวน์โหลด TR-/ })
+      .first()
+      .click();
+    const open = page.getByRole("link", { name: /^เปิดไฟล์ PDF TR-/ });
     await expect(open).toBeVisible();
     await expect(open).toHaveAttribute("href", /^data:/);
 
@@ -125,7 +129,7 @@ test.describe("the account", () => {
     await page.getByLabel(/^เบอร์ผู้รับ/).fill("0812345678");
     // The postcode names the area: one sub-district is chosen at once.
     await page.getByLabel(/^รหัสไปรษณีย์/).fill("10400");
-    await expect(page.getByRole("combobox", { name: /^แขวง\/ตำบล/ })).toContainText("พญาไท");
+    await expect(choiceList(page, /^แขวง\/ตำบล/)).toContainText("พญาไท");
     await page.getByLabel(/^บ้านเลขที่ อาคาร ถนน/).fill("9 ถนนทดสอบ");
     await expectNoViolations(page);
     await page.getByRole("button", { name: "บันทึกที่อยู่" }).click();
@@ -138,7 +142,7 @@ test.describe("the account", () => {
     await page.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท อีทูอี จำกัด");
     await page.getByLabel(/^รหัสไปรษณีย์/).fill("50200");
     // Saving before the postcode lookup has named the area is refused (the API needs its ids).
-    await expect(page.getByRole("combobox", { name: /^แขวง\/ตำบล/ }).last()).toContainText("เมืองเชียงใหม่");
+    await expect(choiceList(page, /^แขวง\/ตำบล/).last()).toContainText("เมืองเชียงใหม่");
     await page.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
     await page.getByRole("button", { name: "บันทึก", exact: true }).click();
     await expect(page.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();
