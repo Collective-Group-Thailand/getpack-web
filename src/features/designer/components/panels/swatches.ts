@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useDesigner } from "../DesignerContext";
-import { readBrandKit } from "./BrandPanel";
+import { readBrandKit } from "./brand-kit";
 
 /** One-click colours for every colour field: the customer's brand kit, then the catalogue's. */
 export function useSwatches(): { value: string; label: string }[] {

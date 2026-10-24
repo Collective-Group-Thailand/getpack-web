@@ -1,12 +1,12 @@
 "use client";
 import type Konva from "konva";
-import { dielineToDxf, dielineToPdf, dielineToSvg, PX_PER_MM } from "@getpack/dieline";
+import { PX_PER_MM } from "@getpack/dieline";
 import { withFlatWorld } from "./lib/capture";
 import type { Dieline } from "./types";
 
 const MAX_CANVAS_PX = 12000;
 
-function download(url: string, filename: string) {
+export function download(url: string, filename: string) {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
@@ -15,7 +15,7 @@ function download(url: string, filename: string) {
   a.remove();
 }
 
-const safeName = (n: string) => n.replace(/[\\/:*?"<>|]+/g, "_").trim() || "design";
+export const safeName = (n: string) => n.replace(/[\\/:*?"<>|]+/g, "_").trim() || "design";
 
 /** Renders the dieline area at `pxPerMm` resolution. */
 export function renderDieline(
@@ -62,31 +62,6 @@ export async function exportPrintPdf(stage: Konva.Stage, d: Dieline, name: strin
   const url = URL.createObjectURL(blob);
   download(url, `${safeName(name)}-print.pdf`);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  download(url, filename);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-/** The die as a true-size SVG with CUT / CREASE / PERF / HALFCUT / GLUE layers. */
-export function exportDielineSvg(d: Dieline, name: string) {
-  downloadBlob(
-    new Blob([dielineToSvg(d, { margin: 3, annotations: true })], { type: "image/svg+xml" }),
-    `${safeName(name)}-dieline.svg`,
-  );
-}
-
-/** The die as DXF (R12, millimetres, same layers) for the die-maker's CAD. */
-export function exportDielineDxf(d: Dieline, name: string) {
-  downloadBlob(new Blob([dielineToDxf(d)], { type: "application/dxf" }), `${safeName(name)}-dieline.dxf`);
-}
-
-/** The die as a vector PDF, each layer a spot colour (CutContour, Crease…). */
-export function exportDielinePdf(d: Dieline, name: string) {
-  const bytes = dielineToPdf(d, { title: name });
-  downloadBlob(new Blob([bytes.buffer as ArrayBuffer], { type: "application/pdf" }), `${safeName(name)}-dieline.pdf`);
 }
 
 export function makeThumbnail(stage: Konva.Stage, d: Dieline): string {
