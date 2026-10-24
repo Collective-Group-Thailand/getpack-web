@@ -68,7 +68,7 @@ export default async function Page({ params }: { params: Promise<{ paymentId: st
             {/* A customer who cannot pay now wants to know the order is kept and how to come back. */}
             <p className="text-muted mt-3 text-[13px] leading-relaxed">
               {t("payLater")}{" "}
-              <Link href="/account/orders" className="text-primary underline-offset-4 hover:underline">
+              <Link href="/account/orders" className="text-primary underline underline-offset-4">
                 {t("payLaterLink")}
               </Link>
               {group.expiresAt ? ` ${t("payLaterExpires", { date: format.dateTime(group.expiresAt) })}` : null}

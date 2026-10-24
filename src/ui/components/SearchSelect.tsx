@@ -123,7 +123,8 @@ export function SearchSelect<T extends string = string>({
           disabled={disabled ?? fieldProps.disabled}
           className={cn(controlVariants(), "flex items-center justify-between gap-2 text-start", className)}
         >
-          <span className={cn("min-w-0 truncate", !chosen && "text-subtle")}>{chosen?.label ?? placeholder}</span>
+          {/* Muted, not subtle: this is text in a button, not a native placeholder, so it needs 4.5:1. */}
+          <span className={cn("min-w-0 truncate", !chosen && "text-muted")}>{chosen?.label ?? placeholder}</span>
           <Icon name="chevron-down" size={18} className="text-muted shrink-0" />
         </button>
       </PopoverPrimitive.Trigger>
