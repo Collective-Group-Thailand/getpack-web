@@ -1,15 +1,19 @@
 name: Deploy
 
-# main is green in CI → build the arm64 image of that exact commit → ECR (getpack/web:sha-xxxxxxx + :uat)
-# → deploy to the UAT box (web container → health check → automatic rollback on failure).
-# NEXT_PUBLIC_* are inlined at build time, so this image is UAT-only; production web is built from a
-# release tag with production build args. Pipeline and box scripts: Collective-Group-Thailand/collective-infra.
+# UAT:        main is green in CI → build the arm64 image of that exact commit → ECR (getpack/web:sha-xxxxxxx + :uat)
+#             → deploy to the UAT box (web container → health check → automatic rollback on failure).
+# Production: tag vX.Y.Z (matching package.json) → build again with production values → :prod → deploy.
+# NEXT_PUBLIC_* are inlined at build time, so a UAT image is never promoted to production. The public values
+# of each environment live in its GitHub Environment variable BUILD_ARGS (one KEY=value per line), read by the
+# reusable build. Pipeline and box scripts: Collective-Group-Thailand/collective-infra.
 
 on:
   workflow_run:
     workflows: [CI]
     types: [completed]
     branches: [main]
+  push:
+    tags: ["v*.*.*"]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +22,7 @@ permissions:
   packages: read
 
 concurrency:
-  group: deploy-uat
+  group: deploy-${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'uat' }}
   cancel-in-progress: false
 
 jobs:
@@ -46,4 +50,41 @@ jobs:
       component: web
       environment: uat
       image_tag: ${{ needs.build.outputs.image_tag }}
+      migrate: false
+
+  # --- production (tag) ---------------------------------------------------------------------------------
+  check-tag:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Tag matches package.json and is on main
+        run: |
+          test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
+          git fetch --quiet origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+  build-prod:
+    needs: check-tag
+    uses: Collective-Group-Thailand/collective-infra/.github/workflows/reusable-build-push.yml@v1
+    with:
+      image: getpack/web
+      environment: production
+      moving_tag: prod
+      # Hosts mirror collective-infra platform/caddy/sites.prod.yml; the rest comes from the
+      # `production` environment's BUILD_ARGS variable (NEXT_PUBLIC_SENTRY_DSN, NEXT_PUBLIC_FIREBASE_*, …).
+      build_args: |
+        PUBLIC_HOST=getpack.co
+        ADMIN_HOST=admin.getpack.co
+        PARTNER_HOST=partner.getpack.co
+        NEXT_PUBLIC_ENV_BADGE=prod
+
+  deploy-prod:
+    needs: build-prod
+    uses: Collective-Group-Thailand/collective-infra/.github/workflows/reusable-deploy.yml@v1
+    with:
+      product: getpack
+      component: web
+      environment: production
+      image_tag: ${{ needs.build-prod.outputs.image_tag }}
       migrate: false
