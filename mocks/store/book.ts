@@ -157,10 +157,18 @@ export const storeBookHandlers = [
     if (refused) return refused;
     const body = (await request.json().catch(() => ({}))) as Schemas["UpdateAddressDto"];
     if (body.provinceId !== undefined || body.subdistrictId !== undefined || body.postcode !== undefined) {
-      // The mock keeps names, not ids: moving an address to another area is not something it can do.
-      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
-        { path: "provinceId", code: "mock", message: "not supported by the mock" },
-      ]);
+      // A new area comes whole, as on create: the postcode and the ids it covers.
+      const area =
+        body.postcode !== undefined && body.provinceId !== undefined
+          ? areaOfIds(body.postcode, body.provinceId, body.subdistrictId)
+          : undefined;
+      if (!area) return mismatch();
+      Object.assign(address, {
+        subdistrict: body.subdistrictId ? area.subdistrict : null,
+        district: area.district,
+        province: area.province,
+        postcode: body.postcode,
+      });
     }
     if (body.isDefault) for (const other of book.addresses) other.isDefault = false;
     if (body.label !== undefined) address.label = body.label;
