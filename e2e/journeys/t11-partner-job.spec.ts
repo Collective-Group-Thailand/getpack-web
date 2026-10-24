@@ -41,23 +41,19 @@ test("T11 accept a new job and report printing started", async ({ page, journey 
     () => toast(`รับงาน ${job.jobNo} แล้ว`),
   );
 
-  j.gap("steps run strictly in order: materials prep must be started and finished before printing can start");
-  await j.tap(
-    "start materials prep",
-    () => page.getByRole("button", { name: /^เริ่มเตรียมวัตถุดิบ/ }).click(),
-    () => toast("เริ่มเตรียมวัตถุดิบแล้ว"),
-  );
+  j.gap("steps run strictly in order: materials prep must be finished before printing can start");
+  // A step with nothing to record is done in one tap (QuickCompleteMilestone).
   await j.tap(
     "finish materials prep",
-    () => page.getByRole("button", { name: /^จบเตรียมวัตถุดิบ/ }).click(),
-    () => toast("จบเตรียมวัตถุดิบแล้ว"),
+    () => page.getByRole("button", { name: /^ขั้น “เตรียมวัตถุดิบ” เสร็จแล้ว/ }).click(),
+    () => toast("บันทึกขั้น “เตรียมวัตถุดิบ” เสร็จแล้ว"),
   );
   j.gap("a photo can only be attached when a step finishes, not when it starts");
   await j.tap(
     "start printing",
-    () => page.getByRole("button", { name: /^เริ่มพิมพ์/ }).click(),
-    () => toast("เริ่มพิมพ์แล้ว"),
+    () => page.getByRole("button", { name: /^เริ่มขั้น “พิมพ์”/ }).click(),
+    () => toast("เริ่มขั้น “พิมพ์” แล้ว"),
   );
 
-  await j.done(() => expect(page.getByRole("button", { name: /^จบพิมพ์/ })).toBeVisible());
+  await j.done(() => expect(page.getByRole("button", { name: /^ขั้น “พิมพ์” เสร็จแล้ว/ })).toBeVisible());
 });

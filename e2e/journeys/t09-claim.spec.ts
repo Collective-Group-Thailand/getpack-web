@@ -10,7 +10,8 @@ test("T9 report off-colour goods", async ({ page, journey }) => {
   await j.startHere();
   j.expectEvents("claim_started", "claim_submitted");
 
-  const row = page.getByRole("article").filter({ hasText: DELIVERED.code });
+  // The orders list is a table on a wide screen (PortalTable).
+  const row = page.getByRole("row").filter({ hasText: DELIVERED.code });
   await j.screen(
     "claim form",
     () => row.getByRole("link", { name: /แจ้งปัญหา/ }).click(),

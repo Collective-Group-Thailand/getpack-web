@@ -12,6 +12,11 @@ export async function openNewDesign(page: Page): Promise<void> {
   await expect(dialog).toBeHidden();
   await expect(page.locator("canvas").first()).toBeVisible();
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
+  // The first save gives the design its own address; settle there before the walk starts, so no
+  // decision of the walk is charged with that move.
+  await expect(page).not.toHaveURL(/\/studio\/new/, { timeout: 15_000 });
+  // A person at the page has moved the pointer: the split view's model loads with that (ADR-0010).
+  await page.mouse.move(1, 1);
 }
 
 export const rail = (page: Page, name: string) =>
