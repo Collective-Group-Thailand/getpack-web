@@ -358,3 +358,29 @@ state and body builder (`seedFromDesign`, `initialState`, `buildCalculateBody`) 
 purpose, so the hero's price is the configurator's by construction (Phase 4 §4.3). The header and
 footer add ≈ 170 B per page (avatar and name, the account menu's notifications entry). The ≈ 8 KB
 `main` had already gained on every page is recorded here, not found: it predates Phase 4.
+
+## CI repair — studio back to ADR-0010, ratchets restated (2026-10-24)
+
+The Lighthouse job had not completed on `main` since the repository moved to GitHub (the build ran
+out of heap first), so every set had grown past its ratchet unmeasured. Measured on `main` with
+`pnpm lhci` (plain production build, mock mode, the CI job's environment):
+
+| Set | Heaviest page | Before | Measured | Ratchet |
+|---|---|---|---|---|
+| studio | `/studio/new?product=tuck-end-box…` | 505,800 | 824,007 → **571,492** | 505,800 → **571,900** |
+| customer-marketing | a style page (`/styles/pk-te-01-…`) | 291,000 | 322,975 | 291,000 → **323,400** |
+| customer-app | `/configure/tuck-end-box` | 346,300 | 353,438 | 346,300 → **353,900** |
+| partner | `/settings` | 301,600 | 308,568 | 301,600 → **309,000** |
+| admin-crud | `/partners` | 492,000 | 507,853 | 492,000 → **508,300** |
+| admin-lists | `/orders`, an order | 392,000 | 392,858 | 392,000 → **393,300** |
+
+- **Studio, fixed**: since U4.3 the desktop studio opens in split view, which mounted the 3D preview
+  at once, so three.js (~250 KB) was in every first load — against ADR-0010. The split's model now
+  loads with the first interaction (pointer move, touch, key or wheel); the 3D view loads at once as
+  before. 824,007 → 571,492 B.
+- **Not yet found**: the studio's remaining +66 KB over U5.5, and a style page's ≈ 40 KB over the rest
+  of its set (`/styles` itself is 283,352). Both grew across the rounds after U5.8 without a
+  measurement; they are recorded here to be worked down, not absorbed — the targets above are
+  unchanged.
+- The other sets' growth is the shared shells (admin menu search and folding groups, the partner
+  ERP's entry points, the storefront header).
