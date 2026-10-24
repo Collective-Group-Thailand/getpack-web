@@ -527,10 +527,12 @@ SEEDS.forEach((seed, index) => stores.set(seed.id, build(seed, index)));
 
 /* ------------------------------------------------------------------------------ proposals */
 
+// The mock prices food packaging on the folding-carton loader's tables, as its seeded price lists
+// and proposals already assume (e.g. F003's food_packaging print_wastes).
 export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   {
     component: "material_prices",
-    productTypeCodes: ["folding_carton", "tag_sleeve", "corrugated"],
+    productTypeCodes: ["folding_carton", "tag_sleeve", "food_packaging", "corrugated"],
     group: "materials",
     dimensions: [
       { key: "materialId", type: "ref", nullable: false, scale: null },
@@ -541,7 +543,7 @@ export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   },
   {
     component: "print_prices",
-    productTypeCodes: ["folding_carton", "tag_sleeve"],
+    productTypeCodes: ["folding_carton", "tag_sleeve", "food_packaging"],
     group: "process_rates",
     dimensions: [
       { key: "printTypeId", type: "ref", nullable: false, scale: null },
@@ -554,7 +556,7 @@ export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   },
   {
     component: "finish_prices",
-    productTypeCodes: ["folding_carton", "tag_sleeve", "corrugated"],
+    productTypeCodes: ["folding_carton", "tag_sleeve", "food_packaging", "corrugated"],
     group: "process_rates",
     dimensions: [{ key: "finishId", type: "ref", nullable: false, scale: null }],
     values: [
@@ -564,14 +566,14 @@ export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   },
   {
     component: "print_wastes",
-    productTypeCodes: ["folding_carton", "tag_sleeve"],
+    productTypeCodes: ["folding_carton", "tag_sleeve", "food_packaging"],
     group: "waste",
     dimensions: [{ key: "qtyFrom", type: "integer", nullable: false, scale: null }],
     values: [{ key: "sheets", type: "integer", nullable: false, scale: null }],
   },
   {
     component: "factory_margins",
-    productTypeCodes: ["folding_carton", "tag_sleeve", "corrugated"],
+    productTypeCodes: ["folding_carton", "tag_sleeve", "food_packaging", "corrugated"],
     group: "commercial_terms",
     dimensions: [{ key: "printTypeId", type: "ref", nullable: false, scale: null }],
     values: [{ key: "pct", type: "decimal", nullable: false, scale: 4 }],

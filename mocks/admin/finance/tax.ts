@@ -123,7 +123,7 @@ function vatReport(period: Period, code: "output_vat" | "input_vat", accounts: s
 /** A signed decimal string — a credit note's line on the sales tax report is negative. */
 const signed = (satang: number) => (satang < 0 ? `-${baht(-satang)}` : baht(satang));
 
-function whtIssuedReport(period: Period, form: "pnd3" | "pnd53" | null, accounts: string[]): Built {
+function whtIssuedReport(period: Period, form: "pnd1" | "pnd3" | "pnd53" | null, accounts: string[]): Built {
   const certificates = whtIssued
     .filter((c) => c.paidOn >= period.startDate && c.paidOn <= period.endDate && (!form || c.whtForm === form))
     .sort((a, b) => a.paidOn.localeCompare(b.paidOn) || a.wtNumber.localeCompare(b.wtNumber));
@@ -243,7 +243,8 @@ function build(kind: Kind, period: Period): Built {
     }
     case "pnd1":
       // Sales agents' commission (D-421); the mock has no agents, so the form is always empty.
-      return whtIssuedReport(period, null, []);
+      // (`null` would be every form — the register's view.)
+      return whtIssuedReport(period, "pnd1", []);
     case "pnd3":
     case "pnd53":
       return whtIssuedReport(period, kind, kind === "pnd3" ? gl.wht_pnd3 : gl.wht_pnd53);
