@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { HOSTS } from "../playwright.config";
 import { acceptCookies, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F3 3.7 end to end: getpack for business, LINE LIFF and help.
@@ -56,7 +57,7 @@ test.describe("getpack for business", () => {
     await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
     // The head office starts from its postcode, which gives the area it is filed under.
     await page.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
-    await expect(page.getByRole("combobox", { name: /^แขวง\/ตำบล/ })).toContainText("คลองเตย");
+    await expect(choiceList(page, /^แขวง\/ตำบล/)).toContainText("คลองเตย");
     await page.getByLabel(/^เลขที่ อาคาร ถนน/).fill("1 ถนนทดสอบ");
     await page.getByLabel(/^ชื่อ-นามสกุล/).fill("สมใจ ทดสอบ");
     await page.getByLabel(/^ตำแหน่ง/).fill("กรรมการผู้จัดการ");
@@ -144,7 +145,7 @@ test.describe("getpack for business", () => {
     await expect(page.getByText(/ยอดวางบิล/).first()).toBeVisible();
     await expect(page.getByText("ยังไม่ถึงกำหนด")).toBeVisible();
     await page
-      .getByRole("button", { name: /^ขอลิงก์ดาวน์โหลด/ })
+      .getByRole("button", { name: /^ดาวน์โหลด / })
       .first()
       .click();
     await expect(page.getByRole("link", { name: /^เปิดไฟล์/ }).first()).toBeVisible();
@@ -154,7 +155,9 @@ test.describe("getpack for business", () => {
     await page.getByLabel(/^เบอร์มือถือ/).fill(PHONES.founder);
     await page.getByRole("checkbox", { name: /^ฝ่ายบัญชี/ }).click();
     await page.getByRole("button", { name: "ส่งคำเชิญ" }).click();
-    await expect(page.locator("main li").filter({ hasText: "รอตอบรับ" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("table", { name: "สมาชิกของบริษัท" }).getByRole("row", { name: /^ผู้ก่อตั้งบริษัท .*รอตอบรับ/ }),
+    ).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/business/reorder`);
     await page.getByLabel(/^หรือวางรายการ/).fill("order,quantity\nPK-2569-00113,2000\nPK-0000-99999,1000\nnot a line!");

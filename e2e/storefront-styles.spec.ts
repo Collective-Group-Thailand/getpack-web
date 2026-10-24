@@ -6,7 +6,7 @@ import { acceptCookies, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated } from "./helpers/session";
 
 /**
- * U3.5, the style library, against the mock API (105 bases, 960 variants from the master file;
+ * U3.5, the style library, against the mock API (the bases and variants of the master file;
  * wave 1's variants are the ones the engine draws): browse by category and facet, search with a
  * Thai synonym, sort, save, compare up to three, and pick a variant whose incompatible options
  * say why.
@@ -30,7 +30,7 @@ test.describe("the style library", () => {
   test("browses by category and facet, finds a mailer by its Thai nickname, and sorts", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/styles`);
     await expect(page.getByRole("heading", { level: 1, name: "คลังแบบกล่องและบรรจุภัณฑ์" })).toBeVisible();
-    await expect(page.getByText("105 แบบ")).toBeVisible();
+    await expect(page.getByText(/^\d+ แบบ$/)).toBeVisible();
     await expect(grid(page).getByRole("listitem").first()).toBeVisible();
     // The grid is virtual and says where each card sits in the whole.
     await expect(grid(page).getByRole("listitem").first()).toHaveAttribute("aria-setsize", "24");
@@ -40,7 +40,8 @@ test.describe("the style library", () => {
       .getByRole("link", { name: /กล่องลูกฟูก/ })
       .click();
     await expect(page).toHaveURL(/category=corrugated/);
-    await expect(page.getByText("28 แบบ")).toBeVisible();
+    // The corrugated bases' count, beside "clear the filters" (the library grows: not pinned).
+    await expect(page.locator('p[aria-live="polite"]').filter({ hasText: /^\d+ แบบ/ })).toBeVisible();
     await page.getByRole("link", { name: /ช่องมือจับ: ด้านข้าง/ }).click();
     await expect(page).toHaveURL(/closure=|feature=hand_holes/);
     await expect(grid(page).getByRole("listitem").first()).toBeVisible();

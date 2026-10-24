@@ -63,16 +63,21 @@ test.describe("a job from acceptance to delivery (F001)", () => {
     await dialog(page).getByRole("button", { name: "รับงาน", exact: true }).click();
     await toast(page, `รับงาน ${job.jobNo} แล้ว`);
 
-    const steps: { name: string; photo?: boolean; qc?: boolean }[] = [
-      { name: "เตรียมวัตถุดิบ" },
+    // A step with nothing to record is done in one tap (QuickCompleteMilestone); the others start,
+    // then complete with their photos and quantities.
+    const steps: { name: string; quick?: boolean; photo?: boolean; qc?: boolean }[] = [
+      { name: "เตรียมวัตถุดิบ", quick: true },
       { name: "พิมพ์", photo: true },
       { name: "ไดคัท", photo: true },
       { name: "ตรวจคุณภาพ", qc: true },
       { name: "แพ็ก", photo: true },
     ];
     for (const step of steps) {
-      await page.getByRole("button", { name: new RegExp(`^เริ่ม${step.name}`) }).click();
-      await toast(page, `เริ่ม${step.name}แล้ว`);
+      const complete = page.getByRole("button", { name: new RegExp(`^ขั้น “${step.name}” เสร็จแล้ว`) });
+      if (!step.quick) {
+        await page.getByRole("button", { name: new RegExp(`^เริ่มขั้น “${step.name}”`) }).click();
+        await toast(page, `เริ่มขั้น “${step.name}” แล้ว`);
+      }
       if (step.qc) {
         // The QC form arrives with the refreshed job; wait for it before answering each item.
         await expect(page.getByRole("radiogroup", { name: /^ผลของ / })).toHaveCount(5);
@@ -90,8 +95,8 @@ test.describe("a job from acceptance to delivery (F001)", () => {
         await toast(page, "บันทึกผลตรวจคุณภาพแล้ว");
       }
       if (step.photo) await photo(page);
-      await page.getByRole("button", { name: new RegExp(`^จบ${step.name}`) }).click();
-      await toast(page, `จบ${step.name}แล้ว`);
+      await complete.click();
+      await toast(page, `บันทึกขั้น “${step.name}” เสร็จแล้ว`);
     }
     await expectAxeClean(page);
 
@@ -104,7 +109,10 @@ test.describe("a job from acceptance to delivery (F001)", () => {
       if (round === 1) await gotoHydrated(page, `${HOSTS.partner}/ship`);
       // "สร้างการจัดส่ง" opens the trip's sheet (round 2, B3); creating it also packs it, so the
       // labels and packing list exist when the sheet closes.
+      // This job's next destination: another job ready to ship may still owe its balance (D-061).
       await page
+        .locator(`li[id^="job-"]`)
+        .filter({ hasText: job.jobNo })
         .getByRole("button", { name: /^สร้างการจัดส่ง/ })
         .first()
         .click();

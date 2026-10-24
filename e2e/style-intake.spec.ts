@@ -6,7 +6,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { signInAsCustomer } from "./helpers/customer";
-import { gotoHydrated, signInAsPartner, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
+import { adminMenuLink, gotoHydrated, signInAsPartner, signInAsStaff } from "./helpers/session";
 
 /**
  * U3.6 against the mock API, across the three zones:
@@ -54,7 +55,7 @@ test("a customer who cannot find a style asks for a structural design", async ({
 test("CS assigns a designer, the designer delivers, Prepress approves and publishes", async ({ page }) => {
   await signInAsStaff(page, "cs");
   await gotoHydrated(page, `${HOSTS.admin}/orders`);
-  await page.getByRole("link", { name: "คำขอออกแบบโครงสร้าง" }).click();
+  await (await adminMenuLink(page, "คำขอออกแบบโครงสร้าง")).click();
   await expect(page).toHaveURL(/\/structural-requests$/);
   // Newest first: this run's request (a rerun on the same server leaves the last one below it).
   await page
@@ -63,7 +64,7 @@ test("CS assigns a designer, the designer delivers, Prepress approves and publis
     .click();
   await page.getByRole("button", { name: "มอบหมาย" }).click();
   const assign = page.getByRole("dialog", { name: "มอบหมายนักออกแบบโครงสร้าง" });
-  await assign.getByRole("combobox").click();
+  await choiceList(assign, "ผู้ออกแบบ").click();
   await page.getByRole("option", { name: /ฝ่ายเตรียมพิมพ์/ }).click();
   await assign.getByRole("button", { name: "มอบหมาย" }).click();
   await expect(page.getByText("มีผู้ออกแบบรับงาน").first()).toBeVisible();

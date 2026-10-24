@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { HOSTS } from "../playwright.config";
 import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { addHeading } from "./helpers/designer";
+import { gotoHydrated } from "./helpers/session";
 
 /**
  * U4.6, ⑤ order from getpack 3D Studio against the mock API: the order sheet's tiers priced for the
@@ -14,7 +15,24 @@ import { addHeading } from "./helpers/designer";
 
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const STUDIO = /\/studio\/([0-9a-f-]{36})\?/;
-const BOX = "/studio/new?product=tuck-end-box&style=tuck-end&l=70&w=40&h=150&step=design";
+
+/**
+ * Only a style-library box prints from the studio (OrderSheet's `catalogueOnly`): opened from its
+ * style page, with its variant code. The style page redirects to its named address, so it is opened
+ * after signing in.
+ */
+async function openLibraryBox(page: Page, phone: string) {
+  await signInAsCustomer(page, "/account", phone);
+  await gotoHydrated(page, `${HOSTS.customer}/styles/pk-te-01`);
+  await page.getByRole("button", { name: "ออกแบบใน 3D Studio" }).click();
+  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
+  await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
+  // A style opens on ② (size and material); its defaults are the box to design on.
+  await page.getByRole("button", { name: "ใช้กล่องนี้ แล้วเริ่มออกแบบ" }).click();
+  await expect(
+    page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" }).getByRole("button", { name: /ออกแบบ/ }),
+  ).toHaveAttribute("aria-current", "step");
+}
 const BFF = { "x-getpack-csrf": "1", origin: HOSTS.customer };
 
 async function expectNoViolations(page: Page) {
@@ -40,8 +58,7 @@ type CartItem = {
 
 test("studio → order sheet → cart: the version pinned at the studio's price", async ({ page }) => {
   test.setTimeout(120_000);
-  await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
+  await openLibraryBox(page, MOCK_DESIGNER_PHONE);
   const id = STUDIO.exec(page.url())![1]!;
 
   await addHeading(page);
@@ -114,8 +131,7 @@ test("studio → order sheet → cart: the version pinned at the studio's price"
 });
 
 async function newDesign(page: Page): Promise<string> {
-  await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
+  await openLibraryBox(page, MOCK_DESIGNER_PHONE);
   await addHeading(page);
   await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   return STUDIO.exec(page.url())![1]!;
@@ -185,8 +201,7 @@ test("an ordered design is a product: reorder, another quantity, a new size fitt
 test("a company buyer sends the design for approval with a view link", async ({ page }) => {
   test.setTimeout(120_000);
   // The mock's Company Admin: a member of a company (D-281).
-  await signInAsCustomer(page, BOX, "0867890123");
-  await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
+  await openLibraryBox(page, "0867890123");
   await addHeading(page);
   await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   await toOrderStep(page);

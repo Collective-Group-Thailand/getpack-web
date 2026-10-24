@@ -5,6 +5,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F6.3 — the general ledger, tax and fixed assets, against the MSW mock of the published B5.1 /
@@ -47,7 +48,7 @@ async function approveAs(page: Page, href: string) {
 }
 
 async function pickAccount(page: Page, label: string, code: string) {
-  const box = page.getByRole("combobox", { name: label });
+  const box = choiceList(page, label);
   const option = page.getByRole("option", { name: new RegExp(`^${code} `) });
   // The chart of accounts may still be loading when the code is typed: type it again until it is offered.
   await expect(async () => {
@@ -59,7 +60,7 @@ async function pickAccount(page: Page, label: string, code: string) {
 }
 
 async function choose(page: Page, label: string | RegExp, option: string | RegExp) {
-  await page.getByRole("combobox", { name: label }).click();
+  await choiceList(page, label).click();
   await page.getByRole("option", { name: option }).click();
 }
 

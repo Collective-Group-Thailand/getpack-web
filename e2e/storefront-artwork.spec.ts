@@ -46,7 +46,7 @@ test.describe("artwork and proofs", () => {
     // The order's rules: what preflight checks, and the box it is laid out on.
     await expect(page.getByText(/ผ่านการตรวจอัตโนมัติ/)).toBeVisible();
     await expect(page.getByText("ระยะตัดตกด้านละ 3 มม.")).toBeVisible();
-    await page.getByRole("button", { name: "ขอลิงก์แบบไดคัท" }).click();
+    await page.getByRole("button", { name: "ดาวน์โหลดแบบไดคัท" }).click();
     await expect(page.getByRole("link", { name: "เปิดแบบไดคัท" })).toHaveAttribute("href", /^data:image\/svg/);
     await expectNoViolations(page);
 

@@ -79,7 +79,13 @@ test("a call-off: asked for on a saved quotation, accepted, released into the ca
   await expect(page).toHaveURL(/\/cart$/);
 
   await gotoHydrated(page, `${HOSTS.customer}/account/call-offs`);
-  await expect(page.getByText(/เรียกแล้ว [\d,]+ จาก/).first()).toBeVisible();
+  // Called off / the whole (the call-offs table, account/call-offs).
+  await expect(
+    page
+      .getByRole("table", { name: "สัญญาเรียกของ" })
+      .getByRole("cell", { name: /^[1-9][\d,]* \/ [\d,]+ ชิ้น$/ })
+      .first(),
+  ).toBeVisible();
 });
 
 test("API keys: the Company Admin issues one (secret once) and revokes it; a buyer cannot", async ({ page }) => {

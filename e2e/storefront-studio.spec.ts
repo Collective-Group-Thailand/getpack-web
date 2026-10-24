@@ -5,6 +5,7 @@ import { HOSTS } from "../playwright.config";
 import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { addHeading } from "./helpers/designer";
 import { gotoHydrated } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * U4.1, getpack 3D Studio against the mock API: from a style card into the studio, the price dock
@@ -34,7 +35,7 @@ test("style card → studio → price → quantity → new price, every step rev
   // The style page redirects to its named address, so it is opened after signing in.
   await signInAsCustomer(page, "/account", MOCK_DESIGNER_PHONE);
   await gotoHydrated(page, `${HOSTS.customer}/styles/pk-te-01`);
-  await page.getByRole("link", { name: "ออกแบบใน 3D Studio" }).click();
+  await page.getByRole("button", { name: "ออกแบบใน 3D Studio" }).click();
   await expect(page).toHaveURL(/\/studio\/new\?product=[^&]+&style=.*step=box/);
 
   const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
@@ -61,7 +62,7 @@ test("style card → studio → price → quantity → new price, every step rev
   const first = await perPiece.textContent();
 
   // Another quantity: a new price, and the dock says why.
-  await dock.getByRole("combobox", { name: "จำนวน" }).click();
+  await choiceList(dock, "จำนวน").click();
   await page.getByRole("option").last().click();
   await expect(perPiece).not.toHaveText(first!, { timeout: 15_000 });
   await expect(dock.getByText(/เพราะเปลี่ยนจำนวน/)).toBeVisible();
@@ -102,7 +103,7 @@ test("② the print method configures the editor and the price; a size that cann
   // The style page redirects to its named address, so it is opened after signing in.
   await signInAsCustomer(page, "/account", MOCK_DESIGNER_PHONE);
   await gotoHydrated(page, `${HOSTS.customer}/styles/pk-te-01`);
-  await page.getByRole("link", { name: "ออกแบบใน 3D Studio" }).click();
+  await page.getByRole("button", { name: "ออกแบบใน 3D Studio" }).click();
   const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
   await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });

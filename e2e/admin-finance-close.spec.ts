@@ -5,6 +5,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F6.4 — period close, financial reports and the auditor, against the MSW mock of the published
@@ -83,7 +84,7 @@ test.describe("the month in numbers (§6, §7)", () => {
     await page.getByRole("link", { name: "งบกระแสเงินสด" }).click();
     await expect(page.getByText("ตรงกับบัญชีเงินสด")).toBeVisible();
     await page.getByRole("link", { name: "งบกำไรขาดทุน" }).click();
-    await page.getByRole("combobox", { name: "จัดกลุ่มตาม" }).click();
+    await choiceList(page, "จัดกลุ่มตาม").click();
     await page.getByRole("option", { name: "ศูนย์ต้นทุน" }).click();
     await expect(page.getByRole("table", { name: "งบกำไรขาดทุน" })).toContainText("ADMIN");
     await expectAxeClean(page);
@@ -103,7 +104,7 @@ test.describe("the month in numbers (§6, §7)", () => {
     await gotoHydrated(page, `${HOSTS.admin}/finance/tax?period=${thisMonth()}`);
     const papers = page.getByRole("table", { name: "รายงานภาษีของเดือน" });
     await buildAllPapers(page);
-    await expect(papers.getByText("ตรงกับบัญชีแยกประเภท")).toHaveCount(7);
+    await expect(papers.getByText("ตรงกับบัญชีแยกประเภท")).toHaveCount(8);
     await expect(papers.getByText(/^ต่างกัน/)).toHaveCount(0);
   });
 });
@@ -123,7 +124,7 @@ test.describe("the period close (§7, §8)", () => {
     await gotoHydrated(finance, `${HOSTS.admin}/finance/tax?period=${month}`);
     const papers = finance.getByRole("table", { name: "รายงานภาษีของเดือน" });
     await buildAllPapers(finance);
-    await expect(papers.getByText("ตรงกับบัญชีแยกประเภท")).toHaveCount(7);
+    await expect(papers.getByText("ตรงกับบัญชีแยกประเภท")).toHaveCount(8);
     for (const name of [
       "รายงานภาษีขาย",
       "รายงานภาษีซื้อ",
@@ -196,7 +197,7 @@ test.describe("the period close (§7, §8)", () => {
     await expect(finance.getByText("เดือนนี้ล็อกแล้ว")).toBeVisible();
     await expect(finance.getByText(/จะลงในเดือน/)).toBeVisible();
     await gotoHydrated(finance, `${HOSTS.admin}/finance/assets/depreciation`);
-    await finance.getByRole("combobox", { name: "เดือน" }).click();
+    await choiceList(finance, "เดือน").click();
     await finance.getByRole("option").nth(1).click();
     await expect(finance.getByText("เดือนนี้ไม่รับรายการแล้ว")).toBeVisible();
     await expect(finance.getByRole("button", { name: "บันทึกค่าเสื่อมราคา" })).toBeDisabled();
@@ -223,7 +224,7 @@ test.describe("the auditor (§8, D-168)", () => {
     await expectAxeClean(auditor);
 
     await auditor.getByRole("link", { name: "การสุ่มตัวอย่าง" }).click();
-    await auditor.getByRole("combobox", { name: "วิธี" }).click();
+    await choiceList(auditor, "วิธี").click();
     await auditor.getByRole("option", { name: "แบ่งชั้นตามมูลค่า" }).click();
     await auditor.getByLabel("จำนวน").fill("4");
     await auditor.getByLabel(/^ค่าเริ่มต้น/).fill("20260929");

@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { HOSTS } from "../playwright.config";
 import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { openRail } from "./helpers/designer";
+import { choiceList } from "./helpers/select";
 
 /**
  * U4.4, ③ design content in getpack 3D Studio against the mock API: a getpack template re-flowed onto
@@ -61,7 +62,7 @@ test("a getpack template re-flows onto the box, then takes my brand", async ({ p
 
   await openRail(page, "แม่แบบ");
   const templates = page.getByRole("region", { name: "แม่แบบของ getpack" });
-  await templates.getByRole("combobox", { name: "ใช้กับสินค้า" }).click();
+  await choiceList(templates, "ใช้กับสินค้า").click();
   await page.getByRole("option", { name: "กาแฟ" }).click();
   await expect(templates.getByRole("list").getByRole("listitem")).toHaveCount(3);
   await templates.getByRole("button", { name: "กาแฟ · คลาสสิก" }).click();
@@ -107,14 +108,14 @@ test("getpack elements, a validated barcode, a nutrition block, a finish layer a
 
   // EAN-8 with its check digit added by the validation service, at least its GS1 minimum width.
   await openRail(page, "องค์ประกอบ");
-  await page.getByRole("combobox", { name: "ชนิดโค้ด" }).click();
+  await choiceList(page, "ชนิดโค้ด").click();
   await page.getByRole("option", { name: "EAN-8" }).click();
   await page.getByRole("textbox", { name: "ตัวเลขหรือข้อความของบาร์โค้ด" }).fill("9638507");
   await expect(page.getByText(/กว้างอย่างน้อย 21\.38 มม\./)).toBeVisible();
   await page.getByRole("button", { name: "เพิ่มโค้ด" }).click();
 
   await openRail(page, "องค์ประกอบ");
-  await page.getByRole("combobox", { name: "ชนิดข้อมูล" }).click();
+  await choiceList(page, "ชนิดข้อมูล").click();
   await page.getByRole("option", { name: "ข้อมูลโภชนาการ" }).click();
   await page.getByRole("textbox", { name: "พลังงาน" }).fill("120 กิโลแคลอรี");
   await page.getByRole("button", { name: "วางข้อมูลบนกล่อง" }).click();
@@ -125,7 +126,7 @@ test("getpack elements, a validated barcode, a nutrition block, a finish layer a
     .getByRole("tree")
     .getByRole("treeitem", { name: /ตั้งด้านนี้ขึ้น/ })
     .click();
-  await page.getByRole("combobox", { name: "งานตกแต่ง (ชั้นพิเศษ)" }).click();
+  await choiceList(page, "งานตกแต่ง (ชั้นพิเศษ)").click();
   await page.getByRole("option", { name: "ปั๊มฟอยล์" }).click();
 
   await openRail(page, "พื้นหลัง");

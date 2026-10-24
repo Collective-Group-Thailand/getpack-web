@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F2 2.5 — catalogue and CMS, against the stateful mock of getpack-api B2.1's published tables.
@@ -23,7 +24,7 @@ async function expectAxeClean(page: Page) {
 }
 
 async function choose(page: Page, label: string | RegExp, option: string | RegExp) {
-  await page.getByRole("combobox", { name: label }).click();
+  await choiceList(page, label).click();
   await page.getByRole("option", { name: option }).first().click();
 }
 

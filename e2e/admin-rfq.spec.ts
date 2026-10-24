@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { choiceList } from "./helpers/select";
 
 /**
  * F2 2.3 — the RFQ workspace, against the mock API.
@@ -24,7 +25,7 @@ async function expectAxeClean(page: Page) {
 }
 
 async function choose(page: Page, label: string | RegExp, option: string | RegExp) {
-  await page.getByRole("combobox", { name: label }).click();
+  await choiceList(page, label).click();
   await page.getByRole("option", { name: option }).first().click();
 }
 
