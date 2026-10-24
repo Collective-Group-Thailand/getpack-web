@@ -146,7 +146,8 @@ export function ProductCard({
         {hoverCta ? (
           <div
             aria-hidden="true"
-            className="duration-base ease-standard absolute inset-x-3 bottom-3 flex justify-center opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+            // `invisible` at rest as well as transparent: nothing to measure until it shows.
+            className="duration-base ease-standard invisible absolute inset-x-3 bottom-3 flex justify-center opacity-0 transition-[opacity,visibility] group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"
           >
             <span className="bg-primary text-primary-fg rounded-control inline-flex h-10 items-center gap-1.5 px-4 text-sm font-medium">
               {hoverCta}

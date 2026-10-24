@@ -191,7 +191,8 @@ export default async function StylesPage({
           </form>
 
           {/* On a phone the facets fold away behind one toggle, so the cards come first (CSS only). */}
-          <input id="style-filters" type="checkbox" className="peer sr-only" />
+          {/* Gone with its label on wider screens, where the facets always show. */}
+          <input id="style-filters" type="checkbox" className="peer sr-only md:hidden" />
           <label
             htmlFor="style-filters"
             className="border-border rounded-control -mt-3 flex items-center justify-between border px-3 py-2 text-sm font-medium peer-focus-visible:ring-2 md:hidden"

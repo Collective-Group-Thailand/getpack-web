@@ -212,7 +212,7 @@ export default async function Page({
             // The factory's own steps, under the journey they are the "production" stage of.
             <div className="border-border mt-6 border-t pt-5">
               <h3 className="text-muted mb-3 text-xs font-semibold">{t("detail.factorySteps")}</h3>
-              <OrderStages steps={detail.progress.steps} />
+              <OrderStages steps={detail.progress.steps} label={t("detail.factorySteps")} />
             </div>
           ) : null}
         </section>

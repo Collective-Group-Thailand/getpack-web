@@ -14,12 +14,21 @@ const STATE = { completed: "done", in_progress: "current", pending: "upcoming", 
  * when; a stage still to come says when the factory's plan has it (`promisedAt`, D-075), when the
  * plan sets a date. Shared by the order page and the public tracking page.
  */
-export async function OrderStages({ steps, className }: { steps: readonly Step[]; className?: string }) {
+export async function OrderStages({
+  steps,
+  label,
+  className,
+}: {
+  steps: readonly Step[];
+  /** The list's name, when a page shows more than one tracker (default: the order's progress). */
+  label?: string;
+  className?: string;
+}) {
   const [t, format, locale] = await Promise.all([getTranslations("fulfilment.stages"), getFormat(), getLocale()]);
   return (
     <ProgressTracker
       className={className}
-      label={t("label")}
+      label={label ?? t("label")}
       stateLabels={{
         done: t("state.done"),
         current: t("state.current"),
