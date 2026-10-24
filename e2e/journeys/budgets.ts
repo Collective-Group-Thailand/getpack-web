@@ -138,9 +138,16 @@ export interface BudgetException {
 }
 
 export const EXCEPTIONS: Partial<Record<JourneyId, BudgetException>> = {
-  T5: {
+  T1: {
     ceiling: 5,
-    cause: "D-182: the customer must choose the measurement basis before a price (no silent default)",
+    cause:
+      "Homepage v10 (Studio-first): the hero prices its three standard sizes, so a size of the customer's own is typed in the configurator — one more choice, then D-182's measurement basis",
+    owner: "Product owner (homepage v10) · Pricing owner (D-182)",
+  },
+  T5: {
+    ceiling: 6,
+    cause:
+      "D-182: the customer must choose the measurement basis before a price (no silent default); the product opens on its standard sizes, so a size of the customer's own is one more choice",
     owner: "Pricing owner (D-182)",
   },
   T9: {
@@ -150,14 +157,14 @@ export const EXCEPTIONS: Partial<Record<JourneyId, BudgetException>> = {
     owner: "CS Lead (D-082 per claim type) · getpack-api",
   },
   T11: {
-    ceiling: 7,
+    ceiling: 6,
     cause: "getpack-api: factory steps run strictly in order and a photo is taken only when a step finishes",
     owner: "Partner Manager · getpack-api",
   },
   T12: {
-    ceiling: 8,
+    ceiling: 7,
     cause:
-      "D-203 / D-271: the free dieline needs a signed-in customer (2 steps); reaching a style from the home page takes 3 screens — a dieline entry without the library is open",
+      "D-203 / D-271: the free dieline needs a signed-in customer (2 steps); reaching a style from the home page takes 2 screens — a dieline entry without the library is open",
     owner: "Marketing (D-203) · getpack-web (dieline entry)",
   },
 };

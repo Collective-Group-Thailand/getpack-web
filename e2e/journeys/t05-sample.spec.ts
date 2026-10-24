@@ -17,7 +17,7 @@ test("T5 ask for a sample before the production run", async ({ page, journey }) 
   const j = journey("T5");
   await signInAsCustomer(page, "/products/mailer-box");
   await j.startHere();
-  j.gap("the measurement basis is asked before a price (D-182: no silent default), one step over the budget");
+  j.gap("a size of the customer's own, then its measurement basis (D-182: no silent default), before a price");
 
   await j.screen(
     "configurator",
@@ -25,6 +25,8 @@ test("T5 ask for a sample before the production run", async ({ page, journey }) 
     () => expect(dock(page)).toBeVisible(),
   );
   await page.locator("html[data-hydrated]").waitFor();
+  // The mailer opens on its standard sizes (Phase 4); the T1 box is a size of the customer's own.
+  await j.decide("own size", () => page.getByRole("radio", { name: "กำหนดเอง" }).click());
   // D-182: the customer chooses the basis (no silent default), then the T1 box's size.
   await j.decide("measurement basis", () => page.getByRole("radio", { name: /ขนาดภายใน/ }).click());
   await j.decide("size", async () => {

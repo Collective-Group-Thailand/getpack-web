@@ -22,14 +22,9 @@ test("T12 download the dieline for a size, for Illustrator", async ({ page, jour
 
   const header = page.getByRole("banner");
   await j.screen(
-    "products menu",
-    () => header.getByRole("button", { name: "สินค้าและบริการ" }).click(),
-    () => expect(header.getByRole("link", { name: "ดูคลังแบบกล่อง" })).toBeVisible(),
-  );
-  await j.screen(
     "style library",
-    // The menu's link: the home page's studio band links to the same library.
-    () => header.getByRole("link", { name: "ดูคลังแบบกล่อง" }).click(),
+    // The header's own link (no menu to open first).
+    () => header.getByRole("link", { name: "แบบกล่อง", exact: true }).click(),
     () => expect(page.getByRole("heading", { level: 1, name: "คลังแบบกล่องและบรรจุภัณฑ์" })).toBeVisible(),
   );
   await j.screen(

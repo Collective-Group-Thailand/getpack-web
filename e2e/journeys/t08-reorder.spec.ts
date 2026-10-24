@@ -10,7 +10,8 @@ test("T8 reorder the previous job, 2,000 pcs", async ({ page, journey }) => {
   await j.startHere();
   j.expectEvents("reorder_started", "reorder_added_to_cart");
 
-  const row = page.getByRole("article").filter({ hasText: DELIVERED.code });
+  // The orders list is a table on a wide screen (PortalTable).
+  const row = page.getByRole("row").filter({ hasText: DELIVERED.code });
   await j.screen(
     "reorder page",
     () => row.getByRole("link", { name: /^สั่งซ้ำ/ }).click(),

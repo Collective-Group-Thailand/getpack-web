@@ -16,7 +16,7 @@ test("T2 put the logo on the top and the front, then see it in 3D", async ({ pag
   const faces = page.getByRole("group", { name: "เลือกด้านที่จะออกแบบ" });
   await j.decide("focus the top (on the 3D model)", async () => {
     await faces.getByRole("button", { name: /^ฝาบน/ }).first().click();
-    await expect(focused("ฝาบน")).toBeVisible();
+    await expect(focused("ฝาบน").first()).toBeVisible();
   });
   await tool(j, page, "อัปโหลด");
   await j.decide("upload the logo (lands on the focused face)", async () => {
@@ -27,7 +27,7 @@ test("T2 put the logo on the top and the front, then see it in 3D", async ({ pag
   j.gap("no way to place one image on several faces at once (U4.4)");
   await j.decide("focus the front (on the 3D model)", async () => {
     await faces.getByRole("button", { name: "ด้านหน้า", exact: true }).click();
-    await expect(focused("ด้านหน้า")).toBeVisible();
+    await expect(focused("ด้านหน้า").first()).toBeVisible();
   });
   await j.decide("place the logo again", () => page.getByRole("button", { name: "วางรูปนี้อีกครั้ง" }).click());
 

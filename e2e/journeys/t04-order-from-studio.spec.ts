@@ -6,8 +6,6 @@ import { addHeading } from "../helpers/designer";
 import { gotoHydrated } from "../helpers/session";
 import { expect, test } from "./fixture";
 
-const BOX = "/studio/new?product=tuck-end-box&style=tuck-end&l=70&w=40&h=150&step=design";
-
 /** Whatever the buyer's cart already holds is not part of this task. */
 async function emptyCart(page: Page) {
   await gotoHydrated(page, `${HOSTS.customer}/cart`);
@@ -28,12 +26,15 @@ test("T4 order 1,000 pcs from the studio, up to payment", async ({ page, journey
   const j = journey("T4");
   await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
   await emptyCart(page);
-  // The task card's start: a design of the box open in the studio, saved.
-  await gotoHydrated(page, `${HOSTS.customer}${BOX}`);
-  const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
-  if (await setup.isVisible()) await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
+  // The task card's start: a design of the box open in the studio, saved. Only a style-library box
+  // prints from the studio (OrderSheet's `catalogueOnly`), so it is opened from its style page.
+  await gotoHydrated(page, `${HOSTS.customer}/styles/pk-te-01`);
+  await page.getByRole("button", { name: "ออกแบบใน 3D Studio" }).click();
+  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
+  await expect(page).toHaveURL(/\/studio\/[0-9a-f-]{36}\?/, { timeout: 15_000 });
+  await page.getByRole("button", { name: "ใช้กล่องนี้ แล้วเริ่มออกแบบ" }).click();
   await addHeading(page);
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   // The task card starts T4 from "the T3 design" — checked and fixed. The heading lands near a fold
   // on this narrow box, so its one-click fix is applied here, before counting: that is T3's work.
   const steps = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" });
