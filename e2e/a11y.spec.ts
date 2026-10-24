@@ -224,6 +224,12 @@ test.describe("keyboard paths", () => {
     ).toBeVisible();
   });
 
+  test("the storefront starts light even on a dark OS", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  });
+
   test("the theme toggle switches theme and persists it", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "ธีม" }).click();

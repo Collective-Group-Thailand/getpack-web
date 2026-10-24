@@ -137,7 +137,7 @@ const light = build(
   },
 );
 
-/** Dark — available in every zone; the customer zone follows the OS unless `pk_theme` says otherwise. */
+/** Dark — available in every zone; only shown when `pk_theme` asks for it (or for `system` on a dark OS). */
 const dark = build(
   {
     bg: D["paper-50"],
