@@ -368,7 +368,7 @@ out of heap first), so every set had grown past its ratchet unmeasured. Measured
 | Set | Heaviest page | Before | Measured | Ratchet |
 |---|---|---|---|---|
 | studio | `/studio/new?product=tuck-end-box…` | 505,800 | 824,007 → **571,492** | 505,800 → **571,900** |
-| customer-marketing | a style page (`/styles/pk-te-01-…`) | 291,000 | 322,975 | 291,000 → **323,400** |
+| customer-marketing | a style page (`/styles/pk-te-01-…`) | 291,000 | 322,975 | 291,000 → 323,400 → **295,900** |
 | customer-app | `/configure/tuck-end-box` | 346,300 | 353,438 | 346,300 → **353,900** |
 | partner | `/settings` | 301,600 | 308,568 | 301,600 → **309,000** |
 | admin-crud | `/partners` | 492,000 | 507,853 | 492,000 → **508,300** |
@@ -378,9 +378,16 @@ out of heap first), so every set had grown past its ratchet unmeasured. Measured
   at once, so three.js (~250 KB) was in every first load — against ADR-0010. The split's model now
   loads with the first interaction (pointer move, touch, key or wheel); the 3D view loads at once as
   before. 824,007 → 571,492 B.
-- **Not yet found**: the studio's remaining +66 KB over U5.5, and a style page's ≈ 40 KB over the rest
-  of its set (`/styles` itself is 283,352). Both grew across the rounds after U5.8 without a
-  measurement; they are recorded here to be worked down, not absorbed — the targets above are
-  unchanged.
+- **Style page, fixed (same day)**: the "ออกแบบใน 3D Studio" button reached the dieline engine
+  (≈ 35 KB) through `studio/library.ts`, and Turbopack lists a client component's `import()` chunks
+  with the page — so even a dynamic import of that module loaded the engine with the page. The lookup
+  is its own module (`studio/variant-recipe.ts`) importing the engine and the library inside the
+  function. 322,975 → **284,642**; customer-marketing 323,400 → **295,900** (the home page, 295,497,
+  is now the heaviest).
+- **Studio, not yet found**: the remaining +66 KB over U5.5. Of today's 557 KB (gzip) the studio's
+  own chunks are Konva (≈ 104 KB, the canvas), the engine (35 KB) and clipper (27 KB), and ≈ 120 KB of
+  designer UI. Turbopack groups modules into chunks itself, so panels already behind `next/dynamic`
+  (the brand kit, templates) share a chunk with the editor and load with it; splitting them out is the
+  next step, recorded here rather than absorbed — the targets above are unchanged.
 - The other sets' growth is the shared shells (admin menu search and folding groups, the partner
   ERP's entry points, the storefront header).

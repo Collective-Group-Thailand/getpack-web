@@ -4,8 +4,8 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { configureHref } from "@/features/customer/catalog/paths";
-import { recipeOfVariant } from "@/features/customer/studio/library";
 import { studioHref } from "@/features/customer/studio/paths";
+import { recipeOfVariant } from "@/features/customer/studio/variant-recipe";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 

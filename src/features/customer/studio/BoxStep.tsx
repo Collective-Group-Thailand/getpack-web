@@ -35,7 +35,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
-import { recipeOfVariant } from "./library";
+import { recipeOfVariant } from "./variant-recipe";
 
 const AdvisorPanel = dynamic(
   () => import("@/features/customer/configurator/AdvisorPanel").then((module) => module.AdvisorPanel),
