@@ -230,7 +230,8 @@ test.describe("demand analytics (D-102)", () => {
 
     await choiceList(page, "เส้นทาง").click();
     await page.getByRole("option", { name: "T9 · แจ้งปัญหาสินค้า" }).click();
-    await expect(page.getByRole("row", { name: /ส่งเรื่อง/ })).toBeVisible();
+    // The funnel's own step ("ส่งเรื่อง <count>"); the weekly table may name the step in its rows too.
+    await expect(page.getByRole("row", { name: /^ส่งเรื่อง [\d,]+$/ })).toBeVisible();
     const week = page.getByRole("table", { name: "การตรวจรายสัปดาห์" });
     await expect(week).toContainText("ลดลงผิดปกติ");
     await expectAxeClean(page);
