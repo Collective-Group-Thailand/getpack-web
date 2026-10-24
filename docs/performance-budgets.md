@@ -369,7 +369,7 @@ out of heap first), so every set had grown past its ratchet unmeasured. Measured
 |---|---|---|---|---|
 | studio | `/studio/new?product=tuck-end-box…` | 505,800 | 824,007 → **571,492** | 505,800 → **571,900** |
 | customer-marketing | a style page (`/styles/pk-te-01-…`) | 291,000 | 322,975 | 291,000 → 323,400 → **295,900** |
-| customer-app | `/configure/tuck-end-box` | 346,300 | 353,438 | 346,300 → **353,900** |
+| customer-app | `/configure/tuck-end-box` | 346,300 | 353,438 → 354,446 | 346,300 → 353,900 → **354,900** |
 | partner | `/settings` | 301,600 | 308,568 | 301,600 → **309,000** |
 | admin-crud | `/partners` | 492,000 | 507,853 | 492,000 → **508,300** |
 | admin-lists | `/orders`, an order | 392,000 | 392,858 | 392,000 → **393,300** |
