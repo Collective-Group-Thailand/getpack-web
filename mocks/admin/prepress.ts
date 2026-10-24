@@ -703,8 +703,10 @@ export function prepressOf(orderId: string): Detail | undefined {
   const index = orders.findIndex((order) => order.id === orderId);
   const order = orders[index];
   if (!order) return undefined;
+  // Read before `build`, whose refresh writes the placeholder stage's status onto the order.
+  const artworkStatus = order.artworkStatus;
   const detail = build(order, index, { stage: "template" });
-  detail.artworkStatus = order.artworkStatus;
+  detail.artworkStatus = artworkStatus;
   detail.designOption = order.designOption;
   detail.mockupOption = order.mockupOption;
   // What the commerce fixture already holds for the order, so the order screen and the workspace

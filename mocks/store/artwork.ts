@@ -456,8 +456,6 @@ export function syncDesign(detail: PrepressDetail): PrepressDetail {
   }
   const delivered = service.rounds.at(-1);
   if (service.status !== "delivered" || delivered?.status !== "delivered") return detail;
-  // Approved artwork is final (the order went on with it): a delivered round is not a new proof.
-  if (detail.artworkStatus === "approved") return detail;
   const known = [...designProofs.entries()].some(
     ([, round]) => round.serviceId === service.id && round.roundNo === delivered.roundNo,
   );
