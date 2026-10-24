@@ -367,7 +367,7 @@ out of heap first), so every set had grown past its ratchet unmeasured. Measured
 
 | Set | Heaviest page | Before | Measured | Ratchet |
 |---|---|---|---|---|
-| studio | `/studio/new?product=tuck-end-box…` | 505,800 | 824,007 → **571,492** | 505,800 → **571,900** |
+| studio | `/studio/new?product=tuck-end-box…` | 505,800 | 824,007 → 571,492 → **563,199** | 505,800 → 571,900 → **563,600** |
 | customer-marketing | a style page (`/styles/pk-te-01-…`) | 291,000 | 322,975 | 291,000 → 323,400 → **295,900** |
 | customer-app | `/configure/tuck-end-box` | 346,300 | 353,438 → 354,446 | 346,300 → 353,900 → **354,900** |
 | partner | `/settings` | 301,600 | 308,568 | 301,600 → **309,000** |
@@ -378,16 +378,18 @@ out of heap first), so every set had grown past its ratchet unmeasured. Measured
   at once, so three.js (~250 KB) was in every first load — against ADR-0010. The split's model now
   loads with the first interaction (pointer move, touch, key or wheel); the 3D view loads at once as
   before. 824,007 → 571,492 B.
-- **Style page, fixed (same day)**: the "ออกแบบใน 3D Studio" button reached the dieline engine
-  (≈ 35 KB) through `studio/library.ts`, and Turbopack lists a client component's `import()` chunks
-  with the page — so even a dynamic import of that module loaded the engine with the page. The lookup
-  is its own module (`studio/variant-recipe.ts`) importing the engine and the library inside the
-  function. 322,975 → **284,642**; customer-marketing 323,400 → **295,900** (the home page, 295,497,
-  is now the heaviest).
-- **Studio, not yet found**: the remaining +66 KB over U5.5. Of today's 557 KB (gzip) the studio's
-  own chunks are Konva (≈ 104 KB, the canvas), the engine (35 KB) and clipper (27 KB), and ≈ 120 KB of
-  designer UI. Turbopack groups modules into chunks itself, so panels already behind `next/dynamic`
-  (the brand kit, templates) share a chunk with the editor and load with it; splitting them out is the
-  next step, recorded here rather than absorbed — the targets above are unchanged.
+- **Style page, fixed (same day)**: the "ออกแบบใน 3D Studio" button imported `studio/library.ts`
+  statically, and that module imports the dieline engine's main entry (≈ 35 KB) — so every style
+  page loaded the engine. The variant lookup is its own module (`studio/variant-recipe.ts`) that
+  imports the engine and the library inside the function. 322,975 → **284,642**; customer-marketing
+  323,400 → **295,900** (the home page, 295,497, is now the heaviest).
+- **Studio, partly fixed (same day)**: `useSwatches` imported the brand kit's storage from
+  `BrandPanel.tsx`, which brought the panel (company kits, template layouts) into the editor although
+  the panel itself is behind `next/dynamic`; the storage is its own module (`panels/brand-kit.ts`). The
+  die's SVG / DXF / PDF writers load with the first die export (`export-files.ts`). 571,492 →
+  **563,199**; studio 571,900 → **563,600**. What remains over U5.5 (≈ 57 KB) is the editor's own
+  growth since then — the checks and their fixes, finishes, layers, the setup dialog — with Konva
+  (≈ 104 KB), the engine (35 KB) and clipper (27 KB) underneath. It is recorded here to be worked
+  down, not absorbed: the targets above are unchanged.
 - The other sets' growth is the shared shells (admin menu search and folding groups, the partner
   ERP's entry points, the storefront header).

@@ -14,32 +14,8 @@ import { useEditor } from "../../store/editor";
 import type { DesignElement, ImageElement } from "../../types";
 import { applyBrand } from "../../templates/layout";
 import { useDesigner } from "../DesignerContext";
+import { readBrandKit, saveBrandKit, type BrandKit } from "./brand-kit";
 import { CompanyBrandKits } from "./CompanyBrandKits";
-
-const KEY = "getpack.brandkit";
-
-export interface BrandKit {
-  colours: string[];
-  logo: Omit<ImageElement, "id" | "x" | "y"> | null;
-}
-
-export function readBrandKit(): BrandKit {
-  try {
-    const raw = localStorage.getItem(KEY);
-    const kit = raw ? (JSON.parse(raw) as Partial<BrandKit>) : {};
-    return { colours: Array.isArray(kit.colours) ? kit.colours : [], logo: kit.logo ?? null };
-  } catch {
-    return { colours: [], logo: null };
-  }
-}
-
-function saveBrandKit(kit: BrandKit) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(kit));
-  } catch {
-    // Storage full or blocked: the kit lasts for this visit.
-  }
-}
 
 /**
  * The brand kit: the customer's own colours and logo, one click away in every design, beside the

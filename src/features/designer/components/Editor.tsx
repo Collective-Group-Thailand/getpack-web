@@ -29,15 +29,7 @@ import {
   type PersistenceMode,
 } from "@/features/designer/data/persistence";
 import { dielineOf, hingesOf, insideSize, readDesign, sizeOf } from "@/features/designer/document";
-import {
-  exportDielineDxf,
-  exportDielinePdf,
-  exportDielineSvg,
-  exportPng,
-  exportPrintPdf,
-  makeThumbnail,
-  renderDieline,
-} from "@/features/designer/export";
+import { exportPng, exportPrintPdf, makeThumbnail, renderDieline } from "@/features/designer/export";
 import { finishesIn, finishMask, type Finish } from "@/features/designer/lib/finishes";
 import { uprightAngles } from "@/features/designer/lib/upright";
 import { useFaceNames } from "@/features/designer/lib/useFaceNames";
@@ -611,9 +603,15 @@ export default function Editor({
     useEditor.getState().select(null);
     if (useEditor.getState().side === "inside") useEditor.getState().setSide("outside");
     setTimeout(() => {
-      if (kind === "svg") exportDielineSvg(dieline, name);
-      else if (kind === "dxf") exportDielineDxf(dieline, name);
-      else if (kind === "dieline-pdf") exportDielinePdf(dieline, name);
+      // The die's file writers load with the first die export, not with the editor.
+      if (kind === "svg" || kind === "dxf" || kind === "dieline-pdf")
+        void import("@/features/designer/export-files").then((files) =>
+          kind === "svg"
+            ? files.exportDielineSvg(dieline, name)
+            : kind === "dxf"
+              ? files.exportDielineDxf(dieline, name)
+              : files.exportDielinePdf(dieline, name),
+        );
       else if (kind === "pdf") void exportPrintPdf(stage, dieline, name, useEditor.getState().bleedMm);
       else exportPng(stage, dieline, name, kind === "png-guides");
     }, 150);
