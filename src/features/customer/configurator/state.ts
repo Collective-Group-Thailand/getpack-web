@@ -477,10 +477,36 @@ export function seedFromDesign(
       ...(inks && front ? { print_front: inks } : {}),
     };
   }
-  // A design's "order this" keeps the online designer; the home page's quick start leaves the choice open.
+  // An asked-for option wins (`/studio/upload`'s `own_file`, a design's "order this"); without one,
+  // a configuration from the designer keeps the online designer and the home page's quick start
+  // leaves the choice open.
   if (design) seed.designOption = design;
   if (design && designId) seed.designDocumentId = designId;
-  else if (query.from !== "home" && configurator.design.options.includes("online_designer"))
+  else if (!design && query.from !== "home" && configurator.design.options.includes("online_designer"))
     seed.designOption = "online_designer";
   return seed;
+}
+
+/**
+ * The artwork options this configuration can take: the product's (`configurator.design.options`),
+ * less the online designer when it cannot draw the chosen pattern (`designerAvailable`).
+ */
+export function designOptionsOf(configurator: Configurator, designerAvailable: boolean): DesignOption[] {
+  return configurator.design.options.filter((option) => option !== "online_designer" || designerAvailable);
+}
+
+/**
+ * The option in force: the chosen one while it is offered; otherwise the product's default, or its
+ * first offered option — so the step, its collapsed summary and the cart line never carry an option
+ * the step does not show (e.g. "ออกแบบออนไลน์" for a pattern the designer cannot draw).
+ */
+export function designOptionOf(
+  configurator: Configurator,
+  chosen: DesignOption,
+  designerAvailable: boolean,
+): DesignOption {
+  const offered = designOptionsOf(configurator, designerAvailable);
+  if (offered.includes(chosen)) return chosen;
+  if (offered.includes(configurator.design.default)) return configurator.design.default;
+  return offered[0] ?? chosen;
 }

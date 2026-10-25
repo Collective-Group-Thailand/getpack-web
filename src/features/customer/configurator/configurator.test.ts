@@ -12,6 +12,8 @@ import { buildCalculateBody, buildConfiguration, seedFromConfiguration } from ".
 import { basesOf, groupsOf, isProcessInk, sizeKindOf, type Configurator } from "./model";
 import {
   DEFAULT_LOAD,
+  designOptionOf,
+  designOptionsOf,
   initialState,
   missingChoices,
   NO_DIMS,
@@ -140,6 +142,29 @@ describe("the configurator state", () => {
     expect(readyToPrice(configurator, { ...state, target: "12.5" })).toBe(true);
     expect(readyToPrice(configurator, { ...state, target: "0" })).toBe(false);
     expect(readyToPrice(configurator, { ...state, target: "1.234" })).toBe(false);
+  });
+
+  it("opens on 'own file' from /studio/upload (?design=own_file), and never on an option the step hides", async () => {
+    const configurator = await configuratorOf("shipping-box");
+    expect(configurator.design.options).toEqual(expect.arrayContaining(["own_file", "online_designer"]));
+    // `/studio/upload` links here with `?design=own_file`: that is the option chosen, not the designer.
+    const seeded = initialState(configurator, seedFromDesign(configurator, { design: "own_file" }));
+    expect(seeded.designOption).toBe("own_file");
+    expect(designOptionOf(configurator, seeded.designOption, true)).toBe("own_file");
+    expect(designOptionOf(configurator, seeded.designOption, false)).toBe("own_file");
+    // With another parameter too (a size from the product page) the asked-for option still wins.
+    const sized = seedFromDesign(configurator, { design: "own_file", size: configurator.standardSizes[0]?.code });
+    expect(sized?.designOption).toBe("own_file");
+    // Without one, a configuration from the designer keeps the online designer (unchanged).
+    expect(seedFromDesign(configurator, { l: "200", w: "150", d: "100" })?.designOption).toBe("online_designer");
+
+    // A pattern the designer cannot draw (UAT's corrugated patterns have no dieline key): the step
+    // does not offer "online_designer", so neither the selection, its summary nor the cart line carry it.
+    expect(designOptionsOf(configurator, false)).not.toContain("online_designer");
+    expect(designOptionOf(configurator, "online_designer", false)).toBe(configurator.design.default);
+    const designerDefault = { ...configurator, design: { ...configurator.design, default: "online_designer" as const } };
+    expect(designOptionOf(designerDefault, "online_designer", false)).toBe(designOptionsOf(designerDefault, false)[0]);
+    expect(designOptionOf(designerDefault, "online_designer", true)).toBe("online_designer");
   });
 });
 

@@ -184,3 +184,16 @@ test.describe("configurator v2", () => {
     await expect(page.getByText(/ทำต่อจากร่าง/)).toBeVisible();
   });
 });
+
+test.describe("own file from /studio/upload", () => {
+  test.beforeEach(async ({ page }) => acceptCookies(page));
+
+  test("?design=own_file opens with 'มีไฟล์งานแล้ว' chosen, and the collapsed step says so", async ({ page }) => {
+    await gotoHydrated(page, `${HOSTS.customer}/configure/shipping-box?design=own_file`);
+    const design = step(page, "งานออกแบบและตัวอย่าง");
+    await expect(design).toContainText("มีไฟล์งานแล้ว");
+    await expect(design).not.toContainText("ออกแบบออนไลน์");
+    await design.click();
+    await expect(page.getByRole("radio", { name: /มีไฟล์งานแล้ว/ })).toBeChecked();
+  });
+});
