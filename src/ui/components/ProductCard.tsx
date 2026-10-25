@@ -46,6 +46,23 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
    * on a narrow card (a phone's two columns) it drops to the picture's foot, so the two never collide.
    */
   promoBadge?: React.ReactNode;
+  /**
+   * Controls of their own over the picture's top-end corner (a favourite heart), raised above the
+   * stretched link. On a device that hovers they show on hover and focus — and at rest once one of
+   * them is pressed (a saved style's star); on touch, always.
+   */
+  imageActions?: React.ReactNode;
+  /** A label at the picture's foot, start side ("18 ตัวเลือก"). */
+  imageFoot?: React.ReactNode;
+  /** A compact list of facts under the title (size, minimum, lead time) — each item is the caller's. */
+  facts?: React.ReactNode;
+  /**
+   * The card's foot as one row over a hairline — the price at the start, an action at the end —
+   * in place of `price` / `meta` / `actions`. Raised above the stretched link, so its controls click.
+   */
+  footer?: React.ReactNode;
+  /** Keep two lines for the title even when it needs one, so every card in a row lines up. */
+  reserveTitleLines?: boolean;
   /** Revealed on hover and focus at the foot of the picture ("ดูราคา"); the whole card is the link. */
   hoverCta?: React.ReactNode;
   /** The heading level in the page outline. */
@@ -75,6 +92,11 @@ export function ProductCard({
   promoBadge,
   hoverCta,
   actions,
+  imageActions,
+  imageFoot,
+  facts,
+  footer,
+  reserveTitleLines = false,
   fallback,
   aspect = "landscape",
   headingLevel: Heading = "h3",
@@ -143,6 +165,14 @@ export function ProductCard({
             {promoBadge}
           </div>
         ) : null}
+        {imageFoot ? (
+          <div className="pointer-events-none absolute start-2.5 bottom-2.5 flex max-w-[80%] gap-1">{imageFoot}</div>
+        ) : null}
+        {imageActions ? (
+          <div className="duration-fast ease-standard absolute end-2 top-2 z-10 flex gap-1 transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:has-[[aria-pressed=true]]:opacity-100">
+            {imageActions}
+          </div>
+        ) : null}
         {hoverCta ? (
           <div
             aria-hidden="true"
@@ -158,13 +188,23 @@ export function ProductCard({
       </div>
       <div className="flex flex-1 flex-col gap-0.5 p-3">
         {topLine ? <p className="text-muted truncate text-[0.6875rem] tracking-wide">{topLine}</p> : null}
-        <Heading className="line-clamp-2 text-sm leading-snug font-semibold md:text-[0.9375rem] [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
+        <Heading
+          className={cn(
+            "line-clamp-2 text-sm leading-snug font-semibold md:text-[0.9375rem] [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']",
+            reserveTitleLines && "min-h-[2lh]",
+          )}
+        >
           {title}
         </Heading>
+        {facts ? <div className="text-muted pt-1.5 text-xs">{facts}</div> : null}
         {details ? <div className="pt-1">{details}</div> : null}
         {/* Price, the quiet line and the actions sit at the card's foot, so across a row they line
             up whatever the title's length (one line or two). */}
-        {price || meta || actions ? (
+        {footer ? (
+          <div className="border-border relative z-10 -mx-3 mt-auto -mb-3 flex items-center justify-between gap-2 border-t px-3 py-2.5">
+            {footer}
+          </div>
+        ) : price || meta || actions ? (
           <div className="mt-auto flex flex-col gap-0.5 pt-2">
             {price ? <p className="text-sm tabular-nums">{price}</p> : null}
             {meta ? <p className="text-muted line-clamp-2 text-xs">{meta}</p> : null}
