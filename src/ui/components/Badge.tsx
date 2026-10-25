@@ -21,6 +21,7 @@ export const badgeVariants = cva("inline-flex items-center gap-1 rounded-control
       warning: "",
       danger: "",
       info: "",
+      instant: "",
     },
     appearance: { subtle: "", solid: "" },
     size: {
@@ -36,6 +37,7 @@ export const badgeVariants = cva("inline-flex items-center gap-1 rounded-control
     { tone: "warning", appearance: "subtle", class: "bg-warning-subtle text-warning-subtle-fg" },
     { tone: "danger", appearance: "subtle", class: "bg-danger-subtle text-danger-subtle-fg" },
     { tone: "info", appearance: "subtle", class: "bg-info-subtle text-info-subtle-fg" },
+    { tone: "instant", appearance: "subtle", class: "bg-instant-subtle text-instant-subtle-fg" },
     { tone: "neutral", appearance: "solid", class: "bg-neutral text-neutral-fg" },
     { tone: "primary", appearance: "solid", class: "bg-primary text-primary-fg" },
     { tone: "accent", appearance: "solid", class: "bg-accent text-accent-fg" },
@@ -43,6 +45,7 @@ export const badgeVariants = cva("inline-flex items-center gap-1 rounded-control
     { tone: "warning", appearance: "solid", class: "bg-warning text-warning-fg" },
     { tone: "danger", appearance: "solid", class: "bg-danger text-danger-fg" },
     { tone: "info", appearance: "solid", class: "bg-info text-info-fg" },
+    { tone: "instant", appearance: "solid", class: "bg-instant text-instant-fg" },
   ],
   defaultVariants: { tone: "neutral", appearance: "subtle", size: "md" },
 });
