@@ -5,6 +5,7 @@ import { listProducts } from "@/features/customer/catalog/api.server";
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { HOME_WRAP } from "@/features/customer/home/parts";
+import { STYLES_HREF } from "@/features/customer/styles/paths";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
@@ -101,7 +102,7 @@ export default async function StudioUpload({ params }: { params: Promise<{ local
               </Link>
             ),
             templates: (chunks) => (
-              <Link href="/studio/templates" className={cn("text-fg", UNDERLINE)}>
+              <Link href={STYLES_HREF} className={cn("text-fg", UNDERLINE)}>
                 {chunks}
               </Link>
             ),

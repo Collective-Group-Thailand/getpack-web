@@ -9,6 +9,7 @@ import { readAccessToken } from "@/lib/auth/session";
 import { getCatalogueTree } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { HeaderSearch } from "@/features/customer/search/HeaderSearch";
+import { STYLES_HREF } from "@/features/customer/styles/paths";
 
 import { emptyContent } from "./content.server";
 import { DeferredAssistant, DeferredLocaleMenu } from "./DeferredMenus";
@@ -55,7 +56,7 @@ export async function SiteHeader() {
   // The five destinations, in the board's order — the desktop bar and the phone drawer alike.
   const links: [string, string][] = [
     ["/studio", t("nav.studio")],
-    ["/studio/templates", t("nav.templates")],
+    [STYLES_HREF, t("nav.templates")],
     ["/products", t("nav.productsPricing")],
     ["/business", t("nav.business")],
     ["/contact", t("nav.contact")],
