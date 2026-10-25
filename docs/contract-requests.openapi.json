@@ -1241,6 +1241,40 @@
             "minimum": 2,
             "maximum": 6
           },
+          "materialSwatches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "materialClass": {
+                  "type": "string"
+                },
+                "colour": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^#[0-9A-Fa-f]{6}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "imageUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "materialClass",
+                "colour",
+                "imageUrl"
+              ],
+              "additionalProperties": false
+            }
+          },
           "trust": {
             "type": "object",
             "properties": {
@@ -1432,6 +1466,7 @@
         "required": [
           "quickSearch",
           "compareLimit",
+          "materialSwatches",
           "trust"
         ],
         "additionalProperties": false

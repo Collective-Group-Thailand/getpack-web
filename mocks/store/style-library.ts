@@ -16,6 +16,7 @@ export const styleLibraryHandlers = [
       { label: { th: "กล่องผลไม้", en: "Fruit box" }, query: "กล่องผลไม้" },
     ],
     compareLimit: 3,
+    materialSwatches: [],
     trust: { certifications: [], foodGrade: [], productionPhotos: [], customerLogos: [], taxInvoiceNote: null },
   })),
 ];
