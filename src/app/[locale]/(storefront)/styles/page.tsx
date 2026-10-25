@@ -8,13 +8,15 @@ import { CompareTray } from "@/features/customer/styles/CompareTray";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { styleHref, STYLES_HREF } from "@/features/customer/styles/paths";
 import {
-  FILTER_KEYS,
+  activeFilterCount,
   isFiltered,
   listHref,
   readParams,
   SORTS,
+  toggleValue,
   toQuery,
-  type FilterKey,
+  toSearch,
+  type FacetKey,
 } from "@/features/customer/styles/query";
 import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
 import { LibraryViews } from "@/features/customer/styles/LibraryViews";
@@ -38,7 +40,7 @@ import { cn } from "@/ui/lib/cn";
 
 const PER_PAGE = 24;
 /** The facets in the sidebar, in this order; `category` is the tabs above the grid. */
-const SIDEBAR: FilterKey[] = ["closure", "feature", "useCase", "materialClass", "pricePath", "family"];
+const SIDEBAR: FacetKey[] = ["closure", "feature", "useCase", "materialClass", "family"];
 const CATEGORIES = ["folding_carton", "corrugated", "rigid", "flexible", "label", "tag_sleeve", "insert"];
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -119,7 +121,7 @@ export default async function StylesPage({
   const action = getPathname({ href: STYLES_HREF, locale: locale as Locale });
   const sort = query.sort ?? (query.q ? "relevance" : "popular");
   const sorts = query.q ? ["relevance", ...SORTS] : [...SORTS];
-  const filtered = FILTER_KEYS.some((k) => query[k]) || !!query.q;
+  const filtered = isFiltered(query) || !!query.category;
   const categoryCount = new Map(list.facets.category.map((f) => [f.value, f.count]));
   // Every style has one category, and that facet ignores its own filter: its counts sum to the matches.
   const total = query.category
@@ -172,8 +174,8 @@ export default async function StylesPage({
       <div className="mt-6 grid gap-8 md:grid-cols-[15rem_1fr]">
         <aside className="flex min-w-0 flex-col gap-6" aria-label={t("list.filters")}>
           <form action={action} role="search" className="flex gap-2">
-            {FILTER_KEYS.filter((k) => query[k]).map((k) => (
-              <input key={k} type="hidden" name={k} value={query[k]} />
+            {[...new URLSearchParams(toSearch({ ...query, q: undefined }))].map(([k, v]) => (
+              <input key={k} type="hidden" name={k} value={v} />
             ))}
             <label className="sr-only" htmlFor="styles-q">
               {t("list.searchLabel")}
@@ -198,10 +200,8 @@ export default async function StylesPage({
             className="border-border rounded-control -mt-3 flex items-center justify-between border px-3 py-2 text-sm font-medium peer-focus-visible:ring-2 md:hidden"
           >
             {t("list.filters")}
-            {SIDEBAR.some((facet) => query[facet]) ? (
-              <span className="text-primary tabular-nums">
-                {t("list.count", { count: SIDEBAR.filter((facet) => query[facet]).length })}
-              </span>
+            {activeFilterCount(query) ? (
+              <span className="text-primary tabular-nums">{t("list.count", { count: activeFilterCount(query) })}</span>
             ) : null}
           </label>
           <div className="hidden min-w-0 flex-col gap-6 peer-checked:flex md:flex">
@@ -215,11 +215,11 @@ export default async function StylesPage({
                   </h2>
                   <ul className="flex flex-col gap-0.5">
                     {values.slice(0, 12).map(({ value, count }) => {
-                      const on = query[facet] === value;
+                      const on = query[facet].includes(value);
                       return (
                         <li key={value}>
                           <Link
-                            href={listHref(query, { [facet]: on ? undefined : value })}
+                            href={listHref(toggleValue(query, facet, value))}
                             aria-current={on ? "true" : undefined}
                             rel="nofollow"
                             className={cn(
