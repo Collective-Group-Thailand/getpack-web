@@ -32,6 +32,9 @@ Reference material (read before coding):
 </context>
 
 <hard_rules>
+0. GLOBAL RULES: also follow docs/design/GLOBAL-RULES.md (factory confidentiality, no internal strategy copy,
+   no sample data, no AI-image hints, no fabricated reviews, branch base, single pricing service, shared
+   foundations). If anything in this file conflicts with GLOBAL-RULES.md, GLOBAL-RULES.md wins.
 1. Git: create/continue branch `design/styles-catalog-redesign` from the current working branch.
    Small commits per task. Never merge to main, never force-push. I review the branch myself.
 2. The prototype is a visual + behaviour reference, NOT code to copy. Rebuild it with this repo's
@@ -151,8 +154,11 @@ Match the prototype's layout, spacing, states and copy. One commit per numbered 
    cat, q, size (LxWxH), use, mat, close, feat, fam, eco (comma-separated), price=instant,
    view=all, sort, page, style. Defaults are omitted. Typing/filtering → router.replace;
    category change → router.push. Copy-link button copies the canonical URL.
-10. VAT switch: prices from the API are ex-VAT; "รวม VAT" multiplies by 1.07 and labels it.
-    Persist the choice per user (account setting if logged in, localStorage otherwise, wrapped in try/catch).
+10. VAT switch (site-wide rule, same as /products): default ON = show VAT-inclusive prices, matching the
+    existing product pages which already display "รวม VAT". Switch OFF shows ex-VAT. First check whether the API
+    returns VAT-inclusive or exclusive amounts, then implement ONE shared price-display helper used by /styles,
+    /products and product pages. Persist the choice per user (account setting if logged in, localStorage
+    otherwise, wrapped in try/catch).
 11. LINE OA button: floating bottom-right, popover with LINE ID + copy + "เพิ่มเพื่อนใน LINE" +
     "ฝากเบอร์ให้โทรกลับ". ID comes from env/config (e.g. NEXT_PUBLIC_LINE_OA_ID); hide the button if unset.
     Moves up when the compare tray is open. Don't use the LINE logo artwork; a chat icon + text is fine.
@@ -213,6 +219,8 @@ when its data exists; otherwise ship it behind a feature flag (off) and report t
    Add the "เลือกตามการใช้งาน" link block at the bottom of /styles. Add pages to sitemap and llms.txt.
 6. Trust section ("ความน่าเชื่อถือ"): certifications, food-grade docs, production photos, tax-invoice note,
    customer logos — content from CMS/config only; the whole section is hidden when empty.
+   Production photos show the product and the process only: no factory name, logo, signage, location, machine
+   branding, vehicles or identifiable workers (GLOBAL-RULES.md §1). Use the label "รูปงานจริงระหว่างผลิต".
 </task>
 
 <report>Same report format as Phase 1, plus: list of styles excluded from size search/estimates due to missing data.</report>
@@ -229,8 +237,9 @@ and follow its <context>, <hard_rules> and <design_system> strictly for this who
 <task>
 Phase 3 of the /styles redesign on branch design/styles-catalog-redesign.
 
-1. Account menu (avatar): โปรเจกต์ของฉัน · สั่งซ้ำ · ใบเสนอราคา (badge with pending count) ·
-   ทีมและผู้อนุมัติ · ข้อมูลใบกำกับภาษี · ออกจากระบบ. Link to existing /account routes; hide items whose feature doesn't exist yet and report them.
+1. Account menu (avatar) — use the SAME labels and routes as the account pack Phase 1 nav: คำสั่งซื้อ (badge = items
+   needing action) · ใบเสนอราคา (badge with pending count) · งานออกแบบ · สั่งซ้ำ · เอกสาร · ข้อมูลบัญชี ·
+   ทีมและผู้อนุมัติ (only when the checkout pack Phase 2 approval feature exists) · ออกจากระบบ. Link to existing /account routes; hide items whose feature doesn't exist yet and report them.
 2. "ทำต่อจากครั้งก่อน" strip under the category rail for logged-in users with history: up to 2 items
    (last order → "สั่งซ้ำ", latest draft/awaiting approval → "ทำต่อ") + "โปรเจกต์ทั้งหมด". Real data only; hidden otherwise.
 3. Quick view "พับ 3D" tab: animated fold from dieline to box (≈1.9s ease-in-out), drag to rotate,
@@ -260,7 +269,7 @@ keep existing API contract backward compatible (additive fields only).
 <task>
 1. Inspect the catalogue style entity/DTOs, facet endpoint and pricing engine. Write a short plan first and wait for approval.
 2. Add per-style fields (nullable): length/width/height min/max (cm), moq_units, lead_time_days_min/max,
-   price_est_low_thb / price_est_high_thb / price_est_basis_qty (ex-VAT), recyclable, plastic_free,
+   price_est_low_thb / price_est_high_thb / price_est_basis_qty (store ex-VAT; the UI shows VAT-inclusive by default), recyclable, plastic_free,
    certifications[], dieline asset refs (.ai + rendered SVG/WebP), name_en, use-case tags.
 3. Estimates: compute from the real pricing formulas where possible (default spec per style) and expose
    tier prices for 500/1,000/3,000/5,000; otherwise use the manually entered estimate fields.
@@ -283,7 +292,7 @@ keep existing API contract backward compatible (additive fields only).
 | length/width/height min–max | ค้นหาด้วยขนาดสินค้า, ช่วงขนาดบนการ์ด |
 | moq_units | ขั้นต่ำบนการ์ด / Quick view, ซ่อนแถวราคาที่ต่ำกว่าขั้นต่ำ |
 | lead_time_days_min/max | "ผลิต x–y วัน" |
-| price_mode, price_est_low/high, basis_qty | ราคาเริ่มต้น / ราคาประมาณ, ตัวช่วยเลือกตามงบ (ราคาไม่รวม VAT) |
+| price_mode, price_est_low/high, basis_qty | ราคาเริ่มต้น / ราคาประมาณ, ตัวช่วยเลือกตามงบ (กรอกราคาไม่รวม VAT · หน้าเว็บแสดงรวม VAT เป็นค่าเริ่มต้น) |
 | recyclable, plastic_free, certifications | ตัวกรองความยั่งยืน, ส่วนความน่าเชื่อถือ |
 | dieline_ai_url | ดาวน์โหลด dieline ฟรี, ภาพแบบคลี่ |
 | name_en | หน้าภาษาอังกฤษ |
