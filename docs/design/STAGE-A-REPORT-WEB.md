@@ -240,3 +240,36 @@ RFQ basket loses the product name (non-UAT); `/products` HTML ≈ 951 KB (≈ 79
 stock in the RFQ tray or cart · type-only RFQ lines meanwhile, and a line's quantity from a card · `partial`
 availability and out-of-stock items · 3 vs 5 service cards · LINE hours null · ผ่อนชำระ vs D-111 · VAT-incl-only until
 ex-VAT fields · materials table source.
+
+---
+
+### A9c — category · Phase 0 · PASS (docs only)
+
+**What changed:** `docs/design/category-redesign/PLAN.md` (no code).
+
+**Findings:** "1 · ประเภท" = `category.types.length`, the number of API **product types** in the category — on UAT
+every one of the 14 categories has exactly one type, so it is always 1 (real product counts 0–10). Filter chips =
+a static `CARD_FILTERS` list with no counts and hard-coded `SMALL_MOQ = 100` / `FAST_LEAD_DAYS = 5`; each chip either
+matches everything or nothing, and on `/products/standard-product` any chip hides all 101 stock items. Only
+**corrugated** (5 items) is instant; the other 13 are quote-only. 23/42 products have standard sizes; **no category
+has content** (intro, use cases, guide, FAQ); flute is a seed code, ply/surface are not fields. The engine can price a
+standard size only one POST at a time (no batch/GET) → proposed cacheable `standard-size-prices` GET; per-size prices
+behind a flag until it and A3 land.
+
+**Data bugs:** postal box description "1–2 สี" vs options ดำ · CMYK · fruit box spec label "[DEV] ฝา · พิมพ์ด้านนอก"
+visible to customers · size names and reference label in W × L × H order · `category.description` claims "ทุกรายการ"
+when any type is instant · footer "เครือข่ายโรงงาน" (A1).
+
+**Blocked today:** "ดาวน์โหลดแบบกล่อง" (patterns have no style variant) · "เปรียบเทียบวัสดุทั้งหมด" (`/materials`
+endpoint 404) · VAT switch (B1 helper).
+
+**Pages:** none changed. **Screenshots:** none. **Tests:** gate only.
+
+**Verify locally:** `/products/corrugated` sidebar "1 · ประเภท" and the 5 chips; `/products/standard-product` any chip
+empties the list; whether production also has one type per category; product images are real photos; on a non-UAT
+backend `/configure/uat-postal-box-b?size=C` prices size C; the data bugs above.
+
+**Open questions (Q1–Q10 in the plan):** content owner (repo file vs back office) · finder clearance rule and low-fit
+threshold (settings?) · standard-size basis and `calc*` dims · finder for quote-only box categories · who supplies flute
+levels · style ↔ catalogue category map · which product drives the finder · the data bugs · service CTA · wording for
+mixed categories.
