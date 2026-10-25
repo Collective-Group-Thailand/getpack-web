@@ -20,6 +20,8 @@ export const AWAITING_TRIAGE: readonly string[] = [
   "POST /v1/store/newsletter/actions/subscribe",
   // U3.6 (2026-10-06): the staff a structural design request can be assigned to.
   "GET /v1/admin/structural-requests/designers",
+  // /styles redesign (2026-10-25): the library page's staff-managed content.
+  "GET /v1/store/style-library/settings",
 ];
 
 /**

@@ -31,6 +31,7 @@ import { contentHandlers } from "./content";
 import { assistantHandlers } from "./assistant";
 import { heroHandlers } from "./hero";
 import { homeHandlers } from "./home";
+import { styleLibraryHandlers } from "./style-library";
 
 export const storeHandlers = [
   // Samples first: they also serve the evidence photos (`files/:fileId/download`) of every zone.
@@ -41,6 +42,7 @@ export const storeHandlers = [
   ...contentHandlers,
   ...assistantHandlers,
   ...homeHandlers,
+  ...styleLibraryHandlers,
   ...heroHandlers,
   ...structuralHandlers,
   ...repeatHandlers,
