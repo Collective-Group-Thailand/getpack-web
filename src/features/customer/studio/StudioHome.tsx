@@ -7,6 +7,7 @@ import { DielineGlyph } from "@/features/customer/home/DielineGlyph";
 import { HOME_WRAP, TemplateCard } from "@/features/customer/home/parts";
 import { styleDieline } from "@/features/customer/home/style-dielines.server";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
+import { STYLES_HREF } from "@/features/customer/styles/paths";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/ui/lib/cn";
@@ -45,7 +46,7 @@ export async function StudioHome({
   const paths = [
     {
       key: "box",
-      href: "/studio/templates",
+      href: STYLES_HREF,
       body: templateCount ? t("paths.box.body", { count: templateCount }) : t("paths.box.bodyNoCount"),
       picture: <DielineGlyph family="tuck" className="h-20 w-28" />,
       lead: true,
@@ -135,7 +136,7 @@ export async function StudioHome({
               <h2 id="studio-popular" className="text-[1.75rem] leading-tight">
                 {t("popular")}
               </h2>
-              <Link href="/studio/templates" className={cn("text-sm", UNDERLINE)}>
+              <Link href={STYLES_HREF} className={cn("text-sm", UNDERLINE)}>
                 {templateCount ? t("allTemplates", { count: templateCount }) : t("allTemplatesShort")}
               </Link>
             </div>

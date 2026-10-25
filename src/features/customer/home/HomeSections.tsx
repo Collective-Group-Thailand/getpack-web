@@ -12,6 +12,7 @@ import { pick } from "@/features/customer/catalog/localize";
 import { categoryHref, stockProductHref } from "@/features/customer/catalog/paths";
 import { compareDecimal } from "@/features/customer/studio/decimal";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
+import { STYLES_HREF } from "@/features/customer/styles/paths";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
@@ -211,7 +212,7 @@ export async function TemplateGallery({
         <h2 id="home-templates" className={H2}>
           {t("title")}
         </h2>
-        <Link href="/studio/templates" className={cn("text-[0.90625rem]", UNDERLINE)}>
+        <Link href={STYLES_HREF} className={cn("text-[0.90625rem]", UNDERLINE)}>
           {total > 0 ? t("all", { count: total }) : t("allShort")}
         </Link>
       </div>

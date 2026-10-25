@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
+import { STYLES_HREF } from "@/features/customer/styles/paths";
 import { serverRequests } from "@/lib/api/requests/server";
 import { BRAND_COMPANY, BRAND_NAME, BrandLogo } from "@/ui/brand";
 import { Icon } from "@/ui/icons";
@@ -35,7 +36,7 @@ export async function SiteFooter() {
       key: "studio",
       links: [
         { key: "start", href: "/studio" },
-        { key: "templates", href: "/studio/templates" },
+        { key: "templates", href: STYLES_HREF },
         { key: "learn", href: "/learn" },
         { key: "materials", href: "/materials" },
       ].filter((link) => !empty.has(link.href)),
