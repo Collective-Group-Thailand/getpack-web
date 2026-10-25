@@ -3,7 +3,13 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { getCatalogueTree, getStyle, type StyleDetail } from "@/features/customer/catalog/api.server";
+import {
+  getCatalogueTree,
+  getStyle,
+  getStyleLibrarySettings,
+  type StyleDetail,
+} from "@/features/customer/catalog/api.server";
+import { CompareLimitProvider } from "@/features/customer/styles/compare-store";
 import { pick } from "@/features/customer/catalog/localize";
 import { configureHref, rfqHref } from "@/features/customer/catalog/paths";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
@@ -85,12 +91,13 @@ export default async function StylePage({ params, searchParams }: { params: Para
       locale: locale as Locale,
     });
 
-  const [t, tree, jar, origin, format] = await Promise.all([
+  const [t, tree, jar, origin, format, settings] = await Promise.all([
     getTranslations("styles"),
     getCatalogueTree(),
     cookies(),
     publicOrigin(),
     getFormat(),
+    getStyleLibrarySettings(),
   ]);
   const words = t as unknown as StylesT;
   const signedIn = Boolean(readAccessToken(jar));
@@ -121,7 +128,12 @@ export default async function StylePage({ params, searchParams }: { params: Para
     {
       term: t("detail.price"),
       description: (
-        <Badge tone={style.pricePath === "instant" ? "success" : "info"}>{t(`pricePaths.${style.pricePath}`)}</Badge>
+        <Badge
+          tone={style.pricePath === "instant" ? "instant" : "info"}
+          icon={style.pricePath === "instant" ? "zap" : undefined}
+        >
+          {t(`pricePaths.${style.pricePath}`)}
+        </Badge>
       ),
     },
     ...(style.startingPrice
@@ -192,11 +204,13 @@ export default async function StylePage({ params, searchParams }: { params: Para
         </p>
         <h1 className="text-3xl font-bold md:text-4xl">{name}</h1>
         <p className="text-muted">{t("card.variants", { count: style.variantCount })}</p>
-        <StyleDetailActions
-          code={style.code}
-          signedIn={signedIn}
-          signInHref={`/sign-in?returnTo=${encodeURIComponent(href)}`}
-        />
+        <CompareLimitProvider limit={settings?.compareLimit}>
+          <StyleDetailActions
+            code={style.code}
+            signedIn={signedIn}
+            signInHref={`/sign-in?returnTo=${encodeURIComponent(href)}`}
+          />
+        </CompareLimitProvider>
       </header>
 
       <div className="mt-8 scroll-mt-24" id={PICKER}>

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { compareStyles } from "@/features/customer/catalog/api.server";
+import { compareStyles, getStyleLibrarySettings } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { getFormat } from "@/features/shared/format/server";
 import { axisLabel, facetLabel, type StylesT } from "@/features/customer/styles/labels";
+import { COMPARE_LIMIT } from "@/features/customer/styles/compare-limit";
 import { styleHref, STYLES_HREF } from "@/features/customer/styles/paths";
 import { Link } from "@/i18n/navigation";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -30,6 +31,8 @@ export default async function ComparePage({
   const { locale } = await params;
   setRequestLocale(locale);
   const raw = (await searchParams).codes;
+  // How many compare is staff's setting (D-246's three without it).
+  const limit = (await getStyleLibrarySettings())?.compareLimit ?? COMPARE_LIMIT;
   const codes = [
     ...new Set(
       (Array.isArray(raw) ? raw.join(",") : (raw ?? ""))
@@ -37,7 +40,7 @@ export default async function ComparePage({
         .map((c) => c.trim().toUpperCase())
         .filter(Boolean),
     ),
-  ].slice(0, 3);
+  ].slice(0, limit);
   const [t, styles, format] = await Promise.all([getTranslations("styles"), compareStyles(codes), getFormat()]);
   const words = t as unknown as StylesT;
   const list = styles ?? [];
@@ -101,7 +104,7 @@ export default async function ComparePage({
           className="mt-8"
           icon="columns"
           title={t("compare.emptyTitle")}
-          description={t("compare.emptyBody")}
+          description={t("compare.emptyBody", { limit })}
           action={
             <Button asChild variant="secondary">
               <Link href={STYLES_HREF}>{t("compare.back")}</Link>
