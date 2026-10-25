@@ -18,18 +18,20 @@ export interface StyleResultsProps {
   nextCursor: string | null;
   /** The query the first page was read with; later pages continue it by cursor. */
   query: StyleListQuery;
+  /** Every match, when known — "แสดง 24 จาก 122 แบบ" and its bar. */
+  total: number | null;
   signedIn: boolean;
   signInHref: string;
 }
 
 /**
- * The library's results (U3.5 §1, §4): a virtualised grid that grows a page at a time by the
- * API's cursor. The first page arrives as cards the server rendered, so the browser runs only the
- * grid and each card's save / compare island; the card renderer and the API client load with the
- * first "show more".
+ * The library's results (styles redesign §4, §14): a virtualised grid of cards at least 228 px
+ * wide (two columns on a phone) that grows 24 at a time by the API's cursor, with how many of how
+ * many are shown. The first page arrives as cards the server rendered, so the browser runs only
+ * the grid and each card's islands; the card renderer and the API client load with "โหลดเพิ่ม".
  */
-export function StyleResults({ initial, nextCursor, query, signedIn, signInHref }: StyleResultsProps) {
-  const t = useTranslations("styles.list");
+export function StyleResults({ initial, nextCursor, query, total, signedIn, signInHref }: StyleResultsProps) {
+  const t = useTranslations("styles.library");
   const [items, setItems] = useState<Item[]>(initial);
   const [cursor, setCursor] = useState(nextCursor);
   const [loading, setLoading] = useState(false);
@@ -54,25 +56,34 @@ export function StyleResults({ initial, nextCursor, query, signedIn, signInHref 
     }
   };
 
+  const shown = items.length;
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6" data-quickview-scope="">
       <VirtualGrid
         items={items}
         itemKey={(item) => item.code}
         label={t("grid")}
-        minColumnWidth={190}
+        minColumnWidth={228}
         minColumns={2}
-        gap={14}
-        estimatedRowHeight={290}
+        gap={16}
+        estimatedRowHeight={420}
         initialItems={12}
         renderItem={(item) =>
           "node" in item ? item.node : <StyleCardView style={item.style} signedIn={signedIn} signInHref={signInHref} />
         }
       />
-      <div className="flex flex-col items-center gap-2">
-        <p className="text-muted text-sm" aria-live="polite">
-          {t("shownMore", { shown: items.length })}
+      <div className="mx-auto flex w-full max-w-xs flex-col items-center gap-3">
+        <p className="text-muted text-sm tabular-nums" aria-live="polite">
+          {total !== null ? t("shown", { shown, total }) : t("shownSome", { shown })}
         </p>
+        {total ? (
+          <div aria-hidden="true" className="bg-bg-subtle h-1 w-full overflow-hidden rounded-full">
+            <div
+              className="bg-primary h-full rounded-full"
+              style={{ width: `${Math.min(100, Math.round((shown / total) * 100))}%` }}
+            />
+          </div>
+        ) : null}
         {cursor ? (
           <Button variant="secondary" loading={loading} onClick={more}>
             {loading ? t("loading") : t("loadMore")}
