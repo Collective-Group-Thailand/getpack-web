@@ -61,5 +61,9 @@ Until answered: hide the dependent element, never use sample data (GLOBAL-RULES 
 - Build with `NODE_OPTIONS=--max-old-space-size=4096` only (without `--use-openssl-ca`); the environment stays as is.
 - Price POST endpoints may be called against UAT **only** after the API code confirms the endpoint is a pure
   calculation with no database writes; the report lists every endpoint allowed. All other POSTs stay blocked.
+  - **Exception — `calculate`:** if the API code shows that `POST /v1/store/quotes/actions/calculate` writes only a
+    `calculate_logs` row (no quote, order, cart or customer record), it is allowed against UAT: **at most 40 calls
+    for the whole of Part 2**, only for the A3/A4 price checks and their screenshots. The report states the exact
+    number of calls and every spec priced.
 - A1 scope: sweep **all** customer-facing text (locale files, components, metadata, JSON-LD, emails) for
   "โรงงาน"/factory wording, not only the footer, using the wording of GLOBAL-RULES §1.
