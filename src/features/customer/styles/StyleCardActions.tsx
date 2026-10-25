@@ -11,7 +11,7 @@ import { trackCatalog } from "./catalog-events";
 import { useCompare } from "./compare-store";
 import { useStyleFavourites } from "./useStyleFavourites";
 
-const round = "bg-surface/95 border-border rounded-full border shadow-sm";
+const plate = "bg-surface/95 border-border border shadow-sm";
 
 /**
  * Save on a library card — the star over its picture (D-246). A guest is sent to sign in and back
@@ -33,7 +33,7 @@ export function FavouriteToggle({
   const saved = favourites.has(code);
   if (!signedIn)
     return (
-      <IconButton asChild name="star" variant="ghost" size="sm" label={t("favouriteSignIn")} className={round}>
+      <IconButton asChild name="star" variant="ghost" size="sm" label={t("favouriteSignIn")} className={plate}>
         <Link href={signInHref} />
       </IconButton>
     );
@@ -45,7 +45,7 @@ export function FavouriteToggle({
       aria-pressed={saved}
       loading={favourites.pending(code)}
       label={saved ? t("favouriteRemove", { name }) : t("favouriteAdd", { name })}
-      className={round}
+      className={plate}
       onClick={() => favourites.toggle(code)}
     />
   );

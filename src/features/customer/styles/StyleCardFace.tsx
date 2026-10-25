@@ -104,7 +104,7 @@ export function StyleCardFace({
       }
       imageFoot={
         style.variantCount > 1 ? (
-          <span className="bg-surface/95 text-fg border-border inline-flex h-6 items-center gap-1 rounded-full border px-2 text-[0.6875rem] font-medium tabular-nums">
+          <span className="bg-surface/95 text-fg border-border inline-flex h-6 items-center gap-1 rounded-control border px-2 text-[0.6875rem] font-medium tabular-nums">
             <Icon name="layers" size={12} aria-hidden="true" />
             {words.variants}
           </span>

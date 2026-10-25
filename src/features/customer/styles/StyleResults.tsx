@@ -77,9 +77,9 @@ export function StyleResults({ initial, nextCursor, query, total, signedIn, sign
           {total !== null ? t("shown", { shown, total }) : t("shownSome", { shown })}
         </p>
         {total ? (
-          <div aria-hidden="true" className="bg-bg-subtle h-1 w-full overflow-hidden rounded-full">
+          <div aria-hidden="true" className="bg-bg-subtle h-1 w-full overflow-hidden rounded-sm">
             <div
-              className="bg-primary h-full rounded-full"
+              className="bg-primary h-full rounded-sm"
               style={{ width: `${Math.min(100, Math.round((shown / total) * 100))}%` }}
             />
           </div>
