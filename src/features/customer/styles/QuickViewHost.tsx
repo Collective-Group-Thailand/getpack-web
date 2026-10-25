@@ -44,7 +44,9 @@ export function QuickViewHost(props: Omit<QuickViewProps, "code" | "onClose">) {
       const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>("a[data-style-code]");
       if (!link || !link.closest("[data-quickview-scope]")) return;
       const styleCode = link.dataset.styleCode!;
+      // Before the link's own handler (capture phase): it would navigate on its own otherwise.
       event.preventDefault();
+      event.stopPropagation();
       opener.current = link;
       pushed.current = true;
       const cell = link.closest<HTMLElement>("[aria-posinset]");
@@ -55,8 +57,8 @@ export function QuickViewHost(props: Omit<QuickViewProps, "code" | "onClose">) {
       });
       window.history.pushState(null, "", urlWith(styleCode));
     };
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
   }, []);
 
   if (!code) return null;
