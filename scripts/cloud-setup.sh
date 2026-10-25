@@ -35,6 +35,29 @@ for bin in node npm npx pnpm pnpx; do
   [ -e "$NODE_BIN/$bin" ] && ln -sf "$NODE_BIN/$bin" "/usr/local/bin/$bin"
 done
 
+# The image puts /opt/node22/bin ahead of /usr/local/bin on PATH, so point its Node tools at
+# Node 24 as well. The originals are kept once in .orig-node22/ (symlinks saved with their
+# resolved target, since theirs are relative); links already on Node 24 are left alone.
+NODE22_BIN=/opt/node22/bin
+if [ -d "$NODE22_BIN" ]; then
+  BACKUP="$NODE22_BIN/.orig-node22"
+  mkdir -p "$BACKUP"
+  for bin in node npm npx corepack pnpm pnpx; do
+    target="$NODE_BIN/$bin"
+    current="$NODE22_BIN/$bin"
+    [ -e "$target" ] || continue
+    [ "$(readlink -f "$current" 2>/dev/null)" = "$(readlink -f "$target")" ] && continue
+    if [ -e "$current" ] && [ ! -e "$BACKUP/$bin" ] && [ ! -L "$BACKUP/$bin" ]; then
+      if [ -L "$current" ]; then
+        ln -s "$(readlink -f "$current")" "$BACKUP/$bin"
+      else
+        cp -p "$current" "$BACKUP/$bin"
+      fi
+    fi
+    ln -sfn "$target" "$current"
+  done
+fi
+
 pnpm install --frozen-lockfile
 
 # Local env for the session: copy the safe template unless one already exists.
