@@ -417,8 +417,8 @@
     "paths": {
       "box": {
         "title": "Choose a template and design",
-        "body": "{count} shapes our partner factories really make — enter your size, the box unfolds, place your logo, see it in 3D",
-        "bodyNoCount": "Shapes our partner factories really make — enter your size, the box unfolds, place your logo, see it in 3D",
+        "body": "{count} shapes we really produce — enter your size, the box unfolds, place your logo, see it in 3D",
+        "bodyNoCount": "Shapes we really produce — enter your size, the box unfolds, place your logo, see it in 3D",
         "go": "Start"
       },
       "product": {
@@ -428,7 +428,7 @@
       },
       "file": {
         "title": "I have a design file",
-        "body": "Upload your designer's file — resolution and safe zone are checked, and you get the same price",
+        "body": "Pick the product, see the price at once, then upload your file after ordering — our team checks it before production",
         "go": "Upload a file"
       },
       "reorder": {
@@ -458,11 +458,11 @@
   "upload": {
     "metaTitle": "Have a file? Upload it",
     "title": "Have a file? Upload it",
-    "lead": "Pick what you're printing, set the size and quantity, then upload your designer's PDF or AI file — resolution and the safe zone are checked for you, and prepress checks every design before print",
+    "lead": "Pick what you're printing, set the size, material and quantity, then order — you upload your file on the order page after ordering, our team checks it before production and sends you a proof to approve before every job goes to print",
     "steps": {
       "pick": "Pick a product below",
       "spec": "Enter the size, board and quantity — see the price at once",
-      "file": "Upload the file, then approve the sample proof"
+      "file": "Order, then upload your file on the order page — our team checks it and sends a proof to approve before production"
     },
     "pick": "What are you printing?",
     "from": "from {price}",

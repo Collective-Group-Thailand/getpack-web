@@ -15,7 +15,7 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
 
-import type { Configurator, ConfiguratorState, DesignOption } from "./state";
+import { designOptionsOf, type Configurator, type ConfiguratorState, type DesignOption } from "./state";
 
 interface DesignStepProps {
   configurator: Configurator;
@@ -37,9 +37,7 @@ interface DesignStepProps {
 export function DesignStep({ configurator, state, onChange, designerAvailable }: DesignStepProps) {
   const t = useTranslations("configurator.design");
   const format = useFormat();
-  const designOptions = configurator.design.options.filter(
-    (option) => option !== "online_designer" || designerAvailable,
-  );
+  const designOptions = designOptionsOf(configurator, designerAvailable);
   // The Studio design this order carries (the studio's "order this"): named here so the customer
   // sees it is attached, and can drop it to order the box blank or with an upload instead.
   const attached = state.designOption === "online_designer" ? state.designDocumentId : null;

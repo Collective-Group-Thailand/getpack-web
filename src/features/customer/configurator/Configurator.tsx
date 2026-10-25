@@ -26,6 +26,7 @@ import { useLivePrice } from "./pricing";
 import { SizeStep } from "./SizeStep";
 import {
   axesOf,
+  designOptionOf,
   groupsIn,
   initialState,
   isConverted,
@@ -145,10 +146,13 @@ export function Configurator({
   const patternBases = usePatternBases(configurator, patternOf(configurator, entered)?.id ?? null);
   const bases = patternBases ?? basesOf(configurator);
   const flatStyle = patternBases?.length === 1 && patternBases[0] === "product";
+  // The online designer draws only the patterns `@getpack/dieline` knows (or the design attached).
+  const designerAvailable = boxStyleOf(configurator, entered) !== null || !!entered.designDocumentId;
   const state: ConfiguratorState = {
     ...entered,
     flatStyle,
     basis: flatStyle ? "product" : entered.basis && bases.includes(entered.basis) ? entered.basis : null,
+    designOption: designOptionOf(configurator, entered.designOption, designerAvailable),
   };
 
   const conversion = useConversion(configurator, state);
@@ -453,7 +457,7 @@ export function Configurator({
             configurator={configurator}
             state={state}
             onChange={update}
-            designerAvailable={boxStyleOf(configurator, state) !== null || !!state.designDocumentId}
+            designerAvailable={designerAvailable}
           />
         );
       case "summary":
