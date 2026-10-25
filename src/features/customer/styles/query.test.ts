@@ -57,7 +57,12 @@ describe("the style library's URL state (styles redesign)", () => {
   });
 
   it("round-trips through the URL", () => {
-    const params = readParams({ cat: "folding_carton", feat: "window:front_window", fam: "tuck_end", style: "PK-TE-01" });
+    const params = readParams({
+      cat: "folding_carton",
+      feat: "window:front_window",
+      fam: "tuck_end",
+      style: "PK-TE-01",
+    });
     expect(readParams(Object.fromEntries(new URLSearchParams(toSearch(params))))).toEqual(params);
   });
 
