@@ -146,3 +146,33 @@ standard size? · multi-colour on single-spot products · white on kraft · cust
 "อนุมัติแบบ" share scope and anonymous comments vs D-285 · variant pricing · CMYK display without ICC · mode preference
 field · one preflight engine (studio rules vs upload Phase 2) · which prototype exports are already real. Hard-rule
 conflicts that exist today: ungated finish picker, 400 ms box autosave.
+
+---
+
+### A8 — checkout · Phase 0 · PASS (docs only)
+
+**What changed:** `docs/design/checkout-redesign/PLAN.md` (no code).
+
+**Map:** `/cart` (guest view + signed-in `CartView`), `/checkout` (one page, sign-in required), `/checkout/pay/[id]`,
+`/checkout/return`, LIFF pay. Cart = one aggregate edited under `If-Match`; checkout re-runs `preview` 400 ms after
+changes; place uses an Idempotency-Key + `expectedGrossAmount`. Shipping and instalment schedule come only from the
+preview; methods = QR, card, online banking, transfer + slip. All blocking validations are tabled in the plan.
+
+**Inconsistencies:** size label "กว้าง × ยาว × ลึก" comes from the API `SpecLineDto` (owner A3 helper) · cart summary
+has no shipping or VAT line (`CartDto` has no fields; VAT via the B1 helper or API) · cart blocks on destinations that
+checkout can set itself · payment methods/plan in the prototype differ from D-020/D-111 · **tax ID shown unmasked** ·
+code limit 3 hard-coded · confirm dialog names `method` instead of `chosenMethod` (small bug) · shipping 0.00 hides the
+row.
+
+**Gaps:** quantity/tier change in the cart · multi-item quote PDF + approver link · cart shipping estimate · delivery
+date · delivery note · step analytics · guest checkout. Postcode → province/district already exists.
+
+**Pages:** none changed. **Screenshots:** none. **Tests:** gate only.
+
+**Verify locally:** `/cart` spec text and missing shipping/VAT lines; cart button disabled until destinations set;
+tax ID unmasked on `/checkout`; which methods UAT preview marks available; whether the 3-code cap is enforced
+server-side. Do not place orders or pay on UAT.
+
+**Open questions:** customer choice of deposit/milestone (D-020) · ผ่อนชำระ before R2 · method cards · "บันทึกไว้
+ทีหลัง" semantics · PO without a company · delivery note (PDPA) · approver link vs D-123 · which delivery date before the
+address · quantity step/MOQ source · shipping ฿0 label.
