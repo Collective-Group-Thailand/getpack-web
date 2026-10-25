@@ -117,8 +117,7 @@ export function toSearch(params: ListParams): string {
   const search = new URLSearchParams();
   if (params.category) search.set(URL_NAME.category, params.category);
   if (params.q) search.set("q", params.q);
-  for (const key of FACET_KEYS)
-    if (params[key].length) search.set(URL_NAME[key], [...params[key]].sort().join(","));
+  for (const key of FACET_KEYS) if (params[key].length) search.set(URL_NAME[key], [...params[key]].sort().join(","));
   if (params.pricePath) search.set(URL_NAME.pricePath, params.pricePath);
   if (params.sort && params.sort !== defaultSort(params)) search.set("sort", params.sort);
   if (params.style) search.set("style", params.style);
