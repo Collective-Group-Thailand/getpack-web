@@ -176,3 +176,35 @@ server-side. Do not place orders or pay on UAT.
 **Open questions:** customer choice of deposit/milestone (D-020) · ผ่อนชำระ before R2 · method cards · "บันทึกไว้
 ทีหลัง" semantics · PO without a company · delivery note (PDPA) · approver link vs D-123 · which delivery date before the
 address · quantity step/MOQ source · shipping ฿0 label.
+
+---
+
+### A9a — styles · Phase 0 · PASS (docs only)
+
+**What changed:** `docs/design/styles-redesign/PLAN.md` (no code). Note: an earlier styles Phase 0/1 is already in this
+branch's history (`b262ecf1` … `38402845`); `f3a4036c` deleted its PLAN and revised the pack, so this plan starts from
+what exists and lists 12 conflicts (C1–C12) for a fresh decision.
+
+**Header bug (reproduced, not fixed):** at 1054 px **English** overlaps ("Contact" under Search/Cart); Thai signed-out
+fits with 17 px slack (3 px at 1040). English overlaps again at 1280–~1355 px. Cause in `SiteHeader.tsx`: fixed
+collapse at 1040 px tuned for Thai label widths; nav links never shrink/wrap; safe centring pushes overflow under the
+tools column; the `xl` step adds more padding/gap than width; extra tools are not budgeted. Thai breaks with ~18 px more
+(longer label, one more tool, 17 px browser font, fallback font). The measured build was the e2e build
+(`NEXT_PUBLIC_ASSISTANT=1` from `playwright.config.ts`); English overlaps with the assistant off too.
+
+**Data gaps (UAT, 122 styles):** `startingPrice` null on all 122 (no price shows) · no size/MOQ/lead on the card DTO ·
+lead time 5–10 on every style (default?) · `assets` empty · no ex-VAT, estimates, tiers, recyclable, certifications ·
+`style-library/settings` and `sample-kits` 404 · `support-channels` null (LINE hidden).
+
+**Confidentiality (C11):** `/styles/[slug]` can render "# โรงงานพาร์ทเนอร์ผลิตได้" from public `partnersCount`
+(null on UAT today). Remove in web, strip in API (with A1), amend D-201.
+
+**Pages:** none changed. **Screenshots:** header measurements only (scratchpad, not committed). **Tests:** gate only.
+
+**Verify locally:** header th/en × 1040/1054/1100/1180/1280/1366/1440, signed in/out, assistant on/off, Thai fallback
+font, 17 px browser font; starting prices once D-220 reference configs exist; `pnpm e2e --grep "style library"`, `pnpm lhci`.
+
+**Open questions:** decisions C1–C12 (VAT helper scope, compare 3 vs 4, estimates vs D-220, fonts, tokens, URL shape,
+multi-select facets, analytics wrapper, LINE id source env vs API, perf budget, `partnersCount`, light default) ·
+assistant in deployed builds · lead time real or default · CSV `family_th` = category or family · CSV sizes inside or
+outside, cm · who sets D-220 reference configs on UAT · "ลูกเล่น" 20 sub-groups → top 6 + "ดูเพิ่ม"?
