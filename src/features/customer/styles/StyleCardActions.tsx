@@ -3,14 +3,21 @@
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/ui/components/Button";
+import { Checkbox } from "@/ui/components/Checkbox";
 import { IconButton } from "@/ui/components/IconButton";
+import { toast } from "@/ui/components/Toast";
 
+import { trackCatalog } from "./catalog-events";
 import { useCompare } from "./compare-store";
 import { useStyleFavourites } from "./useStyleFavourites";
 
-/** Save and compare on a library card — the only part of a card that runs in the browser (U3.5 §4). */
-export function StyleCardActions({
+const round = "bg-surface/95 border-border rounded-full border shadow-sm";
+
+/**
+ * Save on a library card — the star over its picture (D-246). A guest is sent to sign in and back
+ * (`signInHref`); a saved style's star stays visible at rest.
+ */
+export function FavouriteToggle({
   code,
   name,
   signedIn,
@@ -21,40 +28,48 @@ export function StyleCardActions({
   signedIn: boolean;
   signInHref: string;
 }) {
-  const t = useTranslations("styles");
+  const t = useTranslations("styles.library");
   const favourites = useStyleFavourites(signedIn);
-  const compare = useCompare();
   const saved = favourites.has(code);
+  if (!signedIn)
+    return (
+      <IconButton asChild name="star" variant="ghost" size="sm" label={t("favouriteSignIn")} className={round}>
+        <Link href={signInHref} />
+      </IconButton>
+    );
+  return (
+    <IconButton
+      name="star"
+      variant={saved ? "secondary" : "ghost"}
+      size="sm"
+      aria-pressed={saved}
+      loading={favourites.pending(code)}
+      label={saved ? t("favouriteRemove", { name }) : t("favouriteAdd", { name })}
+      className={round}
+      onClick={() => favourites.toggle(code)}
+    />
+  );
+}
+
+/** "เปรียบเทียบ" on a library card: a checkbox; past the limit it stays off and says why. */
+export function CompareToggle({ code, name }: { code: string; name: string }) {
+  const t = useTranslations("styles.library");
+  const compare = useCompare();
   const chosen = compare.has(code);
   return (
-    <>
-      {signedIn ? (
-        <IconButton
-          name="star"
-          variant={saved ? "secondary" : "ghost"}
-          size="sm"
-          aria-pressed={saved}
-          loading={favourites.pending(code)}
-          label={`${saved ? t("favourites.remove") : t("favourites.add")}: ${name}`}
-          onClick={() => favourites.toggle(code)}
-        />
-      ) : (
-        <IconButton asChild name="star" variant="ghost" size="sm" label={t("favourites.signIn")}>
-          <Link href={signInHref} />
-        </IconButton>
-      )}
-      <Button
-        size="sm"
-        variant={chosen ? "secondary" : "ghost"}
-        iconStart="columns"
-        aria-pressed={chosen}
-        disabled={!chosen && compare.full}
-        title={!chosen && compare.full ? t("compare.limit") : undefined}
-        aria-label={`${chosen ? t("compare.remove") : t("compare.add")}: ${name}`}
-        onClick={() => compare.toggle(code)}
-      >
-        {t("compare.add")}
-      </Button>
-    </>
+    <Checkbox
+      size="sm"
+      className="shrink-0"
+      checked={chosen}
+      aria-label={`${t("compare")}: ${name}`}
+      label={t("compare")}
+      onCheckedChange={() => {
+        if (!compare.toggle(code)) {
+          toast(t("compareLimit", { limit: compare.limit }));
+          return;
+        }
+        if (!chosen) trackCatalog("catalog_compare", { style_codes: [...compare.codes, code] });
+      }}
+    />
   );
 }
