@@ -32,6 +32,11 @@ import { Brand } from "@/ui/brand";
  * (`docs/performance-budgets.md`), and a header is on every page. Only the controls that need
  * state — the drawer, the language menu, the cart count and the account menu — are client
  * components.
+ *
+ * The bar becomes the drawer below 1040 px, and its middle track is `minmax(0, 1fr)` with the nav
+ * centred *safely*, so the five links never spread over the logo or under the tools (styles
+ * redesign, PLAN.md §d: a signed-in name pushed them there between 1024 and ~1150 px). The account
+ * shows initials only; the full name is its tooltip and the menu's first line.
  */
 export async function SiteHeader() {
   const [t, tCommon, locale, tree, jar, format, empty] = await Promise.all([
@@ -85,7 +90,7 @@ export async function SiteHeader() {
           A phone: menu · logo in the middle · search and cart (owner, 2026-10-16). Wide screens: logo
           at the start, the primary nav in the middle, the actions at the end.
         */}
-        <div className="max-w-nav mx-auto grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 md:h-16 md:px-5 lg:h-19 lg:grid-cols-[auto_1fr_auto] lg:gap-6 lg:px-6 xl:gap-12 xl:px-12">
+        <div className="max-w-nav mx-auto grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 md:h-16 md:px-5 min-[65rem]:h-19 min-[65rem]:grid-cols-[auto_minmax(0,1fr)_auto] min-[65rem]:gap-6 min-[65rem]:px-6 xl:gap-12 xl:px-12">
           <div className="flex items-center gap-1">
             <MobileProductsMenu
               label={t("nav.menu")}
@@ -199,12 +204,12 @@ export async function SiteHeader() {
                 </ul>
               </section>
             </MobileProductsMenu>
-            <Brand href="/" height={28} className="hidden lg:flex" />
+            <Brand href="/" height={28} className="hidden min-[65rem]:flex" />
           </div>
 
-          <div className="flex items-center justify-center">
-            <Brand href="/" height={24} className="lg:hidden" />
-            <nav aria-label={t("nav.primary")} className="hidden items-center justify-center gap-6 lg:flex xl:gap-9">
+          <div className="flex min-w-0 items-center justify-center-safe">
+            <Brand href="/" height={24} className="min-[65rem]:hidden" />
+            <nav aria-label={t("nav.primary")} className="hidden items-center justify-center gap-4 min-[65rem]:flex min-[74rem]:gap-6 xl:gap-9">
               {links.map(([href, label]) => (
                 <Link key={href} href={href} className={navLink}>
                   {label}
@@ -230,7 +235,7 @@ export async function SiteHeader() {
                 name={actor?.displayName ?? null}
               />
             </span>
-            <Button asChild size="md" className="ms-2 hidden lg:inline-flex">
+            <Button asChild size="md" className="ms-2 hidden min-[65rem]:inline-flex">
               <Link href="/studio">{t("nav.startFree")}</Link>
             </Button>
           </div>
