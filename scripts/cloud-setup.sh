@@ -2,12 +2,16 @@
 # Setup script for a Claude Code cloud environment (paste into the environment's setup script,
 # or run `bash scripts/cloud-setup.sh` from the repo root).
 #
-# - Node: package.json `engines` and .nvmrc ask for 24; the image ships 22 on PATH and nvm at
-#   /opt/nvm, so install 24 through nvm and put it first on PATH.
-# - pnpm: the version pinned in `packageManager`, through corepack.
+# - Node: package.json `engines` and .nvmrc ask for 24; the image ships 22, with nvm at /opt/nvm.
+#   Install 24 through nvm, make it the default and link node/npm/npx into /usr/local/bin so
+#   non-interactive shells get it too (they do not read ~/.bashrc).
+# - pnpm: the version pinned in `packageManager`, through `npm install -g` (not corepack, which
+#   failed on this VM), linked into /usr/local/bin with the rest.
 # - Playwright: the image's Chromium lives at /opt/pw-browsers (PLAYWRIGHT_BROWSERS_PATH) and
 #   matches the repo's @playwright/test, so no `playwright install` — a second download would
 #   only waste disk.
+# - NODE_OPTIONS (--max-old-space-size=4096 for typecheck/build) comes from the environment's
+#   variables, not from here.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -15,17 +19,21 @@ cd "$(dirname "$0")/.."
 export NVM_DIR="${NVM_DIR:-/opt/nvm}"
 # shellcheck disable=SC1091
 . "$NVM_DIR/nvm.sh"
-nvm install "$(cat .nvmrc)"
-nvm alias default "$(cat .nvmrc)"
-NODE_BIN="$(dirname "$(nvm which "$(cat .nvmrc)")")"
-export PATH="$NODE_BIN:$PATH"
+nvm install 24
+nvm alias default 24
+nvm use 24
+NODE_BIN="$(dirname "$(nvm which 24)")"
 
-# Later shells in the session (the agent's Bash tool) start from the profile, not this script.
-PROFILE_LINE="export PATH=\"$NODE_BIN:\$PATH\""
-grep -qxF "$PROFILE_LINE" "$HOME/.bashrc" 2>/dev/null || echo "$PROFILE_LINE" >>"$HOME/.bashrc"
+PNPM_VERSION="$(node -p 'require("./package.json").packageManager.split("@")[1]')"
+# A corepack shim left from an earlier setup blocks `npm install -g` with EEXIST.
+for shim in pnpm pnpx; do
+  [ -L "$NODE_BIN/$shim" ] && readlink "$NODE_BIN/$shim" | grep -q corepack && rm -f "$NODE_BIN/$shim"
+done
+npm install -g "pnpm@$PNPM_VERSION"
 
-corepack enable
-corepack prepare "$(node -p 'require("./package.json").packageManager')" --activate
+for bin in node npm npx pnpm pnpx; do
+  [ -e "$NODE_BIN/$bin" ] && ln -sf "$NODE_BIN/$bin" "/usr/local/bin/$bin"
+done
 
 pnpm install --frozen-lockfile
 
