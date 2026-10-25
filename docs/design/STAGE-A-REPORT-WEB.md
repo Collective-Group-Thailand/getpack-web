@@ -79,3 +79,39 @@ now) · e2e `storefront-configurator-v2.spec.ts` "own file from /studio/upload" 
 - "โรงงาน" for our own production remains in customer i18n files not touched here (e.g. `home.json` "ทรงที่โรงงานใน
   เครือข่ายผลิตได้จริง", `pages.json`, `storefront.json`, `my-orders.json`, `configurator.json`, `agent.json`) and in
   the footer link "เครือข่ายโรงงาน" (→ `/network`, A1). Pre-existing; owners A1 / A2 / later phases.
+
+---
+
+### A6 — studio · Phase 0 · PASS (docs only)
+
+**What changed:** `docs/design/studio-redesign/FINDINGS.md` (no code).
+
+**Findings**
+
+- Two hubs: `/studio` (real page) and `/studio/new`, which is the editor route with no box, so its `StartScreen` acts
+  as a second hub. `?step=` cannot skip it.
+- Counts disagree: `/studio` shows **122** (library bases from the API, same as `/styles`); `/studio/new` shows
+  **30** (`STYLES.length`, a dieline-engine constant). What really opens in the Studio from `/styles`: **81 of 122
+  bases / 772 of 986 variants** (offline reproduction of the web's check — spot-check). Only 16 bases / 5 products have
+  an instant price.
+- Upload path: no automatic check or price on the file before ordering (A5). `/studio/new`'s file card still says
+  "ไปกำหนดสเปกและราคา แล้วอัปโหลดไฟล์ให้ทีมตรวจ" and links to `/configure/<slug>` **without** `?design=own_file`.
+- "แบบที่คนเริ่มบ่อย": **no usage data.** It uses `sort=popular` (D-245: favourites + saved quotes), which on UAT
+  returns the same order as `sort=name`; one of the 3 shown (PK-RG-07) cannot open in the Studio.
+- Untrue copy: sample "(ไม่บันทึก)" (it autosaves), "ยอดนิยม" badge, "ทุกทางจบที่กล่อง 3D กับราคาเดียวกัน",
+  home "ออกแบบเองได้ทุกแบบ".
+
+**Proposal:** one hub at `/studio`; bare `/studio/new` (no `style`/`template`/`order`/`item`) → permanent redirect to
+`/studio` keeping `start`, `product`, `utm_*`; editor entries unchanged; one paths module + one i18n namespace; one
+count from the API (`meta.libraryStyles`), labelled as the library size.
+
+**Pages:** none changed. **Screenshots:** none (no page change). **Tests:** gate only.
+
+**Verify locally:** `/studio/new` shows "30 แบบ" and its file card goes to `/configure` or `/products`; `/studio`
+shows "122 แบบ" with PK-RG-07 under "แบบที่คนเริ่มบ่อย"; PK-RG-07 and a PK-LA-xx style page show "ยังเปิดใน Studio
+ไม่ได้"; `/studio/new?start=product` opens the size dialog.
+
+**Open questions:** Studio count (122 + per-card availability, or an API Studio-ready count, 81 on UAT) · where
+"เลือกแบบกล่อง" goes (`/styles` vs the editor's 30-shape dialog) · usage ranking or a curated list (and its title) ·
+sample "ไม่บันทึก": real no-save mode or new copy · customer fonts (pack) vs D-213/D-284 (OFL only) · `.ai` dieline
+in the contract enum but no output · keep "สำหรับ {name}" for `/studio?product=` · cheap order count for "สั่งซ้ำ".
