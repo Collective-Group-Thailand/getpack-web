@@ -102,7 +102,7 @@ export function LineFloat({ lineOaId }: { lineOaId: string }) {
         aria-expanded={open}
         aria-controls={open ? id : undefined}
         onClick={() => setOpen((o) => !o)}
-        className="shadow-overlay rounded-full max-md:px-3"
+        className="shadow-overlay max-md:px-3"
       >
         <span className="max-md:sr-only">{t("lineOpen")}</span>
       </Button>
