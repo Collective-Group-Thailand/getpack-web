@@ -90,7 +90,10 @@ export function groupFacets(facets: StyleList["facets"], params: ListParams): Fa
 export const VISIBLE_ITEMS = 5;
 
 /** The items shown while a sub-group is folded: the first five, plus any selected beyond them. */
-export function foldedItems(items: FacetItem[], limit = VISIBLE_ITEMS): { shown: FacetItem[]; hidden: number } {
+export function foldedItems<T extends { selected: boolean }>(
+  items: T[],
+  limit = VISIBLE_ITEMS,
+): { shown: T[]; hidden: number } {
   if (items.length <= limit) return { shown: items, hidden: 0 };
   const shown = items.filter((item, index) => index < limit || item.selected);
   return { shown, hidden: items.length - shown.length };

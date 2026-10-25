@@ -21,6 +21,8 @@ export interface VariantActionsProps {
   productSlug: string | null;
   /** The style's RFQ form (`/rfq/<category>?type=<productType>`), or `null` when it has none yet. */
   rfqHref: string | null;
+  /** Told which way the customer went — the library counts its calls to action (`catalog_cta`). */
+  onAction?: (action: "design" | "cart" | "quote") => void;
 }
 
 /**
@@ -29,7 +31,7 @@ export interface VariantActionsProps {
  * (configure) or quoted (a request for quotation carrying the variant code). The engine's library
  * is loaded only when the studio is asked for, not with the page.
  */
-export function VariantActions({ base, variant, productSlug, rfqHref }: VariantActionsProps) {
+export function VariantActions({ base, variant, productSlug, rfqHref, onAction }: VariantActionsProps) {
   const t = useTranslations("styles.detail");
   const router = useRouter();
   const [opening, setOpening] = useState(false);
@@ -38,6 +40,7 @@ export function VariantActions({ base, variant, productSlug, rfqHref }: VariantA
   const instant = variant.pricePath === "instant" && productSlug !== null;
 
   async function openStudio() {
+    onAction?.("design");
     setOpening(true);
     const found = await recipeOfVariant(base, variant.options).catch(() => null);
     const [l, w, h] = [found?.values.length, found?.values.width, found?.values.height];
@@ -69,7 +72,9 @@ export function VariantActions({ base, variant, productSlug, rfqHref }: VariantA
   );
   const quote = (
     <Button asChild variant="secondary">
-      <Link href={variantRfqHref(rfqHref, base, variant.code)}>{t("requestQuote")}</Link>
+      <Link href={variantRfqHref(rfqHref, base, variant.code)} onClick={() => onAction?.("quote")}>
+        {t("requestQuote")}
+      </Link>
     </Button>
   );
 
@@ -79,7 +84,9 @@ export function VariantActions({ base, variant, productSlug, rfqHref }: VariantA
       <div className="flex flex-wrap gap-2">
         {instant ? (
           <Button asChild>
-            <Link href={configureHref(productSlug!)}>{t("configure")}</Link>
+            <Link href={configureHref(productSlug!)} onClick={() => onAction?.("cart")}>
+              {t("configure")}
+            </Link>
           </Button>
         ) : null}
         {noStudio === variant.code ? null : studioButton}
