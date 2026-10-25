@@ -14,7 +14,7 @@ test("the style library reads the real API", async ({ page }) => {
   await page.locator("html[data-hydrated]").waitFor();
   await expect(page.getByRole("heading", { level: 1, name: "คลังแบบกล่องและบรรจุภัณฑ์" })).toBeVisible();
   await expect(
-    page.getByText("ไม่พบแบบกล่องที่ตรงกับเงื่อนไข").or(page.getByRole("list", { name: "แบบกล่อง" })),
+    page.getByText("ไม่พบแบบที่ตรงกับเงื่อนไข").or(page.getByRole("list", { name: "แบบกล่อง" })),
   ).toBeVisible();
 
   const response = await page.goto(`${HOSTS.customer}/styles/pk-zz-99`);

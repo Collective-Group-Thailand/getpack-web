@@ -89,7 +89,11 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
     title: t("meta.listTitle"),
     description: t("meta.listDescription"),
     alternates: { canonical, languages },
-    ...(isFiltered(params) || isVariantsView(raw) ? { robots: { index: false, follow: true } } : {}),
+    // A view that equals a landing page is that page under another URL: canonical only (no noindex
+    // beside it — the two would contradict each other).
+    ...((isFiltered(params) && !landingOf(params)) || isVariantsView(raw)
+      ? { robots: { index: false, follow: true } }
+      : {}),
   };
 }
 
