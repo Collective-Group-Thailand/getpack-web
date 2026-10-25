@@ -209,7 +209,10 @@ export async function SiteHeader() {
 
           <div className="flex min-w-0 items-center justify-center-safe">
             <Brand href="/" height={24} className="min-[65rem]:hidden" />
-            <nav aria-label={t("nav.primary")} className="hidden items-center justify-center gap-4 min-[65rem]:flex min-[74rem]:gap-6 xl:gap-9">
+            <nav
+              aria-label={t("nav.primary")}
+              className="hidden items-center justify-center gap-4 min-[65rem]:flex min-[74rem]:gap-6 xl:gap-9"
+            >
               {links.map(([href, label]) => (
                 <Link key={href} href={href} className={navLink}>
                   {label}
