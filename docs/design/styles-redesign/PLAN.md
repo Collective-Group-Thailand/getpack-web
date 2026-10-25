@@ -1,6 +1,6 @@
 # /styles redesign — Phase 0 plan
 
-Status: **draft, waiting for approval** · Phase 0 (discovery, no code) · 2026-10-25
+Status: **approved 2026-10-25** (all recommendations accepted, see §0.1) · Phase 0 (discovery, no code) · 2026-10-25
 Inputs read: `PROMPT-styles-redesign.md` (shared context + phases), `styles-redesign-prototype.html` (UI + "ดูสิ่งที่เปลี่ยน" spec), `design-tokens.css`, `catalog-commercial-data-template.csv`, repo `CLAUDE.md`, `docs/decisions.md`, `docs/performance-budgets.md`, `src/lib/api/schema.d.ts`, and the current `/styles` code. Header bug reproduced on the running dev server (`localhost:3001`).
 
 ---
@@ -23,6 +23,28 @@ Inputs read: `PROMPT-styles-redesign.md` (shared context + phases), `styles-rede
 | C10 | Perf budget LCP < 2.5 s, CLS < 0.1 | `docs/performance-budgets.md`, customer-marketing set: **LCP ≤ 2.0 s, CLS ≤ 0.05, initial JS ≤ 150 KB** (currently ~257 KB) | follow the stricter repo budget |
 
 Smaller ones I'll take the conservative route on unless told otherwise: the rename "แบบย่อย" → "ตัวเลือก" applies to the storefront `styles.json` keys only (admin copy untouched); "สั่งกล่องตัวอย่าง" is hidden (the sample flow `POST /v1/store/samples` needs a `quoteId`, there is no per-style sample).
+
+### 0.1 Decisions (approved by the product owner, 2026-10-25)
+
+All recommended options are accepted, plus one rule for the whole redesign: **anything staff may want to change later is data, not code** — read from the API (settings / catalogue) and hidden while absent.
+
+| # | Decision |
+|---|---|
+| C1 | Prices stay as the API gives them (incl. VAT) and are labelled so. The VAT switch is built to appear only when the API sends an ex-VAT figure (`store.styles.price-ex-vat`); no arithmetic in web. |
+| C2 | Compare limit = API setting `compareLimit` (`store.style-library.settings`), falling back to D-246's 3. |
+| C3 | No price estimates (D-220). The card shows "เริ่มต้น" for instant styles, otherwise "ขอใบเสนอราคา". |
+| C4 | Anuphan + JetBrains Mono (ADR-0001). |
+| C5 | Existing theme tokens; add only an `instant` status tone (light + dark). |
+| C6 | `view=variants`, cursor pages, `/styles/for/[useCase]` as the landing pages. |
+| C7 | Checkbox groups; one value per facet sent to the API until `store.styles.multi-facets` ships — the URL and UI already carry lists. |
+| C8 | `catalog_*` events to GTM `dataLayer` now; first-party ingest requested (`store.analytics.catalog-events`). |
+| C9 | LINE OA id from `store.support.channels.lineOaId`; hidden when null. |
+| C10 | Repo budget: LCP ≤ 2.0 s, CLS ≤ 0.05, initial JS ≤ 150 KB. |
+| f1 | "ค้นหาบ่อย" from `store.style-library.settings.quickSearch`; row hidden when empty. |
+| f2 | Header fix ships on this branch as its own commit. |
+| f3 | VAT preference: browser only (try/catch), once the switch exists. |
+| f4 | Reference pack stays committed. |
+| — | Category rail, facet groups and their order come from the API's facets (no hard-coded category list). Images keep the repo's `ProductCard` `<img>` (BFF origin, declared size) rather than `next/image`. |
 
 ---
 

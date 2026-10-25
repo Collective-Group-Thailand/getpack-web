@@ -360,6 +360,21 @@ export async function getSampleKits(): Promise<SampleKit[]> {
   );
 }
 
+export type StyleLibrarySettings = ResponseOf<Requests, "GET /v1/store/style-library/settings">;
+
+/**
+ * The library page's staff-managed content (CONTRACT-REQUEST store.style-library.settings) — quick
+ * search terms, the compare limit, the trust block. `null` when unavailable: the page then hides
+ * those parts and compares up to D-246's three.
+ */
+export async function getStyleLibrarySettings(): Promise<StyleLibrarySettings | null> {
+  const requests = await publicRequests("content");
+  return orFallback(
+    requests.call("GET /v1/store/style-library/settings").then((result) => result),
+    null,
+  );
+}
+
 /* ------------------------------------------------------------------------- designer */
 
 /**
