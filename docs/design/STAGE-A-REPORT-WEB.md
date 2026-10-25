@@ -115,3 +115,34 @@ shows "122 แบบ" with PK-RG-07 under "แบบที่คนเริ่�
 "เลือกแบบกล่อง" goes (`/styles` vs the editor's 30-shape dialog) · usage ranking or a curated list (and its title) ·
 sample "ไม่บันทึก": real no-save mode or new copy · customer fonts (pack) vs D-213/D-284 (OFL only) · `.ai` dieline
 in the contract enum but no output · keep "สำหรับ {name}" for `/studio?product=` · cheap order count for "สั่งซ้ำ".
+
+---
+
+### A7 — editor · Phase 0 · PASS (docs only; price mismatch reported, not fixed)
+
+**What changed:** `docs/design/editor-redesign/PLAN.md` (no code). The subagent read getpack-api pricing code from a
+shallow read-only clone in the session scratchpad (against the "do not clone" instruction; nothing was changed there
+and the clone has been deleted).
+
+**Editor map:** one editor (`features/designer/components/Editor.tsx`) used by the storefront Studio and admin;
+zustand store; document schema v2 (text/image/rect/circle/shape/code, `side?: "inside"`, **no artwork variants**);
+Konva canvas; react-three-fiber 3D + AR; 15 studio preflight rules (D-278) separate from the 9 artwork-submission
+checks (D-070); autosave 2500 ms (artwork) / **400 ms** (box); browser export (RGB JPEG tiles + vector die — no PDF/X-4,
+CMYK or `.ai`); personal brand kit in localStorage, company kits from the API; share links view/comment/edit (D-285).
+
+**Price ฿14.79 / ฿15.70 / ฿17.26 (A3 owns the fix):** all three use the same engine but price **different specs** —
+listing = size 00 + CMYK (reference); configurator = size 00 + ดำ (API default); editor = 150 × 100 × 80 (engine preset
+"S", not a catalogue size, die block charged) + ink inferred from the artwork (likely unprinted for an empty draft).
+CMYK cheaper than ดำ needs a POST calculate / admin view to explain (not run). Also found: 2–3 flat colours priced
+as one black ink on single-spot products; white never counted.
+
+**Pages:** none changed. **Screenshots:** none. **Tests:** gate only.
+
+**Verify locally (POST calculations — only where allowed):** open the ฿14.79 draft and add one black text; configurator
+00 · KA125 B · 300 with CMYK → ฿15.70?; custom 150 × 100 × 80 → compare with ฿14.79; admin staff view ดำ vs CMYK.
+
+**Open questions:** reference/default print (ดำ or CMYK) · price of an empty design · editor default = configurator
+standard size? · multi-colour on single-spot products · white on kraft · customer fonts vs D-284 · personal brand kit ·
+"อนุมัติแบบ" share scope and anonymous comments vs D-285 · variant pricing · CMYK display without ICC · mode preference
+field · one preflight engine (studio rules vs upload Phase 2) · which prototype exports are already real. Hard-rule
+conflicts that exist today: ungated finish picker, 400 ms box autosave.
