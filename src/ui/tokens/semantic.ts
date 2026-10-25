@@ -11,7 +11,7 @@
  * `--color-*` does not generate `text-text-muted`.
  */
 
-import type { Oklch } from "./color";
+import { hexToOklch, type Oklch } from "./color";
 import { alpha, ART, BLACK, PALETTES as P, STATUS, WHITE } from "./primitives";
 
 interface BaseSlots {
@@ -60,7 +60,18 @@ interface BaseSlots {
  * Teal (`primary`) is for actions and links. A warning is `warning`, which is deliberately a
  * different, burnt-orange hue so it can never be mistaken for a campaign.
  */
-const TONE_NAMES = ["primary", "accent", "success", "warning", "danger", "info", "neutral"] as const;
+const TONE_NAMES = ["primary", "accent", "success", "warning", "danger", "info", "neutral", "instant"] as const;
+
+/**
+ * `instant` marks a style with an instant price — the one fact on a library card that really differs
+ * from card to card (styles redesign, PLAN.md C5). An ochre deliberately darker and browner than the
+ * promotional `accent`, always as text on its tint with an icon, never a solid amber fill, so it does
+ * not read as a campaign (D-180).
+ */
+const INSTANT = {
+  light: { ink: hexToOklch("#8F530E"), tint: hexToOklch("#F6EAD9") },
+  dark: { ink: hexToOklch("#E7AA60"), tint: hexToOklch("#33271A") },
+};
 export type ToneName = (typeof TONE_NAMES)[number];
 
 /** One tone's four slots: the solid fill with its text, and the quiet variant badges use. */
@@ -134,6 +145,7 @@ const light = build(
     danger: { base: STATUS.danger, fg: WHITE, subtle: P.red[50], subtleFg: P.red[900] },
     info: { base: STATUS.info, fg: WHITE, subtle: P.blue[50], subtleFg: P.blue[900] },
     neutral: { base: P.neutral[700], fg: WHITE, subtle: P.neutral[100], subtleFg: P.neutral[800] },
+    instant: { base: INSTANT.light.ink, fg: WHITE, subtle: INSTANT.light.tint, subtleFg: INSTANT.light.ink },
   },
 );
 
@@ -177,6 +189,7 @@ const dark = build(
     danger: { base: P.red[400], fg: D["paper-50"], subtle: P.red[950], subtleFg: P.red[300] },
     info: { base: P.blue[400], fg: D["paper-50"], subtle: P.blue[950], subtleFg: P.blue[300] },
     neutral: { base: P.neutral[400], fg: D["paper-50"], subtle: P.neutral[800], subtleFg: P.neutral[200] },
+    instant: { base: INSTANT.dark.ink, fg: D["paper-50"], subtle: INSTANT.dark.tint, subtleFg: INSTANT.dark.ink },
   },
 );
 
@@ -218,6 +231,7 @@ const hc = build(
     danger: { base: P.red[900], fg: WHITE, subtle: P.red[50], subtleFg: P.red[950] },
     info: { base: P.blue[900], fg: WHITE, subtle: P.blue[50], subtleFg: P.blue[950] },
     neutral: { base: BLACK, fg: WHITE, subtle: P.neutral[100], subtleFg: BLACK },
+    instant: { base: P.amber[950], fg: WHITE, subtle: P.amber[50], subtleFg: P.amber[950] },
   },
 );
 
