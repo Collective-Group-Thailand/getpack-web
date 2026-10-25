@@ -152,6 +152,7 @@ import {
   Warehouse,
   Wrench,
   X,
+  Zap,
 } from "lucide-react";
 
 /**
@@ -316,6 +317,8 @@ export const ICONS = {
   ticket: Ticket,
   gift: Gift,
   star: Star,
+  /** An instant price — the library card's badge and switch (styles redesign). */
+  zap: Zap,
   megaphone: Megaphone,
   sparkles: Sparkles,
   calculator: Calculator,
