@@ -135,7 +135,7 @@ export function StyleCardFace({
       footer={
         <>
           {words.price ? (
-            <p className="min-w-0 leading-tight">
+            <p className="min-w-[7.5rem] flex-1 leading-tight">
               <span className="text-muted block text-[0.6875rem]">{words.priceLabel}</span>
               <span className="text-instant-subtle-fg block text-sm font-semibold tabular-nums">{words.price}</span>
               {words.priceQuantity ? (
@@ -143,7 +143,7 @@ export function StyleCardFace({
               ) : null}
             </p>
           ) : (
-            <p className="min-w-0 leading-tight">
+            <p className="min-w-[7.5rem] flex-1 leading-tight">
               <span className="block text-sm font-semibold">{words.quote}</span>
               <span className="text-muted block text-[0.6875rem]">{words.quoteHint}</span>
             </p>
