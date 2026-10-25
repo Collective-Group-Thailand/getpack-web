@@ -152,6 +152,10 @@
   --color-neutral-fg: var(--sem-neutral-fg);
   --color-neutral-subtle: var(--sem-neutral-subtle);
   --color-neutral-subtle-fg: var(--sem-neutral-subtle-fg);
+  --color-instant: var(--sem-instant);
+  --color-instant-fg: var(--sem-instant-fg);
+  --color-instant-subtle: var(--sem-instant-subtle);
+  --color-instant-subtle-fg: var(--sem-instant-subtle-fg);
 
   /* Typography (ADR-0001). */
   --font-*: initial;
@@ -270,6 +274,10 @@
   --sem-neutral-fg: oklch(100% 0 0);
   --sem-neutral-subtle: oklch(96.2% 0.0031 72);
   --sem-neutral-subtle-fg: oklch(42.8% 0.018 72);
+  --sem-instant: oklch(50.15% 0.1096 62.09);
+  --sem-instant-fg: oklch(100% 0 0);
+  --sem-instant-subtle: oklch(94.2% 0.0261 76.79);
+  --sem-instant-subtle-fg: oklch(50.15% 0.1096 62.09);
 }
 
 /* Nobody chose yet — follow the OS. Scoped to :root:not([data-theme]) so an explicit
@@ -327,6 +335,10 @@
     --sem-neutral-fg: oklch(19.3% 0.0108 80.52);
     --sem-neutral-subtle: oklch(42.8% 0.018 72);
     --sem-neutral-subtle-fg: oklch(91.8% 0.0062 72);
+    --sem-instant: oklch(78.06% 0.116 70.02);
+    --sem-instant-fg: oklch(19.3% 0.0108 80.52);
+    --sem-instant-subtle: oklch(28.27% 0.0286 68.5);
+    --sem-instant-subtle-fg: oklch(78.06% 0.116 70.02);
   }
 }
 
@@ -381,6 +393,10 @@
   --sem-neutral-fg: oklch(19.3% 0.0108 80.52);
   --sem-neutral-subtle: oklch(42.8% 0.018 72);
   --sem-neutral-subtle-fg: oklch(91.8% 0.0062 72);
+  --sem-instant: oklch(78.06% 0.116 70.02);
+  --sem-instant-fg: oklch(19.3% 0.0108 80.52);
+  --sem-instant-subtle: oklch(28.27% 0.0286 68.5);
+  --sem-instant-subtle-fg: oklch(78.06% 0.116 70.02);
 }
 
 [data-theme="hc"] {
@@ -434,5 +450,9 @@
   --sem-neutral-fg: oklch(100% 0 0);
   --sem-neutral-subtle: oklch(96.2% 0.0031 72);
   --sem-neutral-subtle-fg: oklch(0% 0 0);
+  --sem-instant: oklch(26.2% 0.08 66);
+  --sem-instant-fg: oklch(100% 0 0);
+  --sem-instant-subtle: oklch(98.5% 0.0096 66);
+  --sem-instant-subtle-fg: oklch(26.2% 0.08 66);
 }
 
