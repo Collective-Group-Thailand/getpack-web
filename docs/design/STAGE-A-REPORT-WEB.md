@@ -208,3 +208,35 @@ font, 17 px browser font; starting prices once D-220 reference configs exist; `p
 multi-select facets, analytics wrapper, LINE id source env vs API, perf budget, `partnersCount`, light default) ·
 assistant in deployed builds · lead time real or default · CSV `family_th` = category or family · CSV sizes inside or
 outside, cm · who sets D-220 reference configs on UAT · "ลูกเล่น" 20 sub-groups → top 6 + "ดูเพิ่ม"?
+
+---
+
+### A9b — products · Phase 0 · PASS (docs only)
+
+**What changed:** `docs/design/products-redesign/PLAN.md` (no code). The subagent read four getpack-api files from a
+shallow read-only clone in the session scratchpad (against the "do not clone" instruction; nothing changed there; the
+clone has been deleted).
+
+**Key gaps:** stock unit prices are missing by design in the API (`price-hints` hard-codes `null` for stock until
+`stock_product_price_summaries`) · tier prices only via `calculate` (one POST can price up to 10 quantities; presets
+come from `configurator.quantity.presets`) · no per-print-option price; only 2 of 5 instant products have an ink group
+though all reference specs say CMYK · the hint gives the reference spec as text only (no ids), so a calculator cannot
+reproduce "เริ่มต้น ฿15.70 ที่ 300" (A3) · multi-item RFQ exists (D-301 basket) but lines carry only the product
+**type**, not the product · no ex-VAT figures anywhere · `materials` and `sample-kits` 404, LINE id/hours null · list
+API has no mode filter and `sort=price` does not sort by price. Mode counts derivable: instant 5 · quote 32 · stock 101
+· service 5 = 143 in 14 categories; prototype copy contradicts data (quote MOQ 300–3,000; stock MOQ from 1).
+
+**Calculator (< 300 ms) — not measured:** API target is calculate p95 < 800 ms, uncached, logs every call → not
+reliable for < 300 ms. Proposed: `GET /v1/store/catalog/price-hints/{slug}/tiers` precomputed by the existing hourly
+hint job through the same engine, with reference option ids; calculator behind a flag until it and A3 land.
+
+**Pages:** none changed. **Screenshots:** none. **Tests:** gate only.
+
+**Verify locally:** `/products` stock cards all read "ราคาตามสเปก", count "143 รายการ", no VAT label; one
+`calculate` with several quantities and its real BFF latency (non-UAT); card ฿15.70 vs configurator default at 300;
+RFQ basket loses the product name (non-UAT); `/products` HTML ≈ 951 KB (≈ 794 KB RSC) — Lighthouse baseline.
+
+**Open questions:** when stock "starting from" ships · approve the tiers endpoint and print options per product ·
+stock in the RFQ tray or cart · type-only RFQ lines meanwhile, and a line's quantity from a card · `partial`
+availability and out-of-stock items · 3 vs 5 service cards · LINE hours null · ผ่อนชำระ vs D-111 · VAT-incl-only until
+ex-VAT fields · materials table source.
