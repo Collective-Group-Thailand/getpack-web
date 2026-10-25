@@ -34,6 +34,8 @@ export interface DropdownMenuProps {
   align?: MenuPrimitive.DropdownMenuContentProps["align"];
   /** Accessible name for the menu itself. */
   label?: string;
+  /** A line above the items that is not an action — who is signed in, above an account menu. */
+  heading?: React.ReactNode;
   className?: string;
 }
 
@@ -50,6 +52,7 @@ export function DropdownMenu({
   side = "bottom",
   align = "end",
   label,
+  heading,
   className,
 }: DropdownMenuProps) {
   // Radix needs one `RadioGroup` around the choices, with the value of the chosen one. Items
@@ -72,6 +75,14 @@ export function DropdownMenu({
             className,
           )}
         >
+          {heading ? (
+            <>
+              <MenuPrimitive.Label className="text-fg truncate px-2 pt-1.5 pb-1 text-sm font-semibold">
+                {heading}
+              </MenuPrimitive.Label>
+              <MenuPrimitive.Separator className="bg-border my-1 h-px" />
+            </>
+          ) : null}
           <Choices enabled={hasChoices} value={selectedId}>
             {items.map((item) => {
               const content = (

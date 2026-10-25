@@ -55,7 +55,7 @@ export function MobileProductsMenu({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="hover:bg-bg-subtle focus-visible:ring-focus-ring inline-flex size-10 items-center justify-center rounded-md outline-none focus-visible:ring-2 lg:hidden"
+        className="hover:bg-bg-subtle focus-visible:ring-focus-ring inline-flex size-10 items-center justify-center rounded-md outline-none focus-visible:ring-2 min-[65rem]:hidden"
       >
         <Icon name="menu" size={22} aria-hidden="true" />
         <span className="sr-only">{label}</span>
@@ -70,7 +70,7 @@ export function MobileProductsMenu({
               role="dialog"
               aria-modal="true"
               aria-label={label}
-              className="bg-surface z-modal fixed inset-0 flex h-dvh flex-col lg:hidden"
+              className="bg-surface z-modal fixed inset-0 flex h-dvh flex-col min-[65rem]:hidden"
             >
               <div className="border-border flex h-14 shrink-0 items-center gap-2 border-b px-3">
                 <button

@@ -77,17 +77,20 @@ export function AccountButton({
         name ? (
           <button
             type="button"
-            aria-label={label}
+            aria-label={`${label}: ${name}`}
+            title={name}
             aria-busy={leaving || undefined}
-            className="text-fg hover:bg-fg/5 focus-visible:ring-focus-ring rounded-control inline-flex h-10 items-center gap-2 px-1.5 text-sm font-semibold whitespace-nowrap outline-none focus-visible:ring-2"
+            className="hover:bg-fg/5 focus-visible:ring-focus-ring inline-flex size-10 items-center justify-center rounded-full outline-none focus-visible:ring-2"
           >
+            {/* Initials only: a long name took the nav's room and pushed it over the logo (styles
+                redesign, PLAN.md §d). The full name is the tooltip and the menu's first line. */}
             {leaving ? <Icon name="spinner" className="animate-spin" /> : <Avatar name={name} size="md" />}
-            <span className="hidden max-w-[10em] truncate lg:inline">{name}</span>
           </button>
         ) : (
           <IconButton name="user" variant="ghost" size="sm" label={label} loading={leaving} />
         )
       }
+      heading={name ?? undefined}
       items={[
         { id: "account", label: t("menu.account"), icon: "dashboard", onSelect: () => router.push("/account") },
         { id: "orders", label: t("menu.orders"), icon: "package", onSelect: () => router.push("/account/orders") },
@@ -113,7 +116,7 @@ export function AccountButton({
         <Link
           href={href}
           onClick={openSheet}
-          className="text-muted hover:text-fg focus-visible:ring-focus-ring rounded-control hidden h-10 items-center px-2 text-[0.90625rem] font-medium whitespace-nowrap outline-none focus-visible:ring-2 lg:inline-flex"
+          className="text-muted hover:text-fg focus-visible:ring-focus-ring rounded-control hidden h-10 items-center px-2 text-[0.90625rem] font-medium whitespace-nowrap outline-none focus-visible:ring-2 min-[65rem]:inline-flex"
         >
           {signInLabel}
         </Link>
@@ -124,7 +127,7 @@ export function AccountButton({
         variant="ghost"
         size="sm"
         label={label}
-        className={signInLabel ? "lg:hidden" : undefined}
+        className={signInLabel ? "min-[65rem]:hidden" : undefined}
       >
         <Link href={href} onClick={openSheet} />
       </IconButton>
