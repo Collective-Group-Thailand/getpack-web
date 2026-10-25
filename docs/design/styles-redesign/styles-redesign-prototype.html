@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 </head>
 <body>
-<!-- (head assets above moved into body for portability) -->
 <style>
 /* Layout: catalog workbench — compact head, icon category rail, sticky facet column + dense product grid, floating compare tray */
 :root{
@@ -536,7 +535,7 @@ dialog::backdrop{background:rgba(10,15,12,.5);backdrop-filter:blur(2px)}
         <p class="count" id="count" aria-live="polite">122 แบบ</p>
         <div class="tb-right">
           <button class="btn btn-ghost filter-btn" type="button" id="openFilters" style="height:38px"><svg class="ico" style="width:18px;height:18px"><use href="#i-sliders"/></svg>ตัวกรอง<span id="fcount"></span></button>
-          <label class="vat" for="vat"><input class="switch" type="checkbox" id="vat" role="switch">ราคารวม VAT</label>
+          <label class="vat" for="vat"><input class="switch" type="checkbox" id="vat" role="switch" checked>ราคารวม VAT</label>
           <div class="seg" role="group" aria-label="มุมมอง">
             <button type="button" aria-pressed="true" data-mode="main">แบบหลัก <small>122</small></button>
             <button type="button" aria-pressed="false" data-mode="all">ทุกตัวเลือก <small>986</small></button>
@@ -874,7 +873,7 @@ const FACETS=[
 const FAMMAP={'PK-RG':'กล่องแข็ง','PK-DS':'กล่องโชว์สินค้า','PK-SP':'ทรงพิเศษ','PK-TE':'ทรงพิเศษ','PK-CF':'ทรงพิเศษ','PK-CT':'กล่องลูกฟูกฝาชน'};
 
 /* ---------- state ---------- */
-const S={cat:'all',q:'',instant:false,sort:'pop',sel:{},mode:'main',cmp:[],fav:new Set(),more:{},openG:{},size:null,wiz:null,vat:false};
+const S={cat:'all',q:'',instant:false,sort:'pop',sel:{},mode:'main',cmp:[],fav:new Set(),more:{},openG:{},size:null,wiz:null,vat:true};
 const pv=n=>S.vat?n*1.07:n;
 FACETS.forEach(f=>{S.sel[f.id]=new Set();S.openG[f.id]=f.open});
 const $=s=>document.querySelector(s);
