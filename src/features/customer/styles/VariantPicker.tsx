@@ -46,6 +46,7 @@ export function VariantPicker({
   actions,
   dieline,
   initialCode,
+  compact = false,
 }: {
   style: StyleDetail;
   name: string;
@@ -55,6 +56,8 @@ export function VariantPicker({
   dieline?: Omit<DielineDownloadProps, "variantCode">;
   /** Where the chosen variant goes: the configurator or a quotation, and the studio (D-407). */
   actions: Omit<VariantActionsProps, "base" | "variant">;
+  /** One column — inside the library's quick view, which is narrower than a page. */
+  compact?: boolean;
 }) {
   const t = useTranslations("styles") as unknown as StylesT & ReturnType<typeof useTranslations>;
   const locale = useLocale();
@@ -79,7 +82,7 @@ export function VariantPicker({
       : valueLabel(t, axis, String(value));
 
   return (
-    <div className="grid gap-8 md:grid-cols-2">
+    <div className={compact ? "flex flex-col gap-6" : "grid gap-8 md:grid-cols-2"}>
       <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3">
         <h2 id={`${id}-preview`} className="text-lg font-semibold">
           {t("detail.preview")}
@@ -207,7 +210,10 @@ export function VariantPicker({
               <p className="font-mono text-sm">{t("detail.variantCode", { code: variant.code })}</p>
               <p className="text-sm">
                 <span className="text-muted me-2">{t("detail.price")}</span>
-                <Badge tone={variant.pricePath === "instant" ? "success" : "info"}>
+                <Badge
+                  tone={variant.pricePath === "instant" ? "instant" : "info"}
+                  icon={variant.pricePath === "instant" ? "zap" : undefined}
+                >
                   {t(`pricePaths.${variant.pricePath}`)}
                 </Badge>
               </p>
