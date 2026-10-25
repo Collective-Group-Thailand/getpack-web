@@ -21,8 +21,11 @@ const UNDERLINE = "border-b border-current pb-px font-medium";
 
 /**
  * `/studio/upload` — "มีไฟล์แล้ว อัปโหลดเลย" (Phase 4): the customer with a finished file picks what
- * they print and lands in its configurator with "own file" chosen, where the upload, the checks and
- * the price already are. Only products with an instant price are listed; the rest go through RFQ.
+ * they print and lands in its configurator with "own file" chosen (`?design=own_file`), where the
+ * price is. The file itself is uploaded after ordering, on the order's artwork page, and the team
+ * checks it before production — the copy says only that until the upload pre-check ships
+ * (upload-redesign Phase 2, GLOBAL-RULES §3). Only products with an instant price are listed; the
+ * rest go through RFQ.
  */
 export default async function StudioUpload({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
