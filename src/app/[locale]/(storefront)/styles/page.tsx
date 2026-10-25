@@ -157,7 +157,7 @@ export default async function StylesPage({
 
   if (variantsView || !list)
     return (
-      <div className="max-w-content mx-auto px-5 py-6 pb-28 md:px-8 md:py-8">
+      <div className="max-w-nav mx-auto px-5 py-6 pb-28 md:px-8 md:py-8 xl:px-12">
         {crumbs}
         {head}
         {totals ? <LibraryViews current="variants" totals={totals} className="mt-5" /> : null}
@@ -244,7 +244,7 @@ export default async function StylesPage({
 
   return (
     <CompareLimitProvider limit={settings?.compareLimit}>
-      <div className="max-w-content mx-auto px-5 py-6 pb-32 md:px-8 md:py-8">
+      <div className="max-w-nav mx-auto px-5 py-6 pb-32 md:px-8 md:py-8 xl:px-12">
         <JsonLd
           data={[
             breadcrumbSchema([
@@ -285,13 +285,16 @@ export default async function StylesPage({
         {head}
 
         {list.facets.category.length > 1 || query.category ? (
-          <nav aria-label={t("library.categories")} className="-mx-5 mt-6 overflow-x-auto px-5 md:-mx-8 md:px-8">
-            <ul className="flex gap-2 pb-1 lg:grid lg:grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))]">
+          <nav
+            aria-label={t("library.categories")}
+            className="-mx-5 mt-6 overflow-x-auto px-5 md:-mx-8 md:px-8 xl:-mx-12 xl:px-12"
+          >
+            <ul className="flex gap-2 pb-1">
               {[undefined, ...list.facets.category.map((f) => f.value)].map((category) => {
                 const current = query.category === category;
                 const count = category ? categoryCount.get(category) : allCount;
                 return (
-                  <li key={category ?? "all"} className="shrink-0">
+                  <li key={category ?? "all"} className="shrink-0 lg:min-w-0 lg:flex-1">
                     <Link
                       href={listHref({ ...query, category, style: undefined })}
                       aria-current={current ? "page" : undefined}
@@ -327,7 +330,7 @@ export default async function StylesPage({
           </nav>
         ) : null}
 
-        <div className="mt-8 grid gap-8 min-[65rem]:grid-cols-[16rem_minmax(0,1fr)]">
+        <div className="mt-8 grid gap-x-6 gap-y-8 min-[65rem]:grid-cols-[15rem_minmax(0,1fr)]">
           <aside className="hidden min-w-0 min-[65rem]:block" aria-labelledby="library-filters">
             <div className="mb-4 flex items-center justify-between gap-2">
               <h2 id="library-filters" className="text-base font-semibold">
