@@ -28,6 +28,7 @@ import { basesOf, groupsOf, isProcessInk, optionsById, sizeKindOf } from "./mode
 import { isCorrugate, refusedSide } from "./print-model";
 import { isApiError } from "@/lib/api/problem";
 import { useLivePrice } from "./pricing";
+import { PreviewSide, type PreviewDimensions } from "./PreviewSide";
 import { SizeStep } from "./SizeStep";
 import {
   axesOf,
@@ -254,21 +255,21 @@ export function Configurator({
       .filter(Boolean)
       .join(" · ");
   })();
-  /** A corrugate print as the customer chose it: "ด้านนอก: CMYK · ด้านใน: ไม่พิมพ์" (D-443). */
-  const printSummary = (print: { print_front: string[]; print_back: string[] }) => {
-    const side = (ids: string[]) => {
-      if (ids.length === 0) return t("choices.print.none");
-      return ids
-        .map((id) => {
-          const option = byId.get(id);
-          if (!option) return null;
-          return isProcessInk(option) ? t("choices.print.cmyk") : pick(locale, option.nameTh, option.nameEn);
-        })
-        .filter(Boolean)
-        .join(" + ");
-    };
-    return t("choices.print.summary", { outside: side(print.print_front), inside: side(print.print_back) });
+  /** One side of a corrugate print as the customer chose it ("CMYK", "ดำ", "ไม่พิมพ์"). */
+  const printSide = (ids: string[]) => {
+    if (ids.length === 0) return t("choices.print.none");
+    return ids
+      .map((id) => {
+        const option = byId.get(id);
+        if (!option) return null;
+        return isProcessInk(option) ? t("choices.print.cmyk") : pick(locale, option.nameTh, option.nameEn);
+      })
+      .filter(Boolean)
+      .join(" + ");
   };
+  /** A corrugate print as the customer chose it: "ด้านนอก: CMYK · ด้านใน: ไม่พิมพ์" (D-443). */
+  const printSummary = (print: { print_front: string[]; print_back: string[] }) =>
+    t("choices.print.summary", { outside: printSide(print.print_front), inside: printSide(print.print_back) });
   const choiceSummary = (step: StepKey): string => {
     const parts = partsOf(configurator, state);
     if (step === "printing" && isCorrugate(configurator)) {
@@ -577,6 +578,42 @@ export function Configurator({
   const calculationId = price.data?.calculationId;
   const rfqHref = `${rfqPath}?from=${encodeURIComponent(configurator.slug)}${calculationId ? `&calc=${calculationId}` : ""}`;
 
+  /* ------------------------------------------------------------------ the preview's side panel */
+
+  // The API's sizes on every basis: the calculation's, or — while a new price is on its way, or before
+  // the first — the conversion's for what is entered now; never composed here.
+  const priceDimensions = price.data?.dimensions ?? null;
+  const previewDimensions: PreviewDimensions | null =
+    (price.pending ? (conversion.converted ?? priceDimensions) : (priceDimensions ?? conversion.converted)) ?? null;
+  const previewParts = partsOf(configurator, state);
+  const perPartPrint = previewParts.length > 1 && previewParts.some((part) => state.partPrints[part.subPatternId]);
+  const previewRows: { label: string; value: string }[] = [
+    ...(materialName ? [{ label: t("preview.material"), value: materialName }] : []),
+    // A box printed differently per part has no single "outside" to name here: its steps say so.
+    ...(perPartPrint
+      ? []
+      : isCorrugate(configurator)
+        ? (() => {
+            const print = printOfPart(state, undefined);
+            return [
+              { label: t("preview.printOutside"), value: printSide(print.print_front) },
+              { label: t("preview.printInside"), value: printSide(print.print_back) },
+              ...(state.printArea &&
+              configurator.printAreas.length > 0 &&
+              (print.print_front.length > 0 || print.print_back.length > 0)
+                ? [{ label: t("preview.printArea"), value: t(`choices.printAreas.${state.printArea}`) }]
+                : []),
+            ];
+          })()
+        : choiceSummary("printing")
+          ? [{ label: t("preview.printing"), value: choiceSummary("printing") }]
+          : []),
+  ];
+  const standardSize =
+    state.sizeMode === "standard" && state.standardSizeCode
+      ? configurator.standardSizes.find((size) => size.code === state.standardSizeCode)
+      : undefined;
+
   const chips: StepChip[] = steps.map((step) => {
     const own = ownStatusOf(step);
     // The summary only reviews, and the shipping-load questions are the advisor's optional input:
@@ -602,7 +639,18 @@ export function Configurator({
       style={{ "--step-scroll-mt": "8rem" } as React.CSSProperties}
     >
       <div className="flex min-w-0 flex-col gap-5">
-        <ConfiguratorPreview configurator={configurator} state={state} productName={name} />
+        <ConfiguratorPreview
+          configurator={configurator}
+          state={state}
+          productName={name}
+          side={
+            <PreviewSide
+              title={standardSize?.name ?? t("preview.customSize")}
+              dimensions={previewDimensions}
+              rows={previewRows}
+            />
+          }
+        />
         <StepChips aria-label={t("stepsLabel")} chips={chips} className="-mx-5 px-5 md:mx-0 md:px-0" />
         {steps.map((step, index) => (
           <StepCard

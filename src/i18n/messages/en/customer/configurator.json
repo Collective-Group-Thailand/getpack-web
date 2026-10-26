@@ -266,7 +266,22 @@
     "reset": "Reset the view",
     "caption": "Drawn to the proportions you chose. Drag to turn the box.",
     "flatItemLabel": "{name}, {w} × {l} mm, {material}",
-    "caption2d": "Drawn to the proportions you chose."
+    "caption2d": "Drawn to the proportions you chose.",
+    "mm": "mm",
+    "customSize": "Custom size",
+    "dimensions": {
+      "product": "Finished",
+      "internal": "Inside",
+      "external": "Outside",
+      "overCrease": "Over creases"
+    },
+    "caliperNote": "Worked out from a board thickness of {mm} mm. These sizes are for reference; the team confirms them again when the die-line is made.",
+    "material": "Material",
+    "printing": "Printing",
+    "printOutside": "Print outside",
+    "printInside": "Print inside",
+    "printArea": "Print area",
+    "captionPrinted": "Drawn to scale · print position is approximate · drag to turn the box"
   },
   "dock": {
     "title": "Your price",
