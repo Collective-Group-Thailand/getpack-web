@@ -11315,7 +11315,7 @@ export interface paths {
          * List order groups
          * @description Filter by status; `q` matches a group or order code, or the customer code.
          *
-         *     Implements: D-060, D-073, D-142, D-050.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
          */
         get: operations["admin.orders.listGroups"];
         put?: never;
@@ -11337,7 +11337,7 @@ export interface paths {
          * Get an order group
          * @description Staff view with CS remarks; factory cost and margin need `factory_buy_prices.read` / `margin.read` (D-141).
          *
-         *     Implements: D-060, D-073, D-142, D-050, D-141.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439, D-141.
          */
         get: operations["admin.orders.getGroup"];
         put?: never;
@@ -11367,7 +11367,7 @@ export interface paths {
          * Cancel an order group
          * @description Cancels every order that has not started production, with a reason. A paid group publishes `order_group.cancelled` with `refundRequired` (refund B3.2, credit note B5).
          *
-         *     Implements: D-060, D-073, D-142, D-050.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
          */
         post: operations["admin.orders.cancelGroup"];
         delete?: never;
@@ -11519,7 +11519,7 @@ export interface paths {
          * Get an order
          * @description Staff view of one order (D-141 masking).
          *
-         *     Implements: D-060, D-073, D-142, D-050, D-141.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439, D-141.
          */
         get: operations["admin.orders.get"];
         put?: never;
@@ -11565,7 +11565,7 @@ export interface paths {
          * Cancel one order of a group
          * @description Before production only (afterwards: claims, B4.5); the group follows its orders.
          *
-         *     Implements: D-060, D-073, D-142, D-050.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
          */
         post: operations["admin.orders.cancel"];
         delete?: never;
@@ -15771,6 +15771,28 @@ export interface paths {
          *     Implements: D-140.
          */
         get: operations["admin.staffDirectory.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/status-labels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the words for every status (staff)
+         * @description Every labelled status enum with every value: the customer’s words (`labelTh`), the back office’s and factories’ words (`labelAdminTh`: "Proof", factory steps) and English (D-313). The storefront’s copy (`store.statusLabels.list`) carries customer words only (D-440).
+         *
+         *     Implements: D-313, D-440.
+         */
+        get: operations["admin.statusLabels.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -28046,9 +28068,9 @@ export interface paths {
         };
         /**
          * Get a catalogue product for the configurator
-         * @description Patterns with their size constraints, the options it offers grouped by kind, standard sizes, images, videos and SEO meta.
+         * @description Patterns with their size constraints, the options it offers grouped by kind, standard sizes, images, videos and SEO meta. The starting price and `startingPriceAssumes` (lines and one-string `label`) are the default spec priced through the configurator’s own path; with a default spec, `isDefault` marks the options it selects (D-441).
          *
-         *     Implements: D-100, D-050.
+         *     Implements: D-100, D-050, D-441.
          */
         get: operations["store.catalog.getProduct"];
         put?: never;
@@ -28068,9 +28090,9 @@ export interface paths {
         };
         /**
          * Get the configurator of a calculator-priced product
-         * @description What the configurator needs to build the quote configuration of the product’s calculator (folding, corrugate): patterns with their parts, flutes and typed size rules, standard sizes, the options offered with the ids the configuration takes, the product’s difficulty level, print areas and the D-051 validity; `instant` says whether it is priced online now (D-043, D-100). A product of a type priced by RFQ only is not found. No prices or factory data (D-050).
+         * @description What the configurator needs to build the quote configuration of the product’s calculator (folding, corrugate): patterns with their parts, flutes and typed size rules, standard sizes, the options offered with the ids the configuration takes, the product’s difficulty level, print areas and the D-051 validity; `instant` says whether it is priced online now (D-043, D-100). A product of a type priced by RFQ only is not found. No prices or factory data (D-050). `defaultSpec` is the spec to open on — the admin reference configuration (D-220) the "starting from" price is priced at — and the option, size and quantity defaults follow it, so the configurator opens on the price the product page showed (D-441). `dielineVariantCodes` give the style variants whose dieline the product page can offer for download (D-271).
          *
-         *     Implements: D-100, D-043, D-050, D-051.
+         *     Implements: D-100, D-043, D-050, D-051, D-441.
          */
         get: operations["store.catalog.getConfigurator"];
         put?: never;
@@ -30499,28 +30521,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/store/network/stats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * getpack’s partner network in numbers
-         * @description How partners are audited, which product types the network can make, and — only with at least `trust.network_min_factories` (3) active factories and `trust.network_min_jobs` (30) jobs completed in the last `trust.network_window_days` (90) days — the partner count and the on-time and first-pass rates rounded to whole %. Aggregates only: never a partner or the factory of an order (D-201, D-264, D-044).
-         *
-         *     Implements: D-201, D-264, D-044.
-         */
-        get: operations["store.network.getStats"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/store/notifications": {
         parameters: {
             query?: never;
@@ -30596,9 +30596,9 @@ export interface paths {
         };
         /**
          * List my order groups
-         * @description Newest first; each group holds one order per configuration (D-060 expiry shown while unpaid).
+         * @description Newest first; each group holds one order per configuration. The payment deadline is shown while unpaid (D-060) and an overdue group is re-quoted, never cancelled (`paymentOverdue`, D-436).
          *
-         *     Implements: D-060, D-073, D-142, D-050.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
          */
         get: operations["store.orders.listGroups"];
         put?: never;
@@ -30620,7 +30620,7 @@ export interface paths {
          * Get one of my order groups
          * @description The owner only; no factory data (D-050).
          *
-         *     Implements: D-060, D-073, D-142, D-050.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
          */
         get: operations["store.orders.getGroup"];
         put?: never;
@@ -30644,9 +30644,53 @@ export interface paths {
          * Cancel my unpaid order group
          * @description Only while it waits for payment and nothing is paid; after a payment CS cancels it (refund / credit note, B3.2 / B5). Releases reserved promotions and points.
          *
-         *     Implements: D-060, D-073, D-142, D-050.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
          */
         post: operations["store.orders.cancelGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/order-groups/{groupId}/actions/confirm-requote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept today’s price of my overdue order group
+         * @description Writes the re-quote shown by `store.orders.requoteGroup` (D-436): every order of the group that is not cancelled with the quotation of the preview, and `expectedGrossAmount` = the preview’s `newGrossAmount` (else `order.requote_changed` — re-check again). Each order keeps its previous pricing as a revision and publishes `order.repriced` (the payment schedule follows, ADR-0008); the group gets a new payment deadline (`orders.unpaid_expiry_days`) and publishes `order_group.requoted`. Then pay with `store.payments.initiate`. Requires `Idempotency-Key`; a replay returns the same group.
+         *
+         *     Implements: D-436, D-051, D-060.
+         */
+        post: operations["store.orders.confirmRequote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/order-groups/{groupId}/actions/requote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-check the price of my overdue order group
+         * @description "ตรวจราคาใหม่และชำระ" (D-436): for an unpaid group past its payment deadline (`paymentOverdue`) — never cancelled for it — every order is priced again through the pricing service at today’s price, lead time and ship date (a new instant quotation of the same configuration, quantity and delivery postcode). Answers the old and new totals and the difference; nothing on the order changes until `store.orders.confirmRequote`. Not offered online (`order.requote_unavailable`, the team quotes): an RFQ or sample quotation, a reorder, discounts or add-on charges, a payment being verified or part-paid.
+         *
+         *     Implements: D-436, D-051, D-060.
+         */
+        post: operations["store.orders.requoteGroup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -30692,9 +30736,9 @@ export interface paths {
         put?: never;
         /**
          * Pay open instalments
-         * @description Starts a payment of the instalments due now (or those chosen): SCB QR returns the QR payload to render, 2C2P a redirect URL, a bank transfer waits for its slip. Methods are enabled by feature flag once getpack’s merchant accounts exist (D-176). The amount is the cash after the expected withholding. `bank_transfer_slip` returns the accounts to pay into (`receiverAccounts`). After a 2C2P page the provider sends the customer back to the fixed storefront route `/payments/{paymentId}/return` (no client-supplied return URL); poll `store.payments.get` there. Requires `Idempotency-Key`.
+         * @description Starts a payment of the instalments due now (or those chosen): SCB QR returns the QR payload to render, 2C2P a redirect URL, a bank transfer waits for its slip. Methods are enabled by feature flag once getpack’s merchant accounts exist (D-176). The amount is the cash after the expected withholding. `bank_transfer_slip` returns the accounts to pay into (`receiverAccounts`). After a 2C2P page the provider sends the customer back to the fixed storefront route `/payments/{paymentId}/return` (no client-supplied return URL); poll `store.payments.get` there. Past the group’s payment deadline the customer re-quotes first (`store.orders.requoteGroup`, D-436): `order.requote_required`. Requires `Idempotency-Key`.
          *
-         *     Implements: D-061, D-020, D-176.
+         *     Implements: D-061, D-020, D-176, D-436.
          */
         post: operations["store.payments.initiate"];
         delete?: never;
@@ -30712,9 +30756,9 @@ export interface paths {
         };
         /**
          * Get one of my orders
-         * @description Lines, destinations and the status driven by payment, artwork, production and shipping facts.
+         * @description Lines, destinations and the status driven by payment, artwork, production and shipping facts; `customerStatus` is the one status to show the customer (D-437), with who acts next and the artwork step owner (D-438), this order’s share of the group payment and the delivery-date basis (D-439).
          *
-         *     Implements: D-060, D-073, D-142, D-050.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
          */
         get: operations["store.orders.get"];
         put?: never;
@@ -31196,7 +31240,7 @@ export interface paths {
          * Get one of my orders by its code
          * @description For links in e-mails and LINE (contract §3 exception); the owner only.
          *
-         *     Implements: D-060, D-073, D-142, D-050.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
          */
         get: operations["store.orders.getByCode"];
         put?: never;
@@ -31416,9 +31460,9 @@ export interface paths {
         };
         /**
          * Get the figures the storefront states
-         * @description Every figure has one source and is null without one — the storefront then leaves the sentence out, never a number of its own (D-309): minimum quantities from the catalogue (D-307), the price lock (`quotes.validity_days`, D-051), the claim window (`claims.window_days`, D-082), the first-proof turnaround, support hours and reply time (settings kept by Prepress and the CS Lead), the template library size, the partner count (null below `trust.network_min_factories`, D-264) and the contacts (D-221). Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
+         * @description Every figure has one source and is null without one — the storefront then leaves the sentence out, never a number of its own (D-309): minimum quantities from the catalogue (D-307), the price lock (`quotes.validity_days`, D-051), the claim window (`claims.window_days`, D-082), the first-proof turnaround, support hours and reply time (settings kept by Prepress and the CS Lead), the template library size and the contacts (D-221). Nothing about production partners — no count, coverage or threshold (D-435). Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
          *
-         *     Implements: D-309, D-051, D-082, D-221, D-264, D-307.
+         *     Implements: D-309, D-051, D-082, D-221, D-307, D-435.
          */
         get: operations["store.publicConfig.get"];
         put?: never;
@@ -31776,9 +31820,9 @@ export interface paths {
         put?: never;
         /**
          * Calculate an instant price for a configuration
-         * @description Prices each quantity from the active factories that hold an instant price path (D-043, D-100): price incl. VAT, lead time and earliest ship date within capacity (D-101), quantity tolerance (D-021). A quantity without an instant price carries the reason and routes to RFQ. The configuration is the one of the type’s calculator (folding, corrugate, label, tag & sleeve, pouch, standard product, service). Nothing is saved (quotes are saved with B2.5, D-051); no factory data is returned (D-050). Works signed in or anonymously. With `targetPricePerUnit` the response gives each instant quantity’s gap against it (D-247); the target is not stored here.
+         * @description Prices each quantity from the active factories that hold an instant price path (D-043, D-100): price incl. VAT, lead time and earliest ship date within capacity (D-101), quantity tolerance (D-021). A quantity without an instant price carries the reason and routes to RFQ. The configuration is the one of the type’s calculator (folding, corrugate, label, tag & sleeve, pouch, standard product, service). Nothing is saved (quotes are saved with B2.5, D-051); no factory data is returned (D-050). Works signed in or anonymously. With `targetPricePerUnit` the response gives each instant quantity’s gap against it (D-247); the target is not stored here. `specs` and `specLabel` say which spec the price is for, built by the same helper as quotations, carts, orders and the "starting from" basis (size as ยาว × กว้าง × สูง, mm); every store surface prices through this one path (D-441).
          *
-         *     Implements: D-100, D-043, D-050, D-051, D-101, D-247.
+         *     Implements: D-100, D-043, D-050, D-051, D-101, D-247, D-441.
          */
         post: operations["store.quotes.calculate"];
         delete?: never;
@@ -32598,9 +32642,9 @@ export interface paths {
         };
         /**
          * List the words for every status
-         * @description For each labelled status enum (order, order group, payment, instalment, slip, refund, artwork, submission, Proof, preflight, production job, milestone, shipment, claim, quotation, RFQ, RFQ quotation, sample, design service and round) its values with the customer’s words (`labelTh`: "ตรวจแบบก่อนพิมพ์" / "แบบตัวอย่าง", never a factory — D-050), the back office’s and factories’ words (`labelAdminTh`: "Proof") and English. The same words are on every response next to the status (`statusLabelTh`, `statusLabelAdminTh`); enum values never change (D-313). Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
+         * @description For each labelled status enum (order, customer order status, order group, payment, instalment, slip, refund, artwork, submission, Proof, preflight, production job, milestone, shipment, claim, quotation, RFQ, RFQ quotation, sample, design service and round) its values with the customer’s words (`labelTh`: "ตรวจแบบก่อนพิมพ์" / "แบบตัวอย่าง", never a factory — D-050) and English. `labelAdminTh` repeats the customer words here (D-440; staff words: `admin.statusLabels.list`), and values only staff see (`factory_review`) are left out. The same words are on every response next to the status (`statusLabelTh`, `statusLabelAdminTh`); enum values never change (D-313). Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
          *
-         *     Implements: D-313, D-050.
+         *     Implements: D-313, D-050, D-440.
          */
         get: operations["store.statusLabels.list"];
         put?: never;
@@ -32856,9 +32900,9 @@ export interface paths {
         put?: never;
         /**
          * Price my studio design
-         * @description Prices a version of my design (default: the current one) from its calculator spec — checked against its box: style, sizes and basis, material, print sides — through the same engine and rules as `store.quotes.calculate`, and answers the same calculation object with a `specHash`. The same hash is served from its snapshot for 5 minutes. With `previousSpecHash` the answer explains the change (reason codes and unit prices before / now). A type without an instant price answers `mode: rfq` — ask for a quotation instead. Limited to 60 a minute (D-277).
+         * @description Prices a version of my design (default: the current one) from its calculator spec — checked against its box: style, sizes and basis, material, print sides — through the same engine and rules as `store.quotes.calculate`, and answers the same calculation object with a `specHash`. The same hash is served from its snapshot for 5 minutes. With `previousSpecHash` the answer explains the change (reason codes and unit prices before / now). A type without an instant price answers `mode: rfq` — ask for a quotation instead. Limited to 60 a minute (D-277). The calculation carries `specs` and `specLabel` — the spec priced, in the configurator’s words (e.g. "… · 150 × 100 × 80 มม. (ด้านใน) · … · ไม่พิมพ์" for an empty draft) — from the one store pricing path (D-441).
          *
-         *     Implements: D-277, D-275, D-051.
+         *     Implements: D-277, D-275, D-051, D-441.
          */
         post: operations["store.studio.quote"];
         delete?: never;
@@ -33294,9 +33338,9 @@ export interface paths {
         };
         /**
          * Get a style
-         * @description A published style by its public code (D-184, D-245): construction, the publishable variants and their option combinations, size ranges per material class (the recipe’s solver, else the linked pattern’s rules — `source`), the starting price and the quantity it assumes (D-220, none without a hint), the lead-time band, the number of partners able to make it only with ≥ 3 active factories (D-201), use cases and assets. A verified reference code only (D-211).
+         * @description A published style by its public code (D-184, D-245): construction, the publishable variants and their option combinations, size ranges per material class (the recipe’s solver, else the linked pattern’s rules — `source`), the starting price and the quantity it assumes (D-220, none without a hint), the lead-time band, use cases and assets — nothing about who makes it: no partner count and no `not_makeable` reason (D-435). A verified reference code only (D-211).
          *
-         *     Implements: D-245, D-246, D-243, D-050, D-201, D-220, D-211.
+         *     Implements: D-245, D-246, D-243, D-050, D-435, D-220, D-211.
          */
         get: operations["store.styles.get"];
         put?: never;
@@ -33980,6 +34024,11 @@ export interface components {
              */
             versionNo?: number;
         };
+        /**
+         * @description Who acts next on the order (D-438): `team`, `customer`, or null when nothing is left to do
+         * @enum {string}
+         */
+        ActionOwner: "team" | "customer";
         ActivationRequestDto: {
             /**
              * Format: uuid
@@ -34598,7 +34647,7 @@ export interface components {
              */
             earnedAt: string | null;
             /**
-             * @description The factory (bounty)
+             * @description The factory of a bounty — staff only; agents never see factory names (D-435)
              * @example null
              */
             factoryName: string | null;
@@ -34702,7 +34751,7 @@ export interface components {
             taxId: string | null;
             /** @description The plan’s terms in force */
             terms: components["schemas"]["AgentPlanTermsDto"] | null;
-            totals: components["schemas"]["AgentTotalsDto"];
+            totals: components["schemas"]["AdminAgentTotalsDto"];
             /** @description The customer account the agent signs in with */
             user: components["schemas"]["UserRefDto"];
             /**
@@ -34975,6 +35024,48 @@ export interface components {
              */
             whtAmount: string | null;
         };
+        AdminAgentTotalsDto: {
+            /**
+             * @description Customers and companies linked now
+             * @example 6
+             */
+            activeLinks: number;
+            /**
+             * @description Earned, not yet on a statement
+             * @example 830.50
+             */
+            earned: string;
+            /**
+             * @description Factories brought in (pending or qualified links)
+             * @example 1
+             */
+            factories: number;
+            /**
+             * @description Held for review
+             * @example 0.00
+             */
+            held: string;
+            /**
+             * @description Leads still protected
+             * @example 3
+             */
+            openLeads: number;
+            /**
+             * @description Paid, this calendar year
+             * @example 4200.00
+             */
+            paidThisYear: string;
+            /**
+             * @description Accrued, waiting for the claim window or payment
+             * @example 1250.00
+             */
+            pending: string;
+            /**
+             * @description On a statement not yet paid
+             * @example 0.00
+             */
+            statemented: string;
+        };
         AdminCheckoutDto: {
             /**
              * @description Copies of order e-mails (max 10)
@@ -35164,7 +35255,7 @@ export interface components {
             /** @example under_review */
             status: components["schemas"]["ClaimStatus"];
             /**
-             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example แจ้งเคลมแล้ว
              */
             statusLabelAdminTh: string;
@@ -35696,6 +35787,8 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f1002
              */
             orderId: string;
+            /** @description D-442: the customer's original artwork files behind the approved proof, as copies without document metadata (author, creator, company, title, XMP) and named by the order code — never the customer's name, contact or company */
+            originalFiles: components["schemas"]["ProductionOriginalFileDto"][];
             /**
              * Format: date
              * @example 2026-10-09
@@ -35762,8 +35855,8 @@ export interface components {
             /** @example released */
             status: components["schemas"]["ProductionJobStatus"];
             /**
-             * @description `status` (ProductionJobStatus) in Thai for staff and partner factories (D-313).
-             * @example รอโรงงานรับงาน
+             * @description `status` (ProductionJobStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example เตรียมผลิต
              */
             statusLabelAdminTh: string;
             /**
@@ -35850,16 +35943,26 @@ export interface components {
             roles: string[];
         };
         AdminOrderDto: {
+            /**
+             * @description Who acts next on the order (D-438): `team`, `customer`, or null when nothing is left to do
+             * @example customer
+             */
+            actionOwner: components["schemas"]["ActionOwner"] | null;
+            /**
+             * @description Who owns the artwork step (D-438): `team` ("รอทีมส่งแบบไดคัทให้", a file being checked — no upload button), `customer` ("รอไฟล์จากคุณ", sent back, proof to answer); null once approved
+             * @example team
+             */
+            artworkOwner: components["schemas"]["ActionOwner"] | null;
             /** @example awaiting_template */
             artworkStatus: components["schemas"]["ArtworkStatus"];
             /**
-             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
-             * @example รอแบบไดคัท
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `artworkStatusLabelTh` (D-440).
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelAdminTh: string;
             /**
              * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
-             * @example รอแบบไดคัท
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelTh: string;
             /**
@@ -35881,6 +35984,26 @@ export interface components {
              * @example 2026-10-01T09:00:00+07:00
              */
             createdAt: string;
+            /**
+             * @description THE status to show a customer (D-437), derived by the API from payment, artwork, production, shipment, receipt, claims and cancellation; every customer surface (overview, list, detail, e-mail, LINE) uses it. `status` is the stored fact status (staff)
+             * @example awaiting_payment
+             */
+            customerStatus: components["schemas"]["CustomerOrderStatus"];
+            /**
+             * @description `customerStatus` (CustomerOrderStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `customerStatusLabelTh` (D-440).
+             * @example รอชำระเงิน
+             */
+            customerStatusLabelAdminTh: string;
+            /**
+             * @description `customerStatus` (CustomerOrderStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `customerStatus` never changes.
+             * @example รอชำระเงิน
+             */
+            customerStatusLabelTh: string;
+            /**
+             * @description `after_payment`: not paid yet — the dates above are only the plan made at placement and the storefront shows "คำนวณหลังชำระเงิน" instead (D-439); `planned`: the production plan
+             * @example after_payment
+             */
+            deliveryDateBasis: components["schemas"]["DeliveryDateBasis"];
             /** @example own_file */
             designOption: components["schemas"]["DesignOption"];
             destinations: components["schemas"]["OrderDestinationDto"][];
@@ -35903,8 +36026,11 @@ export interface components {
             mockupOption: components["schemas"]["MockupOption"];
             /** @description What the signed-in user may do on the order now, from the actions’ own checks (U-B0.3); paying an instalment is on the payment schedule (`payable`) */
             nextActions: components["schemas"]["NextActionDto"][];
+            /** @description Claims still being handled, oldest first (D-437); empty when none */
+            openClaims: components["schemas"]["OrderOpenClaimDto"][];
             /** @example OR-2610-00042 */
             orderCode: string;
+            payment: components["schemas"]["OrderPaymentShareDto"];
             /** @example folding_carton */
             productTypeCode: string;
             /**
@@ -35928,7 +36054,7 @@ export interface components {
              */
             statusChangedAt: string;
             /**
-             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอชำระเงิน
              */
             statusLabelAdminTh: string;
@@ -35984,7 +36110,7 @@ export interface components {
             customerId: string;
             /**
              * Format: date-time
-             * @description Unpaid groups are cancelled at this instant (D-060)
+             * @description Payment deadline of an unpaid group (D-060). Past it the group is NOT cancelled (D-436): it is overdue ("เลยกำหนดชำระ") and the customer re-quotes before paying
              * @example 2026-10-08T10:00:00+07:00
              */
             expiresAt: string | null;
@@ -36001,6 +36127,11 @@ export interface components {
              */
             id: string;
             orders: components["schemas"]["AdminOrderDto"][];
+            /**
+             * @description Unpaid and past `expiresAt` (D-436): pay only after `store.orders.requoteGroup`
+             * @example false
+             */
+            paymentOverdue: boolean;
             /**
              * Format: date-time
              * @example 2026-09-25T10:00:00+07:00
@@ -36019,7 +36150,7 @@ export interface components {
             /** @example waiting_payment */
             status: components["schemas"]["OrderGroupStatus"];
             /**
-             * @description `status` (OrderGroupStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (OrderGroupStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอผู้อนุมัติของบริษัท
              */
             statusLabelAdminTh: string;
@@ -36082,13 +36213,13 @@ export interface components {
             /** @example approved */
             artworkStatus: components["schemas"]["ArtworkStatus"];
             /**
-             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
-             * @example รอแบบไดคัท
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `artworkStatusLabelTh` (D-440).
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelAdminTh: string;
             /**
              * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
-             * @example รอแบบไดคัท
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelTh: string;
             /** @example web */
@@ -36144,7 +36275,7 @@ export interface components {
             /** @example in_production */
             status: components["schemas"]["OrderStatus"];
             /**
-             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอชำระเงิน
              */
             statusLabelAdminTh: string;
@@ -36235,7 +36366,7 @@ export interface components {
             /** @example pending */
             status: components["schemas"]["PaymentStatus"];
             /**
-             * @description `status` (PaymentStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (PaymentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example เริ่มชำระเงิน
              */
             statusLabelAdminTh: string;
@@ -36407,7 +36538,7 @@ export interface components {
             /** @example 1000 */
             quantity: number;
             /**
-             * @description Why there is no instant price; `envelope_not_covered`: only tier-B paths priced it, outside their envelopes (D-234); `style_variant_not_publishable`: the named style variant is not published (D-243); `rfq_required`: the variant is published but priced through RFQ — calculator not signed or an option not priced (D-266)
+             * @description Why there is no instant price (staff: `capacity_unavailable` names the capacity gap)
              * @example null
              */
             reason: components["schemas"]["QuoteNoPriceReason"] | null;
@@ -36765,7 +36896,7 @@ export interface components {
              */
             statusChangedAt: string;
             /**
-             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอใบเสนอราคา
              */
             statusLabelAdminTh: string;
@@ -36875,7 +37006,7 @@ export interface components {
             /** @example saved */
             status: components["schemas"]["QuoteStatus"];
             /**
-             * @description `status` (QuoteStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (QuoteStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example คำนวณแล้ว
              */
             statusLabelAdminTh: string;
@@ -37090,8 +37221,8 @@ export interface components {
             /** @example ready */
             status: components["schemas"]["ShipmentStatus"];
             /**
-             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
-             * @example ร่างรอบส่ง
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example เตรียมจัดส่ง
              */
             statusLabelAdminTh: string;
             /**
@@ -37909,11 +38040,6 @@ export interface components {
              */
             earnedAt: string | null;
             /**
-             * @description The factory (bounty)
-             * @example null
-             */
-            factoryName: string | null;
-            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6008
              */
@@ -38494,11 +38620,6 @@ export interface components {
              * @example 830.50
              */
             earned: string;
-            /**
-             * @description Factories brought in
-             * @example 1
-             */
-            factories: number;
             /**
              * @description Held for review
              * @example 0.00
@@ -39381,7 +39502,7 @@ export interface components {
             /** @example blocked */
             preflightStatus: components["schemas"]["PreflightStatus"];
             /**
-             * @description `preflightStatus` (PreflightStatus) in Thai for staff and partner factories (D-313).
+             * @description `preflightStatus` (PreflightStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `preflightStatusLabelTh` (D-440).
              * @example รอตรวจไฟล์อัตโนมัติ
              */
             preflightStatusLabelAdminTh: string;
@@ -39402,7 +39523,7 @@ export interface components {
             /** @example submitted */
             status: components["schemas"]["SubmissionStatus"];
             /**
-             * @description `status` (SubmissionStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (SubmissionStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ส่งไฟล์แล้ว
              */
             statusLabelAdminTh: string;
@@ -40896,7 +41017,7 @@ export interface components {
              */
             expiresAt: string | null;
             /** @description The quotation’s factory, which accepts the lock — staff and the factory only (D-050) */
-            factory: components["schemas"]["CodedRefDto"] | null;
+            factory: components["schemas"]["CodedRefDto"];
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e7301
@@ -40908,7 +41029,7 @@ export interface components {
              */
             lapsedQuantity: number | null;
             /**
-             * @description The factory’s minimum order when asked
+             * @description The smallest release, fixed when asked
              * @example 1000
              */
             minReleaseQuantity: number;
@@ -40943,7 +41064,10 @@ export interface components {
              * @example 2026-10-04T09:00:00+07:00
              */
             startsAt: string | null;
-            /** @example active */
+            /**
+             * @description `pending_confirmation`: waiting for production to confirm the agreement (D-440)
+             * @example active
+             */
             status: components["schemas"]["CallOffStatus"];
             /** @example piece */
             unit: string;
@@ -40991,7 +41115,10 @@ export interface components {
          * @enum {string}
          */
         CallOffReleaseStatus: "quoted" | "ordered" | "lapsed";
-        /** @enum {string} */
+        /**
+         * @description `pending_confirmation`: waiting for production to confirm the agreement (D-440)
+         * @enum {string}
+         */
         CallOffStatus: "pending_factory" | "active" | "declined" | "cancelled" | "expired";
         CampaignBadgeDto: {
             /**
@@ -42553,9 +42680,9 @@ export interface components {
             claimId: string;
             /** @description Oldest first; getpack’s internal steps are not shown */
             events: components["schemas"]["ClaimTimelineEventDto"][];
-            sla: components["schemas"]["ClaimSlaDto"];
+            sla: components["schemas"]["StoreClaimSlaDto"];
             /** @example under_review */
-            status: string;
+            status: components["schemas"]["StoreClaimStatus"];
         };
         /** @enum {string} */
         ClaimTimelineEvent: "claim.submitted" | "claim.under_review" | "claim.info_requested" | "claim.info_provided" | "claim.approved" | "claim.rejected" | "claim.resolved" | "claim.closed";
@@ -43664,6 +43791,32 @@ export interface components {
              */
             fileId?: string;
         };
+        ConfirmRequoteDto: {
+            /**
+             * @description The preview’s `newGrossAmount`; a different total answers `order.requote_changed`
+             * @example 9457.10
+             */
+            expectedGrossAmount: string;
+            /** @description Every order of the group that is not cancelled, with the quotation of the preview */
+            orders: components["schemas"]["ConfirmRequoteItemDto"][];
+        };
+        ConfirmRequoteItemDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d0002
+             */
+            orderId: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ca101
+             */
+            quoteId: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ca102
+             */
+            quoteOptionId: string;
+        };
         ConfirmStyleImportDto: {
             /**
              * @description The `checksum` of the preview being confirmed: a file or library that changed since is refused
@@ -44508,19 +44661,6 @@ export interface components {
              * @example 14
              */
             rfqs: number;
-        };
-        CoverageDto: {
-            /**
-             * @description At least one active partner can make it
-             * @example true
-             */
-            available: boolean;
-            /** @example Folding carton */
-            nameEn: string;
-            /** @example กล่องกระดาษพับ */
-            nameTh: string;
-            /** @example folding_carton */
-            productTypeCode: string;
         };
         CoverageFactoryDto: {
             /** @example active */
@@ -47530,6 +47670,11 @@ export interface components {
         CustomerDocumentStatus: "issued" | "void";
         /** @enum {string} */
         CustomerDocumentType: "iv" | "tr" | "rc" | "cn" | "dn";
+        /**
+         * @description THE status to show a customer (D-437), derived by the API from payment, artwork, production, shipment, receipt, claims and cancellation; every customer surface (overview, list, detail, e-mail, LINE) uses it. `status` is the stored fact status (staff)
+         * @enum {string}
+         */
+        CustomerOrderStatus: "awaiting_payment" | "awaiting_artwork" | "awaiting_approval" | "in_production" | "shipping" | "received" | "claim_in_review" | "completed" | "cancelled";
         CustomerProfileDto: {
             /**
              * Format: date-time
@@ -47994,6 +48139,11 @@ export interface components {
              */
             dielineFileId: string;
         };
+        /**
+         * @description `after_payment`: not paid yet — the dates above are only the plan made at placement and the storefront shows "คำนวณหลังชำระเงิน" instead (D-439); `planned`: the production plan
+         * @enum {string}
+         */
+        DeliveryDateBasis: "after_payment" | "planned";
         DeliveryReconciliationDto: {
             /** @example 214.00 */
             creditAmount: string | null;
@@ -48848,7 +48998,7 @@ export interface components {
             /** @example in_progress */
             status: components["schemas"]["DesignRoundStatus"];
             /**
-             * @description `status` (DesignRoundStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (DesignRoundStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอชำระค่าแก้ไขเพิ่ม
              */
             statusLabelAdminTh: string;
@@ -48919,7 +49069,7 @@ export interface components {
             /** @example in_progress */
             status: components["schemas"]["DesignServiceStatus"];
             /**
-             * @description `status` (DesignServiceStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (DesignServiceStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอบรีฟงานออกแบบ
              */
             statusLabelAdminTh: string;
@@ -61541,7 +61691,7 @@ export interface components {
             /** @example due */
             status: components["schemas"]["InstalmentStatus"];
             /**
-             * @description `status` (InstalmentStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (InstalmentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ยังไม่ถึงกำหนด
              */
             statusLabelAdminTh: string;
@@ -62411,7 +62561,7 @@ export interface components {
             code: string;
             /**
              * Format: date-time
-             * @description `pay`: when the unpaid group expires (D-060); `confirm_receipt`: auto-completion is not shown here
+             * @description `pay`: the payment deadline of the unpaid group (D-060; never an automatic cancellation, D-436); `confirm_receipt`: auto-completion is not shown here
              * @example null
              */
             dueAt: string | null;
@@ -62420,6 +62570,11 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e7303
              */
             id: string;
+            /**
+             * @description `pay` past its deadline (D-436): show "เลยกำหนดชำระ" and "ตรวจราคาใหม่และชำระ" (`store.orders.requoteGroup`)
+             * @example false
+             */
+            overdue: boolean;
             /** @description Null for an order group */
             productType: components["schemas"]["CodeNameRefDto"] | null;
             /** @example order */
@@ -62453,6 +62608,11 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e730c
              */
             thumbnailFileId: string | null;
+            /**
+             * @description Signed URL of the preview image (5 minutes), ready for an `<img>`; null without a preview (show the product placeholder)
+             * @example https://files.example.invalid/thumb.png?sig=…
+             */
+            thumbnailUrl: string | null;
             /** @example กล่องขนมไหว้พระจันทร์ */
             title: string;
             /**
@@ -62648,6 +62808,18 @@ export interface components {
              * @example 62500.00
              */
             spend12m: string;
+            /** @example Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily */
+            spendBasisEn: string;
+            /**
+             * @description What `spend12m` counts, to show next to the tier progress (account Phase 0, D-134): completed orders only, before VAT, without shipping, the last 12 months, recalculated nightly
+             * @example นับยอดเมื่อคำสั่งซื้อเสร็จสิ้นหลังได้รับของ · ยอดก่อน VAT ไม่รวมค่าส่ง · ย้อนหลัง 12 เดือน · อัปเดตวันละครั้ง
+             */
+            spendBasisTh: string;
+            /**
+             * @description Paid orders not completed yet, on the same basis: what will count once they complete (explains a `spend12m` of 0 while an order is on its way or a claim is open)
+             * @example 37372.73
+             */
+            spendNotYetCounted: string;
             /** @example silver */
             tier: components["schemas"]["LoyaltyTier"];
         };
@@ -62976,7 +63148,7 @@ export interface components {
             /** @example in_progress */
             status: components["schemas"]["MilestoneStatus"];
             /**
-             * @description `status` (MilestoneStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (MilestoneStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ยังไม่เริ่ม
              */
             statusLabelAdminTh: string;
@@ -63153,49 +63325,6 @@ export interface components {
         };
         /** @enum {string} */
         NationalDayKind: "holiday" | "extra_working_day";
-        NetworkFiguresDto: {
-            /**
-             * @description Jobs whose first QC check passed, whole %
-             * @example null
-             */
-            firstPassPct: number | null;
-            /** @example 3 */
-            minFactories: number;
-            /** @example 30 */
-            minJobs: number;
-            /**
-             * @description Jobs picked up by their promised ship date, whole %
-             * @example null
-             */
-            onTimePct: number | null;
-            /**
-             * @description Active partner factories
-             * @example null
-             */
-            partnerCount: number | null;
-            /**
-             * @description Figures are published only with ≥ `trust.network_min_factories` active factories and ≥ `trust.network_min_jobs` completed jobs in the window (D-201, D-264); otherwise every figure is null
-             * @example false
-             */
-            published: boolean;
-            /**
-             * @description Rolling window (days)
-             * @example 90
-             */
-            windowDays: number;
-        };
-        NetworkStatsDto: {
-            /** @description How partners are audited (`trust.audit_criteria`) */
-            auditCriteria: components["schemas"]["ArtworkChecklistItemDto"][];
-            /** @description Capability coverage by product type (yes / no) */
-            coverage: components["schemas"]["CoverageDto"][];
-            /**
-             * Format: date-time
-             * @example 2026-10-03T10:00:00+07:00
-             */
-            generatedAt: string;
-            network: components["schemas"]["NetworkFiguresDto"];
-        };
         NextActionDto: {
             /**
              * @description Set when the action is shown but blocked right now, with the reason (a message key)
@@ -63629,16 +63758,26 @@ export interface components {
             format: components["schemas"]["DrawingFormat"];
         };
         OrderDto: {
+            /**
+             * @description Who acts next on the order (D-438): `team`, `customer`, or null when nothing is left to do
+             * @example customer
+             */
+            actionOwner: components["schemas"]["ActionOwner"] | null;
+            /**
+             * @description Who owns the artwork step (D-438): `team` ("รอทีมส่งแบบไดคัทให้", a file being checked — no upload button), `customer` ("รอไฟล์จากคุณ", sent back, proof to answer); null once approved
+             * @example team
+             */
+            artworkOwner: components["schemas"]["ActionOwner"] | null;
             /** @example awaiting_template */
             artworkStatus: components["schemas"]["ArtworkStatus"];
             /**
-             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
-             * @example รอแบบไดคัท
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `artworkStatusLabelTh` (D-440).
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelAdminTh: string;
             /**
              * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
-             * @example รอแบบไดคัท
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelTh: string;
             /**
@@ -63660,6 +63799,26 @@ export interface components {
              * @example 2026-10-01T09:00:00+07:00
              */
             createdAt: string;
+            /**
+             * @description THE status to show a customer (D-437), derived by the API from payment, artwork, production, shipment, receipt, claims and cancellation; every customer surface (overview, list, detail, e-mail, LINE) uses it. `status` is the stored fact status (staff)
+             * @example awaiting_payment
+             */
+            customerStatus: components["schemas"]["CustomerOrderStatus"];
+            /**
+             * @description `customerStatus` (CustomerOrderStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `customerStatusLabelTh` (D-440).
+             * @example รอชำระเงิน
+             */
+            customerStatusLabelAdminTh: string;
+            /**
+             * @description `customerStatus` (CustomerOrderStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `customerStatus` never changes.
+             * @example รอชำระเงิน
+             */
+            customerStatusLabelTh: string;
+            /**
+             * @description `after_payment`: not paid yet — the dates above are only the plan made at placement and the storefront shows "คำนวณหลังชำระเงิน" instead (D-439); `planned`: the production plan
+             * @example after_payment
+             */
+            deliveryDateBasis: components["schemas"]["DeliveryDateBasis"];
             /** @example own_file */
             designOption: components["schemas"]["DesignOption"];
             destinations: components["schemas"]["OrderDestinationDto"][];
@@ -63681,8 +63840,11 @@ export interface components {
             mockupOption: components["schemas"]["MockupOption"];
             /** @description What the signed-in user may do on the order now, from the actions’ own checks (U-B0.3); paying an instalment is on the payment schedule (`payable`) */
             nextActions: components["schemas"]["NextActionDto"][];
+            /** @description Claims still being handled, oldest first (D-437); empty when none */
+            openClaims: components["schemas"]["OrderOpenClaimDto"][];
             /** @example OR-2610-00042 */
             orderCode: string;
+            payment: components["schemas"]["OrderPaymentShareDto"];
             /** @example folding_carton */
             productTypeCode: string;
             /**
@@ -63706,7 +63868,7 @@ export interface components {
              */
             statusChangedAt: string;
             /**
-             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอชำระเงิน
              */
             statusLabelAdminTh: string;
@@ -63759,7 +63921,7 @@ export interface components {
             customerId: string;
             /**
              * Format: date-time
-             * @description Unpaid groups are cancelled at this instant (D-060)
+             * @description Payment deadline of an unpaid group (D-060). Past it the group is NOT cancelled (D-436): it is overdue ("เลยกำหนดชำระ") and the customer re-quotes before paying
              * @example 2026-10-08T10:00:00+07:00
              */
             expiresAt: string | null;
@@ -63772,6 +63934,11 @@ export interface components {
             id: string;
             orders: components["schemas"]["OrderDto"][];
             /**
+             * @description Unpaid and past `expiresAt` (D-436): pay only after `store.orders.requoteGroup`
+             * @example false
+             */
+            paymentOverdue: boolean;
+            /**
              * Format: date-time
              * @example 2026-09-25T10:00:00+07:00
              */
@@ -63781,7 +63948,7 @@ export interface components {
             /** @example waiting_payment */
             status: components["schemas"]["OrderGroupStatus"];
             /**
-             * @description `status` (OrderGroupStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (OrderGroupStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอผู้อนุมัติของบริษัท
              */
             statusLabelAdminTh: string;
@@ -63852,6 +64019,75 @@ export interface components {
             /** @description Staff mentioned in the note (D-143) */
             mentions: components["schemas"]["UserRefDto"][];
         };
+        OrderOpenClaimDto: {
+            /** @example CL-2610-0001 */
+            claimNo: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c1001
+             */
+            id: string;
+            /**
+             * @description Never a final status here
+             * @example under_review
+             */
+            status: components["schemas"]["StoreClaimStatus"];
+            /**
+             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example แจ้งเคลมแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (ClaimStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example แจ้งเคลมแล้ว
+             */
+            statusLabelTh: string;
+        };
+        OrderPaymentShareDto: {
+            /**
+             * Format: date-time
+             * @description Payment deadline while the group waits for payment (D-060, D-436); null otherwise
+             * @example 2026-10-22T11:47:00+07:00
+             */
+            dueAt: string | null;
+            /**
+             * @description The whole group, after the expected withholding
+             * @example 9284.96
+             */
+            groupCashAmount: string;
+            /** @example OG-2610-00042 */
+            groupCode: string;
+            /**
+             * @description The whole group, incl. VAT (one payment for all its orders)
+             * @example 9284.96
+             */
+            groupGrossAmount: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d0001
+             */
+            groupId: string;
+            /**
+             * @description Orders of the group that are not cancelled
+             * @example 2
+             */
+            groupOrderCount: number;
+            /**
+             * @description This order, after the expected withholding
+             * @example 4302.86
+             */
+            orderCashAmount: string;
+            /**
+             * @description This order, incl. VAT (= `totals.grossAmount`)
+             * @example 4302.86
+             */
+            orderGrossAmount: string;
+            /**
+             * @description Past the deadline and unpaid (D-436): never cancelled for it — "เลยกำหนดชำระ"; the customer re-quotes (`store.orders.requoteGroup`) before paying
+             * @example false
+             */
+            overdue: boolean;
+        };
         OrderProgressDto: {
             /**
              * Format: date-time
@@ -63914,13 +64150,13 @@ export interface components {
             /** @example uploaded */
             artworkStatus: components["schemas"]["ArtworkStatus"];
             /**
-             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
-             * @example รอแบบไดคัท
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `artworkStatusLabelTh` (D-440).
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelAdminTh: string;
             /**
              * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
-             * @example รอแบบไดคัท
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelTh: string;
             /** @example สมชาย ทดสอบ */
@@ -63961,7 +64197,7 @@ export interface components {
             /** @example paid_for_production */
             status: components["schemas"]["OrderStatus"];
             /**
-             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (OrderStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอชำระเงิน
              */
             statusLabelAdminTh: string;
@@ -63974,7 +64210,7 @@ export interface components {
         OrderReceiptDto: {
             /**
              * Format: date-time
-             * @description While delivered and not completed: when the order completes by itself (`orders.auto_complete_days`, D-081)
+             * @description While delivered and not completed (and no claim open): when the order completes by itself (`orders.auto_complete_days`, D-081)
              * @example 2026-10-27T15:00:00+07:00
              */
             autoCompleteAt: string | null;
@@ -63989,6 +64225,11 @@ export interface components {
              * @example null
              */
             completedAt: string | null;
+            /**
+             * @description Delivered, not completed, and a claim is open: completion waits for the claim (B4.5, D-437) — `autoCompleteAt` is null meanwhile and receipt is not asked for
+             * @example false
+             */
+            completionHeldByClaim: boolean;
             /** @example null */
             completionMode: components["schemas"]["CompletionMode"] | null;
             /**
@@ -64322,7 +64563,7 @@ export interface components {
             /** @example under_review */
             status: components["schemas"]["ClaimStatus"];
             /**
-             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example แจ้งเคลมแล้ว
              */
             statusLabelAdminTh: string;
@@ -64405,6 +64646,8 @@ export interface components {
             milestones: components["schemas"]["MilestoneDto"][];
             /** @description What the signed-in user may do on the job now (U-B0.3) */
             nextActions: components["schemas"]["NextActionDto"][];
+            /** @description D-442: the customer's original artwork files behind the approved proof, as copies without document metadata (author, creator, company, title, XMP) and named by the order code — never the customer's name, contact or company */
+            originalFiles: components["schemas"]["ProductionOriginalFileDto"][];
             /**
              * Format: date
              * @example 2026-10-09
@@ -64462,8 +64705,8 @@ export interface components {
             /** @example released */
             status: components["schemas"]["ProductionJobStatus"];
             /**
-             * @description `status` (ProductionJobStatus) in Thai for staff and partner factories (D-313).
-             * @example รอโรงงานรับงาน
+             * @description `status` (ProductionJobStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example เตรียมผลิต
              */
             statusLabelAdminTh: string;
             /**
@@ -64706,7 +64949,7 @@ export interface components {
             /** @example in_production */
             status: components["schemas"]["SampleStatus"];
             /**
-             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอใบเสนอราคา
              */
             statusLabelAdminTh: string;
@@ -64779,8 +65022,8 @@ export interface components {
             /** @example ready */
             status: components["schemas"]["ShipmentStatus"];
             /**
-             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
-             * @example ร่างรอบส่ง
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example เตรียมจัดส่ง
              */
             statusLabelAdminTh: string;
             /**
@@ -65160,7 +65403,7 @@ export interface components {
             /** @example pending */
             status: components["schemas"]["PaymentStatus"];
             /**
-             * @description `status` (PaymentStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (PaymentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example เริ่มชำระเงิน
              */
             statusLabelAdminTh: string;
@@ -66160,13 +66403,13 @@ export interface components {
             /** @example in_review */
             artworkStatus: components["schemas"]["ArtworkStatus"];
             /**
-             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313).
-             * @example รอแบบไดคัท
+             * @description `artworkStatus` (ArtworkStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `artworkStatusLabelTh` (D-440).
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelAdminTh: string;
             /**
              * @description `artworkStatus` (ArtworkStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `artworkStatus` never changes.
-             * @example รอแบบไดคัท
+             * @example รอทีมส่งแบบไดคัทให้
              */
             artworkStatusLabelTh: string;
             /** @description The Prepress owner */
@@ -66199,7 +66442,7 @@ export interface components {
             /** @example passed_with_warnings */
             preflightStatus: components["schemas"]["PreflightStatus"] | null;
             /**
-             * @description `preflightStatus` (PreflightStatus) in Thai for staff and partner factories (D-313).
+             * @description `preflightStatus` (PreflightStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `preflightStatusLabelTh` (D-440).
              * @example รอตรวจไฟล์อัตโนมัติ
              */
             preflightStatusLabelAdminTh: string | null;
@@ -66503,6 +66746,14 @@ export interface components {
             /** @example true */
             includesVat: boolean;
             /**
+             * @description The same spec as one string (D-441); show it with the price
+             * @example {
+             *       "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+             *       "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+             *     }
+             */
+            label: components["schemas"]["LocalisedLabelDto"];
+            /**
              * @description Quantity the price per piece is for
              * @example 1000
              */
@@ -66512,7 +66763,7 @@ export interface components {
              * @example null
              */
             sizeCode: string | null;
-            /** @description The reference specification, as spec lines */
+            /** @description The default spec (D-220, D-441) — the spec the configurator opens on — as spec lines */
             specs: components["schemas"]["SpecLineDto"][];
         };
         PriceHintDto: {
@@ -67334,8 +67585,41 @@ export interface components {
             /** @example 12 */
             total: number;
         };
+        /**
+         * @description Why an `unsupported` file is not offered
+         * @enum {string}
+         */
+        ProductionCopyFailure: "unsupported_format" | "encrypted" | "signed" | "unreadable" | "too_large" | "source_unavailable";
+        /**
+         * @description `pending` while the copy is being made; `ready` to download (`fileId`); `unsupported` when the format cannot be cleaned safely — nothing is offered, ask getpack
+         * @enum {string}
+         */
+        ProductionCopyStatus: "pending" | "ready" | "unsupported";
         /** @enum {string} */
         ProductionJobStatus: "released" | "accepted" | "rejected" | "in_progress" | "on_hold" | "completed" | "cancelled";
+        ProductionOriginalFileDto: {
+            /**
+             * Format: uuid
+             * @description Download through `files.downloadUrl` once `ready`
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f1014
+             */
+            fileId: string | null;
+            /**
+             * @description The order code, the submission version and a counter — never the uploaded name
+             * @example DEVOR-2609-00001-original-v1.pdf
+             */
+            fileName: string | null;
+            /**
+             * @description Why an `unsupported` file is not offered
+             * @example null
+             */
+            reason: components["schemas"]["ProductionCopyFailure"] | null;
+            /**
+             * @description `pending` while the copy is being made; `ready` to download (`fileId`); `unsupported` when the format cannot be cleaned safely — nothing is offered, ask getpack
+             * @example ready
+             */
+            status: components["schemas"]["ProductionCopyStatus"];
+        };
         /** @enum {string} */
         ProductionStartMode: "auto" | "manual_exception";
         ProductTypeAvailabilityDto: {
@@ -67526,7 +67810,7 @@ export interface components {
             /** @example completed */
             status: components["schemas"]["MilestoneStatus"];
             /**
-             * @description `status` (MilestoneStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (MilestoneStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ยังไม่เริ่ม
              */
             statusLabelAdminTh: string;
@@ -67796,8 +68080,8 @@ export interface components {
             /** @example changes_requested */
             previousStatus: components["schemas"]["ProofStatus"];
             /**
-             * @description `previousStatus` (ProofStatus) in Thai for staff and partner factories (D-313).
-             * @example รอ Proof จากลูกค้า
+             * @description `previousStatus` (ProofStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `previousStatusLabelTh` (D-440).
+             * @example รอคุณตรวจแบบตัวอย่าง
              */
             previousStatusLabelAdminTh: string;
             /**
@@ -67875,8 +68159,8 @@ export interface components {
             /** @example pending_customer */
             status: components["schemas"]["ProofStatus"];
             /**
-             * @description `status` (ProofStatus) in Thai for staff and partner factories (D-313).
-             * @example รอ Proof จากลูกค้า
+             * @description `status` (ProofStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example รอคุณตรวจแบบตัวอย่าง
              */
             statusLabelAdminTh: string;
             /**
@@ -68260,11 +68544,6 @@ export interface components {
             claimWindowDays: number;
             /** @description From `storefront.support_channels` (D-221) */
             contact: components["schemas"]["ContactDto"];
-            /**
-             * @description Active partner factories, published only from `trust.network_min_factories` (D-264); null below it
-             * @example null
-             */
-            factoryCount: number | null;
             minOrderQty: components["schemas"]["MinOrderQtyDto"];
             /**
              * @description Days a quotation’s price stays locked — `quotes.validity_days` (D-051)
@@ -68675,6 +68954,48 @@ export interface components {
              *     }
              */
             dimensions: components["schemas"]["QuoteDimensionsDto"] | null;
+            /**
+             * @description The same spec as one string (D-441), to show next to every price
+             * @example {
+             *       "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+             *       "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+             *     }
+             */
+            specLabel: components["schemas"]["LocalisedLabelDto"];
+            /**
+             * @description What was priced (D-441): the spec lines of this configuration, built by the same helper as quotations, carts, orders and the "starting from" basis; size as ยาว × กว้าง × สูง in mm
+             * @example [
+             *       {
+             *         "key": "style",
+             *         "labelEn": "Style",
+             *         "labelTh": "แบบกล่อง",
+             *         "valueEn": "RSC",
+             *         "valueTh": "กล่องฝาชน"
+             *       },
+             *       {
+             *         "key": "size",
+             *         "labelEn": "Size (L × W × H)",
+             *         "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+             *         "valueEn": "140 × 97.5 × 60 mm (inside)",
+             *         "valueTh": "140 × 97.5 × 60 มม. (ด้านใน)"
+             *       },
+             *       {
+             *         "key": "material",
+             *         "labelEn": "Material",
+             *         "labelTh": "วัสดุ",
+             *         "valueEn": "KA125 B-flute (3-ply)",
+             *         "valueTh": "ลูกฟูก KA125 ลอน B (3 ชั้น)"
+             *       },
+             *       {
+             *         "key": "print_front",
+             *         "labelEn": "Print (outside)",
+             *         "labelTh": "พิมพ์ด้านนอก",
+             *         "valueEn": "Black",
+             *         "valueTh": "ดำ"
+             *       }
+             *     ]
+             */
+            specs: components["schemas"]["SpecLineDto"][];
             steps: components["schemas"]["QuoteStepDto"][];
             /**
              * @description The gap of each instant quantity against `targetPricePerUnit` (D-247); null when none was sent
@@ -68923,7 +69244,7 @@ export interface components {
          */
         QuoteMode: "instant" | "rfq";
         /**
-         * @description Why there is no instant price; `envelope_not_covered`: only tier-B paths priced it, outside their envelopes (D-234); `style_variant_not_publishable`: the named style variant is not published (D-243); `rfq_required`: the variant is published but priced through RFQ — calculator not signed or an option not priced (D-266)
+         * @description Why there is no instant price (staff: `capacity_unavailable` names the capacity gap)
          * @enum {string}
          */
         QuoteNoPriceReason: "no_price_path" | "not_priceable" | "envelope_not_covered" | "capacity_unavailable" | "delivery_unavailable" | "style_variant_not_publishable" | "rfq_required";
@@ -68981,10 +69302,16 @@ export interface components {
             mode: components["schemas"]["QuoteMode"];
             /** @example folding_carton */
             productTypeCode: string;
-            /** @example type_rfq_only */
-            reason: components["schemas"]["QuotePathReason"];
+            /**
+             * @description `not_instant`: no instant price for this configuration — request a quotation (D-440)
+             * @example type_rfq_only
+             */
+            reason: components["schemas"]["StoreQuotePathReason"];
         };
-        /** @enum {string} */
+        /**
+         * @description Instant path for a configuration inside every envelope (tier A), else why not
+         * @enum {string}
+         */
         QuotePathReason: "instant_available" | "type_rfq_only" | "no_active_factory" | "no_price_list" | "envelope_not_covered";
         QuotePathRequestDto: {
             /**
@@ -69157,10 +69484,10 @@ export interface components {
             /** @example 1000 */
             quantity: number;
             /**
-             * @description Why there is no instant price; `envelope_not_covered`: only tier-B paths priced it, outside their envelopes (D-234); `style_variant_not_publishable`: the named style variant is not published (D-243); `rfq_required`: the variant is published but priced through RFQ — calculator not signed or an option not priced (D-266)
+             * @description Why there is no instant price; `envelope_not_covered`: only tier-B paths priced it, outside their envelopes (D-234); `style_variant_not_publishable`: the named style variant is not published (D-243); `rfq_required`: the variant is published but priced through RFQ — calculator not signed or an option not priced (D-266); `not_instant`: no instant price now — request a quotation (D-440)
              * @example null
              */
-            reason: components["schemas"]["QuoteNoPriceReason"] | null;
+            reason: components["schemas"]["StoreQuoteNoPriceReason"] | null;
             /**
              * @description Shipping incl. VAT, its own line (D-013); null while not priced
              * @example 128.40
@@ -70000,7 +70327,7 @@ export interface components {
             /** @example pending_approval */
             status: components["schemas"]["RefundStatus"];
             /**
-             * @description `status` (RefundStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (RefundStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ขอคืนเงินแล้ว
              */
             statusLabelAdminTh: string;
@@ -70890,6 +71217,103 @@ export interface components {
         };
         /** @enum {string} */
         RequiredBefore: "none" | "production" | "shipping";
+        RequoteOrderDto: {
+            /**
+             * @description new − previous (negative when cheaper)
+             * @example 86.06
+             */
+            differenceAmount: string;
+            /**
+             * Format: date
+             * @example 2026-11-05
+             */
+            estimatedDeliveryDate: string | null;
+            /**
+             * @description Working days of production now
+             * @example 5
+             */
+            leadTimeDays: number | null;
+            /**
+             * @description This order at today’s price, incl. VAT and shipping
+             * @example 4388.92
+             */
+            newGrossAmount: string;
+            /**
+             * @description Product unit price before VAT at today’s price
+             * @example 14.629733
+             */
+            newUnitPrice: string;
+            /** @example OR-2610-00016 */
+            orderCode: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d0002
+             */
+            orderId: string;
+            /**
+             * @description This order before, incl. VAT and shipping
+             * @example 4302.86
+             */
+            previousGrossAmount: string;
+            /**
+             * Format: date
+             * @description Ship date if paid now (today’s calendar and lead time)
+             * @example 2026-11-03
+             */
+            promisedShipDate: string | null;
+            /** @example 300 */
+            quantity: number;
+            /**
+             * Format: uuid
+             * @description The new quotation (send back on confirm)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ca101
+             */
+            quoteId: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ca102
+             */
+            quoteOptionId: string;
+        };
+        RequotePreviewDto: {
+            /**
+             * @description new − previous (negative when cheaper)
+             * @example 172.14
+             */
+            differenceAmount: string;
+            /** @example OG-2610-00016 */
+            groupCode: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d0001
+             */
+            groupId: string;
+            /**
+             * @description What the customer transfers after the expected withholding
+             * @example 9457.10
+             */
+            newCashAmount: string;
+            /**
+             * @description Send back as `expectedGrossAmount` on confirm
+             * @example 9457.10
+             */
+            newGrossAmount: string;
+            orders: components["schemas"]["RequoteOrderDto"][];
+            /**
+             * Format: date-time
+             * @description The new payment deadline once confirmed (`orders.unpaid_expiry_days` from now)
+             * @example 2026-11-01T10:00:00+07:00
+             */
+            paymentDueAt: string;
+            /** @example 9284.96 */
+            previousGrossAmount: string;
+            /**
+             * Format: date-time
+             * @description The new prices are held until then (`quotes.validity_days`, D-051)
+             * @example 2026-11-09T10:00:00+07:00
+             */
+            priceValidUntil: string;
+        };
         ResendETaxDto: {
             /**
              * @description Another buyer address (also re-sends one already sent); default the buyer’s
@@ -71391,7 +71815,7 @@ export interface components {
             /** @example quoted */
             status: components["schemas"]["RfqStatus"];
             /**
-             * @description `status` (RfqStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (RfqStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ได้รับคำขอแล้ว
              */
             statusLabelAdminTh: string;
@@ -71542,7 +71966,7 @@ export interface components {
             /** @example sent */
             status: components["schemas"]["RfqQuoteStatus"];
             /**
-             * @description `status` (RfqQuoteStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (RfqQuoteStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ร่างใบเสนอราคา
              */
             statusLabelAdminTh: string;
@@ -72172,7 +72596,7 @@ export interface components {
              */
             statusChangedAt: string;
             /**
-             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (SampleStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอใบเสนอราคา
              */
             statusLabelAdminTh: string;
@@ -72489,7 +72913,7 @@ export interface components {
             /** @example saved */
             status: components["schemas"]["QuoteStatus"];
             /**
-             * @description `status` (QuoteStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (QuoteStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example คำนวณแล้ว
              */
             statusLabelAdminTh: string;
@@ -73909,8 +74333,8 @@ export interface components {
             /** @example in_transit */
             status: components["schemas"]["ShipmentStatus"];
             /**
-             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
-             * @example ร่างรอบส่ง
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example เตรียมจัดส่ง
              */
             statusLabelAdminTh: string;
             /**
@@ -74458,7 +74882,7 @@ export interface components {
             /** @example passed */
             status: components["schemas"]["SlipStatus"];
             /**
-             * @description `status` (SlipStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (SlipStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอตรวจสลิป
              */
             statusLabelAdminTh: string;
@@ -74528,7 +74952,7 @@ export interface components {
             /** @example passed */
             status: components["schemas"]["SlipStatus"];
             /**
-             * @description `status` (SlipStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (SlipStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example รอตรวจสลิป
              */
             statusLabelAdminTh: string;
@@ -74636,7 +75060,7 @@ export interface components {
         SortOrder: "asc" | "desc";
         SpecLineDto: {
             /**
-             * @description Stable key of the line (`style`, `size`, `material`, `print_front`, `print_back`, `coating_front`, `coating_back`, `special_finish`, `diecut`, `assembly`, `design_service`; `parts[n].…` for a part of a multi-part product; an RFQ spec field name for RFQ quotes)
+             * @description Stable key of the line (`style`, `size` — ยาว × กว้าง × สูง in mm (D-441), `material`, `print_front`, `print_back`, `coating_front`, `coating_back`, `special_finish`, `diecut`, `assembly`, `design_service`; `parts[n].…` for a part of a multi-part product; an RFQ spec field name for RFQ quotes)
              * @example material
              */
             key: string;
@@ -75040,7 +75464,7 @@ export interface components {
             /** @example quoted */
             status: components["schemas"]["RfqStatus"];
             /**
-             * @description `status` (RfqStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (RfqStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ได้รับคำขอแล้ว
              */
             statusLabelAdminTh: string;
@@ -75124,7 +75548,7 @@ export interface components {
             /** @example sent */
             status: components["schemas"]["RfqQuoteStatus"];
             /**
-             * @description `status` (RfqQuoteStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (RfqQuoteStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ร่างใบเสนอราคา
              */
             statusLabelAdminTh: string;
@@ -75485,11 +75909,19 @@ export interface components {
         };
         StartingPriceBasisDto: {
             /**
+             * @description The same spec as one string (D-441); show it with the price
+             * @example {
+             *       "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+             *       "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+             *     }
+             */
+            label: components["schemas"]["LocalisedLabelDto"];
+            /**
              * @description The quantity the starting price is quoted at
              * @example 1000
              */
             quantity: number;
-            /** @description The reference configuration it assumes (D-220) */
+            /** @description The default spec it assumes (D-220, D-441) — the spec the configurator opens on */
             specs: components["schemas"]["SpecLineDto"][];
         };
         StartProductionDto: {
@@ -75639,8 +76071,8 @@ export interface components {
         };
         StatusLabelValueDto: {
             /**
-             * @description Back-office and factory words ("Proof")
-             * @example รอ Proof จากลูกค้า
+             * @description Back-office and factory words ("Proof") on `admin.statusLabels.list`; on the store the customer words (same as `labelTh`, D-440)
+             * @example รอคุณตรวจแบบตัวอย่าง
              */
             labelAdminTh: string;
             /** @example Awaiting customer */
@@ -75876,8 +76308,92 @@ export interface components {
             /** @example null */
             videoUrl: string | null;
         };
+        StoreCallOffAgreementDto: {
+            /**
+             * @description The quotation option’s quantity
+             * @example 10000
+             */
+            committedQuantity: number;
+            /**
+             * Format: date-time
+             * @example 2026-10-03T15:00:00+07:00
+             */
+            createdAt: string;
+            /** @example null */
+            declineReason: string | null;
+            /**
+             * Format: date-time
+             * @example 2027-04-04T09:00:00+07:00
+             */
+            expiresAt: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e7301
+             */
+            id: string;
+            /**
+             * @description At expiry: the quantity not released, without charge
+             * @example null
+             */
+            lapsedQuantity: number | null;
+            /**
+             * @description The smallest release, fixed when asked
+             * @example 1000
+             */
+            minReleaseQuantity: number;
+            /** @example 6 */
+            months: number;
+            productType: components["schemas"]["CodeNameRefDto"];
+            /** @example QT-2610-00012 */
+            quoteCode: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e7303
+             */
+            quoteId: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e7304
+             */
+            quoteOptionId: string;
+            /**
+             * @description Quoted or ordered releases
+             * @example 2000
+             */
+            releasedQuantity: number;
+            releases: components["schemas"]["CallOffReleaseDto"][];
+            /**
+             * @description 0 unless active
+             * @example 8000
+             */
+            remainingQuantity: number;
+            /**
+             * Format: date-time
+             * @example 2026-10-04T09:00:00+07:00
+             */
+            startsAt: string | null;
+            /**
+             * @description `pending_confirmation`: waiting for production to confirm the agreement (D-440)
+             * @example active
+             */
+            status: components["schemas"]["StoreCallOffStatus"];
+            /** @example piece */
+            unit: string;
+            /**
+             * @description The locked unit price, VAT included (product only); null for the factory (D-044)
+             * @example 13.38
+             */
+            unitPrice: string | null;
+        };
+        /**
+         * @description `pending_confirmation`: waiting for production to confirm the agreement (D-440)
+         * @enum {string}
+         */
+        StoreCallOffStatus: "pending_confirmation" | "active" | "declined" | "cancelled" | "expired";
         /** @enum {string} */
         StoreCarrier: "getpack" | "flash_express" | "deliveree";
+        /** @enum {string} */
+        StoreClaimAction: "reproduction_job" | "refund" | "credit_note" | "store_credit";
         StoreClaimDto: {
             /** @example null */
             claimedAmount: string | null;
@@ -75923,7 +76439,7 @@ export interface components {
             remedy: components["schemas"]["GuaranteeRemedy"] | null;
             /** @example reprint */
             requestedResolution: components["schemas"]["ClaimResolutionKind"];
-            resolutions: components["schemas"]["ClaimResolutionDto"][];
+            resolutions: components["schemas"]["StoreClaimResolutionDto"][];
             /**
              * Format: uuid
              * @description The sample claimed (D-259)
@@ -75933,11 +76449,11 @@ export interface components {
             /** @example null */
             severity: components["schemas"]["ClaimSeverity"] | null;
             /** @description SLA countdowns and the current owner (D-263) */
-            sla: components["schemas"]["ClaimSlaDto"];
+            sla: components["schemas"]["StoreClaimSlaDto"];
             /** @example under_review */
-            status: components["schemas"]["ClaimStatus"];
+            status: components["schemas"]["StoreClaimStatus"];
             /**
-             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (ClaimStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example แจ้งเคลมแล้ว
              */
             statusLabelAdminTh: string;
@@ -75961,6 +76477,159 @@ export interface components {
              */
             windowEndsAt: string;
         };
+        /**
+         * @description Who must act now: getpack (our team), the customer (information), nobody (D-263, D-440)
+         * @enum {string}
+         */
+        StoreClaimOwner: "getpack" | "customer" | "none";
+        StoreClaimResolutionDto: {
+            /** @example reproduction_job */
+            action: components["schemas"]["StoreClaimAction"];
+            /** @example null */
+            amount: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-25T11:00:00+07:00
+             */
+            executedAt: string;
+            /**
+             * @description Re-production job (staff and factory)
+             * @example DEVJOB-2610-00002
+             */
+            jobNo: string | null;
+            /** @example 120 */
+            quantity: number | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            refundId: string | null;
+        };
+        StoreClaimSlaDto: {
+            /**
+             * @description Who must act now: getpack (our team), the customer (information), nobody (D-263, D-440)
+             * @example getpack
+             */
+            currentOwner: components["schemas"]["StoreClaimOwner"];
+            /**
+             * Format: date-time
+             * @description Null while getpack waits for the customer’s information (the clock stops, D-263) or once decided
+             * @example 2026-10-27T09:00:00+07:00
+             */
+            decisionDueAt: string | null;
+            /** @example false */
+            decisionOverdue: boolean;
+            /**
+             * @description The guarantee version the claim follows (D-260)
+             * @example 1
+             */
+            guaranteeVersionNo: number | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-22T11:00:00+07:00
+             */
+            respondedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-23T09:00:00+07:00
+             */
+            responseDueAt: string | null;
+            /**
+             * @description No response yet and past its due time
+             * @example false
+             */
+            responseOverdue: boolean;
+        };
+        /**
+         * @description Never a final status here
+         * @enum {string}
+         */
+        StoreClaimStatus: "submitted" | "under_review" | "need_info" | "approved" | "rejected" | "resolved" | "closed";
+        StoreConfiguratorDefaultSpecDto: {
+            /**
+             * @description The calculator configuration, ready for `store.quotes.calculate` (send it as is, or with the customer’s quantities)
+             * @example {
+             *       "catalogProductId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+             *       "d": 250,
+             *       "design": {
+             *         "graphic": false,
+             *         "structure": false
+             *       },
+             *       "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000e006",
+             *       "l": 400,
+             *       "materialId": "0192f3a0-7c1e-7d2a-9b1f-00000000e007",
+             *       "parts": [
+             *         {
+             *           "printFront": [
+             *             {
+             *               "area": "top",
+             *               "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000e008"
+             *             }
+             *           ]
+             *         }
+             *       ],
+             *       "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+             *       "quantities": [
+             *         300
+             *       ],
+             *       "w": 300
+             *     }
+             */
+            configuration: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description The reference quantity the starting price is for
+             * @example 300
+             */
+            quantity: number;
+            /**
+             * @description One string (D-441)
+             * @example {
+             *       "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+             *       "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+             *     }
+             */
+            specLabel: components["schemas"]["LocalisedLabelDto"];
+            /**
+             * @example [
+             *       {
+             *         "key": "style",
+             *         "labelEn": "Style",
+             *         "labelTh": "แบบกล่อง",
+             *         "valueEn": "RSC",
+             *         "valueTh": "กล่องฝาชน"
+             *       },
+             *       {
+             *         "key": "size",
+             *         "labelEn": "Size (L × W × H)",
+             *         "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+             *         "valueEn": "140 × 97.5 × 60 mm (inside)",
+             *         "valueTh": "140 × 97.5 × 60 มม. (ด้านใน)"
+             *       },
+             *       {
+             *         "key": "material",
+             *         "labelEn": "Material",
+             *         "labelTh": "วัสดุ",
+             *         "valueEn": "KA125 B-flute (3-ply)",
+             *         "valueTh": "ลูกฟูก KA125 ลอน B (3 ชั้น)"
+             *       },
+             *       {
+             *         "key": "print_front",
+             *         "labelEn": "Print (outside)",
+             *         "labelTh": "พิมพ์ด้านนอก",
+             *         "valueEn": "Black",
+             *         "valueTh": "ดำ"
+             *       }
+             *     ]
+             */
+            specs: components["schemas"]["SpecLineDto"][];
+            /**
+             * @description The standard size it is; null for a custom size
+             * @example M
+             */
+            standardSizeCode: string | null;
+        };
         StoreConfiguratorDesignDto: {
             /** @example own_file */
             default: components["schemas"]["DesignOption"];
@@ -75982,6 +76651,8 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
              */
             catalogProductId: string;
+            /** @description The spec to open on and the one the "starting from" price is for (D-441); null without a reference configuration (then there is no starting price either, D-220) */
+            defaultSpec: components["schemas"]["StoreConfiguratorDefaultSpecDto"] | null;
             design: components["schemas"]["StoreConfiguratorDesignDto"];
             /**
              * Format: uuid
@@ -75994,7 +76665,7 @@ export interface components {
              * @example true
              */
             instant: boolean;
-            /** @description The options offered, with the ids the configuration takes */
+            /** @description The options offered, with the ids the configuration takes; with a default spec `isDefault` marks exactly the options it selects (a group it selects nothing in, e.g. no print, has no default) (D-441) */
             optionGroups: components["schemas"]["StoreOptionGroupDto"][];
             patterns: components["schemas"]["StoreConfiguratorPatternDto"][];
             /**
@@ -76018,7 +76689,7 @@ export interface components {
             /** @example rsc-carton */
             slug: string;
             /** @description Standard sizes (corrugate: no die block on them) */
-            standardSizes: components["schemas"]["StoreConfiguratorSizeDto"][];
+            standardSizes: components["schemas"]["StoreConfiguratorStandardSizeDto"][];
             /**
              * @description Sales unit of a quantity
              * @example piece
@@ -76051,6 +76722,13 @@ export interface components {
              * @example rsc
              */
             dielineKey: string | null;
+            /**
+             * @description Published variants of the style drawn for this pattern (D-271): with a standard size, the product page links "ดาวน์โหลดแบบกล่อง" to `store.dielines.download` (`variantCode` + the size). Empty = no dieline to download
+             * @example [
+             *       "PK-RSC-01-A"
+             *     ]
+             */
+            dielineVariantCodes: string[];
             /**
              * @description Corrugate: the flutes offered (a board of another flute is refused); empty = any
              * @example [
@@ -76118,6 +76796,37 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e005
              */
             id: string;
+            /**
+             * @description Unit: mm.
+             * @example 400
+             */
+            lengthMm: number;
+            /** @example 30×40×25 ซม. */
+            name: string;
+            /**
+             * @description Unit: mm.
+             * @example 300
+             */
+            widthMm: number;
+        };
+        StoreConfiguratorStandardSizeDto: {
+            /** @example M */
+            code: string;
+            /**
+             * @description Unit: mm.
+             * @example 250
+             */
+            heightMm: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e005
+             */
+            id: string;
+            /**
+             * @description The size the configurator opens on: the default spec’s (D-441); without a default spec the first size
+             * @example true
+             */
+            isDefault: boolean;
             /**
              * @description Unit: mm.
              * @example 400
@@ -76329,7 +77038,7 @@ export interface components {
             /** @example due */
             status: components["schemas"]["InstalmentStatus"];
             /**
-             * @description `status` (InstalmentStatus) in Thai for staff and partner factories (D-313).
+             * @description `status` (InstalmentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
              * @example ยังไม่ถึงกำหนด
              */
             statusLabelAdminTh: string;
@@ -76689,6 +77398,16 @@ export interface components {
              */
             startingPricePerPiece: string | null;
         };
+        /**
+         * @description Why there is no instant price; `envelope_not_covered`: only tier-B paths priced it, outside their envelopes (D-234); `style_variant_not_publishable`: the named style variant is not published (D-243); `rfq_required`: the variant is published but priced through RFQ — calculator not signed or an option not priced (D-266); `not_instant`: no instant price now — request a quotation (D-440)
+         * @enum {string}
+         */
+        StoreQuoteNoPriceReason: "no_price_path" | "not_priceable" | "envelope_not_covered" | "not_instant" | "delivery_unavailable" | "style_variant_not_publishable" | "rfq_required";
+        /**
+         * @description `not_instant`: no instant price for this configuration — request a quotation (D-440)
+         * @enum {string}
+         */
+        StoreQuotePathReason: "instant_available" | "type_rfq_only" | "not_instant" | "no_price_list" | "envelope_not_covered";
         StoreRecommendDto: {
             /**
              * Format: uuid
@@ -76876,8 +77595,8 @@ export interface components {
             /** @example delivered */
             status: components["schemas"]["ShipmentStatus"];
             /**
-             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
-             * @example ร่างรอบส่ง
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example เตรียมจัดส่ง
              */
             statusLabelAdminTh: string;
             /**
@@ -76891,18 +77610,21 @@ export interface components {
             trackingUrl: string | null;
         };
         StoreShipmentEventDto: {
-            /** @example ศูนย์กระจายสินค้าบางนา */
+            /**
+             * @description Only on destination-side steps (`out_for_delivery`, `delivered`, `failed`); null on every pickup, line-haul or return step, so the origin is never shown (D-435)
+             * @example ศูนย์กระจายสินค้าบางนา
+             */
             location: string | null;
             /**
              * Format: date-time
-             * @example 2026-10-20T09:30:00+07:00
+             * @example 2026-10-21T09:30:00+07:00
              */
             occurredAt: string;
-            /** @example in_transit */
+            /** @example out_for_delivery */
             status: components["schemas"]["ShipmentStatus"];
             /**
-             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313).
-             * @example ร่างรอบส่ง
+             * @description `status` (ShipmentStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example เตรียมจัดส่ง
              */
             statusLabelAdminTh: string;
             /**
@@ -77863,11 +78585,6 @@ export interface components {
              *     ]
              */
             options: string[];
-            /**
-             * @description Partners able to make it — only with ≥ 3 active factories (D-201); never who they are
-             * @example null
-             */
-            partnersCount: number | null;
             /** @example null */
             photo: components["schemas"]["StylePhotoDto"] | null;
             /** @example instant */
@@ -78178,6 +78895,14 @@ export interface components {
              */
             currency: components["schemas"]["Currency"];
             /**
+             * @description The spec this price is for, as one string (D-441)
+             * @example {
+             *       "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+             *       "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+             *     }
+             */
+            label: components["schemas"]["LocalisedLabelDto"];
+            /**
              * @description The quantity this price assumes
              * @example 1000
              */
@@ -78188,7 +78913,10 @@ export interface components {
              */
             unitPrice: string;
         };
-        /** @enum {string} */
+        /**
+         * @description Why the variant is RFQ; never `not_makeable` on the storefront (D-435 — no factory coverage)
+         * @enum {string}
+         */
         StylePriceReason: "no_calculator" | "calculator_not_signed" | "option_not_priced" | "not_makeable";
         StylePriceRuleDto: {
             /** @example window */
@@ -78439,6 +79167,7 @@ export interface components {
              */
             pricePath: components["schemas"]["QuoteMode"];
             /**
+             * @description Why the variant is RFQ; never `not_makeable` on the storefront (D-435 — no factory coverage)
              * @example [
              *       "option_not_priced"
              *     ]
@@ -78897,6 +79626,11 @@ export interface components {
             source: components["schemas"]["SupportTicketSource"];
             /** @example CS-2610-00001 */
             ticketNo: string;
+            /**
+             * @description The topic as sent (`guided_help` for a hand-off), its own field next to the reference (D-440): the reference stays `CS-YYMM-NNNNN` for every topic
+             * @example order_status
+             */
+            topic: string;
         };
         /** @enum {string} */
         SupportTicketSource: "contact_form" | "handoff";
@@ -137606,8 +138340,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -137802,8 +138536,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -138023,8 +138757,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -138237,8 +138971,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -138594,8 +139328,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -138815,8 +139549,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -139033,8 +139767,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -139238,8 +139972,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -139407,14 +140141,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -139465,14 +140205,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -139481,6 +140227,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -139509,8 +140256,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -139541,6 +140288,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "placedBy": {
                      *         "displayName": "สมชาย ทดสอบ",
@@ -140036,6 +140784,9 @@ export interface operations {
                      *       "pendingPoints": 25,
                      *       "pointValue": "2.50",
                      *       "spend12m": "62500.00",
+                     *       "spendBasisEn": "Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily",
+                     *       "spendBasisTh": "นับยอดเมื่อคำสั่งซื้อเสร็จสิ้นหลังได้รับของ · ยอดก่อน VAT ไม่รวมค่าส่ง · ย้อนหลัง 12 เดือน · อัปเดตวันละครั้ง",
+                     *       "spendNotYetCounted": "0.00",
                      *       "tier": "silver"
                      *     }
                      */
@@ -163246,7 +163997,7 @@ export interface operations {
                      *             "status": "approved",
                      *             "steps": [
                      *               {
-                     *                 "customerLabelTh": "โรงงานรับงานแล้ว",
+                     *                 "customerLabelTh": "รับงานเข้าผลิตแล้ว",
                      *                 "customerVisible": true,
                      *                 "evidence": "none",
                      *                 "key": "job_received",
@@ -163473,7 +164224,7 @@ export interface operations {
                      *           "status": "approved",
                      *           "steps": [
                      *             {
-                     *               "customerLabelTh": "โรงงานรับงานแล้ว",
+                     *               "customerLabelTh": "รับงานเข้าผลิตแล้ว",
                      *               "customerVisible": true,
                      *               "evidence": "none",
                      *               "key": "job_received",
@@ -165155,14 +165906,20 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *           "orders": [
                      *             {
+                     *               "actionOwner": "customer",
+                     *               "artworkOwner": "team",
                      *               "artworkStatus": "awaiting_template",
-                     *               "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *               "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *               "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *               "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *               "cancelReasonCode": null,
                      *               "cancelReasonNameEn": null,
                      *               "cancelReasonNameTh": null,
                      *               "cancelledAt": null,
                      *               "createdAt": "2026-10-01T09:00:00+07:00",
+                     *               "customerStatus": "awaiting_payment",
+                     *               "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *               "customerStatusLabelTh": "รอชำระเงิน",
+                     *               "deliveryDateBasis": "after_payment",
                      *               "designOption": "own_file",
                      *               "destinations": [
                      *                 {
@@ -165213,14 +165970,20 @@ export interface operations {
                      *                 }
                      *               ],
                      *               "mockupOption": "none",
-                     *               "nextActions": [
-                     *                 {
-                     *                   "disabledReason": null,
-                     *                   "irreversible": false,
-                     *                   "key": "order.upload_artwork"
-                     *                 }
-                     *               ],
+                     *               "nextActions": [],
+                     *               "openClaims": [],
                      *               "orderCode": "OR-2610-00042",
+                     *               "payment": {
+                     *                 "dueAt": "2026-10-08T10:00:00+07:00",
+                     *                 "groupCashAmount": "14182.80",
+                     *                 "groupCode": "OG-2610-00042",
+                     *                 "groupGrossAmount": "14182.80",
+                     *                 "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *                 "groupOrderCount": 1,
+                     *                 "orderCashAmount": "14182.80",
+                     *                 "orderGrossAmount": "14182.80",
+                     *                 "overdue": false
+                     *               },
                      *               "productTypeCode": "folding_carton",
                      *               "promisedShipDate": "2026-10-12",
                      *               "quantityOrdered": 1000,
@@ -165229,6 +165992,7 @@ export interface operations {
                      *                 "autoCompleteAt": null,
                      *                 "claimWindowEndsAt": null,
                      *                 "completedAt": null,
+                     *                 "completionHeldByClaim": false,
                      *                 "completionMode": null,
                      *                 "confirmedAt": null,
                      *                 "deliveredAt": null
@@ -165257,8 +166021,8 @@ export interface operations {
                      *                   },
                      *                   {
                      *                     "key": "size",
-                     *                     "labelEn": "Size",
-                     *                     "labelTh": "ขนาด",
+                     *                     "labelEn": "Size (L × W × H)",
+                     *                     "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                     "valueEn": "60 × 60 × 150 mm",
                      *                     "valueTh": "60 × 60 × 150 มม."
                      *                   },
@@ -165289,6 +166053,7 @@ export interface operations {
                      *               }
                      *             }
                      *           ],
+                     *           "paymentOverdue": false,
                      *           "placedAt": "2026-10-01T10:00:00+07:00",
                      *           "placedBy": {
                      *             "displayName": "สมชาย ทดสอบ",
@@ -165423,14 +166188,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -165481,14 +166252,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -165497,6 +166274,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -165525,8 +166303,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -165557,6 +166335,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "placedBy": {
                      *         "displayName": "สมชาย ทดสอบ",
@@ -165697,14 +166476,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -165755,14 +166540,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -165771,6 +166562,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -165799,8 +166591,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -165831,6 +166623,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "placedBy": {
                      *         "displayName": "สมชาย ทดสอบ",
@@ -166004,14 +166797,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -166062,14 +166861,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -166078,6 +166883,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -166106,8 +166912,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -166138,6 +166944,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "placedBy": {
                      *         "displayName": "สมชาย ทดสอบ",
@@ -166318,14 +167125,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -166376,14 +167189,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -166392,6 +167211,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -166420,8 +167240,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -166452,6 +167272,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "placedBy": {
                      *         "displayName": "สมชาย ทดสอบ",
@@ -167402,14 +168223,20 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "actionOwner": "customer",
+                     *       "artworkOwner": "team",
                      *       "artworkStatus": "awaiting_template",
-                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *       "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
                      *       "cancelledAt": null,
                      *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "customerStatus": "awaiting_payment",
+                     *       "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *       "customerStatusLabelTh": "รอชำระเงิน",
+                     *       "deliveryDateBasis": "after_payment",
                      *       "designOption": "own_file",
                      *       "destinations": [
                      *         {
@@ -167460,14 +168287,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "mockupOption": "none",
-                     *       "nextActions": [
-                     *         {
-                     *           "disabledReason": null,
-                     *           "irreversible": false,
-                     *           "key": "order.upload_artwork"
-                     *         }
-                     *       ],
+                     *       "nextActions": [],
+                     *       "openClaims": [],
                      *       "orderCode": "OR-2610-00042",
+                     *       "payment": {
+                     *         "dueAt": "2026-10-08T10:00:00+07:00",
+                     *         "groupCashAmount": "14182.80",
+                     *         "groupCode": "OG-2610-00042",
+                     *         "groupGrossAmount": "14182.80",
+                     *         "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *         "groupOrderCount": 1,
+                     *         "orderCashAmount": "14182.80",
+                     *         "orderGrossAmount": "14182.80",
+                     *         "overdue": false
+                     *       },
                      *       "productTypeCode": "folding_carton",
                      *       "promisedShipDate": "2026-10-12",
                      *       "quantityOrdered": 1000,
@@ -167476,6 +168309,7 @@ export interface operations {
                      *         "autoCompleteAt": null,
                      *         "claimWindowEndsAt": null,
                      *         "completedAt": null,
+                     *         "completionHeldByClaim": false,
                      *         "completionMode": null,
                      *         "confirmedAt": null,
                      *         "deliveredAt": null
@@ -167504,8 +168338,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -167737,14 +168571,20 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "actionOwner": "customer",
+                     *       "artworkOwner": "team",
                      *       "artworkStatus": "awaiting_template",
-                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *       "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
                      *       "cancelledAt": null,
                      *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "customerStatus": "awaiting_payment",
+                     *       "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *       "customerStatusLabelTh": "รอชำระเงิน",
+                     *       "deliveryDateBasis": "after_payment",
                      *       "designOption": "own_file",
                      *       "destinations": [
                      *         {
@@ -167795,14 +168635,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "mockupOption": "none",
-                     *       "nextActions": [
-                     *         {
-                     *           "disabledReason": null,
-                     *           "irreversible": false,
-                     *           "key": "order.upload_artwork"
-                     *         }
-                     *       ],
+                     *       "nextActions": [],
+                     *       "openClaims": [],
                      *       "orderCode": "OR-2610-00042",
+                     *       "payment": {
+                     *         "dueAt": "2026-10-08T10:00:00+07:00",
+                     *         "groupCashAmount": "14182.80",
+                     *         "groupCode": "OG-2610-00042",
+                     *         "groupGrossAmount": "14182.80",
+                     *         "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *         "groupOrderCount": 1,
+                     *         "orderCashAmount": "14182.80",
+                     *         "orderGrossAmount": "14182.80",
+                     *         "overdue": false
+                     *       },
                      *       "productTypeCode": "folding_carton",
                      *       "promisedShipDate": "2026-10-12",
                      *       "quantityOrdered": 1000,
@@ -167811,6 +168657,7 @@ export interface operations {
                      *         "autoCompleteAt": null,
                      *         "claimWindowEndsAt": null,
                      *         "completedAt": null,
+                     *         "completionHeldByClaim": false,
                      *         "completionMode": null,
                      *         "confirmedAt": null,
                      *         "deliveredAt": null
@@ -167839,8 +168686,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -167990,14 +168837,20 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "actionOwner": "customer",
+                     *       "artworkOwner": "team",
                      *       "artworkStatus": "awaiting_template",
-                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *       "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
                      *       "cancelledAt": null,
                      *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "customerStatus": "awaiting_payment",
+                     *       "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *       "customerStatusLabelTh": "รอชำระเงิน",
+                     *       "deliveryDateBasis": "after_payment",
                      *       "designOption": "own_file",
                      *       "destinations": [
                      *         {
@@ -168048,14 +168901,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "mockupOption": "none",
-                     *       "nextActions": [
-                     *         {
-                     *           "disabledReason": null,
-                     *           "irreversible": false,
-                     *           "key": "order.upload_artwork"
-                     *         }
-                     *       ],
+                     *       "nextActions": [],
+                     *       "openClaims": [],
                      *       "orderCode": "OR-2610-00042",
+                     *       "payment": {
+                     *         "dueAt": "2026-10-08T10:00:00+07:00",
+                     *         "groupCashAmount": "14182.80",
+                     *         "groupCode": "OG-2610-00042",
+                     *         "groupGrossAmount": "14182.80",
+                     *         "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *         "groupOrderCount": 1,
+                     *         "orderCashAmount": "14182.80",
+                     *         "orderGrossAmount": "14182.80",
+                     *         "overdue": false
+                     *       },
                      *       "productTypeCode": "folding_carton",
                      *       "promisedShipDate": "2026-10-12",
                      *       "quantityOrdered": 1000,
@@ -168064,6 +168923,7 @@ export interface operations {
                      *         "autoCompleteAt": null,
                      *         "claimWindowEndsAt": null,
                      *         "completedAt": null,
+                     *         "completionHeldByClaim": false,
                      *         "completionMode": null,
                      *         "confirmedAt": null,
                      *         "deliveredAt": null
@@ -168092,8 +168952,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -168456,6 +169316,14 @@ export interface operations {
                      *       ],
                      *       "orderCode": "DEVOR-2609-00001",
                      *       "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1002",
+                     *       "originalFiles": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *           "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *           "reason": null,
+                     *           "status": "ready"
+                     *         }
+                     *       ],
                      *       "plannedFinishOn": "2026-10-09",
                      *       "plannedStartOn": "2026-09-28",
                      *       "predictedFinishOn": null,
@@ -176841,6 +177709,14 @@ export interface operations {
                      *           ],
                      *           "orderCode": "DEVOR-2609-00001",
                      *           "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1002",
+                     *           "originalFiles": [
+                     *             {
+                     *               "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *               "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *               "reason": null,
+                     *               "status": "ready"
+                     *             }
+                     *           ],
                      *           "plannedFinishOn": "2026-10-09",
                      *           "plannedStartOn": "2026-09-28",
                      *           "predictedFinishOn": null,
@@ -177047,6 +177923,14 @@ export interface operations {
                      *       ],
                      *       "orderCode": "DEVOR-2609-00001",
                      *       "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1002",
+                     *       "originalFiles": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *           "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *           "reason": null,
+                     *           "status": "ready"
+                     *         }
+                     *       ],
                      *       "plannedFinishOn": "2026-10-09",
                      *       "plannedStartOn": "2026-09-28",
                      *       "predictedFinishOn": null,
@@ -177257,6 +178141,14 @@ export interface operations {
                      *       ],
                      *       "orderCode": "DEVOR-2609-00001",
                      *       "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1002",
+                     *       "originalFiles": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *           "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *           "reason": null,
+                     *           "status": "ready"
+                     *         }
+                     *       ],
                      *       "plannedFinishOn": "2026-10-09",
                      *       "plannedStartOn": "2026-09-28",
                      *       "predictedFinishOn": null,
@@ -177487,6 +178379,14 @@ export interface operations {
                      *       ],
                      *       "orderCode": "DEVOR-2609-00001",
                      *       "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1002",
+                     *       "originalFiles": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *           "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *           "reason": null,
+                     *           "status": "ready"
+                     *         }
+                     *       ],
                      *       "plannedFinishOn": "2026-10-09",
                      *       "plannedStartOn": "2026-09-28",
                      *       "predictedFinishOn": null,
@@ -177713,6 +178613,14 @@ export interface operations {
                      *       ],
                      *       "orderCode": "DEVOR-2609-00001",
                      *       "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1002",
+                     *       "originalFiles": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *           "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *           "reason": null,
+                     *           "status": "ready"
+                     *         }
+                     *       ],
                      *       "plannedFinishOn": "2026-10-09",
                      *       "plannedStartOn": "2026-09-28",
                      *       "predictedFinishOn": null,
@@ -180894,8 +181802,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -181158,8 +182066,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -181430,8 +182338,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -181692,8 +182600,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -181964,8 +182872,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -182195,8 +183103,8 @@ export interface operations {
                      *             },
                      *             {
                      *               "key": "size",
-                     *               "labelEn": "Size",
-                     *               "labelTh": "ขนาด",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *               "valueEn": "60 × 60 × 150 mm",
                      *               "valueTh": "60 × 60 × 150 มม."
                      *             },
@@ -182663,8 +183571,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -198338,6 +199246,108 @@ export interface operations {
             };
         };
     };
+    "admin.statusLabels.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status words per enum */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "enumName": "ProofStatus",
+                     *         "values": [
+                     *           {
+                     *             "labelAdminTh": "รอ Proof จากลูกค้า",
+                     *             "labelEn": "Awaiting customer",
+                     *             "labelTh": "รอคุณตรวจแบบตัวอย่าง",
+                     *             "value": "pending_customer"
+                     *           },
+                     *           {
+                     *             "labelAdminTh": "Proof อนุมัติแล้ว",
+                     *             "labelEn": "Approved",
+                     *             "labelTh": "อนุมัติแบบตัวอย่างแล้ว",
+                     *             "value": "approved"
+                     *           },
+                     *           {
+                     *             "labelAdminTh": "ขอให้แก้ไข Proof",
+                     *             "labelEn": "Changes requested",
+                     *             "labelTh": "ขอแก้ไขแบบตัวอย่าง",
+                     *             "value": "changes_requested"
+                     *           },
+                     *           {
+                     *             "labelAdminTh": "มี Proof ฉบับใหม่แทนแล้ว",
+                     *             "labelEn": "Superseded",
+                     *             "labelTh": "มีแบบตัวอย่างฉบับใหม่แล้ว",
+                     *             "value": "superseded"
+                     *           }
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["StatusLabelEnumDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.structuralRequests.list": {
         parameters: {
             query?: {
@@ -209849,14 +210859,20 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *           "orders": [
                      *             {
+                     *               "actionOwner": "customer",
+                     *               "artworkOwner": "team",
                      *               "artworkStatus": "awaiting_template",
-                     *               "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *               "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *               "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *               "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *               "cancelReasonCode": null,
                      *               "cancelReasonNameEn": null,
                      *               "cancelReasonNameTh": null,
                      *               "cancelledAt": null,
                      *               "createdAt": "2026-10-01T09:00:00+07:00",
+                     *               "customerStatus": "awaiting_payment",
+                     *               "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *               "customerStatusLabelTh": "รอชำระเงิน",
+                     *               "deliveryDateBasis": "after_payment",
                      *               "designOption": "own_file",
                      *               "destinations": [
                      *                 {
@@ -209899,14 +210915,20 @@ export interface operations {
                      *                 }
                      *               ],
                      *               "mockupOption": "none",
-                     *               "nextActions": [
-                     *                 {
-                     *                   "disabledReason": null,
-                     *                   "irreversible": false,
-                     *                   "key": "order.upload_artwork"
-                     *                 }
-                     *               ],
+                     *               "nextActions": [],
+                     *               "openClaims": [],
                      *               "orderCode": "OR-2610-00042",
+                     *               "payment": {
+                     *                 "dueAt": "2026-10-08T10:00:00+07:00",
+                     *                 "groupCashAmount": "14182.80",
+                     *                 "groupCode": "OG-2610-00042",
+                     *                 "groupGrossAmount": "14182.80",
+                     *                 "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *                 "groupOrderCount": 1,
+                     *                 "orderCashAmount": "14182.80",
+                     *                 "orderGrossAmount": "14182.80",
+                     *                 "overdue": false
+                     *               },
                      *               "productTypeCode": "folding_carton",
                      *               "promisedShipDate": "2026-10-12",
                      *               "quantityOrdered": 1000,
@@ -209915,6 +210937,7 @@ export interface operations {
                      *                 "autoCompleteAt": null,
                      *                 "claimWindowEndsAt": null,
                      *                 "completedAt": null,
+                     *                 "completionHeldByClaim": false,
                      *                 "completionMode": null,
                      *                 "confirmedAt": null,
                      *                 "deliveredAt": null
@@ -209943,8 +210966,8 @@ export interface operations {
                      *                   },
                      *                   {
                      *                     "key": "size",
-                     *                     "labelEn": "Size",
-                     *                     "labelTh": "ขนาด",
+                     *                     "labelEn": "Size (L × W × H)",
+                     *                     "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                     "valueEn": "60 × 60 × 150 mm",
                      *                     "valueTh": "60 × 60 × 150 มม."
                      *                   },
@@ -209975,6 +210998,7 @@ export interface operations {
                      *               }
                      *             }
                      *           ],
+                     *           "paymentOverdue": false,
                      *           "placedAt": "2026-10-01T10:00:00+07:00",
                      *           "poNumber": null,
                      *           "status": "waiting_payment",
@@ -210098,14 +211122,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -210148,14 +211178,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -210164,6 +211200,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -210192,8 +211229,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -210224,6 +211261,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
@@ -210353,14 +211391,20 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "actionOwner": "customer",
+                     *       "artworkOwner": "team",
                      *       "artworkStatus": "awaiting_template",
-                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
+                     *       "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
                      *       "cancelledAt": null,
                      *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "customerStatus": "awaiting_payment",
+                     *       "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *       "customerStatusLabelTh": "รอชำระเงิน",
+                     *       "deliveryDateBasis": "after_payment",
                      *       "designOption": "own_file",
                      *       "destinations": [
                      *         {
@@ -210403,14 +211447,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "mockupOption": "none",
-                     *       "nextActions": [
-                     *         {
-                     *           "disabledReason": null,
-                     *           "irreversible": false,
-                     *           "key": "order.upload_artwork"
-                     *         }
-                     *       ],
+                     *       "nextActions": [],
+                     *       "openClaims": [],
                      *       "orderCode": "OR-2610-00042",
+                     *       "payment": {
+                     *         "dueAt": "2026-10-08T10:00:00+07:00",
+                     *         "groupCashAmount": "14182.80",
+                     *         "groupCode": "OG-2610-00042",
+                     *         "groupGrossAmount": "14182.80",
+                     *         "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *         "groupOrderCount": 1,
+                     *         "orderCashAmount": "14182.80",
+                     *         "orderGrossAmount": "14182.80",
+                     *         "overdue": false
+                     *       },
                      *       "productTypeCode": "folding_carton",
                      *       "promisedShipDate": "2026-10-12",
                      *       "quantityOrdered": 1000,
@@ -210419,6 +211469,7 @@ export interface operations {
                      *         "autoCompleteAt": null,
                      *         "claimWindowEndsAt": null,
                      *         "completedAt": null,
+                     *         "completionHeldByClaim": false,
                      *         "completionMode": null,
                      *         "confirmedAt": null,
                      *         "deliveredAt": null
@@ -210447,8 +211498,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -210687,8 +211738,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -273427,6 +274478,14 @@ export interface operations {
                      *               "key": "job.update_milestone"
                      *             }
                      *           ],
+                     *           "originalFiles": [
+                     *             {
+                     *               "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *               "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *               "reason": null,
+                     *               "status": "ready"
+                     *             }
+                     *           ],
                      *           "plannedFinishOn": "2026-10-09",
                      *           "plannedStartOn": "2026-09-28",
                      *           "productTypeCode": "folding_box",
@@ -276794,6 +277853,14 @@ export interface operations {
                      *               "key": "job.update_milestone"
                      *             }
                      *           ],
+                     *           "originalFiles": [
+                     *             {
+                     *               "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *               "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *               "reason": null,
+                     *               "status": "ready"
+                     *             }
+                     *           ],
                      *           "plannedFinishOn": "2026-10-09",
                      *           "plannedStartOn": "2026-09-28",
                      *           "productTypeCode": "folding_box",
@@ -276976,6 +278043,14 @@ export interface operations {
                      *           "disabledReason": null,
                      *           "irreversible": false,
                      *           "key": "job.update_milestone"
+                     *         }
+                     *       ],
+                     *       "originalFiles": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *           "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *           "reason": null,
+                     *           "status": "ready"
                      *         }
                      *       ],
                      *       "plannedFinishOn": "2026-10-09",
@@ -277163,6 +278238,14 @@ export interface operations {
                      *           "disabledReason": null,
                      *           "irreversible": false,
                      *           "key": "job.update_milestone"
+                     *         }
+                     *       ],
+                     *       "originalFiles": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *           "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *           "reason": null,
+                     *           "status": "ready"
                      *         }
                      *       ],
                      *       "plannedFinishOn": "2026-10-09",
@@ -277374,6 +278457,14 @@ export interface operations {
                      *           "disabledReason": null,
                      *           "irreversible": false,
                      *           "key": "job.update_milestone"
+                     *         }
+                     *       ],
+                     *       "originalFiles": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *           "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *           "reason": null,
+                     *           "status": "ready"
                      *         }
                      *       ],
                      *       "plannedFinishOn": "2026-10-09",
@@ -278093,6 +279184,14 @@ export interface operations {
                      *             "disabledReason": null,
                      *             "irreversible": false,
                      *             "key": "job.update_milestone"
+                     *           }
+                     *         ],
+                     *         "originalFiles": [
+                     *           {
+                     *             "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                     *             "fileName": "DEVOR-2609-00001-original-v1.pdf",
+                     *             "reason": null,
+                     *             "status": "ready"
                      *           }
                      *         ],
                      *         "plannedFinishOn": "2026-10-09",
@@ -282676,7 +283775,6 @@ export interface operations {
                      *       "totals": {
                      *         "activeLinks": 6,
                      *         "earned": "830.50",
-                     *         "factories": 1,
                      *         "held": "0.00",
                      *         "openLeads": 3,
                      *         "paidThisYear": "4200.00",
@@ -283243,7 +284341,6 @@ export interface operations {
                      *           "createdAt": "2026-10-31T10:00:00+07:00",
                      *           "customerName": "ส•••",
                      *           "earnedAt": null,
-                     *           "factoryName": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6008",
                      *           "isFirstOrder": true,
                      *           "kind": "order",
@@ -283625,7 +284722,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.agent_inactive`, `agents.lead_duplicate`, `agents.lead_existing_customer`, `agents.lead_existing_factory`, `agents.lead_taken` */
+            /** @description Problem: `agents.agent_inactive`, `agents.lead_duplicate`, `agents.lead_existing_customer`, `agents.lead_taken`, `agents.lead_unavailable` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -284038,7 +285135,6 @@ export interface operations {
                      *           "createdAt": "2026-10-31T10:00:00+07:00",
                      *           "customerName": "ส•••",
                      *           "earnedAt": null,
-                     *           "factoryName": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6008",
                      *           "isFirstOrder": true,
                      *           "kind": "order",
@@ -285023,12 +286119,10 @@ export interface operations {
                     /**
                      * @example [
                      *       {
-                     *         "buyUnitPrice": null,
                      *         "committedQuantity": 10000,
                      *         "createdAt": "2026-10-03T15:00:00+07:00",
                      *         "declineReason": null,
                      *         "expiresAt": "2027-04-04T09:00:00+07:00",
-                     *         "factory": null,
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7301",
                      *         "lapsedQuantity": null,
                      *         "minReleaseQuantity": 1000,
@@ -285066,7 +286160,7 @@ export interface operations {
                      *       }
                      *     ]
                      */
-                    "application/json": components["schemas"]["CallOffAgreementDto"][];
+                    "application/json": components["schemas"]["StoreCallOffAgreementDto"][];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -285143,12 +286237,10 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "buyUnitPrice": null,
                      *       "committedQuantity": 10000,
                      *       "createdAt": "2026-10-03T15:00:00+07:00",
                      *       "declineReason": null,
                      *       "expiresAt": null,
-                     *       "factory": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7301",
                      *       "lapsedQuantity": null,
                      *       "minReleaseQuantity": 1000,
@@ -285166,12 +286258,12 @@ export interface operations {
                      *       "releases": [],
                      *       "remainingQuantity": 0,
                      *       "startsAt": null,
-                     *       "status": "pending_factory",
+                     *       "status": "pending_confirmation",
                      *       "unit": "piece",
                      *       "unitPrice": "13.38"
                      *     }
                      */
-                    "application/json": components["schemas"]["CallOffAgreementDto"];
+                    "application/json": components["schemas"]["StoreCallOffAgreementDto"];
                 };
             };
             /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
@@ -285283,12 +286375,10 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "buyUnitPrice": null,
                      *       "committedQuantity": 10000,
                      *       "createdAt": "2026-10-03T15:00:00+07:00",
                      *       "declineReason": null,
                      *       "expiresAt": "2027-04-04T09:00:00+07:00",
-                     *       "factory": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7301",
                      *       "lapsedQuantity": null,
                      *       "minReleaseQuantity": 1000,
@@ -285325,7 +286415,7 @@ export interface operations {
                      *       "unitPrice": "13.38"
                      *     }
                      */
-                    "application/json": components["schemas"]["CallOffAgreementDto"];
+                    "application/json": components["schemas"]["StoreCallOffAgreementDto"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -285420,12 +286510,10 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "buyUnitPrice": null,
                      *       "committedQuantity": 10000,
                      *       "createdAt": "2026-10-03T15:00:00+07:00",
                      *       "declineReason": null,
                      *       "expiresAt": null,
-                     *       "factory": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7301",
                      *       "lapsedQuantity": null,
                      *       "minReleaseQuantity": 1000,
@@ -285448,7 +286536,7 @@ export interface operations {
                      *       "unitPrice": "13.38"
                      *     }
                      */
-                    "application/json": components["schemas"]["CallOffAgreementDto"];
+                    "application/json": components["schemas"]["StoreCallOffAgreementDto"];
                 };
             };
             /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
@@ -285641,8 +286729,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -285847,8 +286935,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -286041,8 +287129,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -286261,8 +287349,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -286473,8 +287561,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -286828,8 +287916,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -287048,8 +288136,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -287265,8 +288353,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -287469,8 +288557,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -288683,13 +289771,17 @@ export interface operations {
                      *         "basis": {
                      *           "includesDelivery": false,
                      *           "includesVat": true,
+                     *           "label": {
+                     *             "en": "60 × 60 × 150 mm",
+                     *             "th": "60 × 60 × 150 มม."
+                     *           },
                      *           "quantity": 1000,
                      *           "sizeCode": null,
                      *           "specs": [
                      *             {
                      *               "key": "size",
-                     *               "labelEn": "Size (W × L × D)",
-                     *               "labelTh": "ขนาด (กว้าง × ยาว × ลึก)",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *               "valueEn": "60 × 60 × 150 mm",
                      *               "valueTh": "60 × 60 × 150 มม."
                      *             }
@@ -288861,6 +289953,10 @@ export interface operations {
                      *         "nameTh": "กล่องกระดาษแข็ง",
                      *         "quoteMode": "instant",
                      *         "startingPriceAssumes": {
+                     *           "label": {
+                     *             "en": "Art card 350",
+                     *             "th": "อาร์ตการ์ด 350"
+                     *           },
                      *           "quantity": 1000,
                      *           "specs": [
                      *             {
@@ -288967,6 +290063,10 @@ export interface operations {
                      *           "productTypeCode": "folding_carton",
                      *           "slug": "tuck-end-box",
                      *           "startingPriceAssumes": {
+                     *             "label": {
+                     *               "en": "Art card 350",
+                     *               "th": "อาร์ตการ์ด 350"
+                     *             },
                      *             "quantity": 1000,
                      *             "specs": [
                      *               {
@@ -289134,6 +290234,10 @@ export interface operations {
                      *         }
                      *       ],
                      *       "startingPriceAssumes": {
+                     *         "label": {
+                     *           "en": "Art card 350",
+                     *           "th": "อาร์ตการ์ด 350"
+                     *         },
                      *         "quantity": 1000,
                      *         "specs": [
                      *           {
@@ -289230,6 +290334,56 @@ export interface operations {
                      * @example {
                      *       "calculator": "corrugate",
                      *       "catalogProductId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "defaultSpec": {
+                     *         "configuration": {
+                     *           "catalogProductId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *           "d": 250,
+                     *           "design": {
+                     *             "graphic": false,
+                     *             "structure": false
+                     *           },
+                     *           "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000e006",
+                     *           "l": 400,
+                     *           "materialId": "0192f3a0-7c1e-7d2a-9b1f-00000000e007",
+                     *           "parts": [
+                     *             {}
+                     *           ],
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *           "quantities": [
+                     *             300
+                     *           ],
+                     *           "w": 300
+                     *         },
+                     *         "quantity": 300,
+                     *         "specLabel": {
+                     *           "en": "กล่องฝาชน · 400 × 300 × 250 mm (inside) · Kraft board KA125 B-flute · Unprinted",
+                     *           "th": "กล่องฝาชน · 400 × 300 × 250 มม. (ด้านใน) · กระดาษลัง KA125 ลอน B · ไม่พิมพ์"
+                     *         },
+                     *         "specs": [
+                     *           {
+                     *             "key": "style",
+                     *             "labelEn": "Style",
+                     *             "labelTh": "แบบกล่อง",
+                     *             "valueEn": "กล่องฝาชน",
+                     *             "valueTh": "กล่องฝาชน"
+                     *           },
+                     *           {
+                     *             "key": "size",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *             "valueEn": "400 × 300 × 250 mm (inside)",
+                     *             "valueTh": "400 × 300 × 250 มม. (ด้านใน)"
+                     *           },
+                     *           {
+                     *             "key": "material",
+                     *             "labelEn": "Material",
+                     *             "labelTh": "วัสดุ",
+                     *             "valueEn": "Kraft board KA125 B-flute",
+                     *             "valueTh": "กระดาษลัง KA125 ลอน B"
+                     *           }
+                     *         ],
+                     *         "standardSizeCode": "M"
+                     *       },
                      *       "design": {
                      *         "default": "own_file",
                      *         "options": [
@@ -289270,6 +290424,7 @@ export interface operations {
                      *           "descriptionEn": "Regular slotted carton, flaps meet in the middle",
                      *           "descriptionTh": "กล่องลูกฟูกทรงมาตรฐาน ฝาบนล่างชนกัน",
                      *           "dielineKey": "rsc",
+                     *           "dielineVariantCodes": [],
                      *           "fluteTypeIds": [
                      *             "0192f3a0-7c1e-7d2a-9b1f-00000000e004"
                      *           ],
@@ -289301,14 +290456,15 @@ export interface operations {
                      *       ],
                      *       "productTypeCode": "corrugated",
                      *       "quantity": {
-                     *         "default": 1000,
+                     *         "default": 300,
                      *         "max": 50000,
                      *         "maxTiers": 10,
                      *         "min": 100,
                      *         "presets": [
+                     *           100,
+                     *           300,
                      *           500,
-                     *           1000,
-                     *           3000
+                     *           1000
                      *         ]
                      *       },
                      *       "quoteValidityDays": 15,
@@ -289318,6 +290474,7 @@ export interface operations {
                      *           "code": "M",
                      *           "heightMm": 250,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e005",
+                     *           "isDefault": true,
                      *           "lengthMm": 400,
                      *           "name": "30×40×25 ซม.",
                      *           "widthMm": 300
@@ -290426,14 +291583,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -290476,14 +291639,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -290492,6 +291661,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -290520,8 +291690,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -290552,6 +291722,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
@@ -297405,8 +298576,8 @@ export interface operations {
                      *             },
                      *             {
                      *               "key": "size",
-                     *               "labelEn": "Size",
-                     *               "labelTh": "ขนาด",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *               "valueEn": "60 × 60 × 150 mm",
                      *               "valueTh": "60 × 60 × 150 มม."
                      *             },
@@ -304352,6 +305523,9 @@ export interface operations {
                      *       "pendingPoints": 25,
                      *       "pointValue": "2.50",
                      *       "spend12m": "62500.00",
+                     *       "spendBasisEn": "Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily",
+                     *       "spendBasisTh": "นับยอดเมื่อคำสั่งซื้อเสร็จสิ้นหลังได้รับของ · ยอดก่อน VAT ไม่รวมค่าส่ง · ย้อนหลัง 12 เดือน · อัปเดตวันละครั้ง",
+                     *       "spendNotYetCounted": "0.00",
                      *       "tier": "silver"
                      *     }
                      */
@@ -305097,6 +306271,7 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7301",
                      *           "lockedByOrderCode": null,
                      *           "thumbnailFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e730c",
+                     *           "thumbnailUrl": "https://files.example.invalid/thumb.png?sig=…",
                      *           "title": "กล่องขนมไหว้พระจันทร์",
                      *           "updatedAt": "2026-10-03T16:20:00+07:00"
                      *         }
@@ -305108,6 +306283,7 @@ export interface operations {
                      *           "code": "PK-2610-0003-01",
                      *           "dueAt": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7303",
+                     *           "overdue": false,
                      *           "productType": {
                      *             "code": "folding",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7306",
@@ -305701,113 +306877,6 @@ export interface operations {
             };
         };
     };
-    "store.network.getStats": {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
-                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Statistics */
-            200: {
-                headers: {
-                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
-                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
-                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
-                    "X-Request-Id": components["headers"]["XRequestId"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "auditCriteria": [
-                     *         {
-                     *           "key": "site_visit",
-                     *           "labelEn": "Passed a site visit by the Partner team",
-                     *           "labelTh": "ผ่านการตรวจเยี่ยมโรงงานโดยทีมพาร์ทเนอร์"
-                     *         }
-                     *       ],
-                     *       "coverage": [
-                     *         {
-                     *           "available": true,
-                     *           "nameEn": "Folding carton",
-                     *           "nameTh": "กล่องกระดาษพับ",
-                     *           "productTypeCode": "folding_carton"
-                     *         }
-                     *       ],
-                     *       "generatedAt": "2026-10-03T10:00:00+07:00",
-                     *       "network": {
-                     *         "firstPassPct": null,
-                     *         "minFactories": 3,
-                     *         "minJobs": 30,
-                     *         "onTimePct": null,
-                     *         "partnerCount": null,
-                     *         "published": false,
-                     *         "windowDays": 90
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["NetworkStatsDto"];
-                };
-            };
-            /** @description Problem: `auth.unauthenticated` */
-            401: {
-                headers: {
-                    "X-Request-Id": components["headers"]["XRequestId"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
-            403: {
-                headers: {
-                    "X-Request-Id": components["headers"]["XRequestId"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Problem: `http.not_found` */
-            404: {
-                headers: {
-                    "X-Request-Id": components["headers"]["XRequestId"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Problem: `http.too_many_requests` */
-            429: {
-                headers: {
-                    "Retry-After": components["headers"]["RetryAfter"];
-                    "X-Request-Id": components["headers"]["XRequestId"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Problem: `internal.unexpected` */
-            500: {
-                headers: {
-                    "X-Request-Id": components["headers"]["XRequestId"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
-    };
     "store.notifications.list": {
         parameters: {
             query?: {
@@ -306108,14 +307177,20 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *           "orders": [
                      *             {
+                     *               "actionOwner": "customer",
+                     *               "artworkOwner": "team",
                      *               "artworkStatus": "awaiting_template",
-                     *               "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *               "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *               "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
+                     *               "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *               "cancelReasonCode": null,
                      *               "cancelReasonNameEn": null,
                      *               "cancelReasonNameTh": null,
                      *               "cancelledAt": null,
                      *               "createdAt": "2026-10-01T09:00:00+07:00",
+                     *               "customerStatus": "awaiting_payment",
+                     *               "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *               "customerStatusLabelTh": "รอชำระเงิน",
+                     *               "deliveryDateBasis": "after_payment",
                      *               "designOption": "own_file",
                      *               "destinations": [
                      *                 {
@@ -306158,14 +307233,20 @@ export interface operations {
                      *                 }
                      *               ],
                      *               "mockupOption": "none",
-                     *               "nextActions": [
-                     *                 {
-                     *                   "disabledReason": null,
-                     *                   "irreversible": false,
-                     *                   "key": "order.upload_artwork"
-                     *                 }
-                     *               ],
+                     *               "nextActions": [],
+                     *               "openClaims": [],
                      *               "orderCode": "OR-2610-00042",
+                     *               "payment": {
+                     *                 "dueAt": "2026-10-08T10:00:00+07:00",
+                     *                 "groupCashAmount": "14182.80",
+                     *                 "groupCode": "OG-2610-00042",
+                     *                 "groupGrossAmount": "14182.80",
+                     *                 "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *                 "groupOrderCount": 1,
+                     *                 "orderCashAmount": "14182.80",
+                     *                 "orderGrossAmount": "14182.80",
+                     *                 "overdue": false
+                     *               },
                      *               "productTypeCode": "folding_carton",
                      *               "promisedShipDate": "2026-10-12",
                      *               "quantityOrdered": 1000,
@@ -306174,6 +307255,7 @@ export interface operations {
                      *                 "autoCompleteAt": null,
                      *                 "claimWindowEndsAt": null,
                      *                 "completedAt": null,
+                     *                 "completionHeldByClaim": false,
                      *                 "completionMode": null,
                      *                 "confirmedAt": null,
                      *                 "deliveredAt": null
@@ -306202,8 +307284,8 @@ export interface operations {
                      *                   },
                      *                   {
                      *                     "key": "size",
-                     *                     "labelEn": "Size",
-                     *                     "labelTh": "ขนาด",
+                     *                     "labelEn": "Size (L × W × H)",
+                     *                     "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                     "valueEn": "60 × 60 × 150 mm",
                      *                     "valueTh": "60 × 60 × 150 มม."
                      *                   },
@@ -306234,6 +307316,7 @@ export interface operations {
                      *               }
                      *             }
                      *           ],
+                     *           "paymentOverdue": false,
                      *           "placedAt": "2026-10-01T10:00:00+07:00",
                      *           "poNumber": null,
                      *           "status": "waiting_payment",
@@ -306353,14 +307436,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -306403,14 +307492,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -306419,6 +307514,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -306447,8 +307543,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -306479,6 +307575,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "poNumber": null,
                      *       "status": "waiting_payment",
@@ -306604,14 +307701,20 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
                      *       "orders": [
                      *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
                      *           "artworkStatus": "awaiting_template",
-                     *           "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *           "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *           "cancelReasonCode": null,
                      *           "cancelReasonNameEn": null,
                      *           "cancelReasonNameTh": null,
                      *           "cancelledAt": null,
                      *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
                      *           "designOption": "own_file",
                      *           "destinations": [
                      *             {
@@ -306654,14 +307757,20 @@ export interface operations {
                      *             }
                      *           ],
                      *           "mockupOption": "none",
-                     *           "nextActions": [
-                     *             {
-                     *               "disabledReason": null,
-                     *               "irreversible": false,
-                     *               "key": "order.upload_artwork"
-                     *             }
-                     *           ],
+                     *           "nextActions": [],
+                     *           "openClaims": [],
                      *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
                      *           "productTypeCode": "folding_carton",
                      *           "promisedShipDate": "2026-10-12",
                      *           "quantityOrdered": 1000,
@@ -306670,6 +307779,7 @@ export interface operations {
                      *             "autoCompleteAt": null,
                      *             "claimWindowEndsAt": null,
                      *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
                      *             "completionMode": null,
                      *             "confirmedAt": null,
                      *             "deliveredAt": null
@@ -306698,8 +307808,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -306730,6 +307840,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "paymentOverdue": false,
                      *       "placedAt": "2026-10-01T10:00:00+07:00",
                      *       "poNumber": null,
                      *       "status": "cancelled",
@@ -306822,6 +307933,443 @@ export interface operations {
             };
             /** @description Problem: `concurrency.precondition_required` */
             428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.orders.confirmRequote": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRequoteDto"];
+            };
+        };
+        responses: {
+            /** @description Re-quoted; pay now */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "ccEmails": [],
+                     *       "channel": "web",
+                     *       "customerId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
+                     *       "expiresAt": "2026-11-01T10:00:00+07:00",
+                     *       "groupCode": "OG-2610-00042",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *       "orders": [
+                     *         {
+                     *           "actionOwner": "customer",
+                     *           "artworkOwner": "team",
+                     *           "artworkStatus": "awaiting_template",
+                     *           "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
+                     *           "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                     *           "cancelReasonCode": null,
+                     *           "cancelReasonNameEn": null,
+                     *           "cancelReasonNameTh": null,
+                     *           "cancelledAt": null,
+                     *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "customerStatus": "awaiting_payment",
+                     *           "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *           "customerStatusLabelTh": "รอชำระเงิน",
+                     *           "deliveryDateBasis": "after_payment",
+                     *           "designOption": "own_file",
+                     *           "destinations": [
+                     *             {
+                     *               "address": {
+                     *                 "districtNameTh": null,
+                     *                 "line1": "99/9 ถนนตัวอย่าง",
+                     *                 "line2": null,
+                     *                 "phone": "+66810001234",
+                     *                 "postcode": "10110",
+                     *                 "provinceId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0004",
+                     *                 "provinceNameTh": "กรุงเทพมหานคร",
+                     *                 "recipientName": "สมชาย ทดสอบ",
+                     *                 "subdistrictId": null,
+                     *                 "subdistrictNameTh": null
+                     *               },
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0004",
+                     *               "quantity": 1000,
+                     *               "shippingNetAmount": "120.00"
+                     *             }
+                     *           ],
+                     *           "estimatedDeliveryDate": "2026-10-14",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0002",
+                     *           "leadTimeDays": 7,
+                     *           "lines": [
+                     *             {
+                     *               "descriptionEn": "Product",
+                     *               "descriptionTh": "สินค้า",
+                     *               "discountAmount": "0.00",
+                     *               "grossAmount": "13380.00",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d0003",
+                     *               "lineNo": 1,
+                     *               "lineType": "product",
+                     *               "netAmount": "12504.21",
+                     *               "quantity": "1000",
+                     *               "unitPrice": "12.504206",
+                     *               "vatAmount": "875.79",
+                     *               "vatRatePct": "7.0000",
+                     *               "whtAmount": "0.00",
+                     *               "whtCategory": "hire_of_work"
+                     *             }
+                     *           ],
+                     *           "mockupOption": "none",
+                     *           "nextActions": [],
+                     *           "openClaims": [],
+                     *           "orderCode": "OR-2610-00042",
+                     *           "payment": {
+                     *             "dueAt": "2026-10-08T10:00:00+07:00",
+                     *             "groupCashAmount": "14182.80",
+                     *             "groupCode": "OG-2610-00042",
+                     *             "groupGrossAmount": "14182.80",
+                     *             "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *             "groupOrderCount": 1,
+                     *             "orderCashAmount": "14182.80",
+                     *             "orderGrossAmount": "14182.80",
+                     *             "overdue": false
+                     *           },
+                     *           "productTypeCode": "folding_carton",
+                     *           "promisedShipDate": "2026-10-12",
+                     *           "quantityOrdered": 1000,
+                     *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
+                     *           "receipt": {
+                     *             "autoCompleteAt": null,
+                     *             "claimWindowEndsAt": null,
+                     *             "completedAt": null,
+                     *             "completionHeldByClaim": false,
+                     *             "completionMode": null,
+                     *             "confirmedAt": null,
+                     *             "deliveredAt": null
+                     *           },
+                     *           "status": "waiting_payment",
+                     *           "statusChangedAt": "2026-10-01T10:00:00+07:00",
+                     *           "statusLabelAdminTh": "รอชำระเงิน",
+                     *           "statusLabelTh": "รอชำระเงิน",
+                     *           "summary": {
+                     *             "product": {
+                     *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *               "nameEn": "Tuck-end box",
+                     *               "nameTh": "กล่องฝาเสียบ",
+                     *               "slug": "tuck-end-box"
+                     *             },
+                     *             "productTypeCode": "folding_carton",
+                     *             "productTypeNameEn": "Folding carton",
+                     *             "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *             "specs": [
+                     *               {
+                     *                 "key": "style",
+                     *                 "labelEn": "Style",
+                     *                 "labelTh": "แบบกล่อง",
+                     *                 "valueEn": "ฝาเสียบ",
+                     *                 "valueTh": "ฝาเสียบ"
+                     *               },
+                     *               {
+                     *                 "key": "size",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *                 "valueEn": "60 × 60 × 150 mm",
+                     *                 "valueTh": "60 × 60 × 150 มม."
+                     *               },
+                     *               {
+                     *                 "key": "material",
+                     *                 "labelEn": "Material",
+                     *                 "labelTh": "วัสดุ",
+                     *                 "valueEn": "Art card 350 gsm",
+                     *                 "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *               }
+                     *             ],
+                     *             "unit": "piece"
+                     *           },
+                     *           "toleranceColourDeltaE": "3.00",
+                     *           "toleranceDimensionalMm": "1.00",
+                     *           "toleranceOutcome": null,
+                     *           "toleranceOveragePct": "5.0000",
+                     *           "toleranceShortagePct": "5.0000",
+                     *           "totals": {
+                     *             "cashAmount": "14182.80",
+                     *             "currency": "THB",
+                     *             "discountAmount": "0.00",
+                     *             "grossAmount": "14182.80",
+                     *             "netAmount": "13254.95",
+                     *             "shippingNetAmount": "120.00",
+                     *             "vatAmount": "927.85",
+                     *             "whtAmount": "0.00"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "paymentOverdue": false,
+                     *       "placedAt": "2026-10-01T10:00:00+07:00",
+                     *       "poNumber": null,
+                     *       "status": "waiting_payment",
+                     *       "statusLabelAdminTh": "รอชำระเงิน",
+                     *       "statusLabelTh": "รอชำระเงิน",
+                     *       "totals": {
+                     *         "cashAmount": "14182.80",
+                     *         "currency": "THB",
+                     *         "discountAmount": "0.00",
+                     *         "grossAmount": "14182.80",
+                     *         "netAmount": "13254.95",
+                     *         "shippingNetAmount": "120.00",
+                     *         "vatAmount": "927.85",
+                     *         "whtAmount": "0.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OrderGroupDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `order.reprice_below_paid`, `order.requote_changed`, `order.requote_not_due`, `order.requote_unavailable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.orders.requoteGroup": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Today’s price */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "differenceAmount": "172.14",
+                     *       "groupCode": "OG-2610-00016",
+                     *       "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *       "newCashAmount": "9457.10",
+                     *       "newGrossAmount": "9457.10",
+                     *       "orders": [
+                     *         {
+                     *           "differenceAmount": "86.06",
+                     *           "estimatedDeliveryDate": "2026-11-05",
+                     *           "leadTimeDays": 5,
+                     *           "newGrossAmount": "4388.92",
+                     *           "newUnitPrice": "14.629733",
+                     *           "orderCode": "OR-2610-00016",
+                     *           "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0002",
+                     *           "previousGrossAmount": "4302.86",
+                     *           "promisedShipDate": "2026-11-03",
+                     *           "quantity": 300,
+                     *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca101",
+                     *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca102"
+                     *         },
+                     *         {
+                     *           "differenceAmount": "86.08",
+                     *           "estimatedDeliveryDate": "2026-11-05",
+                     *           "leadTimeDays": 5,
+                     *           "newGrossAmount": "5068.18",
+                     *           "newUnitPrice": "15.784361",
+                     *           "orderCode": "OR-2610-00017",
+                     *           "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0003",
+                     *           "previousGrossAmount": "4982.10",
+                     *           "promisedShipDate": "2026-11-03",
+                     *           "quantity": 300,
+                     *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca103",
+                     *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca104"
+                     *         }
+                     *       ],
+                     *       "paymentDueAt": "2026-11-01T10:00:00+07:00",
+                     *       "previousGrossAmount": "9284.96",
+                     *       "priceValidUntil": "2026-11-09T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RequotePreviewDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `order.requote_not_due`, `order.requote_unavailable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -307225,7 +308773,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `idempotency.in_progress`, `payments.group_not_payable`, `payments.nothing_to_pay` */
+            /** @description Problem: `idempotency.in_progress`, `order.requote_required`, `payments.group_not_payable`, `payments.nothing_to_pay` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -307304,14 +308852,20 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "actionOwner": "customer",
+                     *       "artworkOwner": "team",
                      *       "artworkStatus": "awaiting_template",
-                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
+                     *       "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
                      *       "cancelledAt": null,
                      *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "customerStatus": "awaiting_payment",
+                     *       "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *       "customerStatusLabelTh": "รอชำระเงิน",
+                     *       "deliveryDateBasis": "after_payment",
                      *       "designOption": "own_file",
                      *       "destinations": [
                      *         {
@@ -307354,14 +308908,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "mockupOption": "none",
-                     *       "nextActions": [
-                     *         {
-                     *           "disabledReason": null,
-                     *           "irreversible": false,
-                     *           "key": "order.upload_artwork"
-                     *         }
-                     *       ],
+                     *       "nextActions": [],
+                     *       "openClaims": [],
                      *       "orderCode": "OR-2610-00042",
+                     *       "payment": {
+                     *         "dueAt": "2026-10-08T10:00:00+07:00",
+                     *         "groupCashAmount": "14182.80",
+                     *         "groupCode": "OG-2610-00042",
+                     *         "groupGrossAmount": "14182.80",
+                     *         "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *         "groupOrderCount": 1,
+                     *         "orderCashAmount": "14182.80",
+                     *         "orderGrossAmount": "14182.80",
+                     *         "overdue": false
+                     *       },
                      *       "productTypeCode": "folding_carton",
                      *       "promisedShipDate": "2026-10-12",
                      *       "quantityOrdered": 1000,
@@ -307370,6 +308930,7 @@ export interface operations {
                      *         "autoCompleteAt": null,
                      *         "claimWindowEndsAt": null,
                      *         "completedAt": null,
+                     *         "completionHeldByClaim": false,
                      *         "completionMode": null,
                      *         "confirmedAt": null,
                      *         "deliveredAt": null
@@ -307398,8 +308959,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -307525,14 +309086,20 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "actionOwner": "customer",
+                     *       "artworkOwner": "team",
                      *       "artworkStatus": "awaiting_template",
-                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
+                     *       "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
                      *       "cancelledAt": null,
                      *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "customerStatus": "awaiting_payment",
+                     *       "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *       "customerStatusLabelTh": "รอชำระเงิน",
+                     *       "deliveryDateBasis": "after_payment",
                      *       "designOption": "own_file",
                      *       "destinations": [
                      *         {
@@ -307575,14 +309142,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "mockupOption": "none",
-                     *       "nextActions": [
-                     *         {
-                     *           "disabledReason": null,
-                     *           "irreversible": false,
-                     *           "key": "order.upload_artwork"
-                     *         }
-                     *       ],
+                     *       "nextActions": [],
+                     *       "openClaims": [],
                      *       "orderCode": "OR-2610-00042",
+                     *       "payment": {
+                     *         "dueAt": "2026-10-08T10:00:00+07:00",
+                     *         "groupCashAmount": "14182.80",
+                     *         "groupCode": "OG-2610-00042",
+                     *         "groupGrossAmount": "14182.80",
+                     *         "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *         "groupOrderCount": 1,
+                     *         "orderCashAmount": "14182.80",
+                     *         "orderGrossAmount": "14182.80",
+                     *         "overdue": false
+                     *       },
                      *       "productTypeCode": "folding_carton",
                      *       "promisedShipDate": "2026-10-12",
                      *       "quantityOrdered": 1000,
@@ -307591,6 +309164,7 @@ export interface operations {
                      *         "autoCompleteAt": null,
                      *         "claimWindowEndsAt": null,
                      *         "completedAt": null,
+                     *         "completionHeldByClaim": false,
                      *         "completionMode": null,
                      *         "confirmedAt": null,
                      *         "deliveredAt": null
@@ -307619,8 +309193,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -307844,8 +309418,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -309620,7 +311194,7 @@ export interface operations {
                      *           "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *           "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *           "previousStatus": "changes_requested",
-                     *           "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *           "previousStatusLabelAdminTh": "ขอแก้ไขแบบตัวอย่าง",
                      *           "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *           "previousVersionNo": 1
                      *         },
@@ -309642,7 +311216,7 @@ export interface operations {
                      *         },
                      *         "sentAt": "2026-09-27T11:00:00+07:00",
                      *         "status": "pending_customer",
-                     *         "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *         "statusLabelAdminTh": "รอคุณตรวจแบบตัวอย่าง",
                      *         "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *         "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *         "versionNo": 2
@@ -310125,8 +311699,8 @@ export interface operations {
                      *             "location": null,
                      *             "occurredAt": "2026-10-20T08:00:00+07:00",
                      *             "status": "picked_up",
-                     *             "statusLabelAdminTh": "ออกจากโรงงานแล้ว",
-                     *             "statusLabelTh": "ออกจากโรงงานแล้ว"
+                     *             "statusLabelAdminTh": "จัดส่งออกแล้ว",
+                     *             "statusLabelTh": "จัดส่งออกแล้ว"
                      *           },
                      *           {
                      *             "location": null,
@@ -310705,14 +312279,20 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "actionOwner": "customer",
+                     *       "artworkOwner": "team",
                      *       "artworkStatus": "awaiting_template",
-                     *       "artworkStatusLabelAdminTh": "รอแบบไดคัท",
-                     *       "artworkStatusLabelTh": "รอแบบไดคัท",
+                     *       "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
+                     *       "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
                      *       "cancelReasonCode": null,
                      *       "cancelReasonNameEn": null,
                      *       "cancelReasonNameTh": null,
                      *       "cancelledAt": null,
                      *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "customerStatus": "awaiting_payment",
+                     *       "customerStatusLabelAdminTh": "รอชำระเงิน",
+                     *       "customerStatusLabelTh": "รอชำระเงิน",
+                     *       "deliveryDateBasis": "after_payment",
                      *       "designOption": "own_file",
                      *       "destinations": [
                      *         {
@@ -310755,14 +312335,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "mockupOption": "none",
-                     *       "nextActions": [
-                     *         {
-                     *           "disabledReason": null,
-                     *           "irreversible": false,
-                     *           "key": "order.upload_artwork"
-                     *         }
-                     *       ],
+                     *       "nextActions": [],
+                     *       "openClaims": [],
                      *       "orderCode": "OR-2610-00042",
+                     *       "payment": {
+                     *         "dueAt": "2026-10-08T10:00:00+07:00",
+                     *         "groupCashAmount": "14182.80",
+                     *         "groupCode": "OG-2610-00042",
+                     *         "groupGrossAmount": "14182.80",
+                     *         "groupId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",
+                     *         "groupOrderCount": 1,
+                     *         "orderCashAmount": "14182.80",
+                     *         "orderGrossAmount": "14182.80",
+                     *         "overdue": false
+                     *       },
                      *       "productTypeCode": "folding_carton",
                      *       "promisedShipDate": "2026-10-12",
                      *       "quantityOrdered": 1000,
@@ -310771,6 +312357,7 @@ export interface operations {
                      *         "autoCompleteAt": null,
                      *         "claimWindowEndsAt": null,
                      *         "completedAt": null,
+                     *         "completionHeldByClaim": false,
                      *         "completionMode": null,
                      *         "confirmedAt": null,
                      *         "deliveredAt": null
@@ -310799,8 +312386,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -311416,7 +313003,7 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
-                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelAdminTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
@@ -311438,7 +313025,7 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
-                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelAdminTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
@@ -311565,7 +313152,7 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
-                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelAdminTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
@@ -311587,7 +313174,7 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
-                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelAdminTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
@@ -311721,7 +313308,7 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
-                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelAdminTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
@@ -311743,7 +313330,7 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "approved",
-                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelAdminTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
@@ -311894,7 +313481,7 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
-                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelAdminTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
@@ -311916,7 +313503,7 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "changes_requested",
-                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelAdminTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
@@ -312067,7 +313654,7 @@ export interface operations {
                      *         "previousProofFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2004",
                      *         "previousProofId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2003",
                      *         "previousStatus": "changes_requested",
-                     *         "previousStatusLabelAdminTh": "ขอให้แก้ไข Proof",
+                     *         "previousStatusLabelAdminTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousStatusLabelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *         "previousVersionNo": 1
                      *       },
@@ -312089,7 +313676,7 @@ export interface operations {
                      *       },
                      *       "sentAt": "2026-09-27T11:00:00+07:00",
                      *       "status": "pending_customer",
-                     *       "statusLabelAdminTh": "รอ Proof จากลูกค้า",
+                     *       "statusLabelAdminTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "statusLabelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *       "submissionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e2006",
                      *       "versionNo": 2
@@ -312212,7 +313799,6 @@ export interface operations {
                      *         "lineOaId": "@getpack-test",
                      *         "phone": "0800000000"
                      *       },
-                     *       "factoryCount": null,
                      *       "minOrderQty": {
                      *         "custom": 500,
                      *         "readyStock": 1
@@ -312901,8 +314487,8 @@ export interface operations {
                      *               },
                      *               {
                      *                 "key": "size",
-                     *                 "labelEn": "Size",
-                     *                 "labelTh": "ขนาด",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                 "valueEn": "60 × 60 × 150 mm",
                      *                 "valueTh": "60 × 60 × 150 มม."
                      *               },
@@ -313122,8 +314708,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -313364,8 +314950,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -313587,8 +315173,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -313828,8 +315414,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -314070,8 +315656,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -314299,8 +315885,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -314654,8 +316240,8 @@ export interface operations {
                      *             },
                      *             {
                      *               "key": "size",
-                     *               "labelEn": "Size",
-                     *               "labelTh": "ขนาด",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *               "valueEn": "60 × 60 × 150 mm",
                      *               "valueTh": "60 × 60 × 150 มม."
                      *             },
@@ -315042,8 +316628,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -315371,8 +316957,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -315527,6 +317113,40 @@ export interface operations {
                      *           "product": null
                      *         }
                      *       },
+                     *       "specLabel": {
+                     *         "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+                     *         "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                     *       },
+                     *       "specs": [
+                     *         {
+                     *           "key": "style",
+                     *           "labelEn": "Style",
+                     *           "labelTh": "แบบกล่อง",
+                     *           "valueEn": "RSC",
+                     *           "valueTh": "กล่องฝาชน"
+                     *         },
+                     *         {
+                     *           "key": "size",
+                     *           "labelEn": "Size (L × W × H)",
+                     *           "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *           "valueEn": "140 × 97.5 × 60 mm (inside)",
+                     *           "valueTh": "140 × 97.5 × 60 มม. (ด้านใน)"
+                     *         },
+                     *         {
+                     *           "key": "material",
+                     *           "labelEn": "Material",
+                     *           "labelTh": "วัสดุ",
+                     *           "valueEn": "KA125 B-flute (3-ply)",
+                     *           "valueTh": "ลูกฟูก KA125 ลอน B (3 ชั้น)"
+                     *         },
+                     *         {
+                     *           "key": "print_front",
+                     *           "labelEn": "Print (outside)",
+                     *           "labelTh": "พิมพ์ด้านนอก",
+                     *           "valueEn": "Black",
+                     *           "valueTh": "ดำ"
+                     *         }
+                     *       ],
                      *       "steps": [
                      *         {
                      *           "designFeeAmount": "0.00",
@@ -315875,8 +317495,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -317184,8 +318804,8 @@ export interface operations {
                      *                 },
                      *                 {
                      *                   "key": "size",
-                     *                   "labelEn": "Size",
-                     *                   "labelTh": "ขนาด",
+                     *                   "labelEn": "Size (L × W × H)",
+                     *                   "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *                   "valueEn": "60 × 60 × 150 mm",
                      *                   "valueTh": "60 × 60 × 150 มม."
                      *                 },
@@ -320994,25 +322614,25 @@ export interface operations {
                      *         "enumName": "ProofStatus",
                      *         "values": [
                      *           {
-                     *             "labelAdminTh": "รอ Proof จากลูกค้า",
+                     *             "labelAdminTh": "รอคุณตรวจแบบตัวอย่าง",
                      *             "labelEn": "Awaiting customer",
                      *             "labelTh": "รอคุณตรวจแบบตัวอย่าง",
                      *             "value": "pending_customer"
                      *           },
                      *           {
-                     *             "labelAdminTh": "Proof อนุมัติแล้ว",
+                     *             "labelAdminTh": "อนุมัติแบบตัวอย่างแล้ว",
                      *             "labelEn": "Approved",
                      *             "labelTh": "อนุมัติแบบตัวอย่างแล้ว",
                      *             "value": "approved"
                      *           },
                      *           {
-                     *             "labelAdminTh": "ขอให้แก้ไข Proof",
+                     *             "labelAdminTh": "ขอแก้ไขแบบตัวอย่าง",
                      *             "labelEn": "Changes requested",
                      *             "labelTh": "ขอแก้ไขแบบตัวอย่าง",
                      *             "value": "changes_requested"
                      *           },
                      *           {
-                     *             "labelAdminTh": "มี Proof ฉบับใหม่แทนแล้ว",
+                     *             "labelAdminTh": "มีแบบตัวอย่างฉบับใหม่แล้ว",
                      *             "labelEn": "Superseded",
                      *             "labelTh": "มีแบบตัวอย่างฉบับใหม่แล้ว",
                      *             "value": "superseded"
@@ -322590,6 +324210,40 @@ export interface operations {
                      *             "product": null
                      *           }
                      *         },
+                     *         "specLabel": {
+                     *           "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+                     *           "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                     *         },
+                     *         "specs": [
+                     *           {
+                     *             "key": "style",
+                     *             "labelEn": "Style",
+                     *             "labelTh": "แบบกล่อง",
+                     *             "valueEn": "RSC",
+                     *             "valueTh": "กล่องฝาชน"
+                     *           },
+                     *           {
+                     *             "key": "size",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *             "valueEn": "140 × 97.5 × 60 mm (inside)",
+                     *             "valueTh": "140 × 97.5 × 60 มม. (ด้านใน)"
+                     *           },
+                     *           {
+                     *             "key": "material",
+                     *             "labelEn": "Material",
+                     *             "labelTh": "วัสดุ",
+                     *             "valueEn": "KA125 B-flute (3-ply)",
+                     *             "valueTh": "ลูกฟูก KA125 ลอน B (3 ชั้น)"
+                     *           },
+                     *           {
+                     *             "key": "print_front",
+                     *             "labelEn": "Print (outside)",
+                     *             "labelTh": "พิมพ์ด้านนอก",
+                     *             "valueEn": "Black",
+                     *             "valueTh": "ดำ"
+                     *           }
+                     *         ],
                      *         "steps": [
                      *           {
                      *             "designFeeAmount": "0.00",
@@ -322873,8 +324527,8 @@ export interface operations {
                      *           },
                      *           {
                      *             "key": "size",
-                     *             "labelEn": "Size",
-                     *             "labelTh": "ขนาด",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
                      *             "valueEn": "60 × 60 × 150 mm",
                      *             "valueTh": "60 × 60 × 150 มม."
                      *           },
@@ -324983,6 +326637,10 @@ export interface operations {
                      *             "catalogProductSlug": "dev-tuck-end-box",
                      *             "computedAt": "2026-10-03T10:00:00+07:00",
                      *             "currency": "THB",
+                     *             "label": {
+                     *               "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+                     *               "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                     *             },
                      *             "quantity": 1000,
                      *             "unitPrice": "4.85"
                      *           },
@@ -325267,6 +326925,10 @@ export interface operations {
                      *             "catalogProductSlug": "dev-tuck-end-box",
                      *             "computedAt": "2026-10-03T10:00:00+07:00",
                      *             "currency": "THB",
+                     *             "label": {
+                     *               "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+                     *               "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                     *             },
                      *             "quantity": 1000,
                      *             "unitPrice": "4.85"
                      *           },
@@ -325428,7 +327090,6 @@ export interface operations {
                      *         "tuck_bottom:crash_lock",
                      *         "window:front_window"
                      *       ],
-                     *       "partnersCount": null,
                      *       "photo": null,
                      *       "pricePath": "instant",
                      *       "productTypeCode": "folding_carton",
@@ -325449,6 +327110,10 @@ export interface operations {
                      *         "catalogProductSlug": "dev-tuck-end-box",
                      *         "computedAt": "2026-10-03T10:00:00+07:00",
                      *         "currency": "THB",
+                     *         "label": {
+                     *           "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+                     *           "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                     *         },
                      *         "quantity": 1000,
                      *         "unitPrice": "4.85"
                      *       },
@@ -325584,7 +327249,6 @@ export interface operations {
                      *           "tuck_bottom:crash_lock",
                      *           "window:front_window"
                      *         ],
-                     *         "partnersCount": null,
                      *         "photo": null,
                      *         "pricePath": "instant",
                      *         "productTypeCode": "folding_carton",
@@ -325605,6 +327269,10 @@ export interface operations {
                      *           "catalogProductSlug": "dev-tuck-end-box",
                      *           "computedAt": "2026-10-03T10:00:00+07:00",
                      *           "currency": "THB",
+                     *           "label": {
+                     *             "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
+                     *             "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                     *           },
                      *           "quantity": 1000,
                      *           "unitPrice": "4.85"
                      *         },
@@ -325945,7 +327613,8 @@ export interface operations {
                      *       "lineUrl": "https://line.me/R/oaMessage/%40getpack-fake/?CS-2610-00001",
                      *       "respondBy": "2026-10-21T10:00:00+07:00",
                      *       "source": "contact_form",
-                     *       "ticketNo": "CS-2610-00001"
+                     *       "ticketNo": "CS-2610-00001",
+                     *       "topic": "order_status"
                      *     }
                      */
                     "application/json": components["schemas"]["SupportTicketDto"];
@@ -326060,7 +327729,8 @@ export interface operations {
                      *       "lineUrl": "https://line.me/R/oaMessage/%40getpack-fake/?CS-2610-00001",
                      *       "respondBy": "2026-10-21T10:00:00+07:00",
                      *       "source": "handoff",
-                     *       "ticketNo": "CS-2610-00001"
+                     *       "ticketNo": "CS-2610-00001",
+                     *       "topic": "guided_help"
                      *     }
                      */
                     "application/json": components["schemas"]["SupportTicketDto"];
@@ -326804,7 +328474,7 @@ export interface operations {
                      *             {
                      *               "occurredAt": "2026-10-19T08:00:00+07:00",
                      *               "status": "picked_up",
-                     *               "statusLabelTh": "ออกจากโรงงานแล้ว"
+                     *               "statusLabelTh": "จัดส่งออกแล้ว"
                      *             },
                      *             {
                      *               "occurredAt": "2026-10-19T12:00:00+07:00",
