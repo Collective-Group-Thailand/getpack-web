@@ -278,7 +278,11 @@ export function ConfiguratorDock({
             {status ?? (
               <>
                 <p className="serif m-0 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-4xl leading-none tabular-nums">
-                  <span key={priced?.unitPrice ?? "none"} className={reason ? "pk-flash rounded-sm px-1" : undefined}>
+                  <span
+                    key={priced?.unitPrice ?? "none"}
+                    data-unit-price=""
+                    className={reason ? "pk-flash rounded-sm px-1" : undefined}
+                  >
                     {format.thb(priced?.unitPrice)}
                   </span>
                   <small className="text-muted font-sans text-[0.9375rem] font-medium tracking-normal">

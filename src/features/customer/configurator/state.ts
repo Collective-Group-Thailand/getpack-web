@@ -270,7 +270,8 @@ function normaliseInkChoices(configurator: Configurator, state: ConfiguratorStat
         : normaliseInks(byId, ids)
       : ids;
   const choices = { ...state.choices };
-  for (const kind of ["print_front", "print_back"] as const) if (choices[kind]) choices[kind] = fix(kind, choices[kind]);
+  for (const kind of ["print_front", "print_back"] as const)
+    if (choices[kind]) choices[kind] = fix(kind, choices[kind]);
   return {
     ...state,
     choices,
