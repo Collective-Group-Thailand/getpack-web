@@ -89,7 +89,7 @@ test.describe("the style library", () => {
     await expect(page).toHaveURL(/style=PK-/);
     const panel = page.getByRole("dialog");
     await expect(panel.getByRole("heading", { name: "ตัวเลือกโครงสร้าง" })).toBeVisible();
-    await expect(panel.getByRole("button", { name: "ออกแบบใน 3D Studio" })).toBeVisible();
+    await expect(panel.getByRole("button", { name: "เริ่มออกแบบแบบนี้" })).toBeVisible();
     await expectNoViolations(page);
     await page.keyboard.press("Escape");
     await expect(panel).toBeHidden();
