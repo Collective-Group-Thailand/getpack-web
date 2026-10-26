@@ -70,7 +70,7 @@ describe("the price summary", () => {
     await show();
     const lines = screen.getByRole("complementary", { name: "ราคาของคุณ" });
     // 5178 × 7 / 107 is 338.75: the API's 338.58 is shown untouched, never re-derived here.
-    expect(within(lines).getByText("VAT 7% (รวมในยอดแล้ว)")).toBeInTheDocument();
+    expect(within(lines).getByText("VAT (รวมในยอดแล้ว)")).toBeInTheDocument();
     expect(within(lines).getByText("฿338.58")).toBeInTheDocument();
     expect(within(lines).getByText("ยอดรวม (ไม่รวมค่าส่ง)")).toBeInTheDocument();
     expect(within(lines).getByText(/ผลิต 5 วันทำการ/)).toBeInTheDocument();
