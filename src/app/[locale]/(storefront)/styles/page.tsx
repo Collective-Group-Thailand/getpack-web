@@ -23,6 +23,7 @@ import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
 import { CopyLinkButton, SearchTracker, SortSelect } from "@/features/customer/styles/LibraryControls";
 import { LibrarySearch } from "@/features/customer/styles/LibrarySearch";
 import { LineFloat } from "@/features/customer/shell/LineFloat";
+import { LibraryEmpty } from "@/features/customer/styles/LibraryEmpty";
 import { LibraryToolbar } from "@/features/customer/styles/LibraryToolbar";
 import { VatSwitch } from "@/features/customer/styles/VatSwitch";
 import { figuresOf, vatSwitchAvailable } from "@/features/shared/format/price";
@@ -58,7 +59,6 @@ import { breadcrumbSchema, productSchema } from "@/lib/seo/structured-data";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -354,22 +354,13 @@ export default async function StylesPage({
             {list.data.length === 0 && !filtered ? (
               <StudioStyleLibrary />
             ) : list.data.length === 0 ? (
-              <EmptyState
-                icon="search"
+              <LibraryEmpty
                 title={t("library.emptyTitle")}
-                description={t("library.emptyBody")}
-                action={
-                  <div className="flex flex-wrap justify-center gap-2">
-                    <Button asChild variant="secondary">
-                      <Link href={listHref({ ...clearFilters(query), q: undefined })} replace>
-                        {t("library.emptyClear")}
-                      </Link>
-                    </Button>
-                    <Button asChild variant="ghost">
-                      <Link href={requestHref(signedIn)}>{t("library.emptyRequest")}</Link>
-                    </Button>
-                  </div>
-                }
+                body={t("library.emptyBody")}
+                clearLabel={t("library.emptyClear")}
+                clearHref={listHref({ ...clearFilters(query), q: undefined })}
+                requestLabel={t("library.emptyRequest")}
+                requestHref={requestHref(signedIn)}
               />
             ) : (
               <StyleResults
