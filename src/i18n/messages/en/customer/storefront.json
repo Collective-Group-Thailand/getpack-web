@@ -28,7 +28,7 @@
   "footer": {
     "tagline": "A packaging design studio and production partner",
     "lineContact": "Reach us on LINE, 09:00–18:00 daily",
-    "paymentMethods": "Pay by bank transfer · PromptPay QR · credit or debit card · instalments",
+    "paymentMethods": "Pay by bank transfer · PromptPay QR · credit or debit card",
     "help": {
       "heading": "Help",
       "howItWorks": "How ordering works",
@@ -218,7 +218,7 @@
           },
           "files": {
             "question": "Are my files safe?",
-            "answer": "Your files and details are used only to make your job, and you can ask for your files to be deleted at any time."
+            "answer": "Your files and details are used only to make your job. They are not published or used for any other job."
           },
           "mismatch": {
             "question": "What if the job does not meet the standard?",

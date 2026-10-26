@@ -3,7 +3,7 @@
     "title": "Help centre",
     "intro": "Answers on ordering, artwork, payment and delivery — or talk to the team.",
     "search": "Search help",
-    "searchPlaceholder": "e.g. bleed, instalments, claims",
+    "searchPlaceholder": "e.g. bleed, deposits, claims",
     "searchButton": "Search",
     "topics": "Common topics",
     "topic": {
@@ -21,7 +21,7 @@
       },
       "payment": {
         "title": "Payment",
-        "body": "Deposits, instalments, PromptPay and tax invoices"
+        "body": "Deposits, PromptPay and tax invoices"
       },
       "samples": {
         "title": "Sample kits",
