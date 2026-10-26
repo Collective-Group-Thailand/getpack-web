@@ -197,7 +197,6 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
   supportHours: null,
   supportReplyMinutes: null,
   templateCount: 105,
-  factoryCount: null,
   contact: { phone: "020000000", lineOaId: "@getpack-mock", email: "support@example.invalid" },
 });
 

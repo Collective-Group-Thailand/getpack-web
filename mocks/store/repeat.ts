@@ -2,8 +2,8 @@
  * Repeat business (U2.F5) for the storefront mock:
  * - `store.reorderSuggestions.*` (D-288): one suggestion per product type the customer has bought,
  *   from their latest order; dismissing keeps it out of the list;
- * - `store.callOffs.*` (D-290): a call-off asked for on a saved quotation is `pending_factory`; the
- *   mock's factory accepts it on the next read (the real one decides). A release ≥ the minimum and
+ * - `store.callOffs.*` (D-290): a call-off asked for on a saved quotation is `pending_confirmation`; the
+ *   mock's back office confirms it on the next read (the real one decides). A release ≥ the minimum and
  *   ≤ what is left puts a quotation at the locked price in the cart and answers the cart;
  * - `store.companyApiClients.*` (D-291): a Company Admin's API clients, the secret answered once.
  * Every amount is the mock's own fake one; nothing is priced here.
@@ -64,7 +64,7 @@ export function suggestionsOf(customer: MockCustomer): Schemas["ReorderSuggestio
 
 /* ------------------------------------------------------------------------------ call-offs */
 
-const agreements = new Map<string, Schemas["CallOffAgreementDto"][]>();
+const agreements = new Map<string, Schemas["StoreCallOffAgreementDto"][]>();
 const agreementsOf = (customer: MockCustomer) => {
   if (!agreements.has(customer.persona)) agreements.set(customer.persona, []);
   return agreements.get(customer.persona)!;
@@ -72,9 +72,9 @@ const agreementsOf = (customer: MockCustomer) => {
 let agreementSeq = 1;
 let releaseSeq = 1;
 
-/** The mock's factory accepts a pending call-off when it is next read. */
-function settle(agreement: Schemas["CallOffAgreementDto"]) {
-  if (agreement.status !== "pending_factory") return agreement;
+/** The mock's back office confirms a pending call-off when it is next read. */
+function settle(agreement: Schemas["StoreCallOffAgreementDto"]) {
+  if (agreement.status !== "pending_confirmation") return agreement;
   agreement.status = "active";
   agreement.startsAt = bangkokIso();
   agreement.expiresAt = bangkokIso(agreement.months * 30 * DAY);
@@ -134,11 +134,15 @@ export const repeatHandlers = [
       return problem(422, "validation.failed", "ระยะเวลา 1–12 เดือน", [
         { path: "months", code: "range", message: "1..12" },
       ]);
-    if (agreementsOf(customer).some((a) => a.quoteId === quote.id && ["pending_factory", "active"].includes(a.status)))
+    if (
+      agreementsOf(customer).some(
+        (a) => a.quoteId === quote.id && ["pending_confirmation", "active"].includes(a.status),
+      )
+    )
       return problem(409, "call_offs.already_requested", "ใบเสนอราคานี้มีสัญญาอยู่แล้ว");
-    const agreement: Schemas["CallOffAgreementDto"] = {
+    const agreement: Schemas["StoreCallOffAgreementDto"] = {
       id: mockId("cof", agreementSeq++),
-      status: "pending_factory",
+      status: "pending_confirmation",
       quoteId: quote.id,
       quoteOptionId: body.quoteOptionId,
       quoteCode: quote.quoteCode,
@@ -151,14 +155,12 @@ export const repeatHandlers = [
       months: body.months,
       unit: quote.unit,
       unitPrice: quote.unitPrice,
-      buyUnitPrice: null,
-      factory: null,
       declineReason: null,
       createdAt: bangkokIso(),
       startsAt: null,
       expiresAt: null,
       releases: [],
-    } as Schemas["CallOffAgreementDto"];
+    } as Schemas["StoreCallOffAgreementDto"];
     agreementsOf(customer).unshift(agreement);
     return HttpResponse.json(agreement, { status: 201 });
   }),
@@ -198,7 +200,7 @@ export const repeatHandlers = [
     if (!customer) return unauthenticated();
     const agreement = agreementsOf(customer).find((a) => a.id === params.agreementId);
     if (!agreement) return problem(404, "http.not_found", "ไม่พบสัญญานี้");
-    if (!["pending_factory", "active"].includes(agreement.status))
+    if (!["pending_confirmation", "active"].includes(agreement.status))
       return problem(409, "call_offs.invalid_status", "ยกเลิกสัญญานี้ไม่ได้");
     agreement.status = "cancelled";
     agreement.lapsedQuantity = agreement.remainingQuantity;

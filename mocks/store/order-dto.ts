@@ -15,7 +15,7 @@ import { lineSummaryOf } from "../admin/catalog";
 import { baht, satang, type MockOrder } from "../admin/commerce";
 import { bangkokIso, mockId } from "../support";
 import { catalogProducts, imageUrl } from "./catalog";
-import { ARTWORK_STATUS, ORDER_STATUS } from "@/domain/status";
+import { ARTWORK_STATUS, CLAIM_STATUS, ORDER_STATUS } from "@/domain/status";
 import { statusLabels } from "../status-labels";
 
 const DAY_MS = 86_400_000;
@@ -86,6 +86,47 @@ function summaryOf(order: MockOrder): Schemas["LineSummaryDto"] {
   };
 }
 
+/** Claims still being handled (never a final status), oldest first; the back office's `factory_review` reads as under review. */
+function openClaimsOf(order: MockOrder): Schemas["OrderOpenClaimDto"][] {
+  return order.claims
+    .filter((claim) => !["approved", "rejected", "resolved", "closed"].includes(claim.status))
+    .map((claim) => {
+      const status = claim.status === "factory_review" ? "under_review" : claim.status;
+      return {
+        id: claim.id,
+        claimNo: claim.claimNo,
+        status: status as Schemas["StoreClaimStatus"],
+        ...statusLabels("status", CLAIM_STATUS, status),
+      };
+    });
+}
+
+/** `customerStatus` (D-437), derived from the facts the row keeps. */
+function customerStatusOf(order: MockOrder): Schemas["CustomerOrderStatus"] {
+  if (order.status === "cancelled") return "cancelled";
+  if (order.status === "completed") return "completed";
+  if (deliveredAt(order)) return openClaimsOf(order).length > 0 ? "claim_in_review" : "received";
+  if (order.status === "shipping") return "shipping";
+  if (order.status === "in_production") return "in_production";
+  if (order.status === "waiting_payment") return "awaiting_payment";
+  if (order.artwork.status === "proof_sent") return "awaiting_approval";
+  if (order.artwork.status === "approved") return "in_production";
+  return "awaiting_artwork";
+}
+
+/** The words of `customerStatus` — the dictionary's, for the customer (D-440). */
+const CUSTOMER_STATUS_TH: Record<Schemas["CustomerOrderStatus"], string> = {
+  awaiting_payment: "รอชำระเงิน",
+  awaiting_artwork: "รอไฟล์งาน",
+  awaiting_approval: "รออนุมัติแบบ",
+  in_production: "กำลังผลิต",
+  shipping: "กำลังจัดส่ง",
+  received: "ได้รับแล้ว",
+  claim_in_review: "ได้รับแล้ว · เคลมกำลังตรวจ",
+  completed: "เสร็จสิ้น",
+  cancelled: "ยกเลิก",
+};
+
 /** The receipt stamps (D-081, D-082): delivered, confirmed or completed by itself, the claim window. */
 function receiptOf(order: MockOrder): Schemas["OrderReceiptDto"] {
   const delivered = deliveredAt(order);
@@ -96,7 +137,10 @@ function receiptOf(order: MockOrder): Schemas["OrderReceiptDto"] {
     confirmedAt: confirmed,
     completedAt: completed,
     completionMode: completed ? (confirmed ? "customer_confirmed" : "auto_after_days") : null,
-    autoCompleteAt: delivered && !completed ? plusDays(delivered, AUTO_COMPLETE_DAYS) : null,
+    // D-437: with a claim open, completion waits and there is no auto-confirm date.
+    completionHeldByClaim: Boolean(delivered && !completed && openClaimsOf(order).length > 0),
+    autoCompleteAt:
+      delivered && !completed && openClaimsOf(order).length === 0 ? plusDays(delivered, AUTO_COMPLETE_DAYS) : null,
     claimWindowEndsAt: claimWindowEnd(order),
   };
 }
@@ -172,11 +216,38 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
   const shipping = order.lines
     .filter((line) => line.lineType === "shipping")
     .reduce((sum, line) => sum + satang(line.netAmount), 0);
+  const customerStatus = customerStatusOf(order);
+  const artworkOwner: Schemas["OrderDto"]["artworkOwner"] =
+    order.artwork.status === "approved"
+      ? null
+      : ["awaiting_upload", "changes_requested", "proof_sent"].includes(order.artwork.status)
+        ? "customer"
+        : "team";
+  const waitingPayment = order.status === "waiting_payment";
+  const overdue = waitingPayment && Boolean(order.expiresAt) && Date.parse(order.expiresAt!) < Date.now();
   return {
     id: order.id,
     orderCode: order.orderCode,
     status: order.status,
     ...statusLabels("status", ORDER_STATUS, order.status),
+    customerStatus,
+    customerStatusLabelTh: CUSTOMER_STATUS_TH[customerStatus],
+    customerStatusLabelAdminTh: CUSTOMER_STATUS_TH[customerStatus],
+    actionOwner: waitingPayment || artworkOwner === "customer" ? "customer" : artworkOwner,
+    artworkOwner,
+    openClaims: openClaimsOf(order),
+    deliveryDateBasis: waitingPayment ? "after_payment" : "planned",
+    payment: {
+      groupId: order.group.id,
+      groupCode: order.group.groupCode,
+      groupOrderCount: 1,
+      groupGrossAmount: order.grossAmount,
+      groupCashAmount: order.grossAmount,
+      orderGrossAmount: order.grossAmount,
+      orderCashAmount: order.grossAmount,
+      dueAt: waitingPayment ? order.expiresAt : null,
+      overdue,
+    },
     artworkStatus: order.artwork.status,
     ...statusLabels("artworkStatus", ARTWORK_STATUS, order.artwork.status),
     productTypeCode: order.productType.code,

@@ -163,9 +163,7 @@
       "reproduction_job": "Reprint",
       "refund": "Refund",
       "credit_note": "Credit note",
-      "store_credit": "Store credit",
-      "factory_deduction": "Deducted from the factory",
-      "carrier_recovery": "Recovered from the carrier"
+      "store_credit": "Store credit"
     },
     "photoCount": "{count, plural, one {# photo} other {# photos}}",
     "photo": "Photo {index}",

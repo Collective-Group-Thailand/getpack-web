@@ -15,8 +15,8 @@
     "lead_closed": "ผู้มุ่งหวังปิดแล้ว",
     "lead_duplicate": "ลงทะเบียนซ้ำ",
     "lead_existing_customer": "เป็นลูกค้าอยู่แล้ว",
-    "lead_existing_factory": "เป็นโรงงานในระบบแล้ว",
     "lead_taken": "มีตัวแทนลงทะเบียนแล้ว",
+    "lead_unavailable": "ลงทะเบียนผู้มุ่งหวังรายนี้ไม่ได้",
     "link_ended": "สิ้นสุดแล้ว",
     "maker_checker": "ต้องให้ผู้อื่นอนุมัติ",
     "not_agent": "ยังไม่ได้เป็นตัวแทน",
@@ -290,6 +290,8 @@
   "order": {
     "cancel_not_allowed": "ยกเลิกเองไม่ได้",
     "invalid_transition": "เปลี่ยนสถานะคำสั่งซื้อไม่ได้",
+    "requote_required": "เลยกำหนดชำระ ตรวจราคาใหม่ก่อนชำระ",
+    "requote_unavailable": "ตรวจราคาใหม่ไม่ได้ในขณะนี้",
     "reprice_below_paid": "ยอดใหม่ต่ำกว่ายอดที่ชำระแล้ว",
     "reprice_has_discounts": "คำนวณราคาใหม่ไม่ได้"
   },

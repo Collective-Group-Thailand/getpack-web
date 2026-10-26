@@ -64,7 +64,7 @@ export default async function Page() {
         {Number(totals.held) > 0 ? (
           <Callout tone="warning">{t("held", { amount: format.thb(totals.held) })}</Callout>
         ) : null}
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Stat
             label={t("customers")}
             value={format.number(totals.activeLinks)}
@@ -72,7 +72,6 @@ export default async function Page() {
             as={Link}
           />
           <Stat label={t("leads")} value={format.number(totals.openLeads)} href="/account/agent/leads" as={Link} />
-          <Stat label={t("factories")} value={format.number(totals.factories)} />
         </div>
         {agent.terms ? (
           <section aria-labelledby="agent-plan" className="flex flex-col gap-2">

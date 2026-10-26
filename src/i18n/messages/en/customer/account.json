@@ -363,7 +363,7 @@
     "until": "until {date}",
     "detailTitle": "Call-off agreement",
     "back": "Back to all agreements",
-    "pending": "Waiting for the factory to accept; releases start once it does",
+    "pending": "Waiting for confirmation; releases start once it is confirmed",
     "committed": "Committed",
     "released": "The release is in your cart",
     "left": "Left",

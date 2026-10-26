@@ -242,6 +242,9 @@ export function toGroupDto(groupId: string, who: StaffPersona | null): Schemas["
     ccEmails: first.ccEmails,
     csRemarks: first.csRemarks,
     expiresAt: first.expiresAt,
+    // D-436: past the price lock while still waiting for payment.
+    paymentOverdue:
+      first.group.status === "waiting_payment" && Boolean(first.expiresAt) && Date.parse(first.expiresAt!) < Date.now(),
     cancelledAt: first.cancelledAt,
     utm: null,
     orders: dtos,

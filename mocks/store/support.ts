@@ -27,6 +27,10 @@ const LINE_OA = "@getpack.mock";
 let ticketSeq = 0;
 export const tickets: { ticketNo: string; kind: "contact" | "handoff"; body: unknown; at: string }[] = [];
 
+/** The topic as sent; a hand-off is always `guided_help` (D-440). */
+const topicOf = (kind: "contact" | "handoff", body: unknown) =>
+  kind === "handoff" ? "guided_help" : ((body as { topic?: string } | null)?.topic ?? "other");
+
 function ticket(kind: "contact" | "handoff", body: unknown, withLine: boolean, signedIn: boolean) {
   ticketSeq += 1;
   const ticketNo = `CS-2569-${String(ticketSeq).padStart(5, "0")}`;
@@ -35,6 +39,7 @@ function ticket(kind: "contact" | "handoff", body: unknown, withLine: boolean, s
   const answer: Schemas["SupportTicketDto"] = {
     ticketNo,
     source: kind === "handoff" ? "handoff" : "contact_form",
+    topic: topicOf(kind, body),
     // `support.first_response_business_days` (D-175): a day in the mock.
     respondBy: bangkokIso(DAY),
     lineUrl: withLine

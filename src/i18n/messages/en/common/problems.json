@@ -15,8 +15,8 @@
     "lead_closed": "Lead closed",
     "lead_duplicate": "Duplicate lead",
     "lead_existing_customer": "Already a customer",
-    "lead_existing_factory": "Already a factory",
     "lead_taken": "Lead taken",
+    "lead_unavailable": "This lead can't be registered",
     "link_ended": "Link ended",
     "maker_checker": "Needs another approver",
     "not_agent": "Not an agent",
@@ -290,6 +290,8 @@
   "order": {
     "cancel_not_allowed": "Cannot cancel",
     "invalid_transition": "Invalid order transition",
+    "requote_required": "Payment is overdue — check the current price before paying",
+    "requote_unavailable": "The price can't be checked again right now",
     "reprice_below_paid": "New total below the amount paid",
     "reprice_has_discounts": "Cannot re-price"
   },

@@ -273,3 +273,32 @@ backend `/configure/uat-postal-box-b?size=C` prices size C; the data bugs above.
 threshold (settings?) · standard-size basis and `calc*` dims · finder for quote-only box categories · who supplies flute
 levels · style ↔ catalogue category map · which product drives the finder · the data bugs · service CTA · wording for
 mixed categories.
+
+---
+
+## Part 2 — steps that use the API changes
+
+Run 2026-10-26. API side read from a shallow clone of `getpack-api` `fix/uat-phase0` (`4be1c49`, deleted after
+`gen:api`). UAT may still run the old API, so everything below is coded against the new contract; features need both
+branches running locally to verify. Copied into this repo: `STAGE-A-REPORT-API.md`, five `API-CHANGES.md`,
+`API-CHANGES-A5b.md`, and §7 "Stage A API decisions" of `DECISIONS-STAGE-A.md` (the two copies are identical).
+
+### api-types — regenerate contract and fix usages · PASS
+
+- `contract/openapi.json` replaced by the branch's document. It is **still labelled 0.75.0 (no release tag)**, so
+  `gen:api --adopt --tag` cannot be used: `contract.lock.json` records the branch commit and new sha256 and keeps
+  `tag`/`source` at v0.75.0 only so `verifyLock` passes. **Re-adopt with `--adopt --tag vX.Y.Z` when the API tags.**
+- Regenerated: `schema.d.ts`, `mocks/generated/*`, `problem-codes.ts` (commit `1b3a0b0b`). 51 type errors → 0.
+- Removed (usage and UI): network stats (`/network` now only title, intro, empty state — copy is A1's), home
+  factories count, style `partnersCount` row, agent `factoryName` and `totals.factories`, `lead_existing_factory` copy,
+  customer `factory_deduction`/`carrier_recovery` claim copy.
+- Renamed: call-off `pending_factory` → `pending_confirmation` ("รอยืนยัน"), `capacity_unavailable` → `not_instant`,
+  claim `factory_review` → `under_review`, owner `factory` → `getpack`. Admin/partner keep the old codes (API renamed
+  store enums only; `admin/sales.ts` maps back). New problem copy th/en: `agents.lead_unavailable`,
+  `order.requote_required`, `order.requote_unavailable`.
+- Mocks got the new required fields (customerStatus, actionOwner, artworkOwner, paymentOverdue, spec labels, topic,
+  originalFiles …) with neutral values. Gate: lint, typecheck, 1246 + 12678 tests, build all pass.
+- Left for A1: shared label `callOff.declined` ("โรงงานไม่รับ"), unused `storefront.trust.network.*` keys.
+- **Verify locally (both branches):** `/network` and home show no counts; style detail has no maker row; agent pages
+  have no factory column; a call-off shows "รอยืนยัน"; claims never show a factory; an overdue order group shows
+  "เลยกำหนดชำระ"; a real call-off response parses without `factory`/`buyUnitPrice`.

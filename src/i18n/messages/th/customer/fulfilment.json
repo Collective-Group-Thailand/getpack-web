@@ -163,9 +163,7 @@
       "reproduction_job": "ผลิตใหม่ให้",
       "refund": "คืนเงิน",
       "credit_note": "ออกใบลดหนี้",
-      "store_credit": "เพิ่มเครดิตร้านค้า",
-      "factory_deduction": "หักจากโรงงาน",
-      "carrier_recovery": "เรียกคืนจากผู้ขนส่ง"
+      "store_credit": "เพิ่มเครดิตร้านค้า"
     },
     "photoCount": "{count} รูป",
     "photo": "รูปที่ {index}",

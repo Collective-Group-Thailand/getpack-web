@@ -364,6 +364,8 @@ export function jobCore(order: MockOrder, job: Job) {
 export function toPartnerJobDto(order: MockOrder, job: Job, who: PartnerPersona): JobDto {
   return {
     ...jobCore(order, job),
+    // D-442: anonymised copies of the customer's originals; the mock keeps none.
+    originalFiles: [],
     nextActions: partnerJobActions({ status: job.status, jobKind: job.kind }, new Set(permissionsOf(who))),
   };
 }

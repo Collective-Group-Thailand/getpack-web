@@ -273,6 +273,8 @@ function calculate(calculator: Calculator, who: StaffPersona, config: Configurat
     dimensions: null,
     steps: steps.map((step) => ({
       ...step,
+      // The back office keeps its own word for what the storefront now calls `not_instant`.
+      reason: step.reason === "not_instant" ? "capacity_unavailable" : step.reason,
       // Plates and die blocks: corrugate flexo only; folding keeps them at 0.00 (v0.3.0).
       toolingAmount: step.instant ? (calculator === "corrugate" ? "1800.00" : "0.00") : null,
       internal: internalOf(who, step),

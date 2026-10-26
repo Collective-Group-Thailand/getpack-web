@@ -172,6 +172,12 @@ export const loyaltyHandlers = [
       pendingPoints: pending,
       expiringSoon: soon.map((entry) => ({ points: entry.points, expiresAt: entry.expiresAt! })),
       spend12m: customer.loyalty.spend12m,
+      spendBasisTh:
+        "นับยอดเมื่อคำสั่งซื้อเสร็จสิ้นหลังได้รับของ · ยอดก่อน VAT ไม่รวมค่าส่ง · ย้อนหลัง 12 เดือน · อัปเดตวันละครั้ง",
+      spendBasisEn:
+        "Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily",
+      // The mock keeps no paid-but-not-completed spend.
+      spendNotYetCounted: "0.00",
       pointValue: settingValue<string>("loyalty.point_value"),
       multiplier: customer.loyalty.tier === "silver" ? "1.25" : customer.loyalty.tier === "gold" ? "1.50" : "1.00",
       currency: "THB",

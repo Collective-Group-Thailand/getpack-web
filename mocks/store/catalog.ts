@@ -71,7 +71,9 @@ function cardFacts(
   const instant = quoteMode === "instant" && key !== undefined;
   return {
     startingPricePerPiece: instant ? fakePrice(key) : null,
-    startingPriceAssumes: instant ? { quantity: 1000, specs: [] } : null,
+    startingPriceAssumes: instant
+      ? { quantity: 1000, label: { th: "1,000 ชิ้น", en: "1,000 pieces" }, specs: [] }
+      : null,
     moq: typeof moq === "number" ? moq : null,
     leadTimeDays: instant ? { min: 7, max: 10 } : null,
     availability: quoteMode === "instant" ? "instant" : "rfq",
@@ -703,6 +705,11 @@ export const storeCatalogHandlers: HttpHandler[] = [
               sizeCode: str(size?.code),
               includesVat: true,
               includesDelivery: false,
+              // The spec as one string (D-441): the values the lines below carry, joined.
+              label: {
+                th: [row.nameTh, size ? (size.name ?? size.code) : null].filter(Boolean).join(" · "),
+                en: [row.nameEn, size ? (size.name ?? size.code) : null].filter(Boolean).join(" · "),
+              },
               specs: [
                 {
                   key: "style",

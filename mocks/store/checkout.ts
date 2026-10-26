@@ -978,6 +978,7 @@ function toGroupDto(
     ccEmails: [],
     placedAt: bangkokIso(),
     expiresAt: bangkokIso(7 * DAY),
+    paymentOverdue: false,
     cancelledAt: null,
     totals: {
       netAmount: baht(priced.gross - vatIn(priced.gross)),
@@ -1126,6 +1127,11 @@ export const storeCheckoutHandlers = [
           ccEmails: [],
           placedAt: list[0]?.createdAt ?? bangkokIso(),
           expiresAt: list[0]?.expiresAt ?? null,
+          // D-436: past the price lock while still waiting for payment.
+          paymentOverdue:
+            (list[0]?.group.status ?? "waiting_payment") === "waiting_payment" &&
+            Boolean(list[0]?.expiresAt) &&
+            Date.parse(list[0]!.expiresAt!) < Date.now(),
           cancelledAt: list[0]?.cancelledAt ?? null,
           totals: {
             netAmount: baht(gross - vatIn(gross)),

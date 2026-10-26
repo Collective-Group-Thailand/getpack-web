@@ -50,7 +50,6 @@ export default async function Page({ params }: { params: Promise<{ statementId: 
               {tc(`kinds.${entry.kind}`)}
               {entry.orderCode ? <span className="font-mono"> {entry.orderCode}</span> : null}
               {entry.customerName ? <span className="text-muted"> · {entry.customerName}</span> : null}
-              {entry.factoryName ? <span className="text-muted"> · {entry.factoryName}</span> : null}
             </span>
             <span className="flex items-center gap-3">
               <span className="font-semibold tabular-nums">{format.thb(entry.amount)}</span>
