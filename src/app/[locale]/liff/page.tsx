@@ -7,9 +7,10 @@ import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { listMyOrders } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { visibleActions } from "@/features/customer/orders/order-state";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { ORDER_STATUS } from "@/domain/status";
+import { CUSTOMER_ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 
@@ -30,7 +31,10 @@ export default async function Page() {
     getPoints(),
     getProductTypeNames(locale),
   ]);
-  const todo = orders.filter((row) => row.actions.length > 0).slice(0, 5);
+  const todo = orders
+    .map((row) => ({ ...row, actions: visibleActions(row.order, row.actions) }))
+    .filter((row) => row.actions.length > 0)
+    .slice(0, 5);
 
   return (
     <div className="flex flex-col gap-6">
@@ -55,7 +59,7 @@ export default async function Page() {
                   <span className="block font-medium">{names[order.productTypeCode] ?? order.productTypeCode}</span>
                   <span className="text-muted block font-mono text-xs">{order.orderCode}</span>
                 </Link>
-                <StatusChip map={ORDER_STATUS} value={order.status} />
+                <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
               </div>
               <OrderActions
                 orderId={order.id}

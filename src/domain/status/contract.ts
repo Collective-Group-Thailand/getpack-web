@@ -20,6 +20,9 @@
 
 import type { Schemas } from "@/lib/api/types";
 
+/** The one status a customer reads on an order (D-437), derived by the API. **Source: contract** (account A2). */
+export type CustomerOrderStatus = Schemas["CustomerOrderStatus"];
+
 /** A customer order (one configuration). Driven by facts — instalments, artwork, jobs, shipments — not set by hand (B3.1). **Source: contract** (U-F0.2). */
 export type OrderStatus = Schemas["OrderStatus"];
 

@@ -12,10 +12,12 @@ import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { listMyOrders } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { isPaymentOverdue, visibleActions } from "@/features/customer/orders/order-state";
+import { RequoteButton } from "@/features/customer/orders/RequoteButton";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { ORDER_STATUS } from "@/domain/status";
+import { CUSTOMER_ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { ProductThumb, productFamilyOf } from "@/ui/components/ProductIllustration";
@@ -52,12 +54,13 @@ export default async function Page() {
   const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
   // Where things stand, by the API's own statuses (U2.F5): nothing is computed from dates here.
   const openRfqs = rfqs.filter((rfq) => ["submitted", "in_review", "need_info", "quoted"].includes(rfq.status)).length;
-  const making = active.filter(({ order }) =>
-    ["paid_for_production", "artwork_approved", "in_production"].includes(order.status),
-  ).length;
-  const onTheWay = active.filter(({ order }) => order.status === "shipping").length;
+  // The one customer status (D-437) — a delivered order with an open claim is neither "on its way" nor "in production".
+  const making = active.filter(({ order }) => order.customerStatus === "in_production").length;
+  const onTheWay = active.filter(({ order }) => order.customerStatus === "shipping").length;
   // What needs doing: the orders' own actions, and a group waiting for its payment.
-  const todo = active.filter((row) => row.actions.length > 0 || row.group.status === "waiting_payment");
+  const todo = active
+    .map((row) => ({ ...row, actions: visibleActions(row.order, row.actions) }))
+    .filter((row) => row.actions.length > 0 || row.group.status === "waiting_payment");
 
   return (
     <div className="flex flex-col gap-8">
@@ -124,11 +127,17 @@ export default async function Page() {
                   </p>
                   <p className="text-muted mt-0.5 flex flex-wrap items-center gap-2 text-[13px]">
                     <span className="font-mono">{order.orderCode}</span>
-                    <StatusChip map={ORDER_STATUS} value={order.status} />
+                    <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
                   </p>
                 </div>
                 <div className="flex basis-full flex-wrap items-center gap-2 sm:basis-auto">
-                  {group.status === "waiting_payment" ? (
+                  {isPaymentOverdue(order) ? (
+                    <RequoteButton
+                      size="sm"
+                      groupId={order.payment.groupId}
+                      payHref={`/account/orders/${order.id}#instalments`}
+                    />
+                  ) : group.status === "waiting_payment" ? (
                     <Button asChild size="sm" iconStart="credit-card">
                       <Link href={`/account/orders/${order.id}#instalments`}>{t("payDue")}</Link>
                     </Button>

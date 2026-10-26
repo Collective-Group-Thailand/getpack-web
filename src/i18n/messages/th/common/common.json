@@ -51,7 +51,10 @@
     "reference": "รหัสอ้างอิง",
     "copyReference": "คัดลอกรหัสอ้างอิง",
     "referenceCopied": "คัดลอกแล้ว",
-    "backHome": "กลับหน้าหลัก"
+    "backHome": "กลับหน้าหลัก",
+    "temporaryTitle": "ระบบขัดข้องชั่วคราว",
+    "temporaryRetrying": "กำลังลองใหม่อัตโนมัติ (ครั้งที่ {attempt} จาก {max})",
+    "temporaryBody": "ลองอีกครั้งในอีกสักครู่ หากยังไม่ได้ กรุณาแจ้งทีมงานพร้อมรหัสอ้างอิงด้านล่าง"
   },
   "notifications": {
     "label": "การแจ้งเตือน",

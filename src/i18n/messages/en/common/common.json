@@ -51,7 +51,10 @@
     "reference": "Reference",
     "copyReference": "Copy reference",
     "referenceCopied": "Copied",
-    "backHome": "Back to the start"
+    "backHome": "Back to the start",
+    "temporaryTitle": "The system is temporarily unavailable",
+    "temporaryRetrying": "Trying again automatically (attempt {attempt} of {max}).",
+    "temporaryBody": "Please try again in a moment. If it keeps happening, tell our team with the reference below."
   },
   "notifications": {
     "label": "Notifications",

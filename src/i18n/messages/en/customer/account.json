@@ -117,7 +117,8 @@
     "documentRow": "{number} · {date} · {amount}",
     "approvalsForYou": "{count, plural, one {# order} other {# orders}} waiting for your approval",
     "approvalsForYouBody": "{company} orders above the buyer's limit",
-    "approvalsOpen": "Open approvals →"
+    "approvalsOpen": "Open approvals →",
+    "tierNotYetCounted": "{amount} more will count once your orders complete"
   },
   "quotes": {
     "title": "Saved quotations",
@@ -460,7 +461,10 @@
     "dueNow": "Due now",
     "lastOrder": "Last time {code} · {quantity} pcs",
     "suggested": "Suggested {quantity} pcs by {date}",
-    "reorderAction": "Reorder"
+    "reorderAction": "Reorder",
+    "overdue": "Payment overdue",
+    "overdueBody": "Your order is not cancelled. Check today’s price before you pay.",
+    "overdueAction": "Check the price again and pay"
   },
   "messages": {
     "title": "Messages",

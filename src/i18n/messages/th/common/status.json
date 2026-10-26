@@ -15,7 +15,7 @@
     "expired": "เกินกำหนด"
   },
   "artwork": {
-    "awaitingTemplate": "รอแบบไดคัท",
+    "awaitingTemplate": "รอทีมส่งแบบไดคัทให้ลูกค้า",
     "awaitingUpload": "รอไฟล์งาน",
     "uploaded": "อัปโหลดไฟล์แล้ว",
     "inReview": "กำลังตรวจไฟล์",
@@ -1057,6 +1057,21 @@
     },
     "rfqQuote": {
       "accepted": "คุณตอบรับแล้ว"
+    },
+    "artwork": {
+      "awaitingTemplate": "รอทีมส่งแบบไดคัทให้",
+      "awaitingUpload": "รอไฟล์จากคุณ"
     }
+  },
+  "customerOrder": {
+    "awaitingPayment": "รอชำระเงิน",
+    "awaitingArtwork": "รอไฟล์งาน",
+    "awaitingApproval": "รออนุมัติแบบ",
+    "inProduction": "กำลังผลิต",
+    "shipping": "กำลังจัดส่ง",
+    "received": "ได้รับแล้ว",
+    "claimInReview": "ได้รับแล้ว · เคลมกำลังตรวจ",
+    "completed": "เสร็จสิ้น",
+    "cancelled": "ยกเลิก"
   }
 }
