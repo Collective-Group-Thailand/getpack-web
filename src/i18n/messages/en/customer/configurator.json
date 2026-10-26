@@ -228,12 +228,12 @@
         "description": "Upload it after ordering; our team checks it before production"
       },
       "online_designer": {
-        "label": "Design online",
-        "description": "Design it yourself on a true-size template, free"
+        "label": "Design in the studio",
+        "description": "Place your logo and text on the real box, in the browser"
       },
       "hired_design": {
         "label": "Hire a designer",
-        "description": "Send a brief and a getpack designer does it, with 3 free revisions"
+        "description": "Send a brief and a getpack designer does it"
       },
       "free_design": {
         "label": "Free design",
@@ -262,6 +262,13 @@
       "cap": " (up to {amount})"
     },
     "promoValidUntil": "Valid until {date}",
+    "paths": "How the artwork is made",
+    "openStudio": "Open the studio",
+    "sample": {
+      "label": "Ask for a real sample before production",
+      "hint": "Check size, colour and print before a large run",
+      "needsPrice": "See the price first, then ask for a sample"
+    },
     "attached": {
       "title": "Studio design attached",
       "body": "“{title}” version {version} will be this order's artwork; we check the file and send a proof before printing.",

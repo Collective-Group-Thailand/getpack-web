@@ -545,13 +545,11 @@ export function seedFromDesign(
       ...(inks && front ? { print_front: inks } : {}),
     };
   }
-  // An asked-for option wins (`/studio/upload`'s `own_file`, a design's "order this"); without one,
-  // a configuration from the designer keeps the online designer and the home page's quick start
-  // leaves the choice open.
+  // Only an asked-for option is seeded (`?design=own_file` from `/studio/upload`, a design's "order this").
+  // Without one the step opens on the API's own default (`configurator.design.default`): "มีไฟล์งานแล้ว"
+  // is never reached by accident, and a size from the product page does not pick the Studio either.
   if (design) seed.designOption = design;
   if (design && designId) seed.designDocumentId = designId;
-  else if (!design && query.from !== "home" && configurator.design.options.includes("online_designer"))
-    seed.designOption = "online_designer";
   return seed;
 }
 
