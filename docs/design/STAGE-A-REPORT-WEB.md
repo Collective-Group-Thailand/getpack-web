@@ -381,9 +381,31 @@ branches running locally to verify. Copied into this repo: `STAGE-A-REPORT-API.m
 - **UAT price check (calculate, 2 of 40 calls used):** `uat-postal-box-b`, size 00, KA125 B, qty 100/300/500/1000, with
   exactly one ink: ดำ → ฿17.26/17.26/17.26/14.96; CMYK only → identical. **So two inks do not explain ฿17.26 on UAT**; the
   ฿15.70 vs ฿17.26 gap on UAT has another cause — re-check with the new API running.
-- Gate passes; screenshots skipped (the changed UI needs a priced UAT page; the pages were exercised by script).
+- Gate passes. Screenshots (mock dataset, no horizontal scroll at 390): `A4-configure-{390,1440,1440-dark}` (the price bar is empty there because `calculate` is blocked in the script).
 - **Verify locally (both branches):** size 00 → ดำ, then CMYK → ฿ equal to the listing price; toggle ดำ ↔ CMYK; a draft with
   both inks collapses to CMYK; steps 2–4 badge; size F at 100 pcs; no raw keys in th/en.
 - **Open:** RFQ page should also read the quantity from the link (takes `from`+`calc` only) · should the API mark ดำ/CMYK
   "choose one" (web rule would become a safeguard) · Summary step still shows defaulted steps as complete · unused string
   `configurator.dock.noInstantPrice`.
+
+### A5b-web — confidentiality leftovers · SKIPPED (no customer-visible effect)
+
+The API report's A5b changes (getpack as carrier sender, metadata stripped from uploads, production copies of originals,
+locked proof renamed `<orderCode>-proof-v<n>`) touch **no store endpoint**. `originalFiles` appears only on partner and
+admin production-job responses; carriers are off; customer files come back cleaned (size and hash may change) with no
+new field. Nothing to change in the customer zone, and the admin/partner UI for `originalFiles` is outside Stage A web.
+**Verify locally:** a customer artwork upload still previews and downloads after the API scrubs it. **Open (API's):**
+carrier pickup at the factory, unsupported original formats, real return address, working-proof names.
+
+---
+
+## Part 2 totals
+
+- **`calculate` budget:** 2 of 40 calls, both on UAT against `uat-postal-box-b`, size 00 (140 × 97.5 × 60 internal),
+  KA125 B, qty 100/300/500/1000: (1) print front ดำ ×1, (2) print front CMYK ×1 — see A4. The A9b/A9c-style "is it a pure
+  calculation?" check relied on the contract text ("Nothing is saved") and the earlier code reading (only a `calculate_logs`
+  row); the API clone was already deleted, so the code was **not re-read** for Part 2. All other POSTs were blocked in the
+  browser; the mock-dataset screenshots signed in against in-process MSW only.
+- **Not run:** e2e (any spec), `pnpm lhci`, anything against the new API. Everything is coded against the regenerated
+  contract (an **unreleased pin** of getpack-api `fix/uat-phase0`, still labelled 0.75.0 — re-adopt with
+  `pnpm gen:api --adopt --tag vX.Y.Z` once the API tags a release).
