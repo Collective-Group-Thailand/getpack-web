@@ -200,3 +200,10 @@ export const activeFilterCount = (params: ListParams) =>
  * category alone is (its rail link is a plain page); the quick view is an overlay, not a filter.
  */
 export const isFiltered = (params: ListParams) => activeFilterCount(params) > 0 || !!params.q;
+
+/** The page a list of `shown` cards stands for: how many 24s a reload of the URL should start with. */
+export const pageFor = (shown: number) => Math.min(MAX_PAGE, Math.max(1, Math.ceil(shown / PAGE_SIZE)));
+
+/** This view's search string with the page for `shown` cards — what "โหลดเพิ่ม" writes to the address bar. */
+export const searchWithPage = (current: string, shown: number) =>
+  toSearch({ ...readParams(Object.fromEntries(new URLSearchParams(current))), page: pageFor(shown) });

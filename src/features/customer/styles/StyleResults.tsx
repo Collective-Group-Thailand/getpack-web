@@ -8,6 +8,8 @@ import type { StyleCard, StyleListQuery } from "@/features/customer/catalog/api.
 import { Button } from "@/ui/components/Button";
 import { VirtualGrid } from "@/ui/components/VirtualGrid";
 
+import { searchWithPage } from "./query";
+
 const StyleCardView = dynamic(() => import("./StyleCardView"));
 
 type Item = { code: string; node: React.ReactNode } | { code: string; style: StyleCard };
@@ -26,8 +28,8 @@ export interface StyleResultsProps {
 
 /**
  * The library's results (styles redesign §4, §14): a virtualised grid of cards at least 228 px
- * wide (two columns on a phone) that grows 24 at a time by the API's cursor, with how many of how
- * many are shown. The first page arrives as cards the server rendered, so the browser runs only
+ * wide (two columns on a phone) that grows 24 at a time by the API's cursor — and the URL's `page`, so a reload keeps the length — with
+ * how many of how many are shown. The first page arrives as cards the server rendered, so the browser runs only
  * the grid and each card's islands; the card renderer and the API client load with "โหลดเพิ่ม".
  */
 export function StyleResults({ initial, nextCursor, query, total, signedIn, signInHref }: StyleResultsProps) {
@@ -43,13 +45,22 @@ export function StyleResults({ initial, nextCursor, query, total, signedIn, sign
       const { browserApi } = await import("@/lib/api/browser");
       const { data } = await browserApi().GET("/v1/store/styles", { params: { query: { ...query, cursor } } });
       if (data) {
-        setItems((current) => [
-          ...current,
-          ...data.data
-            .filter((s) => !current.some((c) => c.code === s.code))
-            .map((style) => ({ code: style.code, style })),
-        ]);
+        const added = data.data
+          .filter((s) => !items.some((c) => c.code === s.code))
+          .map((style) => ({ code: style.code, style }));
+        setItems([...items, ...added]);
         setCursor(data.meta.nextCursor);
+        // The address now says how far the list has grown, so a reload or a shared link lands here.
+        try {
+          const search = searchWithPage(window.location.search, items.length + added.length);
+          window.history.replaceState(
+            window.history.state,
+            "",
+            `${window.location.pathname}${search ? `?${search}` : ""}`,
+          );
+        } catch {
+          // The address bar is a convenience; the list has already grown.
+        }
       }
     } finally {
       setLoading(false);
