@@ -19,10 +19,10 @@
     "signIn": "Sign in",
     "quote": "Get a price",
     "more": "More",
-    "studio": "Design studio",
-    "templates": "Box templates",
-    "productsPricing": "Products & prices",
-    "business": "For business",
+    "studio": "Studio",
+    "templates": "Templates",
+    "productsPricing": "Pricing",
+    "business": "Business",
     "startFree": "Start designing free"
   },
   "footer": {
@@ -86,7 +86,7 @@
   "pages": {
     "configure": "Configure and price",
     "rfq": "Request a quote",
-    "templates": "Box templates",
+    "templates": "Templates",
     "checkout": "Checkout",
     "business": "getpack for business",
     "track": "Track an order",
