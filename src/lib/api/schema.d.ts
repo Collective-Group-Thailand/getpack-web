@@ -40952,6 +40952,11 @@ export interface components {
             min: number;
         };
         CalculateQuoteBatchDto: {
+            /**
+             * @description Key of the variant the others are compared with (must equal one `variants[].key`); when sent every result carries `deltas`
+             * @example size:s1
+             */
+            baselineKey?: string;
             /** @example folding_carton */
             productTypeCode: string;
             /**
@@ -69208,6 +69213,20 @@ export interface components {
             /** @description One entry per variant, in request order */
             results: components["schemas"]["QuoteBatchResultDto"][];
         };
+        QuoteBatchDeltaDto: {
+            /** @example 1000 */
+            quantity: number;
+            /**
+             * @description `productAmount` (pieces incl. VAT, excluding shipping) minus the baseline variant's for the same quantity; same rules as `unitPriceDelta`
+             * @example 1200.00
+             */
+            totalDelta: string | null;
+            /**
+             * @description Unit price incl. VAT minus the baseline variant's for the same quantity; signed 2-decimal string; null when either side is not an instant price or lacks the quantity
+             * @example -0.86
+             */
+            unitPriceDelta: string | null;
+        };
         QuoteBatchProblemDto: {
             /**
              * @description The error code `calculate` would raise
@@ -69220,6 +69239,8 @@ export interface components {
         QuoteBatchResultDto: {
             /** @description Null when the variant failed */
             calculation: components["schemas"]["QuoteCalculationDto"] | null;
+            /** @description Per quantity of this variant against `baselineKey` (all zero for the baseline itself); null without `baselineKey` or without a calculation */
+            deltas: components["schemas"]["QuoteBatchDeltaDto"][] | null;
             /** @example size:s2 */
             key: string;
             /** @description Null when the variant was priced */
@@ -318638,11 +318659,19 @@ export interface operations {
                      *               "targetPricePerUnit": "11.50"
                      *             }
                      *           },
+                     *           "deltas": [
+                     *             {
+                     *               "quantity": 1000,
+                     *               "totalDelta": "0.00",
+                     *               "unitPriceDelta": "0.00"
+                     *             }
+                     *           ],
                      *           "key": "size:s1",
                      *           "problem": null
                      *         },
                      *         {
                      *           "calculation": null,
+                     *           "deltas": null,
                      *           "key": "size:s2",
                      *           "problem": {
                      *             "code": "validation.failed",
