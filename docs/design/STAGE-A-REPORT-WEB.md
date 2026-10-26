@@ -367,3 +367,23 @@ branches running locally to verify. Copied into this repo: `STAGE-A-REPORT-API.m
   when several (first today) · web strings still in the old order: `customSizeBody` "กว้าง × ยาว × สูง", designer.json
   "กว้าง × สูง × ลึก" (report only) · product description "โลโก้ 1–2 สี" is admin catalogue text (report only) ·
   Studio dock not touched (A6/A7).
+
+### A4 — configurator · Phase 0 · PASS
+
+- **Ink bug fixed:** the web hard-coded the print groups as multi-select (API sends `selection: null`), so ดำ + CMYK could
+  be sent together. One rule (`model.ts` `toggleChoice`/`normaliseInks`): CMYK replaces other inks, another ink removes
+  CMYK, spot inks still combine; seeds/drafts holding both collapse to CMYK. Calculate body now has exactly one ink for a
+  single choice (tests a/b/c).
+- Raw key `configurator.quantity.target` fixed (message had an argument the call didn't pass) + i18n key test; steps 2–4 show
+  "ค่าเริ่มต้น" until confirmed (UI only); non-instant quantity (size F at 100) → price area and primary CTA read
+  "ขอใบเสนอราคา" with the calculation prefilled. Items 3 and 5 report only (flat tiers intended; VAT → Stage B).
+  A badge pill class tripped the design-language test; changed to `rounded-control` (1 fix attempt).
+- **UAT price check (calculate, 2 of 40 calls used):** `uat-postal-box-b`, size 00, KA125 B, qty 100/300/500/1000, with
+  exactly one ink: ดำ → ฿17.26/17.26/17.26/14.96; CMYK only → identical. **So two inks do not explain ฿17.26 on UAT**; the
+  ฿15.70 vs ฿17.26 gap on UAT has another cause — re-check with the new API running.
+- Gate passes; screenshots skipped (the changed UI needs a priced UAT page; the pages were exercised by script).
+- **Verify locally (both branches):** size 00 → ดำ, then CMYK → ฿ equal to the listing price; toggle ดำ ↔ CMYK; a draft with
+  both inks collapses to CMYK; steps 2–4 badge; size F at 100 pcs; no raw keys in th/en.
+- **Open:** RFQ page should also read the quantity from the link (takes `from`+`calc` only) · should the API mark ดำ/CMYK
+  "choose one" (web rule would become a safeguard) · Summary step still shows defaulted steps as complete · unused string
+  `configurator.dock.noInstantPrice`.

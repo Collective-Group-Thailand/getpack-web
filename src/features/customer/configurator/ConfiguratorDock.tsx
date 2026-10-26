@@ -114,9 +114,14 @@ export function ConfiguratorDock({
       <Skeleton className="h-4 w-56" />
     </div>
   ) : noPrice ? (
+    // The main price area itself becomes the quotation request for this quantity and spec; the
+    // button below carries the configuration to the RFQ form (`rfqHref`, with the calculation).
     <div>
-      <p className="font-semibold">{t("noInstantPrice")}</p>
+      <p className="font-semibold">{t("quoteForQuantity", { quantity: format.number(noPrice.quantity), unit })}</p>
       <p className="text-muted text-sm">{t(`reasons.${noPrice.reason ?? "no_price_path"}`)}</p>
+      {specLabel ? (
+        <p className="text-muted mt-1 text-xs leading-snug">{specLabelText(specLabel, format.locale)}</p>
+      ) : null}
     </div>
   ) : undefined;
 

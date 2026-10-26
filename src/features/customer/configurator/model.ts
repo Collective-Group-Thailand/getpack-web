@@ -226,6 +226,39 @@ export function placementOf(group: ChoiceGroup, option: StoreOption): Placement 
  */
 export const isProcessInk = (option: StoreOption) => option.attributes?.colourKind === "process";
 
+/** The ink groups: front and back colours of a part (a pouch's `print_set` is one colour set, single). */
+const isInkGroup = (group: Pick<ChoiceGroup, "kind">) => group.kind === "print_front" || group.kind === "print_back";
+
+/**
+ * The one place that says how inks combine on a side: a process ink (CMYK) is the whole
+ * four-colour print, so it and any other ink are alternatives; only spot inks may be combined.
+ * Choosing a process ink replaces the other choices, choosing another ink drops a process ink.
+ */
+export function toggleChoice(
+  group: Pick<ChoiceGroup, "kind">,
+  options: ReadonlyMap<string, StoreOption>,
+  chosen: string[],
+  id: string,
+  on: boolean,
+): string[] {
+  if (!on) return chosen.filter((other) => other !== id);
+  if (chosen.includes(id)) return chosen;
+  if (!isInkGroup(group)) return [...chosen, id];
+  const option = options.get(id);
+  if (option && isProcessInk(option)) return [id];
+  return [...chosen.filter((other) => !(options.get(other) && isProcessInk(options.get(other)!))), id];
+}
+
+/**
+ * Normalises a list of ink ids (a seed, a draft, a shared quote) to the same rule: duplicates
+ * go, and where a process ink is among them it stands alone (it already prints black).
+ */
+export function normaliseInks(options: ReadonlyMap<string, StoreOption>, ids: string[]): string[] {
+  const unique = [...new Set(ids)];
+  const process = unique.filter((id) => options.get(id) && isProcessInk(options.get(id)!));
+  return process.length > 0 ? [process[process.length - 1]!] : unique;
+}
+
 /* ------------------------------------------------------------------------------- patterns */
 
 export function patternById(configurator: Configurator, patternId: string | null): Pattern | null {

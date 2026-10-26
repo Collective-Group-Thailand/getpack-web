@@ -23,6 +23,7 @@
   },
   "stepper": {
     "complete": "done",
+    "defaulted": "Default",
     "error": "needs attention",
     "stepOf": "Step {index} of {total}"
   },
@@ -179,7 +180,7 @@
     "outOfRange": "Order between {min} and {max} {unit}",
     "summary": "{quantity} {unit} · comparing {tiers, plural, one {# quantity} other {# quantities}}",
     "invalid": "Enter a whole number of 1 or more",
-    "target": "Target price per {unit} (optional)",
+    "target": "Budget per piece in mind (optional)",
     "targetHint": "Baht per {unit}, VAT included, shipping excluded — compared with the real price; never shown to anyone else",
     "targetInvalid": "Enter an amount in baht with up to two decimals",
     "targetSummary": "target {target}/{unit}"
@@ -264,6 +265,7 @@
     "failed": "We could not work out a price",
     "retry": "Try again",
     "calculating": "Working out the price",
+    "quoteForQuantity": "Request a quotation for {quantity} {unit}",
     "noInstantPrice": "No instant price for this quantity",
     "reasons": {
       "no_price_path": "Our team prices this spec by hand — send a quote request.",
