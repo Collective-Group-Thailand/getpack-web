@@ -23,6 +23,8 @@ export interface VariantActionsProps {
   rfqHref: string | null;
   /** Told which way the customer went — the library counts its calls to action (`catalog_cta`). */
   onAction?: (action: "design" | "cart" | "quote") => void;
+  /** The studio button's words, when the page wants other than the default ("เริ่มออกแบบแบบนี้" in the quick view). */
+  designLabel?: string;
 }
 
 /**
@@ -31,7 +33,7 @@ export interface VariantActionsProps {
  * (configure) or quoted (a request for quotation carrying the variant code). The engine's library
  * is loaded only when the studio is asked for, not with the page.
  */
-export function VariantActions({ base, variant, productSlug, rfqHref, onAction }: VariantActionsProps) {
+export function VariantActions({ base, variant, productSlug, rfqHref, onAction, designLabel }: VariantActionsProps) {
   const t = useTranslations("styles.detail");
   const router = useRouter();
   const [opening, setOpening] = useState(false);
@@ -67,7 +69,7 @@ export function VariantActions({ base, variant, productSlug, rfqHref, onAction }
       loading={opening}
       onClick={() => void openStudio()}
     >
-      {t("designInStudio")}
+      {designLabel ?? t("designInStudio")}
     </Button>
   );
   const quote = (
