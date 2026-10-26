@@ -8,6 +8,7 @@ import { pick } from "@/features/customer/catalog/localize";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { specLabelText } from "@/features/shared/spec-label";
 import { useRouter } from "@/i18n/navigation";
+import { trackConfigurator } from "@/lib/analytics/configurator";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import type { LengthUnit } from "@/ui/components/DimensionInput";
@@ -28,6 +29,7 @@ import { basesOf, groupsOf, isProcessInk, optionsById, sizeKindOf } from "./mode
 import { isCorrugate, refusedSide } from "./print-model";
 import { isApiError } from "@/lib/api/problem";
 import { useOptionPrices } from "./option-prices";
+import { useChangeTracker } from "./tracking";
 import { queryOf, searchWith } from "./url-state";
 import { PRICE_DEBOUNCE_MS, useLivePrice } from "./pricing";
 import { rememberedPostcode, usePostcodeArea } from "./postcode";
@@ -161,6 +163,8 @@ export function Configurator({
     setTouched((previous) => (previous.has(step) ? previous : new Set(previous).add(step)));
   const update = (patch: Partial<ConfiguratorState>, step?: StepKey) => {
     if (step) touch(step);
+    // One customer action, one analytics event (the cards' `delta` is the API's, read from the batch answer).
+    report(state, { ...state, ...patch }, optionPrices);
     setState((previous) => ({ ...previous, ...patch }));
   };
   /** A step's own changes mark it as the customer's (it stops reading "ค่าเริ่มต้น"). */
@@ -373,6 +377,7 @@ export function Configurator({
     if (POSTCODE.test(state.postcode)) rememberedPostcode(state.postcode);
   }, [state.postcode]);
   const { area: postcodeArea } = usePostcodeArea(state.postcode);
+  const report = useChangeTracker(configurator, state.postcode, postcodeArea?.province.nameEn ?? null);
 
   // The configuration in the address, after a pause and without a navigation (`history.replaceState` is how the
   // App Router takes a search change without fetching the page again). Defaults are left out; the first render
@@ -419,6 +424,17 @@ export function Configurator({
     opened.current = true;
     track("configurator_opened", { route: "/configure/[slug]", productType: configurator.productTypeCode });
   }, [configurator.productTypeCode]);
+  // The API has no instant price for this size and quantity: counted once per combination (demand it cannot serve).
+  const noPriceQuantity = price.data?.steps.find((step) => step.quantity === state.quantity && !step.instant)?.quantity ?? null;
+  const quoteOnlyShown = useRef<string | null>(null);
+  useEffect(() => {
+    if (noPriceQuantity === null) return;
+    const size = state.sizeMode === "standard" && state.standardSizeCode ? state.standardSizeCode : "custom";
+    const key = `${size}:${noPriceQuantity}`;
+    if (quoteOnlyShown.current === key) return;
+    quoteOnlyShown.current = key;
+    trackConfigurator("cfg_quote_only_shown", { size, qty: noPriceQuantity });
+  }, [noPriceQuantity, state.sizeMode, state.standardSizeCode]);
   const shownFor = useRef<string | null>(null);
   useEffect(() => {
     if (!priced) return;
@@ -582,6 +598,7 @@ export function Configurator({
               // A sample is asked for on a kept quotation, so there must be a price to keep.
               disabled: !priced,
               onChange: (on) => {
+                trackConfigurator("cfg_sample_toggle", { on });
                 if (on) actions.run("sample");
               },
             }}
@@ -786,7 +803,13 @@ export function Configurator({
         failed={price.isError}
         refusal={refusedLines}
         onRetry={() => void price.refetch()}
-        onAction={actions.run}
+        onAction={(action) => {
+          // The summary's own buttons; the target panel's levers are not counted as a way out.
+          const cta = { cart: "cart", save: "save", share: "share", pdf: "pdf", sample: "sample" } as const;
+          if (action in cta) trackConfigurator("cfg_cta", { cta: cta[action as keyof typeof cta] });
+          actions.run(action);
+        }}
+        onLink={(cta) => trackConfigurator("cfg_cta", { cta })}
         busy={actions.busy}
         lastQuote={actions.lastQuote}
         rfqHref={rfqHref}
@@ -804,7 +827,11 @@ export function Configurator({
         <RequestSampleDialog
           quoteId={actions.sampleFor}
           open
-          onOpenChange={(open) => !open && actions.closeSample()}
+          onOpenChange={(open) => {
+            if (open) return;
+            trackConfigurator("cfg_sample_toggle", { on: false });
+            actions.closeSample();
+          }}
           defaultPostcode={state.postcode}
         />
       ) : null}
