@@ -14,6 +14,7 @@ import type { LengthUnit } from "@/ui/components/DimensionInput";
 import {
   basesOf,
   groupsOf,
+  normaliseInks,
   optionsById,
   patternById,
   placementOf,
@@ -201,7 +202,7 @@ export function initialState(configurator: Configurator, seed: Partial<Configura
   }
   const bases = basesOf(configurator);
   const tiers = defaultTiers(configurator);
-  return {
+  const state: ConfiguratorState = {
     patternId: pattern?.id ?? null,
     sizeMode: standard ? "standard" : "custom",
     standardSizeCode: standard?.code ?? null,
@@ -227,6 +228,25 @@ export function initialState(configurator: Configurator, seed: Partial<Configura
     load: DEFAULT_LOAD,
     advisory: null,
     ...seed,
+  };
+  return normaliseInkChoices(configurator, state);
+}
+
+/** ดำ + CMYK is never one choice (`normaliseInks`): the starting state, a seed or a draft are brought to the rule. */
+function normaliseInkChoices(configurator: Configurator, state: ConfiguratorState): ConfiguratorState {
+  const byId = optionsById(configurator);
+  const fix = (ids: string[] | undefined) => (ids ? normaliseInks(byId, ids) : ids);
+  const choices = { ...state.choices };
+  for (const kind of ["print_front", "print_back"] as const) if (choices[kind]) choices[kind] = fix(choices[kind]);
+  return {
+    ...state,
+    choices,
+    partPrints: Object.fromEntries(
+      Object.entries(state.partPrints).map(([id, print]) => [
+        id,
+        { print_front: fix(print.print_front)!, print_back: fix(print.print_back)! },
+      ]),
+    ),
   };
 }
 

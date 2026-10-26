@@ -51,6 +51,28 @@ describe("Stepper", () => {
   });
 });
 
+describe("Stepper default values", () => {
+  it("says ค่าเริ่มต้น, not เรียบร้อยแล้ว, for a step nobody confirmed", () => {
+    render(
+      <Stepper
+        aria-label="ขั้นตอน"
+        current="size"
+        onSelect={() => {}}
+        labels={{ ...stepperLabels, defaulted: "ค่าเริ่มต้น" }}
+        steps={[
+          { id: "size", label: "ขนาด", status: "current", content: null },
+          { id: "material", label: "วัสดุ", status: "complete", defaulted: true, content: null },
+          { id: "print", label: "การพิมพ์", status: "complete", content: null },
+        ]}
+      />,
+    );
+    const material = screen.getByRole("button", { name: /วัสดุ/ });
+    expect(material).toHaveTextContent("ค่าเริ่มต้น");
+    expect(material).not.toHaveTextContent("เรียบร้อยแล้ว");
+    expect(screen.getByRole("button", { name: /การพิมพ์\s*—\s*เรียบร้อยแล้ว/ })).toBeInTheDocument();
+  });
+});
+
 describe("PriceSummary and PriceBreakTable", () => {
   it("pairs each amount with its label and lets a quantity be chosen", async () => {
     const onSelect = vi.fn();

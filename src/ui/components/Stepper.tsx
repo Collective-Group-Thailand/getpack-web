@@ -13,6 +13,8 @@ export interface StepperStep {
   /** The answer so far, shown under the label once there is one ("กล่องฝาเสียบ · 120 × 80 × 60 มม."). */
   summary?: React.ReactNode;
   status: StepStatus;
+  /** A complete step whose answer is still the starting value nobody confirmed or changed ("ค่าเริ่มต้น"). */
+  defaulted?: boolean;
   /** Rendered while the step is open. */
   content: React.ReactNode;
 }
@@ -20,6 +22,8 @@ export interface StepperStep {
 export interface StepperLabels {
   /** "เสร็จแล้ว" — announced after a complete step's label. */
   complete: string;
+  /** "ค่าเริ่มต้น" — shown (and announced) instead of the done state while a step still holds its starting value. */
+  defaulted?: string;
   /** "ต้องแก้ไข" — announced after a step with an error. */
   error: string;
   /** "ขั้นที่ 2 จาก 7". */
@@ -68,14 +72,18 @@ export function Stepper({ steps, current, onSelect, labels, headingLevel = 3, cl
               aria-hidden
               className={cn(
                 "relative mt-2 flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold tabular-nums",
-                step.status === "complete" && "border-success bg-success-subtle text-success-subtle-fg",
+                step.status === "complete" &&
+                  !step.defaulted &&
+                  "border-success bg-success-subtle text-success-subtle-fg",
                 step.status === "error" && "border-danger bg-danger-subtle text-danger-subtle-fg",
                 open && step.status !== "error" && "border-primary bg-primary text-primary-fg",
-                !open && step.status === "upcoming" && "border-border-strong text-muted bg-surface",
+                !open &&
+                  (step.status === "upcoming" || (step.status === "complete" && step.defaulted)) &&
+                  "border-border-strong text-muted bg-surface",
                 open && step.status === "complete" && "border-primary bg-primary text-primary-fg",
               )}
             >
-              {step.status === "complete" && !open ? (
+              {step.status === "complete" && !step.defaulted && !open ? (
                 <Icon name="check" size={16} />
               ) : step.status === "error" ? (
                 <Icon name="warning" size={16} />
@@ -97,7 +105,14 @@ export function Stepper({ steps, current, onSelect, labels, headingLevel = 3, cl
                   <span className="sr-only">{labels.stepOf(index + 1, steps.length)} </span>
                   <span className={cn("text-base font-semibold", !open && step.status === "upcoming" && "text-muted")}>
                     {step.label}
-                    {step.status === "complete" ? <span className="sr-only"> — {labels.complete}</span> : null}
+                    {step.status === "complete" && !step.defaulted ? (
+                      <span className="sr-only"> — {labels.complete}</span>
+                    ) : null}
+                    {step.status === "complete" && step.defaulted && labels.defaulted ? (
+                      <span className="bg-bg-subtle text-muted ms-2 rounded-control px-2 py-0.5 align-middle text-xs font-normal">
+                        {labels.defaulted}
+                      </span>
+                    ) : null}
                     {step.status === "error" ? <span className="sr-only"> — {labels.error}</span> : null}
                   </span>
                   {step.summary && !open ? (

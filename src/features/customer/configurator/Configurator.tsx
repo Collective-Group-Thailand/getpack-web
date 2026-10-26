@@ -17,6 +17,7 @@ import { Stepper, type StepStatus } from "@/ui/components/Stepper";
 import { quantityBand } from "../analytics/bands";
 import { loadOf, useAdvisor, useAdvisorMethod, type AdvisorOption } from "./advisor";
 import { buildCalculateBody, seedFromConfiguration } from "./build";
+import { isDefaultStep } from "./step-defaults";
 import { ConfiguratorDock } from "./ConfiguratorDock";
 import { boxStyleOf, ConfiguratorPreview } from "./ConfiguratorPreview";
 import { useConversion, usePatternBases } from "./conversion";
@@ -138,7 +139,16 @@ export function Configurator({
   const steps = useMemo(() => stepsOf(configurator, { advisor: advisorOn }), [configurator, advisorOn]);
   const [current, setCurrent] = useState<StepKey>(steps[0]!);
 
-  const update = (patch: Partial<ConfiguratorState>) => setState((previous) => ({ ...previous, ...patch }));
+  // Steps the customer changed or confirmed; a draft, shared or saved configuration is theirs already.
+  const [touched, setTouched] = useState<ReadonlySet<StepKey>>(() =>
+    seed?.choices || resumed ? new Set(steps) : new Set(),
+  );
+  const touch = (step: StepKey) =>
+    setTouched((previous) => (previous.has(step) ? previous : new Set(previous).add(step)));
+  const update = (patch: Partial<ConfiguratorState>) => {
+    touch(current);
+    setState((previous) => ({ ...previous, ...patch }));
+  };
 
   // D-182: the bases this pattern is measured on, as the API's conversion knows its construction.
   // A style the API builds flat is measured on its finished size only, so that is its basis; a
@@ -388,7 +398,10 @@ export function Configurator({
     return following ? (
       <button
         type="button"
-        onClick={() => setCurrent(following)}
+        onClick={() => {
+          touch(step);
+          setCurrent(following);
+        }}
         className="text-primary mt-4 inline-flex min-h-10 items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
       >
         {t("next", { step: t(`steps.${following}`) })}
@@ -541,6 +554,7 @@ export function Configurator({
           }}
           labels={{
             complete: t("stepper.complete"),
+            defaulted: t("stepper.defaulted"),
             error: t("stepper.error"),
             stepOf: (index, total) => t("stepper.stepOf", { index, total }),
           }}
@@ -549,6 +563,7 @@ export function Configurator({
             label: t(`steps.${step}`),
             summary: summaryOf(step),
             status: statusOf(step),
+            defaulted: isDefaultStep(step, touched),
             content: (
               <>
                 {contentOf(step)}
