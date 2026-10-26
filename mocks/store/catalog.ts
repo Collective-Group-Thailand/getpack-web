@@ -14,6 +14,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import { catalogueRows } from "../admin/catalogue";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { startingOf } from "./quotes";
 import { styleSearchHits } from "./styles";
 
 export type Row = ReturnType<typeof catalogueRows>[number];
@@ -58,6 +59,7 @@ function cardFacts(
   moq: unknown,
   tags: string[],
   key?: string,
+  starting?: ReturnType<typeof startingOf>,
 ): Pick<
   Schemas["StoreProductCardDto"],
   | "startingPricePerPiece"
@@ -70,10 +72,17 @@ function cardFacts(
 > {
   const instant = quoteMode === "instant" && key !== undefined;
   return {
-    startingPricePerPiece: instant ? fakePrice(key) : null,
-    startingPriceAssumes: instant
-      ? { quantity: 1000, label: { th: "1,000 ชิ้น", en: "1,000 pieces" }, specs: [] }
-      : null,
+    // A product's starting price is its reference configuration priced by the configurator's own engine
+    // (D-441); only the type-level cards, which have no single product, keep a made-up figure.
+    startingPricePerPiece: starting !== undefined ? (starting?.unitPrice ?? null) : instant ? fakePrice(key) : null,
+    startingPriceAssumes:
+      starting !== undefined
+        ? starting
+          ? { quantity: starting.spec.quantity, label: starting.spec.specLabel, specs: starting.spec.specs }
+          : null
+        : instant
+          ? { quantity: 1000, label: { th: "1,000 ชิ้น", en: "1,000 pieces" }, specs: [] }
+          : null,
     moq: typeof moq === "number" ? moq : null,
     leadTimeDays: instant ? { min: 7, max: 10 } : null,
     availability: quoteMode === "instant" ? "instant" : "rfq",
@@ -91,6 +100,7 @@ function card(product: Row): Schemas["StoreProductCardDto"] {
       product.quantityMin,
       [`catalog:type:${type?.id}`, `catalog:product:${product.slug}`],
       String(product.slug),
+      startingOf(product),
     ),
     slug: String(product.slug),
     nameTh: String(product.nameTh),
@@ -693,45 +703,45 @@ export const storeCatalogHandlers: HttpHandler[] = [
     const hint = (row: Row, kind: Schemas["PriceHintKind"], key: string, quantity: number): Schemas["PriceHintDto"] => {
       const instant = quoteModeOf(row) === "instant";
       const size = live(catalogueRows("standardSizes")).find((entry) => entry.catalogProductId === row.id);
+      // A catalogue product's hint is its reference configuration priced by the configurator's engine (D-441).
+      const reference = kind === "catalog_product" ? startingOf(row) : null;
+      const fake = kind !== "catalog_product";
       return {
         key,
         kind,
         productTypeCode: typeCodeOf(row),
-        startingFromPerPiece: instant ? fakePrice(key) : null,
+        startingFromPerPiece: reference ? reference.unitPrice : fake && instant ? fakePrice(key) : null,
         currency: "THB",
-        basis: instant
+        basis: reference
           ? {
-              quantity,
-              sizeCode: str(size?.code),
+              quantity: reference.spec.quantity,
+              sizeCode: reference.spec.standardSizeCode,
               includesVat: true,
               includesDelivery: false,
-              // The spec as one string (D-441): the values the lines below carry, joined.
-              label: {
-                th: [row.nameTh, size ? (size.name ?? size.code) : null].filter(Boolean).join(" · "),
-                en: [row.nameEn, size ? (size.name ?? size.code) : null].filter(Boolean).join(" · "),
-              },
-              specs: [
-                {
-                  key: "style",
-                  labelTh: "ทรง",
-                  labelEn: "Style",
-                  valueTh: String(row.nameTh),
-                  valueEn: String(row.nameEn),
-                },
-                ...(size
-                  ? [
-                      {
-                        key: "size",
-                        labelTh: "ขนาด",
-                        labelEn: "Size",
-                        valueTh: String(size.name ?? size.code),
-                        valueEn: String(size.name ?? size.code),
-                      },
-                    ]
-                  : []),
-              ],
+              label: reference.spec.specLabel,
+              specs: reference.spec.specs,
             }
-          : null,
+          : fake && instant
+            ? {
+                quantity,
+                sizeCode: str(size?.code),
+                includesVat: true,
+                includesDelivery: false,
+                label: {
+                  th: [row.nameTh, size ? (size.name ?? size.code) : null].filter(Boolean).join(" · "),
+                  en: [row.nameEn, size ? (size.name ?? size.code) : null].filter(Boolean).join(" · "),
+                },
+                specs: [
+                  {
+                    key: "style",
+                    labelTh: "ทรง",
+                    labelEn: "Style",
+                    valueTh: String(row.nameTh),
+                    valueEn: String(row.nameEn),
+                  },
+                ],
+              }
+            : null,
         leadTimeBusinessDays: instant ? { min: 7, max: 10 } : null,
         computedAt: instant ? bangkokIso() : null,
       };

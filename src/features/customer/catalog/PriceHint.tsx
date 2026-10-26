@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
 import { getFormat } from "@/features/shared/format/server";
+import { specLabelText } from "@/features/shared/spec-label";
 
 import type { PriceHint } from "./api.server";
-import { pick } from "./localize";
 
 /**
  * "เริ่มต้น ฿3.50 / ชิ้น" and "ผลิต 7–10 วันทำการ" from a price hint, with the basis the figure
@@ -33,15 +33,8 @@ export async function priceHintText(hint: PriceHint | undefined) {
       : t("price.leadTime", { min: range.min, max: range.max })
     : null;
 
-  // The reference specification the figure was priced at, in the API's words (D-181).
-  const specs = hint.basis?.specs.length
-    ? hint.basis.specs
-        .map(
-          (line) =>
-            `${pick(format.locale, line.labelTh, line.labelEn)} ${pick(format.locale, line.valueTh, line.valueEn)}`,
-        )
-        .join(" · ")
-    : null;
+  // The reference specification the figure was priced at: the API's one string (D-441), never composed here.
+  const specs = specLabelText(hint.basis?.label, format.locale);
 
   return { price, basis, leadTime, specs };
 }

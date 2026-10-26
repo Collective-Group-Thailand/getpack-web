@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { getFormat } from "@/features/shared/format/server";
+import { SpecLabelLine } from "@/features/shared/spec-label";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 
@@ -23,6 +24,8 @@ type Facts = Pick<
  */
 export async function cardFacts(card: Facts) {
   const [t, format] = await Promise.all([getTranslations("catalog"), getFormat()]);
+  // The spec behind the price, in the API's words (D-441) — shown with every starting price.
+  const spec = card.startingPriceAssumes?.label;
   const assumes = card.startingPriceAssumes
     ? t("price.basisQuantity", { quantity: format.number(card.startingPriceAssumes.quantity) })
     : null;
@@ -39,19 +42,22 @@ export async function cardFacts(card: Facts) {
   const amount = card.startingPricePerPiece ? format.thb(card.startingPricePerPiece) : null;
   return {
     price: amount ? (
-      <span className="flex flex-wrap items-baseline gap-x-1.5">
-        <span className="text-muted text-sm">{t("price.fromLabel")}</span>
-        <span className="serif text-primary text-xl tabular-nums">{amount}</span>
-        <span className="text-muted text-sm">{t("price.perPiece")}</span>
-        {campaign && card.referencePrice ? (
-          <s
-            className="text-muted ms-1 text-sm"
-            aria-label={t("card.referencePrice", { price: format.thb(card.referencePrice) })}
-          >
-            {format.thb(card.referencePrice)}
-          </s>
-        ) : null}
-      </span>
+      <>
+        <span className="flex flex-wrap items-baseline gap-x-1.5">
+          <span className="text-muted text-sm">{t("price.fromLabel")}</span>
+          <span className="serif text-primary text-xl tabular-nums">{amount}</span>
+          <span className="text-muted text-sm">{t("price.perPiece")}</span>
+          {campaign && card.referencePrice ? (
+            <s
+              className="text-muted ms-1 text-sm"
+              aria-label={t("card.referencePrice", { price: format.thb(card.referencePrice) })}
+            >
+              {format.thb(card.referencePrice)}
+            </s>
+          ) : null}
+        </span>
+        <SpecLabelLine label={spec} locale={format.locale} className="mt-0.5" />
+      </>
     ) : (
       <span className="text-muted text-sm">{t("price.onRequest")}</span>
     ),
