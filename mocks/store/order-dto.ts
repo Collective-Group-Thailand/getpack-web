@@ -227,10 +227,16 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
   // D-438: the customer owns an upload to make, a change asked for, a proof to answer — and a file the
   // preflight refused (the mock keeps that one at "uploaded"; the API leaves it with the customer too).
   const refused = order.artwork.submissions.at(-1)?.preflightStatus === "blocked";
+  // B-API-4: an own-file order with no file yet reads "รอไฟล์จากคุณ" (awaiting_upload), never
+  // "รอทีมส่งแบบไดคัทให้"; a hired/free design stays at awaiting_template with the team.
+  const artworkStatus: Schemas["OrderDto"]["artworkStatus"] =
+    order.designOption === "own_file" && order.artwork.status === "awaiting_template"
+      ? "awaiting_upload"
+      : order.artwork.status;
   const artworkOwner: Schemas["OrderDto"]["artworkOwner"] =
-    order.artwork.status === "approved"
+    artworkStatus === "approved"
       ? null
-      : refused || ["awaiting_upload", "changes_requested", "proof_sent"].includes(order.artwork.status)
+      : refused || ["awaiting_upload", "changes_requested", "proof_sent"].includes(artworkStatus)
         ? "customer"
         : "team";
   const waitingPayment = order.status === "waiting_payment";
@@ -258,9 +264,13 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
       dueAt: waitingPayment ? order.expiresAt : null,
       overdue,
     },
-    artworkNoteTh: null,
-    artworkStatus: order.artwork.status,
-    ...statusLabels("artworkStatus", ARTWORK_STATUS, order.artwork.status),
+    // B-API-4b: a file received before payment waits for the review until the order is paid.
+    artworkNoteTh:
+      waitingPayment && order.cancelledAt === null && ["uploaded", "in_review"].includes(artworkStatus)
+        ? "ไฟล์ได้รับแล้ว ทีมงานจะตรวจหลังชำระเงิน"
+        : null,
+    artworkStatus,
+    ...statusLabels("artworkStatus", ARTWORK_STATUS, artworkStatus),
     productTypeCode: order.productType.code,
     summary: summaryOf(order),
     quoteId: sibling(order, "qte"),

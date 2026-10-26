@@ -8,11 +8,11 @@ import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { getMyOrder } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
-import { visibleActions } from "@/features/customer/orders/order-state";
+import { artworkNoteTextOf, visibleActions } from "@/features/customer/orders/order-state";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { CUSTOMER_ORDER_STATUS } from "@/domain/status";
+import { ARTWORK_STATUS, CUSTOMER_ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
@@ -58,7 +58,11 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted font-mono text-sm">{order.orderCode}</span>
           <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
+          {order.artworkOwner !== null ? <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} /> : null}
         </div>
+        {artworkNoteTextOf(locale, order) ? (
+          <p className="text-muted text-sm">{artworkNoteTextOf(locale, order)}</p>
+        ) : null}
       </header>
       {overdue ? (
         <p role="status" className="border-warning/40 bg-warning-subtle rounded-xl border p-3 text-sm">

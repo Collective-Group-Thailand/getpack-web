@@ -5,7 +5,7 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { listMyOrders, type OrderView } from "@/features/customer/orders/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
-import { deliveryDatesOf, isPaymentOverdue, visibleActions } from "@/features/customer/orders/order-state";
+import { artworkNoteTextOf, deliveryDatesOf, isPaymentOverdue, visibleActions } from "@/features/customer/orders/order-state";
 import { RequoteButton } from "@/features/customer/orders/RequoteButton";
 import { PortalTable } from "@/features/customer/account/PortalTable";
 import { latestDocuments } from "@/features/customer/repeat/api.server";
@@ -181,6 +181,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
                     ) : null}
                     {order.artworkOwner !== null ? (
                       <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} />
+                    ) : null}
+                    {artworkNoteTextOf(locale, order) ? (
+                      <span className="text-muted w-full text-xs">{artworkNoteTextOf(locale, order)}</span>
                     ) : null}
                   </span>
                 ),
