@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { foldedItems, groupFacets, splitOption } from "./facet-groups";
+import { foldedItems, foldedSubGroups, groupFacets, splitOption } from "./facet-groups";
 import { readParams } from "./query";
 
 const facets = {
@@ -57,5 +57,37 @@ describe("the sidebar's facet groups (styles redesign §c)", () => {
     expect(shown.map((i) => i.value)).toEqual(["v0", "v1", "v2", "v3", "v4", "v7"]);
     expect(hidden).toBe(3);
     expect(foldedItems(items.slice(0, 4)).hidden).toBe(0);
+  });
+
+  it("shows the six sub-groups with the highest total count, in their own order, and counts the rest", () => {
+    const sub = (axis: string, ...counts: number[]) => ({
+      axis,
+      items: counts.map((count, i) => ({ value: `${axis}:${i}`, count, selected: false })),
+    });
+    const subs = [
+      sub("a", 1),
+      sub("b", 9),
+      sub("c", 2, 2),
+      sub("d", 3),
+      sub("e", 1),
+      sub("f", 8),
+      sub("g", 5),
+      sub("h", 4),
+    ];
+    const { shown, hidden } = foldedSubGroups(subs);
+    expect(shown.map((s) => s.axis)).toEqual(["b", "c", "d", "f", "g", "h"]);
+    expect(hidden).toBe(2);
+    expect(foldedSubGroups(subs.slice(0, 6)).hidden).toBe(0);
+  });
+
+  it("keeps a sub-group that holds a selected value even when it is not in the top six", () => {
+    const sub = (axis: string, count: number, selected = false) => ({
+      axis,
+      items: [{ value: axis, count, selected }],
+    });
+    const subs = [sub("a", 1, true), ...["b", "c", "d", "e", "f", "g"].map((axis) => sub(axis, 5))];
+    const { shown, hidden } = foldedSubGroups(subs);
+    expect(shown.map((s) => s.axis)).toEqual(["a", "b", "c", "d", "e", "f", "g"]);
+    expect(hidden).toBe(0);
   });
 });

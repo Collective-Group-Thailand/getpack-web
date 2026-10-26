@@ -769,6 +769,8 @@
     "instantOnly": "Instant price only",
     "instantOnlyHint": "See the price and order now · {count, plural, one {# style} other {# styles}}",
     "showMore": "Show {count} more",
+    "showMoreTopics": "Show {count} more topics",
+    "showLessTopics": "Show fewer topics",
     "showLess": "Show less",
     "showResults": "Show {count, plural, one {# result} other {# results}}",
     "activeFilters": "Active filters",
