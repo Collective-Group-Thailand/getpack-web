@@ -35,10 +35,13 @@ export function ConfiguratorPreview({
   configurator,
   state,
   productName,
+  side,
 }: {
   configurator: Configurator;
   state: ConfiguratorState;
   productName: string;
+  /** The panel beside the box (size, dimensions, spec): under it on a narrow page. */
+  side?: React.ReactNode;
 }) {
   const t = useTranslations("configurator.preview");
   const locale = useLocale();
@@ -71,42 +74,47 @@ export function ConfiguratorPreview({
       material: materialName,
     });
     return (
-      <figure className="border-border bg-bg-subtle flex flex-col gap-3 rounded-2xl border p-4">
-        {style ? (
-          <SegmentedControl
-            label={t("view")}
-            size="sm"
-            value={view}
-            onValueChange={setView}
-            options={[
-              { value: "3d", label: t("view3d") },
-              { value: "flat", label: t("viewFlat") },
-            ]}
-            className="self-center"
-          />
-        ) : null}
-        {view === "flat" && style ? (
-          <div className="h-64">
-            <BoxPreview styleId={style} values={dims} colour={colour} label={t("flatLabel", { name: productName })} />
-          </div>
-        ) : (
-          <BoxPreview3D
-            style={style ?? "rsc"}
-            dims={dims}
-            colour={colour}
-            printed={printed}
-            label={label}
-            labels={{
-              rotateLeft: t("rotateLeft"),
-              rotateRight: t("rotateRight"),
-              tiltUp: t("tiltUp"),
-              tiltDown: t("tiltDown"),
-              reset: t("reset"),
-            }}
-          />
-        )}
-        <figcaption className="text-muted text-center text-xs">{t("caption")}</figcaption>
-      </figure>
+      <div className="border-border bg-bg-subtle rounded-card grid overflow-hidden border min-[1100px]:grid-cols-[minmax(0,1fr)_14rem]">
+        <figure className="m-0 flex min-w-0 flex-col gap-3 p-4">
+          {style ? (
+            <SegmentedControl
+              label={t("view")}
+              size="sm"
+              value={view}
+              onValueChange={setView}
+              options={[
+                { value: "3d", label: t("view3d") },
+                { value: "flat", label: t("viewFlat") },
+              ]}
+              className="self-center"
+            />
+          ) : null}
+          {view === "flat" && style ? (
+            <div className="h-64">
+              <BoxPreview styleId={style} values={dims} colour={colour} label={t("flatLabel", { name: productName })} />
+            </div>
+          ) : (
+            <BoxPreview3D
+              style={style ?? "rsc"}
+              dims={dims}
+              colour={colour}
+              printed={printed}
+              label={label}
+              labels={{
+                rotateLeft: t("rotateLeft"),
+                rotateRight: t("rotateRight"),
+                tiltUp: t("tiltUp"),
+                tiltDown: t("tiltDown"),
+                reset: t("reset"),
+              }}
+            />
+          )}
+          <figcaption className="text-muted text-center text-xs">
+            {printed ? t("captionPrinted") : t("caption")}
+          </figcaption>
+        </figure>
+        {side}
+      </div>
     );
   }
 
