@@ -17,7 +17,7 @@ import { Icon } from "@/ui/icons";
 import type { Schemas } from "@/lib/api/types";
 
 import type { PriceStep } from "./pricing";
-import { mergeEqualTiers } from "./tiers";
+import { mergeEqualTiers, tierRowLabels } from "./tiers";
 import type { Configurator, ConfiguratorState } from "./state";
 import type { KeptQuote, QuoteAction } from "./useQuoteActions";
 
@@ -90,6 +90,12 @@ export function ConfiguratorDock({
   const noPrice = step && !step.instant ? step : null;
   const ready = missing.length === 0;
   const tierGroups = steps ? mergeEqualTiers(steps) : [];
+  const labelsOf = (group: (typeof tierGroups)[number]) =>
+    tierRowLabels(group, {
+      number: (value) => format.number(value),
+      range: (from, to) => t("breaksRange", { from, to, unit }),
+      withUnit: (quantity) => t("breaksSelect", { quantity, unit }),
+    });
   const reason = usePriceChange(priced?.unitPrice ? { unitPrice: priced.unitPrice, quantity: priced.quantity } : null);
 
   // Quoted on request (`instant: false`, D-043): no price is asked for, the RFQ form is the way on.
@@ -313,14 +319,13 @@ export function ConfiguratorDock({
             total: t("breaksTotal"),
           }}
           rows={tierGroups.map((group) => {
-            const { first, last } = group;
+            const { first } = group;
             const merged = group.steps.length > 1;
+            const labels = labelsOf(group);
             const chosen = group.steps.find((entry) => entry.quantity === state.quantity);
             return {
               key: String(first.quantity),
-              quantity: merged
-                ? t("breaksRange", { from: format.number(first.quantity), to: format.number(last.quantity), unit })
-                : format.number(first.quantity),
+              quantity: labels.quantity,
               perPiece: format.thb(first.unitPrice),
               // One row stands for several quantities, each with its own total: the chosen one's, else none.
               total: merged
@@ -338,7 +343,10 @@ export function ConfiguratorDock({
             if (group && !group.steps.some((entry) => entry.quantity === state.quantity))
               onSelectQuantity(group.first.quantity);
           }}
-          selectLabel={(row) => t("breaksSelect", { quantity: String(row.quantity), unit })}
+          selectLabel={(row) => {
+            const group = tierGroups.find((candidate) => String(candidate.first.quantity) === row.key);
+            return group ? labelsOf(group).select : String(row.quantity);
+          }}
           selectText={t("breaksChoose")}
           selectedText={t("breaksChosen")}
         />
