@@ -129,6 +129,7 @@ import {
   SquareDashed,
   Signature,
   Stamp,
+  Heart,
   Star,
   Sun,
   Tablet,
@@ -316,6 +317,7 @@ export const ICONS = {
   percent: Percent,
   ticket: Ticket,
   gift: Gift,
+  heart: Heart,
   star: Star,
   /** An instant price — the library card's badge and switch (styles redesign). */
   zap: Zap,
