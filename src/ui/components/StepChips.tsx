@@ -103,10 +103,8 @@ export function StepChips({ chips, top, className, ...props }: StepChipsProps) {
   return (
     <nav
       aria-label={props["aria-label"]}
-      className={cn(
-        "bg-bg/95 border-border z-sticky sticky -mx-4 border-b px-4 backdrop-blur sm:mx-0 sm:px-0",
-        className,
-      )}
+      data-step-chips
+      className={cn("bg-bg/95 border-border z-sticky sticky border-b backdrop-blur", className)}
       style={{ top: top ?? "var(--site-sticky-top)" }}
     >
       <ol className="m-0 flex [scrollbar-width:none] list-none gap-1.5 overflow-x-auto overscroll-x-contain p-0 py-2.5 [&::-webkit-scrollbar]:hidden">

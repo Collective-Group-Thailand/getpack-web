@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { StepCard } from "./StepCard";
@@ -47,5 +47,38 @@ describe("StepChips", () => {
     render(page());
     expect(screen.getByRole("heading", { name: /การจัดส่ง/ })).toBeInTheDocument();
     expect(screen.getAllByText("คำใบ้")).toHaveLength(3);
+  });
+});
+
+describe("StepChips active step", () => {
+  it("marks the chip of the card in view with aria-current via IntersectionObserver", () => {
+    let notify: IntersectionObserverCallback = () => {};
+    class FakeObserver {
+      constructor(callback: IntersectionObserverCallback) {
+        notify = callback;
+      }
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+      takeRecords() {
+        return [];
+      }
+    }
+    vi.stubGlobal("IntersectionObserver", FakeObserver);
+    render(page());
+    expect(screen.queryByRole("link", { current: "step" })).toBeNull();
+    act(() => {
+      notify(
+        [
+          {
+            isIntersecting: true,
+            target: document.getElementById("step-material")!,
+          } as unknown as IntersectionObserverEntry,
+        ],
+        {} as IntersectionObserver,
+      );
+    });
+    expect(screen.getByRole("link", { current: "step" })).toHaveTextContent("วัสดุ");
+    vi.unstubAllGlobals();
   });
 });
