@@ -9,7 +9,15 @@ import { NumberInput } from "@/ui/components/Input";
 import { MaterialSwatch } from "@/ui/components/MaterialSwatch";
 import { RadioCards } from "@/ui/components/RadioCards";
 
-import { isProcessInk, placementOf, type ChoiceGroup, type Placement, type StoreOption } from "./model";
+import {
+  isProcessInk,
+  optionsById,
+  placementOf,
+  toggleChoice,
+  type ChoiceGroup,
+  type Placement,
+  type StoreOption,
+} from "./model";
 import {
   partsOf,
   printOfPart,
@@ -123,6 +131,7 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
     }
   };
 
+  const byId = optionsById(configurator);
   const optionList = (group: ChoiceGroup, chosen: string[], set: (ids: string[]) => void, placed: boolean) => {
     const hasSwatch = group.options.some((option) => option.swatchHex || option.imageUrl);
     return (
@@ -136,9 +145,7 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
               <div className="min-w-0 flex-1">
                 <Checkbox
                   checked={checked}
-                  onCheckedChange={(next) =>
-                    set(next === true ? [...chosen, option.id] : chosen.filter((id) => id !== option.id))
-                  }
+                  onCheckedChange={(next) => set(toggleChoice(group, byId, chosen, option.id, next === true))}
                   label={pick(locale, option.nameTh, option.nameEn)}
                   description={describe(group, option)}
                 />
