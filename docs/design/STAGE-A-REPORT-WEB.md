@@ -409,3 +409,24 @@ carrier pickup at the factory, unsupported original formats, real return address
 - **Not run:** e2e (any spec), `pnpm lhci`, anything against the new API. Everything is coded against the regenerated
   contract (an **unreleased pin** of getpack-api `fix/uat-phase0`, still labelled 0.75.0 — re-adopt with
   `pnpm gen:api --adopt --tag vX.Y.Z` once the API tags a release).
+
+---
+
+## Stage B — Part 2 (B0-web, fixes after the Stage B API) — branch `fix/uat-phase0`
+
+API read from a shallow clone of getpack-api `fix/uat-phase0` (`b0206dc`, deleted after `gen:api`); `docs/design/stage-b/API-CHANGES.md`,
+the API report and `DECISIONS-STAGE-A.md` copied (identical). Contract re-pinned (`69a6aea6`, still the unreleased 0.75.0 pin).
+Gate at the end: lint, typecheck, 1382 tests, build pass. Steps with a BLOCKED API step: none.
+| Step | Status | Commit |
+|---|---|---|
+| B0-1 print step: one method per side (ไม่พิมพ์ · ดำ · CMYK · สีพิเศษ) from `printModel`, inside none, 422 copy, old "ไม่เลือกเลย…" text removed | PASS | `17f1a452` |
+| B0-2 spec text = API `specLabel`/`specs` everywhere; configurator opens on the API default print | PASS | `e958fc21` |
+| B0-3 tier row: unit once (the doubling was the select button's accessible name) | PASS | `2477048f` |
+| B0-4 own-file "รอไฟล์จากคุณ" → upload button; "รอทีมส่งแบบไดคัทให้" → text only; `artworkNoteTh` shown (th only) | PASS | `96bf82d6` |
+| B0-5 no instalment-as-method wording (footer, terms, how-to-pay, FAQ, help); no file-deletion claim on /network; guard test | PASS | `c08265f3` |
+`calculate` budget: **1 of 20** — `uat-postal-box-b`, size 00 (140 × 97.5 × 60 internal), KA125 B, qty 100/300/500/1000, web sent front = 1 ink, back = 0
+(old API, no `printModel`, fallback): **฿15.70 / 15.70 / 15.70 / 13.61** (listing ฿15.70). UAT no longer returns the ฿17.26 seen in Stage A; `specLabel` is still null there, so the
+shared label/price equality is covered only by the mock test (`spec-consistency.test.ts`) until the new API is deployed.
+Screenshots (mock dataset; no horizontal scroll): `B0-configure-print-{390,1440}`, `B0-configure-summary-{390,1440}`, `B0-orders-390`.
+**Verify locally (both branches):** `/configure/uat-postal-box-b` card = PDP = configurator label and ฿15.70 with outside CMYK, inside ไม่พิมพ์ (first calculate body `printBack: []`); choosing CMYK sends one entry; 422 message; own-file order before payment shows "ส่งไฟล์งาน"; unpaid upload shows the note; footer/terms/help/`/network` copy; merged tier button reads "เลือก 100–500 ชิ้น".
+**Open:** add-on ink ids (used `spot.inkColourIds`) · radios for folding/label/tag/pouch once they have a per-side model · API label for the PDP standard-size table · Studio artwork with more spot colours than the model's N is trimmed silently · account-privacy "until you delete them" wording outside this scope · "งวดชำระ" schedule screens stay (API-driven).
