@@ -5,12 +5,15 @@ import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Button } from "@/ui/components/Button";
+import { DisclosureList } from "@/ui/components/DisclosureList";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput } from "@/ui/components/Input";
-import { Icon } from "@/ui/icons";
-import { cn } from "@/ui/lib/cn";
+import { RadioCards } from "@/ui/components/RadioCards";
 
+import { PriceSlot } from "./OptionFigure";
+import type { PriceStep } from "./pricing";
 import { TARGET, withTier, type Configurator, type ConfiguratorState } from "./state";
+import { mergeEqualTiers, tierRowLabels } from "./tiers";
 
 interface QuantityStepProps {
   configurator: Configurator;
@@ -18,18 +21,26 @@ interface QuantityStepProps {
   onChange: (patch: Partial<ConfiguratorState>) => void;
   /** The sales unit in the reader's language (`ชิ้น`, `ซอง`). */
   unit: string;
+  /** What the calculation priced at every quantity on screen (the API's own figures). */
+  steps: PriceStep[] | undefined;
+  /** A new price is on its way: the figures on the cards are the last ones, dimmed. */
+  pending: boolean;
 }
 
 /**
- * The quantities to compare and the one to order. Several are priced at once so the customer
- * sees how the price per piece falls with the run (the dock's price breaks); the API caps how
- * many one calculation may price (`maxTiers`) and the range it accepts.
+ * The quantities to compare and the one to order, as cards (the prototype's `.qgrid`): the smallest
+ * first, each with the API's price per piece at that quantity, the selected one highlighted. Quantities
+ * the API prices at the same figure share a card ("100–500"), as the price table used to merge them.
+ * A saving is shown only if the API sends one — it does not today, so none is drawn and none is computed.
  *
- * And an optional target price per piece (U2.F1 §4, D-247): the API answers with the gap at each
- * quantity, and above it the ways to get there. It is the customer's private figure (D-190).
+ * A quantity of the customer's own is added through the field under the cards: it must fit the API's
+ * range and the number of quantities it prices at once (`maxTiers`), and the new card is priced by the
+ * ordinary calculation. An optional target per piece (U2.F1 §4, D-247) sits behind a collapsed
+ * disclosure: the API answers with the gap at each quantity; it is the customer's private figure (D-190).
  */
-export function QuantityStep({ configurator, state, onChange, unit }: QuantityStepProps) {
+export function QuantityStep({ configurator, state, onChange, unit, steps, pending }: QuantityStepProps) {
   const t = useTranslations("configurator.quantity");
+  const tOptions = useTranslations("configurator.options");
   const format = useFormat();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -61,46 +72,58 @@ export function QuantityStep({ configurator, state, onChange, unit }: QuantitySt
     onChange({ quantities: next, quantity: state.quantity === quantity ? next[0]! : state.quantity });
   };
 
+  // One step per quantity on screen: the API's where it has priced it, else a placeholder with no figure.
+  const known = new Map((steps ?? []).map((step) => [step.quantity, step]));
+  const cards = mergeEqualTiers(
+    state.quantities.map(
+      (quantity) =>
+        known.get(quantity) ?? ({ quantity, instant: false, unitPrice: null, reason: null } as unknown as PriceStep),
+    ),
+  );
+  const labelsOf = (group: (typeof cards)[number]) =>
+    tierRowLabels(group, {
+      number: (value) => format.number(value),
+      range: (from, to) => `${from}–${to}`,
+      withUnit: (quantity) => `${quantity} ${unit}`,
+    });
+  const figureOf = (group: (typeof cards)[number]) => {
+    if (!known.has(group.first.quantity)) return "";
+    if (!group.first.instant || !group.first.unitPrice) return tOptions("quoteOnly");
+    return tOptions("perPiece", { price: format.thb(group.first.unitPrice), unit });
+  };
+  const selected = cards.find((group) => group.steps.some((step) => step.quantity === state.quantity));
+
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <p className="text-sm font-medium" id="quantity-tiers-label">
-          {t("tiers")}
-        </p>
-        <ul aria-labelledby="quantity-tiers-label" className="mt-2 flex flex-wrap gap-2">
-          {state.quantities.map((quantity) => {
-            const selected = quantity === state.quantity;
-            return (
-              <li
-                key={quantity}
-                className={cn(
-                  "rounded-control flex items-center border",
-                  selected ? "border-primary bg-primary-subtle" : "border-border-strong",
-                )}
-              >
-                <button
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => onChange({ quantity })}
-                  className="min-h-9 rounded-s-full ps-3 pe-2 text-sm font-medium tabular-nums"
-                >
-                  {t("tier", { quantity: format.number(quantity), unit })}
-                </button>
-                {state.quantities.length > 1 ? (
-                  <button
-                    type="button"
-                    onClick={() => remove(quantity)}
-                    aria-label={t("remove", { quantity: format.number(quantity), unit })}
-                    className="text-muted hover:text-fg flex min-h-9 items-center rounded-e-full ps-1 pe-2.5"
-                  >
-                    <Icon name="close" size={14} />
-                  </button>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-        <p className="text-muted mt-2 text-xs">{t("selectedHint")}</p>
+      <div className="flex flex-col gap-2">
+        <RadioCards
+          columns={4}
+          aria-label={t("tiers")}
+          value={selected ? String(selected.first.quantity) : undefined}
+          onValueChange={(key) => {
+            // A card of several quantities keeps the one already chosen inside it.
+            const group = cards.find((candidate) => String(candidate.first.quantity) === key);
+            if (group && !group.steps.some((step) => step.quantity === state.quantity))
+              onChange({ quantity: group.first.quantity });
+          }}
+          options={cards.map((group) => ({
+            value: String(group.first.quantity),
+            label: <span className="text-base font-semibold tabular-nums">{labelsOf(group).quantity}</span>,
+            description: (
+              <PriceSlot pending={pending} unitPrice={known.has(group.first.quantity) ? group.first.unitPrice : null}>
+                {figureOf(group)}
+              </PriceSlot>
+            ),
+          }))}
+        />
+        <p className="text-muted text-xs">{t("selectedHint")}</p>
+        {state.quantities.length > 1 ? (
+          <div>
+            <Button type="button" variant="ghost" size="sm" onClick={() => remove(state.quantity)}>
+              {t("remove", { quantity: format.number(state.quantity), unit })}
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <form
@@ -153,19 +176,32 @@ export function QuantityStep({ configurator, state, onChange, unit }: QuantitySt
         </div>
       ) : null}
 
-      <Field
-        label={t("target")}
-        hint={t("targetHint", { unit })}
-        error={state.target !== "" && !TARGET.test(state.target) ? t("targetInvalid") : undefined}
-      >
-        <Input
-          inputMode="decimal"
-          autoComplete="off"
-          value={state.target}
-          onChange={(event) => onChange({ target: event.target.value.replace(/[^\d.]/g, "").slice(0, 12) })}
-          className="max-w-48 tabular-nums"
-        />
-      </Field>
+      <DisclosureList
+        items={[
+          {
+            summary: t("target"),
+            defaultOpen: state.target !== "",
+            content: (
+              <div className="flex flex-col gap-2">
+                <Field
+                  label={t("targetLabel")}
+                  hint={t("targetHint", { unit })}
+                  error={state.target !== "" && !TARGET.test(state.target) ? t("targetInvalid") : undefined}
+                >
+                  <Input
+                    inputMode="decimal"
+                    autoComplete="off"
+                    value={state.target}
+                    onChange={(event) => onChange({ target: event.target.value.replace(/[^\d.]/g, "").slice(0, 12) })}
+                    className="max-w-48 tabular-nums"
+                  />
+                </Field>
+                <p className="text-muted m-0 text-xs">{t("targetPrivate")}</p>
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }
