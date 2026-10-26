@@ -28,6 +28,7 @@ import {
   type PrintArea,
   type StoreOption,
 } from "./model";
+import { isCorrugate, isPrintKind, normaliseCorrugateSide, normaliseSingleInk, startIds } from "./print-model";
 
 export type { ChoiceGroup, Configurator, DesignOption, GroupKind, MeasurementBasis, StoreOption } from "./model";
 
@@ -199,6 +200,13 @@ export function initialState(configurator: Configurator, seed: Partial<Configura
   for (const group of groupsOf(configurator)) {
     const defaults = group.options.filter((option) => option.isDefault).map((option) => option.id);
     choices[group.kind] = group.selection === "single" ? defaults.slice(0, 1) : defaults;
+    if (isCorrugate(configurator) && isPrintKind(group.kind)) {
+      // D-443: each side opens on the model's own default (outside: the default spec's print, inside:
+      // none unless the default spec prints it). Without a model: one ink outside, nothing inside.
+      choices[group.kind] =
+        startIds(configurator, group.kind) ??
+        (group.kind === "print_front" ? normaliseSingleInk(optionsById(configurator), defaults) : []);
+    }
   }
   const bases = basesOf(configurator);
   const tiers = defaultTiers(configurator);
@@ -232,19 +240,27 @@ export function initialState(configurator: Configurator, seed: Partial<Configura
   return normaliseInkChoices(configurator, state);
 }
 
-/** ดำ + CMYK is never one choice (`normaliseInks`): the starting state, a seed or a draft are brought to the rule. */
+/**
+ * A seed or draft is brought to a valid print choice per side: on corrugate the product's print
+ * model (or, without one, a single ink); on the other calculators a process ink stands alone.
+ */
 function normaliseInkChoices(configurator: Configurator, state: ConfiguratorState): ConfiguratorState {
   const byId = optionsById(configurator);
-  const fix = (ids: string[] | undefined) => (ids ? normaliseInks(byId, ids) : ids);
+  const fix = (kind: "print_front" | "print_back", ids: string[] | undefined) =>
+    ids
+      ? isCorrugate(configurator)
+        ? normaliseCorrugateSide(configurator, byId, kind, ids)
+        : normaliseInks(byId, ids)
+      : ids;
   const choices = { ...state.choices };
-  for (const kind of ["print_front", "print_back"] as const) if (choices[kind]) choices[kind] = fix(choices[kind]);
+  for (const kind of ["print_front", "print_back"] as const) if (choices[kind]) choices[kind] = fix(kind, choices[kind]);
   return {
     ...state,
     choices,
     partPrints: Object.fromEntries(
       Object.entries(state.partPrints).map(([id, print]) => [
         id,
-        { print_front: fix(print.print_front)!, print_back: fix(print.print_back)! },
+        { print_front: fix("print_front", print.print_front)!, print_back: fix("print_back", print.print_back)! },
       ]),
     ),
   };
