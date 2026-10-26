@@ -12,7 +12,8 @@ import { DIELINE_FRAGMENT } from "@/features/customer/styles/paths";
 export function dielineTargetOf(configurator: Configurator | null): string | null {
   if (!configurator) return null;
   const pattern = defaultPatternOf(configurator);
-  const variant = pattern?.dielineVariantCodes[0];
+  // An API that predates `dielineVariantCodes` (UAT before the pricing fix) omits the field: no variant, old fallback.
+  const variant = (pattern?.dielineVariantCodes as string[] | undefined)?.[0];
   if (!pattern?.styleCode || !variant) return null;
   const size = defaultStandardSizeOf(configurator);
   const query = new URLSearchParams({ v: variant });
