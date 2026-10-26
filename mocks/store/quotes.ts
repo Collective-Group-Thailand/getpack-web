@@ -635,6 +635,7 @@ function configuratorBase(configurator: Configurator): Schemas["StoreConfigurato
     });
   }
   const box = configurator.size.kind === "box";
+  const inks = optionGroups.find((entry) => entry.kind === "ink_colour")?.options ?? [];
   return {
     slug: configurator.slug,
     catalogProductId: configurator.catalogProductId,
@@ -696,12 +697,36 @@ function configuratorBase(configurator: Configurator): Schemas["StoreConfigurato
       isDefault: configurator.size.standardSizes[0] === size,
     })),
     optionGroups,
+    printModel: configurator.calculator === "corrugate" ? printModelOf(inks) : null,
     printAreas: configurator.calculator === "corrugate" ? ["top", "side", "top_side", "all_round"] : [],
     quoteValidityDays: configurator.quoteValidityDays,
     unit: UNIT[configurator.unit] ?? "piece",
     quantity: { ...configurator.quantity },
     design: configurator.design,
   };
+}
+
+/**
+ * D-443, mocked: a corrugate product with inks offers, on each side, none / one spot colour / CMYK
+ * (add-on off) — what the UAT seed gives its corrugated products. Outside opens on CMYK, inside on
+ * none, like the postal box (`printModel.<side>.default`).
+ */
+function printModelOf(inks: Schemas["StoreOptionDto"][]): Schemas["StorePrintModelDto"] | null {
+  const cmyk = inks.find((ink) => ink.attributes?.colourKind === "process");
+  const spot = inks.filter((ink) => ink.attributes?.colourKind !== "process").map((ink) => ink.id);
+  if (!cmyk && spot.length === 0) return null;
+  const side = (field: "printFront" | "printBack", printed: boolean): Schemas["StorePrintSideDto"] => ({
+    field,
+    methods: ["none", ...(spot.length > 0 ? (["spot"] as const) : []), ...(cmyk ? (["cmyk"] as const) : [])],
+    spot: spot.length > 0 ? { minColours: 1, maxColours: 1, inkColourIds: spot } : null,
+    cmyk: cmyk ? { inkColourId: cmyk.id, addOn: { enabled: false, minColours: 0, maxColours: 0 } } : null,
+    default: {
+      method: printed && cmyk ? "cmyk" : "none",
+      spotInkColourIds: [],
+      cmykAddOnInkColourIds: [],
+    },
+  });
+  return { outside: side("printFront", true), inside: side("printBack", false) };
 }
 
 /**

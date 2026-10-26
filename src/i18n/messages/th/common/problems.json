@@ -360,6 +360,7 @@
   },
   "pricing": {
     "not_instant": "ยังไม่รองรับราคาทันที",
+    "print_combination_invalid": "เลือกการพิมพ์ไม่ถูกต้อง",
     "vat_rate_missing": "ยังไม่ได้ตั้งอัตราภาษีมูลค่าเพิ่ม"
   },
   "production": {

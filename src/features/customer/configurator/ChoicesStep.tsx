@@ -27,6 +27,8 @@ import {
   type PartPrint,
 } from "./state";
 import { GlossaryChip } from "@/features/customer/learn/GlossaryChip";
+import { PrintSideChoice } from "./PrintSideChoice";
+import { isCorrugate } from "./print-model";
 
 /** "None" for a single-choice group the customer may leave unanswered. */
 const NONE = "__none__";
@@ -91,7 +93,8 @@ function AreaFields({
  * the decision is made (design-system.md §1.5): a swatch and the catalogue's own sentence.
  *
  * Printing (U2.F1): the ink colours the product offers, per side; a process ink is one full-colour
- * pass (CMYK), any other ink one colour. Corrugated boxes also ask where the colours print. Group
+ * pass (CMYK), any other ink one colour. A corrugate side is one method from the product's print
+ * model (D-443, `PrintSideChoice`). Corrugated boxes also ask where the colours print. Group
  * names are the storefront's, per kind — the API publishes the options only. A box of several
  * parts (a telescope body and lid) prints alike unless the customer prints each part on its own;
  * every part is priced either way.
@@ -132,6 +135,7 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
   };
 
   const byId = optionsById(configurator);
+  const corrugate = isCorrugate(configurator);
   const optionList = (group: ChoiceGroup, chosen: string[], set: (ids: string[]) => void, placed: boolean) => {
     const hasSwatch = group.options.some((option) => option.swatchHex || option.imageUrl);
     return (
@@ -186,21 +190,29 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
               className="bg-surface border-border flex flex-col gap-4 rounded-lg border p-4"
             >
               <legend className="px-1 text-sm font-semibold">{part.name}</legend>
-              {printHint}
+              {corrugate ? null : printHint}
               {groups.filter(isPrint).map((group) => {
                 const print = printOfPart(state, part.subPatternId);
                 return (
                   <fieldset key={group.kind} className="flex flex-col gap-2">
                     <legend className="text-sm font-medium">{t(`groups.${group.kind}`)}</legend>
-                    {optionList(
-                      group,
-                      print[group.kind],
-                      (ids) =>
+                    {(() => {
+                      const set = (ids: string[]) =>
                         onChange({
                           partPrints: { ...state.partPrints, [part.subPatternId]: { ...print, [group.kind]: ids } },
-                        }),
-                      false,
-                    )}
+                        });
+                      return corrugate ? (
+                        <PrintSideChoice
+                          configurator={configurator}
+                          group={group}
+                          ids={print[group.kind]}
+                          onChange={set}
+                          byId={byId}
+                        />
+                      ) : (
+                        optionList(group, print[group.kind], set, false)
+                      );
+                    })()}
                   </fieldset>
                 );
               })}
@@ -212,6 +224,20 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
         const chosen = state.choices[group.kind] ?? [];
         const name = t(`groups.${group.kind}`);
         const hasSwatch = group.options.some((option) => option.swatchHex || option.imageUrl);
+        // D-443: a corrugate side is one method (none / spot / CMYK), never a set of ticked inks.
+        if (corrugate && isPrint(group)) {
+          return (
+            <Field key={group.kind} label={name}>
+              <PrintSideChoice
+                configurator={configurator}
+                group={group}
+                ids={chosen}
+                onChange={(ids) => setChoice(group, ids)}
+                byId={byId}
+              />
+            </Field>
+          );
+        }
         if (group.selection === "single") {
           return (
             <Field
