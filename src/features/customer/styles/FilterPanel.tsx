@@ -11,7 +11,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { trackCatalog } from "./catalog-events";
-import { foldedItems } from "./facet-groups";
+import { foldedItems, foldedSubGroups } from "./facet-groups";
 import { clearFilters, listHref, toggleValue, type FacetKey, type ListParams } from "./query";
 
 /** One value as the panel shows it: its words are the server's, its count the API's. */
@@ -120,7 +120,10 @@ function FacetSection({
   const t = useTranslations("styles");
   const id = useId();
   const [open, setOpen] = useState(true);
+  const [allTopics, setAllTopics] = useState(false);
   const selected = group.subGroups.reduce((n, s) => n + s.items.filter(isOn).length, 0);
+  const topics = foldedSubGroups(group.subGroups, isOn);
+  const visibleSubGroups = allTopics ? group.subGroups : topics.shown;
   return (
     <section aria-labelledby={`${id}-title`} className="border-border border-t pt-4 first:border-t-0 first:pt-0">
       <h3 id={`${id}-title`}>
@@ -149,7 +152,7 @@ function FacetSection({
         </button>
       </h3>
       <div id={`${id}-body`} hidden={!open} className="mt-2 flex flex-col gap-3">
-        {group.subGroups.map((sub, index) => (
+        {visibleSubGroups.map((sub, index) => (
           <SubGroup
             key={sub.title ?? index}
             title={sub.title}
@@ -160,6 +163,16 @@ function FacetSection({
             onToggle={(value) => onToggle(group.key, value)}
           />
         ))}
+        {topics.hidden > 0 || allTopics ? (
+          <button
+            type="button"
+            onClick={() => setAllTopics((e) => !e)}
+            aria-expanded={allTopics}
+            className="text-primary focus-visible:ring-focus-ring rounded-control self-start text-sm font-medium underline-offset-2 outline-none hover:underline focus-visible:ring-2"
+          >
+            {allTopics ? t("library.showLessTopics") : t("library.showMoreTopics", { count: topics.hidden })}
+          </button>
+        ) : null}
       </div>
     </section>
   );
