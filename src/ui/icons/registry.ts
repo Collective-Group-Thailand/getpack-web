@@ -55,6 +55,7 @@ import {
   Gift,
   Globe,
   Grid2x2,
+  Grid3x3,
   GripVertical,
   Handshake,
   Hash,
@@ -71,6 +72,7 @@ import {
   KeyRound,
   Layers,
   LayoutDashboard,
+  LayoutGrid,
   Link,
   List,
   ListFilter,
@@ -96,6 +98,7 @@ import {
   Newspaper,
   Package,
   PackageCheck,
+  PackageOpen,
   Palette,
   PanelLeft,
   Paperclip,
@@ -122,6 +125,7 @@ import {
   Settings,
   ShieldAlert,
   ShieldCheck,
+  ShoppingBag,
   ShoppingCart,
   Sparkles,
   Split,
@@ -349,6 +353,11 @@ export const ICONS = {
   cog: Cog,
   "shield-check": ShieldCheck,
   checklist: ClipboardList,
+  // Category rail (styles redesign polish 3): one outline family for the catalogue's groups
+  "layout-grid": LayoutGrid,
+  "shopping-bag": ShoppingBag,
+  "package-open": PackageOpen,
+  grid: Grid3x3,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
