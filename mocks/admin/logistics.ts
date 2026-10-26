@@ -347,7 +347,9 @@ export function claimTrustFactsOf(status: Schemas["ClaimStatus"]) {
       decisionOverdue: false,
     },
     tolerance: { shortagePct: "5.0000", overagePct: "5.0000", dimensionalMm: null, colourDeltaE: null },
-  } satisfies Pick<Schemas["StoreClaimDto"], "remedy" | "severity" | "sampleId" | "sla" | "tolerance">;
+  } satisfies Pick<Schemas["StoreClaimDto"], "remedy" | "severity" | "sampleId" | "tolerance"> & {
+    sla: Omit<Schemas["StoreClaimDto"]["sla"], "currentOwner"> & { currentOwner: Schemas["ClaimOwner"] };
+  };
 }
 
 /** A claim as `admin.claims.*` answers it, with what this staff member may do on it now. */

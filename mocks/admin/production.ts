@@ -32,6 +32,8 @@ export function toAdminJobDto(order: MockOrder, job: Job, who: StaffPersona | nu
     ...core,
     orderId: order.id,
     orderCode: order.orderCode,
+    // D-442: anonymised copies of the customer's originals; the mock keeps none.
+    originalFiles: [],
     factoryId: factory.id,
     factoryCode: factory.code,
     releaseMode: order.startMode ?? "auto",

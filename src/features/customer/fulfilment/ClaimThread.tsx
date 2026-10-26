@@ -20,8 +20,6 @@ import { FileLink } from "../files/FileLink";
 
 type Claim = Schemas["StoreClaimDto"];
 
-/** What a claim's resolution did that the customer is told of — not how getpack recovers it (D-083). */
-const CUSTOMER_ACTIONS = new Set<Schemas["ClaimAction"]>(["reproduction_job", "refund", "credit_note", "store_credit"]);
 const DECIDED = new Set<Claim["status"]>(["approved", "rejected", "resolved", "closed"]);
 
 const newKey = () =>
@@ -64,7 +62,7 @@ export function ClaimThread({ initial }: { initial: Claim }) {
     }
   }
 
-  const shown = claim.resolutions.filter((resolution) => CUSTOMER_ACTIONS.has(resolution.action));
+  const shown = claim.resolutions;
   const photos = [...claim.photos.product, ...claim.photos.carton];
   const canAnswer = claim.nextActions.some((action) => action.key === "claim.answer_info" && !action.disabledReason);
 

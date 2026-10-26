@@ -84,21 +84,28 @@ const isDelivered = (order: MockOrder) =>
  * and decided, what was done, and what they may do now (getpack-api's `STORE_CLAIM_ACTIONS`).
  * Liability, the factory and internal notes stay behind; there is no free thread (D-225).
  */
+/** `factory_review` is the back office's own state; the customer sees the claim as still under review. */
+const customerClaimStatus = (status: Schemas["ClaimStatus"]): Schemas["StoreClaimStatus"] =>
+  status === "factory_review" ? "under_review" : status;
+
 function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
   const order = orders.find((candidate) => candidate.id === row.order.id);
   const asked = row.messages.filter(
     (message) => message.audience === "customer" && message.author !== order?.customer.displayName,
   );
+  const facts = claimTrustFactsOf(row.status);
   return {
-    ...claimTrustFactsOf(row.status),
+    ...facts,
+    // The customer never sees the factory as the holder: its review is getpack's review (A2).
+    sla: { ...facts.sla, currentOwner: facts.sla.currentOwner === "factory" ? "getpack" : facts.sla.currentOwner },
     id: row.id,
     claimNo: row.claimNo,
     orderId: row.order.id,
     orderCode: row.order.orderCode,
     type: row.type,
     origin: row.origin,
-    status: row.status,
-    ...statusLabels("status", CLAIM_STATUS, row.status),
+    status: customerClaimStatus(row.status),
+    ...statusLabels("status", CLAIM_STATUS, customerClaimStatus(row.status)),
     description: row.description,
     requestedResolution: row.requestedResolution,
     claimedQuantity: row.claimedQuantity,
@@ -112,14 +119,19 @@ function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
       product: row.evidence.productPhotos.map((photo) => photo.id),
       carton: row.evidence.cartonPhotos.map((photo) => photo.id),
     },
-    resolutions: row.resolutions.map((resolution, index) => ({
-      action: resolution.action,
-      amount: resolution.amount,
-      quantity: resolution.action === "reproduction_job" ? row.claimedQuantity : null,
-      jobNo: resolution.action === "reproduction_job" ? (resolution.reference ?? `JOB-R${index + 1}`) : null,
-      refundId: null,
-      executedAt: resolution.executedAt,
-    })),
+    resolutions: row.resolutions
+      .filter(
+        (resolution): resolution is typeof resolution & { action: Schemas["StoreClaimAction"] } =>
+          resolution.action !== "factory_deduction" && resolution.action !== "carrier_recovery",
+      )
+      .map((resolution, index) => ({
+        action: resolution.action,
+        amount: resolution.amount,
+        quantity: resolution.action === "reproduction_job" ? row.claimedQuantity : null,
+        jobNo: resolution.action === "reproduction_job" ? (resolution.reference ?? `JOB-R${index + 1}`) : null,
+        refundId: null,
+        executedAt: resolution.executedAt,
+      })),
     nextActions:
       row.status === "need_info" ? [{ key: "claim.answer_info", irreversible: false, disabledReason: null }] : [],
   };
@@ -453,17 +465,8 @@ export const storeFulfilmentHandlers = [
       const date = new Date(Date.parse(row.submittedAt) + hours * 3_600_000 + 7 * 3_600_000);
       return `${date.toISOString().slice(0, 19)}+07:00`;
     };
-    const ORDER = [
-      "submitted",
-      "under_review",
-      "need_info",
-      "factory_review",
-      "approved",
-      "rejected",
-      "resolved",
-      "closed",
-    ] as const;
-    const reached = ORDER.indexOf(row.status as (typeof ORDER)[number]);
+    const ORDER = ["submitted", "under_review", "need_info", "approved", "rejected", "resolved", "closed"] as const;
+    const reached = ORDER.indexOf(customerClaimStatus(row.status) as (typeof ORDER)[number]);
     const events: Schemas["ClaimTimelineEventDto"][] = [{ type: "claim.submitted", at: row.submittedAt }];
     if (reached >= 1) events.push({ type: "claim.under_review", at: at(4) });
     if (row.status === "need_info") events.push({ type: "claim.info_requested", at: at(6) });
@@ -472,20 +475,13 @@ export const storeFulfilmentHandlers = [
     if (["resolved", "closed"].includes(row.status)) events.push({ type: "claim.resolved", at: at(50) });
     if (row.status === "closed") events.push({ type: "claim.closed", at: at(60) });
     const decided = ["approved", "rejected", "resolved", "closed"].includes(row.status);
-    const owner: Schemas["ClaimOwner"] =
-      row.status === "need_info"
-        ? "customer"
-        : row.status === "factory_review"
-          ? "factory"
-          : decided
-            ? "none"
-            : "getpack";
+    const owner: Schemas["StoreClaimOwner"] = row.status === "need_info" ? "customer" : decided ? "none" : "getpack";
     const responseDueAt = at(24);
     const decisionDueAt = decided || row.status === "need_info" ? null : at(72);
     const now = Date.now();
     return HttpResponse.json({
       claimId: row.id,
-      status: row.status,
+      status: customerClaimStatus(row.status),
       events,
       sla: {
         currentOwner: owner,

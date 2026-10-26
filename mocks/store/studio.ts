@@ -21,7 +21,17 @@ import { addToCart, pinDesign } from "./cart";
 import { typeCodeOf } from "./catalog";
 import { customerOf } from "./customers";
 import { designRowFor, versionBoxOf, versionOf, type StudioBox } from "./designs";
-import { buildQuote, configuratorOf, inputsOf, productOfId, quotesOf, stepOf, toSavedQuote, uncoded } from "./quotes";
+import {
+  buildQuote,
+  calculationSpecOf,
+  configuratorOf,
+  inputsOf,
+  productOfId,
+  quotesOf,
+  stepOf,
+  toSavedQuote,
+  uncoded,
+} from "./quotes";
 
 type Reason = Schemas["PriceChangeReason"];
 
@@ -167,6 +177,7 @@ export const storeStudioHandlers = [
         calculationId: null,
         calculatorVersion: "mock-0.0.0",
         dimensions: inputs.dimensions,
+        ...calculationSpecOf(inputs, configuration),
         target: null,
         steps,
       },

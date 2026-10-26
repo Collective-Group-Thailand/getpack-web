@@ -141,7 +141,6 @@
       "body": "Easy reorders · several approvers · credit terms",
       "go": "Apply for an account"
     },
-    "factsBoth": "Our network has {factories} partner factories today; every lot is photographed at QC before it is closed, and if something is wrong when it arrives you can claim within {days} days.",
     "factsClaim": "Every lot is photographed at QC before it is closed, and if something is wrong when it arrives you can claim within {days} days.",
     "factsNone": "Every lot is photographed at QC before it is closed, and if something is wrong when it arrives you can claim from the order page."
   },

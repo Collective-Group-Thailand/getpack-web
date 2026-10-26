@@ -5,7 +5,7 @@ import { serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
 
 export type Suggestion = Schemas["ReorderSuggestionDto"];
-export type CallOff = Schemas["CallOffAgreementDto"];
+export type CallOff = Schemas["StoreCallOffAgreementDto"];
 export type CustomerDocument = Schemas["CustomerDocumentDto"];
 
 /** When to order again, per product type, with why (`store.reorderSuggestions.list`, D-288). */
