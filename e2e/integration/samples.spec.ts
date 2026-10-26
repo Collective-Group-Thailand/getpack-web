@@ -21,8 +21,8 @@ test("a sample asked for from a saved quotation reaches the CS queue, on the rea
     .getByRole("button", { name: /^ขั้นที่ \d+ จาก \d+ จำนวน/ })
     .first()
     .click();
-  await page.getByLabel("เพิ่มจำนวน").fill("1000");
-  await page.getByRole("button", { name: "เพิ่ม", exact: true }).click();
+  await page.getByLabel("จำนวนอื่น").fill("1000");
+  await page.getByRole("button", { name: "ดูราคา", exact: true }).click();
   const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
   await expect(dock.getByText(/\/ ชิ้น$/)).toBeVisible({ timeout: 30_000 });
   await dock.getByRole("button", { name: "บันทึก" }).click();

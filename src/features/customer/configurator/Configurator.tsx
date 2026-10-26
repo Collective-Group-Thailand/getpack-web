@@ -30,7 +30,6 @@ import { isApiError } from "@/lib/api/problem";
 import { useOptionPrices } from "./option-prices";
 import { useLivePrice } from "./pricing";
 import { PromoCode } from "./PromoCode";
-import { TierTable } from "./TierTable";
 import { PreviewSide, type PreviewDimensions } from "./PreviewSide";
 import { SizeStep } from "./SizeStep";
 import {
@@ -512,16 +511,14 @@ export function Configurator({
         );
       case "quantity":
         return (
-          <div className="flex flex-col gap-5">
-            <QuantityStep configurator={configurator} state={state} onChange={updateIn("quantity")} unit={unit} />
-            {/* The price per quantity, where the quantity is chosen (item 7 turns it into cards). */}
-            <TierTable
-              steps={price.data?.steps}
-              quantity={state.quantity}
-              unit={unit}
-              onSelectQuantity={(quantity) => update({ quantity }, "quantity")}
-            />
-          </div>
+          <QuantityStep
+            configurator={configurator}
+            state={state}
+            onChange={updateIn("quantity")}
+            unit={unit}
+            steps={price.data?.steps}
+            pending={price.pending}
+          />
         );
       case "delivery":
         return <DeliveryStep state={state} onChange={updateIn("delivery")} />;

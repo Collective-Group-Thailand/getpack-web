@@ -22,8 +22,8 @@ test("dashboard, replenishment and a call-off request, on the real API", async (
     .getByRole("button", { name: /^ขั้นที่ \d+ จาก \d+ จำนวน/ })
     .first()
     .click();
-  await page.getByLabel("เพิ่มจำนวน").fill("1000");
-  await page.getByRole("button", { name: "เพิ่ม", exact: true }).click();
+  await page.getByLabel("จำนวนอื่น").fill("1000");
+  await page.getByRole("button", { name: "ดูราคา", exact: true }).click();
   const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
   await expect(dock.getByText(/\/ ชิ้น$/)).toBeVisible({ timeout: 30_000 });
   await dock.getByRole("button", { name: "บันทึก" }).click();
