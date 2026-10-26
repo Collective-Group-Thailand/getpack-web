@@ -129,8 +129,9 @@ describe("size cards", () => {
     await open();
     await settled(1);
     // Two changes inside the pause are one request, for the last state.
+    const material = await screen.findByRole("radio", { name: /ลอน E/ });
     await user.click(card(/^M\d/));
-    await user.click(await screen.findByRole("radio", { name: /ลอน E/ }));
+    await user.click(material);
     expect(mockBatch.requests).toHaveLength(1);
     await settled(2);
     await new Promise((resolve) => setTimeout(resolve, 700));
@@ -152,7 +153,8 @@ describe("size cards", () => {
       await open();
       await waitFor(() => expect(mockBatch.requests).toHaveLength(1), { timeout: 5000 });
       await waitFor(() => expect(dockPrice()).toMatch(/^฿\d/));
-      for (const slot of document.querySelectorAll<HTMLElement>("[data-price-slot]")) {
+      // The option cards (size, material, print) — the quantity cards are priced by the ordinary calculation.
+      for (const slot of document.querySelectorAll<HTMLElement>("[data-price-slot]:not(#step-quantity *)")) {
         // No figure at all (the selected card may still say "เลือกอยู่": that is not a price).
         expect(slot.textContent).not.toMatch(/฿|ขอใบเสนอราคา/);
         expect(slot.hasAttribute("data-option-price")).toBe(false);
@@ -303,5 +305,94 @@ describe("print cards", () => {
     await user.click(await printCard(inside(), /^ไม่พิมพ์/));
     await settled(4);
     expect(areaChips()).toBeNull();
+  });
+});
+
+describe("quantity cards", () => {
+  const tiers = async () => within(await screen.findByRole("radiogroup", { name: "จำนวนที่ต้องการเปรียบเทียบ" }));
+  const tierCard = async (quantity: string) => {
+    const group = await tiers();
+    const found = group.getAllByRole("radio").find((radio) => (radio.textContent ?? "").startsWith(quantity));
+    if (!found) throw new Error(`no tier card for ${quantity}`);
+    return found;
+  };
+
+  it("shows the smallest quantity first with the API's price per piece, and no saving it was not given", async () => {
+    await open();
+    await settled(1);
+    const group = await tiers();
+    const names = group.getAllByRole("radio").map((radio) => radio.textContent ?? "");
+    expect(names.map((name) => name.split("฿")[0])).toEqual(["500", "1,000", "2,000", "3,000"]);
+    expect(names.every((name) => /฿\d+\.\d{2}\/ชิ้น$/.test(name))).toBe(true);
+    // The selected card is the one the summary shows.
+    const selected = await tierCard("1,000");
+    expect(selected).toBeChecked();
+    expect(slotOf(selected).textContent).toBe(`${dockPrice()}/ชิ้น`);
+    // The API sends no saving figure: none is shown, and none is worked out from the prices.
+    expect(document.body.textContent).not.toMatch(/ประหยัด/);
+  });
+
+  it("selecting a tier through its card gives the summary the price the card showed, and touches no other step", async () => {
+    const user = userEvent.setup();
+    await open();
+    await settled(1);
+    const other = await tierCard("2,000");
+    const shown = slotOf(other).getAttribute("data-option-price")!;
+    expect(slotOf(other).textContent).toBe(`฿${shown}/ชิ้น`);
+    // The size's hint names the quantity ("ราคาที่ 1,000 ชิ้น"); the material and the print do not move.
+    const chosen = () => [/วัสดุ/, /การพิมพ์/].map((title) => section(title).querySelector("header p")?.textContent);
+    const before = chosen();
+
+    await user.click(other);
+    await waitFor(() => expect(dockPrice()).toBe(`฿${shown}`));
+    expect(chosen()).toEqual(before);
+  });
+
+  it("adds a custom quantity as a new card, priced by the ordinary calculation, up to the API's maximum", async () => {
+    const user = userEvent.setup();
+    const configurator = await open();
+    await settled(1);
+    const field = await screen.findByLabelText("จำนวนอื่น");
+    // The API's range is stated, and a quantity outside it (the field's own min) adds nothing.
+    expect(screen.getByText("สั่งได้ 100–500,000 ชิ้น")).toBeInTheDocument();
+    await user.type(field, "50");
+    await user.click(screen.getByRole("button", { name: "ดูราคา" }));
+    expect((await tiers()).getAllByRole("radio")).toHaveLength(4);
+    await user.clear(field);
+    await user.type(field, "1500");
+    await user.click(screen.getByRole("button", { name: "ดูราคา" }));
+    const added = await tierCard("1,500");
+    expect(added).toBeChecked();
+    // Between 1,000 and 2,000: smallest first.
+    const order = (await tiers()).getAllByRole("radio").map((radio) => (radio.textContent ?? "").split("฿")[0]);
+    expect(order).toEqual(["500", "1,000", "1,500", "2,000", "3,000"]);
+    await settled(2);
+    await waitFor(() => expect(slotOf(added).textContent).toBe(`${dockPrice()}/ชิ้น`));
+
+    // The API's cap on the quantities it prices at once.
+    await user.type(field, "4000");
+    await user.click(screen.getByRole("button", { name: "ดูราคา" }));
+    await user.type(field, "5000");
+    await user.click(screen.getByRole("button", { name: "ดูราคา" }));
+    expect(configurator.quantity.maxTiers).toBe(6);
+    await user.type(field, "6000");
+    await user.click(screen.getByRole("button", { name: "ดูราคา" }));
+    expect(screen.getByText(/เปรียบเทียบได้สูงสุด 6 จำนวน/)).toBeInTheDocument();
+    expect((await tiers()).getAllByRole("radio")).toHaveLength(6);
+  });
+
+  it("keeps the budget per piece behind a collapsed disclosure with its private-use note", async () => {
+    const user = userEvent.setup();
+    await open();
+    await settled(1);
+    const summary = await screen.findByText("มีงบต่อชิ้นในใจ? (ไม่บังคับ)");
+    const details = summary.closest("details")!;
+    expect(details.open).toBe(false);
+    await user.click(summary);
+    expect(details.open).toBe(true);
+    expect(within(details).getByText("ตัวเลขนี้ใช้ภายในทีมงานเท่านั้น ไม่แสดงต่อผู้อื่น")).toBeInTheDocument();
+    await user.type(within(details).getByRole("textbox"), "50");
+    // The existing behaviour: the target goes to the calculation, which answers with the gap.
+    await waitFor(() => expect(document.body.textContent).toMatch(/50|งบ/));
   });
 });

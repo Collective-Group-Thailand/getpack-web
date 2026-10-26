@@ -46,8 +46,8 @@ test("configure → advisor → alternative → target lever → cart, on the re
 
   // A quantity first: the advisor prices the boards at it.
   await step(page, "จำนวน").click();
-  await page.getByLabel("เพิ่มจำนวน").fill("1000");
-  await page.getByRole("button", { name: "เพิ่ม", exact: true }).click();
+  await page.getByLabel("จำนวนอื่น").fill("1000");
+  await page.getByRole("button", { name: "ดูราคา", exact: true }).click();
   await expect(dock(page).getByText(/\/ ชิ้น$/)).toBeVisible({ timeout: 30_000 });
 
   // The advisor: a recommendation with its range and the indicative notice, then an alternative.
