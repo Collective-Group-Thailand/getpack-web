@@ -114,7 +114,7 @@ test("the factory records a sample's evidence on a phone", async ({ page }) => {
 test("the customer checks a delivered sample, approves it and orders the bulk", async ({ page }) => {
   await signInAsCustomer(page, "/account/samples", FOUNDER);
   await openSampleWith(page, "ถึงแล้ว รอตรวจ");
-  await expect(page.getByRole("heading", { name: "หลักฐานจากโรงงาน" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "หลักฐานการตรวจ" })).toBeVisible();
   await expect(page.getByRole("img", { name: "รูปตัวอย่างที่ 1" })).toBeVisible();
 
   const approve = page.getByRole("button", { name: "อนุมัติตัวอย่าง" });

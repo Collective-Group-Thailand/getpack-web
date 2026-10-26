@@ -15,7 +15,7 @@
   "emptyBody": "No orders yet — start with your first box.",
   "browse": "Browse products",
   "row": "{quantity} {unit} · ordered {date}",
-  "shipBy": "Leaves the factory by {date}",
+  "shipBy": "Ships by {date}",
   "payDue": "Pay now",
   "table": {
     "caption": "My orders",
@@ -104,7 +104,7 @@
     "destinationLine": "{name} · {quantity} {unit}",
     "stages": "Stage by stage",
     "photos": "{count, plural, one {# photo} other {# photos}}",
-    "shipByTerm": "Ships from the factory",
+    "shipByTerm": "Ships by",
     "trackingFailed": "Couldn't create a tracking link. Please try again.",
     "artworkLink": "Artwork and proofs",
     "cancelReason": "Reason: {reason}",
@@ -145,10 +145,10 @@
     "todoPay": "Payment due: {label}",
     "todoPurpose": {
       "production": "Production starts once it is paid",
-      "shipping": "Pay before the factory ships",
+      "shipping": "Pay before it ships",
       "none": "Payable after delivery"
     },
-    "factorySteps": "At the factory",
+    "factorySteps": "Production steps",
     "todoBy": "By {date} — after that the order is cancelled automatically",
     "payEarly": "Pay early"
   },
@@ -177,7 +177,7 @@
     "proof_approved": "Proof approved",
     "proof_changes_requested": "Changes requested on the proof",
     "production_milestone": "Production: {stage}",
-    "shipment_picked_up": "Left the factory",
+    "shipment_picked_up": "Dispatched",
     "shipment_in_transit": "In transit",
     "shipment_out_for_delivery": "Out for delivery",
     "shipment_delivered": "Delivered",
@@ -260,7 +260,7 @@
       "creditRule": "Once approved, the sample's price can be credited against your order on the terms shown after approval",
       "buy": "Buy this sample",
       "waitingQuote": "Our team is quoting the sample — we will let you know",
-      "evidenceTitle": "Evidence from the factory",
+      "evidenceTitle": "Inspection evidence",
       "evidenceIntro": "Measured and photographed before shipping, on {date}",
       "measured": "Measured size ({basis})",
       "bases": {
@@ -280,7 +280,7 @@
         "construction": "It assembles and folds correctly"
       },
       "checkHints": {
-        "dimensions": "Against the factory's measurement and your product",
+        "dimensions": "Against the measured size and your product",
         "colour": "In daylight, against the proof",
         "material": "Thickness, feel, stiffness",
         "construction": "Lids close, folds follow the creases, nothing tears"

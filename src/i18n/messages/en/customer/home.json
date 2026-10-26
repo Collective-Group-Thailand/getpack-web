@@ -57,7 +57,7 @@
     "title": "No need to start from scratch",
     "all": "See all {count} templates",
     "allShort": "See every box template",
-    "body": "Pick the closest shape and enter your size — the dieline adjusts. Every template is a shape our partner factories really make — none is here just for show.",
+    "body": "Pick the closest shape and enter your size — the dieline adjusts. Every template is a shape we can really produce — none is here just for show.",
     "count": "{count} templates · {categories} categories",
     "start": "Start from this one",
     "custom": {
@@ -70,7 +70,7 @@
   },
   "process": {
     "title": "The same box<br></br>from the first line to your customer's hands",
-    "lead": "What you see in the studio is what the factory receives — the same file, the same size, never redrawn by someone else",
+    "lead": "What you see in the studio is what production receives — the same file, the same size, never redrawn by someone else",
     "studio": {
       "day": "Day 0 · in the studio",
       "title": "A dieline at true size",
@@ -102,7 +102,7 @@
   },
   "capabilities": {
     "title": "What ordinary design software won't tell you<br></br>the studio will",
-    "lead": "The studio knows which board this file prints on, at what size, in which factory — so it warns you before it becomes a bad job",
+    "lead": "The studio knows which board this file prints on and at what size — so it warns you before it becomes a bad job",
     "sample": "Screen sample",
     "checks": {
       "title": "Files checked while you design",
@@ -129,8 +129,8 @@
     }
   },
   "quality": {
-    "title": "We don't have one factory<br></br>but we run quality like one",
-    "body": "Each kind of job goes to the factory in our audited network that does it best. Our people check and photograph every lot before it is closed — and the studio is a choice, not a requirement: have a file already or ordering again, use these two",
+    "title": "One standard<br></br>for every job",
+    "body": "Every job meets getpack's production standard. Our people check and photograph every lot before it is closed — and the studio is a choice, not a requirement: have a file already or ordering again, use these two",
     "upload": {
       "title": "Upload a print file",
       "body": "PDF/AI — resolution and safe zone checked for you",

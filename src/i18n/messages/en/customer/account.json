@@ -371,7 +371,7 @@
     "unitPrice": "Locked unit price",
     "window": "Agreement period",
     "windowValue": "{from} to {to}",
-    "windowPending": "{months, plural, one {# month} other {# months}} from the factory's acceptance",
+    "windowPending": "{months, plural, one {# month} other {# months}} from our confirmation",
     "quote": "Quotation",
     "releases": "Releases so far",
     "noReleases": "Nothing released yet",
@@ -391,7 +391,7 @@
     "request": {
       "open": "Lock the price for call-offs",
       "title": "Ask for a call-off agreement",
-      "body": "The factory locks this quotation's unit price for its quantity; you release it in batches within the period",
+      "body": "We lock this quotation's unit price for its quantity; you release it in batches within the period",
       "months": "Period",
       "monthsValue": "{count, plural, one {# month} other {# months}}",
       "send": "Send the request",

@@ -46,6 +46,7 @@ export async function GET(): Promise<Response> {
     ["/business", t("llms.business"), t("llms.businessBody")],
     ["/faq", t("llms.faq"), t("llms.faqBody")],
     ["/guarantee", t("llms.guarantee"), t("llms.guaranteeBody")],
+    ["/network", t("llms.network"), t("llms.networkBody")],
     ["/partner-with-us", t("partner.title"), t("partner.answer")],
     ["/contact", t("llms.contact"), t("llms.contactBody")],
   ];

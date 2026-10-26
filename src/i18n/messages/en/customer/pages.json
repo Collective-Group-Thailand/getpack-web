@@ -16,7 +16,7 @@
     "steps": [
       {
         "title": "Choose a style and enter your size",
-        "body": "Pick from a library of boxes, bags, pouches and labels that the factories in our network really make. Enter your product's size and the sheet unfolds with cut lines, creases and safe zones. The dieline is free to download.",
+        "body": "Pick from a library of boxes, bags, pouches and labels that we really make. Enter your product's size and the sheet unfolds with cut lines, creases and safe zones. The dieline is free to download.",
         "tip": "Not sure which style fits? Enter the product size and let the system suggest one, or message the team on LINE."
       },
       {
@@ -80,8 +80,8 @@
   "about": {
     "title": "About getpack",
     "metaTitle": "About getpack — online packaging production platform by Collective Group (Thailand)",
-    "metaDescription": "getpack is an online platform for ordering boxes, bags, pouches and labels in Thailand, operated by Collective Group (Thailand). Design it yourself, see the price at once, prepress checks every job, and a vetted factory network produces it.",
-    "answer": "getpack is an online packaging production platform in Thailand, operated by Collective Group (Thailand). It lets small and mid-size brands design boxes, bags, pouches and labels themselves, see prices and delivery dates instantly, have every job checked by a prepress team, and have it produced by a network of partner factories that getpack vets and quality-controls.",
+    "metaDescription": "getpack is an online platform for ordering boxes, bags, pouches and labels in Thailand, operated by Collective Group (Thailand). Design it yourself, see the price at once, prepress checks every job, and it is made to getpack's production standard.",
+    "answer": "getpack is an online packaging production platform in Thailand, operated by Collective Group (Thailand). It lets small and mid-size brands design boxes, bags, pouches and labels themselves, see prices and delivery dates instantly, have every job checked by a prepress team, and have it made to getpack's production standard, with quality controlled on every job.",
     "lead": "We believe a small brand deserves a box that looks like a big one — without knowing a printer, waiting for quotes, or guessing how the job will turn out.",
     "sections": [
       {
@@ -89,8 +89,8 @@
         "body": "getpack is one place from design to delivery: a library of box styles that can really be made, a design studio on a 3D box, prices that follow your spec at once, a prepress team that checks every file before print, and production and delivery tracking at every stage. Every tax invoice and document is issued by Collective Group (Thailand)."
       },
       {
-        "title": "Where it is made",
-        "body": "We do not have one factory, but we control quality as if we did. Each kind of job goes to the partner factory best at it within a network we have vetted. Our people inspect and photograph every batch before the cartons are sealed, and getpack is the seller responsible to you for the job."
+        "title": "Production standard",
+        "body": "Every job meets getpack's production standard. Our people inspect and photograph every batch before the cartons are sealed, and getpack is the seller responsible to you for the job."
       },
       {
         "title": "Why instant prices",
@@ -109,7 +109,7 @@
       "whereValue": "Nationwide, Thailand",
       "contact": "Contact"
     },
-    "ctaNetwork": "Our factory network",
+    "ctaNetwork": "Our production standard",
     "ctaGuarantee": "Our guarantee",
     "ctaContact": "Contact us"
   },
@@ -201,7 +201,7 @@
         },
         {
           "title": "10. Intellectual property",
-          "body": "You keep ownership of designs, logos and content you create or upload, and grant the Company and its partner factories the right to use them to produce your order. getpack's box styles, design tools and software belong to the Company."
+          "body": "You keep ownership of designs, logos and content you create or upload, and grant the Company and the producers acting for it the right to use them to produce your order. getpack's box styles, design tools and software belong to the Company."
         },
         {
           "title": "11. Personal data",
@@ -235,7 +235,7 @@
         },
         {
           "title": "4. Who we share it with",
-          "body": "Only as needed: the partner factory producing your order (recipient name, delivery address, artwork), carriers, payment providers, cloud and messaging providers, and public authorities where the law requires. We do not sell your personal data."
+          "body": "Only as needed: the producer making your order (recipient name, delivery address, artwork), carriers, payment providers, cloud and messaging providers, and public authorities where the law requires. We do not sell your personal data."
         },
         {
           "title": "5. Transfers abroad",
@@ -301,6 +301,8 @@
     "faqBody": "Answers on ordering, prices, artwork, payment, delivery and claims",
     "guarantee": "Our guarantee",
     "guaranteeBody": "What getpack guarantees on every order and how to report a problem on receipt",
+    "network": "getpack's production standard",
+    "networkBody": "Every job ordered through getpack meets the same production standard, from the file check to the final check before dispatch, and getpack is the seller responsible to you throughout.",
     "contact": "Contact",
     "contactBody": "How to reach the team and business hours"
   }

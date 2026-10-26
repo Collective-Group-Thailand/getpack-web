@@ -5,7 +5,7 @@
   },
   "breadcrumb": "Request a quote",
   "heading": "Request a quote: {name}",
-  "intro": "Tell us what you need. Our team prices it with our partner factories and sends you a quotation.",
+  "intro": "Tell us what you need. Our team prices it and sends you a quotation.",
   "how": {
     "step1": "Give the spec and quantities, attach files",
     "step2": "We price it and send a quotation",
