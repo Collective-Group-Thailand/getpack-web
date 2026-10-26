@@ -13,6 +13,14 @@ import { topicsOf } from "./topics";
 /** How many option chips a card shows before "+N" — one line, so every card in a row keeps one height. */
 const CHIPS = 2;
 
+/**
+ * The foot's text block. Priced and quoted cards share it: it keeps room for three lines and sets
+ * its content on the bottom of them, so a quoted card's "ขอใบเสนอราคา" and its hint sit on the same
+ * lines as a priced card's price and its quantity line, and the compare control beside it stays on
+ * the row instead of dropping under the text.
+ */
+const FOOT_TEXT = "flex min-h-[2.9rem] min-w-0 flex-1 flex-col justify-end leading-tight max-sm:flex-none";
+
 /** A card's words, prepared by whoever renders it (the server for the first page, the browser after). */
 export interface StyleCardWords {
   name: string;
@@ -83,6 +91,7 @@ export function StyleCardFace({
       className={className}
       priority={priority}
       reserveTitleLines
+      roomy
       title={
         <Link href={href ?? styleHref(style.code, words.name)} data-style-code={style.code}>
           {words.name}
@@ -112,8 +121,8 @@ export function StyleCardFace({
       }
       imageFoot={
         style.variantCount > 1 ? (
-          <span className="bg-surface/95 text-fg border-border rounded-control inline-flex h-6 items-center gap-1 border px-2 text-[0.6875rem] font-medium tabular-nums">
-            <Icon name="layers" size={12} aria-hidden="true" />
+          <span className="bg-surface/90 text-fg-2 border-border inline-flex items-center gap-[5px] rounded-control border py-[3px] ps-[7px] pe-[9px] text-xs font-medium tabular-nums backdrop-blur-sm">
+            <Icon name="layers" size={13} aria-hidden="true" />
             {words.variants}
           </span>
         ) : undefined
@@ -159,7 +168,7 @@ export function StyleCardFace({
       footer={
         <>
           {words.price ? (
-            <p className="min-w-[7.5rem] flex-1 leading-tight">
+            <p className={FOOT_TEXT}>
               <span className="text-muted block text-[0.6875rem]">{words.priceLabel}</span>
               <span className="text-instant-subtle-fg block text-sm font-semibold tabular-nums">{words.price}</span>
               {words.priceQuantity || words.priceVat ? (
@@ -169,7 +178,7 @@ export function StyleCardFace({
               ) : null}
             </p>
           ) : (
-            <p className="min-w-[7.5rem] flex-1 leading-tight">
+            <p className={FOOT_TEXT}>
               <span className="block text-sm font-semibold">{words.quote}</span>
               <span className="text-muted block text-[0.6875rem]">{words.quoteHint}</span>
             </p>
