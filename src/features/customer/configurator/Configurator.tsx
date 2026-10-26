@@ -579,15 +579,17 @@ export function Configurator({
 
   const chips: StepChip[] = steps.map((step) => {
     const own = ownStatusOf(step);
+    // The summary only reviews, and the shipping-load questions are the advisor's optional input:
+    // neither is a to-do that blocks the order.
+    const optional = step === "summary" || step === "logistics";
+    const state: StepChip["state"] =
+      own === "complete" ? (isDefaultStep(step, touched) ? "default" : "done") : optional ? "idle" : "todo";
     return {
       id: anchorOf(step),
       label: t(`chips.${step}`),
-      // Not "done" while the answer is still the catalogue's starting value; a step that waits on the
-      // customer (no postcode, a missing choice) is the amber to-do. The summary only reviews.
-      state:
-        step === "summary" ? "idle" : own === "complete" ? (isDefaultStep(step, touched) ? "default" : "done") : "todo",
+      state,
       stateLabel: t("stepper.defaulted"),
-      srLabel: own === "complete" ? t("chips.done") : t("chips.todo"),
+      srLabel: state === "done" ? t("chips.done") : state === "todo" ? t("chips.todo") : undefined,
     };
   });
 
