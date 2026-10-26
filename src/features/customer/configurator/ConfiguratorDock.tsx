@@ -37,6 +37,8 @@ export interface ConfiguratorDockProps {
   loading: boolean;
   pending: boolean;
   failed: boolean;
+  /** Why the API refused the print choice (`pricing.print_combination_invalid`), one line per side. */
+  refusal?: string[] | null;
   onRetry: () => void;
   onAction: (action: QuoteAction) => void;
   busy: QuoteAction | null;
@@ -70,6 +72,7 @@ export function ConfiguratorDock({
   loading,
   pending,
   failed,
+  refusal,
   onRetry,
   onAction,
   busy,
@@ -99,6 +102,15 @@ export function ConfiguratorDock({
     <div>
       <p className="font-semibold">{t("notReady")}</p>
       <p className="text-muted text-sm">{t("stillNeeded", { items: missing.join(", ") })}</p>
+    </div>
+  ) : refusal && !priced ? (
+    <div role="alert">
+      <p className="font-semibold">{t("printRefused")}</p>
+      <ul className="text-muted text-sm">
+        {refusal.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
     </div>
   ) : failed && !priced ? (
     <div className="flex flex-col items-start gap-2">

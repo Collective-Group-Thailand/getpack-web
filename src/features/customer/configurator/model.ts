@@ -230,7 +230,8 @@ export const isProcessInk = (option: StoreOption) => option.attributes?.colourKi
 const isInkGroup = (group: Pick<ChoiceGroup, "kind">) => group.kind === "print_front" || group.kind === "print_back";
 
 /**
- * The one place that says how inks combine on a side: a process ink (CMYK) is the whole
+ * Folding, label and tag & sleeve inks (no per-side print model yet, B-API-2; corrugate uses
+ * `print-model.ts`): how inks combine on a side: a process ink (CMYK) is the whole
  * four-colour print, so it and any other ink are alternatives; only spot inks may be combined.
  * Choosing a process ink replaces the other choices, choosing another ink drops a process ink.
  */

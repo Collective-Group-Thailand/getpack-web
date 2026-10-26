@@ -258,6 +258,7 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
       dueAt: waitingPayment ? order.expiresAt : null,
       overdue,
     },
+    artworkNoteTh: null,
     artworkStatus: order.artwork.status,
     ...statusLabels("artworkStatus", ARTWORK_STATUS, order.artwork.status),
     productTypeCode: order.productType.code,

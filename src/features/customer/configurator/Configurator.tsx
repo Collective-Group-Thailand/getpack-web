@@ -22,7 +22,9 @@ import { ConfiguratorDock } from "./ConfiguratorDock";
 import { boxStyleOf, ConfiguratorPreview } from "./ConfiguratorPreview";
 import { useConversion, usePatternBases } from "./conversion";
 import { configurationSummary, lineChatUrl } from "./line";
-import { basesOf, groupsOf, optionsById, sizeKindOf } from "./model";
+import { basesOf, groupsOf, isProcessInk, optionsById, sizeKindOf } from "./model";
+import { isCorrugate, refusedSide } from "./print-model";
+import { isApiError } from "@/lib/api/problem";
 import { useLivePrice } from "./pricing";
 import { SizeStep } from "./SizeStep";
 import {
@@ -172,6 +174,19 @@ export function Configurator({
   const ready = readyToPrice(configurator, state, conversion.internal) && !conversion.caliperUnknown;
   const body = ready ? buildCalculateBody(configurator, state) : null;
   const price = useLivePrice(body);
+  // 422 `pricing.print_combination_invalid`: one readable line per refused side, never a crash.
+  const refusal = isApiError(price.error) && price.error.code === "pricing.print_combination_invalid" ? price.error : null;
+  const refusedLines = refusal
+    ? (() => {
+        const lines = refusal.errors.flatMap((entry) => {
+          const side = refusedSide(entry.path ?? "");
+          if (!side) return [];
+          const reason = t.has(`printProblem.${entry.code}`) ? t(`printProblem.${entry.code}`) : t("printProblem.other");
+          return [t("printProblem.side", { side: t(`printProblem.${side}`), reason })];
+        });
+        return lines.length > 0 ? lines : [t("printProblem.other")];
+      })()
+    : null;
   const priced = price.data?.steps.find((step) => step.quantity === state.quantity && step.instant) ?? null;
   const gap = price.data?.target?.steps.find((step) => step.quantity === state.quantity) ?? null;
 
@@ -229,8 +244,29 @@ export function Configurator({
       .filter(Boolean)
       .join(" · ");
   })();
+  /** A corrugate print as the customer chose it: "ด้านนอก: CMYK · ด้านใน: ไม่พิมพ์" (D-443). */
+  const printSummary = (print: { print_front: string[]; print_back: string[] }) => {
+    const side = (ids: string[]) => {
+      if (ids.length === 0) return t("choices.print.none");
+      return ids
+        .map((id) => {
+          const option = byId.get(id);
+          if (!option) return null;
+          return isProcessInk(option) ? t("choices.print.cmyk") : pick(locale, option.nameTh, option.nameEn);
+        })
+        .filter(Boolean)
+        .join(" + ");
+    };
+    return t("choices.print.summary", { outside: side(print.print_front), inside: side(print.print_back) });
+  };
   const choiceSummary = (step: StepKey): string => {
     const parts = partsOf(configurator, state);
+    if (step === "printing" && isCorrugate(configurator)) {
+      const perPart = parts.length > 1 && parts.some((part) => state.partPrints[part.subPatternId]);
+      return perPart
+        ? parts.map((part) => `${part.name}: ${printSummary(printOfPart(state, part.subPatternId))}`).join(" · ")
+        : printSummary(printOfPart(state, undefined));
+    }
     if (step === "printing" && parts.some((part) => state.partPrints[part.subPatternId])) {
       const names = (ids: string[]) =>
         ids.flatMap((id) => {
@@ -600,6 +636,7 @@ export function Configurator({
         loading={price.isLoading || (ready && !price.data)}
         pending={price.pending}
         failed={price.isError}
+        refusal={refusedLines}
         onRetry={() => void price.refetch()}
         onAction={actions.run}
         busy={actions.busy}
