@@ -769,6 +769,8 @@
     "instantOnly": "ราคาทันทีเท่านั้น",
     "instantOnlyHint": "เห็นราคาและสั่งได้เลย · {count, plural, other {# แบบ}}",
     "showMore": "ดูเพิ่มอีก {count} รายการ",
+    "showMoreTopics": "ดูเพิ่มอีก {count} หัวข้อ",
+    "showLessTopics": "แสดงหัวข้อน้อยลง",
     "showLess": "แสดงน้อยลง",
     "showResults": "แสดงผลลัพธ์ {count, plural, other {# แบบ}}",
     "activeFilters": "ตัวกรองที่เลือก",

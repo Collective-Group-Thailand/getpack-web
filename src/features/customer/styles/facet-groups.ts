@@ -98,3 +98,29 @@ export function foldedItems<T extends { selected: boolean }>(
   const shown = items.filter((item, index) => index < limit || item.selected);
   return { shown, hidden: items.length - shown.length };
 }
+
+/** How many sub-group headings an option facet shows before "ดูเพิ่มอีก N หัวข้อ" ("ลูกเล่น" has 20). */
+export const VISIBLE_SUB_GROUPS = 6;
+
+/**
+ * The sub-groups shown while a long facet is folded: the six with the highest total count (kept
+ * in their own order), plus any that holds a selected value — a filter that is on is never hidden.
+ * Presentation only: the API's values and counts are untouched.
+ */
+export function foldedSubGroups<I extends { count: number; selected?: boolean }, T extends { items: I[] }>(
+  subGroups: T[],
+  isSelected: (item: I) => boolean = (item) => !!item.selected,
+  limit = VISIBLE_SUB_GROUPS,
+): { shown: T[]; hidden: number } {
+  if (subGroups.length <= limit) return { shown: subGroups, hidden: 0 };
+  const total = (sub: T) => sub.items.reduce((n, item) => n + item.count, 0);
+  const top = new Set(
+    subGroups
+      .map((sub, index) => ({ sub, index, total: total(sub) }))
+      .sort((a, b) => b.total - a.total || a.index - b.index)
+      .slice(0, limit)
+      .map(({ sub }) => sub),
+  );
+  const shown = subGroups.filter((sub) => top.has(sub) || sub.items.some(isSelected));
+  return { shown, hidden: subGroups.length - shown.length };
+}
