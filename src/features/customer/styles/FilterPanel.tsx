@@ -125,19 +125,27 @@ function FacetSection({
   const topics = foldedSubGroups(group.subGroups, isOn);
   const visibleSubGroups = allTopics ? group.subGroups : topics.shown;
   return (
-    <section aria-labelledby={`${id}-title`} className="border-border border-t pt-4 first:border-t-0 first:pt-0">
+    <section aria-labelledby={`${id}-title`} className="border-border border-b">
       <h3 id={`${id}-title`}>
         <button
           type="button"
           aria-expanded={open}
           aria-controls={`${id}-body`}
           onClick={() => setOpen((o) => !o)}
-          className="focus-visible:ring-focus-ring rounded-control flex w-full items-center justify-between gap-2 py-1 text-start text-sm font-semibold outline-none focus-visible:ring-2"
+          className="focus-visible:ring-focus-ring rounded-control flex w-full items-center justify-between gap-2 py-4 text-start text-[0.90625rem] font-semibold outline-none focus-visible:ring-2"
         >
           <span>
             {group.title}
             {selected ? (
-              <span className="text-primary ms-1.5 tabular-nums">{t("list.count", { count: selected })}</span>
+              <>
+                <span
+                  aria-hidden="true"
+                  className="bg-primary text-primary-fg ms-2 inline-block rounded-control px-[7px] align-middle text-[0.72rem] leading-[18px] font-semibold tabular-nums"
+                >
+                  {selected}
+                </span>
+                <span className="sr-only">{t("list.count", { count: selected })}</span>
+              </>
             ) : null}
           </span>
           <Icon
@@ -146,12 +154,12 @@ function FacetSection({
             aria-hidden="true"
             className={cn(
               "text-muted duration-fast transition-transform motion-reduce:transition-none",
-              open && "rotate-180",
+              !open && "-rotate-90",
             )}
           />
         </button>
       </h3>
-      <div id={`${id}-body`} hidden={!open} className="mt-2 flex flex-col gap-3">
+      <div id={`${id}-body`} hidden={!open} className="flex flex-col gap-3 pb-4">
         {visibleSubGroups.map((sub, index) => (
           <SubGroup
             key={sub.title ?? index}
@@ -280,7 +288,7 @@ export function ClearFiltersButton({ params, className }: { params: ListParams; 
     <button
       type="button"
       className={cn(
-        "text-muted hover:text-fg focus-visible:ring-focus-ring rounded-control text-sm outline-none focus-visible:ring-2",
+        "text-primary focus-visible:ring-focus-ring rounded-control py-1 text-[0.84rem] font-medium outline-none hover:underline focus-visible:ring-2",
         className,
       )}
       onClick={() =>
