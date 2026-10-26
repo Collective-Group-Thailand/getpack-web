@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { pick } from "@/features/customer/catalog/localize";
 import { useFormat } from "@/features/shared/format/useFormat";
+import { specLabelText } from "@/features/shared/spec-label";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
@@ -22,7 +23,9 @@ import { ConfiguratorDock } from "./ConfiguratorDock";
 import { boxStyleOf, ConfiguratorPreview } from "./ConfiguratorPreview";
 import { useConversion, usePatternBases } from "./conversion";
 import { configurationSummary, lineChatUrl } from "./line";
-import { basesOf, groupsOf, optionsById, sizeKindOf } from "./model";
+import { basesOf, groupsOf, isProcessInk, optionsById, sizeKindOf } from "./model";
+import { isCorrugate, refusedSide } from "./print-model";
+import { isApiError } from "@/lib/api/problem";
 import { useLivePrice } from "./pricing";
 import { SizeStep } from "./SizeStep";
 import {
@@ -172,7 +175,21 @@ export function Configurator({
   const ready = readyToPrice(configurator, state, conversion.internal) && !conversion.caliperUnknown;
   const body = ready ? buildCalculateBody(configurator, state) : null;
   const price = useLivePrice(body);
+  // 422 `pricing.print_combination_invalid`: one readable line per refused side, never a crash.
+  const refusal = isApiError(price.error) && price.error.code === "pricing.print_combination_invalid" ? price.error : null;
+  const refusedLines = refusal
+    ? (() => {
+        const lines = refusal.errors.flatMap((entry) => {
+          const side = refusedSide(entry.path ?? "");
+          if (!side) return [];
+          const reason = t.has(`printProblem.${entry.code}`) ? t(`printProblem.${entry.code}`) : t("printProblem.other");
+          return [t("printProblem.side", { side: t(`printProblem.${side}`), reason })];
+        });
+        return lines.length > 0 ? lines : [t("printProblem.other")];
+      })()
+    : null;
   const priced = price.data?.steps.find((step) => step.quantity === state.quantity && step.instant) ?? null;
+  const pricedSpec = specLabelText(price.data?.specLabel, locale);
   const gap = price.data?.target?.steps.find((step) => step.quantity === state.quantity) ?? null;
 
   const advisor = useAdvisor(configurator);
@@ -229,8 +246,29 @@ export function Configurator({
       .filter(Boolean)
       .join(" · ");
   })();
+  /** A corrugate print as the customer chose it: "ด้านนอก: CMYK · ด้านใน: ไม่พิมพ์" (D-443). */
+  const printSummary = (print: { print_front: string[]; print_back: string[] }) => {
+    const side = (ids: string[]) => {
+      if (ids.length === 0) return t("choices.print.none");
+      return ids
+        .map((id) => {
+          const option = byId.get(id);
+          if (!option) return null;
+          return isProcessInk(option) ? t("choices.print.cmyk") : pick(locale, option.nameTh, option.nameEn);
+        })
+        .filter(Boolean)
+        .join(" + ");
+    };
+    return t("choices.print.summary", { outside: side(print.print_front), inside: side(print.print_back) });
+  };
   const choiceSummary = (step: StepKey): string => {
     const parts = partsOf(configurator, state);
+    if (step === "printing" && isCorrugate(configurator)) {
+      const perPart = parts.length > 1 && parts.some((part) => state.partPrints[part.subPatternId]);
+      return perPart
+        ? parts.map((part) => `${part.name}: ${printSummary(printOfPart(state, part.subPatternId))}`).join(" · ")
+        : printSummary(printOfPart(state, undefined));
+    }
     if (step === "printing" && parts.some((part) => state.partPrints[part.subPatternId])) {
       const names = (ids: string[]) =>
         ids.flatMap((id) => {
@@ -263,7 +301,8 @@ export function Configurator({
     guest: {
       slug: configurator.slug,
       unit,
-      specs: [sizeSummary, ...(["material", "printing", "finishing"] as const).map(choiceSummary)].filter(Boolean),
+      // The API's own words for the spec it priced (B-API-3); never composed here.
+      specs: pricedSpec ? [pricedSpec] : [],
       grossAmount: priced?.grossAmount ?? null,
     },
   });
@@ -487,6 +526,7 @@ export function Configurator({
             onEdit={setCurrent}
             pattern={pattern}
             priced={priced}
+            pricedSpec={pricedSpec}
             unit={unit}
             draft={drafts.draft}
             draftBusy={drafts.busy}
@@ -520,12 +560,17 @@ export function Configurator({
           step: "design",
         })
       : null;
+  // Once priced, the spec is the API's own label (B-API-3); before that, the answers given so far.
   const facts = [
-    ...(sizeSummary ? [{ label: t("steps.size"), value: sizeSummary }] : []),
-    ...(["material", "printing", "finishing", "assembly"] as const).flatMap((step) => {
-      const value = choiceSummary(step);
-      return value ? [{ label: t(`steps.${step}`), value }] : [];
-    }),
+    ...(pricedSpec
+      ? [{ label: t("summary.pricedSpec"), value: pricedSpec }]
+      : [
+          ...(sizeSummary ? [{ label: t("steps.size"), value: sizeSummary }] : []),
+          ...(["material", "printing", "finishing", "assembly"] as const).flatMap((step) => {
+            const value = choiceSummary(step);
+            return value ? [{ label: t(`steps.${step}`), value }] : [];
+          }),
+        ]),
     ...(state.quantities.length > 0
       ? [{ label: t("steps.quantity"), value: `${format.number(state.quantity)} ${unit}` }]
       : []),
@@ -600,6 +645,7 @@ export function Configurator({
         loading={price.isLoading || (ready && !price.data)}
         pending={price.pending}
         failed={price.isError}
+        refusal={refusedLines}
         onRetry={() => void price.refetch()}
         onAction={actions.run}
         busy={actions.busy}

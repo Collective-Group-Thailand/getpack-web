@@ -25,3 +25,24 @@ export function mergeEqualTiers(steps: PriceStep[]): TierGroup[] {
   }
   return groups;
 }
+
+/**
+ * The two texts of a tier row: the quantity cell and the screen-reader tail of its button. The unit
+ * appears once in each: a merged row's range already carries it ("100–500 ชิ้น"), so its button
+ * must not add it again; a single-quantity cell shows the bare number and its button adds the unit.
+ */
+export function tierRowLabels(
+  group: TierGroup,
+  text: {
+    number: (value: number) => string;
+    range: (from: string, to: string) => string;
+    withUnit: (quantity: string) => string;
+  },
+): { quantity: string; select: string } {
+  if (group.steps.length > 1) {
+    const range = text.range(text.number(group.first.quantity), text.number(group.last.quantity));
+    return { quantity: range, select: range };
+  }
+  const quantity = text.number(group.first.quantity);
+  return { quantity, select: text.withUnit(quantity) };
+}

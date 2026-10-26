@@ -6,6 +6,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import {
   artworkNoteOf,
+  artworkNoteTextOf,
   deliveryDatesOf,
   isHeldByClaim,
   isPaymentOverdue,
@@ -47,6 +48,7 @@ function order(status: Status, over: Partial<OrderStateInput> = {}): OrderStateI
     customerStatus: status,
     artworkStatus: "approved",
     artworkOwner: null,
+    artworkNoteTh: null,
     deliveryDateBasis: "planned",
     payment: payment(),
     receipt: receipt(),
@@ -119,6 +121,35 @@ describe("status transitions", () => {
     expect(visibleActions(team, ALL).map((a) => a.key)).not.toContain("order.upload_artwork");
     expect(artworkNoteOf(customer)).toBe("customer_upload");
     expect(artworkNoteOf(team)).toBe("team_dieline");
+  });
+
+  it("own-file order before payment: the API's awaiting_upload/customer shows the upload and the dieline-as-help note", () => {
+    const own = order("awaiting_payment", {
+      deliveryDateBasis: "after_payment",
+      artworkOwner: "customer",
+      artworkStatus: "awaiting_upload",
+    });
+    expect(visibleActions(own, ALL).map((a) => a.key)).toContain("order.upload_artwork");
+    expect(artworkNoteOf(own)).toBe("customer_upload");
+  });
+
+  it("hired design: awaiting_template/team explains what happens next and offers no upload", () => {
+    const hired = order("awaiting_artwork", { artworkOwner: "team", artworkStatus: "awaiting_template" });
+    expect(artworkNoteOf(hired)).toBe("team_dieline");
+    expect(visibleActions(hired, ALL)).not.toContainEqual(expect.objectContaining({ key: "order.upload_artwork" }));
+  });
+
+  it("an old API that still says awaiting_template for an own-file order is rendered as sent: no invented upload", () => {
+    const old = order("awaiting_artwork", { artworkOwner: "team", artworkStatus: "awaiting_template" });
+    expect(visibleActions(old, [{ key: "order.upload_artwork" }]).map((a) => a.key)).toEqual([]);
+  });
+
+  it("artworkNoteTh is the API's sentence in Thai only; null, absent and other languages show nothing", () => {
+    const note = "ไฟล์ได้รับแล้ว ทีมงานจะตรวจหลังชำระเงิน";
+    expect(artworkNoteTextOf("th", { artworkNoteTh: note })).toBe(note);
+    expect(artworkNoteTextOf("en", { artworkNoteTh: note })).toBeNull();
+    expect(artworkNoteTextOf("th", { artworkNoteTh: null })).toBeNull();
+    expect(artworkNoteTextOf("th", {})).toBeNull();
   });
 
   it("awaiting_approval: a proof the customer must answer is the customer's step, without a plain-words note", () => {

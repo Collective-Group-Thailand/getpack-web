@@ -1,4 +1,5 @@
-import { groupsOf, isProcessInk, type Configurator, type StoreOption } from "@/features/customer/configurator/model";
+import { groupsOf, isProcessInk, optionsById, type Configurator, type StoreOption } from "@/features/customer/configurator/model";
+import { isCorrugate, normaliseCorrugateSide } from "@/features/customer/configurator/print-model";
 import { initialState, NO_DIMS, type ConfiguratorState } from "@/features/customer/configurator/state";
 import { insideSize } from "@/features/designer/document";
 import type { DesignContent, DesignSpec, StudioChoices } from "@/features/designer/types";
@@ -94,6 +95,13 @@ export function stateForDesign(
     if (backInks.length > 0)
       choices.print_back =
         sides === "inside" || sides === "both" ? inksFor(backInks, content, studio.printMethod ?? null, maxSpot) : [];
+  }
+  if (isCorrugate(configurator)) {
+    // D-443: a corrugate side is one valid choice of the product's print model (what the artwork
+    // needs beyond it is the team's to settle), so a design never asks for a refused combination.
+    const byId = optionsById(configurator);
+    for (const kind of ["print_front", "print_back"] as const)
+      if (choices[kind]) choices[kind] = normaliseCorrugateSide(configurator, byId, kind, choices[kind]!);
   }
   const coating = group("coating_front")?.options.find((o) => o.id === studio.coatingId);
   if (studio.coatingId !== undefined) choices.coating_front = coating ? [coating.id] : [];
