@@ -92,7 +92,7 @@ test.describe("the account", () => {
     await signInAsCustomer(page, "/configure/tuck-end-box");
     const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
     await expect(dock.getByText(/\/ ชิ้น$/)).toBeVisible();
-    await dock.getByRole("button", { name: "บันทึก" }).click();
+    await dock.getByRole("button", { name: "ใบเสนอราคา" }).click();
     // A saved quotation has no code until it is shared or put in a PDF (store.quotes.save).
     await expect(page.getByText(/บันทึกใบเสนอราคาแล้ว ราคาคงที่ถึง/)).toBeVisible();
 
