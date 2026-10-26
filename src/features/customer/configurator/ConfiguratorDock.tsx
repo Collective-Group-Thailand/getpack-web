@@ -51,6 +51,11 @@ export interface ConfiguratorDockProps {
   completeness?: { done: number; total: number };
   /** Scrolls to the shipping step: the link in the shipping line and in the completeness row. */
   onGoToShipping?: () => void;
+  /**
+   * The area the postcode resolves to ("กรุงเทพมหานคร"), under the shipping line. The calculation names no
+   * shipping zone, so this is the geo lookup's province (OPEN QUESTION in the C4 report).
+   */
+  shippingArea?: string | null;
   /** The discount code field, when the configurator offers one. */
   promo?: React.ReactNode;
 }
@@ -85,6 +90,7 @@ export function ConfiguratorDock({
   lineHref,
   completeness,
   onGoToShipping,
+  shippingArea,
   promo,
 }: ConfiguratorDockProps) {
   const t = useTranslations("configurator.dock");
@@ -165,7 +171,11 @@ export function ConfiguratorDock({
           : []),
         priced.shippingPending
           ? { label: t("shipping"), value: onGoToShipping ? toShipping : t("shippingPending") }
-          : { label: t("shipping"), value: format.thb(priced.shippingAmount) },
+          : {
+              label: t("shipping"),
+              value: format.thb(priced.shippingAmount),
+              ...(shippingArea ? { hint: t("shippingTo", { area: shippingArea }) } : {}),
+            },
         // The API's VAT amount exactly as sent: it is inside the total, never added to it (D-441).
         { label: t("vatLine"), value: format.thb(priced.vatAmount) },
       ]

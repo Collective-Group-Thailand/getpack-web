@@ -29,6 +29,7 @@ import { isCorrugate, refusedSide } from "./print-model";
 import { isApiError } from "@/lib/api/problem";
 import { useOptionPrices } from "./option-prices";
 import { useLivePrice } from "./pricing";
+import { rememberedPostcode, usePostcodeArea } from "./postcode";
 import { PromoCode } from "./PromoCode";
 import { PreviewSide, type PreviewDimensions } from "./PreviewSide";
 import { SizeStep } from "./SizeStep";
@@ -350,6 +351,21 @@ export function Configurator({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState((previous) => (previous.unit === remembered ? previous : { ...previous, unit: remembered }));
   }, [session]);
+
+  // The delivery postcode is remembered in this browser (the contract has no account setting for it): read
+  // after hydration, never over one a draft or a link brought; kept once it is complete.
+  const postcodeRead = useRef(false);
+  useEffect(() => {
+    if (postcodeRead.current) return;
+    postcodeRead.current = true;
+    const remembered = rememberedPostcode();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (remembered) setState((previous) => (previous.postcode === "" ? { ...previous, postcode: remembered } : previous));
+  }, []);
+  useEffect(() => {
+    if (POSTCODE.test(state.postcode)) rememberedPostcode(state.postcode);
+  }, [state.postcode]);
+  const { area: postcodeArea } = usePostcodeArea(state.postcode);
 
   // The sticky chip bar's real height, so a step scrolled to lands just under it (and the header).
   const root = useRef<HTMLDivElement>(null);
@@ -726,6 +742,7 @@ export function Configurator({
         lineHref={lineHref}
         completeness={completeness}
         onGoToShipping={() => scrollToStep(anchorOf("delivery"))}
+        shippingArea={postcodeArea ? pick(locale, postcodeArea.province.nameTh, postcodeArea.province.nameEn) : null}
         promo={<PromoCode configurator={configurator} state={state} onChange={updateIn("summary")} />}
       />
       {/* Room for the phone bar, so the last field is never under it. */}
