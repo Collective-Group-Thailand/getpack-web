@@ -299,6 +299,8 @@
     "breaksQuantity": "Quantity",
     "breaksPerPiece": "Each",
     "breaksTotal": "Total",
+    "breaksRange": "{from}–{to} {unit}",
+    "breaksTotalVaries": "By quantity",
     "breaksSelect": "{quantity} {unit}",
     "breaksChoose": "Choose",
     "breaksChosen": "Chosen",

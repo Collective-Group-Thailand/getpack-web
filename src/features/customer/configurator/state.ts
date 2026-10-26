@@ -168,18 +168,32 @@ function defaultTiers(configurator: Configurator): number[] {
   return around.slice(start, start + Math.min(maxTiers, 4));
 }
 
+/**
+ * The pattern the product opens on: the one its default spec names (D-441), else the first. The id
+ * is read from the API's own configuration; nothing is derived from it.
+ */
+export function defaultPatternOf(configurator: Configurator) {
+  const id = configurator.defaultSpec?.configuration["patternId"];
+  return configurator.patterns.find((pattern) => pattern.id === id) ?? configurator.patterns[0] ?? null;
+}
+
+/** The standard size the product opens on: the one the API marks default (D-441), else the first. */
+export function defaultStandardSizeOf(configurator: Configurator) {
+  return configurator.standardSizes.find((size) => size.isDefault) ?? configurator.standardSizes[0] ?? null;
+}
+
 export const NO_DIMS: Record<Axis, number | null> = { l: null, w: null, d: null, b: null, s: null, cs: null };
 
 /**
- * The starting configuration: the API's defaults, the first pattern, the first standard size if
- * there is one. A `seed` (a draft, a shared or saved quote reopened) wins where it has an answer.
+ * The starting configuration: the API's defaults — its default spec's pattern and standard size (D-441),
+ * else the first of each — if there is one. A `seed` (a draft, a shared or saved quote reopened) wins where it has an answer.
  * The basis starts unanswered unless the product has only one (`product` for flat items) or a
  * catalogue standard size — an inside size — is the starting point.
  */
 export function initialState(configurator: Configurator, seed: Partial<ConfiguratorState> = {}): ConfiguratorState {
-  const pattern = configurator.patterns[0] ?? null;
+  const pattern = defaultPatternOf(configurator);
   const kind = sizeKindOf(configurator);
-  const standard = kind === "box" ? (configurator.standardSizes[0] ?? null) : null;
+  const standard = kind === "box" ? defaultStandardSizeOf(configurator) : null;
   const choices: ConfiguratorState["choices"] = {};
   for (const group of groupsOf(configurator)) {
     const defaults = group.options.filter((option) => option.isDefault).map((option) => option.id);

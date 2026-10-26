@@ -299,6 +299,8 @@
     "breaksQuantity": "จำนวน",
     "breaksPerPiece": "ต่อชิ้น",
     "breaksTotal": "รวม",
+    "breaksRange": "{from}–{to} {unit}",
+    "breaksTotalVaries": "ตามจำนวน",
     "breaksSelect": "{quantity} {unit}",
     "breaksChoose": "เลือก",
     "breaksChosen": "เลือกอยู่",

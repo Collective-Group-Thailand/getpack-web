@@ -15,6 +15,8 @@ export interface QuoteDockProps {
   headline: React.ReactNode;
   /** Under it: "รวม ฿13,380.00 · 1,000 ชิ้น". */
   subline?: React.ReactNode;
+  /** Which specification the figure is for (D-441), as one line under the price — in the bar, panel and sheet. */
+  basis?: React.ReactNode;
   /** Replaces the headline while a price is being worked out or cannot be given. */
   status?: React.ReactNode;
   /** Everything else: the summary, price breaks, dates, validity. */
@@ -52,6 +54,7 @@ export function QuoteDock({
   title,
   headline,
   subline,
+  basis,
   status,
   children,
   primaryAction,
@@ -74,6 +77,7 @@ export function QuoteDock({
         <>
           <p className="serif text-3xl tabular-nums">{headline}</p>
           {subline ? <p className="text-muted text-sm tabular-nums">{subline}</p> : null}
+          {basis ? <p className="text-muted mt-1 text-xs leading-snug">{basis}</p> : null}
         </>
       )}
     </div>
@@ -126,6 +130,7 @@ export function QuoteDock({
               <span className="min-w-0 flex-1" aria-live={live ? "polite" : undefined} aria-atomic="true">
                 <span className="block truncate text-lg font-bold tabular-nums">{headline}</span>
                 {subline ? <span className="text-muted block truncate text-xs tabular-nums">{subline}</span> : null}
+                {basis ? <span className="text-muted block truncate text-xs">{basis}</span> : null}
               </span>
               <span className={detailsLinkClass}>
                 <span className="sr-only">, </span>

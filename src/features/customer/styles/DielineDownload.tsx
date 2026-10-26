@@ -28,6 +28,8 @@ export interface DielineDownloadProps {
   signInHref: string;
   /** Where to order this style (the configurator), for the nudge after a download. */
   orderHref: string | null;
+  /** A size to start the form on (from the product page's link), in mm on the inside basis. */
+  initialSize?: { l: string; w: string; h: string };
 }
 
 const MM = /^\d{1,4}(\.\d)?$/;
@@ -39,14 +41,21 @@ const MM = /^\d{1,4}(\.\d)?$/;
  * explained; after a download the page says the box can be ordered as it is, never a paywall. A
  * signed-out visitor is asked to sign in (the API counts downloads per customer).
  */
-export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref, orderHref }: DielineDownloadProps) {
+export function DielineDownload({
+  variantCode,
+  sizeRanges,
+  signedIn,
+  signInHref,
+  orderHref,
+  initialSize,
+}: DielineDownloadProps) {
   const t = useTranslations("styles.dieline");
   const words = useTranslations("styles") as unknown as StylesT;
   const locale = useLocale() as "th" | "en";
   const [material, setMaterial] = useState(sizeRanges[0]?.materialClass ?? "");
   const [basis, setBasis] = useState<Basis>("internal");
   const [format, setFormat] = useState<Format>("pdf");
-  const [size, setSize] = useState({ l: "", w: "", h: "" });
+  const [size, setSize] = useState(initialSize ?? { l: "", w: "", h: "" });
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [done, setDone] = useState<Schemas["DielineDownloadDto"] | null>(null);
