@@ -35,6 +35,8 @@ export async function LaunchpadPanel({ launchpad, hasBrandKit }: { launchpad: La
   const step = launchpad.nextStep;
   const item = launchpad.needsAction.find((row) => row.id === step.targetId);
   const design = launchpad.designs.find((row) => row.id === step.targetId);
+  // D-436: a payment past its deadline is not cancelled — the customer checks the price again, then pays.
+  const overdue = step.kind === "pay" && Boolean(item?.overdue);
 
   return (
     <div className="flex flex-col gap-8">
@@ -50,15 +52,24 @@ export async function LaunchpadPanel({ launchpad, hasBrandKit }: { launchpad: La
             <p className="text-muted text-xs font-medium tracking-wide uppercase">{t("nextLabel")}</p>
             <h2 id="launchpad-next" className="text-lg font-semibold">
               {t(`next.${step.kind}.title`, { code: item?.code ?? "", name: design?.title ?? "" })}
+              {overdue ? (
+                <Badge tone="danger" icon="clock" className="ms-2 align-middle">
+                  {t("overdue")}
+                </Badge>
+              ) : null}
             </h2>
             <p className="text-muted text-sm">
-              {item?.amount ? t("next.amount", { amount: format.thb(item.amount) }) : t(`next.${step.kind}.body`)}
-              {item?.dueAt ? ` · ${t("due", { date: format.date(item.dueAt) })}` : ""}
+              {overdue
+                ? t("overdueBody")
+                : item?.amount
+                  ? t("next.amount", { amount: format.thb(item.amount) })
+                  : t(`next.${step.kind}.body`)}
+              {item?.dueAt && !overdue ? ` · ${t("due", { date: format.date(item.dueAt) })}` : ""}
             </p>
           </div>
         </div>
         <Button asChild className="shrink-0">
-          <Link href={stepHref(step, launchpad)}>{t(`next.${step.kind}.action`)}</Link>
+          <Link href={stepHref(step, launchpad)}>{overdue ? t("overdueAction") : t(`next.${step.kind}.action`)}</Link>
         </Button>
       </section>
 
@@ -81,7 +92,7 @@ export async function LaunchpadPanel({ launchpad, hasBrandKit }: { launchpad: La
                   className="bg-surface border-border hover:border-primary focus-visible:outline-primary flex flex-col overflow-hidden rounded-xl border transition"
                 >
                   <span className="bg-surface-subtle block aspect-[4/3] p-2">
-                    <DesignThumb fileId={row.thumbnailFileId} empty={t("noThumbnail")} />
+                    <DesignThumb url={row.thumbnailUrl} empty={t("noThumbnail")} />
                   </span>
                   <span className="flex flex-col gap-0.5 p-3">
                     <span className="truncate text-sm font-medium">{row.title}</span>

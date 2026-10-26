@@ -181,7 +181,7 @@
         },
         {
           "title": "5. Payment",
-          "body": "Pay through the methods shown at checkout: PromptPay QR, bank transfer, credit/debit card and instalments. An order may be split into stages shown before you confirm. Unpaid orders are cancelled automatically after the deadline. Business customers approved for credit terms pay as agreed."
+          "body": "Pay through the methods shown at checkout: PromptPay QR, bank transfer, credit/debit card and instalments. An order may be split into stages shown before you confirm. An order past its payment deadline is not cancelled automatically; the price is checked again at the date of payment before you pay. Business customers approved for credit terms pay as agreed."
         },
         {
           "title": "6. Production and tolerances",

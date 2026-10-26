@@ -293,7 +293,9 @@
     "requote_required": "เลยกำหนดชำระ ตรวจราคาใหม่ก่อนชำระ",
     "requote_unavailable": "ตรวจราคาใหม่ไม่ได้ในขณะนี้",
     "reprice_below_paid": "ยอดใหม่ต่ำกว่ายอดที่ชำระแล้ว",
-    "reprice_has_discounts": "คำนวณราคาใหม่ไม่ได้"
+    "reprice_has_discounts": "คำนวณราคาใหม่ไม่ได้",
+    "requote_changed": "ราคาเปลี่ยนแล้ว",
+    "requote_not_due": "ยังไม่ต้องตรวจราคาใหม่"
   },
   "orders": {
     "reorder_unavailable": "สั่งซ้ำไม่ได้",

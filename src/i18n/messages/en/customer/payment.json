@@ -75,6 +75,6 @@
   "groupTotal": "Order total",
   "afterPaying": "Once paid, our team checks your file at once and sends a proof for you to approve before production",
   "payLater": "Not able to pay right now? The order is saved — come back to it from",
-  "payLaterExpires": "by {date}, or it is cancelled automatically",
+  "payLaterExpires": "Pay by {date}",
   "payLaterLink": "My orders"
 }

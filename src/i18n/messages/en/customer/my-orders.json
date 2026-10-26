@@ -27,7 +27,8 @@
     "actions": "Actions",
     "view": "View details",
     "qty": "{quantity} {unit}",
-    "noDate": "—"
+    "noDate": "—",
+    "afterPayment": "Calculated after payment"
   },
   "documents": {
     "download": "Download",
@@ -48,7 +49,7 @@
     "title": "Order {code}",
     "back": "All orders",
     "placed": "Ordered {date} · group {group}",
-    "expires": "Please pay by {date}, or the order is cancelled automatically.",
+    "expires": "Pay by {date}",
     "cancelled": "Cancelled on {date}",
     "autoComplete": "Receipt is confirmed automatically on {date}; you can report a problem until {claim}.",
     "timeline": "Progress",
@@ -63,7 +64,7 @@
     },
     "continuePay": "Continue paying",
     "pay": "Pay this instalment",
-    "groupShare": "Amounts are this order's share of a group of {count}; one payment covers the group.",
+    "groupShare": "This instalment is paid once for the whole group of {count} orders. This order’s own amount is under “Payment”.",
     "documents": "Documents",
     "noDocuments": "Documents are issued once a payment is made.",
     "shipments": "Delivery",
@@ -148,9 +149,37 @@
       "shipping": "Pay before it ships",
       "none": "Payable after delivery"
     },
-    "factorySteps": "Production steps",
-    "todoBy": "By {date} — after that the order is cancelled automatically",
-    "payEarly": "Pay early"
+    "todoBy": "Pay by {date}",
+    "payEarly": "Pay early",
+    "overdue": {
+      "badge": "Payment overdue",
+      "title": "Payment was due {date}",
+      "body": "The order is not cancelled. The price and delivery date may have changed — choose “Check the price again and pay” to see today’s price before you pay."
+    },
+    "todoOverdue": "Payment is overdue — check the price again before paying",
+    "productionSteps": "Production steps",
+    "afterPayment": "Calculated after payment",
+    "afterPaymentNote": "The delivery date is calculated again once you have paid.",
+    "artworkNote": {
+      "team": "Our team will send you the dieline. When it arrives we will tell you to place your artwork and send the file.",
+      "customer": "Download the dieline, place your artwork, then upload it."
+    },
+    "artworkOwner": {
+      "team": "Our team is working on this step",
+      "customer": "This step is waiting for you"
+    },
+    "artworkStep": "Artwork",
+    "claimHeld": "Received · claim under review — the order completes when the claim closes, so it is not confirmed automatically.",
+    "openClaim": "Claim {claim} · {status}",
+    "paymentShare": {
+      "title": "Payment",
+      "thisOrder": "This order",
+      "group": "Total for the whole group",
+      "groupNote": "Group {code} · {count} orders, paid in one payment",
+      "due": "Pay by {date}",
+      "overdue": "Payment overdue ({date})",
+      "dueTerm": "Pay by"
+    }
   },
   "tolerance": {
     "title": "Quantity received",
@@ -319,5 +348,41 @@
       "view": "View details",
       "free": "No charge"
     }
+  },
+  "overdue": "Payment overdue",
+  "requote": {
+    "action": "Check the price again and pay",
+    "title": "Check the price again",
+    "intro": "Your order is not cancelled — see today’s price and the difference, then pay.",
+    "close": "Close",
+    "loading": "Checking the price…",
+    "previousTotal": "Previous total (whole group)",
+    "newTotal": "New total (whole group)",
+    "difference": {
+      "up": "Price went up by",
+      "down": "Price went down by",
+      "same": "Price unchanged"
+    },
+    "orderLine": "Was {previous} → now {next}",
+    "orderDifference": {
+      "up": "Up {amount}",
+      "down": "Down {amount}",
+      "same": "Price unchanged"
+    },
+    "orderDates": "Ships {ship} · expected {arrive}",
+    "validity": "This price is valid until {valid} · pay by {due}",
+    "confirm": "Confirm new price {amount}",
+    "done": "Price checked — ready to pay",
+    "doneBody": "New price confirmed. Amount to pay {amount}, by {due}.",
+    "goPay": "Go to payment",
+    "changed": "The price changed while you were looking. This is the latest price — please check it again before confirming.",
+    "unavailable": {
+      "title": "We can’t check this price online",
+      "body": "Our team will check the price again and get back to you. Your order is still here and not cancelled."
+    },
+    "contact": "Contact our team",
+    "notDue": "This order is not yet due for a new price check.",
+    "failed": "We couldn’t check the price. Please try again.",
+    "retry": "Try again"
   }
 }

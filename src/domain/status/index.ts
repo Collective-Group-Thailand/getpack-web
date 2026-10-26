@@ -159,6 +159,7 @@ import {
 import { INSTALMENT_STATUS } from "./instalment";
 import { JOB_STATUS } from "./job";
 import { CAMPAIGN_STATUS, COUPON_STATUS, POINTS_STATUS, PROMOTION_STATUS, REFERRAL_STATUS } from "./marketing";
+import { CUSTOMER_ORDER_STATUS } from "./customer-order";
 import { ORDER_STATUS } from "./order";
 import {
   BANK_ACCOUNT_STATUS,
@@ -331,6 +332,7 @@ export {
   OPS_SIGNAL_STATUS,
   ORDER_GROUP_STATUS,
   ORDER_STATUS,
+  CUSTOMER_ORDER_STATUS,
   PAYABLE_STATUS,
   PAYMENT_STATUS,
   PAYOUT_STATUS,
@@ -408,6 +410,7 @@ export const STATUS_MAPS = {
   milestone: MILESTONE_STATUS,
   onboardingStep: ONBOARDING_STEP_STATUS,
   order: ORDER_STATUS,
+  customerOrder: CUSTOMER_ORDER_STATUS,
   orderGroup: ORDER_GROUP_STATUS,
   payable: PAYABLE_STATUS,
   payment: PAYMENT_STATUS,

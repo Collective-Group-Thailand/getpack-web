@@ -7,7 +7,7 @@ import { listMyOrders } from "@/features/customer/orders/api.server";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { ORDER_STATUS } from "@/domain/status";
+import { CUSTOMER_ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -48,7 +48,7 @@ export default async function Page() {
                   })}
                 </span>
               </span>
-              <StatusChip map={ORDER_STATUS} value={order.status} />
+              <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
             </Link>
           </li>
         ))}

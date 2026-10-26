@@ -324,3 +324,26 @@ branches running locally to verify. Copied into this repo: `STAGE-A-REPORT-API.m
   but is not shipped yet · tolerances hard-coded from GLOBAL-RULES §6 (move to settings later) · contact data
   (`public-config.contact`) null, nothing invented · gaps: company catalogue, ticket lookup, callback, partner
   application, ERP status flags.
+
+### A2 — account · Phase 0 · PASS
+
+- Every order surface (overview, list, detail, LINE) reads the API's `customerStatus` via a status map; web derives
+  nothing. Delivered + open claim = "ได้รับแล้ว · เคลมกำลังตรวจ" (no "ยืนยันรับของ", no claim-window/auto-confirm text).
+- Overdue payment: "เลยกำหนดชำระ" + "ตรวจราคาใหม่และชำระ" → `requote` (shows price difference) → `confirm-requote`
+  (Idempotency-Key + expected total) → existing payment; handles `order.requote_required/_changed/_unavailable`.
+  All auto-cancel copy removed. Artwork split ("รอทีมส่งแบบไดคัทให้" no upload button / "รอไฟล์จากคุณ" shows
+  "ส่งไฟล์งาน"); unpaid orders show "คำนวณหลังชำระเงิน"; order share vs group total; tier basis from `spendBasisTh`;
+  `thumbnailUrl`; "ระบบขัดข้องชั่วคราว" boundary (3 auto-retries, reference code); "ขั้นตอนการผลิต". FINDINGS.md written.
+- Screenshots (mock dataset, no horizontal scroll at 390): `A2-{account,orders,order-unpaid,order-awaiting-file,order-delivered}-*`.
+  The mock has no overdue seed, so the re-quote UI is covered by tests only.
+- Gate: lint, typecheck, full tests, build pass. New tests: order-state (9 statuses), requote, RequoteButton, RouteError,
+  transient, DesignThumb, mock orders. e2e not run.
+- **Verify locally (both branches):** re-quote end to end on group UATOG-2610-00016; payment on an overdue group → 409
+  `order.requote_required` then re-quote offered; UATOR-2610-00008 shows no "ยืนยันรับของ" and links its claim; dates on
+  00016/00017 read "คำนวณหลังชำระเงิน"; error state with the API stopped (production build).
+- **Open:** **Terms §4 reworded** ("ไม่ถูกยกเลิกอัตโนมัติ; ตรวจราคาใหม่ก่อนชำระ") — legal text, needs sign-off ·
+  Terms/payment copy still lists "ผ่อนชำระ" as a method, but DECISIONS §3 says hide it until live (checkout stage) ·
+  own-file customers wait for a dieline with no upload button (allow upload at once?) · hired design reads "รอทีมส่งแบบ
+  ไดคัทให้" (new status/word?) · discounted orders → `requote_unavailable` · no overdue notice e-mail · tier wording is the
+  API's rule, not "นับยอดเมื่อได้รับของแล้ว" · confirm-receipt with an open claim still accepted by the endpoint ·
+  server-render errors can't be told from 503 in production, all retried.

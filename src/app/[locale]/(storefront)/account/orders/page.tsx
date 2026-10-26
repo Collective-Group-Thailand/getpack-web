@@ -5,13 +5,16 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { listMyOrders, type OrderView } from "@/features/customer/orders/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { deliveryDatesOf, isPaymentOverdue, visibleActions } from "@/features/customer/orders/order-state";
+import { RequoteButton } from "@/features/customer/orders/RequoteButton";
 import { PortalTable } from "@/features/customer/account/PortalTable";
 import { latestDocuments } from "@/features/customer/repeat/api.server";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { ARTWORK_STATUS, ORDER_STATUS } from "@/domain/status";
+import { ARTWORK_STATUS, CUSTOMER_ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -130,6 +133,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
           ]}
           rows={rows.map(({ group, order, actions }) => {
             const inTransit = order.status !== "completed" && order.status !== "cancelled";
+            const overdue = isPaymentOverdue(order);
+            const visible = visibleActions(order, actions);
             return {
               id: order.id,
               phoneSubtitle: (
@@ -168,12 +173,22 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
                 placed: format.date(group.placedAt),
                 status: (
                   <span className="flex flex-wrap justify-end gap-1 md:flex-col md:items-start md:justify-start">
-                    <StatusChip map={ORDER_STATUS} value={order.status} />
-                    <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} />
+                    <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
+                    {overdue ? (
+                      <Badge size="sm" tone="danger" icon="clock">
+                        {t("overdue")}
+                      </Badge>
+                    ) : null}
+                    {order.artworkOwner !== null ? (
+                      <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} />
+                    ) : null}
                   </span>
                 ),
                 delivery:
-                  inTransit && order.promisedShipDate ? (
+                  inTransit && deliveryDatesOf(order) === "after_payment" ? (
+                    // D-439: the plan made at placement may be in the past; the date follows payment.
+                    <span className="text-muted">{t("table.afterPayment")}</span>
+                  ) : inTransit && order.promisedShipDate ? (
                     <span className="block">
                       {format.date(order.promisedShipDate)}
                       {order.estimatedDeliveryDate ? (
@@ -188,15 +203,21 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
                 total: <span className="font-semibold">{format.thb(order.totals.grossAmount)}</span>,
                 actions: (
                   <span className="flex flex-wrap justify-end gap-2 md:justify-end">
-                    {group.status === "waiting_payment" ? (
+                    {overdue ? (
+                      <RequoteButton
+                        size="sm"
+                        groupId={order.payment.groupId}
+                        payHref={`/account/orders/${order.id}#instalments`}
+                      />
+                    ) : group.status === "waiting_payment" ? (
                       <Button asChild size="sm" iconStart="credit-card">
                         <Link href={`/account/orders/${order.id}#instalments`}>{t("payDue")}</Link>
                       </Button>
                     ) : null}
-                    {actions.length > 0 ? (
-                      <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={actions} />
+                    {visible.length > 0 ? (
+                      <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={visible} />
                     ) : null}
-                    {group.status !== "waiting_payment" && actions.length === 0 ? (
+                    {group.status !== "waiting_payment" && visible.length === 0 ? (
                       <Button asChild size="sm" variant="secondary">
                         <Link href={`/account/orders/${order.id}`}>
                           {t("table.view")}
