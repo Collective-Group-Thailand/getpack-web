@@ -12,6 +12,7 @@ import {
 import { pick } from "@/features/customer/catalog/localize";
 import { rfqHref } from "@/features/customer/catalog/paths";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
+import { CategoryRail } from "@/features/customer/styles/CategoryRail";
 import { CompareLimitProvider } from "@/features/customer/styles/compare-store";
 import { CompareTray } from "@/features/customer/styles/CompareTray";
 import { groupFacets } from "@/features/customer/styles/facet-groups";
@@ -54,9 +55,7 @@ import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { ProductThumb, productFamilyOf } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
-import { cn } from "@/ui/lib/cn";
 
 const PER_PAGE = 24;
 
@@ -289,49 +288,19 @@ export default async function StylesPage({
         {head}
 
         {list.facets.category.length > 1 || query.category ? (
-          <nav
-            aria-label={t("library.categories")}
-            className="-mx-5 mt-6 overflow-x-auto px-5 md:-mx-8 md:px-8 xl:-mx-12 xl:px-12"
-          >
-            <ul className="flex gap-2 pb-1">
-              {[undefined, ...list.facets.category.map((f) => f.value)].map((category) => {
-                const current = query.category === category;
-                const count = category ? categoryCount.get(category) : allCount;
-                return (
-                  <li key={category ?? "all"} className="shrink-0 lg:min-w-0 lg:flex-1">
-                    <Link
-                      href={listHref({ ...query, category, style: undefined })}
-                      aria-current={current ? "page" : undefined}
-                      className={cn(
-                        "rounded-card focus-visible:ring-focus-ring flex h-full min-w-36 items-center gap-2.5 border p-2.5 outline-none focus-visible:ring-2 lg:min-w-0 lg:flex-col lg:items-start lg:p-3",
-                        current
-                          ? "border-primary bg-primary-subtle text-primary-subtle-fg ring-primary ring-1"
-                          : "border-border bg-surface hover:border-border-strong",
-                      )}
-                    >
-                      {category ? (
-                        <ProductThumb family={productFamilyOf(category)} className="size-9 [&_svg]:max-w-6" />
-                      ) : (
-                        <span className="bg-bg-subtle rounded-thumb grid size-9 place-items-center" aria-hidden="true">
-                          <Icon name="dashboard" size={18} />
-                        </span>
-                      )}
-                      <span className="min-w-0 leading-tight">
-                        <span className="block truncate text-sm font-semibold">
-                          {category ? facetLabel(words, "category", category) : t("library.allCategories")}
-                        </span>
-                        {count !== undefined ? (
-                          <span className="text-muted block text-xs tabular-nums">
-                            {t("library.categoryCount", { count })}
-                          </span>
-                        ) : null}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+          <CategoryRail
+            label={t("library.categories")}
+            items={[undefined, ...list.facets.category.map((f) => f.value)].map((category) => {
+              const count = category ? categoryCount.get(category) : allCount;
+              return {
+                category: category ?? null,
+                label: category ? facetLabel(words, "category", category) : t("library.allCategories"),
+                countLabel: count !== undefined ? t("library.categoryCount", { count }) : undefined,
+                href: listHref({ ...query, category, style: undefined }),
+                current: query.category === category,
+              };
+            })}
+          />
         ) : null}
 
         <div className="mt-8 grid gap-x-6 gap-y-8 min-[65rem]:grid-cols-[15rem_minmax(0,1fr)]">
