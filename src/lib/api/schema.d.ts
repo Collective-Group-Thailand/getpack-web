@@ -1485,7 +1485,7 @@ export interface paths {
         put?: never;
         /**
          * Accept a submission for a proof
-         * @description Prepress takes the version into proof preparation (order artwork status `in_review`). Refused while preflight runs or when it blocked — D-070 blocks on size mismatch or missing bleed. An optional `note` is kept on the internal timeline.
+         * @description Prepress takes the version into proof preparation (order artwork status `in_review`). Refused while preflight runs or when it blocked — D-070 blocks on size mismatch or missing bleed. An optional `note` is kept on the internal timeline. Refused with 409 `artwork.order_unpaid` until the order is paid (B-API-6: Prepress reviews paid orders only).
          *
          *     Implements: D-070, D-073.
          */
@@ -1507,7 +1507,7 @@ export interface paths {
         put?: never;
         /**
          * Reject a submission with a reason
-         * @description The customer is asked for a new version (order artwork status `changes_requested`, D-070).
+         * @description The customer is asked for a new version (order artwork status `changes_requested`, D-070). Refused with 409 `artwork.order_unpaid` until the order is paid (B-API-6: Prepress reviews paid orders only).
          *
          *     Implements: D-070, D-073.
          */
@@ -2642,7 +2642,7 @@ export interface paths {
         get?: never;
         /**
          * Set the per-side print model of a catalogue product
-         * @description D-443: per side (outside = `printFront`, inside = `printBack`) the methods offered — `none` ไม่พิมพ์, `spot` สีพิเศษ, `cmyk` พิมพ์ 4 สี — the most spot colours N and the allowed spot colours, the process ink of CMYK and the "+ สีพิเศษ" add-on beside CMYK (enabled, at most M). Every ink must be an active `ink_colour` option of the product (spot colours of kind spot / white / metallic, CMYK of kind process). Corrugate products only. `store.catalog.getConfigurator` exposes it as `printModel` and `store.quotes.calculate` refuses any other combination (`pricing.print_combination_invalid`); the reference configuration (D-441) must remain a valid choice. `null` removes the model. The price hint is recomputed. Guarded by the product ETag; audited.
+         * @description D-443: per side (outside = `printFront`, inside = `printBack`) the methods offered — `none` ไม่พิมพ์, `spot` สีพิเศษ, `cmyk` พิมพ์ 4 สี — the most spot colours N and the allowed spot colours, the process ink of CMYK and the "+ สีพิเศษ" add-on beside CMYK (enabled, at most M). Every ink must be an active `ink_colour` option of the product (spot colours of kind spot / white / metallic, CMYK of kind process). Corrugate products only. B-API-6 (ADR-0005): each call adds a version effective from `effectiveFrom` (now when omitted, never in the past); reads use the version in force and earlier versions are kept (`printModelVersions`). N and the add-on may not exceed `catalog.print_limits` (seeded: 1 spot colour per side, no CMYK + spot add-on) — 422 `spot_count` / `add_on_count`. `store.catalog.getConfigurator` exposes the version in force as `printModel`; `store.quotes.calculate` answers any other combination with the quote path (`instant: false`, `reason: rfq_required`), other store paths refuse it (`pricing.print_combination_invalid`); the reference configuration (D-441) must remain a valid choice. `null` removes the model from `effectiveFrom`. The price hint is recomputed. Guarded by the product ETag; audited.
          *
          *     Implements: D-443, D-441.
          */
@@ -7069,7 +7069,7 @@ export interface paths {
         };
         /**
          * Search the customer file access log
-         * @description D-444: every download URL issued for a customer's artwork / original, a production copy of one or an approved proof copy — who, when, which file and order, through which surface (store / admin / partner) and for what (download / thumbnail). Newest first; filter by order, file, user and period. Append-only; no URL or token is stored. Superadmin only (`customer_file_access_logs.read`).
+         * @description D-444: every download URL issued for a customer's artwork / original, a production copy of one or an approved proof copy — who, when, which file and order, through which surface (store / admin / partner) and for what (download / thumbnail). Newest first; filter by order, file, user and period. Append-only; no URL or token is stored. Superadmin and Auditor (`customer_file_access_logs.read`, B-API-6); neither reads the files.
          *
          *     Implements: D-444.
          */
@@ -9734,6 +9734,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/files/{fileId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Short-lived URL of a Studio render preview
+         * @description D-446 (B-API-7): a signed URL (5 minutes) for the low-resolution, metadata-free preview (WebP thumbnail) of a Studio render, for Prepress (`customer_files.read`) and for support (`customer_files.read_handled`) handling an order made from the render's design version — an explicit support assignment or an open order conversation. The preview is made with the upload thumbnail pipeline when the render has none. The full-resolution render, customer artwork and originals stay restricted (D-444): every other staff role, or a file that is not a Studio render, gets 404. Every URL is logged in the customer file access log (purpose `thumbnail`).
+         *
+         *     Implements: D-444, D-446.
+         */
+        get: operations["admin.files.preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/files/presign": {
         parameters: {
             query?: never;
@@ -11979,6 +12001,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/support-assignment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read who on support handles an order
+         * @description D-444 (B-API-6): the live explicit support assignment of the order, set by CS Lead / Admin; `assignee` null when none. Support also handles an order through an open conversation about it assigned to them (not shown here). `orders.assign_support`.
+         *
+         *     Implements: D-444.
+         */
+        get: operations["admin.orderSupportAssignments.get"];
+        /**
+         * Assign the support staff member who handles an order
+         * @description D-444 (B-API-6): CS Lead / Admin (`orders.assign_support`) name the support staff member who handles the order — an active staff user holding `customer_files.read_handled` (CS, CS Lead) — so they may read its customer artwork / originals and production copies (every download logged); `null` ends the assignment. One live assignment per order: a change ends the previous one (history kept). Setting the same user again changes nothing. Audited (`order.support_assigned`) with the event `order.support_assigned`.
+         *
+         *     Implements: D-444.
+         */
+        put: operations["admin.orderSupportAssignments.set"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/templates": {
         parameters: {
             query?: never;
@@ -12534,7 +12584,7 @@ export interface paths {
         };
         /**
          * The prepress work queue
-         * @description `submissions`: preflighted files of paid orders waiting for review, oldest first (a file received before payment joins at payment, `since` = the later of check and payment — B-API-4b); `changes_requested`: proofs the customer sent back; `proofs_waiting`: proofs waiting for the customer. `dueAt` follows `artwork.prepress_sla_business_hours` on business hours (D-175) — null while no SLA is set. Filter by the Prepress owner (`assigneeId`, `none` = unowned), product type and artwork status; rows carry the customer, product type, artwork status and owner.
+         * @description `submissions`: preflighted files of paid orders waiting for review, oldest first (a file received before payment joins at payment, `since` = the later of check and payment — B-API-4b); `changes_requested`: proofs the customer sent back, paid orders only (B-API-6); `proofs_waiting`: proofs waiting for the customer. `dueAt` follows `artwork.prepress_sla_business_hours` on business hours (D-175) — null while no SLA is set. Filter by the Prepress owner (`assigneeId`, `none` = unowned), product type and artwork status; rows carry the customer, product type, artwork status and owner.
          *
          *     Implements: D-070, D-175.
          */
@@ -31864,11 +31914,33 @@ export interface paths {
         put?: never;
         /**
          * Calculate an instant price for a configuration
-         * @description Prices each quantity from the active factories that hold an instant price path (D-043, D-100): price incl. VAT, lead time and earliest ship date within capacity (D-101), quantity tolerance (D-021). A quantity without an instant price carries the reason and routes to RFQ. The configuration is the one of the type’s calculator (folding, corrugate, label, tag & sleeve, pouch, standard product, service). Nothing is saved (quotes are saved with B2.5, D-051); no factory data is returned (D-050). Works signed in or anonymously. With `targetPricePerUnit` the response gives each instant quantity’s gap against it (D-247); the target is not stored here. `specs` and `specLabel` say which spec the price is for, built by the same helper as quotations, carts, orders and the "starting from" basis (size as ยาว × กว้าง × สูง, mm); every store surface prices through this one path (D-441).
+         * @description Prices each quantity from the active factories that hold an instant price path (D-043, D-100): price incl. VAT, lead time and earliest ship date within capacity (D-101), quantity tolerance (D-021). A quantity without an instant price carries the reason and routes to RFQ. The configuration is the one of the type’s calculator (folding, corrugate, label, tag & sleeve, pouch, standard product, service). Nothing is saved (quotes are saved with B2.5, D-051); no factory data is returned (D-050). Works signed in or anonymously. With `targetPricePerUnit` the response gives each instant quantity’s gap against it (D-247); the target is not stored here. `specs` and `specLabel` say which spec the price is for, built by the same helper as quotations, carts, orders and the "starting from" basis (size as ยาว × กว้าง × สูง, mm); every store surface prices through this one path (D-441). A print combination the product’s print model in force or `catalog.print_limits` does not offer (D-443) is not an error: every quantity answers `instant: false` with `reason: rfq_required` (the quote path, B-API-6).
          *
-         *     Implements: D-100, D-043, D-050, D-051, D-101, D-247, D-441.
+         *     Implements: D-100, D-043, D-050, D-051, D-101, D-247, D-441, D-443.
          */
         post: operations["store.quotes.calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/quotes/actions/calculate-batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calculate instant prices for up to 24 option variants
+         * @description The configurator’s option cards (sizes, materials, print choices, quantities) priced in ONE request instead of one `store.quotes.calculate` per card (D-441, D-043). Each variant is a full configuration of the product type’s calculator and goes through the very path `calculate` uses (no formula of its own); `quantities`, when sent, replaces `configuration.quantities` of every variant. `results` follow the request order, keyed by the client `key` (unique, 1 to 64 characters, 1 to 24 variants). A variant that fails (for example `validation.failed`, `pricing.print_combination_invalid`) does not fail the batch: its entry has `calculation: null` and a `problem` with the code `calculate` would raise. Variants are priced at most four at a time. Writes what `calculate` writes per priced variant (one calculate log row and its `quote.calculated` event) and nothing else: no quote, cart, order or customer. Anonymous, 20 requests per minute per client. No factory data (D-050). 422 `validation.failed` for more than 24 variants, a duplicate key or a malformed body, `pricing.not_instant` when the product type has no instant price.
+         *
+         *     Implements: D-100, D-043, D-050, D-051, D-101, D-441, D-043.
+         */
+        post: operations["store.quotes.calculateBatch"];
         delete?: never;
         options?: never;
         head?: never;
@@ -40879,6 +40951,19 @@ export interface components {
             /** @example 7 */
             min: number;
         };
+        CalculateQuoteBatchDto: {
+            /** @example folding_carton */
+            productTypeCode: string;
+            /**
+             * @description Replaces `configuration.quantities` of every variant (1 to 10 quantities); omit to price each as sent
+             * @example [
+             *       500,
+             *       1000
+             *     ]
+             */
+            quantities?: number[];
+            variants: components["schemas"]["QuoteBatchVariantDto"][];
+        };
         CalculateQuoteDto: {
             /** @description The configuration of the product type's calculator: `FoldingConfigurationDto` for folding cartons, `CorrugateConfigurationDto` for corrugated boxes, `LabelConfigurationDto` for labels, `TagSleeveConfigurationDto` for tags & sleeves, `PouchConfigurationDto` for pouches, `StandardProductConfigurationDto` for standard products, `ServiceConfigurationDto` for services (validated against it; paths under `configuration`) */
             configuration: {
@@ -42042,10 +42127,12 @@ export interface components {
             options: components["schemas"]["CatalogProductOptionDto"][];
             patterns: components["schemas"]["CatalogProductPatternDto"][];
             /**
-             * @description D-443: the per-side print model (outside / inside) the configurator offers and `store.quotes.calculate` enforces; set through `PUT …/print-model`; null = not configured
+             * @description D-443: the per-side print model (outside / inside) the configurator offers and `store.quotes.calculate` enforces — the version in force now (B-API-6, ADR-0005); set through `PUT …/print-model`; null = not configured
              * @example null
              */
             printModel: components["schemas"]["PrintModelDto"] | null;
+            /** @description B-API-6: every version of the print model, newest `effectiveFrom` first (future ones included) */
+            printModelVersions: components["schemas"]["PrintModelVersionDto"][];
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c002
@@ -64370,6 +64457,18 @@ export interface components {
         };
         /** @enum {string} */
         OrderStatus: "waiting_payment" | "paid_for_production" | "artwork_approved" | "in_production" | "shipping" | "completed" | "cancelled";
+        OrderSupportAssignmentDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-26T10:15:00+07:00
+             */
+            assignedAt: string | null;
+            /** @description The CS Lead / Admin who assigned */
+            assignedBy: components["schemas"]["StaffRefDto"] | null;
+            /** @description null = no explicit assignment */
+            assignee: components["schemas"]["StaffRefDto"] | null;
+            order: components["schemas"]["FileAccessOrderDto"];
+        };
         OrderToleranceOutcomeDto: {
             /**
              * @description Pro-rata credit for a shortage within tolerance, incl. VAT (D-080); null otherwise
@@ -67419,6 +67518,32 @@ export interface components {
             /** @description Outside (`printFront` of each part) */
             outside: components["schemas"]["PrintSideConfigDto"];
         };
+        PrintModelVersionDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-26T10:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f301
+             */
+            id: string;
+            /**
+             * @description This is the version in force now
+             * @example false
+             */
+            inForce: boolean;
+            /** @description null = the model was removed from this date */
+            printModel: components["schemas"]["PrintModelDto"] | null;
+            /** @example 2 */
+            versionNo: number;
+        };
         PrintRuleDto: {
             /**
              * @example [
@@ -69078,6 +69203,38 @@ export interface components {
              *     ]
              */
             w?: number[];
+        };
+        QuoteBatchCalculationDto: {
+            /** @description One entry per variant, in request order */
+            results: components["schemas"]["QuoteBatchResultDto"][];
+        };
+        QuoteBatchProblemDto: {
+            /**
+             * @description The error code `calculate` would raise
+             * @example pricing.print_combination_invalid
+             */
+            code: string;
+            /** @example The print combination is not offered for this product. */
+            message: string;
+        };
+        QuoteBatchResultDto: {
+            /** @description Null when the variant failed */
+            calculation: components["schemas"]["QuoteCalculationDto"] | null;
+            /** @example size:s2 */
+            key: string;
+            /** @description Null when the variant was priced */
+            problem: components["schemas"]["QuoteBatchProblemDto"] | null;
+        };
+        QuoteBatchVariantDto: {
+            /** @description The configuration of the product type's calculator: `FoldingConfigurationDto` for folding cartons, `CorrugateConfigurationDto` for corrugated boxes, `LabelConfigurationDto` for labels, `TagSleeveConfigurationDto` for tags & sleeves, `PouchConfigurationDto` for pouches, `StandardProductConfigurationDto` for standard products, `ServiceConfigurationDto` for services (validated against it; paths under `configuration`) */
+            configuration: {
+                [key: string]: unknown;
+            } | components["schemas"]["FoldingConfigurationDto"] | components["schemas"]["CorrugateConfigurationDto"] | components["schemas"]["LabelConfigurationDto"] | components["schemas"]["TagSleeveConfigurationDto"] | components["schemas"]["PouchConfigurationDto"] | components["schemas"]["StandardProductConfigurationDto"] | components["schemas"]["ServiceConfigurationDto"];
+            /**
+             * @description Client id of the variant, echoed in `results`; unique within the request
+             * @example size:s2
+             */
+            key: string;
         };
         QuoteCalculationDto: {
             /**
@@ -73962,6 +74119,12 @@ export interface components {
             reason: string;
         };
         SetPrintModelDto: {
+            /**
+             * Format: date-time
+             * @description B-API-6 (ADR-0005): when this version takes effect; now when omitted, never in the past. Reads use the version in force; earlier versions are kept
+             * @example 2026-11-01T00:00:00+07:00
+             */
+            effectiveFrom?: string;
             /** @description The per-side print model; `null` removes it (then only never-valid combinations are refused) */
             printModel: components["schemas"]["PrintModelDto"] | null;
         };
@@ -73996,6 +74159,14 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ae001
              */
             fileId: string;
+        };
+        SetSupportAssignmentDto: {
+            /**
+             * Format: uuid
+             * @description The support staff member who handles the order (an active staff user holding `customer_files.read_handled`); `null` ends the assignment
+             * @example 0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8c
+             */
+            supportUserId: string | null;
         };
         SetTemplateDesignDto: {
             /**
@@ -75520,6 +75691,15 @@ export interface components {
              * @example correct horse battery staple
              */
             password: string;
+        };
+        StaffRefDto: {
+            /** @example ซัพพอร์ต ทดสอบ */
+            displayName: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8c
+             */
+            id: string;
         };
         StaffReplyDto: {
             /** @example ขอแก้ไขสีโลโก้ค่ะ */
@@ -77416,8 +77596,8 @@ export interface components {
         };
         StorePrintAddOnDto: {
             /**
-             * @description Show the "+ สีพิเศษ" counter beside CMYK
-             * @example true
+             * @description Show the "+ สีพิเศษ" counter beside CMYK (off while `catalog.print_limits` disables it, B-API-6)
+             * @example false
              */
             enabled: boolean;
             /**
@@ -77485,7 +77665,7 @@ export interface components {
              */
             inkColourIds: string[];
             /**
-             * @description Counter maximum N (back-office data)
+             * @description Counter maximum N (back-office data, capped by `catalog.print_limits`, B-API-6)
              * @example 2
              */
             maxColours: number;
@@ -93698,7 +93878,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `artwork.invalid_status`, `artwork.not_accepting`, `artwork.preflight_blocked`, `artwork.preflight_pending` */
+            /** @description Problem: `artwork.invalid_status`, `artwork.not_accepting`, `artwork.order_unpaid`, `artwork.preflight_blocked`, `artwork.preflight_pending` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -93876,7 +94056,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `artwork.invalid_status`, `artwork.not_accepting` */
+            /** @description Problem: `artwork.invalid_status`, `artwork.not_accepting`, `artwork.order_unpaid` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -100289,6 +100469,7 @@ export interface operations {
                      *             }
                      *           ],
                      *           "printModel": null,
+                     *           "printModelVersions": [],
                      *           "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *           "quantityDefault": null,
                      *           "quantityMax": null,
@@ -100436,6 +100617,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -100591,6 +100773,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -100742,6 +100925,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -100932,6 +101116,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -101109,6 +101294,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -101279,6 +101465,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -101459,6 +101646,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -101639,6 +101827,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -101835,8 +102024,8 @@ export interface operations {
                      *         "outside": {
                      *           "cmyk": {
                      *             "addOn": {
-                     *               "enabled": true,
-                     *               "maxColours": 1
+                     *               "enabled": false,
+                     *               "maxColours": 0
                      *             },
                      *             "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000e103"
                      *           },
@@ -101850,10 +102039,55 @@ export interface operations {
                      *               "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
                      *               "0192f3a0-7c1e-7d2a-9b1f-00000000e102"
                      *             ],
-                     *             "maxColours": 2
+                     *             "maxColours": 1
                      *           }
                      *         }
                      *       },
+                     *       "printModelVersions": [
+                     *         {
+                     *           "createdAt": "2026-10-26T10:15:00+07:00",
+                     *           "effectiveFrom": "2026-10-26T10:15:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000f301",
+                     *           "inForce": true,
+                     *           "printModel": {
+                     *             "inside": {
+                     *               "cmyk": null,
+                     *               "methods": [
+                     *                 "none",
+                     *                 "spot"
+                     *               ],
+                     *               "spot": {
+                     *                 "inkColourIds": [
+                     *                   "0192f3a0-7c1e-7d2a-9b1f-00000000e101"
+                     *                 ],
+                     *                 "maxColours": 1
+                     *               }
+                     *             },
+                     *             "outside": {
+                     *               "cmyk": {
+                     *                 "addOn": {
+                     *                   "enabled": false,
+                     *                   "maxColours": 0
+                     *                 },
+                     *                 "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000e103"
+                     *               },
+                     *               "methods": [
+                     *                 "none",
+                     *                 "spot",
+                     *                 "cmyk"
+                     *               ],
+                     *               "spot": {
+                     *                 "inkColourIds": [
+                     *                   "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                     *                   "0192f3a0-7c1e-7d2a-9b1f-00000000e102"
+                     *                 ],
+                     *                 "maxColours": 1
+                     *               }
+                     *             }
+                     *           },
+                     *           "versionNo": 1
+                     *         }
+                     *       ],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -102034,6 +102268,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -102210,6 +102445,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "printModel": null,
+                     *       "printModelVersions": [],
                      *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                      *       "quantityDefault": null,
                      *       "quantityMax": null,
@@ -156113,6 +156349,113 @@ export interface operations {
             };
         };
     };
+    "admin.files.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description The Studio render (`design_version_renders.file_id`). */
+                fileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed URL of the preview */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-26T10:20:00+07:00",
+                     *       "url": "https://getpack-files.s3.example.com/…thumb.webp?X-Amz-Expires=300"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DownloadUrlDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.files.presign": {
         parameters: {
             query?: never;
@@ -172304,6 +172647,224 @@ export interface operations {
             };
             /** @description Problem: `orders.spec_sheet_unavailable` */
             409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.orderSupportAssignments.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The assignment */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "assignedAt": "2026-10-26T10:15:00+07:00",
+                     *       "assignedBy": {
+                     *         "displayName": "หัวหน้าซีเอส ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8d"
+                     *       },
+                     *       "assignee": {
+                     *         "displayName": "ซัพพอร์ต ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8c"
+                     *       },
+                     *       "order": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a001",
+                     *         "orderCode": "DEVOR-2610-00001"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OrderSupportAssignmentDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.orderSupportAssignments.set": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetSupportAssignmentDto"];
+            };
+        };
+        responses: {
+            /** @description The assignment now */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "assignedAt": "2026-10-26T10:15:00+07:00",
+                     *       "assignedBy": {
+                     *         "displayName": "หัวหน้าซีเอส ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8d"
+                     *       },
+                     *       "assignee": {
+                     *         "displayName": "ซัพพอร์ต ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8c"
+                     *       },
+                     *       "order": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a001",
+                     *         "orderCode": "DEVOR-2610-00001"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OrderSupportAssignmentDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -291105,8 +291666,8 @@ export interface operations {
                      *         "outside": {
                      *           "cmyk": {
                      *             "addOn": {
-                     *               "enabled": true,
-                     *               "maxColours": 1,
+                     *               "enabled": false,
+                     *               "maxColours": 0,
                      *               "minColours": 0
                      *             },
                      *             "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000e103"
@@ -291127,7 +291688,7 @@ export interface operations {
                      *               "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
                      *               "0192f3a0-7c1e-7d2a-9b1f-00000000e102"
                      *             ],
-                     *             "maxColours": 2,
+                     *             "maxColours": 1,
                      *             "minColours": 1
                      *           }
                      *         }
@@ -317919,6 +318480,214 @@ export interface operations {
             };
             /** @description Problem: `pricing.vat_rate_missing` */
             503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.quotes.calculateBatch": {
+        parameters: {
+            query?: never;
+            header: {
+                "accept-language": string;
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalculateQuoteBatchDto"];
+            };
+        };
+        responses: {
+            /** @description One result per variant, in request order */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "results": [
+                     *         {
+                     *           "calculation": {
+                     *             "calculationId": "0192f3a0-7c1e-7d2a-9b1f-0000000c1001",
+                     *             "calculatorVersion": "1.0.0",
+                     *             "dimensions": {
+                     *               "bases": [
+                     *                 "internal",
+                     *                 "external",
+                     *                 "over_crease"
+                     *               ],
+                     *               "basis": "internal",
+                     *               "basisAssumed": false,
+                     *               "caliperMm": 0.5,
+                     *               "conversionVersion": "1.0.0",
+                     *               "entered": {
+                     *                 "d": 50,
+                     *                 "l": 150,
+                     *                 "w": 100
+                     *               },
+                     *               "family": "box",
+                     *               "priced": {
+                     *                 "d": 50,
+                     *                 "l": 150,
+                     *                 "w": 100
+                     *               },
+                     *               "pricedBasis": "internal",
+                     *               "sizes": {
+                     *                 "external": {
+                     *                   "d": 51,
+                     *                   "l": 151,
+                     *                   "w": 101
+                     *                 },
+                     *                 "internal": {
+                     *                   "d": 50,
+                     *                   "l": 150,
+                     *                   "w": 100
+                     *                 },
+                     *                 "overCrease": {
+                     *                   "d": 51,
+                     *                   "l": 150.5,
+                     *                   "w": 100.5
+                     *                 },
+                     *                 "product": null
+                     *               }
+                     *             },
+                     *             "specLabel": {
+                     *               "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+                     *               "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
+                     *             },
+                     *             "specs": [
+                     *               {
+                     *                 "key": "style",
+                     *                 "labelEn": "Style",
+                     *                 "labelTh": "แบบกล่อง",
+                     *                 "valueEn": "RSC",
+                     *                 "valueTh": "กล่องฝาชน"
+                     *               },
+                     *               {
+                     *                 "key": "size",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *                 "valueEn": "140 × 97.5 × 60 mm (inside)",
+                     *                 "valueTh": "140 × 97.5 × 60 มม. (ด้านใน)"
+                     *               },
+                     *               {
+                     *                 "key": "material",
+                     *                 "labelEn": "Material",
+                     *                 "labelTh": "วัสดุ",
+                     *                 "valueEn": "KA125 B-flute (3-ply)",
+                     *                 "valueTh": "ลูกฟูก KA125 ลอน B (3 ชั้น)"
+                     *               },
+                     *               {
+                     *                 "key": "print_front",
+                     *                 "labelEn": "Print (outside)",
+                     *                 "labelTh": "พิมพ์ด้านนอก",
+                     *                 "valueEn": "1 spot colour (ดำ)",
+                     *                 "valueTh": "สีพิเศษ 1 สี (ดำ)"
+                     *               }
+                     *             ],
+                     *             "steps": [
+                     *               {
+                     *                 "designFeeAmount": "0.00",
+                     *                 "earliestDeliveryDate": "2026-10-10",
+                     *                 "earliestShipDate": "2026-10-09",
+                     *                 "grossAmount": "13508.40",
+                     *                 "instant": true,
+                     *                 "leadTimeDays": 7,
+                     *                 "productAmount": "13380.00",
+                     *                 "quantity": 1000,
+                     *                 "reason": null,
+                     *                 "shippingAmount": "128.40",
+                     *                 "shippingNetAmount": "120.00",
+                     *                 "shippingPending": false,
+                     *                 "shippingPendingReason": null,
+                     *                 "shippingVatAmount": "8.40",
+                     *                 "structureDesignFeeAmount": "0.00",
+                     *                 "toleranceColourDeltaE": "3.00",
+                     *                 "toleranceDimensionalMm": "1.00",
+                     *                 "toleranceOveragePct": "5.0000",
+                     *                 "toleranceShortagePct": "5.0000",
+                     *                 "toolingAmount": "0.00",
+                     *                 "toolingWaiver": null,
+                     *                 "unitPrice": "13.38",
+                     *                 "vatAmount": "883.73"
+                     *               }
+                     *             ],
+                     *             "target": {
+                     *               "steps": [
+                     *                 {
+                     *                   "gapPct": "16.35",
+                     *                   "gapPerUnit": "1.88",
+                     *                   "meetsTarget": false,
+                     *                   "quantity": 1000
+                     *                 }
+                     *               ],
+                     *               "targetPricePerUnit": "11.50"
+                     *             }
+                     *           },
+                     *           "key": "size:s1",
+                     *           "problem": null
+                     *         },
+                     *         {
+                     *           "calculation": null,
+                     *           "key": "size:s2",
+                     *           "problem": {
+                     *             "code": "validation.failed",
+                     *             "message": "The request has invalid fields."
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuoteBatchCalculationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.not_instant`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
