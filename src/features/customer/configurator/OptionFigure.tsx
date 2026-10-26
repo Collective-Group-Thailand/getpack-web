@@ -1,11 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useSyncExternalStore } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { cn } from "@/ui/lib/cn";
 
-import { deltaView, type OptionPrice } from "./option-prices";
+import { deltaView, optionPricesUnsupported, subscribeOptionPricesSupport, type OptionPrice } from "./option-prices";
 
 /**
  * The price slot of an option card: its box is always there (a fixed minimum height), so a figure
@@ -24,11 +25,14 @@ export function PriceSlot({
   unitPrice?: string | null;
   className?: string;
 }) {
+  // An API without the batch endpoint never fills the slot: collapse it instead of leaving a blank band on every card.
+  const unsupported = useSyncExternalStore(subscribeOptionPricesSupport, optionPricesUnsupported, () => false);
+  const collapsed = unsupported && !children && !unitPrice;
   return (
     <span
       data-price-slot=""
       data-option-price={unitPrice ?? undefined}
-      className={cn("block min-h-5 leading-5", pending && "opacity-60", className)}
+      className={cn("block leading-5", !collapsed && "min-h-5", pending && "opacity-60", className)}
       aria-busy={pending || undefined}
     >
       {children}
