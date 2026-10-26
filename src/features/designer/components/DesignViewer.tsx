@@ -117,7 +117,7 @@ function Element({ element, idPrefix }: { element: DesignElement; idPrefix: stri
                 x={element.width / 2}
                 y={element.height * 0.83}
                 fontSize={element.height * 0.15}
-                fontFamily="JetBrains Mono, monospace"
+                style={{ fontFamily: "var(--font-sans, sans-serif)", fontVariantNumeric: "tabular-nums" }}
                 textAnchor="middle"
                 dominantBaseline="hanging"
                 fill={element.fill}

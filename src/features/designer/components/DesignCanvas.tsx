@@ -35,6 +35,7 @@ import {
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import { formatMm } from "@/i18n/format";
 import { barModules, barsPath, qrMatrix, qrPath } from "@/features/designer/lib/codes";
+import { uiFontFamily } from "@/features/designer/lib/ui-font";
 import { linesOf, snapBox, type SnapTargets } from "@/features/designer/lib/snapping";
 import { buildPatternTile } from "@/features/designer/patterns";
 import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
@@ -111,7 +112,7 @@ function CodeNode({ el, ...rest }: { el: CodeElement } & NodeProps) {
           width={el.width}
           align="center"
           fontSize={el.height * 0.15}
-          fontFamily="JetBrains Mono, monospace"
+          fontFamily={uiFontFamily()}
           fill={el.fill}
         />
       ) : null}
