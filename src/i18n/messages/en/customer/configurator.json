@@ -625,9 +625,9 @@
     "noInternationalName": "Shown once our team has verified it",
     "tolerances": "Tolerances",
     "tolerancesPending": "Shown once there is a price",
-    "toleranceQuantity": "Quantity: up to {shortage} short or {overage} over",
-    "toleranceDimensional": "Size: ± {mm} mm",
-    "toleranceColour": "Colour: ΔE2000 up to {deltaE} against the approved proof",
+    "toleranceQuantity": "Up to {shortage} under or {overage} over; any shortfall is credited",
+    "toleranceDimensional": "± {mm} mm",
+    "toleranceColour": "ΔE2000 of {deltaE} or less against the approved proof",
     "next": "What happens next",
     "nextSteps": {
       "artwork": "Send your artwork or design it online",
@@ -644,7 +644,18 @@
     "shareDraft": "Share the configuration",
     "draftKept": "Draft kept until {date}",
     "draftHint": "Drafts are kept 90 days after the last change; a shared link works for 15 days",
-    "pricedSpec": "Specification priced"
+    "pricedSpec": "Specification priced",
+    "cardTitle": "Standards and next steps",
+    "standard": {
+      "quantity": "Up to 5% under or over; any shortfall is credited",
+      "size": "± 3 mm",
+      "colour": "ΔE2000 of 3 or less against the approved proof"
+    },
+    "toleranceLabels": {
+      "quantity": "Quantity",
+      "size": "Size",
+      "colour": "Colour"
+    }
   },
   "printProblem": {
     "intro": "This print choice can't be ordered",
