@@ -22,6 +22,7 @@ import { axisLabel, facetLabel, valueLabel, type StylesT } from "@/features/cust
 import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
 import { CopyLinkButton, SearchTracker, SortSelect } from "@/features/customer/styles/LibraryControls";
 import { LibrarySearch } from "@/features/customer/styles/LibrarySearch";
+import { LibraryToolbar } from "@/features/customer/styles/LibraryToolbar";
 import { LibraryViews } from "@/features/customer/styles/LibraryViews";
 import { LineFloat } from "@/features/customer/styles/LineFloat";
 import { forUseCaseHref, styleHref, STYLES_HREF } from "@/features/customer/styles/paths";
@@ -315,22 +316,22 @@ export default async function StylesPage({
           </aside>
 
           <section aria-labelledby="library-results" className="flex min-w-0 flex-col gap-4">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-              <h2 id="library-results" className="me-auto text-xl font-semibold tabular-nums" aria-live="polite">
-                {list.data.length === 0 && !filtered ? null : t("library.results", { count: total })}
-                {query.q ? (
-                  <span className="text-muted ms-2 text-base font-normal">
-                    {t("library.resultsFor", { q: query.q })}
-                  </span>
-                ) : null}
-              </h2>
-              <div className="min-[65rem]:hidden">
-                <FilterSheet {...panel} active={active} />
-              </div>
-              {totals ? <LibraryViews current="styles" totals={totals} /> : null}
-              <CopyLinkButton params={query} />
-              <SortSelect params={query} sorts={sorts} />
-            </div>
+            <LibraryToolbar
+              count={
+                <>
+                  {list.data.length === 0 && !filtered ? null : t("library.results", { count: total })}
+                  {query.q ? (
+                    <span className="text-muted ms-2 text-base font-normal">
+                      {t("library.resultsFor", { q: query.q })}
+                    </span>
+                  ) : null}
+                </>
+              }
+              filters={<FilterSheet {...panel} active={active} />}
+              views={totals ? <LibraryViews current="styles" totals={totals} /> : null}
+              copyLink={<CopyLinkButton params={query} />}
+              sort={<SortSelect params={query} sorts={sorts} />}
+            />
 
             <ActiveFilters params={query} words={words} t={t} />
 
