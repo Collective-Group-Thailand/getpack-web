@@ -49,6 +49,8 @@ export interface StyleCardWords {
   specs: Array<{ icon: "ruler" | "layers" | "clock"; text: string }>;
   /** The features it offers ("หน้าต่าง", "หูแขวน", "ก้นล็อก"), the first few, and how many more. */
   chips: string[];
+  /** "+n" counting every chip after the first, for phones (one chip fits a 2-column card). */
+  moreChipsPhone: string | null;
   moreChips: string | null;
   alt: string;
 }
@@ -148,17 +150,25 @@ export function StyleCardFace({
       details={
         words.chips.length ? (
           <ul className="flex flex-nowrap gap-1 overflow-hidden" aria-label={words.variants}>
-            {words.chips.map((chip) => (
-              <li key={chip} className="min-w-0">
+            {words.chips.map((chip, index) => (
+              // Phones show one chip and a "+n" for the rest (the 2-column card is too narrow for two).
+              <li key={chip} className={index > 0 ? "min-w-0 max-sm:hidden" : "min-w-0"}>
                 <Badge size="sm" className="max-w-full truncate">
                   {chip}
                 </Badge>
               </li>
             ))}
             {words.moreChips ? (
-              <li className="shrink-0">
+              <li className="shrink-0 max-sm:hidden">
                 <Badge size="sm" className="tabular-nums">
                   {words.moreChips}
+                </Badge>
+              </li>
+            ) : null}
+            {words.moreChipsPhone ? (
+              <li className="shrink-0 sm:hidden">
+                <Badge size="sm" className="tabular-nums">
+                  {words.moreChipsPhone}
                 </Badge>
               </li>
             ) : null}
@@ -222,6 +232,7 @@ export function cardWords(
     variants: t("library.cardOptions", { count: style.variantCount }),
     chips: chips.slice(0, CHIPS),
     moreChips: chips.length > CHIPS ? t("library.cardMore", { count: chips.length - CHIPS }) : null,
+    moreChipsPhone: chips.length > 1 ? t("library.cardMore", { count: chips.length - 1 }) : null,
     alt: t("detail.thumbnailAlt", { name, code: style.code }),
   };
 }
