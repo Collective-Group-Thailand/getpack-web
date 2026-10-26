@@ -409,3 +409,33 @@ carrier pickup at the factory, unsupported original formats, real return address
 - **Not run:** e2e (any spec), `pnpm lhci`, anything against the new API. Everything is coded against the regenerated
   contract (an **unreleased pin** of getpack-api `fix/uat-phase0`, still labelled 0.75.0 — re-adopt with
   `pnpm gen:api --adopt --tag vX.Y.Z` once the API tags a release).
+
+---
+
+## Stage B — Part 1 (styles Phase 1 + site-wide look) — branch `design/styles-catalog-redesign`
+
+Gate (end): lint, typecheck, 1429 + dieline tests, build, wording grep — all pass. e2e, Lighthouse not run; the header
+spec (`e2e/storefront-header.spec.ts`) is written but unrun (measured by script instead: **no overlap at 1024–1440 px,
+th and en, 0 bad of 14**). `/products/uat-postal-box-b` crashed on the old UAT API (no `dielineVariantCodes`) — fixed (`cbdb2178`).
+
+| Item | Status | Commit | Notes |
+|---|---|---|---|
+| B1-0 tokens | DONE | `8c160f23` | prototype colours mapped into the semantic tiers; mapping + non-adopted tokens in `src/ui/tokens/README.md` |
+| 1 header | DONE | `f82bc9e0` | no `xl` step, short EN labels, CTA hidden 1040–1184 px; avatar/cart badge already present |
+| 2 head/search · 3 rail · 4 filters · 5 toolbar · 9 URL · 14 load more | DONE | `67272161` `373d72b2` `86f1f597` `2bc61d7e` `575751dd` `8f04201c` | mostly verified/extended existing code + tests (query round-trip, facet grouping, top-6 sub-groups) |
+| 10 VAT · 6 card · 7 compare · 8 quick view · 11 LINE · 12 empty · 13 analytics | DONE | `3519b986` `3b472f6f` `3fcc15ce` `66cde459` `c7cbdf27` `d947d8a9` `f2a15a19` | shared price helper (formats API amounts only), heart icon, shell `LineFloat`, typed `trackCatalog` |
+
+Pages to check at localhost:3001: `/styles` (th/en), `/styles?style=PK-SP-11` (quick view), filter sheet < 1040 px, `/products`, `/products/uat-postal-box-b`, `/configure/uat-postal-box-b`, `/account/orders`, home.
+Five-page check (`docs/design/screenshots/stage-b/B0-*`): no horizontal scroll at 390 px, dark readable.
+Visual check: `B1-styles-{prototype,real}-{1440-light,1054-light,390-dark}.png`.
+
+**Differences vs prototype (and why)**
+- No "ทำต่อจากครั้งก่อน" row, search-by-size tab, "ช่วยเลือกให้หน่อย" wizard — Phase 2/3, no data. Lone word tab not drawn.
+- No "ราคารวม VAT" switch — the API sends VAT-inclusive amounts only (`store.styles.price-ex-vat` open); every price says "รวม VAT".
+- Cards show no price/spec row/estimate: UAT `startingPrice` null on all 122; card DTO has no size/MOQ/lead time; D-220 forbids estimates.
+- Compare limit 3 (not 4): D-246 and the API 422 above 3. Quick view instant CTA → configurator, not "เพิ่มลงตะกร้า" (needs a priced configuration; no `calculate` here); no tier table, sample kit (404) or dieline tab (0/122 assets).
+- Account avatar not shown signed-out; real photos instead of drawings; LINE button shows because this VM sets `NEXT_PUBLIC_LINE_OA_ID` (API `lineOaId` is null).
+- Fonts stay Anuphan (ADR-0001), repo radii kept where tests require (see README list).
+
+**Studio (DECISIONS §2):** 41 of 122 bases / 214 of 986 variants still cannot open in the Studio (tubes, bags, tags, labels, pouches, some specialty) — per `studio-redesign/FINDINGS.md`, not re-derived; planned for studio/editor Phase 1.
+**Open:** `eco`/`size` URL params carried but unused until the API ships them · `page` addressable only to 4 · analytics now consent-gated (silent until the banner is answered) · move LINE i18n keys out of `styles.library` if mounted elsewhere · verify locally: header th/en at 1040–1440, heart/card at 390, LINE above compare tray, Sheet focus trap/Esc, `pnpm e2e --grep "style library|header"`, `pnpm lhci`.
