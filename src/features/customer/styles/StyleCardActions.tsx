@@ -7,7 +7,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { IconButton } from "@/ui/components/IconButton";
 import { toast } from "@/ui/components/Toast";
 
-import { trackCatalog } from "./catalog-events";
+import { trackCatalog } from "@/lib/analytics/catalog";
 import { useCompare } from "./compare-store";
 import { useStyleFavourites } from "./useStyleFavourites";
 

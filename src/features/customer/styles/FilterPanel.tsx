@@ -10,7 +10,7 @@ import { Switch } from "@/ui/components/Switch";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { trackCatalog } from "./catalog-events";
+import { trackCatalog } from "@/lib/analytics/catalog";
 import { foldedItems, foldedSubGroups } from "./facet-groups";
 import { clearFilters, listHref, toggleValue, type FacetKey, type ListParams } from "./query";
 

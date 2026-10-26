@@ -9,7 +9,7 @@ import QuickView from "./QuickView";
 const get = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/api/browser", () => ({ browserApi: () => ({ GET: get }) }));
 vi.mock("next/dynamic", () => ({ default: () => () => <b>3d</b> }));
-vi.mock("./catalog-events", () => ({ trackCatalog: vi.fn() }));
+vi.mock("@/lib/analytics/catalog", () => ({ trackCatalog: vi.fn() }));
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>

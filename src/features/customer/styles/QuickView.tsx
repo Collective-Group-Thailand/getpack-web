@@ -14,7 +14,7 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Sheet } from "@/ui/components/Sheet";
 import { Spinner } from "@/ui/components/Spinner";
 
-import { trackCatalog } from "./catalog-events";
+import { trackCatalog } from "@/lib/analytics/catalog";
 import { facetLabel, type StylesT } from "./labels";
 import { DIELINE_FRAGMENT, styleHref } from "./paths";
 import { VariantPicker } from "./VariantPicker";

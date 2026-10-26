@@ -290,7 +290,7 @@ export default async function StylesPage({
             },
           ]}
         />
-        <SearchTracker query={query.q} resultCount={total} />
+        <SearchTracker query={query.q} resultCount={list.data.length === 0 ? 0 : total} />
         {crumbs}
         {head}
 

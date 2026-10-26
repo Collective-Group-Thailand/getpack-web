@@ -11,7 +11,7 @@ import { CompareToggle } from "./StyleCardActions";
 
 const toast = vi.hoisted(() => vi.fn());
 vi.mock("@/ui/components/Toast", () => ({ toast }));
-vi.mock("./catalog-events", () => ({ trackCatalog: vi.fn() }));
+vi.mock("@/lib/analytics/catalog", () => ({ trackCatalog: vi.fn() }));
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>

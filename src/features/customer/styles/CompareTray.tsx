@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
 
-import { trackCatalog } from "./catalog-events";
+import { trackCatalog } from "@/lib/analytics/catalog";
 import { useCompare } from "./compare-store";
 import { compareHref, previewSrc } from "./paths";
 

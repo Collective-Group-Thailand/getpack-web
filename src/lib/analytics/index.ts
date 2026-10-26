@@ -17,3 +17,4 @@ export {
 } from "./events";
 export { track } from "./track";
 export { useConsent } from "./useConsent";
+export { trackCatalog, type CatalogEventName, type CatalogEvents } from "./catalog";
