@@ -7,6 +7,7 @@ import { ONLINE_PAYMENT_METHODS, type PaymentMethod } from "@/domain/payment-met
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
+import { isRequoteRequired } from "@/features/customer/orders/requote";
 import { isApiError } from "@/lib/api/problem";
 import { Button, type ButtonProps } from "@/ui/components/Button";
 import { Dialog } from "@/ui/components/Dialog";
@@ -67,7 +68,12 @@ export function PayInstalmentButton({
       });
       router.push(`${surface === "liff" ? "/liff/pay" : "/checkout/pay"}/${payment!.id}`);
     } catch (error) {
-      toast.error(isApiError(error) ? error.detail : t("failed"));
+      // D-436: the group went past its deadline — the page now offers "ตรวจราคาใหม่และชำระ" instead.
+      if (isRequoteRequired(error)) {
+        setOpen(false);
+        toast.error(t("requoteRequired"));
+        router.refresh();
+      } else toast.error(isApiError(error) ? error.detail : t("failed"));
       setBusy(false);
     }
   }

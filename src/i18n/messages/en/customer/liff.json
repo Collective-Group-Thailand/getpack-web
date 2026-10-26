@@ -37,7 +37,9 @@
     "total": "Total",
     "eta": "Expected by",
     "full": "See everything on the website",
-    "shipBy": "Ships by"
+    "shipBy": "Ships by",
+    "afterPayment": "Calculated after payment",
+    "overdue": "Payment is overdue — open the site to “Check the price again and pay”. The order is not cancelled."
   },
   "points": {
     "tier": "Tier",

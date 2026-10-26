@@ -11,6 +11,16 @@ import { findLockedDesignOf, getMyOrder } from "@/features/customer/orders/api.s
 import { AskAbout } from "@/features/customer/messages/StartThread";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import {
+  artworkNoteOf,
+  deliveryDatesOf,
+  isHeldByClaim,
+  isPaymentOverdue,
+  paymentShareOf,
+  showAutoComplete,
+  visibleActions,
+} from "@/features/customer/orders/order-state";
+import { RequoteButton } from "@/features/customer/orders/RequoteButton";
 import { SpecSheet } from "@/features/customer/orders/SpecSheet";
 import { listMySamples } from "@/features/customer/samples/api.server";
 import { ToleranceOutcome } from "@/features/customer/orders/ToleranceOutcome";
@@ -20,8 +30,16 @@ import { timelineTitle } from "@/features/customer/orders/timeline";
 import { TrackingLinkButton } from "@/features/customer/orders/TrackingLinkButton";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { CLAIM_STATUS, DOCUMENT_STATUS, SAMPLE_STATUS, INSTALMENT_STATUS, ORDER_STATUS } from "@/domain/status";
+import {
+  ARTWORK_STATUS,
+  CLAIM_STATUS,
+  CUSTOMER_ORDER_STATUS,
+  DOCUMENT_STATUS,
+  SAMPLE_STATUS,
+  INSTALMENT_STATUS,
+} from "@/domain/status";
 import { Link } from "@/i18n/navigation";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -97,8 +115,15 @@ export default async function Page({
     grossAmount: instalment.openAmount,
     activePaymentId: instalment.activePaymentId,
   });
+  // D-436: past the deadline the customer re-quotes before paying, so no pay button until then.
+  const overdue = isPaymentOverdue(order);
   const due = instalments.find((instalment) => instalment.payable) ?? null;
-  const payable = due ? payableOf(due) : null;
+  const payable = due && !overdue ? payableOf(due) : null;
+  const actions = visibleActions(order, detail.actions);
+  const share = paymentShareOf(order);
+  const heldByClaim = isHeldByClaim(order);
+  const artworkNote = artworkNoteOf(order);
+  const afterPayment = deliveryDatesOf(order) === "after_payment";
   const { receipt } = order;
   const cancelReason = order.cancelReasonNameTh
     ? pick(locale, order.cancelReasonNameTh, order.cancelReasonNameEn)
@@ -112,8 +137,13 @@ export default async function Page({
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-title leading-tight">{name}</h1>
-          {/* One chip (UX audit step 12): the artwork's state is in the card below and on its page. */}
-          <StatusChip map={ORDER_STATUS} value={order.status} size="md" />
+          {/* One chip (D-437): the API's `customerStatus`; the artwork's state is in the line below and on its page. */}
+          <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} size="md" />
+          {overdue ? (
+            <Badge tone="danger" icon="clock">
+              {t("detail.overdue.badge")}
+            </Badge>
+          ) : null}
         </div>
         <p className="text-muted flex flex-wrap items-center gap-x-1 gap-y-2 text-sm">
           <span className="font-mono">{order.orderCode}</span>
@@ -127,31 +157,50 @@ export default async function Page({
             <AskAbout subject={{ type: "order", id: order.id, label: order.orderCode }} variant="ghost" />
           </span>
         </p>
-        {detail.actions.length > 0 || payable ? (
+        {actions.length > 0 || payable || overdue ? (
           // What the customer has to do now, with its deadline (the "AccountOrder" board).
           <div className="border-border bg-surface rounded-card flex flex-wrap items-center justify-between gap-4 border border-s-4 border-s-[var(--color-accent)] px-5 py-4.5">
             <div className="min-w-0">
               <p className="font-semibold">
-                {payable
-                  ? t("detail.todoPay", { label: payable.label })
-                  : order.status === "completed"
-                    ? t("detail.todoDone")
-                    : // A delivered order's actions (claim, reorder) are options, not a duty.
-                      receipt.deliveredAt
-                      ? t("detail.todoOptional")
-                      : t("detail.todo")}
+                {overdue
+                  ? t("detail.todoOverdue")
+                  : payable
+                    ? t("detail.todoPay", { label: payable.label })
+                    : order.status === "completed"
+                      ? t("detail.todoDone")
+                      : // A delivered order's actions (claim, reorder) are options, not a duty.
+                        receipt.deliveredAt
+                        ? t("detail.todoOptional")
+                        : t("detail.todo")}
               </p>
               {due ? (
                 <p className="text-muted mt-1 text-sm">
                   {t(`detail.todoPurpose.${due.requiredBefore}`)}
-                  {group?.expiresAt && order.status === "waiting_payment"
-                    ? ` · ${t("detail.todoBy", { date: format.dateTime(group.expiresAt) })}`
+                  {order.payment.dueAt && order.status === "waiting_payment"
+                    ? ` · ${t(overdue ? "detail.overdue.title" : "detail.todoBy", { date: format.dateTime(order.payment.dueAt) })}`
                     : null}
                 </p>
               ) : null}
             </div>
-            <OrderActions orderId={order.id} orderCode={order.orderCode} actions={detail.actions} payable={payable} />
+            <div className="flex flex-wrap items-start gap-2">
+              {overdue ? (
+                <RequoteButton groupId={order.payment.groupId} payHref={`/account/orders/${order.id}#instalments`} />
+              ) : null}
+              <OrderActions orderId={order.id} orderCode={order.orderCode} actions={actions} payable={payable} />
+            </div>
           </div>
+        ) : null}
+        {/* Who has the artwork step and what happens next (D-438): "ส่งไฟล์งาน" appears only when it is the customer's. */}
+        {order.artworkOwner !== null ? (
+          <p className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-muted">{t("detail.artworkStep")}</span>
+            <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} />
+            {artworkNote ? (
+              <span className="text-muted">
+                {t(`detail.artworkNote.${artworkNote === "team_dieline" ? "team" : "customer"}`)}
+              </span>
+            ) : null}
+          </p>
         ) : null}
         {/* The artwork workspace is a destination, not a footnote: a button, beside the design link. */}
         <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -181,15 +230,45 @@ export default async function Page({
             {t("detail.companyApproval.body", { date: format.dateTime(group.placedAt) })}
           </Callout>
         ) : null}
-        {group?.expiresAt && order.status === "waiting_payment" && !payable ? (
-          <Callout tone="warning">{t("detail.expires", { date: format.dateTime(group.expiresAt) })}</Callout>
+        {overdue ? (
+          // D-436: never cancelled for being late — the customer re-quotes, then pays.
+          <Callout
+            tone="warning"
+            icon="clock"
+            title={t("detail.overdue.title", {
+              date: format.dateTime(order.payment.dueAt ?? group?.expiresAt ?? order.createdAt),
+            })}
+          >
+            {t("detail.overdue.body")}
+          </Callout>
+        ) : order.payment.dueAt && order.status === "waiting_payment" && !payable ? (
+          <Callout tone="warning">{t("detail.expires", { date: format.dateTime(order.payment.dueAt) })}</Callout>
         ) : null}
         {order.cancelledAt ? (
           <Callout tone="neutral" title={t("detail.cancelled", { date: format.date(order.cancelledAt) })}>
             {cancelReason ? t("detail.cancelReason", { reason: cancelReason }) : null}
           </Callout>
         ) : null}
-        {receipt.deliveredAt && !receipt.completedAt && receipt.autoCompleteAt ? (
+        {heldByClaim && receipt.deliveredAt && !receipt.completedAt ? (
+          // D-437: completion waits for the open claim — no auto-confirm date, no "confirm receipt".
+          <Callout tone="info" icon="eye">
+            <p>{t("detail.claimHeld")}</p>
+            {order.openClaims.length > 0 ? (
+              <ul className="mt-1 list-disc ps-5">
+                {order.openClaims.map((claim) => (
+                  <li key={claim.id}>
+                    <Link
+                      href={`/account/orders/${order.id}/claims/${claim.id}`}
+                      className="text-primary underline underline-offset-4"
+                    >
+                      {t("detail.openClaim", { claim: claim.claimNo, status: claim.statusLabelTh })}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </Callout>
+        ) : showAutoComplete(order) ? (
           <Callout tone="info">
             {t("detail.autoComplete", {
               date: format.date(receipt.autoCompleteAt),
@@ -209,10 +288,10 @@ export default async function Page({
             steps={journeySteps(detail.progress, group?.placedAt ?? order.createdAt, (key) => tJourney(key))}
           />
           {detail.progress.steps.length > 0 ? (
-            // The factory's own steps, under the journey they are the "production" stage of.
+            // The production steps, under the journey they are the "production" stage of.
             <div className="border-border mt-6 border-t pt-5">
-              <h3 className="text-muted mb-3 text-xs font-semibold">{t("detail.factorySteps")}</h3>
-              <OrderStages steps={detail.progress.steps} label={t("detail.factorySteps")} />
+              <h3 className="text-muted mb-3 text-xs font-semibold">{t("detail.productionSteps")}</h3>
+              <OrderStages steps={detail.progress.steps} label={t("detail.productionSteps")} />
             </div>
           ) : null}
         </section>
@@ -467,12 +546,17 @@ export default async function Page({
                       },
                     ]
                   : []),
-                ...(order.promisedShipDate
-                  ? [{ term: t("detail.shipByTerm"), description: format.date(order.promisedShipDate) }]
-                  : []),
-                ...(order.estimatedDeliveryDate
-                  ? [{ term: t("detail.arrivesByTerm"), description: format.date(order.estimatedDeliveryDate) }]
-                  : []),
+                // D-439: an unpaid order's dates are the plan made at placement and may be past — say so instead.
+                ...(afterPayment
+                  ? [{ term: t("detail.shipByTerm"), description: t("detail.afterPayment") }]
+                  : [
+                      ...(order.promisedShipDate
+                        ? [{ term: t("detail.shipByTerm"), description: format.date(order.promisedShipDate) }]
+                        : []),
+                      ...(order.estimatedDeliveryDate
+                        ? [{ term: t("detail.arrivesByTerm"), description: format.date(order.estimatedDeliveryDate) }]
+                        : []),
+                    ]),
                 ...(receipt.deliveredAt
                   ? [{ term: t("detail.deliveredTerm"), description: format.dateTime(receipt.deliveredAt) }]
                   : []),
@@ -491,6 +575,33 @@ export default async function Page({
                   : []),
               ]}
             />
+          </section>
+          <section aria-labelledby="order-payment" className="border-border bg-surface rounded-card border px-5 py-5">
+            <h2 id="order-payment" className="text-base font-bold">
+              {t("detail.paymentShare.title")}
+            </h2>
+            <DescriptionList
+              className="mt-3"
+              items={[
+                { term: t("detail.paymentShare.thisOrder"), description: format.thb(share.orderGross) },
+                ...(share.shared
+                  ? [{ term: t("detail.paymentShare.group"), description: format.thb(share.groupGross) }]
+                  : []),
+                ...(order.payment.dueAt && order.status === "waiting_payment"
+                  ? [
+                      {
+                        term: t("detail.paymentShare.dueTerm"),
+                        description: format.dateTime(order.payment.dueAt),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+            {share.shared ? (
+              <p className="text-muted mt-2 text-xs">
+                {t("detail.paymentShare.groupNote", { code: share.groupCode, count: share.groupOrderCount })}
+              </p>
+            ) : null}
           </section>
           <section aria-labelledby="order-price" className="border-border bg-surface rounded-card border px-5 py-5">
             <h2 id="order-price" className="text-base font-bold">

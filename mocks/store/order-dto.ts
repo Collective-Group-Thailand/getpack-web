@@ -104,8 +104,10 @@ function openClaimsOf(order: MockOrder): Schemas["OrderOpenClaimDto"][] {
 /** `customerStatus` (D-437), derived from the facts the row keeps. */
 function customerStatusOf(order: MockOrder): Schemas["CustomerOrderStatus"] {
   if (order.status === "cancelled") return "cancelled";
+  // Delivered with a claim open reads "claim in review" — also after completion (D-437).
+  if (deliveredAt(order) && openClaimsOf(order).length > 0) return "claim_in_review";
   if (order.status === "completed") return "completed";
-  if (deliveredAt(order)) return openClaimsOf(order).length > 0 ? "claim_in_review" : "received";
+  if (deliveredAt(order)) return "received";
   if (order.status === "shipping") return "shipping";
   if (order.status === "in_production") return "in_production";
   if (order.status === "waiting_payment") return "awaiting_payment";
@@ -184,19 +186,24 @@ function toleranceOf(order: MockOrder): Schemas["OrderToleranceOutcomeDto"] | nu
 const PRE_PRODUCTION = ["waiting_payment", "paid_for_production", "artwork_approved"];
 const OWN_ARTWORK = ["own_file", "online_designer"];
 
-/** getpack-api's `STORE_ORDER_ACTIONS` over the row's facts (D-070, D-073, D-081, D-082, D-153). */
+/** getpack-api's `STORE_ORDER_ACTIONS` over the row's facts (D-070, D-073, D-081, D-082, D-153; D-436–D-438). */
 export function storeOrderActions(order: MockOrder): Schemas["NextActionDto"][] {
   const dto = toOrderDto(order);
   const takesArtwork = PRE_PRODUCTION.includes(dto.status) && dto.artworkStatus !== "approved";
   const received = dto.receipt.deliveredAt !== null && dto.cancelledAt === null;
+  const claimOpen = dto.openClaims.length > 0;
   const actions: Schemas["NextActionDto"][] = [];
   const offer = (key: string, irreversible = false, disabledReason: string | null = null) =>
     actions.push({ key, irreversible, disabledReason });
-  if (takesArtwork && OWN_ARTWORK.includes(dto.designOption)) offer("order.upload_artwork");
+  // D-438: the upload belongs to the customer only while the customer owns the artwork step.
+  if (takesArtwork && OWN_ARTWORK.includes(dto.designOption) && dto.artworkOwner === "customer")
+    offer("order.upload_artwork");
   if (takesArtwork && dto.artworkStatus === "proof_sent") offer("order.approve_proof", true);
-  if (received && dto.receipt.completedAt === null) offer("order.confirm_receipt", true);
+  // D-437: no "ยืนยันรับของ" while a claim is open — completion waits for it.
+  if (received && dto.receipt.completedAt === null && !claimOpen) offer("order.confirm_receipt", true);
   const claimWindow = dto.receipt.claimWindowEndsAt;
-  if (received && claimWindow !== null)
+  // The open claim is shown instead of an "open a claim" button.
+  if (received && claimWindow !== null && !claimOpen)
     offer("order.open_claim", false, Date.parse(claimWindow) >= Date.now() ? null : "claims.window_closed");
   if (received) offer("order.reorder");
   return actions;
@@ -217,10 +224,13 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
     .filter((line) => line.lineType === "shipping")
     .reduce((sum, line) => sum + satang(line.netAmount), 0);
   const customerStatus = customerStatusOf(order);
+  // D-438: the customer owns an upload to make, a change asked for, a proof to answer — and a file the
+  // preflight refused (the mock keeps that one at "uploaded"; the API leaves it with the customer too).
+  const refused = order.artwork.submissions.at(-1)?.preflightStatus === "blocked";
   const artworkOwner: Schemas["OrderDto"]["artworkOwner"] =
     order.artwork.status === "approved"
       ? null
-      : ["awaiting_upload", "changes_requested", "proof_sent"].includes(order.artwork.status)
+      : refused || ["awaiting_upload", "changes_requested", "proof_sent"].includes(order.artwork.status)
         ? "customer"
         : "team";
   const waitingPayment = order.status === "waiting_payment";

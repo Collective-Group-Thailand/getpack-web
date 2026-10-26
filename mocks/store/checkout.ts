@@ -690,6 +690,27 @@ function instalmentsOf(group: Group): Schemas["InstalmentDto"][] {
 }
 
 /** Whether the customer owns the group's orders. */
+/** The previews `requoteGroup` answered, by group, for `confirmRequote` to hold the customer to. */
+const previews = new Map<string, Schemas["RequotePreviewDto"]>();
+
+/** The customer's group and its live orders when it is unpaid, past its deadline and re-quotable online; else the API's refusal. */
+function overdueGroupOf(customer: MockCustomer, groupId: string): { group: Group; list: MockOrder[] } | Response {
+  const seeded = orders.find((order) => order.groupId === groupId);
+  const group = groups.get(groupId) ?? (seeded ? groupForOrder(seeded) : undefined);
+  if (!group || !owns(customer, group)) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
+  const list = group.orderIds
+    .map((id) => orders.find((order) => order.id === id))
+    .filter((order): order is MockOrder => Boolean(order) && order!.status !== "cancelled");
+  const overdue = list.some(
+    (order) => order.status === "waiting_payment" && order.expiresAt && Date.parse(order.expiresAt) < Date.now(),
+  );
+  if (!overdue) return problem(409, "order.requote_not_due", "ยังไม่ต้องตรวจราคาใหม่");
+  // RFQ, reorder, discounts or add-on charges, a slip being verified, part-paid: the team quotes.
+  if (list.some((order) => satang(order.discountAmount) > 0 || order.payments.length > 0))
+    return problem(409, "order.requote_unavailable", "ตรวจราคาใหม่เองไม่ได้");
+  return { group, list };
+}
+
 function owns(customer: MockCustomer, group: Group): boolean {
   const owner = ownerIdOf(customer);
   return group.orderIds.some((id) => orders.find((order) => order.id === id)?.customer.id === owner);
@@ -1184,9 +1205,119 @@ export const storeCheckoutHandlers = [
     return HttpResponse.json(schedule);
   }),
 
+  // store.orders.requoteGroup (D-436): "ตรวจราคาใหม่และชำระ", step 1 — the mock's own fake re-price
+  // (+2 % per order), nothing on the order changes. Refused like the API: not overdue, discounts.
+  http.post("*/v1/store/order-groups/:groupId/actions/requote", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const found = overdueGroupOf(customer, String(params.groupId));
+    if (found instanceof Response) return found;
+    const { group, list } = found;
+    const rows = list.map((order) => {
+      const previous = satang(order.grossAmount);
+      const next = Math.round(previous * 1.02);
+      return { order, previous, next };
+    });
+    const previousTotal = rows.reduce((sum, row) => sum + row.previous, 0);
+    const nextTotal = rows.reduce((sum, row) => sum + row.next, 0);
+    const preview: Schemas["RequotePreviewDto"] = {
+      groupId: group.id,
+      groupCode: group.code,
+      previousGrossAmount: baht(previousTotal),
+      newGrossAmount: baht(nextTotal),
+      differenceAmount: baht(nextTotal - previousTotal),
+      newCashAmount: baht(nextTotal),
+      priceValidUntil: bangkokIso(15 * DAY),
+      paymentDueAt: bangkokIso(7 * DAY),
+      orders: rows.map(({ order, previous, next }) => ({
+        orderId: order.id,
+        orderCode: order.orderCode,
+        quoteId: mockId("rqq", Number.parseInt(order.id.slice(-6), 16) % 0x10000),
+        quoteOptionId: mockId("rqo", Number.parseInt(order.id.slice(-6), 16) % 0x10000),
+        quantity: order.quantity,
+        previousGrossAmount: baht(previous),
+        newGrossAmount: baht(next),
+        differenceAmount: baht(next - previous),
+        newUnitPrice: (next / 100 / Math.max(order.quantity, 1)).toFixed(6),
+        leadTimeDays: order.leadTimeDays,
+        promisedShipDate: bangkokIso(5 * DAY).slice(0, 10),
+        estimatedDeliveryDate: bangkokIso(7 * DAY).slice(0, 10),
+      })),
+    };
+    previews.set(group.id, preview);
+    return HttpResponse.json(preview);
+  }),
+
+  // store.orders.confirmRequote, step 2: writes the preview; a total that differs answers
+  // `order.requote_changed`; needs an Idempotency-Key.
+  http.post("*/v1/store/order-groups/:groupId/actions/confirm-requote", async ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const key = request.headers.get("idempotency-key");
+    if (!key) return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
+    if (!UUID.test(key)) return problem(400, "validation.failed", "Idempotency-Key ต้องเป็น uuid");
+    const found = overdueGroupOf(customer, String(params.groupId));
+    if (found instanceof Response) return found;
+    const { group, list } = found;
+    const body = await bodyOf<Schemas["ConfirmRequoteDto"]>(request);
+    const preview = previews.get(group.id);
+    if (!preview || preview.newGrossAmount !== body.expectedGrossAmount)
+      return problem(409, "order.requote_changed", "ราคาเปลี่ยนแล้ว");
+    const listed = new Set(body.orders.map((row) => row.orderId));
+    if (listed.size !== list.length || !list.every((order) => listed.has(order.id)))
+      return problem(422, "validation.failed", "ต้องระบุคำสั่งซื้อให้ครบทุกรายการของกลุ่ม");
+    for (const order of list) {
+      const next = preview.orders.find((row) => row.orderId === order.id)!;
+      const gross = satang(next.newGrossAmount);
+      order.grossAmount = baht(gross);
+      order.vatAmount = baht(vatIn(gross));
+      order.netAmount = baht(gross - vatIn(gross));
+      order.expiresAt = preview.paymentDueAt;
+      order.promisedShipDate = next.promisedShipDate;
+    }
+    previews.delete(group.id);
+    const first = list[0]!;
+    const dto: Schemas["OrderGroupDto"] = {
+      id: group.id,
+      groupCode: group.code,
+      status: "waiting_payment",
+      ...statusLabels("status", ORDER_GROUP_STATUS, "waiting_payment"),
+      channel: first.channel ?? "web",
+      customerId: customer.id,
+      poNumber: null,
+      ccEmails: [],
+      placedAt: first.createdAt,
+      expiresAt: preview.paymentDueAt,
+      paymentOverdue: false,
+      cancelledAt: null,
+      totals: {
+        netAmount: baht(satang(preview.newGrossAmount) - vatIn(satang(preview.newGrossAmount))),
+        discountAmount: "0.00",
+        shippingNetAmount: "0.00",
+        vatAmount: baht(vatIn(satang(preview.newGrossAmount))),
+        grossAmount: preview.newGrossAmount,
+        whtAmount: "0.00",
+        cashAmount: preview.newCashAmount,
+        currency: "THB",
+      },
+      orders: list.map(toStoreOrderDto),
+    };
+    return HttpResponse.json(dto);
+  }),
+
   http.post("*/v1/store/order-groups/:groupId/payments", async ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    {
+      // D-436: past the deadline the customer re-quotes first (customers only; CS can still take a payment).
+      const seededGroup = orders.find((order) => order.groupId === params.groupId);
+      if (
+        seededGroup?.status === "waiting_payment" &&
+        seededGroup.expiresAt &&
+        Date.parse(seededGroup.expiresAt) < Date.now()
+      )
+        return problem(409, "order.requote_required", "เลยกำหนดชำระ ตรวจราคาใหม่ก่อนชำระ");
+    }
     if (!request.headers.get("idempotency-key"))
       return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
     // getpack-api takes a UUID and nothing else (api-conventions §3); the mock refused nothing and

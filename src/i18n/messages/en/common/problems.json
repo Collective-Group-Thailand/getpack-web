@@ -293,7 +293,9 @@
     "requote_required": "Payment is overdue — check the current price before paying",
     "requote_unavailable": "The price can't be checked again right now",
     "reprice_below_paid": "New total below the amount paid",
-    "reprice_has_discounts": "Cannot re-price"
+    "reprice_has_discounts": "Cannot re-price",
+    "requote_changed": "The price has changed",
+    "requote_not_due": "No need to check the price again yet"
   },
   "orders": {
     "reorder_unavailable": "Reorder unavailable",

@@ -41,7 +41,8 @@ describe("zero dead ends in the customer zone", () => {
   });
 
   it("offers more than a retry when something breaks or is missing", () => {
-    for (const file of ["src/app/[locale]/not-found.tsx", "src/app/[locale]/error.tsx"]) {
+    for (const file of ["src/app/[locale]/not-found.tsx", "src/features/customer/shell/RouteError.tsx"]) {
+      // The segment boundary is `error.tsx`, which draws `RouteError`.
       expect(readFileSync(file, "utf8"), file).toMatch(/<NextStep /);
     }
   });

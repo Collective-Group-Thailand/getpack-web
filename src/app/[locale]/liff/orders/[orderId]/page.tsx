@@ -8,10 +8,11 @@ import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { getMyOrder } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { visibleActions } from "@/features/customer/orders/order-state";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { ORDER_STATUS } from "@/domain/status";
+import { CUSTOMER_ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
@@ -33,7 +34,10 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
   ]);
   if (!detail) notFound();
   const { order } = detail;
-  const next = detail.instalments.find((instalment) => instalment.payable);
+  const actions = visibleActions(order, detail.actions);
+  // D-436: past the deadline the price is checked again first, on the site — LINE does not pay it.
+  const overdue = order.payment.overdue;
+  const next = overdue ? undefined : detail.instalments.find((instalment) => instalment.payable);
   const due = next
     ? {
         id: next.id,
@@ -53,17 +57,16 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
         <h1 className="text-xl font-bold">{productNameOf(locale, order.summary)}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted font-mono text-sm">{order.orderCode}</span>
-          <StatusChip map={ORDER_STATUS} value={order.status} />
+          <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
         </div>
       </header>
-      {detail.actions.length > 0 || due ? (
-        <OrderActions
-          orderId={order.id}
-          orderCode={order.orderCode}
-          actions={detail.actions}
-          payable={due}
-          surface="liff"
-        />
+      {overdue ? (
+        <p role="status" className="border-warning/40 bg-warning-subtle rounded-xl border p-3 text-sm">
+          {t("overdue")}
+        </p>
+      ) : null}
+      {actions.length > 0 || due ? (
+        <OrderActions orderId={order.id} orderCode={order.orderCode} actions={actions} payable={due} surface="liff" />
       ) : null}
       <section aria-labelledby="liff-stages">
         <h2 id="liff-stages" className="sr-only">
@@ -78,10 +81,16 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
             description: `${format.number(order.quantityOrdered)} ${tCatalog(`stock.units.${order.summary.unit}`)}`,
           },
           { term: t("total"), description: format.thb(order.totals.grossAmount) },
-          ...(order.promisedShipDate ? [{ term: t("shipBy"), description: format.date(order.promisedShipDate) }] : []),
-          ...(order.estimatedDeliveryDate
-            ? [{ term: t("eta"), description: format.date(order.estimatedDeliveryDate) }]
-            : []),
+          ...(order.deliveryDateBasis === "after_payment"
+            ? [{ term: t("shipBy"), description: t("afterPayment") }]
+            : [
+                ...(order.promisedShipDate
+                  ? [{ term: t("shipBy"), description: format.date(order.promisedShipDate) }]
+                  : []),
+                ...(order.estimatedDeliveryDate
+                  ? [{ term: t("eta"), description: format.date(order.estimatedDeliveryDate) }]
+                  : []),
+              ]),
         ]}
       />
       <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline underline-offset-4">

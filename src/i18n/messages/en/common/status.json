@@ -15,7 +15,7 @@
     "expired": "Expired"
   },
   "artwork": {
-    "awaitingTemplate": "Awaiting template",
+    "awaitingTemplate": "Awaiting the dieline for the customer",
     "awaitingUpload": "Awaiting artwork",
     "uploaded": "Uploaded",
     "inReview": "In review",
@@ -1057,6 +1057,21 @@
     },
     "rfqQuote": {
       "accepted": "You accepted"
+    },
+    "artwork": {
+      "awaitingTemplate": "Awaiting the dieline from our team",
+      "awaitingUpload": "Awaiting your file"
     }
+  },
+  "customerOrder": {
+    "awaitingPayment": "Awaiting payment",
+    "awaitingArtwork": "Awaiting your file",
+    "awaitingApproval": "Awaiting proof approval",
+    "inProduction": "In production",
+    "shipping": "Shipping",
+    "received": "Received",
+    "claimInReview": "Received · claim under review",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
   }
 }
