@@ -340,7 +340,7 @@
       "spec": "Price changed with the specification"
     },
     "printRefused": "This print choice can't be priced — please choose the print again",
-    "vatLine": "VAT 7% (included in the total)",
+    "vatLine": "VAT (included in the total)",
     "totalNoShipping": "Total (excluding shipping)",
     "toleranceLine": "Quantity: up to {shortage} under or {overage} over; any shortfall is credited",
     "retention": "A quotation holds its price for {days} days · drafts are kept 90 days · a shared link works for 15 days",
