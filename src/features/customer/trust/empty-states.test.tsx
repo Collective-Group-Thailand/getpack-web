@@ -28,6 +28,14 @@ vi.mock("next-intl/server", () => ({
 vi.mock("@/features/customer/shell/NextStep", () => ({
   NextStep: ({ to }: { to: string }) => <a href={`/${to}`}>{`next.${to}`}</a>,
 }));
+// The FAQ answers link to /guarantee and /products: a plain anchor (the real one reads the intl context).
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 vi.mock("@/features/shared/format/server", () => ({
   getFormat: async () => ({
     date: (iso: string) => iso.slice(0, 10),
@@ -55,11 +63,12 @@ describe("trust pages with nothing to show yet", () => {
     expect(html).toMatchSnapshot();
   });
 
-  it("network: shows no figures, only that there is nothing to show yet", async () => {
+  it("network: is getpack's production standard, with no factory wording", async () => {
     const { default: NetworkPage } = await import("@/app/[locale]/(storefront)/network/page");
     const html = await render(NetworkPage);
-    expect(html).toContain("ยังไม่มีข้อมูลเครือข่าย");
-    expect(html).not.toMatch(/\d+%/);
+    expect(html).toContain("มาตรฐานการผลิตของ getpack");
+    expect(html).toContain("ΔE2000 ≤ 3");
+    expect(html).not.toContain("โรงงาน");
     expect(html).toMatchSnapshot();
   });
 });

@@ -121,7 +121,7 @@ test.describe("configurator v2", () => {
     const target = page.getByRole("region", { name: /ราคาเป้าหมาย/ });
     await expect(target.getByText("สูงกว่าเป้าหมาย", { exact: true })).toBeVisible({ timeout: 15_000 });
     await expect(dock(page)).toContainText("สูงกว่าเป้าหมาย");
-    await expect(target).toContainText("เราไม่แสดงให้โรงงานเห็น");
+    await expect(target).toContainText("เราไม่แสดงให้ผู้อื่นเห็น");
 
     await target.getByRole("button", { name: "ดูวิธีลดราคา" }).click();
     const levers = target.getByRole("list", { name: "วิธีลดราคาที่คำนวณได้" });

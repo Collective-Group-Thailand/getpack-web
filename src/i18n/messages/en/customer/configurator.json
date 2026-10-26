@@ -87,7 +87,7 @@
       },
       "over_crease": {
         "label": "Over the creases",
-        "description": "Crease to crease, as the factory works on the flat blank"
+        "description": "Crease to crease, as production works on the flat blank"
       },
       "product": {
         "label": "Finished size",
@@ -108,7 +108,7 @@
       "title": "Your size on each basis",
       "converting": "Converting the size",
       "entered": "(entered)",
-      "caliper": "Worked out with a material thickness of {caliper} — a reference size the factory confirms on the drawing",
+      "caliper": "Worked out with a material thickness of {caliper} — a reference size our team confirms on the drawing",
       "caliperMissing": "We don't know this material's thickness yet, so the size can't be converted. Choose another material or enter the inside size.",
       "failed": "Couldn't convert the size — try again",
       "empty": "Enter every dimension to see the other sizes",
@@ -180,7 +180,7 @@
     "summary": "{quantity} {unit} · comparing {tiers, plural, one {# quantity} other {# quantities}}",
     "invalid": "Enter a whole number of 1 or more",
     "target": "Target price per {unit} (optional)",
-    "targetHint": "Baht per {unit}, VAT included, shipping excluded — compared with the real price; never shown to the factory",
+    "targetHint": "Baht per {unit}, VAT included, shipping excluded — compared with the real price; never shown to anyone else",
     "targetInvalid": "Enter an amount in baht with up to two decimals",
     "targetSummary": "target {target}/{unit}"
   },
@@ -269,7 +269,7 @@
       "no_price_path": "Our team prices this spec by hand — send a quote request.",
       "not_priceable": "This spec cannot be priced automatically — send a quote request.",
       "not_instant": "Production is fully booked for now — try a smaller quantity, or send a quote request.",
-      "envelope_not_covered": "This size or spec is outside what our instant-price factory covers — send a request for quote",
+      "envelope_not_covered": "This size or spec is outside what we can price instantly — send a request for quote",
       "delivery_unavailable": "We can't deliver to this area yet — try another postcode or send a request for quote",
       "style_variant_not_publishable": "This style isn't open for instant pricing yet — send a request for quote",
       "rfq_required": "This style needs our team to price it — send a request for quote"
@@ -565,7 +565,7 @@
       "meets_target": "This quotation already meets your target",
       "not_instant": "This spec has no instant price — talk to sales"
     },
-    "private": "Your target price is yours — factories never see it",
+    "private": "Your target price is yours — we never show it to anyone else",
     "askTitle": "Ask sales to find a price",
     "askBody": "We'll send this spec, quantity and target to our sales team as a request for quote, and they'll get back to you",
     "notes": "Message to sales (optional)",

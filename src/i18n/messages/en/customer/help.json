@@ -72,7 +72,7 @@
       "payment": "Payment",
       "delivery": "Delivery",
       "business": "Business account",
-      "partnership": "Becoming a partner factory",
+      "partnership": "Becoming a production partner",
       "other": "Something else"
     },
     "orderCode": "Order number",
