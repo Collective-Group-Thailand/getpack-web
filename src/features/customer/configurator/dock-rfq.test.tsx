@@ -35,7 +35,6 @@ describe("the dock for a quantity with no instant price", () => {
           state={{ quantity: 100, promoCode: "" } as unknown as ConfiguratorState}
           unit="ชิ้น"
           gap={null}
-          onSelectQuantity={() => {}}
           missing={[]}
           steps={[nonInstant]}
           specLabel={{ th: "กล่องไปรษณีย์ · 300 × 200 × 100 มม.", en: "Mailer box · 300 × 200 × 100 mm" }}

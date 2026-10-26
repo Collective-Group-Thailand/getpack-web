@@ -164,16 +164,16 @@ test.describe("keeping the price", () => {
     await expect(page.getByRole("img", { name: /ขนาด 180 × 100 × 50 มม./ })).toBeVisible();
   });
 
-  test("on a phone the dock is a bar above the bottom nav, with details in a sheet", async ({ browser }) => {
+  test("on a phone the price is a bar above the bottom nav, with the action in it", async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 393, height: 851 }, isMobile: true, hasTouch: true });
     const page = await context.newPage();
     await acceptCookies(page);
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
-    await expect(page.getByRole("button", { name: "เพิ่มลงตะกร้า" })).toBeVisible();
-    await page.getByRole("button", { name: "รายละเอียด" }).click();
-    const sheet = page.getByRole("dialog", { name: "ราคาของคุณ" });
-    await expect(sheet.getByRole("table", { name: "ราคาต่อจำนวน" })).toBeVisible();
-    await expect(sheet).toContainText("ยอดรวมทั้งหมด");
+    const bar = page.locator("[data-quote-bar]");
+    await expect(bar.getByRole("button", { name: "เพิ่มลงตะกร้า" })).toBeVisible();
+    await expect(bar).toContainText(/\/ ชิ้น/);
+    // The price table sits with the quantity step now, not in a sheet.
+    await expect(page.getByRole("table", { name: "ราคาต่อจำนวน" })).toBeAttached();
     await context.close();
   });
 });

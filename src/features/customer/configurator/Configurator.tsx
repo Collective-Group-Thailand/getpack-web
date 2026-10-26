@@ -28,6 +28,8 @@ import { basesOf, groupsOf, isProcessInk, optionsById, sizeKindOf } from "./mode
 import { isCorrugate, refusedSide } from "./print-model";
 import { isApiError } from "@/lib/api/problem";
 import { useLivePrice } from "./pricing";
+import { PromoCode } from "./PromoCode";
+import { TierTable } from "./TierTable";
 import { PreviewSide, type PreviewDimensions } from "./PreviewSide";
 import { SizeStep } from "./SizeStep";
 import {
@@ -495,7 +497,18 @@ export function Configurator({
           </div>
         );
       case "quantity":
-        return <QuantityStep configurator={configurator} state={state} onChange={updateIn("quantity")} unit={unit} />;
+        return (
+          <div className="flex flex-col gap-5">
+            <QuantityStep configurator={configurator} state={state} onChange={updateIn("quantity")} unit={unit} />
+            {/* The price per quantity, where the quantity is chosen (item 7 turns it into cards). */}
+            <TierTable
+              steps={price.data?.steps}
+              quantity={state.quantity}
+              unit={unit}
+              onSelectQuantity={(quantity) => update({ quantity }, "quantity")}
+            />
+          </div>
+        );
       case "delivery":
         return <DeliveryStep state={state} onChange={updateIn("delivery")} />;
       case "design":
@@ -609,7 +622,15 @@ export function Configurator({
     // neither is a to-do that blocks the order.
     const optional = step === "summary" || step === "logistics";
     const state: StepChip["state"] =
-      own === "complete" ? (isDefaultStep(step, touched) ? "default" : "done") : optional ? "idle" : "todo";
+      step === "summary"
+        ? "idle"
+        : own === "complete"
+          ? isDefaultStep(step, touched)
+            ? "default"
+            : "done"
+          : optional
+            ? "idle"
+            : "todo";
     return {
       id: anchorOf(step),
       label: t(`chips.${step}`),
@@ -618,6 +639,11 @@ export function Configurator({
       srLabel: state === "done" ? t("chips.done") : state === "todo" ? t("chips.todo") : undefined,
     };
   });
+
+  // "ครบ 3/6": the steps that ask for an answer (not the summary, not the optional shipping-load
+  // questions) with a confirmed one — the same count the chips show as done.
+  const counted = chips.filter((chip) => chip.id !== anchorOf("summary") && chip.id !== anchorOf("logistics"));
+  const completeness = { done: counted.filter((chip) => chip.state === "done").length, total: counted.length };
 
   return (
     // The prototype's two columns: the preview, the progress chips and every step on the left, the
@@ -673,7 +699,6 @@ export function Configurator({
         state={state}
         unit={unit}
         gap={gap}
-        onSelectQuantity={(quantity) => update({ quantity }, "quantity")}
         missing={missing}
         steps={price.data?.steps}
         specLabel={price.data?.specLabel}
@@ -688,6 +713,9 @@ export function Configurator({
         rfqHref={rfqHref}
         designHref={designHref}
         lineHref={lineHref}
+        completeness={completeness}
+        onGoToShipping={() => scrollToStep(anchorOf("delivery"))}
+        promo={<PromoCode configurator={configurator} state={state} onChange={updateIn("summary")} />}
       />
       {/* Room for the phone bar, so the last field is never under it. */}
       <div aria-hidden className="h-16 min-[1100px]:hidden" />
