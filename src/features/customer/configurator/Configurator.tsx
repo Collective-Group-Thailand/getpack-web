@@ -545,6 +545,15 @@ export function Configurator({
             state={state}
             onChange={updateIn("design")}
             designerAvailable={designerAvailable}
+            studioLink={studioLink}
+            sample={{
+              checked: actions.sampleFor !== null || actions.busy === "sample",
+              // A sample is asked for on a kept quotation, so there must be a price to keep.
+              disabled: !priced,
+              onChange: (on) => {
+                if (on) actions.run("sample");
+              },
+            }}
           />
         );
       case "summary":
@@ -583,6 +592,18 @@ export function Configurator({
           material: state.choices.material?.[0] ?? null,
           step: "design",
         })
+      : null;
+  // The Studio on this product: with the inside size once it is known (the box is drawn at once), else on the
+  // product, pattern and board alone. It takes nothing of print or quantity (`StudioEntry`).
+  const studioLink =
+    designerAvailable && configurator.design.options.includes("online_designer")
+      ? (designHref ??
+        studioHref({
+          product: configurator.slug,
+          pattern: state.patternId,
+          material: state.choices.material?.[0] ?? null,
+          step: "start",
+        }))
       : null;
   // Once priced, the spec is the API's own label (B-API-3); before that, the answers given so far.
   const facts = [
