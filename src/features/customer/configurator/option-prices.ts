@@ -238,9 +238,22 @@ export function deltaView(delta: string | null | undefined): DeltaView | null {
 /* ------------------------------------------------------------------------------------- the hook */
 
 let unsupported = false;
+const supportListeners = new Set<() => void>();
+function markUnsupported() {
+  if (unsupported) return;
+  unsupported = true;
+  supportListeners.forEach((listener) => listener());
+}
+/** For `useSyncExternalStore`: whether the API has said the batch endpoint does not exist (so price slots can collapse). */
+export function subscribeOptionPricesSupport(listener: () => void) {
+  supportListeners.add(listener);
+  return () => void supportListeners.delete(listener);
+}
+export const optionPricesUnsupported = () => unsupported;
 /** Tests only: forget that the endpoint answered 404. */
 export function resetOptionPricesSupport() {
   unsupported = false;
+  supportListeners.forEach((listener) => listener());
 }
 
 export interface OptionPrices {
@@ -278,7 +291,7 @@ export function useOptionPrices(configurator: Configurator, state: ConfiguratorS
         return data ?? null;
       } catch (error) {
         // An API without the endpoint: stop asking for the rest of the visit.
-        if (isApiError(error) && error.status === 404) unsupported = true;
+        if (isApiError(error) && error.status === 404) markUnsupported();
         throw error;
       }
     },
