@@ -6,7 +6,7 @@ import { SPEC_VERSION } from "@getpack/dieline";
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken } from "../../../../mocks/support";
 import { groupsOf } from "@/features/customer/configurator/model";
-import { seedFromDesign } from "@/features/customer/configurator/state";
+import { seedFromDesign } from "@/features/customer/configurator/url-state";
 import type { DesignContent, DesignSpec } from "@/features/designer/types";
 import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";

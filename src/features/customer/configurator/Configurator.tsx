@@ -28,7 +28,8 @@ import { basesOf, groupsOf, isProcessInk, optionsById, sizeKindOf } from "./mode
 import { isCorrugate, refusedSide } from "./print-model";
 import { isApiError } from "@/lib/api/problem";
 import { useOptionPrices } from "./option-prices";
-import { useLivePrice } from "./pricing";
+import { queryOf, searchWith } from "./url-state";
+import { PRICE_DEBOUNCE_MS, useLivePrice } from "./pricing";
 import { rememberedPostcode, usePostcodeArea } from "./postcode";
 import { PromoCode } from "./PromoCode";
 import { PreviewSide, type PreviewDimensions } from "./PreviewSide";
@@ -108,6 +109,11 @@ export interface ConfiguratorProps {
   rfqPath: string;
   /** This page's canonical address, for the link in a LINE message. */
   pageUrl: string;
+  /**
+   * Keep the configuration in the address (a refresh, or a link copied from the bar, comes back to it). Off
+   * when a draft, a saved or shared quotation is open: that is what a refresh reopens.
+   */
+  syncUrl?: boolean;
 }
 
 /**
@@ -129,6 +135,7 @@ export function Configurator({
   draft: resumed = null,
   rfqPath,
   pageUrl,
+  syncUrl = false,
 }: ConfiguratorProps) {
   const t = useTranslations("configurator");
   const tUnits = useTranslations("catalog.stock.units");
@@ -366,6 +373,30 @@ export function Configurator({
     if (POSTCODE.test(state.postcode)) rememberedPostcode(state.postcode);
   }, [state.postcode]);
   const { area: postcodeArea } = usePostcodeArea(state.postcode);
+
+  // The configuration in the address, after a pause and without a navigation (`history.replaceState` is how the
+  // App Router takes a search change without fetching the page again). Defaults are left out; the first render
+  // writes nothing, so a link is only rewritten once the customer has changed something.
+  const queryKey = JSON.stringify(queryOf(configurator, state));
+  const addressSynced = useRef(false);
+  useEffect(() => {
+    if (!syncUrl) return;
+    if (!addressSynced.current) {
+      addressSynced.current = true;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      try {
+        const next = searchWith(window.location.search, JSON.parse(queryKey) as Record<string, string>);
+        if (next === new URLSearchParams(window.location.search).toString()) return;
+        const { pathname, hash } = window.location;
+        window.history.replaceState(window.history.state, "", `${pathname}${next ? `?${next}` : ""}${hash}`);
+      } catch {
+        // An address that cannot be written (a sandboxed frame) is only a link that does not follow.
+      }
+    }, PRICE_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [syncUrl, queryKey]);
 
   // The sticky chip bar's real height, so a step scrolled to lands just under it (and the header).
   const root = useRef<HTMLDivElement>(null);
