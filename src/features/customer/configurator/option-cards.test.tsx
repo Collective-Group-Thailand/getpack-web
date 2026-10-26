@@ -181,8 +181,10 @@ describe("size cards", () => {
         // No figure at all (the selected card may still say "เลือกอยู่": that is not a price).
         expect(slot.textContent).not.toMatch(/฿|ขอใบเสนอราคา/);
         expect(slot.hasAttribute("data-option-price")).toBe(false);
-        // The slot is still there, with its height: nothing moves when a price is missing.
-        expect(slot.className).toContain("min-h-5");
+        // Throttled: the slot keeps its height (a price may come back, nothing moves). Missing endpoint: the API will
+        // never fill it, so it collapses instead of leaving a blank band on every card.
+        if (mode === "throttled") expect(slot.className).toContain("min-h-5");
+        else if (!slot.textContent?.trim()) expect(slot.className).not.toContain("min-h-5");
       }
       const before = dockPrice();
       await user.click(card(/^M\d/));
