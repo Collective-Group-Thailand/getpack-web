@@ -185,7 +185,11 @@
       "spotPick": "เลือกสีพิเศษ (สูงสุด {max} สี)",
       "addOn": "เพิ่มสีพิเศษ (ไม่เกิน {max} สี)",
       "summary": "ด้านนอก: {outside} · ด้านใน: {inside}",
-      "cmyk": "CMYK"
+      "cmyk": "CMYK",
+      "outside": "ด้านนอก",
+      "inside": "ด้านใน",
+      "noneOutside": "กล่องเปล่า",
+      "noneInside": "ด้านในเรียบ"
     }
   },
   "quantity": {
