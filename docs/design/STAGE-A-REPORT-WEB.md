@@ -439,3 +439,16 @@ Visual check: `B1-styles-{prototype,real}-{1440-light,1054-light,390-dark}.png`.
 
 **Studio (DECISIONS §2):** 41 of 122 bases / 214 of 986 variants still cannot open in the Studio (tubes, bags, tags, labels, pouches, some specialty) — per `studio-redesign/FINDINGS.md`, not re-derived; planned for studio/editor Phase 1.
 **Open:** `eco`/`size` URL params carried but unused until the API ships them · `page` addressable only to 4 · analytics now consent-gated (silent until the banner is answered) · move LINE i18n keys out of `styles.library` if mounted elsewhere · verify locally: header th/en at 1040–1440, heart/card at 390, LINE above compare tray, Sheet focus trap/Esc, `pnpm e2e --grep "style library|header"`, `pnpm lhci`.
+
+### Stage B — visual polish pass (`/styles` + header)
+
+Gate: lint, typecheck, 1431 tests, build pass; no horizontal scroll at 390 px; header clearance measured 1040–1440 px th/en
+(0 bad). Screenshots: `docs/design/screenshots/stage-b/polish/{prototype,before,after}-{1054-light,1440-light,390-dark}.png`.
+Commits: `9ec48257` header · `5d0cb383` search · `b399bc8f` rail · `a6cc9869` card · `6c7bd7e0` filters · `8135c34d` LINE.
+1. Header: "เริ่มออกแบบฟรี" CTA now at every width ≥ 1040 (compact padding/gaps below 1184); current nav item has `aria-current` + tinted pill; cart badge was already there (not rendered with items — verify locally).
+2. Search: "ค้นหาด้วยคำ" tab as the prototype, 54 px box. Size tab, "ช่วยเลือกให้หน่อย" (no wizard route) and quick terms (none in UAT) stay hidden.
+3. Rail: one outline icon set (`category-icons.ts`, neutral default), names wrap, fade veil + arrow when it overflows.
+4. Card: no blank spec band, footer pinned, "ขอใบเสนอราคา" + sub-line on the price line, option-count chip restyled.
+5. Filters: "ล้างทั้งหมด" link beside "ตัวกรอง" when active, dividers/spacing/chevron as the prototype.
+6. LINE renders (env `NEXT_PUBLIC_LINE_OA_ID` set here), sits above the phone bottom nav. VAT switch hidden: API sends VAT-inclusive amounts only.
+Remaining differences: need DATA — prices ("เริ่มต้น ฿x"; UAT `startingPrice` null), spec row (size/MOQ/lead time not on the card DTO), VAT switch (ex-VAT figures), "ทำต่อจากครั้งก่อน", size search, quick terms. Design-language tests: flat veil (no gradient), `rounded-control` chips (no pills). Sidebar 15rem / 4 columns at 1440 (prototype's 264 px sidebar would give 3). Photos instead of drawings. Rows without option chips keep a two-line name gap (equal heights). Chips clip on 2-column phone cards. e2e header spec updated, not run.
