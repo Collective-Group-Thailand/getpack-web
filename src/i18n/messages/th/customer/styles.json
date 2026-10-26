@@ -765,6 +765,8 @@
     "searchShortcut": "กด / เพื่อค้นหา",
     "searchClear": "ล้างคำค้น",
     "quickSearch": "ค้นหาบ่อย:",
+    "searchTabWord": "ค้นหาด้วยคำ",
+    "searchMethods": "วิธีค้นหา",
     "categories": "หมวดบรรจุภัณฑ์",
     "allCategories": "ทั้งหมด",
     "categoryCount": "{count, plural, other {# แบบ}}",
