@@ -625,9 +625,9 @@
     "noInternationalName": "แสดงเมื่อทีมงานตรวจสอบแล้ว",
     "tolerances": "มาตรฐานความคลาดเคลื่อน",
     "tolerancesPending": "แสดงเมื่อคำนวณราคาได้",
-    "toleranceQuantity": "จำนวน: ขาดได้ {shortage} เกินได้ {overage}",
-    "toleranceDimensional": "ขนาด: ± {mm} มม.",
-    "toleranceColour": "สี: ΔE2000 ไม่เกิน {deltaE} เทียบกับแบบตัวอย่างที่อนุมัติ",
+    "toleranceQuantity": "ขาดได้ {shortage} เกินได้ {overage} ส่วนที่ขาดคืนเป็นเครดิต",
+    "toleranceDimensional": "± {mm} มม.",
+    "toleranceColour": "ΔE2000 ไม่เกิน {deltaE} เทียบกับแบบตัวอย่างที่อนุมัติ",
     "next": "ขั้นตอนต่อไป",
     "nextSteps": {
       "artwork": "ส่งไฟล์งานหรือออกแบบออนไลน์",
@@ -644,7 +644,18 @@
     "shareDraft": "แชร์ลิงก์การตั้งค่า",
     "draftKept": "เก็บร่างไว้ถึง {date}",
     "draftHint": "ร่างเก็บไว้ 90 วันหลังแก้ไขล่าสุด ลิงก์แชร์ใช้ได้ 15 วัน",
-    "pricedSpec": "สเปกที่ใช้คิดราคา"
+    "pricedSpec": "สเปกที่ใช้คิดราคา",
+    "cardTitle": "มาตรฐานงานและขั้นตอนต่อไป",
+    "standard": {
+      "quantity": "ขาดได้ 5% เกินได้ 5% ส่วนที่ขาดคืนเป็นเครดิต",
+      "size": "± 3 มม.",
+      "colour": "ΔE2000 ไม่เกิน 3 เทียบกับแบบตัวอย่างที่อนุมัติ"
+    },
+    "toleranceLabels": {
+      "quantity": "จำนวน",
+      "size": "ขนาด",
+      "colour": "สี"
+    }
   },
   "printProblem": {
     "intro": "ชุดการพิมพ์ที่เลือกยังสั่งไม่ได้",

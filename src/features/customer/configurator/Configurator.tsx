@@ -510,19 +510,8 @@ export function Configurator({
       case "summary":
         return (
           <SummaryStep
-            sections={steps
-              .filter((section) => section !== "summary")
-              .map((section) => ({
-                step: section,
-                label: t(`steps.${section}`),
-                summary: summaryOf(section),
-                status: ownStatusOf(section),
-              }))}
-            onEdit={(section) => scrollToStep(anchorOf(section))}
-            pattern={pattern}
             priced={priced}
-            pricedSpec={pricedSpec}
-            unit={unit}
+            pattern={pattern}
             draft={drafts.draft}
             draftBusy={drafts.busy}
             onDraft={drafts.run}
@@ -657,7 +646,7 @@ export function Configurator({
             key={step}
             id={anchorOf(step)}
             number={index + 1}
-            title={t(`steps.${step}`)}
+            title={step === "summary" ? t("summary.cardTitle") : t(`steps.${step}`)}
             hint={step === "summary" ? undefined : summaryOf(step)}
           >
             {/* Any press inside a step is the customer's answer, even the option already selected. */}
