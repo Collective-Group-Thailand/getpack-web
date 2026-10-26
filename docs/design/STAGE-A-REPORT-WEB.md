@@ -302,3 +302,25 @@ branches running locally to verify. Copied into this repo: `STAGE-A-REPORT-API.m
 - **Verify locally (both branches):** `/network` and home show no counts; style detail has no maker row; agent pages
   have no factory column; a call-off shows "รอยืนยัน"; claims never show a factory; an overdue order group shows
   "เลยกำหนดชำระ"; a real call-off response parses without `factory`/`buyUnitPrice`.
+
+### A1 — business · Phase 0 + 3b · PASS
+
+- `/network` rewritten as "มาตรฐานการผลิตของ getpack" (static: 4 quality steps, ± 3 มม. · ΔE2000 ≤ 3 · ± 5 %, what the
+  customer sees, FAQ + FAQPage/WebPage JSON-LD); now in sitemap and llms.txt; footer "มาตรฐานการผลิต" and a neutral
+  partner link. Network-stats keys removed. `docs/design/business-redesign/PLAN.md` written.
+- **Sweep of all customer text** (th + en: account, agent, configurator, fulfilment, help, home, liff, my-orders,
+  pages, quote-requests, styles, storefront, `common/status` "จัดส่งออกแล้ว"/"Dispatched", `callOff.declined`) — no
+  "โรงงาน"/factory wording left in customer message files except `/partner-with-us` (allow-list: `pages.json` `partner.*`).
+  New guard test `src/i18n/customer-wording.test.ts`. Message **keys/identifiers** that still say `factory` were kept
+  (values are neutral); admin/partner zones untouched.
+- Screenshots (no horizontal scroll at 390): `A1-network-{390,1440,1440-dark}`, `A1-network-en-*`, `A1-home-*`.
+- Gate: lint, typecheck, full tests, build pass. Changed e2e specs (trust, home, configurator-v2, fulfilment, samples,
+  integration/trust) were **not run**.
+- **Verify locally (both branches):** `/network` th/en incl. FAQ; `/network` in `/sitemap.xml` + `/llms.txt`;
+  `GET /bff/v1/store/network/stats` → 404; order timeline shows "จัดส่งออกแล้ว" and no origin location; agent pages
+  say "พาร์ทเนอร์ผลิต"; run `pnpm e2e` for the edited specs.
+- **Open:** legal wording for terms §9 / privacy §3 ("ผู้ผลิตที่ดำเนินการผลิต" vs PDPA recipient disclosure) · keep
+  the agent factory-referral programme (renamed) or hide it · file-deletion claim on `/network` follows DECISIONS §1
+  but is not shipped yet · tolerances hard-coded from GLOBAL-RULES §6 (move to settings later) · contact data
+  (`public-config.contact`) null, nothing invented · gaps: company catalogue, ticket lookup, callback, partner
+  application, ERP status flags.

@@ -42,10 +42,10 @@
     "company": {
       "heading": "getpack",
       "about": "About getpack",
-      "partner": "Become a partner factory",
+      "partner": "For manufacturers · become a production partner",
       "contact": "Contact us",
       "guarantee": "Our guarantee",
-      "network": "Factory network",
+      "network": "Production standard",
       "reviews": "Customer reviews"
     },
     "legal": {
@@ -144,24 +144,94 @@
       "link": "Our guarantee"
     },
     "network": {
-      "title": "getpack's factory network",
-      "intro": "Your boxes are made by audited partner factories. We do not name them; we publish how they are audited and how the network performs",
-      "emptyTitle": "No network figures yet",
-      "emptyBody": "They will show here when ready",
-      "figuresTitle": "How the network performs",
-      "partners": "Active partner factories",
-      "onTime": "Shipped on time",
-      "firstPass": "Passed QC first time",
-      "pct": "{value, number}%",
-      "window": "Last {days, number} days, as of {date}",
-      "notYet": "Figures not published yet",
-      "notYetBody": "We publish them once at least {factories, number} factories and {jobs, number} completed jobs are in the last {days, number} days, so the figures mean something",
-      "auditTitle": "How factories are audited",
-      "coverageTitle": "What the network makes",
-      "available": "available",
-      "notAvailable": "not yet",
-      "coverageItem": "{name} · {state}",
-      "link": "Factory network"
+      "title": "getpack's production standard",
+      "intro": "Every job ordered through getpack meets the same production standard, from the file check to the final check before dispatch, and getpack is the seller responsible to you throughout.",
+      "link": "Production standard",
+      "quality": {
+        "title": "Four steps of quality control",
+        "steps": {
+          "files": {
+            "title": "File and spec check",
+            "body": "Our team checks the file, size, material and spec before production starts. If something needs fixing, we tell you before production starts."
+          },
+          "during": {
+            "title": "Checks during production",
+            "body": "The job is checked during production against the proof and spec you approved."
+          },
+          "final": {
+            "title": "Check before dispatch",
+            "body": "Size, colour and quantity are checked against the criteria below before the job is packed and dispatched."
+          },
+          "secrecy": {
+            "title": "Confidentiality",
+            "body": "Your files and details are used only to make your job. They are not published or used for any other job."
+          }
+        }
+      },
+      "criteria": {
+        "title": "Inspection criteria",
+        "items": {
+          "size": {
+            "label": "Size",
+            "value": "± 3 mm",
+            "note": "Against the size stated in your order"
+          },
+          "colour": {
+            "label": "Colour",
+            "value": "ΔE2000 ≤ 3",
+            "note": "Against the sample you approved"
+          },
+          "quantity": {
+            "label": "Quantity",
+            "value": "± 5%",
+            "note": "Any shortfall is refunded as credit"
+          }
+        }
+      },
+      "visible": {
+        "title": "What you see",
+        "items": {
+          "proof": {
+            "title": "Proof to approve",
+            "body": "Review and approve the proof before production starts"
+          },
+          "status": {
+            "title": "Status",
+            "body": "Follow your order at every step"
+          },
+          "inspection": {
+            "title": "Inspection results",
+            "body": "See the quality inspection results for your job"
+          },
+          "guarantee": {
+            "title": "Job guarantee",
+            "body": "Raise a claim under the guarantee terms"
+          }
+        }
+      },
+      "faq": {
+        "title": "Frequently asked questions",
+        "items": {
+          "responsible": {
+            "question": "Who is responsible for my job?",
+            "answer": "getpack is the seller and is responsible for your job from order to delivery. If anything goes wrong, you deal with us only."
+          },
+          "files": {
+            "question": "Are my files safe?",
+            "answer": "Your files and details are used only to make your job, and you can ask for your files to be deleted at any time."
+          },
+          "mismatch": {
+            "question": "What if the job does not meet the standard?",
+            "answer": "Raise a claim under the guarantee terms. We review it and act as set out on the guarantee page.",
+            "link": "See the guarantee"
+          },
+          "range": {
+            "question": "What can I order?",
+            "answer": "See everything on the products page. Some items show an instant price; others you request a quotation for.",
+            "link": "See all products"
+          }
+        }
+      }
     },
     "reviews": {
       "title": "Customer reviews",

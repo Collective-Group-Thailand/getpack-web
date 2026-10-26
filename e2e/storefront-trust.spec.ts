@@ -32,14 +32,12 @@ test("the guarantee: time limits and the remedies matrix as getpack-api publishe
   await expectNoViolations(page);
 });
 
-test("the network: figures held back until enough factories and jobs, the audit and the coverage", async ({ page }) => {
+test("the network page: getpack's production standard, with no factory wording", async ({ page }) => {
   await gotoHydrated(page, `${HOSTS.customer}/network`);
-  await expect(page.getByRole("main")).toMatchAriaSnapshot(`
-    - heading "ผลงานโดยรวม" [level=2]
-    - paragraph: ยังไม่เผยแพร่ตัวเลข
-  `);
-  await expect(page.getByText(/อย่างน้อย 3 แห่ง และงานที่เสร็จอย่างน้อย 30 งาน/)).toBeVisible();
-  await expect(page.getByRole("heading", { name: "เกณฑ์ตรวจโรงงาน" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "มาตรฐานการผลิตของ getpack" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ควบคุมคุณภาพ 4 ขั้น" })).toBeVisible();
+  await expect(page.getByText("ΔE2000 ≤ 3")).toBeVisible();
+  await expect(page.getByRole("main")).not.toContainText(/โรงงาน|ยังไม่เผยแพร่ตัวเลข|อย่างน้อย 3 แห่ง/);
   await expectNoViolations(page);
 });
 

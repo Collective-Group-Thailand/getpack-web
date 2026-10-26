@@ -38,7 +38,7 @@
     "how3": "Customers order and pay in getpack themselves; prices and terms are what getpack shows",
     "how4": "Each month's commission is summed up early the next month and paid within {days} days of approval",
     "joinTitle": "Become a getpack sales agent",
-    "joinIntro": "Introduce customers and factories to getpack and earn on every order of the customers you bring.",
+    "joinIntro": "Introduce customers and production partners to getpack and earn on every order of the customers you bring.",
     "offer": "Standard commission",
     "applied": "Application sent on {date}",
     "appliedBody": "Sales will check your documents and get back to you. Once approved, your agent code appears here.",
@@ -127,7 +127,7 @@
     "repeat": "Later orders: {pct}% for {months} months from the day the customer was linked to you",
     "cap": "Never more than {pct}% of that order's margin",
     "minBase": "Orders below {amount} earn nothing",
-    "bounty": "Refer a factory: {amount} once it is active and has completed {jobs} jobs within {days} days",
+    "bounty": "Refer a production partner: {amount} once it is active and has completed {jobs} jobs within {days} days",
     "when": "Earned once the order is complete, past the claim window and fully paid; refunds take back their share"
   },
   "pagination": {
@@ -159,12 +159,12 @@
   },
   "leads": {
     "title": "Leads",
-    "intro": "Register the customers or factories you are talking to; protected for {days} days, no other agent can register them",
+    "intro": "Register the customers or production partners you are talking to; protected for {days} days, no other agent can register them",
     "empty": "No leads yet",
     "emptyHint": "Register before you meet; when they sign up with the same phone, e-mail or tax id they are linked to you",
     "kinds": {
       "customer": "Customer",
-      "factory": "Factory"
+      "factory": "Production partner"
     },
     "protectedUntil": "Protected until {date}",
     "convertedAt": "Signed up on {date}",
@@ -176,12 +176,12 @@
     "kind": "Kind",
     "contactName": "Contact name",
     "contactNameExample": "e.g. Manee Jaidee",
-    "factoryName": "Factory name",
+    "factoryName": "Production partner name",
     "organisation": "Shop or company",
     "phone": "Phone",
     "email": "E-mail",
-    "taxId": "Tax id (company / factory)",
-    "taxIdHint": "13 digits; links them when they apply as a company or factory",
+    "taxId": "Tax id (company / production partner)",
+    "taxIdHint": "13 digits; links them when they apply as a company or production partner",
     "note": "Note",
     "noteExample": "e.g. interested in 1,000 bakery boxes a month",
     "consent": "The lead agreed to be contacted by getpack",
@@ -203,7 +203,7 @@
     "emptyHint": "Orders of customers linked to you show here once they complete",
     "kinds": {
       "order": "Order",
-      "factory_bounty": "Factory referral",
+      "factory_bounty": "Production partner referral",
       "adjustment": "Adjustment",
       "reversal": "Taken back (refund)"
     },

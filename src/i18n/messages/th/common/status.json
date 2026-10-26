@@ -331,7 +331,7 @@
   "shipment": {
     "draft": "ร่างรอบส่ง",
     "ready": "พร้อมส่ง",
-    "pickedUp": "ออกจากโรงงานแล้ว",
+    "pickedUp": "จัดส่งออกแล้ว",
     "inTransit": "กำลังส่ง",
     "outForDelivery": "กำลังนำส่ง",
     "delivered": "ส่งถึงแล้ว",
@@ -785,7 +785,7 @@
     "pendingFactory": "รอโรงงานตอบรับ",
     "pendingConfirmation": "รอยืนยัน",
     "active": "ใช้งานได้",
-    "declined": "โรงงานไม่รับ",
+    "declined": "ไม่สามารถรับได้",
     "cancelled": "ยกเลิก",
     "expired": "หมดอายุ"
   },
