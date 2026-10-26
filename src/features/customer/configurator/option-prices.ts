@@ -123,6 +123,14 @@ function printFamily(configurator: Configurator, state: ConfiguratorState, kind:
   };
 }
 
+/** The key of the print card for a side holding `ids` (what the batch answers under), as `printFamily` keys it. */
+export function printCardKey(configurator: Configurator, kind: PrintKind, ids: string[]): string | null {
+  if (!isCorrugate(configurator)) return null;
+  const side = sideModelOf(configurator, kind);
+  if (side) return printKey(kind, choiceOf(side, ids));
+  return printKey(kind, ids[0] ? inkChoice(ids[0]) : NO_MODEL_NONE);
+}
+
 export interface VariantPlan {
   /** The key of the variant that IS the current state; the others are compared with it. */
   baselineKey: string;
