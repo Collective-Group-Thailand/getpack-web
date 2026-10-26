@@ -805,7 +805,7 @@
     "title": "Real size in AR",
     "body": "Place the box in your room at its real size, on a phone that supports AR",
     "alt": "The {name} box, {size} mm",
-    "size": "Closed box: {size} mm (width × height × depth)",
+    "size": "Closed box: {size} mm (length × width × height)",
     "open": "Place it in my room",
     "noAr": "This device cannot open AR",
     "noArBody": "Open this page on a phone, or download the 3D file for an app that supports it",

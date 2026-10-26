@@ -20,6 +20,8 @@ export interface SummaryStepProps {
   pattern: Pattern | null;
   /** The priced step for the quantity on screen, when there is one. */
   priced: PriceStep | null;
+  /** The spec the price is for, as the API words it (`QuoteCalculationDto.specLabel`), already in the reader's language. */
+  pricedSpec?: string | null;
   unit: string;
   draft: Draft | null;
   draftBusy: "save" | "share" | null;
@@ -32,7 +34,7 @@ export interface SummaryStepProps {
  * tolerances the order is made to (D-186, D-163) and what happens next and when — every date and
  * figure the API's. A configuration can be kept as a draft and shared by link (D-185).
  */
-export function SummaryStep({ sections, onEdit, pattern, priced, unit, draft, draftBusy, onDraft }: SummaryStepProps) {
+export function SummaryStep({ sections, onEdit, pattern, priced, pricedSpec, unit, draft, draftBusy, onDraft }: SummaryStepProps) {
   const t = useTranslations("configurator.summary");
   const format = useFormat();
   const answered = sections.filter((section) => section.status === "complete").length;
@@ -64,6 +66,13 @@ export function SummaryStep({ sections, onEdit, pattern, priced, unit, draft, dr
           <p className="text-muted text-xs">{t("missingFields", { count: draft.missingFields.length })}</p>
         ) : null}
       </div>
+
+      {pricedSpec ? (
+        <div>
+          <p className="text-sm font-medium">{t("pricedSpec")}</p>
+          <p className="text-muted text-sm break-words">{pricedSpec}</p>
+        </div>
+      ) : null}
 
       <ul className="divide-border flex flex-col divide-y">
         {sections.map((section) => (

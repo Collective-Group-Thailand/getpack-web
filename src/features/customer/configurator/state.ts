@@ -184,6 +184,21 @@ export function defaultStandardSizeOf(configurator: Configurator) {
   return configurator.standardSizes.find((size) => size.isDefault) ?? configurator.standardSizes[0] ?? null;
 }
 
+/**
+ * The outside inks of the API's default spec (D-441), for a product whose configurator has no
+ * `printModel` yet: the first part's `printFront`, or `null` when the spec does not say.
+ */
+function defaultSpecInks(configurator: Configurator): string[] | null {
+  const parts = configurator.defaultSpec?.configuration["parts"];
+  const front = Array.isArray(parts) ? (parts[0] as { printFront?: unknown } | undefined)?.printFront : undefined;
+  if (!Array.isArray(front)) return null;
+  const offered = new Set(optionsById(configurator).keys());
+  return front.flatMap((entry) => {
+    const id = (entry as { inkColourId?: unknown } | null)?.inkColourId;
+    return typeof id === "string" && offered.has(id) ? [id] : [];
+  });
+}
+
 export const NO_DIMS: Record<Axis, number | null> = { l: null, w: null, d: null, b: null, s: null, cs: null };
 
 /**
@@ -205,7 +220,9 @@ export function initialState(configurator: Configurator, seed: Partial<Configura
       // none unless the default spec prints it). Without a model: one ink outside, nothing inside.
       choices[group.kind] =
         startIds(configurator, group.kind) ??
-        (group.kind === "print_front" ? normaliseSingleInk(optionsById(configurator), defaults) : []);
+        (group.kind === "print_front"
+          ? normaliseSingleInk(optionsById(configurator), defaultSpecInks(configurator) ?? defaults)
+          : []);
     }
   }
   const bases = basesOf(configurator);
