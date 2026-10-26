@@ -38,12 +38,13 @@ beforeEach(() => {
 afterEach(cleanup);
 vi.setConfig({ testTimeout: 30_000 });
 
-async function open() {
+async function open(change: (configurator: ConfiguratorData) => void = () => {}) {
   const api = createApiClient({ baseUrl: "http://api.test" });
   const { data } = await api.GET("/v1/store/catalog/products/{slug}/configurator", {
     params: { path: { slug: "shipping-box" } },
   });
   const configurator = data as ConfiguratorData;
+  change(configurator);
   const messages = await loadAllMessages("th");
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
@@ -152,7 +153,9 @@ describe("size cards", () => {
       await waitFor(() => expect(mockBatch.requests).toHaveLength(1), { timeout: 5000 });
       await waitFor(() => expect(dockPrice()).toMatch(/^฿\d/));
       for (const slot of document.querySelectorAll<HTMLElement>("[data-price-slot]")) {
-        expect(slot.textContent).toBe("");
+        // No figure at all (the selected card may still say "เลือกอยู่": that is not a price).
+        expect(slot.textContent).not.toMatch(/฿|ขอใบเสนอราคา/);
+        expect(slot.hasAttribute("data-option-price")).toBe(false);
         // The slot is still there, with its height: nothing moves when a price is missing.
         expect(slot.className).toContain("min-h-5");
       }
@@ -183,5 +186,56 @@ describe("size cards", () => {
     await settled(1);
     for (const className of heights()) expect(className).toContain("min-h-5");
     expect(document.body.textContent).not.toMatch(/\bconfigurator\.[a-z]+\.[a-zA-Z.]+/);
+  });
+});
+
+describe("material cards", () => {
+  const materialCard = (name: RegExp) => screen.findByRole("radio", { name });
+
+  it("shows every material with its one line, the default marked, the selected one as เลือกอยู่ and the others' change", async () => {
+    await open();
+    await settled(1);
+    const bc = await materialCard(/ลอน BC/);
+    expect(bc).toBeChecked();
+    expect(bc.textContent).toContain("ค่าเริ่มต้น");
+    expect(slotOf(bc).textContent).toBe("เลือกอยู่");
+    expect(bc.textContent).toContain("5 ชั้น แข็งแรงมาก สำหรับสินค้าหนัก");
+    const e = await materialCard(/ลอน E/);
+    expect(e.textContent).not.toContain("ค่าเริ่มต้น");
+    // The sign comes from the API's string: "+฿x" or "−฿x" (never computed here).
+    expect(slotOf(e).textContent).toMatch(/^[+\u2212]฿\d+\.\d{2}$/);
+  });
+
+  it("selecting a material through its card gives the summary the unit price the card carried, and touches no other step", async () => {
+    const user = userEvent.setup();
+    await open();
+    await settled(1);
+    const e = await materialCard(/ลอน E/);
+    const shown = slotOf(e).getAttribute("data-option-price")!;
+    const change = slotOf(e).textContent!;
+    const before = otherSteps(/วัสดุ/);
+
+    await user.click(e);
+    await waitFor(() => expect(dockPrice()).toBe(`฿${shown}`));
+    expect(otherSteps(/วัสดุ/)).toEqual(before);
+    await settled(2);
+    expect(slotOf(await materialCard(/ลอน E/)).textContent).toBe("เลือกอยู่");
+    // The material left is now the one that differs, in the opposite direction by the same amount.
+    const back = slotOf(await materialCard(/ลอน BC/)).textContent!;
+    expect(back.slice(1)).toBe(change.slice(1));
+    expect(back[0]).not.toBe(change[0]);
+  });
+
+  it("shows no line for a material with no description, and never one invented", async () => {
+    await open((configurator) => {
+      const bare = configurator.optionGroups.find((group) => group.kind === "material")!.options[1]!;
+      bare.descriptionTh = null;
+      bare.descriptionEn = null;
+    });
+    await settled(1);
+    const e = await materialCard(/ลอน E/);
+    expect(e.textContent).not.toContain("3 ชั้น น้ำหนักเบา");
+    const withLine = await materialCard(/ลอน B \(/);
+    expect(withLine.textContent).toContain("3 ชั้น น้ำหนักเบา");
   });
 });
