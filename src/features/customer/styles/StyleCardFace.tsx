@@ -1,5 +1,6 @@
 import type { StyleCard } from "@/features/customer/catalog/api.server";
 import { storeImageSrc } from "@/features/customer/catalog/images";
+import { displayPrice, figuresOf } from "@/features/shared/format/price";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
 import { ProductCard } from "@/ui/components/ProductCard";
@@ -20,6 +21,8 @@ export interface StyleCardWords {
   price?: string;
   /** "ที่ 1,000 ใบ" — the quantity that price assumes. */
   priceQuantity?: string;
+  /** "รวม VAT" — printed with every price (the API's figures are VAT-inclusive, D-220). */
+  priceVat?: string;
   /** "เริ่มต้น", the label over the price. */
   priceLabel: string;
   /** "ขอใบเสนอราคา" and its hint, for a style priced by quotation. */
@@ -138,8 +141,10 @@ export function StyleCardFace({
             <p className="min-w-[7.5rem] flex-1 leading-tight">
               <span className="text-muted block text-[0.6875rem]">{words.priceLabel}</span>
               <span className="text-instant-subtle-fg block text-sm font-semibold tabular-nums">{words.price}</span>
-              {words.priceQuantity ? (
-                <span className="text-muted block text-[0.6875rem] tabular-nums">{words.priceQuantity}</span>
+              {words.priceQuantity || words.priceVat ? (
+                <span className="text-muted block text-[0.6875rem] tabular-nums">
+                  {[words.priceQuantity, words.priceVat].filter(Boolean).join(" · ")}
+                </span>
               ) : null}
             </p>
           ) : (
@@ -164,12 +169,16 @@ export function cardWords(
 ): StyleCardWords {
   const name = locale === "en" ? style.nameEn || style.nameTh : style.nameTh || style.nameEn;
   const chips = topicsOf(style.options ?? []).map((topic) => t(`topics.${topic.id}.chip`));
+  // The one shared helper formats and labels the API's figure; it is VAT-inclusive today, so that is what it says.
+  const shown = displayPrice(figuresOf(style.startingPrice?.unitPrice), "incl", format.thb, {
+    incl: t("library.vatLabelIncl"),
+    excl: t("library.vatLabelExcl"),
+  });
   return {
     name,
     category: t.has(`categories.${style.category}`) ? t(`categories.${style.category}`) : style.category,
-    price: style.startingPrice
-      ? t("library.cardPrice", { price: format.thb(style.startingPrice.unitPrice) })
-      : undefined,
+    price: shown ? t("library.cardPrice", { price: shown.amount }) : undefined,
+    priceVat: shown?.vatLabel,
     priceQuantity: style.startingPrice
       ? t("library.cardAtQuantity", { quantity: format.number(style.startingPrice.quantity) })
       : undefined,

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { displayPrice, figuresOf } from "@/features/shared/format/price";
 import { getFormat } from "@/features/shared/format/server";
 import { SpecLabelLine } from "@/features/shared/spec-label";
 import type { Schemas } from "@/lib/api/types";
@@ -39,7 +40,12 @@ export async function cardFacts(card: Facts) {
   const campaign = card.campaignBadge;
   // UX audit, product card: the price bold in brand colour with the reference price struck through
   // on the same line, then one caption line — the quantity it assumes, the MOQ, the lead time.
-  const amount = card.startingPricePerPiece ? format.thb(card.startingPricePerPiece) : null;
+  // Per piece incl. VAT (D-220): the shared helper formats and labels it — "รวม VAT" beside the figure.
+  const shown = displayPrice(figuresOf(card.startingPricePerPiece), "incl", format.thb, {
+    incl: t("price.vatIncluded"),
+    excl: t("price.vatExcluded"),
+  });
+  const amount = shown?.amount ?? null;
   return {
     price: amount ? (
       <>
@@ -47,6 +53,7 @@ export async function cardFacts(card: Facts) {
           <span className="text-muted text-sm">{t("price.fromLabel")}</span>
           <span className="serif text-primary text-xl tabular-nums">{amount}</span>
           <span className="text-muted text-sm">{t("price.perPiece")}</span>
+          <span className="text-muted text-xs">{shown?.vatLabel}</span>
           {campaign && card.referencePrice ? (
             <s
               className="text-muted ms-1 text-sm"
