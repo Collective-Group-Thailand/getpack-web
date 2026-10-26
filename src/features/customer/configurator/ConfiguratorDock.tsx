@@ -39,6 +39,8 @@ export interface ConfiguratorDockProps {
   refusal?: string[] | null;
   onRetry: () => void;
   onAction: (action: QuoteAction) => void;
+  /** A link of the summary followed (analytics): the quotation form, the Studio, the LINE chat. */
+  onLink?: (link: "rfq" | "studio" | "line") => void;
   busy: QuoteAction | null;
   lastQuote: KeptQuote | null;
   /** Where to ask for a quote instead, with the configuration carried along. */
@@ -83,6 +85,7 @@ export function ConfiguratorDock({
   refusal,
   onRetry,
   onAction,
+  onLink,
   busy,
   lastQuote,
   rfqHref,
@@ -194,7 +197,9 @@ export function ConfiguratorDock({
     )
   ) : (
     <Button block asChild variant={noPrice || !configurator.instant ? "primary" : "secondary"}>
-      <Link href={rfqHref}>{tActions("requestQuote")}</Link>
+      <Link href={rfqHref} onClick={() => onLink?.("rfq")}>
+        {tActions("requestQuote")}
+      </Link>
     </Button>
   );
 
@@ -225,7 +230,9 @@ export function ConfiguratorDock({
       ) : null}
       {priced && designHref ? (
         <Button block size="sm" variant="ghost" asChild iconStart="palette">
-          <Link href={designHref}>{tActions("designNow")}</Link>
+          <Link href={designHref} onClick={() => onLink?.("studio")}>
+            {tActions("designNow")}
+          </Link>
         </Button>
       ) : null}
       {priced ? (
@@ -242,7 +249,7 @@ export function ConfiguratorDock({
       ) : null}
       {lineHref ? (
         <Button block size="sm" variant="ghost" asChild iconStart="chat">
-          <a href={lineHref} target="_blank" rel="noopener noreferrer">
+          <a href={lineHref} target="_blank" rel="noopener noreferrer" onClick={() => onLink?.("line")}>
             {tActions("askCs")}
           </a>
         </Button>
