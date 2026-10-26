@@ -76,9 +76,27 @@ export function LibrarySearch({
   };
 
   return (
-    <div className="flex min-w-0 flex-col gap-2">
+    <div className="flex min-w-0 flex-col">
+      {/*
+        The method tabs (prototype `.stabs`). One method exists today — by word. "By size" waits for
+        size data and "help me choose" for a page to go to, so neither is drawn.
+      */}
+      <div role="tablist" aria-label={t("searchMethods")} className="mb-2.5 flex gap-1">
+        <button
+          type="button"
+          role="tab"
+          id="styles-tab-word"
+          aria-selected="true"
+          aria-controls="styles-pane-word"
+          className="bg-surface text-fg ring-border focus-visible:ring-focus-ring rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm ring-1 outline-none focus-visible:ring-2"
+        >
+          {t("searchTabWord")}
+        </button>
+      </div>
       <form
         role="search"
+        id="styles-pane-word"
+        aria-labelledby="styles-tab-word"
         action={action}
         onSubmit={(event) => {
           event.preventDefault();
@@ -114,7 +132,7 @@ export function LibrarySearch({
             timer.current = setTimeout(() => search(next), DEBOUNCE_MS);
           }}
           className={cn(
-            "border-border bg-surface text-fg placeholder:text-subtle rounded-card h-14 w-full border ps-12 pe-14 text-base shadow-sm outline-none",
+            "border-border bg-surface text-fg placeholder:text-subtle h-13.5 w-full rounded-card border ps-12 pe-14 text-base shadow-sm outline-none",
             "focus-visible:border-primary focus-visible:ring-focus-ring focus-visible:ring-2",
             "[&::-webkit-search-cancel-button]:hidden",
           )}
@@ -143,7 +161,7 @@ export function LibrarySearch({
         </span>
       </form>
       {quickTerms.length ? (
-        <p className="text-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+        <p className="text-muted mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[0.8125rem]">
           <span>{t("quickSearch")}</span>
           {quickTerms.map((term) => (
             <button

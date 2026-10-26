@@ -765,6 +765,8 @@
     "searchShortcut": "Press / to search",
     "searchClear": "Clear search",
     "quickSearch": "Popular:",
+    "searchTabWord": "Search by word",
+    "searchMethods": "Search method",
     "categories": "Packaging types",
     "allCategories": "All",
     "categoryCount": "{count, plural, one {# style} other {# styles}}",

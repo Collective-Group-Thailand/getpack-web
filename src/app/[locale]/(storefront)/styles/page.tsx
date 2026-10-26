@@ -142,7 +142,7 @@ export default async function StylesPage({
   }));
 
   const head = (
-    <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:items-end">
+    <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,35rem)] lg:gap-x-12 lg:items-end">
       <div>
         <h1 className="text-3xl leading-tight font-bold md:text-[2.5rem]">{t("list.heading")}</h1>
         <p className="text-muted mt-2 max-w-2xl">
@@ -312,7 +312,7 @@ export default async function StylesPage({
 
         <div className="mt-8 grid gap-x-6 gap-y-8 min-[65rem]:grid-cols-[15rem_minmax(0,1fr)]">
           <aside className="hidden min-w-0 min-[65rem]:block" aria-labelledby="library-filters">
-            <div className="mb-4 flex items-center justify-between gap-2">
+            <div className="mb-3 flex items-center justify-between gap-2">
               <h2 id="library-filters" className="text-base font-semibold">
                 {t("library.filters")}
               </h2>
