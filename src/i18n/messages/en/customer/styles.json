@@ -766,6 +766,8 @@
     "searchClear": "Clear search",
     "quickSearch": "Popular:",
     "searchTabWord": "Search by word",
+    "railPrevious": "Show earlier categories",
+    "railNext": "Show more categories",
     "searchMethods": "Search method",
     "categories": "Packaging types",
     "allCategories": "All",

@@ -766,6 +766,8 @@
     "searchClear": "ล้างคำค้น",
     "quickSearch": "ค้นหาบ่อย:",
     "searchTabWord": "ค้นหาด้วยคำ",
+    "railPrevious": "เลื่อนดูหมวดก่อนหน้า",
+    "railNext": "เลื่อนดูหมวดถัดไป",
     "searchMethods": "วิธีค้นหา",
     "categories": "หมวดบรรจุภัณฑ์",
     "allCategories": "ทั้งหมด",
