@@ -32,6 +32,7 @@ import {
   FACET_KEYS,
   isFiltered,
   listHref,
+  PAGE_SIZE,
   readParams,
   SORTS,
   toggleValue,
@@ -58,8 +59,6 @@ import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 
-const PER_PAGE = 24;
-
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 /**
@@ -68,7 +67,12 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  */
 function landingOf(params: ListParams): string | null {
   const [useCase, ...more] = params.useCase;
-  const others = FACET_KEYS.some((k) => k !== "useCase" && params[k].length) || params.pricePath || params.q;
+  const others =
+    FACET_KEYS.some((k) => k !== "useCase" && params[k].length) ||
+    params.eco.length ||
+    params.pricePath ||
+    params.q ||
+    params.size;
   return useCase && more.length === 0 && !others && !params.category && isUseCase(useCase)
     ? forUseCaseHref(useCase)
     : null;
@@ -120,7 +124,7 @@ export default async function StylesPage({
   const [t, list, jar, origin, format, totals, settings, support] = await Promise.all([
     getTranslations("styles"),
     // The variants grid reads its own page; the styles list then is not needed.
-    variantsView ? null : listStyles(toQuery(query, PER_PAGE)),
+    variantsView ? null : listStyles(toQuery(query, PAGE_SIZE * (query.page ?? 1))),
     cookies(),
     publicOrigin(),
     getFormat(),
@@ -171,7 +175,7 @@ export default async function StylesPage({
     );
 
   const signedIn = Boolean(readAccessToken(jar));
-  const here = listHref(query);
+  const here = listHref(query, { page: query.page });
   const signInHref = `/sign-in?returnTo=${encodeURIComponent(here)}`;
   const tree = await getCatalogueTree();
   const filtered = isFiltered(query) || !!query.category;
@@ -364,7 +368,7 @@ export default async function StylesPage({
                 key={here}
                 initial={cards}
                 nextCursor={list.meta.nextCursor}
-                query={toQuery(query, PER_PAGE)}
+                query={toQuery(query, PAGE_SIZE)}
                 total={total}
                 signedIn={signedIn}
                 signInHref={signInHref}

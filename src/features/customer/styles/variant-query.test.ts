@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { readVariantParams, toVariantQuery, variantsHref } from "./variant-query";
+import { isVariantsView, readVariantParams, toVariantQuery, variantsHref } from "./variant-query";
 
 describe("the variants grid's URL (D-410)", () => {
   it("keeps valid options, repeated or comma-separated, and drops the rest", () => {
@@ -24,5 +24,12 @@ describe("the variants grid's URL (D-410)", () => {
       "/styles?view=variants&option=hang%3Aeuro_slot&option=window%3Afront_window",
     );
     expect(variantsHref(params, { toggle: "window:front_window" })).toBe("/styles?view=variants");
+  });
+
+  it("reads view=all as the variants view (ruling C6); any other view is the styles list", () => {
+    expect(isVariantsView({ view: "variants" })).toBe(true);
+    expect(isVariantsView({ view: "all" })).toBe(true);
+    expect(isVariantsView({ view: ["all", "styles"] })).toBe(true);
+    for (const view of [undefined, "", "styles", "grid", "ALL "]) expect(isVariantsView({ view })).toBe(false);
   });
 });
