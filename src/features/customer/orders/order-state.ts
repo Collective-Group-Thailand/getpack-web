@@ -5,7 +5,7 @@ type Order = Schemas["OrderDto"];
 /** The fields of an order this module reads — so a list row, a detail and a test can all pass one. */
 export type OrderStateInput = Pick<
   Order,
-  "customerStatus" | "artworkStatus" | "artworkOwner" | "deliveryDateBasis" | "payment" | "receipt" | "openClaims"
+  "customerStatus" | "artworkStatus" | "artworkOwner" | "artworkNoteTh" | "deliveryDateBasis" | "payment" | "receipt" | "openClaims"
 >;
 
 /** What the customer is told about the artwork step, when the step has a plain next step to explain (D-438). */
@@ -20,6 +20,15 @@ export function artworkNoteOf(order: Pick<OrderStateInput, "artworkStatus" | "ar
   if (order.artworkOwner === "team" && order.artworkStatus === "awaiting_template") return "team_dieline";
   if (order.artworkOwner === "customer" && order.artworkStatus === "awaiting_upload") return "customer_upload";
   return null;
+}
+
+/**
+ * The API's own sentence under the artwork status ("ไฟล์ได้รับแล้ว ทีมงานจะตรวจหลังชำระเงิน"). The
+ * contract has Thai only, so other languages show nothing rather than an invented translation; an
+ * older API without the field reads as null.
+ */
+export function artworkNoteTextOf(locale: string, order: { artworkNoteTh?: string | null }): string | null {
+  return locale === "th" && order.artworkNoteTh ? order.artworkNoteTh : null;
 }
 
 /** An unpaid order's dates are the plan made at placement and may be in the past: the API says so (D-439). */

@@ -58,7 +58,11 @@ export default function ARView({ input, name, onClose }: { input: BoxModelInput;
   }, [model]);
 
   const file = (name.replace(/[\\/:*?"<>|]+/g, "_").trim() || "box").slice(0, 60);
-  const size = typeof model === "object" && model ? model.sizeMm.map((n) => formatNumber(n, locale)).join(" × ") : "";
+  // The model's x, y, z are the box's length, height and width; shown ยาว × กว้าง × สูง.
+  const size =
+    typeof model === "object" && model
+      ? [model.sizeMm[0], model.sizeMm[2], model.sizeMm[1]].map((n) => formatNumber(n, locale)).join(" × ")
+      : "";
 
   return (
     <Dialog

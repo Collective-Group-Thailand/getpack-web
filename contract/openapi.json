@@ -3675,6 +3675,17 @@
           "type": "https://errors.getpack/pricing.not_instant"
         }
       },
+      "problem.pricing.print_combination_invalid": {
+        "summary": "pricing.print_combination_invalid",
+        "value": {
+          "code": "pricing.print_combination_invalid",
+          "detail": "แต่ละด้านเลือกได้หนึ่งแบบ: ไม่พิมพ์ สีพิเศษ หรือพิมพ์ 4 สี (CMYK) ตามที่สินค้านี้เปิดให้เลือก",
+          "requestId": "6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e",
+          "status": 422,
+          "title": "เลือกการพิมพ์ไม่ถูกต้อง",
+          "type": "https://errors.getpack/pricing.print_combination_invalid"
+        }
+      },
       "problem.pricing.vat_rate_missing": {
         "summary": "pricing.vat_rate_missing",
         "value": {
@@ -9899,6 +9910,14 @@
             "description": "Who acts next on the order (D-438): `team`, `customer`, or null when nothing is left to do",
             "example": "customer"
           },
+          "artworkNoteTh": {
+            "description": "The artwork next step to show the customer (B-API-4b, DECISIONS-STAGE-A §7): \"ไฟล์ได้รับแล้ว ทีมงานจะตรวจหลังชำระเงิน\" while a file sent before payment waits for it (Prepress reviews paid orders only); null otherwise",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "artworkOwner": {
             "anyOf": [
               {
@@ -10180,6 +10199,7 @@
           "artworkStatusLabelTh",
           "artworkStatusLabelAdminTh",
           "artworkOwner",
+          "artworkNoteTh",
           "productTypeCode",
           "summary",
           "quoteId",
@@ -23230,6 +23250,18 @@
             },
             "type": "array"
           },
+          "printModel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrintModelDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "D-443: the per-side print model (outside / inside) the configurator offers and `store.quotes.calculate` enforces; set through `PUT …/print-model`; null = not configured",
+            "example": null
+          },
           "productTypeId": {
             "example": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
             "format": "uuid",
@@ -23343,6 +23375,7 @@
           "quantityDefault",
           "quantityPresets",
           "referenceConfiguration",
+          "printModel",
           "sort",
           "status",
           "patterns",
@@ -35687,6 +35720,14 @@
           "rc",
           "cn",
           "dn"
+        ],
+        "type": "string"
+      },
+      "CustomerFileKind": {
+        "enum": [
+          "customer_original",
+          "production_copy",
+          "approved_proof_copy"
         ],
         "type": "string"
       },
@@ -64300,6 +64341,155 @@
         },
         "type": "object"
       },
+      "FileAccessActorDto": {
+        "properties": {
+          "id": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "example": "เตรียมพิมพ์ ทดสอบ",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FileAccessActorType"
+              }
+            ],
+            "example": "user"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "FileAccessActorType": {
+        "enum": [
+          "user",
+          "api_client"
+        ],
+        "type": "string"
+      },
+      "FileAccessChannel": {
+        "enum": [
+          "admin",
+          "partner",
+          "store"
+        ],
+        "type": "string"
+      },
+      "FileAccessLogEntryDto": {
+        "properties": {
+          "actor": {
+            "$ref": "#/components/schemas/FileAccessActorDto"
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FileAccessChannel"
+              }
+            ],
+            "example": "admin"
+          },
+          "fileId": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+            "format": "uuid",
+            "type": "string"
+          },
+          "fileKind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerFileKind"
+              }
+            ],
+            "example": "customer_original"
+          },
+          "id": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-00000000ac01",
+            "format": "uuid",
+            "type": "string"
+          },
+          "occurredAt": {
+            "example": "2026-10-26T10:15:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "order": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileAccessOrderDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null for an upload not yet in a submission"
+          },
+          "purpose": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FileAccessPurpose"
+              }
+            ],
+            "example": "download"
+          },
+          "requestId": {
+            "example": "req-3f2a9c1d",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "occurredAt",
+          "actor",
+          "fileId",
+          "fileKind",
+          "order",
+          "channel",
+          "purpose",
+          "requestId"
+        ],
+        "type": "object"
+      },
+      "FileAccessOrderDto": {
+        "properties": {
+          "id": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-00000000a001",
+            "format": "uuid",
+            "type": "string"
+          },
+          "orderCode": {
+            "example": "DEVOR-2610-00001",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "orderCode"
+        ],
+        "type": "object"
+      },
+      "FileAccessPurpose": {
+        "enum": [
+          "download",
+          "thumbnail"
+        ],
+        "type": "string"
+      },
       "FileDto": {
         "properties": {
           "createdAt": {
@@ -73807,6 +73997,14 @@
             "description": "Who acts next on the order (D-438): `team`, `customer`, or null when nothing is left to do",
             "example": "customer"
           },
+          "artworkNoteTh": {
+            "description": "The artwork next step to show the customer (B-API-4b, DECISIONS-STAGE-A §7): \"ไฟล์ได้รับแล้ว ทีมงานจะตรวจหลังชำระเงิน\" while a file sent before payment waits for it (Prepress reviews paid orders only); null otherwise",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "artworkOwner": {
             "anyOf": [
               {
@@ -74085,6 +74283,7 @@
           "artworkStatusLabelTh",
           "artworkStatusLabelAdminTh",
           "artworkOwner",
+          "artworkNoteTh",
           "productTypeCode",
           "summary",
           "quoteId",
@@ -80571,8 +80770,8 @@
             ],
             "description": "The same spec as one string (D-441); show it with the price",
             "example": {
-              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
             }
           },
           "quantity": {
@@ -81666,6 +81865,45 @@
         ],
         "type": "object"
       },
+      "PrintCmykAddOnDto": {
+        "properties": {
+          "enabled": {
+            "description": "\"+ สีพิเศษ\" beside CMYK is offered",
+            "example": false,
+            "type": "boolean"
+          },
+          "maxColours": {
+            "description": "M: the most spot colours beside CMYK (0 when disabled); colours come from the side’s `spot` list",
+            "example": 0,
+            "maximum": 8,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxColours"
+        ],
+        "type": "object"
+      },
+      "PrintCmykConfigDto": {
+        "properties": {
+          "addOn": {
+            "$ref": "#/components/schemas/PrintCmykAddOnDto"
+          },
+          "inkColourId": {
+            "description": "The process ink colour (an offered `ink_colour` option of kind process) that prints CMYK",
+            "example": "0192f3a0-7c1e-7d2a-9b1f-00000000e103",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "inkColourId",
+          "addOn"
+        ],
+        "type": "object"
+      },
       "PrintColourDto": {
         "properties": {
           "inkColourId": {
@@ -81695,6 +81933,31 @@
           "none"
         ],
         "type": "string"
+      },
+      "PrintModelDto": {
+        "properties": {
+          "inside": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrintSideConfigDto"
+              }
+            ],
+            "description": "Inside (`printBack` of each part)"
+          },
+          "outside": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrintSideConfigDto"
+              }
+            ],
+            "description": "Outside (`printFront` of each part)"
+          }
+        },
+        "required": [
+          "outside",
+          "inside"
+        ],
+        "type": "object"
       },
       "PrintRuleDto": {
         "properties": {
@@ -81784,6 +82047,68 @@
         ],
         "type": "string"
       },
+      "PrintSideConfigDto": {
+        "properties": {
+          "cmyk": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrintCmykConfigDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Required when `cmyk` is offered"
+          },
+          "methods": {
+            "description": "`none` ไม่พิมพ์ · `spot` สีพิเศษ · `cmyk` พิมพ์ 4 สี (CMYK); one choice per side",
+            "example": [
+              "none",
+              "spot",
+              "cmyk"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PrintSideMethod"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "spot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrintSpotConfigDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Required when `spot` is offered"
+          }
+        },
+        "required": [
+          "methods",
+          "spot",
+          "cmyk"
+        ],
+        "type": "object"
+      },
+      "PrintSideField": {
+        "description": "The configuration field of each part this side fills",
+        "enum": [
+          "printFront",
+          "printBack"
+        ],
+        "type": "string"
+      },
+      "PrintSideMethod": {
+        "description": "`none` ไม่พิมพ์ · `spot` สีพิเศษ · `cmyk` พิมพ์ 4 สี (CMYK); one choice per side",
+        "enum": [
+          "none",
+          "spot",
+          "cmyk"
+        ],
+        "type": "string"
+      },
       "PrintSides": {
         "enum": [
           "outside",
@@ -81792,6 +82117,36 @@
           "none"
         ],
         "type": "string"
+      },
+      "PrintSpotConfigDto": {
+        "properties": {
+          "inkColourIds": {
+            "description": "The spot ink colours (offered `ink_colour` options of kind spot / white / metallic) the customer picks from; at least `maxColours` of them",
+            "example": [
+              "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+              "0192f3a0-7c1e-7d2a-9b1f-00000000e102"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array"
+          },
+          "maxColours": {
+            "description": "N: the most spot colours on this side (ดำ counts as one spot colour); at least 1",
+            "example": 2,
+            "maximum": 8,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "maxColours",
+          "inkColourIds"
+        ],
+        "type": "object"
       },
       "PrintTypeDto": {
         "properties": {
@@ -85316,8 +85671,8 @@
             ],
             "description": "The same spec as one string (D-441), to show next to every price",
             "example": {
-              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
             }
           },
           "specs": {
@@ -85348,8 +85703,8 @@
                 "key": "print_front",
                 "labelEn": "Print (outside)",
                 "labelTh": "พิมพ์ด้านนอก",
-                "valueEn": "Black",
-                "valueTh": "ดำ"
+                "valueEn": "1 spot colour (ดำ)",
+                "valueTh": "สีพิเศษ 1 สี (ดำ)"
               }
             ],
             "items": {
@@ -95662,6 +96017,25 @@
         ],
         "type": "object"
       },
+      "SetPrintModelDto": {
+        "properties": {
+          "printModel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrintModelDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The per-side print model; `null` removes it (then only never-valid combinations are refused)"
+          }
+        },
+        "required": [
+          "printModel"
+        ],
+        "type": "object"
+      },
       "SetRouteEnabledDto": {
         "properties": {
           "enabled": {
@@ -98375,7 +98749,7 @@
       "SpecLineDto": {
         "properties": {
           "key": {
-            "description": "Stable key of the line (`style`, `size` — ยาว × กว้าง × สูง in mm (D-441), `material`, `print_front`, `print_back`, `coating_front`, `coating_back`, `special_finish`, `diecut`, `assembly`, `design_service`; `parts[n].…` for a part of a multi-part product; an RFQ spec field name for RFQ quotes)",
+            "description": "Stable key of the line (`style`, `size` — ยาว × กว้าง × สูง in mm (D-441), `material`, `print_front`, `print_back` — the method of the side: CMYK, สีพิเศษ n สี (…), CMYK + สีพิเศษ n สี (…) (B-API-3), `coating_front`, `coating_back`, `special_finish`, `diecut`, `assembly`, `design_service`; `parts[n].…` for a part of a multi-part product; an RFQ spec field name for RFQ quotes)",
             "example": "material",
             "type": "string"
           },
@@ -100142,8 +100516,8 @@
             ],
             "description": "The same spec as one string (D-441); show it with the price",
             "example": {
-              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
             }
           },
           "quantity": {
@@ -101559,8 +101933,8 @@
             ],
             "description": "One string (D-441)",
             "example": {
-              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
             }
           },
           "specs": {
@@ -101590,8 +101964,8 @@
                 "key": "print_front",
                 "labelEn": "Print (outside)",
                 "labelTh": "พิมพ์ด้านนอก",
-                "valueEn": "Black",
-                "valueTh": "ดำ"
+                "valueEn": "1 spot colour (ดำ)",
+                "valueTh": "สีพิเศษ 1 สี (ดำ)"
               }
             ],
             "items": {
@@ -101715,6 +102089,17 @@
             },
             "type": "array"
           },
+          "printModel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StorePrintModelDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrugate, D-443: the per-side print model (outside → `printFront`, inside → `printBack` of each part) — method radios (`none` ไม่พิมพ์ · `spot` สีพิเศษ · `cmyk` พิมพ์ 4 สี), the spot-colour counter 1..N with the allowed colours, the \"+ สีพิเศษ\" counter beside CMYK when enabled, and each side’s default (inside: `none` unless the default spec prints inside). Back-office data; null until an admin sets it (then send at most one ink kind per side: no CMYK together with a spot colour)"
+          },
           "productTypeCode": {
             "example": "corrugated",
             "type": "string"
@@ -101759,6 +102144,7 @@
           "standardSizes",
           "optionGroups",
           "printAreas",
+          "printModel",
           "quoteValidityDays",
           "unit",
           "quantity",
@@ -102894,6 +103280,192 @@
           "maxSMm",
           "minCsMm",
           "maxCsMm"
+        ],
+        "type": "object"
+      },
+      "StorePrintAddOnDto": {
+        "properties": {
+          "enabled": {
+            "description": "Show the \"+ สีพิเศษ\" counter beside CMYK",
+            "example": true,
+            "type": "boolean"
+          },
+          "maxColours": {
+            "description": "M (0 when disabled)",
+            "example": 1,
+            "type": "integer"
+          },
+          "minColours": {
+            "example": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "minColours",
+          "maxColours"
+        ],
+        "type": "object"
+      },
+      "StorePrintCmykDto": {
+        "properties": {
+          "addOn": {
+            "$ref": "#/components/schemas/StorePrintAddOnDto"
+          },
+          "inkColourId": {
+            "description": "The process ink sent for CMYK",
+            "example": "0192f3a0-7c1e-7d2a-9b1f-00000000e103",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "inkColourId",
+          "addOn"
+        ],
+        "type": "object"
+      },
+      "StorePrintModelDto": {
+        "properties": {
+          "inside": {
+            "$ref": "#/components/schemas/StorePrintSideDto"
+          },
+          "outside": {
+            "$ref": "#/components/schemas/StorePrintSideDto"
+          }
+        },
+        "required": [
+          "outside",
+          "inside"
+        ],
+        "type": "object"
+      },
+      "StorePrintSelectionDto": {
+        "properties": {
+          "cmykAddOnInkColourIds": {
+            "description": "`cmyk`: the \"+ สีพิเศษ\" colours chosen (empty without the add-on)",
+            "example": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "method": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrintSideMethod"
+              }
+            ],
+            "example": "none"
+          },
+          "spotInkColourIds": {
+            "description": "`spot`: the spot colours chosen",
+            "example": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "method",
+          "spotInkColourIds",
+          "cmykAddOnInkColourIds"
+        ],
+        "type": "object"
+      },
+      "StorePrintSideDto": {
+        "properties": {
+          "cmyk": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StorePrintCmykDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorePrintSelectionDto"
+              }
+            ],
+            "description": "What the configurator opens on: the default spec’s print on this side; inside defaults to `none`"
+          },
+          "field": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrintSideField"
+              }
+            ],
+            "description": "The configuration field of each part this side fills",
+            "example": "printFront"
+          },
+          "methods": {
+            "description": "`none` ไม่พิมพ์ · `spot` สีพิเศษ · `cmyk` พิมพ์ 4 สี (CMYK); one choice per side",
+            "example": [
+              "none",
+              "spot",
+              "cmyk"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PrintSideMethod"
+            },
+            "type": "array"
+          },
+          "spot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StorePrintSpotDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "field",
+          "methods",
+          "spot",
+          "cmyk",
+          "default"
+        ],
+        "type": "object"
+      },
+      "StorePrintSpotDto": {
+        "properties": {
+          "inkColourIds": {
+            "description": "Allowed spot colours, ids of the `ink_colour` option group (names and swatches there)",
+            "example": [
+              "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+              "0192f3a0-7c1e-7d2a-9b1f-00000000e102"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "maxColours": {
+            "description": "Counter maximum N (back-office data)",
+            "example": 2,
+            "type": "integer"
+          },
+          "minColours": {
+            "description": "Counter minimum (always 1)",
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "minColours",
+          "maxColours",
+          "inkColourIds"
         ],
         "type": "object"
       },
@@ -106729,8 +107301,8 @@
             ],
             "description": "The spec this price is for, as one string (D-441)",
             "example": {
-              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+              "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+              "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
             }
           },
           "quantity": {
@@ -147662,6 +148234,7 @@
                           "sort": 0
                         }
                       ],
+                      "printModel": null,
                       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                       "quantityDefault": null,
                       "quantityMax": null,
@@ -147908,6 +148481,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -148172,6 +148746,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -148428,6 +149003,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -148770,6 +149346,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -149091,6 +149668,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -149401,6 +149979,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -149703,6 +150282,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -150029,6 +150609,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -150271,6 +150852,404 @@
         ]
       }
     },
+    "/v1/admin/catalog/catalog-products/{id}/print-model": {
+      "put": {
+        "description": "D-443: per side (outside = `printFront`, inside = `printBack`) the methods offered — `none` ไม่พิมพ์, `spot` สีพิเศษ, `cmyk` พิมพ์ 4 สี — the most spot colours N and the allowed spot colours, the process ink of CMYK and the \"+ สีพิเศษ\" add-on beside CMYK (enabled, at most M). Every ink must be an active `ink_colour` option of the product (spot colours of kind spot / white / metallic, CMYK of kind process). Corrugate products only. `store.catalog.getConfigurator` exposes it as `printModel` and `store.quotes.calculate` refuses any other combination (`pricing.print_combination_invalid`); the reference configuration (D-441) must remain a valid choice. `null` removes the model. The price hint is recomputed. Guarded by the product ETag; audited.\n\nImplements: D-443, D-441.",
+        "operationId": "admin.catalogProducts.setPrintModel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "clear": {
+                  "value": {
+                    "printModel": null
+                  }
+                },
+                "default": {
+                  "value": {
+                    "printModel": {
+                      "inside": {
+                        "cmyk": null,
+                        "methods": [
+                          "none",
+                          "spot"
+                        ],
+                        "spot": {
+                          "inkColourIds": [
+                            "0192f3a0-7c1e-7d2a-9b1f-00000000e101"
+                          ],
+                          "maxColours": 1
+                        }
+                      },
+                      "outside": {
+                        "cmyk": {
+                          "addOn": {
+                            "enabled": true,
+                            "maxColours": 1
+                          },
+                          "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000e103"
+                        },
+                        "methods": [
+                          "none",
+                          "spot",
+                          "cmyk"
+                        ],
+                        "spot": {
+                          "inkColourIds": [
+                            "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                            "0192f3a0-7c1e-7d2a-9b1f-00000000e102"
+                          ],
+                          "maxColours": 2
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/SetPrintModelDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "defaultDifficultyLevelId": null,
+                  "descriptionEn": "Reverse tuck-end folding box",
+                  "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
+                  "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
+                  "images": [
+                    {
+                      "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                      "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c012",
+                      "sort": 0,
+                      "variant": {
+                        "material": "art-card-350"
+                      }
+                    }
+                  ],
+                  "isCombination": false,
+                  "nameEn": "Tuck-end box",
+                  "nameTh": "กล่องฝาเสียบ",
+                  "options": [
+                    {
+                      "isDefault": true,
+                      "kind": "material",
+                      "optionId": "0192f3a0-7c1e-7d2a-9b1f-00000000c010",
+                      "sort": 0
+                    }
+                  ],
+                  "patterns": [
+                    {
+                      "factorNd": 1,
+                      "factorNl": 1,
+                      "factorNw": 1,
+                      "patternCode": "RTE-01",
+                      "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
+                      "sort": 0
+                    }
+                  ],
+                  "printModel": {
+                    "inside": {
+                      "cmyk": null,
+                      "methods": [
+                        "none",
+                        "spot"
+                      ],
+                      "spot": {
+                        "inkColourIds": [
+                          "0192f3a0-7c1e-7d2a-9b1f-00000000e101"
+                        ],
+                        "maxColours": 1
+                      }
+                    },
+                    "outside": {
+                      "cmyk": {
+                        "addOn": {
+                          "enabled": true,
+                          "maxColours": 1
+                        },
+                        "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000e103"
+                      },
+                      "methods": [
+                        "none",
+                        "spot",
+                        "cmyk"
+                      ],
+                      "spot": {
+                        "inkColourIds": [
+                          "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                          "0192f3a0-7c1e-7d2a-9b1f-00000000e102"
+                        ],
+                        "maxColours": 2
+                      }
+                    }
+                  },
+                  "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
+                  "quantityDefault": null,
+                  "quantityMax": null,
+                  "quantityMin": null,
+                  "quantityPresets": [],
+                  "referenceConfiguration": null,
+                  "seoPageId": null,
+                  "slug": "tuck-end-box",
+                  "sort": 10,
+                  "status": "active",
+                  "templateAvailability": "drawing",
+                  "updatedAt": "2026-09-25T10:00:00+07:00",
+                  "videoUrl": null
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogProductDto"
+                }
+              }
+            },
+            "description": "The catalogue product",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.bad_request": {
+                    "$ref": "#/components/examples/problem.http.bad_request"
+                  },
+                  "http.malformed_json": {
+                    "$ref": "#/components/examples/problem.http.malformed_json"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.bad_request`, `http.malformed_json`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "concurrency.stale": {
+                    "$ref": "#/components/examples/problem.concurrency.stale"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `concurrency.stale`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "pricing.print_combination_invalid": {
+                    "$ref": "#/components/examples/problem.pricing.print_combination_invalid"
+                  },
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `pricing.print_combination_invalid`, `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "428": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "concurrency.precondition_required": {
+                    "$ref": "#/components/examples/problem.concurrency.precondition_required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `concurrency.precondition_required`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "summary": "Set the per-side print model of a catalogue product",
+        "tags": [
+          "admin.catalogProducts"
+        ],
+        "x-required-permissions": [
+          "catalog.manage"
+        ]
+      }
+    },
     "/v1/admin/catalog/catalog-products/{id}/reference-configuration": {
       "delete": {
         "description": "The product then has no \"starting from\" price (D-220). Guarded by the product ETag; audited.\n\nImplements: D-220.",
@@ -150331,6 +151310,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -150550,7 +151530,7 @@
         ]
       },
       "put": {
-        "description": "D-220: the calculator configuration (one quantity) a product card's starting price is quoted at, validated as a store request of the product type's calculator. The price hint is recomputed at once and shown by `store.catalog.listPriceHints`; no hint while nothing can price it. Guarded by the product ETag; audited.\n\nImplements: D-220, D-181.",
+        "description": "D-220: the calculator configuration (one quantity) a product card's starting price is quoted at, validated as a store request of the product type's calculator (and one valid print choice per side, D-443). The price hint is recomputed at once and shown by `store.catalog.listPriceHints`; no hint while nothing can price it. Guarded by the product ETag; audited.\n\nImplements: D-220, D-181, D-443.",
         "operationId": "admin.catalogProducts.setReferenceConfiguration",
         "parameters": [
           {
@@ -150638,6 +151618,7 @@
                       "sort": 0
                     }
                   ],
+                  "printModel": null,
                   "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002",
                   "quantityDefault": null,
                   "quantityMax": null,
@@ -150786,6 +151767,9 @@
             "content": {
               "application/problem+json": {
                 "examples": {
+                  "pricing.print_combination_invalid": {
+                    "$ref": "#/components/examples/problem.pricing.print_combination_invalid"
+                  },
                   "validation.failed": {
                     "$ref": "#/components/examples/problem.validation.failed"
                   }
@@ -150795,7 +151779,7 @@
                 }
               }
             },
-            "description": "Problem: `validation.failed`",
+            "description": "Problem: `pricing.print_combination_invalid`, `validation.failed`",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/XRequestId"
@@ -218184,6 +219168,275 @@
         ]
       }
     },
+    "/v1/admin/customer-file-access-logs": {
+      "get": {
+        "description": "D-444: every download URL issued for a customer's artwork / original, a production copy of one or an approved proof copy — who, when, which file and order, through which surface (store / admin / partner) and for what (download / thumbnail). Newest first; filter by order, file, user and period. Append-only; no URL or token is stored. Superadmin only (`customer_file_access_logs.read`).\n\nImplements: D-444.",
+        "operationId": "admin.customerFileAccessLogs.list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Order id",
+            "in": "query",
+            "name": "orderId",
+            "required": false,
+            "schema": {
+              "example": "0192f3a0-7c1e-7d2a-9b1f-00000000a001",
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "File id",
+            "in": "query",
+            "name": "fileId",
+            "required": false,
+            "schema": {
+              "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Acting user (or API client)",
+            "in": "query",
+            "name": "userId",
+            "required": false,
+            "schema": {
+              "example": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "example": "2026-10-01T00:00:00+07:00",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exclusive",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "example": "2026-11-01T00:00:00+07:00",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "actor": {
+                        "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
+                        "name": "เตรียมพิมพ์ ทดสอบ",
+                        "type": "user"
+                      },
+                      "channel": "admin",
+                      "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1014",
+                      "fileKind": "customer_original",
+                      "id": "0192f3a0-7c1e-7d2a-9b1f-00000000ac01",
+                      "occurredAt": "2026-10-26T10:15:00+07:00",
+                      "order": {
+                        "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a001",
+                        "orderCode": "DEVOR-2610-00001"
+                      },
+                      "purpose": "download",
+                      "requestId": "req-3f2a9c1d"
+                    }
+                  ],
+                  "meta": {
+                    "nextCursor": "eyJpZCI6IjEyMyJ9"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/FileAccessLogEntryDto"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/CursorMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "One slice of the feed",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "summary": "Search the customer file access log",
+        "tags": [
+          "admin.customerFileAccessLogs"
+        ],
+        "x-required-permissions": [
+          "customer_file_access_logs.read"
+        ]
+      }
+    },
     "/v1/admin/customer-wht-certificates": {
       "get": {
         "description": "50 ทวิ to collect for every receipt the customer withheld on (§2); `status=pending` with `olderThanDays` is the missing-certificate report.\n\nImplements: D-033, D-174.",
@@ -223918,10 +225171,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -252626,7 +253880,7 @@
     },
     "/v1/admin/files/{fileId}": {
       "get": {
-        "description": "Visible to the uploader, their factory/company scope, staff with `files.read`, or through an attachment of a record the caller can see; otherwise 404.\n\nImplements: ADR-0003, D-142.",
+        "description": "Visible to the uploader, their factory/company scope, staff with `files.read`, or through an attachment of a record the caller can see; otherwise 404. D-444: customer artwork / originals and their production copies need `customer_files.read` or `customer_files.read_handled` on staff instead of `files.read`.\n\nImplements: ADR-0003, D-142, D-444.",
         "operationId": "admin.files.get",
         "parameters": [
           {
@@ -253505,7 +254759,7 @@
     },
     "/v1/admin/files/{fileId}/download": {
       "get": {
-        "description": "A signed URL valid 5 minutes, after the access check. Files still scanning are `file.not_ready`; infected files are never served.\n\nImplements: ADR-0003.",
+        "description": "A signed URL valid 5 minutes, after the access check. Files still scanning are `file.not_ready`; infected files are never served. D-444: a customer's artwork / original or its production copy is read on staff only with `customer_files.read` (Prepress) or `customer_files.read_handled` for an order whose open conversation is assigned to the caller (support); every URL issued for one of these, a production copy or an approved proof copy is logged in the customer file access log (no URL stored).\n\nImplements: ADR-0003, D-444.",
         "operationId": "admin.files.download",
         "parameters": [
           {
@@ -273631,10 +274885,11 @@
                       "orders": [
                         {
                           "actionOwner": "customer",
-                          "artworkOwner": "team",
-                          "artworkStatus": "awaiting_template",
-                          "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                          "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                          "artworkNoteTh": null,
+                          "artworkOwner": "customer",
+                          "artworkStatus": "awaiting_upload",
+                          "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                          "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                           "cancelReasonCode": null,
                           "cancelReasonNameEn": null,
                           "cancelReasonNameTh": null,
@@ -274006,10 +275261,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -274400,10 +275656,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -274862,10 +276119,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -275353,10 +276611,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -276702,7 +277961,7 @@
     },
     "/v1/admin/order-queues/{queue}": {
       "get": {
-        "description": "`waiting_payment` (รอชำระ, oldest first), `artwork_review` (รอตรวจไฟล์: uploaded / in review), `waiting_production` (รอเริ่มผลิต: paid, not started), `due_soon` (ใกล้ครบกำหนดส่ง: promised ship date within `withinDays`, not shipped), `late` (ล่าช้า: promised ship date passed, not shipped).\n\nImplements: D-060, D-073.",
+        "description": "`waiting_payment` (รอชำระ, oldest first), `artwork_review` (รอตรวจไฟล์: uploaded / in review, paid orders only — B-API-4b), `waiting_production` (รอเริ่มผลิต: paid, not started), `due_soon` (ใกล้ครบกำหนดส่ง: promised ship date within `withinDays`, not shipped), `late` (ล่าช้า: promised ship date passed, not shipped).\n\nImplements: D-060, D-073.",
         "operationId": "admin.orderOperations.queue",
         "parameters": [
           {
@@ -277580,10 +278839,11 @@
               "application/json": {
                 "example": {
                   "actionOwner": "customer",
-                  "artworkOwner": "team",
-                  "artworkStatus": "awaiting_template",
-                  "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                  "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                  "artworkNoteTh": null,
+                  "artworkOwner": "customer",
+                  "artworkStatus": "awaiting_upload",
+                  "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                  "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                   "cancelReasonCode": null,
                   "cancelReasonNameEn": null,
                   "cancelReasonNameTh": null,
@@ -278151,10 +279411,11 @@
               "application/json": {
                 "example": {
                   "actionOwner": "customer",
-                  "artworkOwner": "team",
-                  "artworkStatus": "awaiting_template",
-                  "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                  "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                  "artworkNoteTh": null,
+                  "artworkOwner": "customer",
+                  "artworkStatus": "awaiting_upload",
+                  "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                  "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                   "cancelReasonCode": null,
                   "cancelReasonNameEn": null,
                   "cancelReasonNameTh": null,
@@ -278559,10 +279820,11 @@
               "application/json": {
                 "example": {
                   "actionOwner": "customer",
-                  "artworkOwner": "team",
-                  "artworkStatus": "awaiting_template",
-                  "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                  "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                  "artworkNoteTh": null,
+                  "artworkOwner": "customer",
+                  "artworkStatus": "awaiting_upload",
+                  "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                  "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                   "cancelReasonCode": null,
                   "cancelReasonNameEn": null,
                   "cancelReasonNameTh": null,
@@ -290196,7 +291458,7 @@
     },
     "/v1/admin/prepress/queue": {
       "get": {
-        "description": "`submissions`: preflighted files waiting for review, oldest first; `changes_requested`: proofs the customer sent back; `proofs_waiting`: proofs waiting for the customer. `dueAt` follows `artwork.prepress_sla_business_hours` on business hours (D-175) — null while no SLA is set. Filter by the Prepress owner (`assigneeId`, `none` = unowned), product type and artwork status; rows carry the customer, product type, artwork status and owner.\n\nImplements: D-070, D-175.",
+        "description": "`submissions`: preflighted files of paid orders waiting for review, oldest first (a file received before payment joins at payment, `since` = the later of check and payment — B-API-4b); `changes_requested`: proofs the customer sent back; `proofs_waiting`: proofs waiting for the customer. `dueAt` follows `artwork.prepress_sla_business_hours` on business hours (D-175) — null while no SLA is set. Filter by the Prepress owner (`assigneeId`, `none` = unowned), product type and artwork status; rows carry the customer, product type, artwork status and owner.\n\nImplements: D-070, D-175.",
         "operationId": "admin.artwork.queue",
         "parameters": [
           {
@@ -355398,10 +356660,11 @@
                       "orders": [
                         {
                           "actionOwner": "customer",
-                          "artworkOwner": "team",
-                          "artworkStatus": "awaiting_template",
-                          "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                          "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                          "artworkNoteTh": null,
+                          "artworkOwner": "customer",
+                          "artworkStatus": "awaiting_upload",
+                          "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                          "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                           "cancelReasonCode": null,
                           "cancelReasonNameEn": null,
                           "cancelReasonNameTh": null,
@@ -355770,10 +357033,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -356184,10 +357448,11 @@
               "application/json": {
                 "example": {
                   "actionOwner": "customer",
-                  "artworkOwner": "team",
-                  "artworkStatus": "awaiting_template",
-                  "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้ลูกค้า",
-                  "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                  "artworkNoteTh": null,
+                  "artworkOwner": "customer",
+                  "artworkStatus": "awaiting_upload",
+                  "artworkStatusLabelAdminTh": "รอไฟล์จากลูกค้า",
+                  "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                   "cancelReasonCode": null,
                   "cancelReasonNameEn": null,
                   "cancelReasonNameTh": null,
@@ -474548,7 +475813,7 @@
     },
     "/v1/partner/files/{fileId}": {
       "get": {
-        "description": "Visible to the uploader, their factory/company scope, staff with `files.read`, or through an attachment of a record the caller can see; otherwise 404.\n\nImplements: ADR-0003, D-142.",
+        "description": "Visible to the uploader, their factory/company scope, staff with `files.read`, or through an attachment of a record the caller can see; otherwise 404. D-444: customer artwork / originals and their production copies need `customer_files.read` or `customer_files.read_handled` on staff instead of `files.read`.\n\nImplements: ADR-0003, D-142, D-444.",
         "operationId": "partner.files.get",
         "parameters": [
           {
@@ -475427,7 +476692,7 @@
     },
     "/v1/partner/files/{fileId}/download": {
       "get": {
-        "description": "A signed URL valid 5 minutes, after the access check. Files still scanning are `file.not_ready`; infected files are never served.\n\nImplements: ADR-0003.",
+        "description": "A signed URL valid 5 minutes, after the access check. Files still scanning are `file.not_ready`; infected files are never served. D-444: a customer's artwork / original or its production copy is read on staff only with `customer_files.read` (Prepress) or `customer_files.read_handled` for an order whose open conversation is assigned to the caller (support); every URL issued for one of these, a production copy or an approved proof copy is logged in the customer file access log (no URL stored).\n\nImplements: ADR-0003, D-444.",
         "operationId": "partner.files.download",
         "parameters": [
           {
@@ -501608,6 +502873,57 @@
                     "top_side",
                     "all_round"
                   ],
+                  "printModel": {
+                    "inside": {
+                      "cmyk": null,
+                      "default": {
+                        "cmykAddOnInkColourIds": [],
+                        "method": "none",
+                        "spotInkColourIds": []
+                      },
+                      "field": "printBack",
+                      "methods": [
+                        "none",
+                        "spot"
+                      ],
+                      "spot": {
+                        "inkColourIds": [
+                          "0192f3a0-7c1e-7d2a-9b1f-00000000e101"
+                        ],
+                        "maxColours": 1,
+                        "minColours": 1
+                      }
+                    },
+                    "outside": {
+                      "cmyk": {
+                        "addOn": {
+                          "enabled": true,
+                          "maxColours": 1,
+                          "minColours": 0
+                        },
+                        "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000e103"
+                      },
+                      "default": {
+                        "cmykAddOnInkColourIds": [],
+                        "method": "cmyk",
+                        "spotInkColourIds": []
+                      },
+                      "field": "printFront",
+                      "methods": [
+                        "none",
+                        "spot",
+                        "cmyk"
+                      ],
+                      "spot": {
+                        "inkColourIds": [
+                          "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
+                          "0192f3a0-7c1e-7d2a-9b1f-00000000e102"
+                        ],
+                        "maxColours": 2,
+                        "minColours": 1
+                      }
+                    }
+                  },
                   "productTypeCode": "corrugated",
                   "quantity": {
                     "default": 300,
@@ -503638,10 +504954,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากคุณ",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -527208,7 +528525,7 @@
     },
     "/v1/store/files/{fileId}": {
       "get": {
-        "description": "Visible to the uploader, their factory/company scope, staff with `files.read`, or through an attachment of a record the caller can see; otherwise 404.\n\nImplements: ADR-0003, D-142.",
+        "description": "Visible to the uploader, their factory/company scope, staff with `files.read`, or through an attachment of a record the caller can see; otherwise 404. D-444: customer artwork / originals and their production copies need `customer_files.read` or `customer_files.read_handled` on staff instead of `files.read`.\n\nImplements: ADR-0003, D-142, D-444.",
         "operationId": "store.files.get",
         "parameters": [
           {
@@ -528087,7 +529404,7 @@
     },
     "/v1/store/files/{fileId}/download": {
       "get": {
-        "description": "A signed URL valid 5 minutes, after the access check. Files still scanning are `file.not_ready`; infected files are never served.\n\nImplements: ADR-0003.",
+        "description": "A signed URL valid 5 minutes, after the access check. Files still scanning are `file.not_ready`; infected files are never served. D-444: a customer's artwork / original or its production copy is read on staff only with `customer_files.read` (Prepress) or `customer_files.read_handled` for an order whose open conversation is assigned to the caller (support); every URL issued for one of these, a production copy or an approved proof copy is logged in the customer file access log (no URL stored).\n\nImplements: ADR-0003, D-444.",
         "operationId": "store.files.download",
         "parameters": [
           {
@@ -531881,10 +533198,11 @@
                       "orders": [
                         {
                           "actionOwner": "customer",
-                          "artworkOwner": "team",
-                          "artworkStatus": "awaiting_template",
-                          "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
-                          "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                          "artworkNoteTh": null,
+                          "artworkOwner": "customer",
+                          "artworkStatus": "awaiting_upload",
+                          "artworkStatusLabelAdminTh": "รอไฟล์จากคุณ",
+                          "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                           "cancelReasonCode": null,
                           "cancelReasonNameEn": null,
                           "cancelReasonNameTh": null,
@@ -532230,10 +533548,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากคุณ",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -532601,10 +533920,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากคุณ",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -533069,10 +534389,11 @@
                   "orders": [
                     {
                       "actionOwner": "customer",
-                      "artworkOwner": "team",
-                      "artworkStatus": "awaiting_template",
-                      "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
-                      "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                      "artworkNoteTh": null,
+                      "artworkOwner": "customer",
+                      "artworkStatus": "awaiting_upload",
+                      "artworkStatusLabelAdminTh": "รอไฟล์จากคุณ",
+                      "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                       "cancelReasonCode": null,
                       "cancelReasonNameEn": null,
                       "cancelReasonNameTh": null,
@@ -534555,10 +535876,11 @@
               "application/json": {
                 "example": {
                   "actionOwner": "customer",
-                  "artworkOwner": "team",
-                  "artworkStatus": "awaiting_template",
-                  "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
-                  "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                  "artworkNoteTh": null,
+                  "artworkOwner": "customer",
+                  "artworkStatus": "awaiting_upload",
+                  "artworkStatusLabelAdminTh": "รอไฟล์จากคุณ",
+                  "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                   "cancelReasonCode": null,
                   "cancelReasonNameEn": null,
                   "cancelReasonNameTh": null,
@@ -534855,10 +536177,11 @@
               "application/json": {
                 "example": {
                   "actionOwner": "customer",
-                  "artworkOwner": "team",
-                  "artworkStatus": "awaiting_template",
-                  "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
-                  "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                  "artworkNoteTh": null,
+                  "artworkOwner": "customer",
+                  "artworkStatus": "awaiting_upload",
+                  "artworkStatusLabelAdminTh": "รอไฟล์จากคุณ",
+                  "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                   "cancelReasonCode": null,
                   "cancelReasonNameEn": null,
                   "cancelReasonNameTh": null,
@@ -535178,10 +536501,11 @@
               "application/json": {
                 "example": {
                   "actionOwner": "customer",
-                  "artworkOwner": "team",
-                  "artworkStatus": "awaiting_template",
-                  "artworkStatusLabelAdminTh": "รอทีมส่งแบบไดคัทให้",
-                  "artworkStatusLabelTh": "รอทีมส่งแบบไดคัทให้",
+                  "artworkNoteTh": null,
+                  "artworkOwner": "customer",
+                  "artworkStatus": "awaiting_upload",
+                  "artworkStatusLabelAdminTh": "รอไฟล์จากคุณ",
+                  "artworkStatusLabelTh": "รอไฟล์จากคุณ",
                   "cancelReasonCode": null,
                   "cancelReasonNameEn": null,
                   "cancelReasonNameTh": null,
@@ -545035,8 +546359,8 @@
                     }
                   },
                   "specLabel": {
-                    "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-                    "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                    "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+                    "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
                   },
                   "specs": [
                     {
@@ -545064,8 +546388,8 @@
                       "key": "print_front",
                       "labelEn": "Print (outside)",
                       "labelTh": "พิมพ์ด้านนอก",
-                      "valueEn": "Black",
-                      "valueTh": "ดำ"
+                      "valueEn": "1 spot colour (ดำ)",
+                      "valueTh": "สีพิเศษ 1 สี (ดำ)"
                     }
                   ],
                   "steps": [
@@ -563424,8 +564748,8 @@
                       }
                     },
                     "specLabel": {
-                      "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-                      "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                      "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+                      "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
                     },
                     "specs": [
                       {
@@ -563453,8 +564777,8 @@
                         "key": "print_front",
                         "labelEn": "Print (outside)",
                         "labelTh": "พิมพ์ด้านนอก",
-                        "valueEn": "Black",
-                        "valueTh": "ดำ"
+                        "valueEn": "1 spot colour (ดำ)",
+                        "valueTh": "สีพิเศษ 1 สี (ดำ)"
                       }
                     ],
                     "steps": [
@@ -565414,8 +566738,8 @@
                         "computedAt": "2026-10-03T10:00:00+07:00",
                         "currency": "THB",
                         "label": {
-                          "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-                          "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                          "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+                          "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
                         },
                         "quantity": 1000,
                         "unitPrice": "4.85"
@@ -566015,8 +567339,8 @@
                         "computedAt": "2026-10-03T10:00:00+07:00",
                         "currency": "THB",
                         "label": {
-                          "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-                          "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                          "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+                          "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
                         },
                         "quantity": 1000,
                         "unitPrice": "4.85"
@@ -566278,8 +567602,8 @@
                       "computedAt": "2026-10-03T10:00:00+07:00",
                       "currency": "THB",
                       "label": {
-                        "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-                        "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                        "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+                        "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
                       },
                       "quantity": 1000,
                       "unitPrice": "4.85"
@@ -566847,8 +568171,8 @@
                     "computedAt": "2026-10-03T10:00:00+07:00",
                     "currency": "THB",
                     "label": {
-                      "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Black",
-                      "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · ดำ"
+                      "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+                      "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
                     },
                     "quantity": 1000,
                     "unitPrice": "4.85"
@@ -570998,6 +572322,10 @@
     {
       "description": "Tax invoices, invoices, receipts, credit and debit notes issued by the entity under the getpack brand (D-010, D-092): PDFs, voids, credit notes under maker-checker (D-169).",
       "name": "admin.customerDocuments"
+    },
+    {
+      "description": "D-444 the append-only log of every download of customer artwork / originals, production copies and approved proof copies (Superadmin).",
+      "name": "admin.customerFileAccessLogs"
     },
     {
       "description": "The customer shipping rate card: effective-dated versions approved by C-Level (D-013).",

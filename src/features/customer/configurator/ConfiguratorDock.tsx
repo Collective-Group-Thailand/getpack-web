@@ -17,7 +17,7 @@ import { Icon } from "@/ui/icons";
 import type { Schemas } from "@/lib/api/types";
 
 import type { PriceStep } from "./pricing";
-import { mergeEqualTiers } from "./tiers";
+import { mergeEqualTiers, tierRowLabels } from "./tiers";
 import type { Configurator, ConfiguratorState } from "./state";
 import type { KeptQuote, QuoteAction } from "./useQuoteActions";
 
@@ -37,6 +37,8 @@ export interface ConfiguratorDockProps {
   loading: boolean;
   pending: boolean;
   failed: boolean;
+  /** Why the API refused the print choice (`pricing.print_combination_invalid`), one line per side. */
+  refusal?: string[] | null;
   onRetry: () => void;
   onAction: (action: QuoteAction) => void;
   busy: QuoteAction | null;
@@ -70,6 +72,7 @@ export function ConfiguratorDock({
   loading,
   pending,
   failed,
+  refusal,
   onRetry,
   onAction,
   busy,
@@ -87,6 +90,12 @@ export function ConfiguratorDock({
   const noPrice = step && !step.instant ? step : null;
   const ready = missing.length === 0;
   const tierGroups = steps ? mergeEqualTiers(steps) : [];
+  const labelsOf = (group: (typeof tierGroups)[number]) =>
+    tierRowLabels(group, {
+      number: (value) => format.number(value),
+      range: (from, to) => t("breaksRange", { from, to, unit }),
+      withUnit: (quantity) => t("breaksSelect", { quantity, unit }),
+    });
   const reason = usePriceChange(priced?.unitPrice ? { unitPrice: priced.unitPrice, quantity: priced.quantity } : null);
 
   // Quoted on request (`instant: false`, D-043): no price is asked for, the RFQ form is the way on.
@@ -99,6 +108,15 @@ export function ConfiguratorDock({
     <div>
       <p className="font-semibold">{t("notReady")}</p>
       <p className="text-muted text-sm">{t("stillNeeded", { items: missing.join(", ") })}</p>
+    </div>
+  ) : refusal && !priced ? (
+    <div role="alert">
+      <p className="font-semibold">{t("printRefused")}</p>
+      <ul className="text-muted text-sm">
+        {refusal.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
     </div>
   ) : failed && !priced ? (
     <div className="flex flex-col items-start gap-2">
@@ -301,14 +319,13 @@ export function ConfiguratorDock({
             total: t("breaksTotal"),
           }}
           rows={tierGroups.map((group) => {
-            const { first, last } = group;
+            const { first } = group;
             const merged = group.steps.length > 1;
+            const labels = labelsOf(group);
             const chosen = group.steps.find((entry) => entry.quantity === state.quantity);
             return {
               key: String(first.quantity),
-              quantity: merged
-                ? t("breaksRange", { from: format.number(first.quantity), to: format.number(last.quantity), unit })
-                : format.number(first.quantity),
+              quantity: labels.quantity,
               perPiece: format.thb(first.unitPrice),
               // One row stands for several quantities, each with its own total: the chosen one's, else none.
               total: merged
@@ -326,7 +343,10 @@ export function ConfiguratorDock({
             if (group && !group.steps.some((entry) => entry.quantity === state.quantity))
               onSelectQuantity(group.first.quantity);
           }}
-          selectLabel={(row) => t("breaksSelect", { quantity: String(row.quantity), unit })}
+          selectLabel={(row) => {
+            const group = tierGroups.find((candidate) => String(candidate.first.quantity) === row.key);
+            return group ? labelsOf(group).select : String(row.quantity);
+          }}
           selectText={t("breaksChoose")}
           selectedText={t("breaksChosen")}
         />

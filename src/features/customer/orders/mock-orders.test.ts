@@ -33,6 +33,16 @@ describe("the seeded orders against the account contract", () => {
     }
   });
 
+  it("an own-file order without a file reads awaiting_upload/customer and offers the upload; hired design stays with the team", () => {
+    const own = dtos.filter((dto) => dto.designOption === "own_file");
+    expect(own.some((dto) => dto.artworkStatus === "awaiting_upload")).toBe(true);
+    expect(own.some((dto) => dto.artworkStatus === "awaiting_template")).toBe(false);
+    for (const dto of dtos.filter((row) => row.artworkStatus === "awaiting_template")) {
+      expect(dto.designOption).not.toBe("own_file");
+      expect(dto.artworkOwner).toBe("team");
+    }
+  });
+
   it("unpaid orders say their dates follow payment", () => {
     const unpaid = dtos.filter((dto) => dto.customerStatus === "awaiting_payment");
     expect(unpaid.length).toBeGreaterThan(0);

@@ -13,6 +13,7 @@ import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import {
   artworkNoteOf,
+  artworkNoteTextOf,
   deliveryDatesOf,
   isHeldByClaim,
   isPaymentOverdue,
@@ -123,6 +124,7 @@ export default async function Page({
   const share = paymentShareOf(order);
   const heldByClaim = isHeldByClaim(order);
   const artworkNote = artworkNoteOf(order);
+  const artworkApiNote = artworkNoteTextOf(locale, order);
   const afterPayment = deliveryDatesOf(order) === "after_payment";
   const { receipt } = order;
   const cancelReason = order.cancelReasonNameTh
@@ -200,6 +202,7 @@ export default async function Page({
                 {t(`detail.artworkNote.${artworkNote === "team_dieline" ? "team" : "customer"}`)}
               </span>
             ) : null}
+            {artworkApiNote ? <span className="text-muted">{artworkApiNote}</span> : null}
           </p>
         ) : null}
         {/* The artwork workspace is a destination, not a footnote: a button, beside the design link. */}

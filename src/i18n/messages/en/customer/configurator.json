@@ -147,7 +147,7 @@
       "print_set": "Print colour set"
     },
     "ink": {
-      "hint": "Choose the colours to print; choose none to leave that side unprinted",
+      "hint": "Choose the colours to print",
       "process": "Full-colour images (4-colour CMYK)",
       "spot": "One special colour",
       "white": "White underprint",
@@ -165,6 +165,16 @@
       "label": "Print each part differently",
       "description": "Otherwise {parts} print alike. Every part is always priced.",
       "blank": "Unprinted"
+    },
+    "print": {
+      "none": "No print",
+      "spotOne": "One special colour",
+      "spotMany": "Special colours",
+      "upTo": "Choose up to {max}",
+      "spotPick": "Choose special colours (up to {max})",
+      "addOn": "Add special colours (up to {max})",
+      "summary": "Outside: {outside} · Inside: {inside}",
+      "cmyk": "CMYK"
     }
   },
   "quantity": {
@@ -313,7 +323,8 @@
     "changed": {
       "quantity": "Price per piece changed with the quantity",
       "spec": "Price changed with the specification"
-    }
+    },
+    "printRefused": "This print choice can't be priced — please choose the print again"
   },
   "actions": {
     "addToCart": "Add to cart",
@@ -617,6 +628,21 @@
     "updateDraft": "Update draft",
     "shareDraft": "Share the configuration",
     "draftKept": "Draft kept until {date}",
-    "draftHint": "Drafts are kept 90 days after the last change; a shared link works for 15 days"
+    "draftHint": "Drafts are kept 90 days after the last change; a shared link works for 15 days",
+    "pricedSpec": "Specification priced"
+  },
+  "printProblem": {
+    "intro": "This print choice can't be ordered",
+    "outside": "Outside",
+    "inside": "Inside",
+    "side": "{side}: {reason}",
+    "method_not_offered": "This product doesn't offer that way of printing",
+    "cmyk_with_spot": "CMYK can't be combined with a special colour — choose one",
+    "process_repeated": "CMYK can't be chosen twice",
+    "spot_count": "More special colours than this product takes",
+    "add_on_count": "More added special colours than this product takes",
+    "colour_repeated": "A colour can't be chosen twice",
+    "colour_not_allowed": "This colour isn't available for this product",
+    "other": "Please choose the print again"
   }
 }
