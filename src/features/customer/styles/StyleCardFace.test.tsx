@@ -70,11 +70,16 @@ describe("a style card", () => {
     expect(screen.getByText("ขอใบเสนอราคา")).toBeInTheDocument();
   });
 
-  it("shows at most two option tags and '+n' for the rest", () => {
+  it("shows at most two option tags and '+n' for the rest, and one tag plus '+n' on phones", () => {
     const { container } = face(base);
-    const tags = container.querySelectorAll("ul[aria-label] li");
-    expect(tags.length).toBeLessThanOrEqual(3);
-    expect(container.textContent).toMatch(/\+\d/);
+    const tags = [...container.querySelectorAll("ul[aria-label] li")];
+    const hiddenOnPhone = (li: Element) => /(^|\s)max-sm:hidden/.test(li.className);
+    const phoneOnly = (li: Element) => /(^|\s)sm:hidden/.test(li.className);
+    const wide = tags.filter((li) => !phoneOnly(li));
+    const phone = tags.filter((li) => !hiddenOnPhone(li));
+    expect(wide.length).toBeLessThanOrEqual(3); // two tags + "+n"
+    expect(phone.length).toBeLessThanOrEqual(2); // one tag + "+n"
+    expect(phone.at(-1)?.textContent).toMatch(/\+\d/);
   });
 
   it("draws the spec row only for the facts it is given, each hidden when missing", () => {
