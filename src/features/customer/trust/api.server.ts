@@ -4,19 +4,12 @@ import { publicApi } from "@/features/customer/catalog/api.server";
 import type { Schemas } from "@/lib/api/types";
 
 export type Guarantee = Schemas["PublicGuaranteeDto"];
-export type NetworkStats = Schemas["NetworkStatsDto"];
 export type PublicReview = Schemas["PublicReviewDto"];
 export type ReviewSummary = Schemas["ReviewSummaryDto"];
 
 /** The guarantee in force (`store.guarantee.get`, D-260): the remedies matrix and its time limits. */
 export async function getGuarantee(): Promise<Guarantee | null> {
   const { data } = await (await publicApi("content")).GET("/v1/store/guarantee");
-  return data ?? null;
-}
-
-/** The partner network's published figures (`store.network.getStats`, D-201, D-264). */
-export async function getNetworkStats(): Promise<NetworkStats | null> {
-  const { data } = await (await publicApi("content")).GET("/v1/store/network/stats");
   return data ?? null;
 }
 

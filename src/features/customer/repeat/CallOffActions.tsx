@@ -26,7 +26,7 @@ export function CallOffActions({
   agreement,
   canOrder,
 }: {
-  agreement: Schemas["CallOffAgreementDto"];
+  agreement: Schemas["StoreCallOffAgreementDto"];
   canOrder: boolean;
 }) {
   const t = useTranslations("account.callOffs");
@@ -101,7 +101,7 @@ export function CallOffActions({
           {problem ? <Callout tone="danger" title={problem} /> : null}
         </section>
       ) : null}
-      {["pending_factory", "active"].includes(agreement.status) ? (
+      {["pending_confirmation", "active"].includes(agreement.status) ? (
         <div>
           <Button variant="ghost" className="text-danger" onClick={() => setCancelling(true)}>
             {t("cancel")}

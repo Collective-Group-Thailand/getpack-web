@@ -83,6 +83,7 @@ export const launchpadHandlers = [
           productType: typeRef(order.productType),
           dueAt: null,
           amount: action === "pay" ? dto.totals.grossAmount : null,
+          overdue: false,
         });
         break;
       }
@@ -101,6 +102,7 @@ export const launchpadHandlers = [
           catalogProductNameEn: product.nameEn,
           thumbnailFileId: row.thumbnailFileId,
           lockedByOrderCode: row.lockedByOrderCode,
+          thumbnailUrl: null,
           updatedAt: row.design.updatedAt,
         };
       });

@@ -157,9 +157,6 @@ export default async function StylePage({ params, searchParams }: { params: Para
           },
         ]
       : []),
-    ...(style.partnersCount !== null
-      ? [{ term: t("detail.makers"), description: t("detail.partners", { count: style.partnersCount }) }]
-      : []),
     ...(style.useCases.length
       ? [
           {

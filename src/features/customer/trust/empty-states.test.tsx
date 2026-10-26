@@ -37,20 +37,6 @@ vi.mock("@/features/shared/format/server", () => ({
 vi.mock("@/features/customer/trust/api.server", () => ({
   getReviewSummary: async () => ({ averageRating: null, byProductType: [], count: 0, distribution: [] }),
   listReviews: async () => ({ reviews: [], total: 0 }),
-  getNetworkStats: async () => ({
-    auditCriteria: [],
-    coverage: [],
-    generatedAt: "2026-10-05T10:00:00+07:00",
-    network: {
-      published: false,
-      partnerCount: null,
-      onTimePct: null,
-      firstPassPct: null,
-      windowDays: 90,
-      minFactories: 3,
-      minJobs: 30,
-    },
-  }),
 }));
 
 // Streamed to the end: the pages' structured data and breadcrumbs now suspend while they resolve.
@@ -69,10 +55,10 @@ describe("trust pages with nothing to show yet", () => {
     expect(html).toMatchSnapshot();
   });
 
-  it("network: holds the figures back and says why", async () => {
+  it("network: shows no figures, only that there is nothing to show yet", async () => {
     const { default: NetworkPage } = await import("@/app/[locale]/(storefront)/network/page");
     const html = await render(NetworkPage);
-    expect(html).toContain("ยังไม่เผยแพร่ตัวเลข");
+    expect(html).toContain("ยังไม่มีข้อมูลเครือข่าย");
     expect(html).not.toMatch(/\d+%/);
     expect(html).toMatchSnapshot();
   });

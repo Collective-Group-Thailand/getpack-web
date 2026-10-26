@@ -514,22 +514,9 @@ export async function StudioCapabilities() {
 
 /* ----------------------------------------------------------------------------------------- 8 */
 
-export async function QualityBand({
-  photo,
-  factories,
-  claimDays,
-}: {
-  photo: HomePhoto | null;
-  factories: number | null;
-  claimDays: number | null;
-}) {
+export async function QualityBand({ photo, claimDays }: { photo: HomePhoto | null; claimDays: number | null }) {
   const t = await getTranslations("home.quality");
-  const facts =
-    factories !== null && claimDays !== null
-      ? t("factsBoth", { factories, days: claimDays })
-      : claimDays !== null
-        ? t("factsClaim", { days: claimDays })
-        : t("factsNone");
+  const facts = claimDays !== null ? t("factsClaim", { days: claimDays }) : t("factsNone");
   const shortcut =
     "border-fg-inverse/25 text-fg-inverse rounded-card block border p-4.5 outline-none hover:border-fg-inverse/60 focus-visible:ring-2 focus-visible:ring-fg-inverse";
   return (

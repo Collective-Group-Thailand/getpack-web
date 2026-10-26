@@ -45,7 +45,7 @@ export default async function Page({ params }: { params: Promise<{ agreementId: 
           </h1>
           <StatusChip map={CALL_OFF_STATUS} value={agreement.status} size="md" />
         </div>
-        {agreement.status === "pending_factory" ? <p className="text-sm">{t("pending")}</p> : null}
+        {agreement.status === "pending_confirmation" ? <p className="text-sm">{t("pending")}</p> : null}
         {agreement.declineReason ? <p className="text-danger text-sm">{agreement.declineReason}</p> : null}
       </header>
       <DescriptionList

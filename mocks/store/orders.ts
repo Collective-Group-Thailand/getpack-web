@@ -491,6 +491,12 @@ export const storeOrderHandlers = [
       pendingPoints: customer.ownerIndex === null ? 0 : 42,
       pointValue: "2.50",
       spend12m: baht(spendOf(customer)),
+      spendBasisTh:
+        "นับยอดเมื่อคำสั่งซื้อเสร็จสิ้นหลังได้รับของ · ยอดก่อน VAT ไม่รวมค่าส่ง · ย้อนหลัง 12 เดือน · อัปเดตวันละครั้ง",
+      spendBasisEn:
+        "Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily",
+      // The mock keeps no paid-but-not-completed spend.
+      spendNotYetCounted: "0.00",
       tier: current.tier,
       // The next tier up (D-134) and the 12-month spend as a share of it; 100 at the top.
       nextTier: next?.tier ?? null,

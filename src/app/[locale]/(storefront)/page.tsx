@@ -29,7 +29,7 @@ import {
 import { lowestPresetQty } from "@/features/customer/home/studio-hero";
 import { getStudioHero } from "@/features/customer/home/studio-hero.server";
 import { homeTemplates } from "@/features/customer/home/templates";
-import { getGuarantee, getNetworkStats } from "@/features/customer/trust/api.server";
+import { getGuarantee } from "@/features/customer/trust/api.server";
 import { readAccessToken } from "@/lib/auth/session";
 
 /**
@@ -47,23 +47,21 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [content, tree, styles, published, faqs, channels, guarantee, network, hero, library, stock, jar] =
-    await Promise.all([
-      getHomeContent(locale),
-      getCatalogueTree(),
-      listStyles({ sort: "popular", limit: 7 }).catch(() => null),
-      // The curated templates are looked up in the whole (cached) library; popular ones fill any gap.
-      listAllStyles().catch(() => []),
-      listFaqs().catch(() => []),
-      getSupportChannels(),
-      getGuarantee().catch(() => null),
-      getNetworkStats().catch(() => null),
-      getStudioHero(),
-      getLibraryTotals(),
-      // The ready-to-ship shelf picks a varied two dozen from these; a failure leaves the shelf out.
-      listStockProducts({ perPage: 100 }).catch(() => null),
-      cookies(),
-    ]);
+  const [content, tree, styles, published, faqs, channels, guarantee, hero, library, stock, jar] = await Promise.all([
+    getHomeContent(locale),
+    getCatalogueTree(),
+    listStyles({ sort: "popular", limit: 7 }).catch(() => null),
+    // The curated templates are looked up in the whole (cached) library; popular ones fill any gap.
+    listAllStyles().catch(() => []),
+    listFaqs().catch(() => []),
+    getSupportChannels(),
+    getGuarantee().catch(() => null),
+    getStudioHero(),
+    getLibraryTotals(),
+    // The ready-to-ship shelf picks a varied two dozen from these; a failure leaves the shelf out.
+    listStockProducts({ perPage: 100 }).catch(() => null),
+    cookies(),
+  ]);
 
   // Instant-price categories lead, as they lead the catalogue (UX audit step 4). Only packaging
   // a customer configures: the `standard_product` and `service` types are bookkeeping, not a range.
@@ -76,7 +74,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     );
   const styleCategories = styles?.facets.category ?? [];
   const templateCount = styleCategories.reduce((sum, facet) => sum + facet.count, 0);
-  const factories = network?.network.published ? network.network.partnerCount : null;
 
   return (
     <>
@@ -114,11 +111,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <ScreenToFactory sample={content.photos.process.sample} packing={content.photos.process.packing} />
       {content.cases.length > 0 ? <CustomerCases cases={content.cases} /> : null}
       <StudioCapabilities />
-      <QualityBand
-        photo={content.photos.quality}
-        factories={factories}
-        claimDays={guarantee?.claimWindowDays ?? null}
-      />
+      <QualityBand photo={content.photos.quality} claimDays={guarantee?.claimWindowDays ?? null} />
       <ProductRows categories={categories} photos={content.photos.categories} locale={locale} />
       <HomeFaq groups={faqs} locale={locale} hours={channels?.hours ?? null} />
       <HomeContact channels={channels} />

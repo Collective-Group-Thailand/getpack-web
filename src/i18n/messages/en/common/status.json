@@ -783,6 +783,7 @@
   },
   "callOff": {
     "pendingFactory": "Waiting for the factory",
+    "pendingConfirmation": "Awaiting confirmation",
     "active": "Active",
     "declined": "Declined",
     "cancelled": "Cancelled",

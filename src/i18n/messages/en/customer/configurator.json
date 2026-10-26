@@ -268,7 +268,7 @@
     "reasons": {
       "no_price_path": "Our team prices this spec by hand — send a quote request.",
       "not_priceable": "This spec cannot be priced automatically — send a quote request.",
-      "capacity_unavailable": "Production is fully booked for now — try a smaller quantity, or send a quote request.",
+      "not_instant": "Production is fully booked for now — try a smaller quantity, or send a quote request.",
       "envelope_not_covered": "This size or spec is outside what our instant-price factory covers — send a request for quote",
       "delivery_unavailable": "We can't deliver to this area yet — try another postcode or send a request for quote",
       "style_variant_not_publishable": "This style isn't open for instant pricing yet — send a request for quote",

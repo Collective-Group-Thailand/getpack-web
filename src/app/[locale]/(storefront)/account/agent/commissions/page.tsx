@@ -49,7 +49,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
                 <p className="font-medium">
                   {t(`kinds.${entry.kind}`)}
                   {entry.orderCode ? <span className="font-mono text-sm"> {entry.orderCode}</span> : null}
-                  {entry.factoryName ? <span> · {entry.factoryName}</span> : null}
                   {entry.customerName ? <span className="text-muted"> · {entry.customerName}</span> : null}
                 </p>
                 <p className="text-muted text-xs">

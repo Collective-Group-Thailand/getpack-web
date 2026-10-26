@@ -138,6 +138,7 @@ function startingPrice(s: MockStyle): Schemas["StylePriceDto"] | null {
     catalogProductSlug: s.row.category === "corrugated" ? "shipping-box" : "tuck-end-box",
     computedAt: bangkokIso(-60),
     currency: "THB",
+    label: { en: "Reference configuration", th: "สเปกอ้างอิง" },
     quantity: 1000,
     unitPrice: n.toFixed(2),
   };
@@ -200,7 +201,6 @@ function detail(s: MockStyle, favourite: boolean | null): Detail {
     descriptionEn: null,
     descriptionTh: null,
     leadTime: s.pricePath === "instant" ? { minDays: 7, maxDays: 12 } : null,
-    partnersCount: s.row.wave === 1 ? 4 : null,
     sizeRanges: [
       {
         materialClass: s.row.material_class,

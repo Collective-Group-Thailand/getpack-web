@@ -640,6 +640,8 @@ export function toStoreConfiguratorDto(configurator: Configurator): Schemas["Sto
     calculator: configurator.calculator,
     instant: configurator.fixedInputs.difficultyLevelId !== undefined,
     difficultyLevelId: configurator.fixedInputs.difficultyLevelId ?? null,
+    // D-441: the mock keeps no reference configuration per product.
+    defaultSpec: null,
     patterns: configurator.size.patterns.map((pattern) => ({
       id: pattern.id,
       code: pattern.code,
@@ -661,6 +663,7 @@ export function toStoreConfiguratorDto(configurator: Configurator): Schemas["Sto
             }
           : null,
       dielineKey: pattern.dielineKey,
+      dielineVariantCodes: [],
       imageUrl: pattern.imageUrl,
       descriptionTh: null,
       descriptionEn: null,
@@ -687,6 +690,7 @@ export function toStoreConfiguratorDto(configurator: Configurator): Schemas["Sto
       lengthMm: size.lengthMm,
       widthMm: size.widthMm,
       heightMm: box ? (size.heightMm ?? 0) : 0,
+      isDefault: false,
     })),
     optionGroups,
     printAreas: configurator.calculator === "corrugate" ? ["top", "side", "top_side", "all_round"] : [],
@@ -929,7 +933,7 @@ export function stepOf(inputs: Inputs, quantity: number, postcode: string | unde
     shippingPendingReason: null,
   });
   // D-101: the one mock factory's weekly capacity. D-043: its machines stop at 450 mm.
-  if (quantity > 200_000) return noPrice("capacity_unavailable");
+  if (quantity > 200_000) return noPrice("not_instant");
   if (inputs.l > 450) return noPrice("no_price_path");
 
   const productNet = unitNetOf(inputs, quantity) * quantity;
@@ -1095,6 +1099,25 @@ function specsOf(inputs: Inputs, raw: Record<string, unknown>, en: boolean): Sto
   if (inks.length > 0)
     specs.push({ label: en ? "Print colours" : "สีพิมพ์", value: inks.map((row) => String(row.name)).join(", ") });
   return specs;
+}
+
+/** D-441: what was priced, as the spec lines and as one string, in both languages. */
+export function calculationSpecOf(
+  inputs: Inputs,
+  raw: Record<string, unknown>,
+): Pick<Schemas["QuoteCalculationDto"], "specLabel" | "specs"> {
+  const th = specsOf(inputs, raw, false);
+  const en = specsOf(inputs, raw, true);
+  return {
+    specLabel: { th: th.map((spec) => spec.value).join(" · "), en: en.map((spec) => spec.value).join(" · ") },
+    specs: th.map((spec, index) => ({
+      key: `spec_${index + 1}`,
+      labelTh: spec.label,
+      labelEn: en[index]!.label,
+      valueTh: spec.value,
+      valueEn: en[index]!.value,
+    })),
+  };
 }
 
 const BASIS_TH: Record<Basis, string> = {
@@ -1414,6 +1437,7 @@ export const storeQuoteHandlers: HttpHandler[] = [
       calculationId: null,
       calculatorVersion: "mock-0.0.0",
       dimensions: inputs.dimensions,
+      ...calculationSpecOf(inputs, body.configuration as unknown as Record<string, unknown>),
       target: target
         ? {
             targetPricePerUnit: target,

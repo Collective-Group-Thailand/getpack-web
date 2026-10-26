@@ -783,6 +783,7 @@
   },
   "callOff": {
     "pendingFactory": "รอโรงงานตอบรับ",
+    "pendingConfirmation": "รอยืนยัน",
     "active": "ใช้งานได้",
     "declined": "โรงงานไม่รับ",
     "cancelled": "ยกเลิก",
