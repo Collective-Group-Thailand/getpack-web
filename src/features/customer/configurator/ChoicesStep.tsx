@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 
 import { pick } from "@/features/customer/catalog/localize";
+import { Badge } from "@/ui/components/Badge";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { NumberInput } from "@/ui/components/Input";
@@ -27,6 +28,9 @@ import {
   type PartPrint,
 } from "./state";
 import { GlossaryChip } from "@/features/customer/learn/GlossaryChip";
+import { materialNoteKey } from "./material-notes";
+import { PriceSlot, useOptionFigures } from "./OptionFigure";
+import { materialKey, type OptionPrices } from "./option-prices";
 import { PrintSideChoice } from "./PrintSideChoice";
 import { isCorrugate } from "./print-model";
 
@@ -40,6 +44,8 @@ interface ChoicesStepProps {
   onChange: (patch: Partial<ConfiguratorState>) => void;
   /** Group kinds with a required answer still missing — shown as an error on that group. */
   missing: Set<string>;
+  /** The price change of each material and print card against the current selection (the batch answer). */
+  prices: OptionPrices;
 }
 
 function AreaFields({
@@ -99,8 +105,11 @@ function AreaFields({
  * parts (a telescope body and lid) prints alike unless the customer prints each part on its own;
  * every part is priced either way.
  */
-export function ChoicesStep({ configurator, groups, state, onChange, missing }: ChoicesStepProps) {
+export function ChoicesStep({ configurator, groups, state, onChange, missing, prices }: ChoicesStepProps) {
   const t = useTranslations("configurator.choices");
+  const tNotes = useTranslations("configurator.materialNotes");
+  const tOptions = useTranslations("configurator.options");
+  const figures = useOptionFigures();
   const locale = useLocale();
 
   const setChoice = (group: ChoiceGroup, ids: string[]) =>
@@ -115,6 +124,12 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
     const kind = typeof option.attributes?.colourKind === "string" ? option.attributes.colourKind : null;
     const note = isProcessInk(option) ? t("ink.process") : kind ? t(`ink.${kind}`) : null;
     return [note, own].filter(Boolean).join(" · ") || undefined;
+  };
+  /** A material's one line: the content file's sentence, else the API's own, else none (never invented). */
+  const materialNote = (option: StoreOption) => {
+    const key = materialNoteKey(option);
+    if (key && tNotes.has(key)) return tNotes(key);
+    return pick(locale, option.descriptionTh ?? "", option.descriptionEn) || undefined;
   };
   const isPrint = (group: ChoiceGroup): group is ChoiceGroup & { kind: keyof PartPrint } =>
     group.kind === "print_front" || group.kind === "print_back";
@@ -234,6 +249,50 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
                 ids={chosen}
                 onChange={(ids) => setChoice(group, ids)}
                 byId={byId}
+              />
+            </Field>
+          );
+        }
+        if (group.kind === "material") {
+          return (
+            <Field
+              key={group.kind}
+              label={name}
+              labelHidden
+              required={group.required}
+              requiredLabel={t("required")}
+              error={missing.has(group.kind) ? t("pickOne", { name }) : undefined}
+            >
+              <RadioCards
+                columns={2}
+                value={chosen[0]}
+                onValueChange={(id) => setChoice(group, [id])}
+                options={group.options.map((option) => {
+                  const price = prices.price(materialKey(option.id));
+                  return {
+                    value: option.id,
+                    label: pick(locale, option.nameTh, option.nameEn),
+                    description: materialNote(option),
+                    badge: option.isDefault ? (
+                      <Badge size="sm" tone="neutral">
+                        {tOptions("default")}
+                      </Badge>
+                    ) : undefined,
+                    // The prototype's cards are text; only a real photo of the board earns the room.
+                    visual: option.imageUrl ? (
+                      <MaterialSwatch colour={option.swatchHex} imageUrl={option.imageUrl} size="md" />
+                    ) : undefined,
+                    trailing: (
+                      <PriceSlot
+                        pending={prices.pending}
+                        unitPrice={price?.unitPrice}
+                        className="min-w-[4.5rem] text-end"
+                      >
+                        {figures.delta(price, chosen[0] === option.id)}
+                      </PriceSlot>
+                    ),
+                  };
+                })}
               />
             </Field>
           );

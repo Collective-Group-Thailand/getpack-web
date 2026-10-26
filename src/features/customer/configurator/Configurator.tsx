@@ -506,6 +506,7 @@ export function Configurator({
               state={state}
               onChange={updateIn(step)}
               missing={new Set(missingGroups.map((group) => group.kind))}
+              prices={optionPrices}
             />
           </div>
         );
