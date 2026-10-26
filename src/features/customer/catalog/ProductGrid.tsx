@@ -98,7 +98,15 @@ export async function ProductGrid({
               {t(product.inStock ? "stock.inStock" : "stock.outOfStock")}
             </Badge>
           }
-          price={text.price ?? t("price.seePrice")}
+          price={
+            text.price ? (
+              <>
+                {text.price} <span className="text-muted text-xs">{text.vatLabel}</span>
+              </>
+            ) : (
+              t("price.seePrice")
+            )
+          }
           meta={t("stock.minOrder", {
             quantity: format.number(product.minOrderQty),
             unit: t(`stock.units.${product.unit}`),
