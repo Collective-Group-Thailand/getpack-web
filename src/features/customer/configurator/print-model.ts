@@ -115,6 +115,28 @@ export function choiceOf(side: PrintSide, ids: readonly string[]): PrintChoice {
   return method;
 }
 
+/**
+ * The radio values a side offers, in the order the cards show them: ไม่พิมพ์, each spot colour (or
+ * `spot` when more than one may be picked), CMYK — only what the model offers (`hasInk`: the product
+ * lists that ink). The cards and the option prices (`option-prices.ts`) read this one list, so a
+ * card and its price always share a key.
+ */
+export function choiceValues(side: PrintSide, hasInk: (id: string) => boolean): PrintChoice[] {
+  const spotIds = side.spot?.inkColourIds.filter(hasInk) ?? [];
+  const maxSpot = side.spot?.maxColours ?? 0;
+  return [
+    ...(side.methods.includes("none") ? ["none"] : []),
+    ...(side.methods.includes("spot") && side.spot
+      ? maxSpot === 1
+        ? spotIds.map((id) => `spot:${id}`)
+        : spotIds.length > 0
+          ? ["spot"]
+          : []
+      : []),
+    ...(side.methods.includes("cmyk") && side.cmyk ? ["cmyk"] : []),
+  ];
+}
+
 /** The ids a radio stands for; picking spot with N > 1 starts from the side's default or the first ink. */
 export function idsOfChoice(side: PrintSide, choice: PrintChoice, current: readonly string[]): string[] {
   if (choice === "none") return [];

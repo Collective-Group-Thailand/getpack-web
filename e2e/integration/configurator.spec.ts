@@ -22,7 +22,7 @@ test("configure → advisor → alternative → target lever → cart, on the re
   await page.locator("html[data-hydrated]").waitFor();
 
   // The standard size is the catalogue's inside size; every other basis comes from the API.
-  await expect(page.getByRole("radio", { name: /ขนาดมาตรฐาน/ })).toBeChecked();
+  await expect(page.getByRole("radio", { name: /เบอร์มาตรฐาน/ })).toBeChecked();
   await page.getByRole("radio", { name: "กำหนดเอง" }).click();
   await page.getByRole("radio", { name: /ขนาดภายนอก/ }).click();
   await page.getByRole("textbox", { name: "ยาว" }).fill("406");

@@ -162,7 +162,10 @@ describe("the configurator state", () => {
     // does not offer "online_designer", so neither the selection, its summary nor the cart line carry it.
     expect(designOptionsOf(configurator, false)).not.toContain("online_designer");
     expect(designOptionOf(configurator, "online_designer", false)).toBe(configurator.design.default);
-    const designerDefault = { ...configurator, design: { ...configurator.design, default: "online_designer" as const } };
+    const designerDefault = {
+      ...configurator,
+      design: { ...configurator.design, default: "online_designer" as const },
+    };
     expect(designOptionOf(designerDefault, "online_designer", false)).toBe(designOptionsOf(designerDefault, false)[0]);
     expect(designOptionOf(designerDefault, "online_designer", true)).toBe("online_designer");
   });

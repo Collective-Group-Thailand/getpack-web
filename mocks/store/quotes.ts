@@ -1518,37 +1518,119 @@ export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
 
+/** Test-only knobs and the log of the batch endpoint's mock (see its handler). */
+export const MAX_BATCH_VARIANTS = 24;
+export const mockBatch: {
+  mode: "ok" | "missing" | "throttled";
+  requests: (Schemas["CalculateQuoteBatchDto"] | null)[];
+} = { mode: "ok", requests: [] };
+
+/** The mock's difference of two decimal strings, signed and with two decimals; null when either is missing. */
+function signedDifference(value: string | null | undefined, base: string | null | undefined): string | null {
+  if (value == null || base == null) return null;
+  const satang = Math.round(Number(value) * 100) - Math.round(Number(base) * 100);
+  return satang > 0 ? `+${baht(satang)}` : baht(satang);
+}
+
+/** `store.quotes.calculate` as the mock answers it; a refusal is the Response the API would send. */
+function calculationOf(body: Schemas["CalculateQuoteDto"] | null): Schemas["QuoteCalculationDto"] | Response {
+  if (!body?.productTypeCode || !body.configuration)
+    return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+      { path: "configuration", code: "required", message: "required" },
+    ]);
+  const inputs = inputsOf(body.productTypeCode, body.configuration as unknown as Record<string, unknown>);
+  if (inputs instanceof Response) return inputs;
+  if (!Array.isArray(inputs.quantities) || inputs.quantities.length === 0 || inputs.quantities.length > 10)
+    return invalid("configuration.quantities", "ระบุจำนวน 1–10 ระดับ");
+  const steps = inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode));
+  const target = body.targetPricePerUnit;
+  return {
+    // The mock records no calculations.
+    calculationId: null,
+    calculatorVersion: "mock-0.0.0",
+    dimensions: inputs.dimensions,
+    ...calculationSpecOf(inputs, body.configuration as unknown as Record<string, unknown>),
+    target: target
+      ? {
+          targetPricePerUnit: target,
+          steps: steps
+            .filter((step) => step.instant && step.unitPrice)
+            .map((step) => ({ quantity: step.quantity, ...gapOf(step.unitPrice!, target) })),
+        }
+      : null,
+    steps,
+  };
+}
+
 export const storeQuoteHandlers: HttpHandler[] = [
   // Published (B2.3), mocked for every instant type in its own published configuration.
   http.post("*/v1/store/quotes/actions/calculate", async ({ request }) => {
     const body = (await request.json().catch(() => null)) as Schemas["CalculateQuoteDto"] | null;
-    if (!body?.productTypeCode || !body.configuration)
-      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
-        { path: "configuration", code: "required", message: "required" },
-      ]);
-    const inputs = inputsOf(body.productTypeCode, body.configuration as unknown as Record<string, unknown>);
-    if (inputs instanceof Response) return inputs;
-    if (!Array.isArray(inputs.quantities) || inputs.quantities.length === 0 || inputs.quantities.length > 10)
-      return invalid("configuration.quantities", "ระบุจำนวน 1–10 ระดับ");
-    const steps = inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode));
-    const target = body.targetPricePerUnit;
-    const result: Schemas["QuoteCalculationDto"] = {
-      // The mock records no calculations.
-      calculationId: null,
-      calculatorVersion: "mock-0.0.0",
-      dimensions: inputs.dimensions,
-      ...calculationSpecOf(inputs, body.configuration as unknown as Record<string, unknown>),
-      target: target
-        ? {
-            targetPricePerUnit: target,
-            steps: steps
-              .filter((step) => step.instant && step.unitPrice)
-              .map((step) => ({ quantity: step.quantity, ...gapOf(step.unitPrice!, target) })),
-          }
-        : null,
-      steps,
-    };
-    return HttpResponse.json(result);
+    const result = calculationOf(body);
+    return result instanceof Response ? result : HttpResponse.json(result);
+  }),
+
+  // Published (Stage C, C4): the option cards' prices in one request. Each variant is priced by the
+  // SAME mock calculation as `calculate`; the deltas are the mock's own (test-only) difference of
+  // two decimal strings against the baseline. Stateful: `batchRequests` records what was asked, and
+  // `mockBatch.mode` lets a test or the dev mock answer 404 / 429 like an API without the endpoint.
+  http.post("*/v1/store/quotes/actions/calculate-batch", async ({ request }) => {
+    const body = (await request.json().catch(() => null)) as Schemas["CalculateQuoteBatchDto"] | null;
+    mockBatch.requests.push(body);
+    if (mockBatch.mode === "missing") return problem(404, "http.not_found", "ไม่พบเส้นทางนี้");
+    if (mockBatch.mode === "throttled") return problem(429, "http.rate_limited", "เรียกบ่อยเกินไป");
+    if (!body?.productTypeCode || !Array.isArray(body.variants) || body.variants.length === 0)
+      return invalid("variants", "required");
+    if (body.variants.length > MAX_BATCH_VARIANTS) return invalid("variants", `ไม่เกิน ${MAX_BATCH_VARIANTS} รูปแบบ`);
+    if (body.baselineKey !== undefined && !body.variants.some((variant) => variant.key === body.baselineKey))
+      return invalid("baselineKey", "ต้องเป็น key ของรูปแบบหนึ่งในรายการ");
+    const results = await Promise.all(
+      body.variants.map(async (variant) => {
+        const configuration = body.quantities
+          ? { ...(variant.configuration as Record<string, unknown>), quantities: body.quantities }
+          : variant.configuration;
+        const outcome = calculationOf({ productTypeCode: body.productTypeCode, configuration });
+        if (outcome instanceof Response) {
+          const detail = (await outcome
+            .clone()
+            .json()
+            .catch(() => null)) as { code?: string; detail?: string } | null;
+          return {
+            key: variant.key,
+            calculation: null,
+            deltas: null,
+            problem: { code: detail?.code ?? "validation.failed", message: detail?.detail ?? "" },
+          };
+        }
+        return {
+          key: variant.key,
+          calculation: outcome,
+          deltas: null as Schemas["QuoteBatchDeltaDto"][] | null,
+          problem: null,
+        };
+      }),
+    );
+    const baseline = results.find((result) => result.key === body.baselineKey)?.calculation ?? null;
+    if (body.baselineKey !== undefined) {
+      for (const result of results) {
+        if (!result.calculation) continue;
+        result.deltas = result.calculation.steps.map((step) => {
+          const base = baseline?.steps.find((entry) => entry.quantity === step.quantity);
+          return {
+            quantity: step.quantity,
+            unitPriceDelta: signedDifference(
+              step.instant ? step.unitPrice : null,
+              base?.instant ? base.unitPrice : null,
+            ),
+            totalDelta: signedDifference(
+              step.instant ? step.productAmount : null,
+              base?.instant ? base.productAmount : null,
+            ),
+          };
+        });
+      }
+    }
+    return HttpResponse.json({ results });
   }),
 
   // Published (`store.catalog.getConfigurator`, v0.3.0): the mock's view in the published shape.
