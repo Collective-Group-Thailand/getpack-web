@@ -8,6 +8,7 @@ import type { StyleDetail } from "@/features/customer/catalog/api.server";
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { Badge } from "@/ui/components/Badge";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Button } from "@/ui/components/Button";
 import { Spinner } from "@/ui/components/Spinner";
 import { Icon } from "@/ui/icons";
@@ -67,6 +68,7 @@ export function VariantPicker({
     return first ? selectionOf(first, style.axes) : {};
   });
   const [show3d, setShow3d] = useState(false);
+  const [pictureView, setPictureView] = useState<"photo" | "dieline">("photo");
   const variant = variantOf(style.variants, selection);
   // The style's photo (D-426) leads; the engine's thumbnails and drawing follow.
   const photo = storeImageSrc(style.photo?.url);
@@ -74,6 +76,10 @@ export function VariantPicker({
     style.assets.find((a) => a.variantCode === variant?.code && a.kind === "thumbnail_3d") ??
     style.assets.find((a) => a.variantCode === null && a.kind === "thumbnail_3d") ??
     style.assets.find((a) => a.variantCode === null && a.kind === "thumbnail_2d");
+  // The "แบบคลี่" view exists only when the API holds a dieline drawing for the style (never the engine's stand-in).
+  const dielineAsset =
+    style.assets.find((a) => a.variantCode === variant?.code && a.kind === "dieline_svg") ??
+    style.assets.find((a) => a.variantCode === null && a.kind === "dieline_svg");
   const describe = (axis: string, value: unknown) =>
     Array.isArray(value)
       ? value.length
@@ -88,7 +94,16 @@ export function VariantPicker({
           {t("detail.preview")}
         </h2>
         <div className="bg-bg-subtle rounded-card flex min-h-64 items-center justify-center overflow-hidden p-2">
-          {show3d && variant ? (
+          {pictureView === "dieline" && dielineAsset && !show3d ? (
+            // eslint-disable-next-line @next/next/no-img-element -- a signed URL on the API's file host
+            <img
+              src={dielineAsset.url}
+              alt={t("detail.thumbnailAlt", { name, code: variant?.code ?? style.code })}
+              width={640}
+              height={480}
+              className="bg-surface aspect-[4/3] h-auto w-full max-w-full object-contain p-4"
+            />
+          ) : show3d && variant ? (
             <StylePreview3D code={style.code} options={variant.options} name={variant.code} />
           ) : photo ? (
             // eslint-disable-next-line @next/next/no-img-element -- the API's public image, through the BFF
@@ -122,6 +137,18 @@ export function VariantPicker({
             <Icon name="box" size={64} className="text-subtle" aria-hidden="true" />
           )}
         </div>
+        {dielineAsset && !show3d ? (
+          <SegmentedControl
+            label={t("detail.viewLabel")}
+            size="sm"
+            value={pictureView}
+            onValueChange={setPictureView}
+            options={[
+              { value: "photo", label: t("detail.viewPhoto") },
+              { value: "dieline", label: t("detail.viewDieline") },
+            ]}
+          />
+        ) : null}
         {!show3d ? (
           <Button variant="secondary" iconStart="box" onClick={() => setShow3d(true)} disabled={!variant}>
             {t("detail.show3d")}
@@ -221,7 +248,12 @@ export function VariantPicker({
           ) : null}
           {variant ? (
             <div className="pt-1">
-              <VariantActions base={style.code} variant={variant} {...actions} />
+              <VariantActions
+                base={style.code}
+                variant={variant}
+                designLabel={compact ? t("detail.startDesign") : undefined}
+                {...actions}
+              />
             </div>
           ) : null}
         </div>
