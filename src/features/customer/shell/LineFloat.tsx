@@ -4,26 +4,37 @@ import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { Link } from "@/i18n/navigation";
+import { clientEnv } from "@/lib/env";
 import { Button } from "@/ui/components/Button";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
-import { useCompare } from "./compare-store";
+/**
+ * The id to show: the build's `NEXT_PUBLIC_LINE_OA_ID` first (GLOBAL-RULES §5), else the one staff
+ * keep in the API's support channels; none → the button is not drawn (never a made-up id).
+ */
+export function resolveLineOaId(fromEnv: string | null | undefined, fromApi: string | null | undefined): string | null {
+  return fromEnv?.trim() || fromApi?.trim() || null;
+}
 
 /**
  * "คุยทาง LINE" at the page's bottom-end corner (styles redesign §6.1): the LINE Official Account
- * getpack configured (`store.support.channels.lineOaId` — never a constant here), with its id to
+ * getpack configured (`NEXT_PUBLIC_LINE_OA_ID`, else `store.support.channels.lineOaId` — never a constant here), with its id to
  * copy, the add-friend link, and the call-back request of the existing CS hand-off. A chat icon
  * and words, not LINE's logo. It moves up when the compare tray is docked, so neither hides the
- * other. The page renders it only when an id is configured.
+ * other. It renders nothing when neither source has an id.
  *
  * A disclosure rather than a popover library: it is on the page from the first paint, so it
  * carries no script beyond its own (the storefront's JS budget). Escape and a click outside
  * close it; Escape returns focus to the button.
  */
-export function LineFloat({ lineOaId }: { lineOaId: string }) {
+export function LineFloat({ apiLineOaId }: { apiLineOaId?: string | null }) {
+  const lineOaId = resolveLineOaId(clientEnv.NEXT_PUBLIC_LINE_OA_ID, apiLineOaId);
+  return lineOaId ? <LineChat lineOaId={lineOaId} /> : null;
+}
+
+function LineChat({ lineOaId }: { lineOaId: string }) {
   const t = useTranslations("styles.library");
-  const tray = useCompare().codes.length > 0;
   const [open, setOpen] = useState(false);
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
@@ -53,7 +64,8 @@ export function LineFloat({ lineOaId }: { lineOaId: string }) {
       ref={root}
       className={cn(
         "z-sticky fixed end-4 flex flex-col items-end gap-2 transition-[bottom] duration-200 motion-reduce:transition-none",
-        tray ? "bottom-40 md:bottom-24" : "bottom-20 md:bottom-6",
+        // Above the compare tray while it is docked (the tray marks itself `data-compare-tray`).
+        "bottom-20 md:bottom-6 [body:has([data-compare-tray])_&]:bottom-40 md:[body:has([data-compare-tray])_&]:bottom-24",
       )}
     >
       {open ? (
