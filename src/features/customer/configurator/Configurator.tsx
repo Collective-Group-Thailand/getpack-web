@@ -11,9 +11,10 @@ import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import type { LengthUnit } from "@/ui/components/DimensionInput";
-import { QuoteDockSpacer } from "@/ui/components/QuoteDock";
 import { Skeleton } from "@/ui/components/Skeleton";
-import { Stepper, type StepStatus } from "@/ui/components/Stepper";
+import { StepCard } from "@/ui/components/StepCard";
+import { scrollToStep, StepChips, type StepChip } from "@/ui/components/StepChips";
+import type { StepStatus } from "@/ui/components/Stepper";
 
 import { quantityBand } from "../analytics/bands";
 import { loadOf, useAdvisor, useAdvisorMethod, type AdvisorOption } from "./advisor";
@@ -140,7 +141,6 @@ export function Configurator({
   const method = useAdvisorMethod(configurator);
   const advisorOn = method.data?.available === true;
   const steps = useMemo(() => stepsOf(configurator, { advisor: advisorOn }), [configurator, advisorOn]);
-  const [current, setCurrent] = useState<StepKey>(steps[0]!);
 
   // Steps the customer changed or confirmed; a draft, shared or saved configuration is theirs already.
   const [touched, setTouched] = useState<ReadonlySet<StepKey>>(() =>
@@ -148,10 +148,12 @@ export function Configurator({
   );
   const touch = (step: StepKey) =>
     setTouched((previous) => (previous.has(step) ? previous : new Set(previous).add(step)));
-  const update = (patch: Partial<ConfiguratorState>) => {
-    touch(current);
+  const update = (patch: Partial<ConfiguratorState>, step?: StepKey) => {
+    if (step) touch(step);
     setState((previous) => ({ ...previous, ...patch }));
   };
+  /** A step's own changes mark it as the customer's (it stops reading "ค่าเริ่มต้น"). */
+  const updateIn = (step: StepKey) => (patch: Partial<ConfiguratorState>) => update(patch, step);
 
   // D-182: the bases this pattern is measured on, as the API's conversion knows its construction.
   // A style the API builds flat is measured on its finished size only, so that is its basis; a
@@ -176,13 +178,16 @@ export function Configurator({
   const body = ready ? buildCalculateBody(configurator, state) : null;
   const price = useLivePrice(body);
   // 422 `pricing.print_combination_invalid`: one readable line per refused side, never a crash.
-  const refusal = isApiError(price.error) && price.error.code === "pricing.print_combination_invalid" ? price.error : null;
+  const refusal =
+    isApiError(price.error) && price.error.code === "pricing.print_combination_invalid" ? price.error : null;
   const refusedLines = refusal
     ? (() => {
         const lines = refusal.errors.flatMap((entry) => {
           const side = refusedSide(entry.path ?? "");
           if (!side) return [];
-          const reason = t.has(`printProblem.${entry.code}`) ? t(`printProblem.${entry.code}`) : t("printProblem.other");
+          const reason = t.has(`printProblem.${entry.code}`)
+            ? t(`printProblem.${entry.code}`)
+            : t("printProblem.other");
           return [t("printProblem.side", { side: t(`printProblem.${side}`), reason })];
         });
         return lines.length > 0 ? lines : [t("printProblem.other")];
@@ -207,10 +212,13 @@ export function Configurator({
     const recommendation = advisor.recommend.data;
     if (!recommendation) return;
     await advisor.choose.mutateAsync({ recommendationId: recommendation.id, option });
-    update({
-      choices: { ...state.choices, material: [option.board.id] },
-      advisory: { recommendationId: recommendation.id, boardId: option.board.id },
-    });
+    update(
+      {
+        choices: { ...state.choices, material: [option.board.id] },
+        advisory: { recommendationId: recommendation.id, boardId: option.board.id },
+      },
+      "material",
+    );
   };
 
   const reseed = (quote: SavedQuote) =>
@@ -338,6 +346,20 @@ export function Configurator({
     setState((previous) => (previous.unit === remembered ? previous : { ...previous, unit: remembered }));
   }, [session]);
 
+  // The sticky chip bar's real height, so a step scrolled to lands just under it (and the header).
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const container = root.current;
+    const bar = container?.querySelector<HTMLElement>("[data-step-chips]");
+    if (!container || !bar || typeof ResizeObserver === "undefined") return;
+    const measure = () =>
+      container.style.setProperty("--step-scroll-mt", `calc(var(--site-sticky-top) + ${bar.offsetHeight}px + 1rem)`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, []);
+
   // D-102: the funnel's "configure" step, once per visit; "quote shown" when a price arrives.
   const opened = useRef(false);
   useEffect(() => {
@@ -395,17 +417,6 @@ export function Configurator({
     })();
     return own;
   };
-  // Steps are ticked in order (UX audit, configure): a later step that has its defaults is not
-  // shown as done while an earlier one still waits, which read as "steps 5–6 done, 4 not".
-  const statusOf = (step: StepKey): StepStatus => {
-    const index = steps.indexOf(step);
-    const earlierOpen = steps.slice(0, index).some((earlier) => ownStatusOf(earlier) !== "complete");
-    const own = ownStatusOf(step);
-    const ordered = own === "complete" && earlierOpen ? "upcoming" : own;
-    if (step !== current) return ordered;
-    return ordered === "error" ? "error" : "current";
-  };
-
   const summaryOf = (step: StepKey): string | undefined => {
     switch (step) {
       case "size":
@@ -431,23 +442,6 @@ export function Configurator({
     }
   };
 
-  const next = (step: StepKey) => steps[steps.indexOf(step) + 1];
-  const nextButton = (step: StepKey) => {
-    const following = next(step);
-    return following ? (
-      <button
-        type="button"
-        onClick={() => {
-          touch(step);
-          setCurrent(following);
-        }}
-        className="text-primary mt-4 inline-flex min-h-10 items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
-      >
-        {t("next", { step: t(`steps.${following}`) })}
-      </button>
-    ) : null;
-  };
-
   const materialName = (() => {
     const material = state.choices.material?.[0] ? byId.get(state.choices.material[0]) : undefined;
     return material ? pick(locale, material.nameTh, material.nameEn) : null;
@@ -460,7 +454,7 @@ export function Configurator({
           <SizeStep
             configurator={configurator}
             state={state}
-            onChange={update}
+            onChange={updateIn("size")}
             onUnitChange={changeUnit}
             bases={bases}
             conversion={conversion}
@@ -468,7 +462,7 @@ export function Configurator({
           />
         );
       case "logistics":
-        return <LogisticsStep load={state.load} onChange={update} />;
+        return <LogisticsStep load={state.load} onChange={updateIn("logistics")} />;
       case "material":
       case "printing":
       case "finishing":
@@ -483,7 +477,7 @@ export function Configurator({
                 recommending={advisor.recommend.isPending}
                 recommendError={advisor.recommend.error}
                 onRecommend={recommend}
-                onEditLoad={() => setCurrent("logistics")}
+                onEditLoad={() => scrollToStep(anchorOf("logistics"))}
                 chosenBoardId={state.advisory?.boardId ?? null}
                 onChoose={chooseBoard}
                 choosing={advisor.choose.isPending}
@@ -494,21 +488,21 @@ export function Configurator({
               configurator={configurator}
               groups={groupsIn(configurator, step)}
               state={state}
-              onChange={update}
+              onChange={updateIn(step)}
               missing={new Set(missingGroups.map((group) => group.kind))}
             />
           </div>
         );
       case "quantity":
-        return <QuantityStep configurator={configurator} state={state} onChange={update} unit={unit} />;
+        return <QuantityStep configurator={configurator} state={state} onChange={updateIn("quantity")} unit={unit} />;
       case "delivery":
-        return <DeliveryStep state={state} onChange={update} />;
+        return <DeliveryStep state={state} onChange={updateIn("delivery")} />;
       case "design":
         return (
           <DesignStep
             configurator={configurator}
             state={state}
-            onChange={update}
+            onChange={updateIn("design")}
             designerAvailable={designerAvailable}
           />
         );
@@ -521,9 +515,9 @@ export function Configurator({
                 step: section,
                 label: t(`steps.${section}`),
                 summary: summaryOf(section),
-                status: statusOf(section) === "current" ? "complete" : statusOf(section),
+                status: ownStatusOf(section),
               }))}
-            onEdit={setCurrent}
+            onEdit={(section) => scrollToStep(anchorOf(section))}
             pattern={pattern}
             priced={priced}
             pricedSpec={pricedSpec}
@@ -583,40 +577,43 @@ export function Configurator({
   const calculationId = price.data?.calculationId;
   const rfqHref = `${rfqPath}?from=${encodeURIComponent(configurator.slug)}${calculationId ? `&calc=${calculationId}` : ""}`;
 
+  const chips: StepChip[] = steps.map((step) => {
+    const own = ownStatusOf(step);
+    return {
+      id: anchorOf(step),
+      label: t(`chips.${step}`),
+      // Not "done" while the answer is still the catalogue's starting value; a step that waits on the
+      // customer (no postcode, a missing choice) is the amber to-do. The summary only reviews.
+      state:
+        step === "summary" ? "idle" : own === "complete" ? (isDefaultStep(step, touched) ? "default" : "done") : "todo",
+      stateLabel: t("stepper.defaulted"),
+      srLabel: own === "complete" ? t("chips.done") : t("chips.todo"),
+    };
+  });
+
   return (
-    // 7:5 — the preview and the steps on the left, the price panel (with add-to-cart) on the right,
-    // sticky so the total and the button stay in view (UX audit, configure).
-    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_21rem] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
-      <div className="flex min-w-0 flex-col gap-6">
+    // The prototype's two columns: the preview, the progress chips and every step on the left, the
+    // sticky price summary on the right; one column under 1100 px (summary last, bar at the bottom).
+    <div
+      ref={root}
+      className="grid items-start gap-8 min-[1100px]:grid-cols-[minmax(0,1fr)_25rem]"
+      style={{ "--step-scroll-mt": "8rem" } as React.CSSProperties}
+    >
+      <div className="flex min-w-0 flex-col gap-5">
         <ConfiguratorPreview configurator={configurator} state={state} productName={name} />
-        <Stepper
-          aria-label={t("stepsLabel")}
-          headingLevel={2}
-          current={current}
-          onSelect={(id) => {
-            setCurrent(id as StepKey);
-            track("configuration_changed", { route: "/configure/[slug]", productType: configurator.productTypeCode });
-          }}
-          labels={{
-            complete: t("stepper.complete"),
-            defaulted: t("stepper.defaulted"),
-            error: t("stepper.error"),
-            stepOf: (index, total) => t("stepper.stepOf", { index, total }),
-          }}
-          steps={steps.map((step) => ({
-            id: step,
-            label: t(`steps.${step}`),
-            summary: summaryOf(step),
-            status: statusOf(step),
-            defaulted: isDefaultStep(step, touched),
-            content: (
-              <>
-                {contentOf(step)}
-                {nextButton(step)}
-              </>
-            ),
-          }))}
-        />
+        <StepChips aria-label={t("stepsLabel")} chips={chips} className="-mx-5 px-5 md:mx-0 md:px-0" />
+        {steps.map((step, index) => (
+          <StepCard
+            key={step}
+            id={anchorOf(step)}
+            number={index + 1}
+            title={t(`steps.${step}`)}
+            hint={step === "summary" ? undefined : summaryOf(step)}
+          >
+            {/* Any press inside a step is the customer's answer, even the option already selected. */}
+            <div onClickCapture={() => touch(step)}>{contentOf(step)}</div>
+          </StepCard>
+        ))}
         {gap && TARGET.test(state.target) ? (
           <TargetPanel
             configurator={configurator}
@@ -630,7 +627,6 @@ export function Configurator({
             busy={actions.busy === "levers" || actions.busy === "sendToCs"}
           />
         ) : null}
-        <QuoteDockSpacer />
       </div>
 
       <ConfiguratorDock
@@ -638,7 +634,7 @@ export function Configurator({
         state={state}
         unit={unit}
         gap={gap}
-        onSelectQuantity={(quantity) => update({ quantity })}
+        onSelectQuantity={(quantity) => update({ quantity }, "quantity")}
         missing={missing}
         steps={price.data?.steps}
         specLabel={price.data?.specLabel}
@@ -654,6 +650,8 @@ export function Configurator({
         designHref={designHref}
         lineHref={lineHref}
       />
+      {/* Room for the phone bar, so the last field is never under it. */}
+      <div aria-hidden className="h-16 min-[1100px]:hidden" />
 
       {actions.sampleFor ? (
         <RequestSampleDialog
@@ -681,6 +679,9 @@ export function Configurator({
     </div>
   );
 }
+
+/** The anchor of a step's card, for the progress chips and every "go to the step" link. */
+const anchorOf = (step: StepKey) => `step-${step}`;
 
 const GUEST_UNIT_KEY = "getpack.displayUnit";
 
