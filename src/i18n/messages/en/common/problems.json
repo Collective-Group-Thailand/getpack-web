@@ -43,6 +43,7 @@
     "self_approval": "Cannot approve own request"
   },
   "artwork": {
+    "order_unpaid": "The order is not paid yet — files are reviewed after payment",
     "file_not_usable": "File cannot be used",
     "invalid_status": "Wrong submission status",
     "not_accepting": "Artwork not accepted",
