@@ -36,7 +36,7 @@
       },
       {
         "title": "Pay the deposit to start production",
-        "body": "Pay by PromptPay QR, bank transfer, credit/debit card or instalments, split into the stages shown before you confirm. The tax invoice is issued by Collective Group (Thailand) as soon as you pay. Business customers can apply for credit terms.",
+        "body": "Pay by PromptPay QR, bank transfer, credit/debit card; if an order is paid in stages, the stages are shown before you confirm. The tax invoice is issued by Collective Group (Thailand) as soon as you pay. Business customers can apply for credit terms.",
         "tip": "Enter your tax-invoice details once in your account and use them on every order."
       },
       {
@@ -65,7 +65,7 @@
       },
       {
         "q": "How can I pay?",
-        "a": "PromptPay QR, bank transfer, credit/debit card and instalments. Approved business customers can order on credit terms."
+        "a": "PromptPay QR, bank transfer, credit/debit card. Approved business customers can order on credit terms."
       },
       {
         "q": "Something is wrong with the delivery — what do I do?",
@@ -181,7 +181,7 @@
         },
         {
           "title": "5. Payment",
-          "body": "Pay through the methods shown at checkout: PromptPay QR, bank transfer, credit/debit card and instalments. An order may be split into stages shown before you confirm. An order past its payment deadline is not cancelled automatically; the price is checked again at the date of payment before you pay. Business customers approved for credit terms pay as agreed."
+          "body": "Pay through the methods shown at checkout: PromptPay QR, bank transfer, credit/debit card. An order may be split into stages shown before you confirm. An order past its payment deadline is not cancelled automatically; the price is checked again at the date of payment before you pay. Business customers approved for credit terms pay as agreed."
         },
         {
           "title": "6. Production and tolerances",
