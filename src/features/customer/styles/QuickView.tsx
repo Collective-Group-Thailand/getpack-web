@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import type { StyleDetail } from "@/features/customer/catalog/api.server";
 import { configureHref } from "@/features/customer/catalog/paths";
+import { displayPrice, figuresOf } from "@/features/shared/format/price";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
@@ -76,6 +77,12 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
       ? t("detail.range", { min: format.number(Math.ceil(min)), max: format.number(Math.floor(max)) })
       : null;
 
+  // The shared helper formats and labels the API's (VAT-inclusive) figure; nothing is derived here.
+  const shownPrice = displayPrice(figuresOf(style?.startingPrice?.unitPrice), "incl", format.thb, {
+    incl: t("library.vatLabelIncl"),
+    excl: t("library.vatLabelExcl"),
+  });
+
   const facts = style
     ? [
         ...style.sizeRanges
@@ -114,7 +121,8 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
                 term: t("library.cardFrom"),
                 description: (
                   <span className="tabular-nums">
-                    {t("library.cardPrice", { price: format.thb(style.startingPrice.unitPrice) })}{" "}
+                    {shownPrice ? t("library.cardPrice", { price: shownPrice.amount }) : null}{" "}
+                    <span className="text-muted">{shownPrice?.vatLabel}</span>{" "}
                     <span className="text-muted">
                       {t("library.cardAtQuantity", { quantity: format.number(style.startingPrice.quantity) })}
                     </span>
