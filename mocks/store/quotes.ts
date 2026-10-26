@@ -1141,9 +1141,11 @@ export function nextQuoteId(): { id: string; quoteCode: string } {
 
 const validUntilOf = () => `${bangkokIso(QUOTE_VALIDITY_DAYS * DAY).slice(0, 10)}T23:59:59+07:00`;
 
-function specsOf(inputs: Inputs, raw: Record<string, unknown>, en: boolean): StoreQuote["specs"] {
+type SpecLine = StoreQuote["specs"][number] & { prefixed?: string };
+
+function specsOf(inputs: Inputs, raw: Record<string, unknown>, en: boolean): SpecLine[] {
   const { configurator } = inputs;
-  const specs: StoreQuote["specs"] = [];
+  const specs: SpecLine[] = [];
   const pattern = configurator.size.patterns.find((entry) => entry.id === raw.patternId);
   if (pattern) specs.push({ label: en ? "Style" : "รูปแบบ", value: pattern.name });
   // D-184: the style code rides on every summary (getpack-api `line-summary.ts`).
@@ -1165,9 +1167,34 @@ function specsOf(inputs: Inputs, raw: Record<string, unknown>, en: boolean): Sto
         value: chosen.map((item) => (en ? item.nameEn : item.nameTh)).join(", "),
       });
   }
-  const inks = live(catalogueRows("inkColours")).filter((row) => inputs.ids.has(String(row.id)));
-  if (inks.length > 0)
-    specs.push({ label: en ? "Print colours" : "สีพิมพ์", value: inks.map((row) => String(row.name)).join(", ") });
+  const inkRows = live(catalogueRows("inkColours"));
+  if (configurator.calculator === "corrugate") {
+    // B-API-3: a corrugate side is its method ("CMYK", "สีพิเศษ n สี (…)"), the label prefixes the side.
+    const part = (Array.isArray(raw.parts) ? raw.parts[0] : null) as Record<string, unknown> | null;
+    const sideOf = (value: unknown) => {
+      const ids = (Array.isArray(value) ? value : []).map((entry) =>
+        String((entry as { inkColourId?: unknown }).inkColourId),
+      );
+      const rows = inkRows.filter((row) => ids.includes(String(row.id)));
+      if (rows.length === 0) return null;
+      return rows.some((row) => row.colourKind === "process")
+        ? "CMYK"
+        : en
+          ? `${rows.length} spot colour${rows.length > 1 ? "s" : ""} (${rows.map((row) => row.name).join(", ")})`
+          : `สีพิเศษ ${rows.length} สี (${rows.map((row) => row.name).join(", ")})`;
+    };
+    for (const [key, field, th, enLabel] of [
+      ["print_front", "printFront", "พิมพ์ด้านนอก", "Print (outside)"],
+      ["print_back", "printBack", "พิมพ์ด้านใน", "Print (inside)"],
+    ] as const) {
+      const value = sideOf(part?.[field]);
+      if (value) specs.push({ label: en ? enLabel : th, value, prefixed: key });
+    }
+  } else {
+    const inks = inkRows.filter((row) => inputs.ids.has(String(row.id)));
+    if (inks.length > 0)
+      specs.push({ label: en ? "Print colours" : "สีพิมพ์", value: inks.map((row) => String(row.name)).join(", ") });
+  }
   return specs;
 }
 
@@ -1179,7 +1206,10 @@ export function calculationSpecOf(
   const th = specsOf(inputs, raw, false);
   const en = specsOf(inputs, raw, true);
   return {
-    specLabel: { th: th.map((spec) => spec.value).join(" · "), en: en.map((spec) => spec.value).join(" · ") },
+    specLabel: {
+      th: th.map((spec) => (spec.prefixed ? `${spec.label}: ${spec.value}` : spec.value)).join(" · "),
+      en: en.map((spec) => (spec.prefixed ? `${spec.label}: ${spec.value}` : spec.value)).join(" · "),
+    },
     specs: th.map((spec, index) => ({
       key: `spec_${index + 1}`,
       labelTh: spec.label,

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { pick } from "@/features/customer/catalog/localize";
 import { useFormat } from "@/features/shared/format/useFormat";
+import { specLabelText } from "@/features/shared/spec-label";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
@@ -188,6 +189,7 @@ export function Configurator({
       })()
     : null;
   const priced = price.data?.steps.find((step) => step.quantity === state.quantity && step.instant) ?? null;
+  const pricedSpec = specLabelText(price.data?.specLabel, locale);
   const gap = price.data?.target?.steps.find((step) => step.quantity === state.quantity) ?? null;
 
   const advisor = useAdvisor(configurator);
@@ -299,7 +301,8 @@ export function Configurator({
     guest: {
       slug: configurator.slug,
       unit,
-      specs: [sizeSummary, ...(["material", "printing", "finishing"] as const).map(choiceSummary)].filter(Boolean),
+      // The API's own words for the spec it priced (B-API-3); never composed here.
+      specs: pricedSpec ? [pricedSpec] : [],
       grossAmount: priced?.grossAmount ?? null,
     },
   });
@@ -523,6 +526,7 @@ export function Configurator({
             onEdit={setCurrent}
             pattern={pattern}
             priced={priced}
+            pricedSpec={pricedSpec}
             unit={unit}
             draft={drafts.draft}
             draftBusy={drafts.busy}
@@ -556,12 +560,17 @@ export function Configurator({
           step: "design",
         })
       : null;
+  // Once priced, the spec is the API's own label (B-API-3); before that, the answers given so far.
   const facts = [
-    ...(sizeSummary ? [{ label: t("steps.size"), value: sizeSummary }] : []),
-    ...(["material", "printing", "finishing", "assembly"] as const).flatMap((step) => {
-      const value = choiceSummary(step);
-      return value ? [{ label: t(`steps.${step}`), value }] : [];
-    }),
+    ...(pricedSpec
+      ? [{ label: t("summary.pricedSpec"), value: pricedSpec }]
+      : [
+          ...(sizeSummary ? [{ label: t("steps.size"), value: sizeSummary }] : []),
+          ...(["material", "printing", "finishing", "assembly"] as const).flatMap((step) => {
+            const value = choiceSummary(step);
+            return value ? [{ label: t(`steps.${step}`), value }] : [];
+          }),
+        ]),
     ...(state.quantities.length > 0
       ? [{ label: t("steps.quantity"), value: `${format.number(state.quantity)} ${unit}` }]
       : []),

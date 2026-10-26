@@ -628,7 +628,8 @@
     "updateDraft": "Update draft",
     "shareDraft": "Share the configuration",
     "draftKept": "Draft kept until {date}",
-    "draftHint": "Drafts are kept 90 days after the last change; a shared link works for 15 days"
+    "draftHint": "Drafts are kept 90 days after the last change; a shared link works for 15 days",
+    "pricedSpec": "Specification priced"
   },
   "printProblem": {
     "intro": "This print choice can't be ordered",
