@@ -10,7 +10,6 @@ import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { PriceBreakTable, PriceSummary, type PriceRow } from "@/ui/components/PriceSummary";
-import { QuoteDock } from "@/ui/components/QuoteDock";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Icon } from "@/ui/icons";
 
@@ -234,124 +233,164 @@ export function ConfiguratorDock({
     </>
   );
 
-  return (
-    <QuoteDock
-      title={t("title")}
-      headline={
-        priced ? (
-          // A changed price is highlighted once, with why it changed (U5.7 §1): what the customer
-          // changed, never a computed difference — the figures are the API's.
-          <span className="flex flex-wrap items-center gap-2">
-            <span key={priced.unitPrice ?? "none"} className={reason ? "pk-flash rounded-sm px-1" : undefined}>
-              {t("perPiece", { price: format.thb(priced.unitPrice), unit })}
-            </span>
-            {reason ? (
-              <Badge size="sm" tone="info" icon="info">
-                {t(`changed.${reason}`)}
-              </Badge>
-            ) : null}
-          </span>
-        ) : (
-          ""
-        )
-      }
-      subline={
-        priced
-          ? t("total", { total: format.thb(priced.grossAmount), quantity: format.number(priced.quantity), unit })
-          : undefined
-      }
-      basis={priced ? specLabelText(specLabel, format.locale) : null}
-      status={status}
-      primaryAction={primary}
-      secondaryActions={secondary}
-      detailsLabel={t("details")}
-      closeLabel={t("close")}
-    >
-      {priced ? (
-        <div className={pending ? "opacity-60 transition-opacity" : undefined} aria-busy={pending || undefined}>
-          <PriceSummary
-            aria-label={t("summary")}
-            rows={rows}
-            total={{ label: t("grandTotal"), value: format.thb(priced.grossAmount) }}
-          />
-          <ul className="mt-4 flex flex-col gap-1.5 text-sm">
-            <li className="flex items-center gap-2">
-              <Icon name="clock" size={16} aria-hidden="true" />
-              {t("leadTime", { days: priced.leadTimeDays ?? 0 })}
-            </li>
-            <li className="flex items-center gap-2">
-              <Icon name="truck" size={16} aria-hidden="true" />
-              {t("shipBy", { date: format.date(priced.earliestShipDate) })}
-            </li>
-            {lastQuote?.option.earliestDeliveryDate ? (
-              <li className="flex items-center gap-2">
-                <Icon name="package-check" size={16} aria-hidden="true" />
-                {t("receiveBy", { date: format.date(lastQuote.option.earliestDeliveryDate) })}
-              </li>
-            ) : null}
-            {gap ? (
-              <li className="flex items-start gap-2">
-                <Icon name="flag" size={16} aria-hidden="true" className="mt-0.5" />
-                {gap.meetsTarget ? t("targetMet") : t("targetAbove", { gap: format.thb(gap.gapPerUnit), unit })}
-              </li>
-            ) : null}
-            {priced.toleranceShortagePct && priced.toleranceOveragePct ? (
-              <li className="flex items-start gap-2">
-                <Icon name="scale" size={16} aria-hidden="true" className="mt-0.5" />
-                {t("tolerance", {
-                  shortage: format.percent(priced.toleranceShortagePct, 1),
-                  overage: format.percent(priced.toleranceOveragePct, 1),
-                })}
-              </li>
-            ) : null}
-          </ul>
-          <p className="text-muted mt-3 text-xs">{t("validity", { days: configurator.quoteValidityDays })}</p>
-          {state.promoCode.trim() ? <p className="text-muted mt-1 text-xs">{t("appliedOnQuote")}</p> : null}
-        </div>
-      ) : null}
+  const tierTable =
+    steps && steps.length > 1 ? (
+      <PriceBreakTable
+        caption={t("breaksCaption")}
+        headers={{
+          quantity: t("breaksQuantity"),
+          perPiece: t("breaksPerPiece"),
+          total: t("breaksTotal"),
+        }}
+        rows={tierGroups.map((group) => {
+          const { first } = group;
+          const merged = group.steps.length > 1;
+          const labels = labelsOf(group);
+          const chosen = group.steps.find((entry) => entry.quantity === state.quantity);
+          return {
+            key: String(first.quantity),
+            quantity: labels.quantity,
+            perPiece: format.thb(first.unitPrice),
+            // One row stands for several quantities, each with its own total: the chosen one's, else none.
+            total: merged
+              ? chosen
+                ? format.thb(chosen.grossAmount)
+                : t("breaksTotalVaries")
+              : format.thb(first.grossAmount),
+            selected: chosen !== undefined,
+            unavailable: first.instant ? undefined : t(`reasons.${first.reason ?? "no_price_path"}`),
+          };
+        })}
+        onSelect={(key) => {
+          // A row of several quantities keeps the one already chosen inside it.
+          const group = tierGroups.find((candidate) => String(candidate.first.quantity) === key);
+          if (group && !group.steps.some((entry) => entry.quantity === state.quantity))
+            onSelectQuantity(group.first.quantity);
+        }}
+        selectLabel={(row) => {
+          const group = tierGroups.find((candidate) => String(candidate.first.quantity) === row.key);
+          return group ? labelsOf(group).select : String(row.quantity);
+        }}
+        selectText={t("breaksChoose")}
+        selectedText={t("breaksChosen")}
+      />
+    ) : null;
 
-      {steps && steps.length > 1 ? (
-        <PriceBreakTable
-          caption={t("breaksCaption")}
-          headers={{
-            quantity: t("breaksQuantity"),
-            perPiece: t("breaksPerPiece"),
-            total: t("breaksTotal"),
-          }}
-          rows={tierGroups.map((group) => {
-            const { first } = group;
-            const merged = group.steps.length > 1;
-            const labels = labelsOf(group);
-            const chosen = group.steps.find((entry) => entry.quantity === state.quantity);
-            return {
-              key: String(first.quantity),
-              quantity: labels.quantity,
-              perPiece: format.thb(first.unitPrice),
-              // One row stands for several quantities, each with its own total: the chosen one's, else none.
-              total: merged
-                ? chosen
-                  ? format.thb(chosen.grossAmount)
-                  : t("breaksTotalVaries")
-                : format.thb(first.grossAmount),
-              selected: chosen !== undefined,
-              unavailable: first.instant ? undefined : t(`reasons.${first.reason ?? "no_price_path"}`),
-            };
-          })}
-          onSelect={(key) => {
-            // A row of several quantities keeps the one already chosen inside it.
-            const group = tierGroups.find((candidate) => String(candidate.first.quantity) === key);
-            if (group && !group.steps.some((entry) => entry.quantity === state.quantity))
-              onSelectQuantity(group.first.quantity);
-          }}
-          selectLabel={(row) => {
-            const group = tierGroups.find((candidate) => String(candidate.first.quantity) === row.key);
-            return group ? labelsOf(group).select : String(row.quantity);
-          }}
-          selectText={t("breaksChoose")}
-          selectedText={t("breaksChosen")}
-        />
+  const headline = priced ? (
+    // A changed price is highlighted once, with why it changed (U5.7 §1): what the customer
+    // changed, never a computed difference — the figures are the API's.
+    <span className="flex flex-wrap items-center gap-2">
+      <span key={priced.unitPrice ?? "none"} className={reason ? "pk-flash rounded-sm px-1" : undefined}>
+        {t("perPiece", { price: format.thb(priced.unitPrice), unit })}
+      </span>
+      {reason ? (
+        <Badge size="sm" tone="info" icon="info">
+          {t(`changed.${reason}`)}
+        </Badge>
       ) : null}
-    </QuoteDock>
+    </span>
+  ) : null;
+  const subline = priced
+    ? t("total", { total: format.thb(priced.grossAmount), quantity: format.number(priced.quantity), unit })
+    : null;
+  const basis = priced ? specLabelText(specLabel, format.locale) : null;
+
+  return (
+    <>
+      {/*
+        The price summary (prototype `.sum`): beside the steps from 1100 px, sticky under the storefront
+        header so the total and the button stay in view while every step is scrolled; below that it is
+        the last block of the single column, and the bar underneath carries the price and the action.
+      */}
+      <aside
+        aria-label={t("title")}
+        className="flex flex-col gap-3 min-[1100px]:sticky min-[1100px]:top-[calc(var(--site-sticky-top)+1rem)] min-[1100px]:max-h-[calc(100dvh-var(--site-sticky-top)-2rem)] min-[1100px]:self-start min-[1100px]:overflow-y-auto"
+      >
+        <div className="border-border bg-surface rounded-card shadow-card flex flex-col gap-4 border p-5 sm:p-6">
+          <h2 className="text-muted text-sm font-medium">{t("title")}</h2>
+          <div aria-live="polite" aria-atomic="true">
+            {status ?? (
+              <>
+                <p className="serif text-4xl tabular-nums">{headline}</p>
+                {subline ? <p className="text-muted text-sm tabular-nums">{subline}</p> : null}
+                {basis ? <p className="text-muted mt-1 text-xs leading-snug">{basis}</p> : null}
+              </>
+            )}
+          </div>
+          {priced ? (
+            <div className={pending ? "opacity-60 transition-opacity" : undefined} aria-busy={pending || undefined}>
+              <PriceSummary
+                aria-label={t("summary")}
+                rows={rows}
+                total={{ label: t("grandTotal"), value: format.thb(priced.grossAmount) }}
+              />
+              <ul className="mt-4 flex flex-col gap-1.5 text-sm">
+                <li className="flex items-center gap-2">
+                  <Icon name="clock" size={16} aria-hidden="true" />
+                  {t("leadTime", { days: priced.leadTimeDays ?? 0 })}
+                </li>
+                <li className="flex items-center gap-2">
+                  <Icon name="truck" size={16} aria-hidden="true" />
+                  {t("shipBy", { date: format.date(priced.earliestShipDate) })}
+                </li>
+                {lastQuote?.option.earliestDeliveryDate ? (
+                  <li className="flex items-center gap-2">
+                    <Icon name="package-check" size={16} aria-hidden="true" />
+                    {t("receiveBy", { date: format.date(lastQuote.option.earliestDeliveryDate) })}
+                  </li>
+                ) : null}
+                {gap ? (
+                  <li className="flex items-start gap-2">
+                    <Icon name="flag" size={16} aria-hidden="true" className="mt-0.5" />
+                    {gap.meetsTarget ? t("targetMet") : t("targetAbove", { gap: format.thb(gap.gapPerUnit), unit })}
+                  </li>
+                ) : null}
+                {priced.toleranceShortagePct && priced.toleranceOveragePct ? (
+                  <li className="flex items-start gap-2">
+                    <Icon name="scale" size={16} aria-hidden="true" className="mt-0.5" />
+                    {t("tolerance", {
+                      shortage: format.percent(priced.toleranceShortagePct, 1),
+                      overage: format.percent(priced.toleranceOveragePct, 1),
+                    })}
+                  </li>
+                ) : null}
+              </ul>
+              <p className="text-muted mt-3 text-xs">{t("validity", { days: configurator.quoteValidityDays })}</p>
+              {state.promoCode.trim() ? <p className="text-muted mt-1 text-xs">{t("appliedOnQuote")}</p> : null}
+            </div>
+          ) : null}
+          {tierTable}
+          <div className="flex flex-col gap-2">
+            {primary}
+            {secondary}
+          </div>
+        </div>
+      </aside>
+
+      {/*
+        The phone / tablet bar (prototype `.mbar2`): price per piece, quantity and total, and the one
+        action. It sits above the storefront's bottom nav (`--mobile-tab-h`; none from md up), and the
+        LINE button lifts over it (`LineFloat` reads `data-quote-bar`).
+      */}
+      <div
+        data-quote-bar
+        className="border-border bg-surface z-sticky shadow-overlay fixed inset-x-0 bottom-(--mobile-tab-h) border-t px-4 py-2.5 min-[1100px]:hidden md:bottom-0 print:hidden"
+      >
+        <div className="mx-auto flex min-h-12 max-w-3xl items-center gap-3">
+          <div className="min-w-0 flex-1" aria-live="polite" aria-atomic="true">
+            {priced ? (
+              <>
+                <p className="m-0 truncate text-lg leading-tight font-semibold tabular-nums">{headline}</p>
+                <p className="text-muted m-0 truncate text-xs tabular-nums">{subline}</p>
+              </>
+            ) : (
+              <div className="text-sm [&_p]:m-0 [&_p]:leading-snug [&_ul]:hidden">{status}</div>
+            )}
+          </div>
+          <div className="shrink-0">{primary}</div>
+        </div>
+      </div>
+    </>
   );
 }
 

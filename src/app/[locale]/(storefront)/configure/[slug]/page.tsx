@@ -124,7 +124,7 @@ export default async function Page({
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
 
   return (
-    <div className="max-w-content mx-auto px-5 py-6 md:px-8 md:py-10">
+    <div className="max-w-nav mx-auto px-5 py-6 md:px-8 md:py-10">
       <Breadcrumbs
         label={tCatalog("breadcrumbs.label")}
         items={[

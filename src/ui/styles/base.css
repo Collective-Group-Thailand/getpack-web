@@ -351,6 +351,21 @@
 :root {
   /* The storefront's phone tab bar (56 px + the home indicator): what floats above it sits on this. */
   --mobile-tab-h: calc(3.5rem + env(safe-area-inset-bottom));
+  /* The storefront's sticky header (SiteHeader's row, without its 1 px rule): what sticks under it starts here. */
+  --site-header-h: 3.5rem;
+  --site-sticky-top: calc(var(--site-header-h) + 1px);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --site-header-h: 4rem;
+  }
+}
+
+@media (min-width: 65rem) {
+  :root {
+    --site-header-h: 4.75rem;
+  }
 }
 
 @layer components {
