@@ -581,6 +581,7 @@ export function Configurator({
         onSelectQuantity={(quantity) => update({ quantity })}
         missing={missing}
         steps={price.data?.steps}
+        specLabel={price.data?.specLabel}
         loading={price.isLoading || (ready && !price.data)}
         pending={price.pending}
         failed={price.isError}

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useJustAdded } from "@/features/customer/cart/cart-events";
 import { useFormat } from "@/features/shared/format/useFormat";
+import { specLabelText } from "@/features/shared/spec-label";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -16,6 +17,7 @@ import { Icon } from "@/ui/icons";
 import type { Schemas } from "@/lib/api/types";
 
 import type { PriceStep } from "./pricing";
+import { mergeEqualTiers } from "./tiers";
 import type { Configurator, ConfiguratorState } from "./state";
 import type { KeptQuote, QuoteAction } from "./useQuoteActions";
 
@@ -30,6 +32,8 @@ export interface ConfiguratorDockProps {
   /** Why no price can be asked for yet ("เลือกวัสดุ"), in the order the stepper asks. */
   missing: string[];
   steps: PriceStep[] | undefined;
+  /** The spec the calculation priced, as the API words it (`QuoteCalculationDto.specLabel`, D-441). */
+  specLabel?: Schemas["LocalisedLabelDto"] | null;
   loading: boolean;
   pending: boolean;
   failed: boolean;
@@ -62,6 +66,7 @@ export function ConfiguratorDock({
   onSelectQuantity,
   missing,
   steps,
+  specLabel,
   loading,
   pending,
   failed,
@@ -81,6 +86,7 @@ export function ConfiguratorDock({
   const priced = step?.instant ? step : null;
   const noPrice = step && !step.instant ? step : null;
   const ready = missing.length === 0;
+  const tierGroups = steps ? mergeEqualTiers(steps) : [];
   const reason = usePriceChange(priced?.unitPrice ? { unitPrice: priced.unitPrice, quantity: priced.quantity } : null);
 
   // Quoted on request (`instant: false`, D-043): no price is asked for, the RFQ form is the way on.
@@ -231,6 +237,7 @@ export function ConfiguratorDock({
           ? t("total", { total: format.thb(priced.grossAmount), quantity: format.number(priced.quantity), unit })
           : undefined
       }
+      basis={priced ? specLabelText(specLabel, format.locale) : null}
       status={status}
       primaryAction={primary}
       secondaryActions={secondary}
@@ -288,15 +295,32 @@ export function ConfiguratorDock({
             perPiece: t("breaksPerPiece"),
             total: t("breaksTotal"),
           }}
-          rows={steps.map((entry) => ({
-            key: String(entry.quantity),
-            quantity: format.number(entry.quantity),
-            perPiece: format.thb(entry.unitPrice),
-            total: format.thb(entry.grossAmount),
-            selected: entry.quantity === state.quantity,
-            unavailable: entry.instant ? undefined : t(`reasons.${entry.reason ?? "no_price_path"}`),
-          }))}
-          onSelect={(key) => onSelectQuantity(Number(key))}
+          rows={tierGroups.map((group) => {
+            const { first, last } = group;
+            const merged = group.steps.length > 1;
+            const chosen = group.steps.find((entry) => entry.quantity === state.quantity);
+            return {
+              key: String(first.quantity),
+              quantity: merged
+                ? t("breaksRange", { from: format.number(first.quantity), to: format.number(last.quantity), unit })
+                : format.number(first.quantity),
+              perPiece: format.thb(first.unitPrice),
+              // One row stands for several quantities, each with its own total: the chosen one's, else none.
+              total: merged
+                ? chosen
+                  ? format.thb(chosen.grossAmount)
+                  : t("breaksTotalVaries")
+                : format.thb(first.grossAmount),
+              selected: chosen !== undefined,
+              unavailable: first.instant ? undefined : t(`reasons.${first.reason ?? "no_price_path"}`),
+            };
+          })}
+          onSelect={(key) => {
+            // A row of several quantities keeps the one already chosen inside it.
+            const group = tierGroups.find((candidate) => String(candidate.first.quantity) === key);
+            if (group && !group.steps.some((entry) => entry.quantity === state.quantity))
+              onSelectQuantity(group.first.quantity);
+          }}
           selectLabel={(row) => t("breaksSelect", { quantity: String(row.quantity), unit })}
           selectText={t("breaksChoose")}
           selectedText={t("breaksChosen")}

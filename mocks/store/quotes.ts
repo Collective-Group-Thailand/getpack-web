@@ -36,6 +36,8 @@ import { customerOf } from "./customers";
 import { BasisError, caliperOf, convert, familyOf, type Basis, type Size } from "./specs";
 import { unitOf } from "./order-dto";
 import { QUOTE_STATUS } from "@/domain/status";
+import { buildCalculateBody } from "@/features/customer/configurator/build";
+import { initialState, readyToPrice } from "@/features/customer/configurator/state";
 import { statusLabels } from "../status-labels";
 
 type Step = Schemas["QuoteStepDto"];
@@ -589,7 +591,7 @@ const UNIT: Record<string, Schemas["ProductUnit"]> = { ชิ้น: "piece", �
  * the shapes and pouch styles of the unported calculators, the mockup add-on, the cutting step
  * and the gusset limits.
  */
-export function toStoreConfiguratorDto(configurator: Configurator): Schemas["StoreConfiguratorDto"] {
+function configuratorBase(configurator: Configurator): Schemas["StoreConfiguratorDto"] {
   const published = (option: Option): Schemas["StoreOptionDto"] => ({
     id: option.id,
     code: option.code,
@@ -640,7 +642,7 @@ export function toStoreConfiguratorDto(configurator: Configurator): Schemas["Sto
     calculator: configurator.calculator,
     instant: configurator.fixedInputs.difficultyLevelId !== undefined,
     difficultyLevelId: configurator.fixedInputs.difficultyLevelId ?? null,
-    // D-441: the mock keeps no reference configuration per product.
+    // Filled by `toStoreConfiguratorDto` once the rest of the DTO exists (D-441).
     defaultSpec: null,
     patterns: configurator.size.patterns.map((pattern) => ({
       id: pattern.id,
@@ -690,7 +692,8 @@ export function toStoreConfiguratorDto(configurator: Configurator): Schemas["Sto
       lengthMm: size.lengthMm,
       widthMm: size.widthMm,
       heightMm: box ? (size.heightMm ?? 0) : 0,
-      isDefault: false,
+      // Without a reference configuration the first size is the default; the mock's reference is that size.
+      isDefault: configurator.size.standardSizes[0] === size,
     })),
     optionGroups,
     printAreas: configurator.calculator === "corrugate" ? ["top", "side", "top_side", "all_round"] : [],
@@ -699,6 +702,48 @@ export function toStoreConfiguratorDto(configurator: Configurator): Schemas["Sto
     quantity: { ...configurator.quantity },
     design: configurator.design,
   };
+}
+
+/**
+ * D-441, mocked: the reference configuration of an instant product is its first pattern at its first
+ * standard size, the options flagged default, at the quantity the configurator opens on. The listing
+ * card, the price hint and the configurator all read the figure this prices, through the same fake
+ * engine as `calculate`, so they cannot drift apart.
+ */
+export function referenceOf(configurator: Configurator): {
+  spec: Schemas["StoreConfiguratorDefaultSpecDto"];
+  unitPrice: string;
+} | null {
+  const base = configuratorBase(configurator);
+  if (!base.instant) return null;
+  const quantity = base.quantity.default ?? base.quantity.min ?? 1;
+  const state = initialState(base, { quantities: [quantity], quantity });
+  if (!readyToPrice(base, state)) return null;
+  const configuration = buildCalculateBody(base, state).configuration;
+  const raw = configuration as unknown as Record<string, unknown>;
+  const inputs = inputsOf(base.productTypeCode, raw);
+  if (inputs instanceof Response) return null;
+  const step = stepOf(inputs, quantity, undefined);
+  if (!step.instant || !step.unitPrice) return null;
+  return {
+    spec: {
+      configuration: configuration as unknown as Record<string, unknown>,
+      quantity,
+      standardSizeCode: state.standardSizeCode,
+      ...calculationSpecOf(inputs, raw),
+    },
+    unitPrice: step.unitPrice,
+  };
+}
+
+/** The reference of a catalogue product, for the cards and the price hints (`./catalog.ts`). */
+export function startingOf(product: Row) {
+  const configurator = configuratorOf(product);
+  return configurator ? referenceOf(configurator) : null;
+}
+
+export function toStoreConfiguratorDto(configurator: Configurator): Schemas["StoreConfiguratorDto"] {
+  return { ...configuratorBase(configurator), defaultSpec: referenceOf(configurator)?.spec ?? null };
 }
 
 function productOfSlug(slug: string | undefined): Row | undefined {

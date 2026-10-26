@@ -17,6 +17,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import {
+  getConfigurator,
   getPriceHints,
   getProductFaqs,
   getRfqForm,
@@ -24,6 +25,7 @@ import {
   type ProductDetail,
   type ProductType,
 } from "./api.server";
+import { dielineTargetOf } from "./dieline-target";
 import { absoluteImageUrl, photoVariant, storeImageSrc } from "./images";
 import { pick } from "./localize";
 import { categoryHref, configureHref, productHref, rfqHref } from "./paths";
@@ -57,6 +59,11 @@ export async function ProductView({
   const rfqForm = type && type.quoteMode !== "instant" ? await getRfqForm(type.code).catch(() => null) : null;
   const related = (category?.types ?? []).filter((other) => other.code !== product.productTypeCode).slice(0, 4);
   const hint = hints.get(product.slug);
+  // "ดาวน์โหลดแบบกล่อง" goes to this product's own dieline at its default size, from the API's variants (D-271, D-441).
+  const dielineHref =
+    product.templateAvailability !== "online_template" && type?.quoteMode === "instant"
+      ? dielineTargetOf(await getConfigurator(product.slug).catch(() => null))
+      : null;
   const text = await priceHintText(hint);
   const name = pick(locale, product.nameTh, product.nameEn);
   const description = pick(locale, product.descriptionTh ?? "", product.descriptionEn) || null;
@@ -185,6 +192,12 @@ export async function ProductView({
               )}
               {text.basis ? <p className="text-muted text-sm">{text.basis}</p> : null}
             </div>
+            {/* Which specification the price is for (D-441): the API's one string, right under the price. */}
+            {hint?.startingFromPerPiece && text.specs ? (
+              <p id="product-price-spec" className="text-muted mt-1.5 text-sm leading-snug">
+                {text.specs}
+              </p>
+            ) : null}
 
             <ul className="border-border mt-5 flex flex-wrap gap-x-6 gap-y-2 border-t pt-4 text-sm">
               {text.leadTime ? (
@@ -228,7 +241,7 @@ export async function ProductView({
                 </Button>
               ) : (
                 <Button asChild variant="secondary" iconStart="download">
-                  <Link href={product.templateAvailability === "drawing" ? "/templates" : "/styles"}>
+                  <Link href={dielineHref ?? (product.templateAvailability === "drawing" ? "/templates" : "/styles")}>
                     {t("product.downloadTemplate")}
                   </Link>
                 </Button>
@@ -240,7 +253,6 @@ export async function ProductView({
 
             {/* The reference behind the starting price and the fine print, small and last (UX audit). */}
             <div className="text-muted mt-4 flex flex-col gap-1 text-xs leading-relaxed">
-              {text.specs ? <p>{t("product.priceBasisSpecs", { specs: text.specs })}</p> : null}
               <p>{instant ? t("product.priceNote") : t("product.rfqNote")}</p>
               {rfqForm?.slaTargetHours ? <p>{t("product.rfqSla", { hours: rfqForm.slaTargetHours })}</p> : null}
               <p>

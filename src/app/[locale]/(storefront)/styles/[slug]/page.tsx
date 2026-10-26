@@ -82,12 +82,19 @@ export default async function StylePage({ params, searchParams }: { params: Para
   if (!style) notFound();
   const name = nameIn(style, locale);
   // A card of the variants grid opens its style with that variant chosen (D-410).
-  const v = (await searchParams)["v"];
+  const query = await searchParams;
+  const v = query["v"];
   const chosen = style.variants.find((x) => x.code === (Array.isArray(v) ? v[0] : v))?.code;
+  // A product page's "ดาวน์โหลดแบบกล่อง" brings its default size (mm, inside) for the dieline form.
+  const one = (key: string) => (Array.isArray(query[key]) ? query[key][0] : query[key]);
+  const [l, w, h] = [one("l"), one("w"), one("h")];
+  const initialSize =
+    l && w && h && [l, w, h].every((value) => /^\d{1,4}(\.\d)?$/.test(value)) ? { l, w, h } : undefined;
+  const sizeQuery = initialSize ? `&l=${initialSize.l}&w=${initialSize.w}&h=${initialSize.h}` : "";
   // The code decides the page; a stale or other-language name is sent to this language's URL.
   if (decodeURIComponent(slug) !== styleSlug(style.code, name))
     redirect({
-      href: `${styleHref(style.code, name)}${chosen ? `?v=${encodeURIComponent(chosen)}` : ""}`,
+      href: `${styleHref(style.code, name)}${chosen ? `?v=${encodeURIComponent(chosen)}${sizeQuery}` : ""}`,
       locale: locale as Locale,
     });
 
@@ -222,6 +229,7 @@ export default async function StylePage({ params, searchParams }: { params: Para
             signedIn,
             signInHref: `/sign-in?returnTo=${encodeURIComponent(`${href}#${DIELINE_FRAGMENT}`)}`,
             orderHref: style.startingPrice ? configureHref(style.startingPrice.catalogProductSlug) : null,
+            initialSize,
           }}
         />
       </div>

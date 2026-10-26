@@ -347,3 +347,23 @@ branches running locally to verify. Copied into this repo: `STAGE-A-REPORT-API.m
   ไดคัทให้" (new status/word?) · discounted orders → `requote_unavailable` · no overdue notice e-mail · tier wording is the
   API's rule, not "นับยอดเมื่อได้รับของแล้ว" · confirm-receipt with an open claim still accepted by the endpoint ·
   server-render errors can't be told from 503 in production, all retried.
+
+### A3 — pdp · Phase 0 (price consistency, web) · PASS
+
+- One shared helper `features/shared/spec-label`; the API's spec label (ยาว × กว้าง × สูง, mm) now sits under every price:
+  listing card, product page, configurator panel/mobile bar/sheet. Old "ราคาอ้างอิง" footnote removed. **No VAT or
+  rounding change** (Stage B, DECISIONS §7).
+- Configurator opens on the API default spec (pattern, `isDefault` size/options, `quantity.default`); equal consecutive
+  tiers shown as one row ("100–500 ชิ้น ฿x", string comparison, no arithmetic); "ดาวน์โหลดแบบกล่อง" → style page with
+  variant + size prefilled (`/templates` is still ComingSoon, so the API's suggested URL was not used).
+- Tests: `price-consistency` (card = product page = hint = configurator default, same price and label, 4 mock
+  products), `default-spec`, `tiers`, `spec-label`. FINDINGS.md written. Gate passes.
+- Screenshots (mock dataset; no horizontal scroll at 390): `A3-{products,product,configure}-*`. The configurator price
+  panel is empty in them because the screenshot script blocks the `calculate` POST — consistency is covered by the test.
+- **Verify locally (both branches):** `uat-postal-box-b` shows the same ฿ and label on card, product page and
+  configurator at 300 pcs; opens on size 00 and the default print; merged tier row keeps the chosen quantity; download
+  link (needs real `dielineVariantCodes`, else old fallback).
+- **Open:** style-page route instead of a real `/templates` · "ตามจำนวน" as a merged row's total · which dieline variant
+  when several (first today) · web strings still in the old order: `customSizeBody` "กว้าง × ยาว × สูง", designer.json
+  "กว้าง × สูง × ลึก" (report only) · product description "โลโก้ 1–2 สี" is admin catalogue text (report only) ·
+  Studio dock not touched (A6/A7).
