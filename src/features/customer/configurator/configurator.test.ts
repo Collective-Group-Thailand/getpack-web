@@ -155,8 +155,8 @@ describe("the configurator state", () => {
     // With another parameter too (a size from the product page) the asked-for option still wins.
     const sized = seedFromDesign(configurator, { design: "own_file", size: configurator.standardSizes[0]?.code });
     expect(sized?.designOption).toBe("own_file");
-    // Without one, a configuration from the designer keeps the online designer (unchanged).
-    expect(seedFromDesign(configurator, { l: "200", w: "150", d: "100" })?.designOption).toBe("online_designer");
+    // Without one the step keeps the API's default: a size in the link does not pick the designer (design-step.test.tsx).
+    expect(seedFromDesign(configurator, { l: "200", w: "150", d: "100" })?.designOption).toBeUndefined();
 
     // A pattern the designer cannot draw (UAT's corrugated patterns have no dieline key): the step
     // does not offer "online_designer", so neither the selection, its summary nor the cart line carry it.
