@@ -63,11 +63,13 @@ function LineChat({ lineOaId }: { lineOaId: string }) {
     <div
       ref={root}
       className={cn(
-        "z-sticky fixed end-3 flex flex-col items-end gap-2 transition-[bottom] duration-200 md:end-4 motion-reduce:transition-none",
+        "z-sticky fixed end-3 flex flex-col items-end gap-2 transition-[bottom] duration-200 motion-reduce:transition-none md:end-4",
         // A phone: just above the bottom nav (56 px and the safe area), so it never sits on it.
         "bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6",
         // Above the compare tray while it is docked (the tray marks itself `data-compare-tray`).
         "[body:has([data-compare-tray])_&]:bottom-40 md:[body:has([data-compare-tray])_&]:bottom-24",
+        // Above the configurator's price bar (phones and tablets; it is not drawn from 1100 px).
+        "max-[1099px]:[body:has([data-quote-bar])_&]:bottom-[calc(var(--mobile-tab-h)+5.5rem)] md:max-[1099px]:[body:has([data-quote-bar])_&]:bottom-24",
       )}
     >
       {open ? (

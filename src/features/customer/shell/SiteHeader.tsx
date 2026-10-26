@@ -97,7 +97,7 @@ export async function SiteHeader() {
           A phone: menu · logo in the middle · search and cart (owner, 2026-10-16). Wide screens: logo
           at the start, the primary nav in the middle, the actions at the end.
         */}
-        <div className="max-w-nav mx-auto grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 md:h-16 md:px-5 min-[65rem]:h-19 min-[65rem]:grid-cols-[auto_minmax(0,1fr)_auto] min-[65rem]:gap-4 min-[65rem]:px-6 min-[74rem]:gap-6">
+        <div className="max-w-nav mx-auto grid h-(--site-header-h) grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 md:px-5 min-[65rem]:grid-cols-[auto_minmax(0,1fr)_auto] min-[65rem]:gap-4 min-[65rem]:px-6 min-[74rem]:gap-6">
           <div className="flex items-center gap-1">
             <MobileProductsMenu
               label={t("nav.menu")}

@@ -644,5 +644,19 @@
     "colour_repeated": "A colour can't be chosen twice",
     "colour_not_allowed": "This colour isn't available for this product",
     "other": "Please choose the print again"
+  },
+  "chips": {
+    "size": "Size",
+    "logistics": "Shipping load",
+    "material": "Material",
+    "printing": "Printing",
+    "finishing": "Finishing",
+    "assembly": "Die-cut",
+    "quantity": "Quantity",
+    "delivery": "Delivery",
+    "design": "Design",
+    "summary": "Summary",
+    "done": "done",
+    "todo": "still to do"
   }
 }
