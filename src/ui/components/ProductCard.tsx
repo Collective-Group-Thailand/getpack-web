@@ -61,6 +61,12 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
    * in place of `price` / `meta` / `actions`. Raised above the stretched link, so its controls click.
    */
   footer?: React.ReactNode;
+  /**
+   * The library's roomier card (styles redesign prototype): 16 px body padding, a 16 px title, a
+   * footer set off by more air, round pills over the picture and a drawing set well inside its
+   * plate. Opt-in, so the other grids keep their compact card.
+   */
+  roomy?: boolean;
   /** Keep two lines for the title even when it needs one, so every card in a row lines up. */
   reserveTitleLines?: boolean;
   /** Revealed on hover and focus at the foot of the picture ("ดูราคา"); the whole card is the link. */
@@ -97,6 +103,7 @@ export function ProductCard({
   facts,
   footer,
   reserveTitleLines = false,
+  roomy = false,
   fallback,
   aspect = "landscape",
   headingLevel: Heading = "h3",
@@ -140,7 +147,9 @@ export function ProductCard({
             decoding="async"
             className={cn(
               "duration-base ease-standard h-full w-full transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100",
-              image.fit === "contain" ? "bg-surface object-contain p-4" : "object-cover",
+              image.fit === "contain"
+                ? cn("object-contain", roomy ? "bg-bg-subtle p-[12%]" : "bg-surface p-4")
+                : "object-cover",
             )}
           />
         ) : (
@@ -156,7 +165,12 @@ export function ProductCard({
           </div>
         )}
         {badges ? (
-          <div className="absolute start-2.5 top-2.5 flex flex-wrap gap-1 [&>*]:h-5 [&>*]:px-2 [&>*]:text-[0.6875rem] [&>*]:font-medium">
+          <div
+            className={cn(
+              "absolute flex flex-wrap gap-1 [&>*]:h-5 [&>*]:px-2 [&>*]:text-[0.6875rem] [&>*]:font-medium",
+              roomy ? "start-3 top-3 [&>*]:h-6 [&>*]:text-xs [&>*]:font-semibold" : "start-2.5 top-2.5",
+            )}
+          >
             {badges}
           </div>
         ) : null}
@@ -166,7 +180,14 @@ export function ProductCard({
           </div>
         ) : null}
         {imageFoot ? (
-          <div className="pointer-events-none absolute start-2.5 bottom-2.5 flex max-w-[80%] gap-1">{imageFoot}</div>
+          <div
+            className={cn(
+              "pointer-events-none absolute flex max-w-[80%] gap-1",
+              roomy ? "start-3 bottom-3" : "start-2.5 bottom-2.5",
+            )}
+          >
+            {imageFoot}
+          </div>
         ) : null}
         {imageActions ? (
           <div className="duration-fast ease-standard absolute end-2 top-2 z-10 flex gap-1 transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:has-[[aria-pressed=true]]:opacity-100">
@@ -186,11 +207,12 @@ export function ProductCard({
           </div>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-0.5 p-3">
+      <div className={cn("flex flex-1 flex-col gap-0.5", roomy ? "gap-1.5 px-4 pt-3.5 pb-4" : "p-3")}>
         {topLine ? <p className="text-muted truncate text-[0.6875rem] tracking-wide">{topLine}</p> : null}
         <Heading
           className={cn(
             "line-clamp-2 text-sm leading-snug font-semibold md:text-[0.9375rem] [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']",
+            roomy && "text-[0.90625rem] leading-[1.4] md:text-base",
             reserveTitleLines && "min-h-[2lh]",
           )}
         >
@@ -201,7 +223,12 @@ export function ProductCard({
         {/* Price, the quiet line and the actions sit at the card's foot, so across a row they line
             up whatever the title's length (one line or two). */}
         {footer ? (
-          <div className="border-border relative z-10 -mx-3 mt-auto -mb-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t px-3 py-2.5">
+          <div
+            className={cn(
+              "border-border relative z-10 mt-auto flex items-center justify-between gap-x-2 gap-y-1.5 border-t",
+              roomy ? "-mx-4 -mb-4 px-4 pt-3 pb-3.5 max-sm:flex-col max-sm:items-start" : "-mx-3 -mb-3 flex-wrap px-3 py-2.5",
+            )}
+          >
             {footer}
           </div>
         ) : price || meta || actions ? (
