@@ -22,11 +22,11 @@ import { axisLabel, facetLabel, valueLabel, type StylesT } from "@/features/cust
 import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
 import { CopyLinkButton, SearchTracker, SortSelect } from "@/features/customer/styles/LibraryControls";
 import { LibrarySearch } from "@/features/customer/styles/LibrarySearch";
+import { LineFloat } from "@/features/customer/shell/LineFloat";
 import { LibraryToolbar } from "@/features/customer/styles/LibraryToolbar";
 import { VatSwitch } from "@/features/customer/styles/VatSwitch";
 import { figuresOf, vatSwitchAvailable } from "@/features/shared/format/price";
 import { LibraryViews } from "@/features/customer/styles/LibraryViews";
-import { LineFloat } from "@/features/customer/styles/LineFloat";
 import { forUseCaseHref, styleHref, STYLES_HREF } from "@/features/customer/styles/paths";
 import {
   activeFilterCount,
@@ -405,7 +405,7 @@ export default async function StylesPage({
               : null
           }
         />
-        {support?.lineOaId ? <LineFloat lineOaId={support.lineOaId} /> : null}
+        <LineFloat apiLineOaId={support?.lineOaId} />
       </div>
     </CompareLimitProvider>
   );

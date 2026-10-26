@@ -141,6 +141,8 @@ export function clientEnvSchema() {
     NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: optionalText,
 
     NEXT_PUBLIC_LIFF_ID: optionalText,
+    /** The LINE Official Account id ("@getpack") for the floating chat button; the API's support channels are the fallback. */
+    NEXT_PUBLIC_LINE_OA_ID: optionalText,
     /** Customer host only — admin and partner ship no third-party analytics (D-102). */
     NEXT_PUBLIC_GTM_ID: optionalText,
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: optionalText,
