@@ -46,11 +46,16 @@ async function boxes(page: Page) {
 const intersects = (a: Box, b: Box) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
-async function expectNoOverlap(page: Page, where: string) {
+async function expectNoOverlap(page: Page, where: string, cta: string) {
   const { logo, nav, tools } = await boxes(page);
   expect(logo, `${where}: logo`).not.toBeNull();
   expect(nav.length, `${where}: nav links`).toBe(5);
   expect(tools.length, `${where}: tools`).toBeGreaterThanOrEqual(3);
+  // The primary action is in the bar at every width from the collapse point up (polish 1).
+  expect(
+    tools.some((b) => b.name.endsWith(cta)),
+    `${where}: primary action`,
+  ).toBe(true);
   const all: Box[] = [logo!, ...nav, ...tools];
   for (let i = 0; i < all.length; i++) {
     for (let j = i + 1; j < all.length; j++) {
@@ -82,11 +87,20 @@ for (const signedIn of [false, true]) {
           await expect(page.locator("header [data-header-nav]"), where).toBeHidden();
           continue;
         }
-        await expectNoOverlap(page, where);
+        await expectNoOverlap(page, where, locale === "en" ? "Start designing free" : "เริ่มออกแบบฟรี");
       }
     });
   }
 }
+
+test("header: the current section's link is marked and tinted", async ({ page }) => {
+  await acceptCookies(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await gotoHydrated(page, `${HOSTS.customer}/styles`);
+  const current = page.locator("header [data-header-nav] a[aria-current='page']");
+  await expect(current).toHaveCount(1);
+  await expect(current).toHaveAttribute("href", /\/styles$/);
+});
 
 test("header: signed in, the account is initials with the full name as its tooltip, and the cart is an icon", async ({
   page,
