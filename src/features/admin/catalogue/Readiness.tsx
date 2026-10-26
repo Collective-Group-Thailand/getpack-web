@@ -212,7 +212,7 @@ function Group({
                           href={current.open(item)}
                           className="hover:bg-bg-subtle focus-visible:ring-focus-ring flex items-center gap-3 px-3 py-2 text-sm outline-none focus-visible:ring-2"
                         >
-                          <span className="text-muted w-40 shrink-0 truncate font-mono text-xs">{item.key}</span>
+                          <span className="text-muted w-40 shrink-0 truncate text-xs tabular-nums">{item.key}</span>
                           <ItemName item={item} />
                           <Icon
                             name="chevron-right"

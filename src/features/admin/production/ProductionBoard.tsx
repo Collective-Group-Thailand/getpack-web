@@ -155,7 +155,7 @@ export function ProductionBoard() {
                               <button
                                 type="button"
                                 onClick={() => setOpened(job.id)}
-                                className="text-primary font-mono font-medium hover:underline"
+                                className="text-primary font-medium tabular-nums hover:underline"
                                 aria-haspopup="dialog"
                               >
                                 {job.jobNo}

@@ -154,12 +154,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
               !voided && doc.isTaxInvoice && (doc.docType === "iv" || doc.docType === "tr") && !pending;
             return {
               id: doc.id,
-              phoneSubtitle: <span className="font-mono">{doc.docNumber}</span>,
+              phoneSubtitle: <span className="tabular-nums">{doc.docNumber}</span>,
               cells: {
                 document: (
                   <span className="block min-w-0">
                     <span className="block font-semibold">{tTypes(doc.docType)}</span>
-                    <span className="text-muted hidden font-mono text-xs font-normal md:block">{doc.docNumber}</span>
+                    <span className="text-muted hidden text-xs font-normal tabular-nums md:block">{doc.docNumber}</span>
                     {doc.orderCode && doc.orderId ? (
                       <Link
                         href={`/account/orders/${doc.orderId}`}

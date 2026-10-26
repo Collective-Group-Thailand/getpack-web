@@ -117,7 +117,7 @@ export default async function InvoicesPage({
                   primary: true,
                   cell: (row) =>
                     row.invoiceNo ? (
-                      <span className="font-mono whitespace-nowrap">{row.invoiceNo}</span>
+                      <span className="whitespace-nowrap tabular-nums">{row.invoiceNo}</span>
                     ) : (
                       <span className="text-muted">{tCommon("draftNo")}</span>
                     ),
@@ -181,7 +181,7 @@ export default async function InvoicesPage({
                 primary: true,
                 cell: (row) =>
                   row.noteNo ? (
-                    <span className="font-mono whitespace-nowrap">{row.noteNo}</span>
+                    <span className="whitespace-nowrap tabular-nums">{row.noteNo}</span>
                   ) : (
                     <span className="text-muted">{tCommon("draftNo")}</span>
                   ),
@@ -192,7 +192,7 @@ export default async function InvoicesPage({
                 key: "invoice",
                 header: t("table.invoice"),
                 hideOnPhone: true,
-                cell: (row) => <span className="font-mono">{row.invoice.invoiceNo}</span>,
+                cell: (row) => <span className="tabular-nums">{row.invoice.invoiceNo}</span>,
               },
               { key: "total", header: tCommon("amount"), align: "end", cell: (row) => format.thb(row.total) },
               {

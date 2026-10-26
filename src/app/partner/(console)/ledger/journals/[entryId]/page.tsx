@@ -162,7 +162,7 @@ export default async function JournalPage({ params }: { params: Promise<{ entryI
                   className="text-link underline-offset-4 hover:underline"
                   title={t("accountMonth")}
                 >
-                  <span className="font-mono">{row.account.code}</span> {row.account.name}
+                  <span className="tabular-nums">{row.account.code}</span> {row.account.name}
                 </Link>
               ),
             },

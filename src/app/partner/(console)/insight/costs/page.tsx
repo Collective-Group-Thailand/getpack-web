@@ -79,7 +79,7 @@ export default async function CostsPage({ searchParams }: { searchParams: Promis
                 key: "no",
                 header: t("order"),
                 primary: true,
-                cell: (row) => <span className="font-mono whitespace-nowrap">{row.productionOrder.number}</span>,
+                cell: (row) => <span className="whitespace-nowrap tabular-nums">{row.productionOrder.number}</span>,
               },
               { key: "ti", header: t("product"), cell: (row) => row.item?.name ?? row.title },
               { key: "g", header: t("good"), align: "end", cell: (row) => formatQty(row.goodQty, format.locale) },

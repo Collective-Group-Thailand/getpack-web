@@ -107,7 +107,7 @@ export default async function AccountsPage({
                 key: "k",
                 header: t("ruleKey"),
                 primary: true,
-                cell: (row) => <span className="font-mono">{row.key}</span>,
+                cell: (row) => <span className="tabular-nums">{row.key}</span>,
               },
               {
                 key: "n",
@@ -123,13 +123,13 @@ export default async function AccountsPage({
                 key: "e",
                 header: t("event"),
                 hideOnPhone: true,
-                cell: (row) => <span className="font-mono text-xs">{row.eventType}</span>,
+                cell: (row) => <span className="text-xs tabular-nums">{row.eventType}</span>,
               },
               {
                 key: "a",
                 header: t("postsTo"),
                 hideOnPhone: true,
-                cell: (row) => <span className="font-mono text-xs">{row.accountCodes.join(" ") || "—"}</span>,
+                cell: (row) => <span className="text-xs tabular-nums">{row.accountCodes.join(" ") || "—"}</span>,
               },
               { key: "v", header: t("version"), align: "end", hideOnPhone: true, cell: (row) => row.versionNo ?? "—" },
               { key: "c", header: t("entries"), align: "end", cell: (row) => format.number(row.entries) },
@@ -240,7 +240,7 @@ export default async function AccountsPage({
                 header: t("code"),
                 primary: true,
                 cell: (row) => (
-                  <span className={row.isPostable ? "font-mono" : "font-mono font-semibold"}>{row.code}</span>
+                  <span className={row.isPostable ? "tabular-nums" : "font-semibold tabular-nums"}>{row.code}</span>
                 ),
               },
               {

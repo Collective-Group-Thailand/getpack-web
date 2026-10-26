@@ -30,7 +30,7 @@ export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) 
       header: t("columns.claim"),
       cell: (row) => (
         <div className="min-w-0">
-          <Link href={`/claims/${row.id}`} className="text-primary font-mono hover:underline">
+          <Link href={`/claims/${row.id}`} className="text-primary tabular-nums hover:underline">
             {row.claimNo}
           </Link>
           <p className="text-muted text-xs">

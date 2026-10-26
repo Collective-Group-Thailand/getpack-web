@@ -85,7 +85,7 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
               const sensitive = SENSITIVE_PERMISSIONS.has(permission);
               return (
                 <tr key={permission} className="border-border border-t">
-                  <th scope="row" className="px-3 py-1.5 text-start font-mono text-xs font-normal whitespace-nowrap">
+                  <th scope="row" className="px-3 py-1.5 text-start text-xs font-normal whitespace-nowrap tabular-nums">
                     {sensitive ? (
                       <Icon name="shield-alert" size={14} className="text-warning-subtle-fg me-1 inline" aria-hidden />
                     ) : null}

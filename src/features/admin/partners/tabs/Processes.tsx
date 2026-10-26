@@ -100,7 +100,7 @@ export function Processes({ factory }: { factory: Factory }) {
       cell: (row) => (
         <div>
           <p className="font-medium">{nameOf(row.process)}</p>
-          <p className="text-muted font-mono text-xs">{row.process.code}</p>
+          <p className="text-muted text-xs tabular-nums">{row.process.code}</p>
         </div>
       ),
     },

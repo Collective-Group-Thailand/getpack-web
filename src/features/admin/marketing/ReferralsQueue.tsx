@@ -72,7 +72,7 @@ export function ReferralsQueue({ initial }: { initial: InitialPage<Referral> | n
       header: t("columns.firstOrder"),
       cell: (row) =>
         row.firstOrderGroupId && row.firstOrderGroupCode ? (
-          <Link href={`/orders/groups/${row.firstOrderGroupId}`} className="text-primary font-mono hover:underline">
+          <Link href={`/orders/groups/${row.firstOrderGroupId}`} className="text-primary tabular-nums hover:underline">
             {row.firstOrderGroupCode}
           </Link>
         ) : (

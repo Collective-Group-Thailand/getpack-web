@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: Promise<{ statementId: 
           <li key={entry.id} className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
             <span>
               {tc(`kinds.${entry.kind}`)}
-              {entry.orderCode ? <span className="font-mono"> {entry.orderCode}</span> : null}
+              {entry.orderCode ? <span className="tabular-nums"> {entry.orderCode}</span> : null}
               {entry.customerName ? <span className="text-muted"> · {entry.customerName}</span> : null}
             </span>
             <span className="flex items-center gap-3">

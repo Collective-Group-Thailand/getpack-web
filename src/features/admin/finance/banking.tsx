@@ -181,7 +181,7 @@ export function CashPosition() {
               header: t("account"),
               cell: (row) => (
                 <Link href={`/finance/ledger/journals?accountCode=${row.accountCode}`} className="hover:underline">
-                  <span className="font-mono text-sm">{row.accountCode}</span> {name(row.accountCode)}
+                  <span className="text-sm tabular-nums">{row.accountCode}</span> {name(row.accountCode)}
                 </Link>
               ),
             },
@@ -229,7 +229,7 @@ export function BankLines({ initial }: { initial: InitialPage<BankLine> | null }
       cell: (row) => (
         <button type="button" className="text-primary text-start hover:underline" onClick={() => setOpen(row)}>
           {row.description}
-          {row.reference ? <span className="text-muted block font-mono text-xs">{row.reference}</span> : null}
+          {row.reference ? <span className="text-muted block text-xs tabular-nums">{row.reference}</span> : null}
         </button>
       ),
     },
@@ -414,7 +414,7 @@ function LineSheet({ lineId, line: known, onClose }: { lineId: string; line: Ban
               { term: t("amount"), description: <span className="tabular-nums">{format.thb(data.amount)}</span> },
               {
                 term: t("reference"),
-                description: data.reference ? <span className="font-mono">{data.reference}</span> : "—",
+                description: data.reference ? <span className="tabular-nums">{data.reference}</span> : "—",
               },
               { term: t("account"), description: <AccountNo last4={data.accountNoLast4} /> },
               { term: t("status"), description: <StatusChip map={BANK_MATCH_STATUS} value={data.matchStatus} /> },
@@ -455,7 +455,7 @@ function LineSheet({ lineId, line: known, onClose }: { lineId: string; line: Ban
                         <div className="min-w-0 flex-1">
                           <p className="font-medium">
                             {tLines(`targets.${item.targetType}`)} ·{" "}
-                            <span className="font-mono text-sm">{item.label}</span>
+                            <span className="text-sm tabular-nums">{item.label}</span>
                           </p>
                           <p className="text-muted text-sm">
                             {format.date(item.date)} · <span className="tabular-nums">{format.thb(item.amount)}</span> ·{" "}
@@ -748,7 +748,7 @@ function SettlementImport({ accounts }: { accounts: Schemas["CompanyBankAccountD
             value={form.rows}
             onChange={(event) => setForm({ ...form, rows: event.target.value })}
             rows={4}
-            className="font-mono"
+            className="tabular-nums"
           />
         </Field>
       </div>
@@ -806,7 +806,9 @@ export function UnidentifiedReceipts() {
               cell: (row) => (
                 <span>
                   {row.description}
-                  {row.reference ? <span className="text-muted block font-mono text-xs">{row.reference}</span> : null}
+                  {row.reference ? (
+                    <span className="text-muted block text-xs tabular-nums">{row.reference}</span>
+                  ) : null}
                 </span>
               ),
             },
@@ -878,8 +880,8 @@ function Identify({ receipt, onClose }: { receipt: Schemas["UnidentifiedReceiptD
                 className="border-border hover:bg-surface-subtle flex w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md border p-3 text-start text-sm"
                 onClick={() => setPicked({ groupId: group.id, groupCode: group.groupCode, orderCode: orderCodes })}
               >
-                <span className="font-mono font-medium">{group.groupCode}</span>
-                <span className="font-mono">{orderCodes}</span>
+                <span className="font-medium tabular-nums">{group.groupCode}</span>
+                <span className="tabular-nums">{orderCodes}</span>
                 {/* The group names its customer by id only (CONTRACT-GAP admin.orders). */}
                 <span className="ms-auto tabular-nums">{format.thb(group.totals.grossAmount)}</span>
               </button>
@@ -958,7 +960,7 @@ export function CompanyBankAccounts() {
             ),
           },
           { id: "purpose", header: t("purpose"), cell: (row) => t(`purposes.${row.purpose}`) },
-          { id: "gl", header: t("gl"), cell: (row) => <span className="font-mono">{row.glAccountCode}</span> },
+          { id: "gl", header: t("gl"), cell: (row) => <span className="tabular-nums">{row.glAccountCode}</span> },
           { id: "format", header: t("format"), cell: (row) => row.defaultBulkFormat },
           {
             id: "status",

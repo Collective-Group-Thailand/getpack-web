@@ -140,7 +140,7 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
         title={campaign.name}
         meta={
           <>
-            <span className="text-muted font-mono text-sm">{campaign.code}</span>
+            <span className="text-muted text-sm tabular-nums">{campaign.code}</span>
             <StatusChip map={CAMPAIGN_STATUS} value={campaign.status} size="md" />
             {campaign.owner ? (
               <span className="text-muted text-sm">

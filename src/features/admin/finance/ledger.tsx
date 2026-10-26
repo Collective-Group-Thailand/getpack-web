@@ -681,7 +681,7 @@ export function AccountsView() {
       cell: (row) => (
         <Link
           href={`/finance/ledger/journals?accountCode=${row.code}`}
-          className={row.parentCode ? "text-primary ps-4 font-mono hover:underline" : "font-mono font-semibold"}
+          className={row.parentCode ? "text-primary ps-4 tabular-nums hover:underline" : "font-semibold tabular-nums"}
         >
           {row.code}
         </Link>
@@ -799,7 +799,7 @@ export function AccountsView() {
             {
               id: "account",
               header: t("code"),
-              cell: (row) => <span className="font-mono">{row.accountCode ?? row.proposed.code}</span>,
+              cell: (row) => <span className="tabular-nums">{row.accountCode ?? row.proposed.code}</span>,
             },
             { id: "reason", header: t("reason"), cell: (row) => row.reason },
             { id: "at", header: t("proposedAt"), cell: (row) => <When at={row.createdAt} /> },
@@ -1031,7 +1031,7 @@ export function PostingRulesList() {
             id: "key",
             header: t("key"),
             cell: (row) => (
-              <Link href={`/finance/ledger/rules/${row.key}`} className="text-primary font-mono hover:underline">
+              <Link href={`/finance/ledger/rules/${row.key}`} className="text-primary tabular-nums hover:underline">
                 {row.key}
               </Link>
             ),
@@ -1191,7 +1191,7 @@ export function PostingRuleDetail({ ruleKey }: { ruleKey: string }) {
               value={text}
               onChange={(event) => setPayload(event.target.value)}
               rows={8}
-              className="font-mono text-xs"
+              className="text-xs tabular-nums"
               spellCheck={false}
             />
           </Field>
@@ -1217,7 +1217,7 @@ export function PostingRuleDetail({ ruleKey }: { ruleKey: string }) {
                   {
                     id: "account",
                     header: t("account"),
-                    cell: (row) => <span className="font-mono">{row.accountCode}</span>,
+                    cell: (row) => <span className="tabular-nums">{row.accountCode}</span>,
                   },
                   { id: "tax", header: t("tax"), cell: (row) => row.taxCode ?? "" },
                   {
@@ -1282,7 +1282,7 @@ function ProposeRuleVersion({ rule, onClose }: { rule: Rule; onClose: () => void
           value={template}
           onChange={(event) => setTemplate(event.target.value)}
           rows={12}
-          className="font-mono text-xs"
+          className="text-xs tabular-nums"
           spellCheck={false}
         />
       </Field>
@@ -1358,7 +1358,7 @@ export function RecurringJournals() {
                 <ul className="text-xs">
                   {row.lines.map((line, index) => (
                     <li key={index} className="tabular-nums">
-                      <span className="font-mono">{line.accountCode}</span> {t(`sides.${line.side}`)}{" "}
+                      <span className="tabular-nums">{line.accountCode}</span> {t(`sides.${line.side}`)}{" "}
                       {format.thb(line.amount)}
                     </li>
                   ))}
@@ -1693,7 +1693,7 @@ export function DimensionsView() {
               id: "required",
               header: t("requiredBy"),
               cell: (row) => (
-                <span className="font-mono text-xs">
+                <span className="text-xs tabular-nums">
                   {(accounts.data ?? [])
                     .filter((account) => account.requiredDimensions.includes(row.dimension))
                     .map((account) => account.code)
@@ -1722,7 +1722,7 @@ export function DimensionsView() {
           getRowId={(row) => row.id}
           density="compact"
           columns={[
-            { id: "code", header: t("code"), cell: (row) => <span className="font-mono">{row.code}</span> },
+            { id: "code", header: t("code"), cell: (row) => <span className="tabular-nums">{row.code}</span> },
             { id: "name", header: t("name"), cell: (row) => row.name },
             {
               id: "status",

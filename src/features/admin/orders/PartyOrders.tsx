@@ -38,7 +38,7 @@ export function PartyOrders({ customer, companyId }: { customer?: { id: string }
       id: "orderCode",
       header: t("order"),
       cell: (row) => (
-        <Link href={`/orders/${row.orderId}`} className="text-primary font-mono hover:underline">
+        <Link href={`/orders/${row.orderId}`} className="text-primary tabular-nums hover:underline">
           {row.orderCode}
         </Link>
       ),

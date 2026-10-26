@@ -31,7 +31,7 @@ export function CustomersList({ initial }: { initial: InitialPage<Customer> | nu
           <Link href={`/customers/${row.id}`} className="text-primary font-medium hover:underline">
             {row.displayName}
           </Link>
-          {row.customerCode ? <p className="text-muted font-mono text-xs">{row.customerCode}</p> : null}
+          {row.customerCode ? <p className="text-muted text-xs tabular-nums">{row.customerCode}</p> : null}
           {row.companyName ? <p className="text-muted truncate text-xs">{row.companyName}</p> : null}
         </div>
       ),
@@ -72,7 +72,7 @@ export function CustomersList({ initial }: { initial: InitialPage<Customer> | nu
       id: "referralCode",
       header: t("columns.referralCode"),
       hideable: true,
-      cell: (row) => <span className="font-mono text-sm">{row.referralCode ?? "–"}</span>,
+      cell: (row) => <span className="text-sm tabular-nums">{row.referralCode ?? "–"}</span>,
     },
     { id: "createdAt", header: t("columns.since"), sortable: true, cell: (row) => <When at={row.createdAt} /> },
   ];

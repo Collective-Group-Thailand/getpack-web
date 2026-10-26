@@ -97,7 +97,7 @@ export default async function ProductionOrderPage({ params }: { params: Promise<
             {
               term: t("detail.job"),
               description: mo.job ? (
-                <Link href={`/jobs/${mo.job.id}`} className="font-mono underline-offset-4 hover:underline">
+                <Link href={`/jobs/${mo.job.id}`} className="tabular-nums underline-offset-4 hover:underline">
                   {mo.job.code}
                 </Link>
               ) : (

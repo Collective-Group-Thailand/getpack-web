@@ -245,7 +245,7 @@ function RunDialog({ from, onClose }: { from: Recommendation | null; onClose: ()
       <Field label={t("configuration")} hint={t("configurationHint")} required>
         <Textarea
           rows={8}
-          className="font-mono text-xs"
+          className="text-xs tabular-nums"
           value={configuration}
           onChange={(event) => setConfiguration(event.target.value)}
         />
@@ -405,7 +405,7 @@ export function RecommendationDetail({ recommendationId }: { recommendationId: s
           <Callout tone="success" title={t("identical", { engine: replay.data.engineVersion })} />
         ) : (
           <Callout tone="danger" title={t("different", { engine: replay.data.engineVersion })}>
-            <ul className="mt-1 list-disc ps-5 font-mono text-xs">
+            <ul className="mt-1 list-disc ps-5 text-xs tabular-nums">
               {replay.data.differences.map((path) => (
                 <li key={path}>{path}</li>
               ))}
@@ -493,7 +493,7 @@ export function RecommendationDetail({ recommendationId }: { recommendationId: s
                   <tr key={option.board.id} className="border-border border-t">
                     <td className="px-3 py-2">
                       <span className="font-medium">{boardName(option.board)}</span>
-                      <span className="text-muted ms-2 font-mono text-xs">{option.board.code}</span>
+                      <span className="text-muted ms-2 text-xs tabular-nums">{option.board.code}</span>
                       <span className="ms-2 inline-flex gap-1">
                         {option.board.id === rec.recommendedBoardId ? (
                           <Badge size="sm" tone="success">

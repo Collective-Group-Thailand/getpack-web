@@ -84,7 +84,7 @@ export function ZonesDesk() {
   };
 
   const columns: DataTableColumn<Zone>[] = [
-    { id: "code", header: t("code"), cell: (row) => <span className="font-mono text-sm">{row.code}</span> },
+    { id: "code", header: t("code"), cell: (row) => <span className="text-sm tabular-nums">{row.code}</span> },
     { id: "nameTh", header: t("nameTh"), cell: (row) => row.nameTh },
     { id: "nameEn", header: t("nameEn"), cell: (row) => row.nameEn },
     {
@@ -182,7 +182,7 @@ export function ZonesDesk() {
         >
           <Field label={t("code")} hint={t("codeHint")} required>
             <Input
-              className="font-mono"
+              className="tabular-nums"
               value={draft.code}
               onChange={(e) => setDraft({ ...draft, code: e.target.value })}
             />
@@ -214,7 +214,7 @@ export function ZonesDesk() {
         >
           <Field label={t("code")} hint={t("schemeCodeHint")} required>
             <Input
-              className="font-mono"
+              className="tabular-nums"
               value={scheme.code}
               onChange={(e) => setScheme({ ...scheme, code: e.target.value })}
             />
@@ -254,7 +254,7 @@ export function ZonesDesk() {
             >
               <Textarea
                 rows={12}
-                className="font-mono text-sm"
+                className="text-sm tabular-nums"
                 value={postcodes.text}
                 onChange={(e) => setPostcodes({ ...postcodes, text: e.target.value })}
               />
@@ -267,7 +267,7 @@ export function ZonesDesk() {
             onClose={() => setPostcodes(null)}
             onSubmit={async () => undefined}
           >
-            <p className="font-mono text-sm break-words">{parsed.valid.join(", ") || t("noPostcodes")}</p>
+            <p className="text-sm break-words tabular-nums">{parsed.valid.join(", ") || t("noPostcodes")}</p>
           </FormDialog>
         )
       ) : null}

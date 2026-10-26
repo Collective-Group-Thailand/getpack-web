@@ -30,7 +30,7 @@ export function StylesList({ initial }: { initial: InitialPage<AdminStyle> | nul
             {row.nameTh}
           </Link>
           <p className="text-muted text-xs">
-            <span className="font-mono">{row.code}</span> · {row.nameEn}
+            <span className="tabular-nums">{row.code}</span> · {row.nameEn}
           </p>
         </div>
       ),

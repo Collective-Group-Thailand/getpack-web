@@ -479,7 +479,7 @@ export function FactoryRateCard({ factoryId }: { factoryId: string }) {
             {countered.map((rate) => (
               <li key={rate.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
                 <span className="min-w-48">
-                  <span className="font-mono">{rate.zoneCode}</span> {rate.postcode ?? ""} ·{" "}
+                  <span className="tabular-nums">{rate.zoneCode}</span> {rate.postcode ?? ""} ·{" "}
                   {format.number(rate.weightMinG / 1000)}–
                   {rate.weightMaxG === null ? "∞" : format.number(rate.weightMaxG / 1000)}
                 </span>

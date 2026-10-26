@@ -47,7 +47,7 @@ export default async function Page() {
         <h2 id="referral-code" className="text-muted text-sm font-medium">
           {t("yourCode")}
         </h2>
-        <p className="font-mono text-3xl font-bold tracking-wider">{referral.code}</p>
+        <p className="text-3xl font-bold tracking-wider tabular-nums">{referral.code}</p>
         <p className="text-muted text-sm break-all">{referral.link}</p>
         <div className="flex flex-wrap gap-2">
           <CopyButton value={referral.code} label={t("copyCode")} />

@@ -381,7 +381,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
               {item.campaign ? (
                 <Link
                   href={`/marketing/campaigns/${item.campaign.id}`}
-                  className="text-primary font-mono text-sm hover:underline"
+                  className="text-primary text-sm tabular-nums hover:underline"
                 >
                   {item.campaign.code}
                 </Link>

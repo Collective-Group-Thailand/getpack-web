@@ -129,7 +129,7 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
           text === null ? (
             <JsonView value={value} label={key} />
           ) : kind === "code" ? (
-            <span className="font-mono">{text}</span>
+            <span className="tabular-nums">{text}</span>
           ) : (
             text
           ),

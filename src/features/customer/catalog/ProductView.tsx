@@ -322,7 +322,7 @@ export async function ProductView({
                         instant && "hover:bg-primary-subtle/50 focus-within:bg-primary-subtle/50",
                       )}
                     >
-                      <td className="text-primary px-4 py-3 font-mono font-semibold">{size.code}</td>
+                      <td className="text-primary px-4 py-3 font-semibold tabular-nums">{size.code}</td>
                       <td className="px-4 py-3">
                         {instant ? (
                           // The whole row opens the configurator at this size (UX audit, product detail).

@@ -101,7 +101,7 @@ export default async function TaxPage({
                     header: t("vat.docNo"),
                     primary: true,
                     cell: (row) => (
-                      <span className="flex flex-wrap items-center gap-1 font-mono">
+                      <span className="flex flex-wrap items-center gap-1 tabular-nums">
                         <span className="whitespace-nowrap">{row.docNo}</span>
                         {row.voided ? <Badge tone="danger">{t("vat.voided")}</Badge> : null}
                       </span>
@@ -190,7 +190,7 @@ export default async function TaxPage({
                   key: "no",
                   header: t("wht.certNo"),
                   primary: true,
-                  cell: (row) => <span className="font-mono">{row.certNo}</span>,
+                  cell: (row) => <span className="tabular-nums">{row.certNo}</span>,
                 },
                 { key: "d", header: tCommon("date"), cell: (row) => format.date(row.paidOn) },
                 { key: "p", header: t("wht.payee"), cell: (row) => row.payeeName },
@@ -232,7 +232,7 @@ export default async function TaxPage({
             key: "no",
             header: t("wht.certNo"),
             primary: true,
-            cell: (row) => <span className="font-mono">{row.certNo}</span>,
+            cell: (row) => <span className="tabular-nums">{row.certNo}</span>,
           },
           { key: "d", header: tCommon("date"), cell: (row) => format.date(row.paidOn) },
           { key: "s", header: t("wht.payee"), cell: (row) => row.supplier.name },

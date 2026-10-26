@@ -47,7 +47,7 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
           {/* One line, however long the code (UX audit, /shipments). */}
           <Link
             href={`/shipments/${row.id}`}
-            className="text-primary inline-block min-w-[11.5rem] font-mono whitespace-nowrap hover:underline"
+            className="text-primary inline-block min-w-[11.5rem] whitespace-nowrap tabular-nums hover:underline"
           >
             {row.shipmentNo}
           </Link>
@@ -85,7 +85,7 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
           <Badge size="sm" tone={row.carrier === "factory_fleet" ? "neutral" : "info"}>
             {t(`carriers.${row.carrier}`)}
           </Badge>
-          {row.trackingNo ? <p className="text-muted mt-1 font-mono text-xs">{row.trackingNo}</p> : null}
+          {row.trackingNo ? <p className="text-muted mt-1 text-xs tabular-nums">{row.trackingNo}</p> : null}
           {row.carrierRequest ? <p className="text-warning-subtle-fg mt-1 text-xs">{t("carrierRequested")}</p> : null}
         </div>
       ),
@@ -105,7 +105,7 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
     {
       id: "factory",
       header: t("columns.factory"),
-      cell: (row) => <span className="font-mono text-sm">{row.factoryCode}</span>,
+      cell: (row) => <span className="text-sm tabular-nums">{row.factoryCode}</span>,
     },
     {
       id: "quantity",

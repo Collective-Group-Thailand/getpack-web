@@ -130,7 +130,7 @@ export default async function PurchasingPage({
                   primary: true,
                   cell: (po) =>
                     po.poNo ? (
-                      <span className="font-mono whitespace-nowrap">{po.poNo}</span>
+                      <span className="whitespace-nowrap tabular-nums">{po.poNo}</span>
                     ) : (
                       <span className="text-muted">{t("draftNo")}</span>
                     ),
@@ -193,7 +193,7 @@ export default async function PurchasingPage({
                 key: "no",
                 header: t("table.grNo"),
                 primary: true,
-                cell: (gr) => <span className="font-mono whitespace-nowrap">{gr.grNo}</span>,
+                cell: (gr) => <span className="whitespace-nowrap tabular-nums">{gr.grNo}</span>,
               },
               {
                 key: "date",

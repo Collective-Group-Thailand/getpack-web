@@ -112,7 +112,7 @@ export function SummaryTab({ order, group }: { order: Order; group: OrderGroup |
             },
             {
               term: t("summary.customerCode"),
-              description: <span className="font-mono">{customer?.customerCode ?? "—"}</span>,
+              description: <span className="tabular-nums">{customer?.customerCode ?? "—"}</span>,
             },
             ...(customer?.companyName ? [{ term: t("summary.company"), description: customer.companyName }] : []),
             { term: t("summary.placedBy"), description: group?.placedBy.displayName ?? "—" },
@@ -120,7 +120,7 @@ export function SummaryTab({ order, group }: { order: Order; group: OrderGroup |
             {
               term: t("summary.group"),
               description: group ? (
-                <Link href={`/orders/groups/${group.id}`} className="text-primary font-mono hover:underline">
+                <Link href={`/orders/groups/${group.id}`} className="text-primary tabular-nums hover:underline">
                   {group.groupCode}
                 </Link>
               ) : (
@@ -240,7 +240,7 @@ export function SummaryTab({ order, group }: { order: Order; group: OrderGroup |
             items={[
               ...(tax.name ? [{ term: t("summary.taxName"), description: tax.name }] : []),
               ...(tax.taxId
-                ? [{ term: t("summary.taxId"), description: <span className="font-mono">{tax.taxId}</span> }]
+                ? [{ term: t("summary.taxId"), description: <span className="tabular-nums">{tax.taxId}</span> }]
                 : []),
               ...(tax.branchCode ? [{ term: t("summary.branch"), description: tax.branchCode }] : []),
               ...(tax.withholdsTax !== null
@@ -473,7 +473,7 @@ export function PaymentsTab({
       cell: (row) => (
         <div>
           <p>{t.has(`methods.${row.method}`) ? t(`methods.${row.method}`) : row.method}</p>
-          <p className="text-muted font-mono text-xs">{t("reference", { ref: row.referenceCode })}</p>
+          <p className="text-muted text-xs tabular-nums">{t("reference", { ref: row.referenceCode })}</p>
         </div>
       ),
     },
@@ -882,7 +882,7 @@ export function DocumentsTab({ order }: { order: Order }) {
   if (documents.isError) return <QueryError error={documents.error} onRetry={() => void documents.refetch()} />;
   const columns: DataTableColumn<Schemas["CustomerDocumentDto"]>[] = [
     { id: "type", header: t("type"), cell: (row) => t(`types.${row.docType}`) },
-    { id: "number", header: t("number"), cell: (row) => <span className="font-mono">{row.docNumber}</span> },
+    { id: "number", header: t("number"), cell: (row) => <span className="tabular-nums">{row.docNumber}</span> },
     { id: "issuedAt", header: t("issuedAt"), cell: (row) => <When at={row.issuedAt} absoluteOnly /> },
     { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
     { id: "status", header: t("status"), cell: (row) => <StatusChip map={DOCUMENT_STATUS} value={row.status} /> },
@@ -921,7 +921,7 @@ export function ClaimsTab({ order }: { order: Order }) {
       <ul className="divide-border divide-y text-sm">
         {claims.data.data.map((claim) => (
           <li key={claim.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-            <Link href={`/claims/${claim.id}`} className="text-primary font-mono hover:underline">
+            <Link href={`/claims/${claim.id}`} className="text-primary tabular-nums hover:underline">
               {claim.claimNo}
             </Link>
             <span className="text-muted">{t(`types.${claim.type}`)}</span>

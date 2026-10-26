@@ -82,7 +82,7 @@ export function BasketQuotes({ basket }: { basket: Basket }) {
                   {rfq ? (
                     <Link
                       href={`/account/rfqs/${rfq.id}`}
-                      className="text-primary ms-2 font-mono text-sm hover:underline"
+                      className="text-primary ms-2 text-sm tabular-nums hover:underline"
                     >
                       {rfq.rfqCode}
                     </Link>

@@ -71,7 +71,7 @@ export default async function BillingNotePage({ params }: Props) {
               header: t("form.invoices"),
               primary: true,
               cell: (row) => (
-                <Link className="font-mono" href={`/invoices/${row.invoice.id}`}>
+                <Link className="tabular-nums" href={`/invoices/${row.invoice.id}`}>
                   {row.invoice.invoiceNo}
                 </Link>
               ),

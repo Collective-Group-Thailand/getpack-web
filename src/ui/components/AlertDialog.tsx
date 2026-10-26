@@ -128,7 +128,7 @@ function Confirmation({
             autoCapitalize="characters"
             spellCheck={false}
             placeholder={confirmationPhrase}
-            className={cn(controlVariants({ inputSize: "md" }), "font-mono")}
+            className={cn(controlVariants({ inputSize: "md" }), "tabular-nums")}
           />
         </div>
       ) : null}

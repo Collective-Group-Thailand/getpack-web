@@ -32,7 +32,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-4 px-4 text-center">
           <h1 className="text-xl font-semibold">เกิดข้อผิดพลาด · Something went wrong</h1>
           <p className="text-muted text-sm">ลองโหลดหน้านี้อีกครั้ง · Please try loading this page again.</p>
-          {error.digest ? <p className="text-muted font-mono text-xs select-all">{error.digest}</p> : null}
+          {error.digest ? <p className="text-muted text-xs tabular-nums select-all">{error.digest}</p> : null}
           <p>
             <button
               type="button"

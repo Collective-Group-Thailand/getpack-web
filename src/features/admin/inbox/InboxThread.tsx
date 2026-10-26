@@ -215,7 +215,7 @@ export function InboxThread({ initial }: { initial: Conversation }) {
             <dd>
               {conversation.subject ? (
                 subjectHref ? (
-                  <Link href={subjectHref} className="text-primary font-mono hover:underline">
+                  <Link href={subjectHref} className="text-primary tabular-nums hover:underline">
                     {t(`subjects.${conversation.subjectType}`)} {conversation.subject.label}
                   </Link>
                 ) : (

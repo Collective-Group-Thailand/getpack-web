@@ -101,7 +101,7 @@ export default async function ReceiptPage({ params }: Props) {
               header: t("table.invoice"),
               primary: true,
               cell: (row) => (
-                <Link className="font-mono" href={`/invoices/${row.invoice.id}`}>
+                <Link className="tabular-nums" href={`/invoices/${row.invoice.id}`}>
                   {row.invoice.invoiceNo}
                 </Link>
               ),

@@ -105,7 +105,7 @@ export default async function BankPage({
                   cell: (row) => (
                     <span>
                       {row.account.bankName} {row.account.name}{" "}
-                      <span className="font-mono">{t("masked", { last4: row.account.accountNoLast4 })}</span>
+                      <span className="tabular-nums">{t("masked", { last4: row.account.accountNoLast4 })}</span>
                     </span>
                   ),
                 },
@@ -119,7 +119,7 @@ export default async function BankPage({
                   key: "gl",
                   header: tc("account"),
                   hideOnPhone: true,
-                  cell: (row) => <span className="font-mono">{row.account.glAccount.code}</span>,
+                  cell: (row) => <span className="tabular-nums">{row.account.glAccount.code}</span>,
                 },
                 {
                   key: "b",
@@ -184,7 +184,7 @@ export default async function BankPage({
                   key: "r",
                   header: t("reference"),
                   hideOnPhone: true,
-                  cell: (row) => <span className="font-mono text-xs">{row.reference ?? "—"}</span>,
+                  cell: (row) => <span className="text-xs tabular-nums">{row.reference ?? "—"}</span>,
                 },
                 {
                   key: "a",

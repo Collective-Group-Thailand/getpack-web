@@ -132,7 +132,6 @@ export const FONT_FAMILY = {
   sans: "var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif",
   /** One face for the whole site: display text is Anuphan too, set heavier and tighter (base.css). */
   display: "var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif",
-  mono: "var(--font-pk-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
 } as const;
 
 /** Stacking order. Overlays come from Radix portals, so only a few levels are needed. */

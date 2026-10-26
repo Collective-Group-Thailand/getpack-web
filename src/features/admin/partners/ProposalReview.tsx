@@ -44,7 +44,7 @@ function changed(current: Record<string, unknown> | null, proposed: Record<strin
 function Values({ values, highlight }: { values: Record<string, unknown> | null; highlight?: Set<string> }) {
   if (!values) return <span className="text-muted">–</span>;
   return (
-    <span className="flex flex-wrap gap-x-2 font-mono text-xs">
+    <span className="flex flex-wrap gap-x-2 text-xs tabular-nums">
       {Object.entries(values).map(([key, value]) => {
         const text = value === null ? "–" : String(value);
         // A catalogue reference is an id: its tail is enough to tell lines apart; the whole id is on hover.
@@ -479,7 +479,7 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
                           <Field key={column} label={t("counterValue", { column })}>
                             <Input
                               inputMode="decimal"
-                              className="font-mono"
+                              className="tabular-nums"
                               value={value}
                               onChange={(event) =>
                                 setDecisions((current) => ({
@@ -557,7 +557,7 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
                 ].map((column) => (
                   <Field key={column.key} label={column.key} hint={t(`columnTypes.${column.type}`)}>
                     <Input
-                      className="font-mono"
+                      className="tabular-nums"
                       value={newLine.values[column.key] ?? ""}
                       onChange={(event) =>
                         setNewLine({ ...newLine, values: { ...newLine.values, [column.key]: event.target.value } })

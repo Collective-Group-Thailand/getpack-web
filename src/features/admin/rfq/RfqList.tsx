@@ -59,7 +59,7 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
         <div>
           <Link
             href={`/rfq/${row.id}`}
-            className="text-primary font-mono text-sm font-medium whitespace-nowrap hover:underline"
+            className="text-primary text-sm font-medium whitespace-nowrap tabular-nums hover:underline"
           >
             {row.rfqCode}
           </Link>
@@ -73,7 +73,7 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
       cell: (row) => (
         <div className="min-w-0">
           <p className="truncate">{row.customer.displayName}</p>
-          {row.customerCode ? <p className="text-muted truncate font-mono text-xs">{row.customerCode}</p> : null}
+          {row.customerCode ? <p className="text-muted truncate text-xs tabular-nums">{row.customerCode}</p> : null}
         </div>
       ),
     },

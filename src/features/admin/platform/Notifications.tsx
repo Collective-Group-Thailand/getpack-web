@@ -56,7 +56,7 @@ export function NotificationTemplates({ initial }: { initial: Template[] | null 
       cell: (row) => (
         <button
           type="button"
-          className="text-primary font-mono text-xs font-medium hover:underline"
+          className="text-primary text-xs font-medium tabular-nums hover:underline"
           onClick={() => setOpen(row.id)}
         >
           {row.key}
@@ -209,7 +209,7 @@ function TemplateSheet({ template, onClose }: { template: Template; onClose: () 
         {chosen ? (
           <Card padding="md" className="space-y-2">
             {chosen.subject ? <p className="text-sm font-medium">{chosen.subject}</p> : null}
-            <pre className="bg-surface-subtle max-h-48 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
+            <pre className="bg-surface-subtle max-h-48 overflow-auto rounded-md p-3 text-xs whitespace-pre-wrap tabular-nums">
               {chosen.body}
             </pre>
             <p className="text-muted text-xs">
@@ -223,7 +223,7 @@ function TemplateSheet({ template, onClose }: { template: Template; onClose: () 
         <Field label={t("samplePayload")} hint={t("samplePayloadHint")} error={parsed ? undefined : t("invalidJson")}>
           <Textarea
             rows={5}
-            className="font-mono text-xs"
+            className="text-xs tabular-nums"
             value={payload}
             onChange={(event) => setPayload(event.target.value)}
           />
@@ -366,7 +366,7 @@ function NewDraft({
         <Field label={t("body")} hint={t("bodyHint")} required requiredLabel={tCommon("state.required")}>
           <Textarea
             rows={12}
-            className="font-mono text-xs"
+            className="text-xs tabular-nums"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />
@@ -423,7 +423,7 @@ export function NotificationRoutes({ initial }: { initial: Route[] | null }) {
     {
       id: "eventType",
       header: t("columns.event"),
-      cell: (row) => <span className="font-mono text-xs">{row.eventType}</span>,
+      cell: (row) => <span className="text-xs tabular-nums">{row.eventType}</span>,
     },
     {
       id: "audience",
@@ -434,7 +434,7 @@ export function NotificationRoutes({ initial }: { initial: Route[] | null }) {
     {
       id: "template",
       header: t("columns.template"),
-      cell: (row) => <span className="font-mono text-xs">{row.template}</span>,
+      cell: (row) => <span className="text-xs tabular-nums">{row.template}</span>,
     },
     {
       id: "flags",

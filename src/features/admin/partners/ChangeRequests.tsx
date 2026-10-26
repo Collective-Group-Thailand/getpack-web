@@ -90,7 +90,7 @@ export function ChangeRequests() {
       cell: (row) => (
         <Link
           href={`/partners/${row.factoryId}?tab=${TAB[row.topic]}`}
-          className="text-primary font-mono hover:underline"
+          className="text-primary tabular-nums hover:underline"
         >
           {row.factoryCode}
         </Link>

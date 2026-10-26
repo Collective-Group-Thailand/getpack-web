@@ -50,7 +50,7 @@ export default async function Page() {
           ]}
           rows={samples.map((sample) => ({
             id: sample.id,
-            phoneSubtitle: sample.orderCode ? <span className="font-mono">{sample.orderCode}</span> : null,
+            phoneSubtitle: sample.orderCode ? <span className="tabular-nums">{sample.orderCode}</span> : null,
             cells: {
               sample: (
                 <span className="block min-w-0">
@@ -61,7 +61,9 @@ export default async function Page() {
                     {t(`mockup.${sample.mockupOption}`)}
                   </Link>
                   {sample.orderCode ? (
-                    <span className="text-muted hidden font-mono text-xs font-normal md:block">{sample.orderCode}</span>
+                    <span className="text-muted hidden text-xs font-normal tabular-nums md:block">
+                      {sample.orderCode}
+                    </span>
                   ) : null}
                 </span>
               ),

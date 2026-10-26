@@ -48,7 +48,7 @@ export function OrderGroup({ groupId }: { groupId: string }) {
             items={[{ label: t("orders"), href: "/orders" }, { label: data.groupCode }]}
           />
         }
-        title={<span className="font-mono">{data.groupCode}</span>}
+        title={<span className="tabular-nums">{data.groupCode}</span>}
         meta={<StatusChip map={ORDER_GROUP_STATUS} value={data.status} size="md" />}
         actions={<GroupActions group={data} />}
         description={t("headline", {
@@ -71,7 +71,7 @@ export function OrderGroup({ groupId }: { groupId: string }) {
             },
             {
               term: t("customerCode"),
-              description: <span className="font-mono">{data.customer.customerCode ?? "—"}</span>,
+              description: <span className="tabular-nums">{data.customer.customerCode ?? "—"}</span>,
             },
             ...(data.customer.companyName ? [{ term: t("company"), description: data.customer.companyName }] : []),
             { term: t("placedBy"), description: data.placedBy.displayName },
@@ -96,7 +96,7 @@ export function OrderGroup({ groupId }: { groupId: string }) {
             id: "orderCode",
             header: t("order"),
             cell: (row) => (
-              <Link href={`/orders/${row.id}`} className="text-primary font-mono hover:underline">
+              <Link href={`/orders/${row.id}`} className="text-primary tabular-nums hover:underline">
                 {row.orderCode}
               </Link>
             ),

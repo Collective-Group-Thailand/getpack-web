@@ -108,7 +108,7 @@ export default async function OpportunityPage({ params }: { params: Promise<{ op
                 key={qt.id}
                 href={`/quotations/${qt.id}`}
                 icon="document"
-                title={<span className="font-mono">{qt.quoteNo}</span>}
+                title={<span className="tabular-nums">{qt.quoteNo}</span>}
                 meta={<StatusChip map={ERP_QUOTATION_STATUS} value={qt.status} />}
                 aside={format.thb(qt.total)}
               />

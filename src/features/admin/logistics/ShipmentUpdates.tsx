@@ -226,7 +226,7 @@ export function PodDialog({
       />
       {!fleet ? (
         <Field label={t("carrierRef")} hint={t("carrierRefHint")}>
-          <Input className="font-mono" value={carrierRef} onChange={(e) => setCarrierRef(e.target.value)} />
+          <Input className="tabular-nums" value={carrierRef} onChange={(e) => setCarrierRef(e.target.value)} />
         </Field>
       ) : null}
       <Field label={t("note")}>

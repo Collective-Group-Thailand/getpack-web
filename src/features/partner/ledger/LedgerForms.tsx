@@ -683,7 +683,7 @@ export function LedgerSettingsForm({
             {Object.entries(settings.itemKindAccounts).map(([kind, code]) => (
               <div key={kind} className="flex justify-between px-3 py-2">
                 <dt>{tk.has(kind as never) ? tk(kind as never) : kind}</dt>
-                <dd className="font-mono">{code}</dd>
+                <dd className="tabular-nums">{code}</dd>
               </div>
             ))}
           </dl>
@@ -693,8 +693,8 @@ export function LedgerSettingsForm({
           <dl className="border-border divide-border divide-y rounded-lg border text-sm">
             {METHOD_ORDER.filter((k) => settings.methodAccounts[k]).map((k) => (
               <div key={k} className="flex justify-between px-3 py-2">
-                <dt className="font-mono text-xs">{k}</dt>
-                <dd className="font-mono">{settings.methodAccounts[k]}</dd>
+                <dt className="text-xs tabular-nums">{k}</dt>
+                <dd className="tabular-nums">{settings.methodAccounts[k]}</dd>
               </div>
             ))}
           </dl>
@@ -898,7 +898,7 @@ export function ProposeAccountChange({ accounts }: { accounts: Account[] }) {
                       disabled={kind !== "create"}
                       maxLength={20}
                       onChange={(e) => setCode(e.target.value.toUpperCase())}
-                      className="font-mono"
+                      className="tabular-nums"
                     />
                   </Field>
                   <Field label={t("nameTh")} required>

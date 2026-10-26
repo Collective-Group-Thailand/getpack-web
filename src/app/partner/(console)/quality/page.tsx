@@ -116,7 +116,7 @@ export default async function QualityChecksPage({
                 key: "no",
                 header: t("qcNo"),
                 primary: true,
-                cell: (row) => <span className="font-mono">{row.qcNo}</span>,
+                cell: (row) => <span className="tabular-nums">{row.qcNo}</span>,
               },
               { key: "k", header: t("kind"), cell: (row) => tKind(row.kind) },
               {

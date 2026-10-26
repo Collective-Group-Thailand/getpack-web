@@ -87,7 +87,7 @@ export function CatalogueImport({ initialKind }: { initialKind: Kind | null }) {
   if (kinds.isError) return <QueryError error={kinds.error} onRetry={() => void kinds.refetch()} />;
 
   const columnColumns: DataTableColumn<Column>[] = [
-    { id: "header", header: t("column"), cell: (row) => <span className="font-mono text-sm">{row.header}</span> },
+    { id: "header", header: t("column"), cell: (row) => <span className="text-sm tabular-nums">{row.header}</span> },
     { id: "type", header: t("type"), cell: (row) => (t.has(`types.${row.type}`) ? t(`types.${row.type}`) : row.type) },
     {
       id: "required",
@@ -219,7 +219,7 @@ export function CatalogueImport({ initialKind }: { initialKind: Kind | null }) {
               {
                 id: "name",
                 header: t("sheetColumn"),
-                cell: (row) => <span className="font-mono text-sm">{row.name}</span>,
+                cell: (row) => <span className="text-sm tabular-nums">{row.name}</span>,
               },
               ...(["create", "update", "unchanged", "invalid"] as const).map((key) => ({
                 id: key,
@@ -240,7 +240,7 @@ export function CatalogueImport({ initialKind }: { initialKind: Kind | null }) {
               <ul className="divide-border mt-3 divide-y rounded-md border text-sm">
                 {preview.errors.map((error, index) => (
                   <li key={index} className="flex flex-wrap gap-2 px-3 py-2">
-                    <span className="font-mono text-xs">
+                    <span className="text-xs tabular-nums">
                       {t("errorAt", { sheet: error.sheet, row: error.row, column: error.column ?? "–" })}
                     </span>
                     <span>{error.message}</span>

@@ -134,7 +134,7 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
           breadcrumbs={
             <Breadcrumbs label={t("breadcrumb")} items={[{ label: t("rfqs"), href: "/rfq" }, { label: rfq.rfqCode }]} />
           }
-          title={<span className="font-mono">{rfq.rfqCode}</span>}
+          title={<span className="tabular-nums">{rfq.rfqCode}</span>}
           meta={
             <>
               <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
@@ -220,7 +220,7 @@ function AcceptedCallout({
     >
       <span className="flex flex-wrap items-center gap-3">
         {canRead ? (
-          <Link href={`/quotations/${quoteId}`} className="text-primary font-mono hover:underline">
+          <Link href={`/quotations/${quoteId}`} className="text-primary tabular-nums hover:underline">
             {quote.data?.quoteCode ?? t("openQuotation")}
           </Link>
         ) : null}
@@ -333,7 +333,7 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
               ),
             },
             ...(rfq.customerCode
-              ? [{ term: t("code"), description: <span className="font-mono">{rfq.customerCode}</span> }]
+              ? [{ term: t("code"), description: <span className="tabular-nums">{rfq.customerCode}</span> }]
               : []),
             ...(rfq.contact.phone ? [{ term: t("phone"), description: rfq.contact.phone }] : []),
             ...(rfq.contact.email ? [{ term: t("email"), description: rfq.contact.email }] : []),

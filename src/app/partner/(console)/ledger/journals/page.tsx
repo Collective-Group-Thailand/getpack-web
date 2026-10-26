@@ -202,7 +202,7 @@ export default async function JournalsPage({
                 defaultValue={query.account}
                 inputMode="numeric"
                 placeholder={t("accountPlaceholder")}
-                className="w-32 font-mono"
+                className="w-32 tabular-nums"
               />
             </label>
             <Button type="submit" variant="secondary">
@@ -231,7 +231,7 @@ export default async function JournalsPage({
                     key: "no",
                     header: t("entryNo"),
                     primary: true,
-                    cell: (row) => <span className="font-mono whitespace-nowrap">{row.entryNo ?? "—"}</span>,
+                    cell: (row) => <span className="whitespace-nowrap tabular-nums">{row.entryNo ?? "—"}</span>,
                   },
                   {
                     key: "d",
@@ -251,7 +251,8 @@ export default async function JournalsPage({
                     key: "src",
                     header: t("source"),
                     hideOnPhone: true,
-                    cell: (row) => (row.source ? <span className="font-mono text-sm">{row.source.number}</span> : "—"),
+                    cell: (row) =>
+                      row.source ? <span className="text-sm tabular-nums">{row.source.number}</span> : "—",
                   },
                   { key: "a", header: tc("amount"), align: "end", cell: (row) => format.thb(row.totalDebit) },
                   {

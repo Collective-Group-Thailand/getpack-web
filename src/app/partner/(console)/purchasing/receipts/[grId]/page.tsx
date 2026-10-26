@@ -64,7 +64,7 @@ export default async function GoodsReceiptPage({ params }: Props) {
               description: r.purchaseOrder ? (
                 <Link
                   href={`/purchasing/${r.purchaseOrder.id}`}
-                  className="text-primary font-mono underline-offset-4 hover:underline"
+                  className="text-primary tabular-nums underline-offset-4 hover:underline"
                 >
                   {r.purchaseOrder.code}
                 </Link>

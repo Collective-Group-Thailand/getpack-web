@@ -93,7 +93,7 @@ export function StyleImports({ initial }: { initial: InitialPage<StyleImportRun>
           >
             {row.fileName}
           </button>
-          <p className="text-muted font-mono text-xs">{row.checksum.slice(0, 12)}</p>
+          <p className="text-muted text-xs tabular-nums">{row.checksum.slice(0, 12)}</p>
         </div>
       ),
     },
@@ -283,7 +283,7 @@ function ChangeList({
       <ul className="mt-2 flex max-h-72 flex-col gap-1 overflow-y-auto text-sm">
         {changes.map((change, index) => (
           <li key={`${String(change.code)}-${index}`}>
-            <span className="font-mono">{String(change.code ?? "")}</span>{" "}
+            <span className="tabular-nums">{String(change.code ?? "")}</span>{" "}
             <span className="text-muted">{words(change)}</span>
           </li>
         ))}

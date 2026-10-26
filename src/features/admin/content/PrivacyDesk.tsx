@@ -386,7 +386,7 @@ function Agreements() {
                 <li key={v.versionNo}>
                   <span className="font-medium">{t("version", { no: v.versionNo })}</span> · {t("effective")}{" "}
                   <When at={v.effectiveFrom} absoluteOnly /> · <span className="text-muted">{v.reason}</span>
-                  <span className="text-muted ms-2 font-mono text-xs">{v.textSha256.slice(0, 10)}</span>
+                  <span className="text-muted ms-2 text-xs tabular-nums">{v.textSha256.slice(0, 10)}</span>
                 </li>
               ))}
             </ul>

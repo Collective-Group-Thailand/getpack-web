@@ -454,7 +454,7 @@ export function BankAccountButton({ bank }: { bank?: Bank }) {
                   maxLength={4}
                   value={last4}
                   onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))}
-                  className="font-mono"
+                  className="tabular-nums"
                 />
               </Field>
             </div>
@@ -567,7 +567,7 @@ export function ImportStatement({ bank }: { bank: Bank }) {
                 value={text}
                 placeholder={t("pastePlaceholder")}
                 onChange={(e) => setText(e.target.value)}
-                className="font-mono text-sm"
+                className="text-sm tabular-nums"
               />
             </Field>
           </div>
@@ -626,7 +626,7 @@ export function MatchBankLine({ line }: { line: Line }) {
                       className="flex items-center justify-between gap-2 px-3 py-2 text-sm"
                     >
                       <span>
-                        {t(`targets.${c.targetType}` as never)} <span className="font-mono">{c.targetNo}</span>
+                        {t(`targets.${c.targetType}` as never)} <span className="tabular-nums">{c.targetNo}</span>
                       </span>
                       <Button size="sm" loading={busy} onClick={() => void match(c.targetType, c.targetId)}>
                         {t("matched")}

@@ -93,7 +93,7 @@ export default async function PrintPurchaseOrderPage({ params }: Props) {
             <p className="text-muted text-xs tracking-wide">{t("titleEn")}</p>
             <dl className="mt-2 grid grid-cols-[auto_auto] justify-end gap-x-3 gap-y-0.5">
               <dt className="text-muted">{t("no")}</dt>
-              <dd className="font-mono">{po.poNo ?? "—"}</dd>
+              <dd className="tabular-nums">{po.poNo ?? "—"}</dd>
               <dt className="text-muted">{t("date")}</dt>
               <dd>{format.date(po.orderedOn)}</dd>
               {po.expectedOn ? (

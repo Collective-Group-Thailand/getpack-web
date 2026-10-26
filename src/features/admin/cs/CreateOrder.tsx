@@ -276,7 +276,7 @@ export function CreateOrder({
               {others.map((item) => (
                 <li key={item.id} className="flex flex-wrap items-center gap-2">
                   {item.quoteCode ? (
-                    <span className="font-mono">{item.quoteCode}</span>
+                    <span className="tabular-nums">{item.quoteCode}</span>
                   ) : (
                     <span className="text-muted">{t("quoteNoCode")}</span>
                   )}
@@ -493,7 +493,7 @@ export function CreateOrder({
               term: t("customer"),
               description: [customer.data.displayName, customer.data.customerCode].filter(Boolean).join(" · "),
             },
-            { term: t("quote"), description: <span className="font-mono">{quote.data.quoteCode}</span> },
+            { term: t("quote"), description: <span className="tabular-nums">{quote.data.quoteCode}</span> },
             { term: t("quantity"), description: format.number(option.quantity) },
             {
               term: t("total"),

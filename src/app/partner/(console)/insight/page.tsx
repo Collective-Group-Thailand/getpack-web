@@ -189,7 +189,7 @@ export default async function DashboardPage() {
                 key: "no",
                 header: t("order"),
                 primary: true,
-                cell: (row) => <span className="font-mono">{row.order.number}</span>,
+                cell: (row) => <span className="tabular-nums">{row.order.number}</span>,
               },
               { key: "title", header: t("orderTitle"), cell: (row) => row.title },
               { key: "due", header: t("due"), cell: (row) => format.date(row.dueOn) },

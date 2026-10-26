@@ -60,7 +60,7 @@ export default async function Page({
         <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-3">
-        <p className="text-muted font-mono text-sm">{rfq.rfqCode}</p>
+        <p className="text-muted text-sm tabular-nums">{rfq.rfqCode}</p>
         {rfq.nextActions.some((action) => action.key === "rfq.decline" && !action.disabledReason) ? (
           <DeclineRfq rfqId={rfq.id} rfqCode={rfq.rfqCode} />
         ) : null}

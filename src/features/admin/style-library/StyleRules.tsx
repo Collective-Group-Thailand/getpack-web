@@ -118,7 +118,7 @@ function PriceRules() {
       cell: (row) => (
         <span>
           {axisLabel(row.axis)}: <span className="font-medium">{valueLabel(row.axis, row.value)}</span>
-          <span className="text-muted ms-1 font-mono text-xs">
+          <span className="text-muted ms-1 text-xs tabular-nums">
             {row.axis}:{row.value}
           </span>
         </span>
@@ -273,7 +273,7 @@ function PriceRules() {
             <Field label={t("patch")} hint={t("patchHint")}>
               <Textarea
                 rows={4}
-                className="font-mono text-sm"
+                className="text-sm tabular-nums"
                 value={draft.patch}
                 onChange={(e) => setDraft((d) => ({ ...d, patch: e.target.value }))}
               />
@@ -348,12 +348,12 @@ function ProcessRules() {
       cell: (row) => (
         <div>
           <p className="font-medium">{name(row.process)}</p>
-          <p className="text-muted font-mono text-xs">{row.process.code}</p>
+          <p className="text-muted text-xs tabular-nums">{row.process.code}</p>
         </div>
       ),
     },
     { id: "scope", header: t("scope"), cell: (row) => t(`scopes.${row.scope}`) },
-    { id: "value", header: t("value"), cell: (row) => <span className="font-mono text-sm">{row.scopeValue}</span> },
+    { id: "value", header: t("value"), cell: (row) => <span className="text-sm tabular-nums">{row.scopeValue}</span> },
     { id: "created", header: t("date"), cell: (row) => <When at={row.createdAt} /> },
     ...(canManage
       ? [
@@ -428,7 +428,7 @@ function ProcessRules() {
           <Field label={t("value")} required hint={t(`valueHints.${draft.scope}`)}>
             <Input
               value={draft.scopeValue}
-              className="font-mono"
+              className="tabular-nums"
               onChange={(e) => setDraft((d) => ({ ...d, scopeValue: e.target.value }))}
             />
           </Field>

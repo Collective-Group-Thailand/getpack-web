@@ -201,7 +201,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                         <span className="text-muted block text-xs">{claim.customer.companyName}</span>
                       ) : null}
                       {claim.customer.customerCode ? (
-                        <span className="text-muted block font-mono text-xs">{claim.customer.customerCode}</span>
+                        <span className="text-muted block text-xs tabular-nums">{claim.customer.customerCode}</span>
                       ) : null}
                     </span>
                   ),
@@ -209,7 +209,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                 {
                   term: t("order"),
                   description: (
-                    <Link href={`/orders/${claim.orderId}`} className="text-primary font-mono hover:underline">
+                    <Link href={`/orders/${claim.orderId}`} className="text-primary tabular-nums hover:underline">
                       {claim.orderCode}
                     </Link>
                   ),
@@ -225,7 +225,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                 {
                   term: t("shipment"),
                   description: claim.shipmentId ? (
-                    <Link href={`/shipments/${claim.shipmentId}`} className="text-primary font-mono hover:underline">
+                    <Link href={`/shipments/${claim.shipmentId}`} className="text-primary tabular-nums hover:underline">
                       {claim.shipmentNo ?? t("openShipment")}
                     </Link>
                   ) : (
@@ -331,7 +331,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                       {item.amount ? ` · ${format.thb(item.amount)}` : ""}
                     </p>
                     <p className="text-muted text-xs">
-                      {item.jobNo ? <span className="font-mono">{item.jobNo} · </span> : null}
+                      {item.jobNo ? <span className="tabular-nums">{item.jobNo} · </span> : null}
                       {item.quantity !== null ? `${t("pieces", { quantity: format.number(item.quantity) })} · ` : null}
                       <When at={item.executedAt} />
                     </p>

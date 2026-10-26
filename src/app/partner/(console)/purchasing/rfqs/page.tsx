@@ -94,7 +94,7 @@ export default async function RfqsPage({
                 key: "no",
                 header: t("table.no"),
                 primary: true,
-                cell: (r) => <span className="font-mono whitespace-nowrap">{r.rfqNo}</span>,
+                cell: (r) => <span className="whitespace-nowrap tabular-nums">{r.rfqNo}</span>,
               },
               { key: "subject", header: t("table.subject"), cell: (r) => r.title },
               {

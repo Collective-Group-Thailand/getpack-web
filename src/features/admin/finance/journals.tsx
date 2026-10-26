@@ -68,7 +68,7 @@ export function JournalDetail({ journalId }: { journalId: string }) {
       header: t("account"),
       cell: (row) => (
         <Link href={`/finance/ledger/journals?accountCode=${row.accountCode}`} className="hover:underline">
-          <span className="font-mono text-sm">{row.accountCode}</span> {row.accountName}
+          <span className="text-sm tabular-nums">{row.accountCode}</span> {row.accountName}
         </Link>
       ),
     },
@@ -173,11 +173,11 @@ export function JournalDetail({ journalId }: { journalId: string }) {
               term: t("source"),
               description: source ? (
                 href ? (
-                  <Link href={href} className="text-primary font-mono hover:underline">
+                  <Link href={href} className="text-primary tabular-nums hover:underline">
                     {source.number ?? source.id.slice(0, 8)}
                   </Link>
                 ) : (
-                  <span className="font-mono">{source.number ?? source.id.slice(0, 8)}</span>
+                  <span className="tabular-nums">{source.number ?? source.id.slice(0, 8)}</span>
                 )
               ) : (
                 t("manual")
@@ -189,7 +189,7 @@ export function JournalDetail({ journalId }: { journalId: string }) {
               description: journal.domainEventId ? (
                 <Link
                   href={`/outbox?q=${journal.domainEventId}`}
-                  className="text-primary font-mono text-xs hover:underline"
+                  className="text-primary text-xs tabular-nums hover:underline"
                 >
                   {journal.domainEventId}
                 </Link>
@@ -269,7 +269,10 @@ export function JournalsList({ initial }: { initial: InitialPage<Journal> | null
       header: t("entry"),
       cell: (row) => (
         <div>
-          <Link href={journalHref(row.id)} className="text-primary font-mono text-sm whitespace-nowrap hover:underline">
+          <Link
+            href={journalHref(row.id)}
+            className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
+          >
             {row.entryNo ?? row.jvNumber ?? t("draft")}
           </Link>
           <p className="text-muted text-xs">
@@ -293,11 +296,11 @@ export function JournalsList({ initial }: { initial: InitialPage<Journal> | null
         const href = sourceHref(row.source);
         const label = row.source ? (row.source.number ?? row.source.id.slice(0, 8)) : t("manual");
         return href ? (
-          <Link href={href} className="text-primary font-mono text-sm whitespace-nowrap hover:underline">
+          <Link href={href} className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline">
             {label}
           </Link>
         ) : (
-          <span className="font-mono text-sm">{label}</span>
+          <span className="text-sm tabular-nums">{label}</span>
         );
       },
     },

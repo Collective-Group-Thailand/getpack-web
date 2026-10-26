@@ -60,7 +60,7 @@ export default async function Page() {
                   className="border-border hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-2 rounded-xl border p-4"
                 >
                   <span>
-                    <span className="font-mono font-medium">{basket.basketCode}</span>
+                    <span className="font-medium tabular-nums">{basket.basketCode}</span>
                     <span className="text-muted ms-2 text-sm">
                       {tBasket("sentRow", { count: basket.items.length })}
                     </span>
@@ -97,7 +97,7 @@ export default async function Page() {
           ]}
           rows={list.map((rfq) => ({
             id: rfq.id,
-            phoneSubtitle: <span className="font-mono">{rfq.rfqCode}</span>,
+            phoneSubtitle: <span className="tabular-nums">{rfq.rfqCode}</span>,
             cells: {
               request: (
                 <span className="block min-w-0">
@@ -107,7 +107,7 @@ export default async function Page() {
                   >
                     {rfq.productTypeName}
                   </Link>
-                  <span className="text-muted hidden font-mono text-xs font-normal md:block">{rfq.rfqCode}</span>
+                  <span className="text-muted hidden text-xs font-normal tabular-nums md:block">{rfq.rfqCode}</span>
                 </span>
               ),
               quantities: rfq.quantities.map((quantity) => format.number(quantity)).join(", "),

@@ -51,7 +51,7 @@ export function AgentsList({ initial }: { initial: InitialPage<Agent> | null }) 
           <Link href={`/agents/${row.id}`} className="text-primary truncate font-medium hover:underline">
             {row.legalName}
           </Link>
-          <span className="text-muted font-mono text-xs">{row.code}</span>
+          <span className="text-muted text-xs tabular-nums">{row.code}</span>
         </div>
       ),
     },

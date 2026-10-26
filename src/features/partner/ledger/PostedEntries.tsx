@@ -37,7 +37,7 @@ export async function PostedEntries({ sourceId }: { sourceId: string }) {
             icon="list-ordered"
             title={
               <span className="flex flex-wrap items-center gap-2">
-                <span className="font-mono">{entry.entryNo ?? t("draft")}</span>
+                <span className="tabular-nums">{entry.entryNo ?? t("draft")}</span>
                 <StatusChip map={JOURNAL_STATUS} value={entry.status} />
                 {entry.ruleKey ? <span className="text-muted text-xs">{t("rule", { key: entry.ruleKey })}</span> : null}
               </span>

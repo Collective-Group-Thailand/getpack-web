@@ -746,7 +746,7 @@ function ReferenceDialog({ def, row, onClose, onDone }: DialogProps) {
       <Field label={t("reference.configuration")} hint={t("reference.hint")}>
         <Textarea
           rows={12}
-          className="font-mono text-xs"
+          className="text-xs tabular-nums"
           value={text}
           disabled={clearing}
           onChange={(e) => setText(e.target.value)}
@@ -872,7 +872,7 @@ function ColoursDialog({ def, row, onClose, onDone }: DialogProps) {
               onChange={(e) => setColours(colours.map((c, i) => (i === index ? e.target.value.toUpperCase() : c)))}
             />
             <Input
-              className="w-32 font-mono"
+              className="w-32 tabular-nums"
               aria-label={t("colours.hex", { n: index + 1 })}
               value={colour}
               onChange={(e) => setColours(colours.map((c, i) => (i === index ? e.target.value : c)))}
@@ -920,7 +920,7 @@ function SetDesignDialog({ row, onClose, onDone }: DialogProps) {
       }}
     >
       <Field label={t("setDesign.designId")} hint={t("setDesign.hint")} required>
-        <Input className="font-mono" value={designId} onChange={(e) => setDesignId(e.target.value)} />
+        <Input className="tabular-nums" value={designId} onChange={(e) => setDesignId(e.target.value)} />
       </Field>
     </FormDialog>
   );

@@ -56,7 +56,7 @@ export function CreditNoteRequests({ initial }: { initial: InitialPage<CreditNot
         <div>
           <Link
             href={`/orders/${row.orderId}`}
-            className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+            className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
           >
             {row.orderCode}
           </Link>
@@ -216,9 +216,9 @@ export function CreditNoteWizard({ orderId }: { orderId: string | null }) {
                 }}
                 className="border-border hover:bg-surface-subtle aria-pressed:border-primary aria-pressed:bg-primary-subtle flex w-full flex-wrap items-center gap-x-4 gap-y-1 rounded-md border p-3 text-start text-sm"
               >
-                <span className="font-mono font-medium">{doc.docNumber}</span>
+                <span className="font-medium tabular-nums">{doc.docNumber}</span>
                 <span className="text-muted">{tDocs(`kinds.${doc.docKind}`)}</span>
-                <span className="font-mono">{doc.orderCode}</span>
+                <span className="tabular-nums">{doc.orderCode}</span>
                 <span className="min-w-0 truncate">{doc.buyer.name}</span>
                 <span className="ms-auto tabular-nums">{format.thb(doc.grossAmount)}</span>
               </button>
@@ -320,7 +320,10 @@ export function CreditNoteWizard({ orderId }: { orderId: string | null }) {
         <DescriptionList
           columns={2}
           items={[
-            { term: t("invoice"), description: invoice ? <span className="font-mono">{invoice.docNumber}</span> : "—" },
+            {
+              term: t("invoice"),
+              description: invoice ? <span className="tabular-nums">{invoice.docNumber}</span> : "—",
+            },
             { term: t("order"), description: invoice?.orderCode ?? "—" },
             { term: t("buyer"), description: invoice?.buyer.name ?? "—" },
             { term: t("kind"), description: kind ? tDocs(`cnKinds.${kind}`) : "—" },

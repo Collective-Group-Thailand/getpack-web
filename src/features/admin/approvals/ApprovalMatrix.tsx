@@ -100,7 +100,7 @@ function StepsList({ steps }: { steps: readonly Step[] }) {
           </span>
           <span>{t("approver", { role: roleLabel(step.approverRole), quorum: step.quorum })}</span>
           <span className="text-muted">{t(`scopes.${step.approverScope}`)}</span>
-          <span className="text-muted font-mono text-xs">{conditionText(step.condition, t("always"))}</span>
+          <span className="text-muted text-xs tabular-nums">{conditionText(step.condition, t("always"))}</span>
           {step.slaMinutes ? (
             <span className="text-muted">
               {t("sla", { minutes: step.slaMinutes, calendar: t(`calendars.${step.slaCalendar}`) })}
@@ -150,7 +150,7 @@ export function ApprovalMatrix() {
             <div className="flex min-w-0 flex-col gap-1">
               <CardTitle className="flex flex-wrap items-center gap-2">
                 {tPolicies.has(policy.key) ? tPolicies(policy.key) : policy.key}
-                <span className="text-muted font-mono text-xs">{policy.key}</span>
+                <span className="text-muted text-xs tabular-nums">{policy.key}</span>
                 {policy.pending ? (
                   <Badge size="sm" tone="warning" icon="stamp">
                     {t("pending", { no: policy.pending.versionNo })}
@@ -405,7 +405,7 @@ function ProposeVersionDialog({
             <Field label={t("condition", { n: index + 1 })} hint={t("conditionHint")} className="sm:col-span-2">
               <Textarea
                 rows={3}
-                className="font-mono text-xs"
+                className="text-xs tabular-nums"
                 value={step.condition}
                 onChange={(event) => set(step.key, { condition: event.target.value })}
               />

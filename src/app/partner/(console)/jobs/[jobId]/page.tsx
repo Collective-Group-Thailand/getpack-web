@@ -408,7 +408,7 @@ export default async function JobPage({ params }: Props) {
                 items={[
                   ...(po
                     ? [
-                        { term: t("poNumber"), description: <span className="font-mono">{po.poNumber}</span> },
+                        { term: t("poNumber"), description: <span className="tabular-nums">{po.poNumber}</span> },
                         { term: t("poIssued"), description: format.dateTime(po.issuedAt) },
                         {
                           term: t("poAmount"),

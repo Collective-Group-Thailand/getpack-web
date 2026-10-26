@@ -36,7 +36,7 @@ export function StepCard({ id, number, title, hint, children, className }: StepC
     >
       <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h2 id={titleId} className="m-0 flex items-baseline gap-2.5 text-xl font-semibold">
-          <span aria-hidden className="text-primary font-mono text-[0.8125rem] tabular-nums">
+          <span aria-hidden className="text-primary text-[0.8125rem] tabular-nums">
             {String(number).padStart(2, "0")}
           </span>
           {title}

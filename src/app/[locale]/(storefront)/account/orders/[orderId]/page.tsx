@@ -148,7 +148,7 @@ export default async function Page({
           ) : null}
         </div>
         <p className="text-muted flex flex-wrap items-center gap-x-1 gap-y-2 text-sm">
-          <span className="font-mono">{order.orderCode}</span>
+          <span className="tabular-nums">{order.orderCode}</span>
           {group ? (
             <>
               {" · "}

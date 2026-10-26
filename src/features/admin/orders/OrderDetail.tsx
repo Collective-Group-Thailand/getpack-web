@@ -133,7 +133,7 @@ export function OrderDetail({ orderId, initial, tab }: { orderId: string; initia
       {/* One sticky line (UX audit, order detail): code · status · customer · amount, and the
           action this status calls for, with everything else — cancel included — behind "⋯". */}
       <div className="bg-bg z-sticky border-border sticky top-16 -mx-4 -mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-4 py-3 md:-mx-6 md:px-6">
-        <h1 className="font-mono text-2xl font-bold">{order.orderCode}</h1>
+        <h1 className="text-2xl font-bold tabular-nums">{order.orderCode}</h1>
         <span
           className="flex items-center"
           title={`${t("artworkLabel")}: ${tStatus(statusMeta(ARTWORK_STATUS, order.artworkStatus).labelKey)}`}

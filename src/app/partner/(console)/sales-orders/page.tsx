@@ -97,7 +97,7 @@ export default async function SalesOrdersPage({
                 key: "no",
                 header: t("table.no"),
                 primary: true,
-                cell: (row) => <span className="font-mono whitespace-nowrap">{row.soNo}</span>,
+                cell: (row) => <span className="whitespace-nowrap tabular-nums">{row.soNo}</span>,
               },
               { key: "customer", header: tCommon("customer"), cell: (row) => row.customer.name },
               {

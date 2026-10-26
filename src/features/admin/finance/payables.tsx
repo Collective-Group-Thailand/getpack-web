@@ -126,7 +126,7 @@ export function PayablesList({ initial }: { initial: InitialPage<PayableItem> | 
       id: "po",
       header: t("columns.po"),
       cell: (row) => (
-        <span className="font-mono text-sm whitespace-nowrap">
+        <span className="text-sm whitespace-nowrap tabular-nums">
           {row.poNumber ?? "–"}
           {row.orderCode ? <span className="text-muted block text-xs">{row.orderCode}</span> : null}
         </span>
@@ -187,11 +187,11 @@ export function PurchaseOrdersList({ initial }: { initial: InitialPage<PurchaseO
         <div>
           <Link
             href={`/finance/payables/purchase-orders/${row.id}`}
-            className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+            className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
           >
             {row.poNumber}
           </Link>
-          <p className="text-muted font-mono text-xs">{row.jobNo}</p>
+          <p className="text-muted text-xs tabular-nums">{row.jobNo}</p>
         </div>
       ),
     },
@@ -199,7 +199,7 @@ export function PurchaseOrdersList({ initial }: { initial: InitialPage<PurchaseO
     {
       id: "order",
       header: t("columns.order"),
-      cell: (row) => <span className="font-mono text-sm whitespace-nowrap">{row.orderCode}</span>,
+      cell: (row) => <span className="text-sm whitespace-nowrap tabular-nums">{row.orderCode}</span>,
     },
     { id: "issuedAt", header: t("columns.issuedAt"), sortable: true, cell: (row) => format.date(row.issuedAt) },
     { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
@@ -311,7 +311,7 @@ export function PurchaseOrderDetail({ poId }: { poId: string }) {
           getRowId={(row) => row.id}
           empty={<EmptyState icon="package" title={t("noReceipts")} />}
           columns={[
-            { id: "gr", header: t("grNumber"), cell: (row) => <span className="font-mono">{row.grNumber}</span> },
+            { id: "gr", header: t("grNumber"), cell: (row) => <span className="tabular-nums">{row.grNumber}</span> },
             { id: "on", header: t("receivedOn"), cell: (row) => format.date(row.receivedOn) },
             {
               id: "qty",
@@ -337,8 +337,8 @@ export function GoodsReceiptsList({ initial }: { initial: InitialPage<GoodsRecei
       header: t("columns.number"),
       cell: (row) => (
         <div>
-          <span className="font-mono text-sm whitespace-nowrap">{row.grNumber}</span>
-          <p className="text-muted font-mono text-xs">{row.poNumber}</p>
+          <span className="text-sm whitespace-nowrap tabular-nums">{row.grNumber}</span>
+          <p className="text-muted text-xs tabular-nums">{row.poNumber}</p>
         </div>
       ),
     },
@@ -387,7 +387,7 @@ export function BillingStatementsList({ initial }: { initial: InitialPage<Billin
       cell: (row) => (
         <Link
           href={`/finance/payables/statements/${row.id}`}
-          className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+          className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
         >
           {row.bsNumber}
         </Link>
@@ -554,7 +554,9 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
               cell: (row) => (
                 <>
                   {row.description}
-                  {row.reference ? <span className="text-muted block font-mono text-xs">{row.reference}</span> : null}
+                  {row.reference ? (
+                    <span className="text-muted block text-xs tabular-nums">{row.reference}</span>
+                  ) : null}
                   {disputed.has(row.lineNo) ? (
                     <span className="text-danger block text-xs">{t("lineDisputed")}</span>
                   ) : null}
@@ -599,7 +601,7 @@ function InvoiceRows({ rows, loading }: { rows: VendorInvoice[]; loading?: boole
           cell: (row) => (
             <Link
               href={`/finance/payables/invoices/${row.id}`}
-              className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+              className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
             >
               {row.vendorInvoiceNo}
             </Link>
@@ -742,7 +744,7 @@ export function VendorInvoicesList({ initial }: { initial: InitialPage<VendorInv
         <div>
           <Link
             href={`/finance/payables/invoices/${row.id}`}
-            className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+            className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
           >
             {row.vendorInvoiceNo}
           </Link>
@@ -919,7 +921,7 @@ export function VendorInvoiceDetail({ invoiceId }: { invoiceId: string }) {
                   className={check.ok === false ? "text-danger" : check.ok ? "text-success" : "text-muted"}
                 />
                 <span className="font-medium">{t(`checkNames.${check.key}`)}</span>
-                <span className="font-mono">{check.shown}</span>
+                <span className="tabular-nums">{check.shown}</span>
                 {check.ok === false ? (
                   <span className="text-danger">{t("expected", { value: check.expected ?? "—" })}</span>
                 ) : null}
@@ -935,8 +937,8 @@ export function VendorInvoiceDetail({ invoiceId }: { invoiceId: string }) {
             { term: t("columns.vendor"), description: <VendorLink id={data.vendorId} name={data.vendorName} /> },
             { term: t("columns.date"), description: format.date(data.invoiceDate) },
             { term: t("statement"), description: data.bsNumber ?? "—" },
-            { term: t("sellerTaxId"), description: <span className="font-mono">{data.sellerTaxId}</span> },
-            { term: t("sellerBranch"), description: <span className="font-mono">{data.sellerBranchCode}</span> },
+            { term: t("sellerTaxId"), description: <span className="tabular-nums">{data.sellerTaxId}</span> },
+            { term: t("sellerBranch"), description: <span className="tabular-nums">{data.sellerBranchCode}</span> },
             { term: t("source"), description: t(`sources.${data.source}`) },
             { term: t("columns.net"), description: format.thb(data.netAmount) },
             { term: t("vat"), description: format.thb(data.vatAmount) },
@@ -955,7 +957,7 @@ export function VendorInvoiceDetail({ invoiceId }: { invoiceId: string }) {
             {
               id: "account",
               header: t("account"),
-              cell: (row) => <span className="font-mono">{row.accountCode ?? "–"}</span>,
+              cell: (row) => <span className="tabular-nums">{row.accountCode ?? "–"}</span>,
             },
             { id: "wht", header: t("wht"), cell: (row) => t(`whtCategories.${row.whtCategory}`) },
             { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
@@ -1017,7 +1019,7 @@ export function VendorsList() {
           <Link href={`/finance/payables/vendors/${row.id}`} className="text-primary hover:underline">
             {row.legalName}
           </Link>
-          <p className="text-muted font-mono text-xs">
+          <p className="text-muted text-xs tabular-nums">
             {row.taxId} · {row.branchCode}
           </p>
         </div>

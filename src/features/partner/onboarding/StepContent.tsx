@@ -275,7 +275,7 @@ async function BankAccounts({ context }: Props) {
             {banks.data.map((bank) => (
               <li key={bank.id}>
                 <Card padding="md" className="flex flex-wrap items-center gap-2">
-                  <span className="flex-1 font-mono">
+                  <span className="flex-1 tabular-nums">
                     {t("masked", { bank: bank.bankCode, last4: bank.accountNoLast4 })}
                   </span>
                   <StatusChip map={BANK_ACCOUNT_STATUS} value={bank.status} size="md" />

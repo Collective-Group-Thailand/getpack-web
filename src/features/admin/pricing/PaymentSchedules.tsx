@@ -101,7 +101,7 @@ export function PaymentSchedules() {
             <div className="flex min-w-0 flex-col gap-1">
               <CardTitle className="flex flex-wrap items-center gap-2">
                 {locale === "en" ? template.nameEn : template.nameTh}
-                <span className="text-muted font-mono text-xs">{template.key}</span>
+                <span className="text-muted text-xs tabular-nums">{template.key}</span>
                 {template.versionNo ? (
                   <Badge size="sm">{t("version", { no: template.versionNo })}</Badge>
                 ) : (

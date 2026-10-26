@@ -116,7 +116,7 @@ export function MilestoneRoutes() {
                 <CardTitle className="flex flex-wrap items-center gap-2">
                   {route.name}
                   <Badge size="sm">{types.labelOf(route.productTypeCode)}</Badge>
-                  <span className="text-muted font-mono text-xs">{route.variant}</span>
+                  <span className="text-muted text-xs tabular-nums">{route.variant}</span>
                 </CardTitle>
                 <p className="text-muted text-sm">
                   {current
@@ -180,7 +180,7 @@ function StepsTable({ steps, locale }: { steps: readonly RouteStep[]; locale: st
             <tr key={step.seq} className="border-border border-t">
               <td className="px-3 py-2">
                 {step.seq}. {locale === "en" ? step.nameEn : step.nameTh}
-                <span className="text-muted ms-2 font-mono text-xs">{step.key}</span>
+                <span className="text-muted ms-2 text-xs tabular-nums">{step.key}</span>
                 {step.tracksQuantity ? (
                   <Badge size="sm" className="ms-2">
                     {t("tracksQuantity")}

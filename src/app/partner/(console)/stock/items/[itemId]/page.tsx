@@ -102,7 +102,7 @@ export default async function ItemPage({ params }: Props) {
       back={back}
       meta={
         <>
-          <span className="text-muted font-mono">{it.sku}</span>
+          <span className="text-muted tabular-nums">{it.sku}</span>
           <Badge tone="neutral">{tCommon(`itemKinds.${it.kind}` as never)}</Badge>
           {it.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}
           {it.stock.low ? <Badge tone="warning">{tCommon("low")}</Badge> : null}
@@ -204,7 +204,7 @@ export default async function ItemPage({ params }: Props) {
                 cell: (row) => (
                   <span className="flex flex-col">
                     {tPrices(`sources.${row.source}` as never)}
-                    {row.documentNo ? <span className="text-muted font-mono text-sm">{row.documentNo}</span> : null}
+                    {row.documentNo ? <span className="text-muted text-sm tabular-nums">{row.documentNo}</span> : null}
                   </span>
                 ),
               },
@@ -274,7 +274,7 @@ export default async function ItemPage({ params }: Props) {
                 key: "document",
                 header: tStock("table.document"),
                 primary: true,
-                cell: (move) => <span className="font-mono whitespace-nowrap">{move.documentNo}</span>,
+                cell: (move) => <span className="whitespace-nowrap tabular-nums">{move.documentNo}</span>,
               },
               { key: "date", header: tStock("table.date"), cell: (move) => format.dateTime(move.occurredAt) },
               {

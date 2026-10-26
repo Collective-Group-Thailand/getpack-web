@@ -385,7 +385,7 @@ export function TaxReportDetail({ reportId }: { reportId: string }) {
         case "number":
           return format.number(Number(value));
         case "code":
-          return <span className="font-mono text-sm whitespace-nowrap">{String(value)}</span>;
+          return <span className="text-sm whitespace-nowrap tabular-nums">{String(value)}</span>;
         case "flag":
           return value === true ? (
             <Badge tone="warning" size="sm">
@@ -401,11 +401,11 @@ export function TaxReportDetail({ reportId }: { reportId: string }) {
           return (
             <span className="flex flex-col">
               {href ? (
-                <Link href={href} className="text-primary font-mono text-sm whitespace-nowrap hover:underline">
+                <Link href={href} className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline">
                   {String(value)}
                 </Link>
               ) : (
-                <span className="font-mono text-sm">{String(value)}</span>
+                <span className="text-sm tabular-nums">{String(value)}</span>
               )}
               {row.journalEntryId ? (
                 <Link href={journalHref(String(row.journalEntryId))} className="text-muted text-xs hover:underline">
@@ -777,7 +777,7 @@ export function TaxSettings() {
               cell: (row) => (
                 <div>
                   {row.nameTh}
-                  <p className="text-muted font-mono text-xs">{row.code}</p>
+                  <p className="text-muted text-xs tabular-nums">{row.code}</p>
                 </div>
               ),
             },
@@ -851,7 +851,7 @@ export function TaxSettings() {
             items={[
               { term: t("natureDefault"), description: t(`natures.${nature.default}`) },
               ...Object.entries(nature.overrides).map(([productType, value]) => ({
-                term: <span className="font-mono">{productType}</span>,
+                term: <span className="tabular-nums">{productType}</span>,
                 description: t(`natures.${value}`),
               })),
             ]}
@@ -875,7 +875,7 @@ export function TaxSettings() {
               header: t("setting"),
               cell: (row) => (
                 <div>
-                  <Link href={`/settings/${row.id}`} className="text-primary font-mono text-sm hover:underline">
+                  <Link href={`/settings/${row.id}`} className="text-primary text-sm tabular-nums hover:underline">
                     {row.key}
                   </Link>
                   <p className="text-muted text-xs">{row.description}</p>
@@ -1006,7 +1006,7 @@ export function DocumentSeries() {
         density="compact"
         columns={[
           { id: "type", header: t("type"), cell: (row) => t(`types.${row.docType}`) },
-          { id: "prefix", header: t("prefix"), cell: (row) => <span className="font-mono">{row.prefix}</span> },
+          { id: "prefix", header: t("prefix"), cell: (row) => <span className="tabular-nums">{row.prefix}</span> },
           { id: "format", header: t("format"), cell: (row) => <code className="text-xs">{row.format}</code> },
           { id: "reset", header: t("reset"), cell: (row) => t(`resets.${row.resetPeriod}`) },
           {
@@ -1078,7 +1078,7 @@ export function DocumentSeries() {
             <Input
               value={form.format}
               onChange={(event) => setForm({ ...form, format: event.target.value })}
-              className="font-mono"
+              className="tabular-nums"
             />
           </Field>
           <Field label={t("about")} required requiredLabel={tCommon("state.required")}>

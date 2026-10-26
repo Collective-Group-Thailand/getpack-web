@@ -58,7 +58,7 @@ export function DocumentLink({ document }: { document: { id: string; docNumber: 
   return (
     <Link
       href={`/finance/documents/${document.id}`}
-      className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+      className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
     >
       {document.docNumber}
     </Link>
@@ -81,7 +81,8 @@ export function StaffName({ id }: { id: string | null | undefined }) {
     staleTime: 5 * 60_000,
   });
   if (!id) return <span className="text-muted">{t("system")}</span>;
-  if (!canRead || !user.data) return <span className="font-mono text-xs">{t("staffId", { id: id.slice(0, 8) })}</span>;
+  if (!canRead || !user.data)
+    return <span className="text-xs tabular-nums">{t("staffId", { id: id.slice(0, 8) })}</span>;
   return (
     <Link href={`/users/${id}`} className="text-primary hover:underline">
       {user.data.displayName}
@@ -122,7 +123,7 @@ export function SourceJournals({ sourceType, sourceId }: { sourceType: string; s
           <div>
             <Link
               href={journalHref(journal.id)}
-              className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+              className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
             >
               {journal.entryNo ?? t("draft")}
             </Link>
@@ -140,7 +141,7 @@ export function SourceJournals({ sourceType, sourceId }: { sourceType: string; s
       header: t("account"),
       cell: ({ line }) => (
         <span>
-          <span className="font-mono text-sm">{line.accountCode}</span> {line.accountName}
+          <span className="text-sm tabular-nums">{line.accountCode}</span> {line.accountName}
         </span>
       ),
     },
@@ -223,7 +224,7 @@ export function AccountNo({
   const t = useTranslations("finance.common");
   if (!last4) return <span className="text-muted">—</span>;
   return (
-    <span className="font-mono text-sm whitespace-nowrap">
+    <span className="text-sm whitespace-nowrap tabular-nums">
       {bank ? t("accountWithBank", { bank, last4 }) : t("accountLast4", { last4 })}
       {gl ? <span className="text-muted"> {t("accountGl", { gl })}</span> : null}
     </span>

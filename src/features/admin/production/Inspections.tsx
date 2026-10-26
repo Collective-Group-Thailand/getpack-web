@@ -66,9 +66,9 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
       header: t("columns.job"),
       cell: (row) => (
         <div>
-          <span className="font-mono">{row.jobNo}</span>
+          <span className="tabular-nums">{row.jobNo}</span>
           <p className="text-xs">
-            <Link href={`/orders/${row.orderId}?tab=production`} className="text-primary font-mono hover:underline">
+            <Link href={`/orders/${row.orderId}?tab=production`} className="text-primary tabular-nums hover:underline">
               {row.orderCode}
             </Link>
           </p>

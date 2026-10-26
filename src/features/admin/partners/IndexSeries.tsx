@@ -91,7 +91,7 @@ export function IndexSeries() {
               >
                 <span className="block font-medium">{item.nameTh}</span>
                 <span className="text-muted flex flex-wrap items-center gap-2 text-xs">
-                  <span className="font-mono">{item.code}</span>
+                  <span className="tabular-nums">{item.code}</span>
                   <Badge size="sm">{t(`kinds.${item.kind}`)}</Badge>
                   {item.latestPoint ? t("latest", { period: item.latestPoint.period }) : t("noPoints")}
                 </span>
@@ -110,7 +110,7 @@ export function IndexSeries() {
           <DataTable
             caption={t("pointsOf", { name: chosen.nameTh })}
             columns={[
-              { id: "period", header: t("period"), cell: (row) => <span className="font-mono">{row.period}</span> },
+              { id: "period", header: t("period"), cell: (row) => <span className="tabular-nums">{row.period}</span> },
               {
                 id: "value",
                 header: t("value"),

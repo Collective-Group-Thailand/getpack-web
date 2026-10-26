@@ -78,8 +78,8 @@ export function Profile({ factory }: { factory: Factory }) {
           items={[
             { term: t("legalName"), description: factory.legalName, wide: true },
             { term: t("tradeName"), description: factory.tradeName ?? "–" },
-            { term: t("taxId"), description: <span className="font-mono">{factory.taxId}</span> },
-            { term: t("branchCode"), description: <span className="font-mono">{factory.branchCode}</span> },
+            { term: t("taxId"), description: <span className="tabular-nums">{factory.taxId}</span> },
+            { term: t("branchCode"), description: <span className="tabular-nums">{factory.branchCode}</span> },
             { term: t("juristicType"), description: t(`juristic.${factory.juristicType}`) },
             {
               term: t("vat"),

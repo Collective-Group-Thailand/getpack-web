@@ -114,7 +114,7 @@ export default async function CheckPage({ params }: { params: Promise<{ checkId:
                   className="border-border hover:bg-surface-subtle inline-flex min-h-11 items-center gap-2 rounded-lg border px-3"
                   href={`/quality/ncrs/${n.id}`}
                 >
-                  <span className="font-mono">{n.ncrNo}</span>
+                  <span className="tabular-nums">{n.ncrNo}</span>
                   <StatusChip map={ERP_NCR_STATUS} value={n.status} />
                 </Link>
               </li>

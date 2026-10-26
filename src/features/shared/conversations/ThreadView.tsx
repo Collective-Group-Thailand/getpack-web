@@ -111,7 +111,7 @@ function CardChip({ card, href }: { card: ContextCard; href: string | null }) {
       <Icon name={card.type === "design" ? "image" : card.type === "order" ? "package" : "document"} size={16} />
       <span className="flex flex-col">
         <span className="text-muted text-xs">{t(`cards.${card.type}`)}</span>
-        <span className="font-mono font-medium">{card.label}</span>
+        <span className="font-medium tabular-nums">{card.label}</span>
       </span>
     </span>
   );

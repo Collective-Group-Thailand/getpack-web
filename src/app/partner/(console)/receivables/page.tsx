@@ -151,7 +151,7 @@ export default async function ReceivablesPage({
               key: "no",
               header: t("table.no"),
               primary: true,
-              cell: (row) => <span className="font-mono whitespace-nowrap">{row.receiptNo}</span>,
+              cell: (row) => <span className="whitespace-nowrap tabular-nums">{row.receiptNo}</span>,
             },
             { key: "kind", header: t("table.kind"), cell: (row) => t(`kinds.${row.kind}`) },
             { key: "c", header: tCommon("customer"), cell: (row) => row.customer.name },
@@ -209,7 +209,7 @@ export default async function ReceivablesPage({
               key: "no",
               header: t("table.no"),
               primary: true,
-              cell: (row) => <span className="font-mono whitespace-nowrap">{row.billingNo}</span>,
+              cell: (row) => <span className="whitespace-nowrap tabular-nums">{row.billingNo}</span>,
             },
             { key: "c", header: tCommon("customer"), cell: (row) => row.customer.name },
             {

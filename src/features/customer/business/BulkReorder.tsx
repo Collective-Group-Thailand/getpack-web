@@ -125,7 +125,7 @@ export function BulkReorder({ companyId }: { companyId: string }) {
               rows={6}
               value={text}
               onChange={(event) => setText(event.target.value)}
-              className="font-mono text-sm"
+              className="text-sm tabular-nums"
             />
           </Field>
           <Button
@@ -147,7 +147,7 @@ export function BulkReorder({ companyId }: { companyId: string }) {
       ) : null}
       {unreadable.length > 0 ? (
         <Callout tone="warning" title={t("unreadable", { count: unreadable.length })}>
-          <ul className="list-disc ps-5 font-mono text-sm">
+          <ul className="list-disc ps-5 text-sm tabular-nums">
             {unreadable.map((row) => (
               <li key={row.line}>{t("lineValue", { line: row.line, value: row.value })}</li>
             ))}
@@ -186,7 +186,7 @@ export function BulkReorder({ companyId }: { companyId: string }) {
                 {preview.rows.map((row) => (
                   <tr key={row.line} className="border-border border-t">
                     <td className="py-2 tabular-nums">{row.line}</td>
-                    <td className="py-2 font-mono">{row.orderCode}</td>
+                    <td className="py-2 tabular-nums">{row.orderCode}</td>
                     <td className="py-2 text-end tabular-nums">
                       {row.quantity === null ? "—" : format.number(row.quantity)}
                     </td>

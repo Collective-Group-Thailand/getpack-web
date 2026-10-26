@@ -154,7 +154,7 @@ export function ExceptionsView() {
                 {
                   id: "reference",
                   header: t("reference"),
-                  cell: (row) => <span className="font-mono text-sm">{row.reference}</span>,
+                  cell: (row) => <span className="text-sm tabular-nums">{row.reference}</span>,
                 },
                 { id: "date", header: t("date"), cell: (row) => (row.date ? format.date(row.date) : "") },
                 {
@@ -305,7 +305,7 @@ export function SamplesView() {
               {
                 id: "number",
                 header: t("number"),
-                cell: (row) => <span className="font-mono text-sm">{row.number}</span>,
+                cell: (row) => <span className="text-sm tabular-nums">{row.number}</span>,
               },
               { id: "date", header: t("date"), cell: (row) => (row.date ? format.date(row.date) : "") },
               { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.amount) },

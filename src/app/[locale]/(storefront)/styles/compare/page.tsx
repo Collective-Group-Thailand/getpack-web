@@ -48,7 +48,7 @@ export default async function ComparePage({
     min !== null && max !== null ? `${format.number(min)}–${format.number(max)}` : "—";
 
   const rows: { key: string; label: string; cell: (s: (typeof list)[number]) => React.ReactNode }[] = [
-    { key: "code", label: t("compare.rows.code"), cell: (s) => <span className="font-mono">{s.code}</span> },
+    { key: "code", label: t("compare.rows.code"), cell: (s) => <span className="tabular-nums">{s.code}</span> },
     { key: "category", label: t("compare.rows.category"), cell: (s) => facetLabel(words, "category", s.category) },
     {
       key: "material",

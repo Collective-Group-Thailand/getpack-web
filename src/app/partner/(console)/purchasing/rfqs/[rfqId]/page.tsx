@@ -72,7 +72,7 @@ export default async function RfqPage({ params }: { params: Promise<{ rfqId: str
               description: rfq.purchaseRequest ? (
                 <Link
                   href={`/purchasing/requests/${rfq.purchaseRequest.id}`}
-                  className="text-primary font-mono underline-offset-4 hover:underline"
+                  className="text-primary tabular-nums underline-offset-4 hover:underline"
                 >
                   {rfq.purchaseRequest.code}
                 </Link>

@@ -51,7 +51,7 @@ export function ReferenceCode({
 
   return (
     <span className={cn("text-muted inline-flex items-center gap-1.5 text-xs", className)}>
-      {label} <span className="text-fg font-mono font-medium select-all">{short}</span>
+      {label} <span className="text-fg font-medium tabular-nums select-all">{short}</span>
       <button
         type="button"
         onClick={copy}

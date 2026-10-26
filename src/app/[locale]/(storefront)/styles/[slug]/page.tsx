@@ -128,7 +128,7 @@ export default async function StylePage({ params, searchParams }: { params: Para
       : "none";
 
   const facts = [
-    { term: t("detail.code"), description: <span className="font-mono">{style.code}</span> },
+    { term: t("detail.code"), description: <span className="tabular-nums">{style.code}</span> },
     ...(style.referenceCode ? [{ term: t("detail.internationalName"), description: style.referenceCode }] : []),
     { term: t("facets.category"), description: facetLabel(words, "category", style.category) },
     { term: t("facets.family"), description: facetLabel(words, "family", style.family) },
@@ -204,7 +204,7 @@ export default async function StylePage({ params, searchParams }: { params: Para
       />
       <header className="mt-4 flex flex-col gap-3">
         <p className="text-muted text-sm">
-          <span className="font-mono">{style.code}</span> · {facetLabel(words, "category", style.category)}
+          <span className="tabular-nums">{style.code}</span> · {facetLabel(words, "category", style.category)}
         </p>
         <h1 className="text-3xl font-bold md:text-4xl">{name}</h1>
         <p className="text-muted">{t("card.variants", { count: style.variantCount })}</p>
@@ -316,7 +316,7 @@ export default async function StylePage({ params, searchParams }: { params: Para
                   href={`${href}?v=${encodeURIComponent(variant.code)}#${PICKER}`}
                   rel="nofollow"
                   scroll={false}
-                  className="text-primary font-mono underline-offset-2 hover:underline"
+                  className="text-primary tabular-nums underline-offset-2 hover:underline"
                 >
                   {variant.code}
                 </Link>{" "}

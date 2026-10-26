@@ -161,7 +161,7 @@ export default async function PlanningPage({
                     primary: true,
                     cell: (mo) => (
                       <span className="flex flex-col">
-                        <span className="font-mono whitespace-nowrap">{mo.moNo}</span>
+                        <span className="whitespace-nowrap tabular-nums">{mo.moNo}</span>
                         <span className="text-muted text-sm">{t(`sources.${mo.source}` as never)}</span>
                       </span>
                     ),

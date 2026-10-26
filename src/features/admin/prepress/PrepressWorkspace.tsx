@@ -174,7 +174,7 @@ export function PrepressWorkspace({
               items={[{ label: t("desk"), href: "/prepress" }, { label: order.orderCode }]}
             />
           }
-          title={<span className="font-mono">{order.orderCode}</span>}
+          title={<span className="tabular-nums">{order.orderCode}</span>}
           meta={<StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} size="md" />}
           description={t("headline", {
             type: productTypes.labelOf(order.productTypeCode),
@@ -259,7 +259,7 @@ function PrepressRail({
             {
               term: t("orderCode"),
               description: (
-                <Link href={`/orders/${order.id}`} className="text-primary font-mono hover:underline">
+                <Link href={`/orders/${order.id}`} className="text-primary tabular-nums hover:underline">
                   {order.orderCode}
                 </Link>
               ),

@@ -231,7 +231,7 @@ export default async function ShipmentPage({ params }: Props) {
             {shipment.items.map((item) => (
               <li key={`${item.jobId}-${item.destinationId}`} className="flex justify-between gap-2 tabular-nums">
                 <span>
-                  <span className="font-mono">{item.jobNo}</span>
+                  <span className="tabular-nums">{item.jobNo}</span>
                   <span className="text-muted"> · {item.orderCode}</span>
                 </span>
                 <span>

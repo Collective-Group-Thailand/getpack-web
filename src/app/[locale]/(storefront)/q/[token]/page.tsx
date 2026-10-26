@@ -44,7 +44,7 @@ export default async function QuoteLinkPage({ params }: { params: Promise<{ toke
         </div>
         <div className="sm:text-end">
           <h1 className="text-2xl font-semibold">{t("title")}</h1>
-          <p className="font-mono">
+          <p className="tabular-nums">
             {quote.quoteNo}
             {quote.revision > 1 ? ` (${t("revision", { n: quote.revision })})` : ""}
           </p>

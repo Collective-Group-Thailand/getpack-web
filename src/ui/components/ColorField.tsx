@@ -57,7 +57,7 @@ export function ColorField({
           disabled={disabled ?? fieldProps.disabled}
           aria-label={hexLabel}
           spellCheck={false}
-          className={cn(controlVariants({ inputSize: "sm" }), "font-mono uppercase")}
+          className={cn(controlVariants({ inputSize: "sm" }), "uppercase tabular-nums")}
         />
       </div>
 

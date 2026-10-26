@@ -161,7 +161,7 @@ export default async function PayablesPage({
                   primary: true,
                   cell: (inv) => (
                     <span className="flex flex-col">
-                      <span className="font-mono whitespace-nowrap">{inv.docNo}</span>
+                      <span className="whitespace-nowrap tabular-nums">{inv.docNo}</span>
                       <span className="text-muted text-sm">{inv.invoiceNo}</span>
                     </span>
                   ),
@@ -223,7 +223,7 @@ export default async function PayablesPage({
                   key: "no",
                   header: t("table.paymentNo"),
                   primary: true,
-                  cell: (p) => <span className="font-mono">{p.paymentNo}</span>,
+                  cell: (p) => <span className="tabular-nums">{p.paymentNo}</span>,
                 },
                 {
                   key: "date",

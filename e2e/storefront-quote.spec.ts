@@ -201,7 +201,11 @@ test.describe("requests for quotation", () => {
     await customer.getByRole("button", { name: "ส่งคำขอใบเสนอราคา" }).click();
 
     await expect(customer.getByText(/ส่งคำขอ RFQ-2569-\d+ แล้ว/)).toBeVisible();
-    const code = (await customer.locator("p.font-mono").first().textContent())!.trim();
+    const code = (await customer
+      .locator("p")
+      .filter({ hasText: /^\S*RFQ-\d{4}-\d+$/ })
+      .first()
+      .textContent())!.trim();
     await expect(customer.getByText("ฝาแม่เหล็ก")).toBeVisible();
     const rfqUrl = customer.url().split("?")[0]!;
 

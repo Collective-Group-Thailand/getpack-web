@@ -100,7 +100,7 @@ export function FeatureFlags({ initial }: { initial: InitialPage<FeatureFlag> | 
     {
       id: "key",
       header: t("columns.key"),
-      cell: (row) => <span className="font-mono text-xs font-medium">{row.key}</span>,
+      cell: (row) => <span className="text-xs font-medium tabular-nums">{row.key}</span>,
     },
     { id: "description", header: t("columns.description"), cell: (row) => row.description },
     {

@@ -127,7 +127,7 @@ export default async function TradingPartnerPage({ params }: Props) {
       back={back}
       meta={
         <>
-          <span className="text-muted font-mono">{partner.code}</span>
+          <span className="text-muted tabular-nums">{partner.code}</span>
           <Badge tone="neutral">{tCommon(`partnerKinds.${partner.kind}`)}</Badge>
           {partner.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}
         </>
@@ -242,7 +242,7 @@ export default async function TradingPartnerPage({ params }: Props) {
                   <li key={`${r.goodsReceipt.id}-${r.item.id}`}>
                     <Link
                       href={`/purchasing/receipts/${r.goodsReceipt.id}`}
-                      className="font-mono underline-offset-4 hover:underline"
+                      className="tabular-nums underline-offset-4 hover:underline"
                     >
                       {r.goodsReceipt.code}
                     </Link>

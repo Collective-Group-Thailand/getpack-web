@@ -64,7 +64,7 @@ export default async function EvalRunPage({ params }: { params: Promise<{ runId:
         <tbody>
           {results.map((result) => (
             <tr key={result.id} className="border-border border-t">
-              <td className="py-2 font-mono">{result.id}</td>
+              <td className="py-2 tabular-nums">{result.id}</td>
               <td className="py-2">{t(`kinds.${result.kind}`)}</td>
               <td className="py-2">
                 <Badge size="sm" tone={result.passed ? "success" : "danger"} icon={result.passed ? "check" : "error"}>

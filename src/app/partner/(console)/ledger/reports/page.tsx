@@ -124,7 +124,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                       className="text-link"
                       href={`/ledger/reports${queryOf({ tab: "gl", account: a.account.code })}`}
                     >
-                      <span className="font-mono">{a.account.code}</span> {a.account.name}
+                      <span className="tabular-nums">{a.account.code}</span> {a.account.name}
                     </Link>
                     <span>{format.thb(a.amount)}</span>
                   </li>
@@ -180,7 +180,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                 key: "c",
                 header: t("code"),
                 primary: true,
-                cell: (row) => <span className="font-mono">{row.account.code}</span>,
+                cell: (row) => <span className="tabular-nums">{row.account.code}</span>,
               },
               { key: "n", header: tc("account"), cell: (row) => row.account.name },
               {
@@ -217,7 +217,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
             empty={<EmptyState icon="list-ordered" title={t("noRows")} />}
             columns={[
               { key: "d", header: tc("date"), primary: true, cell: (row) => format.date(row.entryDate) },
-              { key: "n", header: t("entryNo"), cell: (row) => <span className="font-mono">{row.entryNo}</span> },
+              { key: "n", header: t("entryNo"), cell: (row) => <span className="tabular-nums">{row.entryNo}</span> },
               { key: "ds", header: tc("description"), hideOnPhone: true, cell: (row) => row.description },
               {
                 key: "dr",
@@ -296,7 +296,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                     primary: true,
                     cell: (row) => (
                       <span>
-                        <span className="font-mono">{row.account.code}</span> {row.account.name}
+                        <span className="tabular-nums">{row.account.code}</span> {row.account.name}
                       </span>
                     ),
                   },
@@ -334,7 +334,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                 key: "a",
                 header: tc("account"),
                 hideOnPhone: true,
-                cell: (row) => <span className="font-mono">{row.account.code}</span>,
+                cell: (row) => <span className="tabular-nums">{row.account.code}</span>,
               },
               {
                 key: "i",

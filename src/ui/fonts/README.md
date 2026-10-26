@@ -1,6 +1,6 @@
 # `src/ui/fonts` — self-hosted typography (ADR-0001)
 
-No runtime Google Fonts in any zone. These five files are committed, served by Next from the
+No runtime Google Fonts in any zone. These four files are committed, served by Next from the
 app's own origin, and loaded with `next/font/local` in `index.ts`.
 
 | Role            | Family                             | File                         | Size                                                                        |
@@ -9,19 +9,18 @@ app's own origin, and loaded with `next/font/local` in `index.ts`.
 | (unused)        | Noto Sans Thai (variable, 100–900) | `noto-sans-thai-thai.woff2`  | 26.3 KB — not loaded                                                        |
 | Display (h1–h4) | Anuphan (variable, 100–700)        | `anuphan-latin.woff2`        | 34.3 KB                                                                     |
 | Display (h1–h4) | Anuphan (variable, 100–700)        | `anuphan-thai.woff2`         | 18.5 KB                                                                     |
-| Mono (codes)    | JetBrains Mono (variable, 100–800) | `jetbrains-mono-latin.woff2` | 39.5 KB                                                                     |
 
-**149 KB total**, against the 180 KB budgeted in ADR-0001.
+**109 KB total** (53 KB loaded), against the 180 KB budgeted in ADR-0001.
 
 ## Provenance
 
 Downloaded from `fonts.gstatic.com`, the Thai and Latin subsets of the Google Fonts v2 API's
-variable builds — Noto Sans Thai `v29`, Anuphan `v6`, JetBrains Mono `v24`. To refresh a file,
+variable builds — Noto Sans Thai `v29`, Anuphan `v6`. To refresh a file,
 request the family's `css2` URL with a modern browser User-Agent and take the `src` URL under
 the `/* thai */` or `/* latin */` comment.
 
-All three are licensed under the **SIL Open Font License 1.1**; the licence text sits beside
-the files as `OFL-notosansthai.txt`, `OFL-anuphan.txt` and `OFL-jetbrainsmono.txt`.
+Both are licensed under the **SIL Open Font License 1.1**; the licence text sits beside
+the files as `OFL-notosansthai.txt` and `OFL-anuphan.txt`.
 
 ## Why one file per script, and why Latin first
 
@@ -37,12 +36,14 @@ family, and the stack in `src/ui/tokens/scale.ts` orders them by coverage:
 ASCII resolves in the metric-matched Latin companion; Thai codepoints are absent there and
 fall through to the Thai file. Mixed Thai/English lines keep one x-height either way.
 
-Mono is Latin-only and `preload: false`: a code is never Thai script, and preloading 40 KB on
-pages that show none would cost the marketing LCP budget.
+There is no monospace face. Codes, order numbers and quantities are Anuphan with
+`tabular-nums`, so a Thai label next to a code keeps one family (ADR-0001 amendment,
+2026-10-26). Do not add `font-mono` back: Tailwind's font theme is reset in the tokens, so the
+class generates nothing.
 
 ## Storybook
 
-Vite cannot run `next/font`, so `.storybook/fonts.css` declares the same five faces by hand
+Vite cannot run `next/font`, so `.storybook/fonts.css` declares the same faces by hand
 over `staticDirs`. If a file here is renamed, rename it there too.
 
 ## Not these fonts

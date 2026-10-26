@@ -108,7 +108,7 @@ export default async function NcrsPage({
                 key: "no",
                 header: t("ncrNo"),
                 primary: true,
-                cell: (row) => <span className="font-mono">{row.ncrNo}</span>,
+                cell: (row) => <span className="tabular-nums">{row.ncrNo}</span>,
               },
               { key: "title", header: t("titleColumn"), cell: (row) => row.title },
               { key: "src", header: t("source"), hideOnPhone: true, cell: (row) => tSource(row.source) },

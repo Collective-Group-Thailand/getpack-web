@@ -191,7 +191,9 @@ export function SampleView({ sample }: { sample: Sample }) {
               <li key={p.id} className="flex flex-col gap-1">
                 <Photo id={p.id} alt={t("photo", { n: i + 1 })} />
                 {p.sha256 ? (
-                  <span className="text-muted font-mono text-[11px]">{t("sha", { hash: p.sha256.slice(0, 12) })}</span>
+                  <span className="text-muted text-[11px] tabular-nums">
+                    {t("sha", { hash: p.sha256.slice(0, 12) })}
+                  </span>
                 ) : null}
               </li>
             ))}

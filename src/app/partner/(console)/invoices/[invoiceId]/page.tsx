@@ -122,7 +122,7 @@ export default async function InvoicePage({ params }: Props) {
                       description: (
                         <span className="flex flex-wrap gap-2">
                           {doc.deliveryNotes.map((d) => (
-                            <Link key={d.id} className="text-link font-mono underline" href={`/deliveries/${d.id}`}>
+                            <Link key={d.id} className="text-link tabular-nums underline" href={`/deliveries/${d.id}`}>
                               {d.doNo}
                             </Link>
                           ))}
@@ -153,7 +153,7 @@ export default async function InvoicePage({ params }: Props) {
                   key={r.id}
                   href={`/receivables/receipts/${r.id}`}
                   icon="coins"
-                  title={<span className="font-mono">{r.receiptNo}</span>}
+                  title={<span className="tabular-nums">{r.receiptNo}</span>}
                   meta={
                     <span className="flex items-center gap-2">
                       {format.date(r.receivedOn)}
@@ -177,7 +177,9 @@ export default async function InvoicePage({ params }: Props) {
                   href={`/invoices/notes/${n.id}`}
                   icon="receipt"
                   title={
-                    <span className="font-mono">{n.noteNo ?? `${t(`noteKinds.${n.kind}`)} ${tCommon("draftNo")}`}</span>
+                    <span className="tabular-nums">
+                      {n.noteNo ?? `${t(`noteKinds.${n.kind}`)} ${tCommon("draftNo")}`}
+                    </span>
                   }
                   meta={<StatusChip map={ERP_ISSUED_STATUS} value={n.status} />}
                   aside={format.thb(n.total)}
