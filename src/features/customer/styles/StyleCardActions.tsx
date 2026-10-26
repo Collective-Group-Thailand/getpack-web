@@ -14,8 +14,8 @@ import { useStyleFavourites } from "./useStyleFavourites";
 const plate = "bg-surface/95 border-border border shadow-sm";
 
 /**
- * Save on a library card — the star over its picture (D-246). A guest is sent to sign in and back
- * (`signInHref`); a saved style's star stays visible at rest.
+ * Save on a library card — the heart over its picture (D-246). A guest is sent to sign in and back
+ * (`signInHref`); a saved style's heart stays visible at rest.
  */
 export function FavouriteToggle({
   code,
@@ -33,13 +33,13 @@ export function FavouriteToggle({
   const saved = favourites.has(code);
   if (!signedIn)
     return (
-      <IconButton asChild name="star" variant="ghost" size="sm" label={t("favouriteSignIn")} className={plate}>
+      <IconButton asChild name="heart" variant="ghost" size="sm" label={t("favouriteSignIn")} className={plate}>
         <Link href={signInHref} />
       </IconButton>
     );
   return (
     <IconButton
-      name="star"
+      name="heart"
       variant={saved ? "secondary" : "ghost"}
       size="sm"
       aria-pressed={saved}

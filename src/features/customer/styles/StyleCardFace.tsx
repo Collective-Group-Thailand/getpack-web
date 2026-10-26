@@ -34,6 +34,11 @@ export interface StyleCardWords {
   featured: string;
   /** "18 ตัวเลือก". */
   variants: string;
+  /**
+   * The spec row — size range, MOQ, lead time — each only when the API has it. The card DTO carries
+   * none of them today (CONTRACT-REQUEST store.styles.card-commercial), so the row is not drawn.
+   */
+  specs: Array<{ icon: "ruler" | "layers" | "clock"; text: string }>;
   /** The features it offers ("หน้าต่าง", "หูแขวน", "ก้นล็อก"), the first few, and how many more. */
   chips: string[];
   moreChips: string | null;
@@ -114,7 +119,23 @@ export function StyleCardFace({
         ) : undefined
       }
       imageActions={favourite}
-      facts={words.meta ? <p className="truncate">{words.meta}</p> : undefined}
+      facts={
+        words.specs.length || words.meta ? (
+          <>
+            {words.specs.length ? (
+              <ul className="text-fg-2 flex flex-wrap gap-x-3 gap-y-1" data-card-specs="">
+                {words.specs.map((spec) => (
+                  <li key={spec.icon} className="inline-flex items-center gap-1 tabular-nums">
+                    <Icon name={spec.icon} size={14} aria-hidden="true" />
+                    {spec.text}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {words.meta ? <p className="truncate">{words.meta}</p> : null}
+          </>
+        ) : undefined
+      }
       details={
         words.chips.length ? (
           <ul className="flex flex-nowrap gap-1 overflow-hidden" aria-label={words.variants}>
@@ -188,6 +209,7 @@ export function cardWords(
     meta: style.referenceCode ? t("card.reference", { code: style.referenceCode }) : "",
     instant: t("library.cardInstant"),
     featured: t("card.featured"),
+    specs: [],
     variants: t("library.cardOptions", { count: style.variantCount }),
     chips: chips.slice(0, CHIPS),
     moreChips: chips.length > CHIPS ? t("library.cardMore", { count: chips.length - CHIPS }) : null,
