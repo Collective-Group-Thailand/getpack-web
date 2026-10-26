@@ -32,8 +32,11 @@ type Raw = Record<string, string | string[] | undefined>;
 const OPTION = /^[a-z0-9_]+:[a-z0-9_+]+$/;
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)?.trim() || undefined;
 
-/** Whether the URL asks for the variants view. */
-export const isVariantsView = (raw: Raw) => one(raw["view"]) === VARIANTS_VIEW;
+/** Whether the URL asks for the variants view: `view=variants`, or its alias `view=all` (ruling C6). */
+export const isVariantsView = (raw: Raw) => {
+  const view = one(raw["view"]);
+  return view === VARIANTS_VIEW || view === "all";
+};
 
 /** The URL's parameters, kept to what the grid understands. */
 export function readVariantParams(raw: Raw): VariantParams {
