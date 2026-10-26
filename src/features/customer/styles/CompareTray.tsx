@@ -24,6 +24,7 @@ export function CompareTray() {
   return (
     <section
       aria-label={t("compareTray")}
+      data-compare-tray=""
       className="z-sticky fixed inset-x-3 bottom-[4.5rem] md:inset-x-auto md:bottom-4 md:left-1/2 md:-translate-x-1/2"
     >
       <div className="border-border bg-surface-raised shadow-overlay rounded-card flex items-center gap-3 border p-2 ps-3">
