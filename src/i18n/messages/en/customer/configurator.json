@@ -185,7 +185,11 @@
       "spotPick": "Choose special colours (up to {max})",
       "addOn": "Add special colours (up to {max})",
       "summary": "Outside: {outside} · Inside: {inside}",
-      "cmyk": "CMYK"
+      "cmyk": "CMYK",
+      "outside": "Outside",
+      "inside": "Inside",
+      "noneOutside": "Plain box",
+      "noneInside": "Plain inside"
     }
   },
   "quantity": {

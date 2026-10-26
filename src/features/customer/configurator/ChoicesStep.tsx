@@ -9,6 +9,7 @@ import { Field } from "@/ui/components/Field";
 import { NumberInput } from "@/ui/components/Input";
 import { MaterialSwatch } from "@/ui/components/MaterialSwatch";
 import { RadioCards } from "@/ui/components/RadioCards";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
 
 import {
   isProcessInk,
@@ -30,7 +31,7 @@ import {
 import { GlossaryChip } from "@/features/customer/learn/GlossaryChip";
 import { materialNoteKey } from "./material-notes";
 import { PriceSlot, useOptionFigures } from "./OptionFigure";
-import { materialKey, type OptionPrices } from "./option-prices";
+import { materialKey, printSideOf, type OptionPrices } from "./option-prices";
 import { PrintSideChoice } from "./PrintSideChoice";
 import { isCorrugate } from "./print-model";
 
@@ -188,6 +189,18 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing, pr
     </p>
   );
 
+  const showArea = printing && configurator.printAreas.length > 0 && anyColour;
+  const areaChips = showArea ? (
+    <Field label={t("printArea")} hint={t("printAreaHint")}>
+      <SegmentedControl
+        label={t("printArea")}
+        value={state.printArea ?? configurator.printAreas[0]!}
+        onValueChange={(printArea) => onChange({ printArea })}
+        options={configurator.printAreas.map((area) => ({ value: area, label: t(`printAreas.${area}`) }))}
+      />
+    </Field>
+  ) : null;
+
   return (
     <div className="flex flex-col gap-6">
       {parts.length > 1 ? (
@@ -242,15 +255,20 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing, pr
         // D-443: a corrugate side is one method (none / spot / CMYK), never a set of ticked inks.
         if (corrugate && isPrint(group)) {
           return (
-            <Field key={group.kind} label={name}>
-              <PrintSideChoice
-                configurator={configurator}
-                group={group}
-                ids={chosen}
-                onChange={(ids) => setChoice(group, ids)}
-                byId={byId}
-              />
-            </Field>
+            <div key={group.kind} className="flex flex-col gap-5">
+              <Field label={t(`print.${printSideOf(group.kind)}`)}>
+                <PrintSideChoice
+                  configurator={configurator}
+                  group={group}
+                  ids={chosen}
+                  onChange={(ids) => setChoice(group, ids)}
+                  byId={byId}
+                  prices={prices}
+                />
+              </Field>
+              {/* The prototype's order: outside, where it prints, inside. Nothing to place when nothing prints. */}
+              {group.kind === "print_front" ? areaChips : null}
+            </div>
           );
         }
         if (group.kind === "material") {
@@ -334,16 +352,8 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing, pr
         );
       })}
 
-      {printing && configurator.printAreas.length > 0 && anyColour ? (
-        <Field label={t("printArea")} hint={t("printAreaHint")}>
-          <RadioCards
-            columns={2}
-            value={state.printArea ?? configurator.printAreas[0]}
-            onValueChange={(printArea) => onChange({ printArea: printArea as ConfiguratorState["printArea"] })}
-            options={configurator.printAreas.map((area) => ({ value: area, label: t(`printAreas.${area}`) }))}
-          />
-        </Field>
-      ) : null}
+      {/* Corrugate shows the chips between its two sides; any other product keeps them after its colours. */}
+      {!corrugate || perPart ? areaChips : null}
     </div>
   );
 }

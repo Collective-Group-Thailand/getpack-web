@@ -239,3 +239,69 @@ describe("material cards", () => {
     expect(withLine.textContent).toContain("3 ชั้น น้ำหนักเบา");
   });
 });
+
+describe("print cards", () => {
+  const side = async (name: string) => within(await screen.findByRole("radiogroup", { name }));
+  const outside = () => side("ด้านนอก");
+  const inside = () => side("ด้านใน");
+  const printCard = async (group: ReturnType<typeof side>, name: RegExp) => (await group).getByRole("radio", { name });
+  const areaChips = () => screen.queryByRole("radiogroup", { name: /บริเวณ/ });
+
+  it("offers ไม่พิมพ์ and only the methods the product's print model offers, with the default marked", async () => {
+    await open();
+    await settled(1);
+    const out = await outside();
+    const names = out.getAllByRole("radio").map((radio) => radio.textContent ?? "");
+    expect(names[0]).toMatch(/^ไม่พิมพ์/);
+    expect(names.some((name) => /CMYK/.test(name))).toBe(true);
+    // One card per offered method: none, four spot inks, CMYK (shipping-box's model).
+    expect(names).toHaveLength(6);
+    const cmyk = await printCard(outside(), /CMYK/);
+    expect(cmyk).toBeChecked();
+    expect(cmyk.textContent).toContain("ค่าเริ่มต้น");
+    expect(slotOf(cmyk).textContent).toBe("เลือกอยู่");
+    // The inside starts on ไม่พิมพ์ (the model's default), explicit.
+    const plain = await printCard(inside(), /^ไม่พิมพ์/);
+    expect(plain).toBeChecked();
+    expect(plain.textContent).toContain("ค่าเริ่มต้น");
+  });
+
+  it("each card carries its change from the batch, and selecting it gives the summary the price the card carried", async () => {
+    const user = userEvent.setup();
+    await open();
+    await settled(1);
+    const none = await printCard(outside(), /^ไม่พิมพ์/);
+    expect(slotOf(none).textContent).toMatch(/^[+\u2212]฿\d+\.\d{2}$/);
+    const shown = slotOf(none).getAttribute("data-option-price")!;
+    const before = otherSteps(/การพิมพ์/);
+
+    await user.click(none);
+    await waitFor(() => expect(dockPrice()).toBe(`฿${shown}`));
+    expect(otherSteps(/การพิมพ์/)).toEqual(before);
+    await settled(2);
+    expect(slotOf(await printCard(outside(), /^ไม่พิมพ์/)).textContent).toBe("เลือกอยู่");
+  });
+
+  it("prices the inside options on their own, and shows the print area only while something prints", async () => {
+    const user = userEvent.setup();
+    await open();
+    await settled(1);
+    await outside();
+    expect(areaChips()).not.toBeNull();
+    const cmykInside = await printCard(inside(), /CMYK/);
+    const shown = slotOf(cmykInside).getAttribute("data-option-price")!;
+    expect(slotOf(cmykInside).textContent).toMatch(/^\+฿\d+\.\d{2}$/);
+
+    await user.click(cmykInside);
+    await waitFor(() => expect(dockPrice()).toBe(`฿${shown}`));
+    await settled(2);
+    // Outside to ไม่พิมพ์: the inside still prints, so the area is still asked.
+    await user.click(await printCard(outside(), /^ไม่พิมพ์/));
+    await settled(3);
+    expect(areaChips()).not.toBeNull();
+    // Nothing prints any more: nothing to place.
+    await user.click(await printCard(inside(), /^ไม่พิมพ์/));
+    await settled(4);
+    expect(areaChips()).toBeNull();
+  });
+});
