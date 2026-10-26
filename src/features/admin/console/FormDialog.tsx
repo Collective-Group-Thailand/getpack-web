@@ -110,7 +110,7 @@ export function FormDialog({
             <ul className="list-disc ps-4 text-sm">
               {fieldErrors.slice(0, 10).map((error, index) => (
                 <li key={`${error.path}-${index}`}>
-                  <span className="font-mono text-xs">{error.path}</span> {error.message}
+                  <span className="text-xs tabular-nums">{error.path}</span> {error.message}
                 </li>
               ))}
             </ul>

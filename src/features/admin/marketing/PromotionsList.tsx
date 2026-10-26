@@ -68,7 +68,7 @@ export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | 
         row.campaign ? (
           <Link
             href={`/marketing/campaigns/${row.campaign.id}`}
-            className="text-primary font-mono text-xs hover:underline"
+            className="text-primary text-xs tabular-nums hover:underline"
             title={row.campaign.name}
           >
             {row.campaign.code}

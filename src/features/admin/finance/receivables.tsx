@@ -98,7 +98,7 @@ export function ReceivablesList({ initial }: { initial: InitialPage<Receivable> 
       cell: (row) => (
         <div>
           <DocumentLink document={row.document} />
-          {row.orderCode ? <p className="text-muted font-mono text-xs">{row.orderCode}</p> : null}
+          {row.orderCode ? <p className="text-muted text-xs tabular-nums">{row.orderCode}</p> : null}
         </div>
       ),
     },
@@ -375,7 +375,7 @@ export function WhtCertificates({ initial }: { initial: InitialPage<WhtCertifica
       cell: (row) =>
         row.certificateNo ? (
           <span>
-            <span className="font-mono">{row.certificateNo}</span>
+            <span className="tabular-nums">{row.certificateNo}</span>
             <span className="text-muted block text-xs">{format.date(row.certificateDate)}</span>
           </span>
         ) : (
@@ -546,7 +546,11 @@ export function CompanyStatements() {
   });
   type Line = Schemas["StatementLineDto"];
   const columns: DataTableColumn<Line>[] = [
-    { id: "groupCode", header: t("order"), cell: (row) => <span className="font-mono text-sm">{row.groupCode}</span> },
+    {
+      id: "groupCode",
+      header: t("order"),
+      cell: (row) => <span className="text-sm tabular-nums">{row.groupCode}</span>,
+    },
     { id: "poNumber", header: t("po"), cell: (row) => row.poNumber ?? "–" },
     { id: "branch", header: t("branch"), cell: (row) => row.branchCode ?? "–" },
     { id: "placedAt", header: t("placedAt"), cell: (row) => format.date(row.placedAt) },

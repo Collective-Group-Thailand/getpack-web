@@ -32,7 +32,7 @@ export function ArticlesList({ initial }: { initial: InitialPage<CatalogueRow> |
           <Link href={`/cms/articles/${row.id}`} className="text-primary font-medium hover:underline">
             {String(row.titleTh)}
           </Link>
-          <p className="text-muted font-mono text-xs">{String(row.slug)}</p>
+          <p className="text-muted text-xs tabular-nums">{String(row.slug)}</p>
         </div>
       ),
     },

@@ -117,7 +117,7 @@ export function Scorecards() {
       header: t("factory"),
       cell: (row) => (
         <Link href={`/partners/${row.factory.id}`} className="text-primary hover:underline">
-          <span className="font-mono">{row.factory.code}</span> · {row.factory.name}
+          <span className="tabular-nums">{row.factory.code}</span> · {row.factory.name}
         </Link>
       ),
     },

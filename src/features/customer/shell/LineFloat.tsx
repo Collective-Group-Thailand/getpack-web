@@ -85,7 +85,7 @@ function LineChat({ lineOaId }: { lineOaId: string }) {
             <p className="text-muted mt-0.5 text-sm">{t("lineBody")}</p>
           </div>
           <div className="border-border bg-surface flex items-center justify-between gap-2 rounded-md border px-3 py-2">
-            <span className="font-mono text-sm">{lineOaId}</span>
+            <span className="text-sm tabular-nums">{lineOaId}</span>
             <Button
               size="sm"
               variant="ghost"

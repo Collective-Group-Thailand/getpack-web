@@ -18,7 +18,7 @@ export function JsonView({ value, label, className }: JsonViewProps) {
       aria-label={label}
       tabIndex={0}
       className={cn(
-        "bg-surface-subtle border-border max-h-80 overflow-auto rounded-md border p-3 font-mono text-xs leading-relaxed",
+        "bg-surface-subtle border-border max-h-80 overflow-auto rounded-md border p-3 text-xs leading-relaxed tabular-nums",
         className,
       )}
     >

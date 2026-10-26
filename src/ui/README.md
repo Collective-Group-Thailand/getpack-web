@@ -6,7 +6,7 @@ components and the theme switch. Zones compose `src/ui`; they never restyle a pr
 
 ```
 tokens/      OKLCH primitives → semantic tiers → generated/tokens.css   (ADR-0003)
-fonts/       Noto Sans Thai, Anuphan, JetBrains Mono, self-hosted       (ADR-0001)
+fonts/       Anuphan (the only UI face), self-hosted       (ADR-0001)
 theme/       pk_theme cookie, server stamp, provider, toggle
 icons/       curated Lucide registry reached by name
 components/  Radix + CVA primitives                                     (ADR-0002)

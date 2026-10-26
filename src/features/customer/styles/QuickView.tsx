@@ -151,7 +151,7 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
       description={
         style ? (
           <>
-            <span className="font-mono">{style.code}</span> · {facetLabel(words, "category", style.category)}
+            <span className="tabular-nums">{style.code}</span> · {facetLabel(words, "category", style.category)}
           </>
         ) : undefined
       }

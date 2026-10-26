@@ -136,7 +136,7 @@ export function ApiClients({ companyId, initial }: { companyId: string; initial:
             >
               <div className="min-w-0">
                 <p className="font-medium">
-                  {client.name} <span className="text-muted font-mono text-xs">{client.clientId}</span>
+                  {client.name} <span className="text-muted text-xs tabular-nums">{client.clientId}</span>
                 </p>
                 <p className="text-muted text-xs">
                   {t("meta", {

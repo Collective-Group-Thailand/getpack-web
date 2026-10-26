@@ -90,7 +90,7 @@ export function AssetRegister({ initial }: { initial: InitialPage<FixedAsset> | 
         <div>
           <Link
             href={`/finance/assets/${row.id}`}
-            className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+            className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
           >
             {row.assetNo}
           </Link>
@@ -402,7 +402,7 @@ export function AssetDetail({ assetId }: { assetId: string }) {
             {
               term: t("accounts"),
               description: (
-                <span className="font-mono text-sm">
+                <span className="text-sm tabular-nums">
                   {data.assetAccountCode}
                   {data.creditAccountCode ? ` / ${data.creditAccountCode}` : ""}
                 </span>
@@ -614,7 +614,7 @@ export function DepreciationView() {
               header: t("asset"),
               cell: (row) => (
                 <Link href={`/finance/assets/${row.assetId}`} className="text-primary hover:underline">
-                  <span className="font-mono text-sm">{row.assetNo}</span> {row.name}
+                  <span className="text-sm tabular-nums">{row.assetNo}</span> {row.name}
                 </Link>
               ),
             },
@@ -731,7 +731,7 @@ export function AssetCategories() {
             cell: (row) => (
               <div>
                 {row.nameTh}
-                <p className="text-muted font-mono text-xs">{row.code}</p>
+                <p className="text-muted text-xs tabular-nums">{row.code}</p>
               </div>
             ),
           },
@@ -741,7 +741,7 @@ export function AssetCategories() {
             id: "accounts",
             header: t("accounts"),
             cell: (row) => (
-              <span className="font-mono text-xs">
+              <span className="text-xs tabular-nums">
                 {t("accountsValue", {
                   asset: row.assetAccountCode,
                   accumulated: row.accumulatedAccountCode,
@@ -987,7 +987,7 @@ export function AssetRollForward() {
               cell: (row) => (
                 <Link
                   href={`/finance/ledger/journals?accountCode=${row.accountCode}`}
-                  className="text-primary font-mono hover:underline"
+                  className="text-primary tabular-nums hover:underline"
                 >
                   {row.accountCode}
                 </Link>

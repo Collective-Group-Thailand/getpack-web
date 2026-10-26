@@ -48,7 +48,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
               >
                 <div>
                   <p className="font-medium">{format.date(s.periodStart, { style: "month" })}</p>
-                  <p className="text-muted font-mono text-xs">{s.statementNo}</p>
+                  <p className="text-muted text-xs tabular-nums">{s.statementNo}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-semibold tabular-nums">{format.thb(s.paidAmount ?? s.totalAmount)}</span>

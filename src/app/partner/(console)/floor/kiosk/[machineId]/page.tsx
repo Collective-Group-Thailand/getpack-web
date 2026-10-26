@@ -80,7 +80,10 @@ export default async function KioskPage({ params }: { params: Promise<{ machineI
             {tShared("numbered", { no: item.operation.seq, name: item.operation.name })}
           </p>
           <p className={big ? "text-lg" : undefined}>
-            <Link href={`/planning/orders/${item.order.id}`} className="font-mono underline-offset-4 hover:underline">
+            <Link
+              href={`/planning/orders/${item.order.id}`}
+              className="tabular-nums underline-offset-4 hover:underline"
+            >
               {item.order.moNo}
             </Link>{" "}
             · {item.order.title}

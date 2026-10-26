@@ -229,7 +229,7 @@ export default async function StockPage({
                     cell: (item) => (
                       <span className="flex flex-col">
                         <span>{item.name}</span>
-                        <span className="text-muted font-mono text-sm">{item.sku}</span>
+                        <span className="text-muted text-sm tabular-nums">{item.sku}</span>
                       </span>
                     ),
                   },
@@ -337,7 +337,7 @@ export default async function StockPage({
                     key: "document",
                     header: t("table.document"),
                     primary: true,
-                    cell: (move) => <span className="font-mono whitespace-nowrap">{move.documentNo}</span>,
+                    cell: (move) => <span className="whitespace-nowrap tabular-nums">{move.documentNo}</span>,
                   },
                   {
                     key: "date",

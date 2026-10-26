@@ -129,7 +129,7 @@ export function FactoryWorkspace({
         title={name}
         meta={
           <>
-            <span className="text-muted font-mono text-sm">{factory.code}</span>
+            <span className="text-muted text-sm tabular-nums">{factory.code}</span>
             <StatusChip map={FACTORY_STATUS} value={factory.status} size="md" />
             <Badge>{t(`modes.${factory.onboardingMode}`)}</Badge>
           </>

@@ -195,7 +195,7 @@ function Preview({
       <ul className="flex flex-col gap-2">
         {preview.orders.map((row) => (
           <li key={row.orderId} className="border-border rounded-lg border p-3 text-sm">
-            <p className="font-mono font-medium">{row.orderCode}</p>
+            <p className="font-medium tabular-nums">{row.orderCode}</p>
             <p className="text-muted">
               {t("orderLine", {
                 previous: format.thb(row.previousGrossAmount),

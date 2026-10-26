@@ -94,7 +94,7 @@ export function ReviewsDesk() {
       header: t("order"),
       cell: (row) => (
         <div>
-          <Link href={`/orders/${row.orderId}`} className="text-primary font-mono text-sm hover:underline">
+          <Link href={`/orders/${row.orderId}`} className="text-primary text-sm tabular-nums hover:underline">
             {row.orderCode}
           </Link>
           <p className="text-muted text-xs">{row.customer.displayName}</p>

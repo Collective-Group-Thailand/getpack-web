@@ -82,7 +82,7 @@ export function StudioElementsDesk() {
       cell: (row) => (
         <div>
           <p className="font-medium">{locale === "en" ? row.nameEn : row.nameTh}</p>
-          <p className="text-muted font-mono text-xs">{row.code}</p>
+          <p className="text-muted text-xs tabular-nums">{row.code}</p>
         </div>
       ),
     },
@@ -210,7 +210,7 @@ export function StudioElementsDesk() {
             <Field label={t("code")} hint={t("codeHint")} required>
               <Input
                 value={draft.code}
-                className="font-mono"
+                className="tabular-nums"
                 onChange={(e) => setDraft({ ...draft, code: e.target.value })}
               />
             </Field>
@@ -231,7 +231,7 @@ export function StudioElementsDesk() {
           <Field label={t("path")} hint={t("pathHint")} required>
             <Textarea
               rows={4}
-              className="font-mono text-xs"
+              className="text-xs tabular-nums"
               value={draft.path}
               onChange={(e) => setDraft({ ...draft, path: e.target.value })}
             />

@@ -207,7 +207,7 @@ export function DielineDownload({
         <ul className="text-muted mt-2 flex flex-col gap-1">
           {(["CutContour", "Crease", "Perf", "Glue", "Bleed", "Safe", "HalfCut"] as const).map((layer) => (
             <li key={layer}>
-              <span className="font-mono">{layer}</span> — {t(`layers.${layer}`)}
+              <span className="tabular-nums">{layer}</span> — {t(`layers.${layer}`)}
             </li>
           ))}
         </ul>

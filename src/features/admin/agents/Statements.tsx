@@ -64,7 +64,7 @@ export function StatementsList({ initial }: { initial: InitialPage<AgentStatemen
       id: "statementNo",
       header: t("columns.no"),
       cell: (row) => (
-        <Link href={`/agents/statements/${row.id}`} className="text-primary font-mono hover:underline">
+        <Link href={`/agents/statements/${row.id}`} className="text-primary tabular-nums hover:underline">
           {row.statementNo}
         </Link>
       ),
@@ -251,7 +251,7 @@ export function StatementDetail({ statementId }: { statementId: string }) {
             <Link href={`/agents/${s.agent.id}`} className="text-primary hover:underline">
               {s.agent.legalName}
             </Link>{" "}
-            · <span className="font-mono">{s.agent.code}</span>
+            · <span className="tabular-nums">{s.agent.code}</span>
           </span>
         }
         actions={actions.map((item) => (

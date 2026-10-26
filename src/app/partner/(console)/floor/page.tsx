@@ -110,7 +110,7 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
                       <p className="text-muted text-sm">
                         <Link
                           href={`/planning/orders/${order.id}`}
-                          className="font-mono underline-offset-4 hover:underline"
+                          className="tabular-nums underline-offset-4 hover:underline"
                         >
                           {order.moNo}
                         </Link>{" "}

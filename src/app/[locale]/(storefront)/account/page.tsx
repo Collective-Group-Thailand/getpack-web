@@ -126,7 +126,7 @@ export default async function Page() {
                     </Link>
                   </p>
                   <p className="text-muted mt-0.5 flex flex-wrap items-center gap-2 text-[13px]">
-                    <span className="font-mono">{order.orderCode}</span>
+                    <span className="tabular-nums">{order.orderCode}</span>
                     <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
                   </p>
                 </div>

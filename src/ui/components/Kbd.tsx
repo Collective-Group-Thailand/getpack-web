@@ -8,7 +8,7 @@ export function Kbd({ className, ...props }: KbdProps) {
     <kbd
       className={cn(
         "border-border inline-flex h-5 min-w-5 items-center justify-center rounded-sm border",
-        "bg-surface-subtle text-muted px-1 font-mono text-xs",
+        "bg-surface-subtle text-muted px-1 text-xs tabular-nums",
         className,
       )}
       {...props}

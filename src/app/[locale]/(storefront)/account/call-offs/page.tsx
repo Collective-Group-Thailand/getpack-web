@@ -58,7 +58,7 @@ export default async function Page() {
             const name = pick(locale, a.productType.nameTh, a.productType.nameEn);
             return {
               id: a.id,
-              phoneSubtitle: a.quoteCode ? <span className="font-mono">{a.quoteCode}</span> : null,
+              phoneSubtitle: a.quoteCode ? <span className="tabular-nums">{a.quoteCode}</span> : null,
               cells: {
                 product: (
                   <span className="block min-w-0">
@@ -69,7 +69,7 @@ export default async function Page() {
                       {name}
                     </Link>
                     {a.quoteCode ? (
-                      <span className="text-muted hidden font-mono text-xs font-normal md:block">{a.quoteCode}</span>
+                      <span className="text-muted hidden text-xs font-normal tabular-nums md:block">{a.quoteCode}</span>
                     ) : null}
                   </span>
                 ),

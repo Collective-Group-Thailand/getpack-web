@@ -34,7 +34,7 @@ function JsonField({ value, onChange, name }: { value: unknown; onChange: (value
     <Textarea
       name={name}
       rows={6}
-      className="font-mono text-xs"
+      className="text-xs tabular-nums"
       spellCheck={false}
       value={typeof value === "string" ? value : ""}
       onChange={(event) => onChange(event.target.value)}
@@ -109,7 +109,7 @@ export function CatalogueTable({
           case "ref":
             return (
               refs.labels[kind.table]?.get(String(value)) ?? (
-                <span className="font-mono text-xs">{String(value).slice(0, 8)}</span>
+                <span className="text-xs tabular-nums">{String(value).slice(0, 8)}</span>
               )
             );
           case "datetime":
@@ -117,12 +117,12 @@ export function CatalogueTable({
           case "file":
             return <Icon name="paperclip" size={16} label={t("hasFile")} />;
           case "json":
-            return <span className="text-muted font-mono text-xs">{t("jsonSet")}</span>;
+            return <span className="text-muted text-xs tabular-nums">{t("jsonSet")}</span>;
           case "list":
             return <span className="block max-w-72 truncate">{Array.isArray(value) ? value.join(", ") : ""}</span>;
           default:
             return (
-              <span className={MONO.has(field) ? "font-mono text-sm whitespace-nowrap" : "block max-w-72 truncate"}>
+              <span className={MONO.has(field) ? "text-sm whitespace-nowrap tabular-nums" : "block max-w-72 truncate"}>
                 {String(value)}
               </span>
             );

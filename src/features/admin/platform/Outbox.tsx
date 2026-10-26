@@ -28,7 +28,7 @@ export function Outbox({ initial }: { initial: InitialPage<OutboxMessage> | null
 
   const columns: DataTableColumn<OutboxMessage>[] = [
     { id: "occurredAt", header: t("columns.occurredAt"), sortable: true, cell: (row) => <When at={row.occurredAt} /> },
-    { id: "type", header: t("columns.type"), cell: (row) => <span className="font-mono text-xs">{row.type}</span> },
+    { id: "type", header: t("columns.type"), cell: (row) => <span className="text-xs tabular-nums">{row.type}</span> },
     {
       id: "aggregate",
       header: t("columns.aggregate"),

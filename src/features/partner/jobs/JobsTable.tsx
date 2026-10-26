@@ -29,7 +29,7 @@ export async function JobsTable({ jobs, caption }: { jobs: JobSummary[]; caption
           header: t("no"),
           primary: true,
           cell: (job) => (
-            <span className="font-mono text-sm font-semibold whitespace-nowrap lg:font-normal">{job.jobNo}</span>
+            <span className="text-sm font-semibold whitespace-nowrap tabular-nums lg:font-normal">{job.jobNo}</span>
           ),
         },
         {

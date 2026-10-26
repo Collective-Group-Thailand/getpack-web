@@ -95,7 +95,7 @@ export async function StockProductView({ product }: { product: StockProduct }) {
           <div>
             <p className="text-muted flex flex-wrap items-center gap-2 text-sm">
               {t("card.stock")}
-              <span className="font-mono">{product.sku}</span>
+              <span className="tabular-nums">{product.sku}</span>
               <Badge tone={product.inStock ? "success" : "warning"}>
                 {product.inStock ? t("stock.inStock") : t("stock.outOfStock")}
               </Badge>

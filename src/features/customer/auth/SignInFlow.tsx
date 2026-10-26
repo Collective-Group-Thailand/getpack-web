@@ -267,7 +267,7 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
         <div className="text-muted mt-3 flex items-center justify-between gap-3 text-sm">
           <span>
             {t("customer.reference")}{" "}
-            <span className="text-fg font-mono font-semibold">{shortReference(challenge.challengeId)}</span>
+            <span className="text-fg font-semibold tabular-nums">{shortReference(challenge.challengeId)}</span>
           </span>
           <span aria-live="off" className={cn(expired && "text-danger-subtle-fg font-medium")}>
             {expired ? (

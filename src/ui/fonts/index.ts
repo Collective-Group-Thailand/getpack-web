@@ -13,11 +13,12 @@ import localFont from "next/font/local";
  * None of these declarations names a generic fallback: `next/font/local` would splice it into
  * that family's own variable, ahead of the Thai family in the stack, and `system-ui` on a Thai
  * system *does* have Thai glyphs — so Thai text would never reach Noto Sans Thai. The generics
- * belong at the end of `--font-sans` / `--font-display` / `--font-mono` instead. The
+ * belong at the end of `--font-sans` / `--font-display` instead. The
  * metric-adjusted local fallback Next generates for CLS stays: Arial carries no Thai.
  *
- * Anuphan (both halves) and JetBrains Mono — well under the 180 KB in ADR-0001; Noto Sans Thai
- * was dropped when Anuphan became the body face too.
+ * Anuphan (both halves) is the only UI face, codes and numbers included — well under the 180 KB
+ * in ADR-0001. Noto Sans Thai was dropped when Anuphan became the body face, and JetBrains Mono
+ * when codes moved to Anuphan with tabular figures (ADR-0001 amendment, 2026-10-26).
  *
  * Fonts for *artwork* inside the designer are a separate catalogue (`FONT_FAMILIES`) and are
  * F4 Part C's problem, including outlining or embedding them in print PDFs.
@@ -46,22 +47,8 @@ const displayThai = localFont({
 });
 
 /**
- * Mono — JetBrains Mono variable, for order codes, job numbers and tax ids. Latin only:
- * a code is never Thai script, and preloading 40 KB for the pages that show none would
- * cost the marketing LCP budget.
- */
-const mono = localFont({
-  src: "./files/jetbrains-mono-latin.woff2",
-  weight: "100 800",
-  style: "normal",
-  display: "swap",
-  variable: "--font-pk-mono",
-  preload: false,
-});
-
-/**
  * Applied to `<html>` by each zone's root layout. The class only carries the CSS variables;
- * what actually selects a family is `--font-sans` / `--font-display` / `--font-mono` in
+ * what actually selects a family is `--font-sans` / `--font-display` in
  * the generated tokens.
  */
-export const fontClassNames = [displayLatin, displayThai, mono].map((font) => font.variable).join(" ");
+export const fontClassNames = [displayLatin, displayThai].map((font) => font.variable).join(" ");

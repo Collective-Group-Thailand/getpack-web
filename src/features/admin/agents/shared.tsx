@@ -59,7 +59,7 @@ export function AgentCell({ agent }: { agent: Schemas["AgentRefDto"] }) {
         {agent.legalName}
       </Link>
       <span className="text-muted flex items-center gap-1 text-xs">
-        <span className="font-mono">{agent.code}</span>
+        <span className="tabular-nums">{agent.code}</span>
         <span aria-hidden>·</span>
         {t(agent.kind)}
       </span>

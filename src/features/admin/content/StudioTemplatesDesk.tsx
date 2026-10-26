@@ -152,7 +152,7 @@ export function StudioTemplatesDesk() {
           >
             {name(row)}
           </button>
-          <p className="text-muted font-mono text-xs">{row.code}</p>
+          <p className="text-muted text-xs tabular-nums">{row.code}</p>
         </div>
       ),
     },
@@ -309,7 +309,7 @@ export function StudioTemplatesDesk() {
           <Field label={t("code")} hint={t("codeHint")} required>
             <Input
               value={draft.code}
-              className="font-mono"
+              className="tabular-nums"
               disabled={Boolean(draft.id)}
               onChange={(e) => setDraft({ ...draft, code: e.target.value })}
             />
@@ -369,7 +369,7 @@ export function StudioTemplatesDesk() {
           >
             <Textarea
               rows={10}
-              className="font-mono text-xs"
+              className="text-xs tabular-nums"
               value={draft.layout}
               onChange={(e) => setDraft({ ...draft, layout: e.target.value })}
             />

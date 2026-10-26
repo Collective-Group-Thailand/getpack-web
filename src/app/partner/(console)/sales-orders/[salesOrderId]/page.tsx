@@ -150,7 +150,7 @@ export default async function SalesOrderPage({ params }: Props) {
                   key={d.id}
                   href={`/deliveries/${d.id}`}
                   icon="truck"
-                  title={<span className="font-mono">{d.doNo}</span>}
+                  title={<span className="tabular-nums">{d.doNo}</span>}
                   meta={format.date(d.deliverOn)}
                   aside={<StatusChip map={ERP_DELIVERY_STATUS} value={d.status} />}
                 />
@@ -168,7 +168,7 @@ export default async function SalesOrderPage({ params }: Props) {
                   key={i.id}
                   href={`/invoices/${i.id}`}
                   icon="receipt"
-                  title={<span className="font-mono">{i.invoiceNo ?? tCommon("draftNo")}</span>}
+                  title={<span className="tabular-nums">{i.invoiceNo ?? tCommon("draftNo")}</span>}
                   meta={<StatusChip map={ERP_SALES_INVOICE_STATUS} value={i.status} />}
                   aside={format.thb(i.total)}
                 />

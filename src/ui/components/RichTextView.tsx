@@ -54,7 +54,7 @@ function renderText(node: RichTextNode, key: number, linkAs?: LinkLike): React.R
         out = <s>{out}</s>;
         break;
       case "code":
-        out = <code className="bg-bg-subtle rounded px-1 font-mono text-[0.9em]">{out}</code>;
+        out = <code className="bg-bg-subtle rounded px-1 text-[0.9em] tabular-nums">{out}</code>;
         break;
       case "link": {
         const href = safeHref(mark.attrs?.href);

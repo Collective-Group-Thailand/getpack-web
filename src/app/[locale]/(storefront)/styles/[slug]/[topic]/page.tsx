@@ -164,7 +164,7 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
         </div>
         <div className="flex flex-col gap-3">
           <p className="text-muted text-sm">
-            <span className="font-mono">{style.code}</span> · {t(`topics.${topic.id}.chip`)}
+            <span className="tabular-nums">{style.code}</span> · {t(`topics.${topic.id}.chip`)}
           </p>
           <h1 className="text-3xl font-bold md:text-4xl">{heading}</h1>
           <p className="text-primary text-lg font-semibold">

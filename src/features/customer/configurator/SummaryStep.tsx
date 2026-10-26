@@ -90,7 +90,7 @@ export function SummaryStep({ priced, pattern, draft, draftBusy, onDraft }: Summ
       {pattern ? (
         <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
           <dt className="text-muted">{t("styleCode")}</dt>
-          <dd className="m-0 font-mono">{pattern.styleCode ?? t("noStyleCode")}</dd>
+          <dd className="m-0 tabular-nums">{pattern.styleCode ?? t("noStyleCode")}</dd>
           <dt className="text-muted">{t("internationalName")}</dt>
           <dd className="m-0">{pattern.internationalName ?? t("noInternationalName")}</dd>
         </dl>

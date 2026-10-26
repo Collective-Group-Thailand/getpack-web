@@ -109,7 +109,7 @@ export function SettingsList({ initial }: { initial: Setting[] | null }) {
       className: "w-1/3",
       cell: (row) => (
         <div>
-          <Link href={`/settings/${row.id}`} className="text-primary font-mono text-xs font-medium hover:underline">
+          <Link href={`/settings/${row.id}`} className="text-primary text-xs font-medium tabular-nums hover:underline">
             {row.key}
           </Link>
           <p className="text-muted mt-0.5 text-xs">{row.description}</p>
@@ -281,7 +281,7 @@ export function SettingDetailView({ settingId, initial }: { settingId: string; i
             items={[{ label: t("title"), href: "/settings" }, { label: setting.key }]}
           />
         }
-        title={<span className="font-mono text-xl">{setting.key}</span>}
+        title={<span className="text-xl tabular-nums">{setting.key}</span>}
         meta={<StatusBadge meta={confirmation} label={tStatus(confirmation.labelKey)} />}
         description={setting.description}
       />
@@ -394,7 +394,7 @@ export function SettingDetailView({ settingId, initial }: { settingId: string; i
                   />
                 ) : setting.valueType === "json" || setting.valueType === "time_of_day_window" ? (
                   <Textarea
-                    className="font-mono text-xs"
+                    className="text-xs tabular-nums"
                     rows={6}
                     value={current}
                     onChange={(event) => setDraft(event.target.value)}

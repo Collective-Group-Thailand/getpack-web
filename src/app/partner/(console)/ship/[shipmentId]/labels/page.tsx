@@ -53,7 +53,7 @@ export default async function LabelsPage({ params }: Props) {
           label={t("sheet", { no: shipment.shipmentNo })}
           labels={shipment.cartons.map((carton) => (
             <div key={carton.seq} className="flex h-full flex-col gap-[2mm] text-[11pt] leading-snug">
-              <p className="font-mono text-[16pt] font-bold">{carton.labelCode}</p>
+              <p className="text-[16pt] font-bold tabular-nums">{carton.labelCode}</p>
               <p className="font-semibold">{t("carton", { n: carton.seq, total: shipment.cartons.length })}</p>
               <p className="text-[10pt]">{t("job", { jobNo: jobNos })}</p>
               <hr className="border-black" />

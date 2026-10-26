@@ -92,7 +92,7 @@ export function StyleCoverage() {
       cell: (row) => (
         <div>
           <p className="font-medium">{locale === "en" ? row.nameEn : row.nameTh}</p>
-          <p className="text-muted font-mono text-xs">{row.code}</p>
+          <p className="text-muted text-xs tabular-nums">{row.code}</p>
         </div>
       ),
     },

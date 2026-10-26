@@ -122,7 +122,7 @@ export default async function PurchaseRequestPage({ params }: { params: Promise<
                 line.purchaseOrder ? (
                   <Link
                     href={`/purchasing/${line.purchaseOrder.id}`}
-                    className="font-mono underline-offset-4 hover:underline"
+                    className="tabular-nums underline-offset-4 hover:underline"
                   >
                     {line.purchaseOrder.code || t("draftPo")}
                   </Link>

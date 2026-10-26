@@ -68,7 +68,7 @@ export function PayoutRunsList({ initial }: { initial: InitialPage<PayoutRun> | 
       cell: (row) => (
         <Link
           href={`/finance/payouts/${row.id}`}
-          className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+          className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
         >
           {row.runNo}
         </Link>
@@ -413,7 +413,7 @@ export function PayoutRunDetail({ runId }: { runId: string }) {
       cell: (row) =>
         row.status === "paid" ? (
           <button type="button" className="text-primary text-start hover:underline" onClick={() => setDocumentsOf(row)}>
-            <span className="font-mono text-sm whitespace-nowrap">{row.pvNumber}</span>
+            <span className="text-sm whitespace-nowrap tabular-nums">{row.pvNumber}</span>
             <span className="block text-xs">{t("documents")}</span>
           </button>
         ) : row.failureReason ? (
@@ -814,7 +814,10 @@ export function PayoutExceptions() {
             id: "run",
             header: t("run"),
             cell: (row) => (
-              <Link href={`/finance/payouts/${row.runId}`} className="text-primary font-mono text-sm hover:underline">
+              <Link
+                href={`/finance/payouts/${row.runId}`}
+                className="text-primary text-sm tabular-nums hover:underline"
+              >
                 {row.runNo}
               </Link>
             ),

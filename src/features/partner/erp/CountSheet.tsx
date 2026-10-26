@@ -193,7 +193,7 @@ export function CountSheet({
                 <tr key={l.row.item.id} className="border-border border-t">
                   <td className="px-3 py-2">
                     <span className="block">{l.row.item.name}</span>
-                    <span className="text-muted font-mono text-xs">{l.row.item.sku}</span>
+                    <span className="text-muted text-xs tabular-nums">{l.row.item.sku}</span>
                     {l.lots ? <span className="text-muted block text-xs">{t("byLot")}</span> : null}
                   </td>
                   {!blind ? (

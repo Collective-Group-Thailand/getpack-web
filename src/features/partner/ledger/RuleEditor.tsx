@@ -138,7 +138,7 @@ export function PreviewResult({ preview }: { preview: Preview }) {
               {preview.lines.map((l, i) => (
                 <tr key={i} className="border-border border-t">
                   <td className="py-1">
-                    <span className="font-mono">{l.accountCode}</span> {l.accountName ?? ""}
+                    <span className="tabular-nums">{l.accountCode}</span> {l.accountName ?? ""}
                     {l.taxCode ? (
                       <span className="text-muted ms-1 text-xs">{t(`taxCodes.${l.taxCode}` as never)}</span>
                     ) : null}
@@ -394,7 +394,7 @@ export function RuleEditor({
                 <Input
                   value={line.amount}
                   list={`amounts-${rule.id}`}
-                  className="font-mono"
+                  className="tabular-nums"
                   maxLength={200}
                   onChange={(e) => set(i, { amount: e.target.value })}
                 />
@@ -453,7 +453,7 @@ export function RuleEditor({
                   <Input
                     value={line.taxBase}
                     list={`amounts-${rule.id}`}
-                    className="font-mono"
+                    className="tabular-nums"
                     maxLength={200}
                     onChange={(e) => set(i, { taxBase: e.target.value })}
                   />

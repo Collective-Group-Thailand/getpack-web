@@ -97,7 +97,7 @@ export default async function StatementOfAccountPage({ searchParams }: Props) {
                 <tr key={`${entry.reference}-${index}`} className="border-border border-t">
                   <td className="p-3 whitespace-nowrap">{format.date(entry.date)}</td>
                   <td className="p-3">
-                    {entry.reference ? <span className="block font-mono">{entry.reference}</span> : null}
+                    {entry.reference ? <span className="block tabular-nums">{entry.reference}</span> : null}
                     <span className="text-muted">{t(`kinds.${entry.kind}`)}</span>
                   </td>
                   <td className="p-3 text-end">{amount(entry.credit)}</td>

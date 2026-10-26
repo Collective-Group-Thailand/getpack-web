@@ -45,7 +45,7 @@ export async function MaintenanceTable({
           key: "no",
           header: t("table.no"),
           primary: true,
-          cell: (r) => <span className="font-mono whitespace-nowrap">{r.mtNo}</span>,
+          cell: (r) => <span className="whitespace-nowrap tabular-nums">{r.mtNo}</span>,
         },
         ...(withMachine ? [{ key: "machine", header: t("table.machine"), cell: (r: Row) => r.machine.name }] : []),
         { key: "subject", header: t("table.subject"), cell: (r) => r.title },

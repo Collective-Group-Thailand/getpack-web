@@ -130,7 +130,7 @@ export function CompanyWorkspace({ companyId, tab }: { companyId: string; tab: C
         title={company.legalName}
         meta={
           <>
-            <span className="text-muted font-mono text-sm">{code}</span>
+            <span className="text-muted text-sm tabular-nums">{code}</span>
             <StatusChip map={COMPANY_STATUS} value={company.status} size="md" />
             <StatusChip map={CREDIT_STATUS} value={company.creditStatus} size="md" />
           </>
@@ -533,7 +533,7 @@ function Members({ company }: { company: Company }) {
 function Branches({ company }: { company: Company }) {
   const t = useTranslations("companies.branches");
   const columns: DataTableColumn<CompanyBranch>[] = [
-    { id: "code", header: t("code"), cell: (row) => <span className="font-mono">{row.branchCode}</span> },
+    { id: "code", header: t("code"), cell: (row) => <span className="tabular-nums">{row.branchCode}</span> },
     {
       id: "name",
       header: t("name"),
@@ -763,7 +763,7 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
                     </Badge>
                     {notice.amount ? <span className="tabular-nums">{format.thb(notice.amount)}</span> : null}
                     {notice.dueAt ? <When at={notice.dueAt} absoluteOnly /> : null}
-                    {notice.groupCode ? <span className="font-mono">{notice.groupCode}</span> : null}
+                    {notice.groupCode ? <span className="tabular-nums">{notice.groupCode}</span> : null}
                   </li>
                 ))}
               </ul>
@@ -904,7 +904,7 @@ function Statements({ company }: { company: Company }) {
   });
   const data = statement.data;
   const columns: DataTableColumn<IssuedStatement>[] = [
-    { id: "month", header: t("month"), cell: (row) => <span className="font-mono">{row.month}</span> },
+    { id: "month", header: t("month"), cell: (row) => <span className="tabular-nums">{row.month}</span> },
     { id: "opening", header: t("opening"), numeric: true, cell: (row) => format.thb(row.openingAmount) },
     { id: "invoiced", header: t("invoiced"), numeric: true, cell: (row) => format.thb(row.invoicedAmount) },
     { id: "credited", header: t("credited"), numeric: true, cell: (row) => format.thb(row.creditedAmount) },

@@ -169,7 +169,7 @@ export function RollupRuns({ period }: { period: Period | null }) {
   const shown = showAll ? all : attention;
   const columns: DataTableColumn<Rollup>[] = [
     { id: "date", header: t("columns.date"), cell: (row) => format.date(row.date) },
-    { id: "job", header: t("columns.job"), cell: (row) => <span className="font-mono text-xs">{row.job}</span> },
+    { id: "job", header: t("columns.job"), cell: (row) => <span className="text-xs tabular-nums">{row.job}</span> },
     {
       id: "status",
       header: t("columns.status"),

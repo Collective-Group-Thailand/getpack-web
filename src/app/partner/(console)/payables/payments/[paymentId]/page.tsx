@@ -85,7 +85,7 @@ export default async function SupplierPaymentPage({ params }: { params: Promise<
                     description: (
                       <Link
                         href={`/payables/payments/${p.reverses.id}`}
-                        className="font-mono underline-offset-4 hover:underline"
+                        className="tabular-nums underline-offset-4 hover:underline"
                       >
                         {p.reverses.code}
                       </Link>
@@ -100,7 +100,7 @@ export default async function SupplierPaymentPage({ params }: { params: Promise<
                     description: (
                       <Link
                         href={`/payables/payments/${p.reversedBy.id}`}
-                        className="font-mono underline-offset-4 hover:underline"
+                        className="tabular-nums underline-offset-4 hover:underline"
                       >
                         {p.reversedBy.code}
                       </Link>
@@ -141,7 +141,7 @@ export default async function SupplierPaymentPage({ params }: { params: Promise<
               key: "no",
               header: t("table.no"),
               primary: true,
-              cell: (a) => <span className="font-mono">{a.invoice.code}</span>,
+              cell: (a) => <span className="tabular-nums">{a.invoice.code}</span>,
             },
             { key: "inv", header: t("detail.invoiceNo"), cell: (a) => a.invoice.name },
             { key: "amount", header: t("table.amount"), align: "end", cell: (a) => format.thb(a.amount) },

@@ -57,7 +57,7 @@ export default async function Page() {
               <div className="flex items-start justify-between gap-2">
                 <Link href={`/liff/orders/${order.id}`} className="min-w-0">
                   <span className="block font-medium">{names[order.productTypeCode] ?? order.productTypeCode}</span>
-                  <span className="text-muted block font-mono text-xs">{order.orderCode}</span>
+                  <span className="text-muted block text-xs tabular-nums">{order.orderCode}</span>
                 </Link>
                 <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
               </div>

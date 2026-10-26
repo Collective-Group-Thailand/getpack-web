@@ -161,7 +161,7 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
       cell: (row) => (
         <div className="min-w-0">
           <p className="truncate font-medium">{nameOf(row.factoryId) ?? row.factoryCode}</p>
-          <p className="text-muted font-mono text-xs">{row.factoryCode}</p>
+          <p className="text-muted text-xs tabular-nums">{row.factoryCode}</p>
           <p className="text-muted text-xs">{t("requestedBy", { name: row.requestedBy.displayName })}</p>
         </div>
       ),

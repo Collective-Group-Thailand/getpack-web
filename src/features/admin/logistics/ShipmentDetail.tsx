@@ -206,7 +206,9 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
             <Badge tone={shipment.carrier === "factory_fleet" ? "neutral" : "info"}>
               {tList(`carriers.${shipment.carrier}`)}
             </Badge>
-            {shipment.trackingNo ? <span className="text-muted font-mono text-sm">{shipment.trackingNo}</span> : null}
+            {shipment.trackingNo ? (
+              <span className="text-muted text-sm tabular-nums">{shipment.trackingNo}</span>
+            ) : null}
           </>
         }
         description={t("summary", {
@@ -272,7 +274,7 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
       {shipment.splitFrom ? (
         <p className="text-sm">
           {t("splitFromLabel")}{" "}
-          <Link href={`/shipments/${shipment.splitFrom.id}`} className="text-primary font-mono hover:underline">
+          <Link href={`/shipments/${shipment.splitFrom.id}`} className="text-primary tabular-nums hover:underline">
             {shipment.splitFrom.shipmentNo}
           </Link>
         </p>
@@ -393,11 +395,11 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
                   <li key={`${item.jobId}-${item.destinationId}`} className="flex justify-between gap-2 py-1">
                     <span>
                       {orderId ? (
-                        <Link href={`/orders/${orderId}`} className="text-primary font-mono hover:underline">
+                        <Link href={`/orders/${orderId}`} className="text-primary tabular-nums hover:underline">
                           {item.orderCode}
                         </Link>
                       ) : (
-                        <span className="font-mono">{item.orderCode}</span>
+                        <span className="tabular-nums">{item.orderCode}</span>
                       )}
                       <span className="text-muted block text-xs">{item.jobNo}</span>
                     </span>
@@ -423,7 +425,7 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
               <ul className="mt-2 flex flex-col gap-1 text-xs">
                 {shipment.cartons.map((carton) => (
                   <li key={carton.seq} className="flex justify-between gap-2">
-                    <span className="font-mono">{carton.labelCode}</span>
+                    <span className="tabular-nums">{carton.labelCode}</span>
                     {carton.weightG ? (
                       <span className="text-muted tabular-nums">
                         {t("cartonWeight", { kg: format.number(carton.weightG / 1000) })}

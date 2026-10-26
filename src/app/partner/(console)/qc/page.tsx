@@ -74,7 +74,7 @@ export default async function QcPage() {
           key: "job",
           header: t("table.job"),
           primary: true,
-          cell: (job) => <span className="font-mono whitespace-nowrap">{job.jobNo}</span>,
+          cell: (job) => <span className="whitespace-nowrap tabular-nums">{job.jobNo}</span>,
         },
         { key: "product", header: t("table.product"), cell: (job) => job.productTypeNameTh ?? job.title },
         {

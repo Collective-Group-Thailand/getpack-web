@@ -778,7 +778,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
               ) : null}
               {proof.decisionComment ? <span className="mt-1 block">{proof.decisionComment}</span> : null}
               {proof.approvedFileSha256 ? (
-                <span className="mt-1 block font-mono text-xs break-all">
+                <span className="mt-1 block text-xs break-all tabular-nums">
                   {t("hash", { hash: proof.approvedFileSha256.slice(0, 16) })}
                 </span>
               ) : null}

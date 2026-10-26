@@ -110,7 +110,7 @@ export function AuditLog() {
     {
       id: "action",
       header: t("columns.action"),
-      cell: (row) => <span className="font-mono text-xs">{row.action}</span>,
+      cell: (row) => <span className="text-xs tabular-nums">{row.action}</span>,
     },
     {
       id: "outcome",
@@ -242,7 +242,7 @@ export function AuditLog() {
               columns={1}
               items={[
                 { term: t("columns.when"), description: <When at={open.occurredAt} absoluteOnly /> },
-                { term: t("columns.action"), description: <span className="font-mono">{open.action}</span> },
+                { term: t("columns.action"), description: <span className="tabular-nums">{open.action}</span> },
                 {
                   term: t("columns.actor"),
                   description: `${open.actor.name ?? "—"} (${t(`actorTypes.${open.actor.type}`)})`,
@@ -254,7 +254,7 @@ export function AuditLog() {
                 },
                 {
                   term: t("requestId"),
-                  description: <span className="font-mono text-xs">{open.requestId ?? "—"}</span>,
+                  description: <span className="text-xs tabular-nums">{open.requestId ?? "—"}</span>,
                 },
               ]}
             />

@@ -63,13 +63,13 @@ export default async function Page() {
                     {entry.orderCode ? (
                       <>
                         {" · "}
-                        <span className="font-mono">{entry.orderCode}</span>
+                        <span className="tabular-nums">{entry.orderCode}</span>
                       </>
                     ) : null}
                     {entry.docNumber ? (
                       <>
                         {" · "}
-                        <span className="font-mono">{entry.docNumber}</span>
+                        <span className="tabular-nums">{entry.docNumber}</span>
                       </>
                     ) : null}
                   </p>
@@ -95,7 +95,7 @@ export default async function Page() {
                 className="bg-surface border-border flex flex-col gap-1 rounded-lg border p-3 text-sm"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono font-semibold">{offer.code}</span>
+                  <span className="font-semibold tabular-nums">{offer.code}</span>
                   <StatusChip map={PROMOTION_OFFER_STATUS} value={offer.status} />
                 </div>
                 <p className="font-medium">{offer.title}</p>

@@ -85,18 +85,18 @@ export default async function RulePage({ params }: { params: Promise<{ ruleId: s
   const account = (l: TemplateLine) =>
     l.accountCode ? (
       <span>
-        <span className="font-mono">{l.accountCode}</span> {names.get(l.accountCode) ?? ""}
+        <span className="tabular-nums">{l.accountCode}</span> {names.get(l.accountCode) ?? ""}
       </span>
     ) : l.accountPath?.startsWith("accounts.") ? (
       <span>
-        <span className="font-mono">{methods[l.accountPath.slice(9)] ?? ""}</span>{" "}
+        <span className="tabular-nums">{methods[l.accountPath.slice(9)] ?? ""}</span>{" "}
         {names.get(methods[l.accountPath.slice(9)] ?? "") ?? ""}{" "}
-        <span className="text-muted font-mono text-xs">{l.accountPath}</span>
+        <span className="text-muted text-xs tabular-nums">{l.accountPath}</span>
       </span>
     ) : (
       <span>
         {rule.variables.find((v) => v.path === l.accountPath)?.label ?? ""}{" "}
-        <span className="text-muted font-mono text-xs">{l.accountPath}</span>
+        <span className="text-muted text-xs tabular-nums">{l.accountPath}</span>
       </span>
     );
   const lines = (v: Version, caption: string) => (
@@ -107,7 +107,7 @@ export default async function RulePage({ params }: { params: Promise<{ ruleId: s
       columns={[
         { key: "a", header: t("account"), primary: true, cell: (row) => account(row) },
         { key: "s", header: t("side"), cell: (row) => (row.side === "debit" ? tc("debit") : tc("credit")) },
-        { key: "m", header: t("amount"), cell: (row) => <span className="font-mono text-sm">{row.amount}</span> },
+        { key: "m", header: t("amount"), cell: (row) => <span className="text-sm tabular-nums">{row.amount}</span> },
         {
           key: "w",
           header: t("condition"),
@@ -186,7 +186,7 @@ export default async function RulePage({ params }: { params: Promise<{ ruleId: s
               key: "p",
               header: t("value"),
               primary: true,
-              cell: (row) => <span className="font-mono text-sm">{row.path}</span>,
+              cell: (row) => <span className="text-sm tabular-nums">{row.path}</span>,
             },
             { key: "l", header: tc("description"), cell: (row) => row.label },
             { key: "k", header: t("kind"), hideOnPhone: true, cell: (row) => t(`kinds.${row.kind}` as never) },

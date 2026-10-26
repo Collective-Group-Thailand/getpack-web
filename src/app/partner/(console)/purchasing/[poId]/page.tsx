@@ -173,7 +173,7 @@ export default async function PurchaseOrderPage({ params }: Props) {
                 key={gr.id}
                 href={`/purchasing/receipts/${gr.id}`}
                 icon="package-check"
-                title={<span className="font-mono">{gr.grNo}</span>}
+                title={<span className="tabular-nums">{gr.grNo}</span>}
                 meta={format.date(gr.receivedOn)}
                 aside={format.thb(gr.total)}
               />

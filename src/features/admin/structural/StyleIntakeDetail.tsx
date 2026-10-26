@@ -118,7 +118,7 @@ export function StyleIntakeDetail({ intakeId }: { intakeId: string }) {
             },
             {
               term: t("sha256"),
-              description: <span className="font-mono text-xs break-all">{intake.fileSha256}</span>,
+              description: <span className="text-xs break-all tabular-nums">{intake.fileSha256}</span>,
             },
             { term: t("terms"), description: t("termsVersion", { version: intake.termsVersion }) },
             { term: t("submitted"), description: <When at={intake.createdAt} /> },

@@ -110,10 +110,10 @@ export default async function ShipPage({ searchParams }: Props) {
                 <li key={job.jobId} id={`job-${job.jobId}`}>
                   <Card padding="md" className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/jobs/${job.jobId}`} className="font-mono font-semibold underline">
+                      <Link href={`/jobs/${job.jobId}`} className="font-semibold tabular-nums underline">
                         {job.jobNo}
                       </Link>
-                      <span className="text-muted flex-1 font-mono text-sm">{job.orderCode}</span>
+                      <span className="text-muted flex-1 text-sm tabular-nums">{job.orderCode}</span>
                       <span className="text-muted text-sm">
                         {job.quantityGood !== null
                           ? t("plan.meta", {
@@ -189,7 +189,7 @@ export default async function ShipPage({ searchParams }: Props) {
                   key: "no",
                   header: t("list.table.no"),
                   primary: true,
-                  cell: (shipment) => <span className="font-mono whitespace-nowrap">{shipment.shipmentNo}</span>,
+                  cell: (shipment) => <span className="whitespace-nowrap tabular-nums">{shipment.shipmentNo}</span>,
                 },
                 {
                   key: "to",
@@ -205,7 +205,7 @@ export default async function ShipPage({ searchParams }: Props) {
                   key: "jobs",
                   header: t("list.table.jobs"),
                   cell: (shipment) => (
-                    <span className="font-mono text-sm">
+                    <span className="text-sm tabular-nums">
                       {[...new Set(shipment.items.map((item) => item.jobNo))].join(", ")}
                     </span>
                   ),

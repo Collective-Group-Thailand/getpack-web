@@ -94,7 +94,7 @@ export default async function QuotationsPage({
                 header: t("table.no"),
                 primary: true,
                 cell: (row) => (
-                  <span className="font-mono whitespace-nowrap">
+                  <span className="whitespace-nowrap tabular-nums">
                     {row.quoteNo}
                     {row.revision > 1 ? ` (${t("revision", { n: row.revision })})` : ""}
                   </span>

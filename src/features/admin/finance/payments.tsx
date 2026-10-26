@@ -68,7 +68,7 @@ export function PaymentsList({ initial }: { initial: InitialPage<Payment> | null
         <div>
           <Link
             href={`/finance/payments/${row.id}`}
-            className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+            className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
           >
             {row.referenceCode}
           </Link>

@@ -147,7 +147,7 @@ export function AgentDetail({ agentId }: { agentId: string }) {
       id: "no",
       header: t("statements.no"),
       cell: (row) => (
-        <Link href={`/agents/statements/${row.id}`} className="text-primary font-mono hover:underline">
+        <Link href={`/agents/statements/${row.id}`} className="text-primary tabular-nums hover:underline">
           {row.statementNo}
         </Link>
       ),
@@ -167,7 +167,7 @@ export function AgentDetail({ agentId }: { agentId: string }) {
     [
       t("taxId"),
       agent.taxId ? (
-        <span key="taxId" className="font-mono">
+        <span key="taxId" className="tabular-nums">
           {agent.taxId}
         </span>
       ) : (
@@ -208,7 +208,7 @@ export function AgentDetail({ agentId }: { agentId: string }) {
         title={agent.legalName}
         meta={
           <>
-            <span className="text-muted font-mono text-sm">{agent.code}</span>
+            <span className="text-muted text-sm tabular-nums">{agent.code}</span>
             <KindBadge kind={agent.kind} />
             <StatusChip map={AGENT_STATUS} value={agent.status} size="md" />
           </>

@@ -61,13 +61,13 @@ export function Tooling() {
     {
       id: "factory",
       header: t("factory"),
-      cell: (row) => <span className="font-mono text-sm">{row.factory.code}</span>,
+      cell: (row) => <span className="text-sm tabular-nums">{row.factory.code}</span>,
     },
     {
       id: "source",
       header: t("source"),
       cell: (row) => (
-        <Link href={`/orders/${row.sourceOrder.orderId}`} className="text-primary font-mono text-sm hover:underline">
+        <Link href={`/orders/${row.sourceOrder.orderId}`} className="text-primary text-sm tabular-nums hover:underline">
           {row.sourceOrder.orderCode}
         </Link>
       ),
@@ -77,7 +77,7 @@ export function Tooling() {
       header: t("lastUsed"),
       cell: (row) => (
         <div className="text-sm">
-          <Link href={`/orders/${row.lastOrder.orderId}`} className="text-primary font-mono hover:underline">
+          <Link href={`/orders/${row.lastOrder.orderId}`} className="text-primary tabular-nums hover:underline">
             {row.lastOrder.orderCode}
           </Link>
           <p className="text-muted text-xs">
@@ -99,7 +99,7 @@ export function Tooling() {
       id: "artwork",
       header: t("artwork"),
       cell: (row) =>
-        row.artworkSha256 ? <span className="font-mono text-xs">{row.artworkSha256.slice(0, 12)}</span> : "—",
+        row.artworkSha256 ? <span className="text-xs tabular-nums">{row.artworkSha256.slice(0, 12)}</span> : "—",
     },
     {
       id: "status",

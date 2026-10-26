@@ -63,7 +63,7 @@ export function CallOffsList({ initial }: { initial: InitialPage<CallOff> | null
       header: t("columns.quote"),
       cell: (row) => (
         <div className="flex flex-col">
-          <Link href={`/quotations/${row.quoteId}`} className="text-primary font-mono hover:underline">
+          <Link href={`/quotations/${row.quoteId}`} className="text-primary tabular-nums hover:underline">
             {row.quoteCode ?? t("noCode")}
           </Link>
           <span className="text-muted text-xs">
@@ -112,7 +112,7 @@ export function CallOffsList({ initial }: { initial: InitialPage<CallOff> | null
             {row.releases.map((release) => (
               <li key={release.id} className="flex flex-wrap items-center gap-1">
                 {release.order ? (
-                  <Link href={`/orders/${release.order.orderId}`} className="text-primary font-mono hover:underline">
+                  <Link href={`/orders/${release.order.orderId}`} className="text-primary tabular-nums hover:underline">
                     {release.order.orderCode}
                   </Link>
                 ) : (
@@ -206,7 +206,7 @@ export function ReorderQueue({ initial }: { initial: InitialPage<Suggestion> | n
       header: t("columns.lastOrder"),
       cell: (row) => (
         <div className="flex flex-col text-xs">
-          <Link href={`/orders/${row.lastOrder.orderId}`} className="text-primary font-mono hover:underline">
+          <Link href={`/orders/${row.lastOrder.orderId}`} className="text-primary tabular-nums hover:underline">
             {row.lastOrder.orderCode}
           </Link>
           <span className="text-muted">

@@ -368,7 +368,7 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
                 <dt className="text-muted text-xs">{t("transferTo")}</dt>
                 <dd className="font-medium">
                   {bank ? <span className="block">{bank}</span> : null}
-                  <span className="font-mono tabular-nums">{account.accountNumber}</span>
+                  <span className="tabular-nums">{account.accountNumber}</span>
                   {account.accountName ? <span className="block">{account.accountName}</span> : null}
                 </dd>
               </div>

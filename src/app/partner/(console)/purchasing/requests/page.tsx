@@ -94,7 +94,7 @@ export default async function PurchaseRequestsPage({
                 key: "no",
                 header: t("table.no"),
                 primary: true,
-                cell: (pr) => <span className="font-mono whitespace-nowrap">{pr.prNo}</span>,
+                cell: (pr) => <span className="whitespace-nowrap tabular-nums">{pr.prNo}</span>,
               },
               { key: "by", header: t("table.by"), cell: (pr) => pr.requestedBy },
               {

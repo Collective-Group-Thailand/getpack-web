@@ -101,7 +101,7 @@ export function StyleCardFace({
       }
       topLine={
         <>
-          <span className="text-fg font-mono tracking-normal">{style.code}</span> · {words.category}
+          <span className="text-fg tracking-normal tabular-nums">{style.code}</span> · {words.category}
         </>
       }
       image={
@@ -123,7 +123,7 @@ export function StyleCardFace({
       }
       imageFoot={
         style.variantCount > 1 ? (
-          <span className="bg-surface/90 text-fg-2 border-border inline-flex items-center gap-[5px] rounded-control border py-[3px] ps-[7px] pe-[9px] text-xs font-medium tabular-nums backdrop-blur-sm">
+          <span className="bg-surface/90 text-fg-2 border-border rounded-control inline-flex items-center gap-[5px] border py-[3px] ps-[7px] pe-[9px] text-xs font-medium tabular-nums backdrop-blur-sm">
             <Icon name="layers" size={13} aria-hidden="true" />
             {words.variants}
           </span>

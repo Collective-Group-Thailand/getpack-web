@@ -107,7 +107,7 @@ export default async function TradingPartnersPage({
                 cell: (p) => (
                   <span className="flex flex-col">
                     <span>{p.name}</span>
-                    <span className="text-muted font-mono text-sm">{p.code}</span>
+                    <span className="text-muted text-sm tabular-nums">{p.code}</span>
                   </span>
                 ),
               },

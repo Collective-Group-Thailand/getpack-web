@@ -85,7 +85,7 @@ export default async function SupplierInvoicePage({ params }: { params: Promise<
               description: inv.purchaseOrder ? (
                 <Link
                   href={`/purchasing/${inv.purchaseOrder.id}`}
-                  className="font-mono underline-offset-4 hover:underline"
+                  className="tabular-nums underline-offset-4 hover:underline"
                 >
                   {inv.purchaseOrder.code}
                 </Link>
@@ -164,7 +164,7 @@ export default async function SupplierInvoicePage({ params }: { params: Promise<
               key: "no",
               header: t("table.paymentNo"),
               primary: true,
-              cell: (p) => <span className="font-mono">{p.paymentNo}</span>,
+              cell: (p) => <span className="tabular-nums">{p.paymentNo}</span>,
             },
             { key: "date", header: t("table.paidOn"), cell: (p) => format.date(p.paidOn) },
             { key: "amount", header: t("table.amount"), align: "end", cell: (p) => format.thb(p.amount) },

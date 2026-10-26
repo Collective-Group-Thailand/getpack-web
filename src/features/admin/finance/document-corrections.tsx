@@ -46,7 +46,7 @@ export function ReplacementNotice({ doc }: { doc: CustomerDocument }) {
             link: (chunks) => (
               <Link
                 href={`/finance/documents/${doc.replacedBy!.id}`}
-                className="text-primary font-mono hover:underline"
+                className="text-primary tabular-nums hover:underline"
               >
                 {chunks}
               </Link>
@@ -60,7 +60,10 @@ export function ReplacementNotice({ doc }: { doc: CustomerDocument }) {
             number: doc.replaces.docNumber,
             reason: doc.replacementReason ? t(`reasons.${doc.replacementReason}`) : "—",
             link: (chunks) => (
-              <Link href={`/finance/documents/${doc.replaces!.id}`} className="text-primary font-mono hover:underline">
+              <Link
+                href={`/finance/documents/${doc.replaces!.id}`}
+                className="text-primary tabular-nums hover:underline"
+              >
                 {chunks}
               </Link>
             ),
@@ -103,7 +106,7 @@ export function ETaxPanel({ doc }: { doc: CustomerDocument }) {
             {
               id: "subject",
               header: t("subject"),
-              cell: (row) => <span className="font-mono text-xs">{row.subject}</span>,
+              cell: (row) => <span className="text-xs tabular-nums">{row.subject}</span>,
             },
             { id: "to", header: t("to"), cell: (row) => row.to ?? "—" },
             {
@@ -309,7 +312,7 @@ export function CorrectionsQueue() {
               id: "document",
               header: t("document"),
               cell: (row) => (
-                <Link href={`/finance/corrections/${row.id}`} className="text-primary font-mono hover:underline">
+                <Link href={`/finance/corrections/${row.id}`} className="text-primary tabular-nums hover:underline">
                   {row.document.docNumber}
                 </Link>
               ),
@@ -393,7 +396,7 @@ export function CorrectionDetail({ requestId }: { requestId: string }) {
       </Section>
       <Section title={t("documents")}>
         <p className="flex flex-wrap gap-4 text-sm">
-          <Link href={`/finance/documents/${row.document.id}`} className="text-primary font-mono hover:underline">
+          <Link href={`/finance/documents/${row.document.id}`} className="text-primary tabular-nums hover:underline">
             {row.document.docNumber}
           </Link>
           {row.replacement ? (
@@ -401,7 +404,7 @@ export function CorrectionDetail({ requestId }: { requestId: string }) {
               → {t("replacement")}{" "}
               <Link
                 href={`/finance/documents/${row.replacement.id}`}
-                className="text-primary font-mono hover:underline"
+                className="text-primary tabular-nums hover:underline"
               >
                 {row.replacement.docNumber}
               </Link>

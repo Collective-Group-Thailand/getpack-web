@@ -75,7 +75,7 @@ export function DocumentsRegister({ initial }: { initial: InitialPage<CustomerDo
       cell: (row) => (
         <div className="min-w-0">
           <p className="truncate">{row.buyer.name}</p>
-          {row.buyer.taxId ? <p className="text-muted font-mono text-xs">{row.buyer.taxId}</p> : null}
+          {row.buyer.taxId ? <p className="text-muted text-xs tabular-nums">{row.buyer.taxId}</p> : null}
         </div>
       ),
     },
@@ -87,12 +87,12 @@ export function DocumentsRegister({ initial }: { initial: InitialPage<CustomerDo
         row.orderId ? (
           <Link
             href={`/orders/${row.orderId}`}
-            className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+            className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
           >
             {row.orderCode}
           </Link>
         ) : (
-          <span className="font-mono text-sm whitespace-nowrap">{row.orderCode ?? "–"}</span>
+          <span className="text-sm whitespace-nowrap tabular-nums">{row.orderCode ?? "–"}</span>
         ),
     },
     {
@@ -359,7 +359,7 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
             {
               term: t("order"),
               description: doc.orderId ? (
-                <Link href={`/orders/${doc.orderId}`} className="text-primary font-mono hover:underline">
+                <Link href={`/orders/${doc.orderId}`} className="text-primary tabular-nums hover:underline">
                   {doc.orderCode}
                 </Link>
               ) : (
@@ -470,7 +470,7 @@ function Party({ party }: { party: Schemas["DocumentPartyDto"] }) {
       columns={1}
       items={[
         { term: t("partyName"), description: party.name },
-        { term: t("taxId"), description: party.taxId ? <span className="font-mono">{party.taxId}</span> : "—" },
+        { term: t("taxId"), description: party.taxId ? <span className="tabular-nums">{party.taxId}</span> : "—" },
         { term: t("branch"), description: party.branchCode ? t("branchCode", { code: party.branchCode }) : "—" },
         { term: t("address"), description: party.address ?? "—" },
       ]}

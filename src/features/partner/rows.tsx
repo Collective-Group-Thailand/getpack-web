@@ -88,7 +88,7 @@ export function Row({
 
 /** A reference code as the floor reads it off a label: monospace, never wrapped mid-code. */
 export function Code({ children }: { children: React.ReactNode }) {
-  return <span className="font-mono font-semibold whitespace-nowrap">{children}</span>;
+  return <span className="font-semibold whitespace-nowrap tabular-nums">{children}</span>;
 }
 
 /**

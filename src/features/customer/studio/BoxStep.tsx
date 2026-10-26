@@ -159,7 +159,7 @@ function StyleSection({ spec, openSetup }: { spec: DesignSpec; openSetup: () => 
       </h3>
       <p className="text-sm">
         {getStyle(spec.styleId).name[locale]}
-        {base ? <span className="text-muted font-mono"> · {base}</span> : null}
+        {base ? <span className="text-muted tabular-nums"> · {base}</span> : null}
       </p>
       {detail && detail.variants.length > 0 ? (
         <div className="space-y-3">
@@ -182,7 +182,9 @@ function StyleSection({ spec, openSetup }: { spec: DesignSpec; openSetup: () => 
             </Field>
           ))}
           {spec.studio?.styleVariantCode ? (
-            <p className="text-muted font-mono text-xs">{t("variantCode", { code: spec.studio.styleVariantCode })}</p>
+            <p className="text-muted text-xs tabular-nums">
+              {t("variantCode", { code: spec.studio.styleVariantCode })}
+            </p>
           ) : null}
         </div>
       ) : null}
@@ -344,7 +346,7 @@ function SizeSection({
             {issues.map((issue) => (
               <li key={`${issue.code}-${issue.param ?? ""}`}>
                 {issue.message[locale]}{" "}
-                <span className="text-muted font-mono text-xs">{t("reasonCode", { code: issue.code })}</span>
+                <span className="text-muted text-xs tabular-nums">{t("reasonCode", { code: issue.code })}</span>
               </li>
             ))}
           </ul>

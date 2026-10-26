@@ -86,7 +86,7 @@ export function FactoriesList({ initial }: { initial: InitialPage<Factory> | nul
           <Link href={`/partners/${row.id}`} className="text-primary font-medium hover:underline">
             {row.tradeName ?? row.legalName}
           </Link>
-          <p className="text-muted font-mono text-xs">{row.code}</p>
+          <p className="text-muted text-xs tabular-nums">{row.code}</p>
         </div>
       ),
     },

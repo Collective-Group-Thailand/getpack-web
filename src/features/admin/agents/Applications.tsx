@@ -178,7 +178,7 @@ export function ApplicationReview({ applicationId }: { applicationId: string }) 
     [t("juristicType"), tJuristic(app.juristicType)],
     [
       t("taxId"),
-      <span key="taxId" className="font-mono">
+      <span key="taxId" className="tabular-nums">
         {app.taxId}
       </span>,
     ],
@@ -195,7 +195,7 @@ export function ApplicationReview({ applicationId }: { applicationId: string }) 
     [t("bankAccountName"), app.bankAccountName],
     [
       t("bankAccountNo"),
-      <span key="accountNo" className="font-mono">
+      <span key="accountNo" className="tabular-nums">
         {t("accountMasked", { last4: app.bankAccountNoLast4 })}
       </span>,
     ],

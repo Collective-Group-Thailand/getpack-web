@@ -29,7 +29,7 @@ export function CompaniesList({ initial }: { initial: InitialPage<Company> | nul
           <Link href={`/companies/${row.id}`} className="text-primary font-medium hover:underline">
             {row.legalName}
           </Link>
-          <p className="text-muted font-mono text-xs">
+          <p className="text-muted text-xs tabular-nums">
             {row.companyCode ?? t("noCode")} · {row.taxId}
           </p>
         </div>

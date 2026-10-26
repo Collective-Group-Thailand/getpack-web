@@ -75,7 +75,9 @@ export default async function PayoutCalendarPage({ searchParams }: { searchParam
                       key: "po",
                       header: t("table.po"),
                       primary: true,
-                      cell: (p) => <span className="font-mono text-sm">{p.poNumber ?? t(`sources.${p.source}`)}</span>,
+                      cell: (p) => (
+                        <span className="text-sm tabular-nums">{p.poNumber ?? t(`sources.${p.source}`)}</span>
+                      ),
                     },
                     {
                       key: "net",

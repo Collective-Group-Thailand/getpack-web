@@ -128,7 +128,7 @@ export function StepChips({ chips, top, className, ...props }: StepChipsProps) {
               <span
                 aria-hidden
                 className={cn(
-                  "rounded-control flex size-6 items-center justify-center font-mono text-xs font-semibold tabular-nums",
+                  "rounded-control flex size-6 items-center justify-center text-xs font-semibold tabular-nums",
                   chip.state === "done" && "bg-primary text-primary-fg",
                   chip.state === "todo" && "bg-instant-subtle text-instant-subtle-fg",
                   (chip.state === "default" || chip.state === "idle") && "bg-bg-subtle text-muted",

@@ -83,12 +83,12 @@ export function Pricing({ factory }: { factory: Factory }) {
     {
       id: "component",
       header: t("component"),
-      cell: (row) => <span className="font-mono text-xs">{row.component}</span>,
+      cell: (row) => <span className="text-xs tabular-nums">{row.component}</span>,
     },
     {
       id: "values",
       header: t("values"),
-      cell: (row) => <span className="font-mono text-xs">{formatValues(row.values)}</span>,
+      cell: (row) => <span className="text-xs tabular-nums">{formatValues(row.values)}</span>,
     },
   ];
   const proposalColumns: DataTableColumn<ProposalSummary>[] = [

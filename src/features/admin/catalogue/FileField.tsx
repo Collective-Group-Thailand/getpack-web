@@ -43,7 +43,7 @@ export function FileField({
       {typeof value === "string" && value && value !== NONE ? (
         <p className="flex items-center gap-2 text-sm">
           <Icon name="paperclip" size={16} />
-          <span className="font-mono text-xs">{value.slice(0, 8)}</span>
+          <span className="text-xs tabular-nums">{value.slice(0, 8)}</span>
           <Button type="button" size="sm" variant="ghost" onClick={() => onChange("")}>
             {t("remove")}
           </Button>

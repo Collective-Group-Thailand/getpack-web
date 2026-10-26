@@ -58,7 +58,7 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
         <div className="min-w-0">
           <Link
             href={`/quotations/${row.id}`}
-            className="text-primary font-mono font-medium whitespace-nowrap hover:underline"
+            className="text-primary font-medium whitespace-nowrap tabular-nums hover:underline"
           >
             {/* A code is issued at share or PDF; until then, say so rather than show part of a UUID. */}
             {row.quoteCode ?? <span className="text-muted font-sans font-normal">{t("noCode")}</span>}
@@ -73,7 +73,7 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
       cell: (row) => (
         <div className="min-w-0">
           <p className="truncate">{row.customer?.displayName ?? "—"}</p>
-          {row.customerCode ? <p className="text-muted font-mono text-xs">{row.customerCode}</p> : null}
+          {row.customerCode ? <p className="text-muted text-xs tabular-nums">{row.customerCode}</p> : null}
         </div>
       ),
     },
@@ -85,7 +85,7 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
         <div className="text-sm">
           <p>{t(`channels.${row.channel}`)}</p>
           {row.rfq ? (
-            <Link href={`/rfq/${row.rfq.id}`} className="text-primary font-mono text-xs hover:underline">
+            <Link href={`/rfq/${row.rfq.id}`} className="text-primary text-xs tabular-nums hover:underline">
               {row.rfq.rfqCode}
             </Link>
           ) : null}
@@ -211,7 +211,7 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
             items={[{ label: t("title"), href: "/quotations" }, { label: data.quoteCode ?? t("noCode") }]}
           />
         }
-        title={data.quoteCode ? <span className="font-mono">{data.quoteCode}</span> : t("draftTitle")}
+        title={data.quoteCode ? <span className="tabular-nums">{data.quoteCode}</span> : t("draftTitle")}
         meta={<StatusChip map={QUOTE_STATUS} value={data.status} size="md" />}
         description={t("headline", {
           customer: data.customer?.displayName ?? "—",
@@ -234,7 +234,7 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
             { term: t("columns.customer"), description: data.customer?.displayName ?? "—" },
             {
               term: t("customerCode"),
-              description: <span className="font-mono">{data.customerCode ?? "—"}</span>,
+              description: <span className="tabular-nums">{data.customerCode ?? "—"}</span>,
             },
             { term: t("columns.channel"), description: t(`channels.${data.channel}`) },
             ...(data.rfq
@@ -242,7 +242,7 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
                   {
                     term: t("rfq"),
                     description: (
-                      <Link href={`/rfq/${data.rfq.id}`} className="text-primary font-mono hover:underline">
+                      <Link href={`/rfq/${data.rfq.id}`} className="text-primary tabular-nums hover:underline">
                         {data.rfq.rfqCode}
                       </Link>
                     ),

@@ -153,7 +153,7 @@ export function TrialBalanceView() {
       header: t("account"),
       cell: (row) => (
         <Link href={glHref(row.accountCode)} className="text-primary hover:underline">
-          <span className="font-mono">{row.accountCode}</span> {row.nameTh}
+          <span className="tabular-nums">{row.accountCode}</span> {row.nameTh}
         </Link>
       ),
     },
@@ -257,7 +257,7 @@ export function GlDetailView() {
       cell: (row) => (
         <Link
           href={journalHref(row.journalEntryId)}
-          className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+          className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
         >
           {row.entryNo ?? row.jvNumber}
         </Link>
@@ -429,7 +429,7 @@ export function BalanceSheetView() {
               href={`/finance/reports/gl-detail?account=${row.accountCode}`}
               className="text-primary hover:underline"
             >
-              <span className="font-mono">{row.accountCode}</span> {row.nameTh}
+              <span className="tabular-nums">{row.accountCode}</span> {row.nameTh}
             </Link>
           ),
         },
@@ -630,7 +630,7 @@ export function CashFlowView() {
             header: t("account"),
             cell: (row) => (
               <span>
-                <span className="font-mono">{row.accountCode}</span> {row.nameTh}
+                <span className="tabular-nums">{row.accountCode}</span> {row.nameTh}
               </span>
             ),
           },
@@ -809,7 +809,7 @@ export function ReconciliationView() {
             cell: (row) => (
               <Link
                 href={`/finance/reports/gl-detail?account=${row.accounts}`}
-                className="text-primary font-mono hover:underline"
+                className="text-primary tabular-nums hover:underline"
               >
                 {row.accounts}
               </Link>

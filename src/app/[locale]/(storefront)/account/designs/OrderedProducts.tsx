@@ -66,7 +66,7 @@ export function OrderedProducts({ designs }: { designs: StoreDesign[] }) {
                 {design.styleVariantCode ? (
                   <>
                     <dt className="text-muted">{t("styleCode")}</dt>
-                    <dd className="font-mono">{design.styleVariantCode}</dd>
+                    <dd className="tabular-nums">{design.styleVariantCode}</dd>
                   </>
                 ) : null}
                 <dt className="text-muted">{t("artwork")}</dt>

@@ -46,7 +46,7 @@ export default async function Page() {
             <h2 id="agent-link" className="text-muted text-sm font-medium">
               {t("yourCode")}
             </h2>
-            <p className="font-mono text-3xl font-bold tracking-wider">{agent.code}</p>
+            <p className="text-3xl font-bold tracking-wider tabular-nums">{agent.code}</p>
             <p className="text-muted text-sm break-all">{agent.link}</p>
             <div className="flex flex-wrap gap-2">
               <CopyButton value={agent.code} label={t("copyCode")} />

@@ -16,3 +16,6 @@ IBM Plex Sans Thai was rejected for the UI role: only static weights (7 files), 
 ## Consequences
 - No runtime Google Fonts in any app (the designer's previous Google Fonts `<link>` is removed).
 - Fonts for *artwork* inside the designer remain a separate catalogue (`FONT_FAMILIES`) and must be outlined/embedded in print PDFs (F4 Part C).
+
+## Amendment — 2026-10-26: Anuphan everywhere, no mono face
+Product owner: the whole system uses Anuphan only. JetBrains Mono is removed — the font file, its OFL text, the `--font-mono` token and every `font-mono` class. Codes, order numbers, step numbers and quantities are Anuphan with `tabular-nums`, so digits still line up in columns and a Thai label next to a code no longer falls back to a system face (the mono file was Latin-only). `code`/`kbd`/`samp`/`pre` inherit the surrounding family. Tailwind's font theme is reset, so `font-mono` would generate nothing if reintroduced. Supersedes the Mono line above and the earlier UX-audit change that already made Anuphan the body face (Noto Sans Thai no longer loaded). Artwork fonts in the designer are unaffected.

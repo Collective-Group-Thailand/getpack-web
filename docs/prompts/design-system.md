@@ -112,7 +112,7 @@ Techniques: RSC by default, client components only where interactive, route-leve
 Rules: **one primary accent** — teal is for actions, amber only for promotions; kraft tones are surfaces and illustration, never body text; every semantic pair passes WCAG 2.2 AA in light, dark and high-contrast (the contrast gate in `pnpm test` enforces it).
 
 ### Type, shape, depth, motion
-- Type (ADR-0001): **Anuphan** display (h1–h3, hero, section titles), **Noto Sans Thai** UI/body, **JetBrains Mono** for codes and quantities in tables; tabular figures for all prices and quantities; Thai line-height ≥ 1.6; h1 clamp(2rem, 5vw, 3.25rem).
+- Type (ADR-0001): **Anuphan** display (h1–h3, hero, section titles), **Noto Sans Thai** UI/body, codes and quantities in Anuphan too, no monospace face (ADR-0001 amendment 2026-10-26); tabular figures for all prices and quantities; Thai line-height ≥ 1.6; h1 clamp(2rem, 5vw, 3.25rem).
 - Shape: radius 12 px controls, 16 px cards/media, 999 px pills (nav pill, chips, primary CTA on storefront only — admin keeps 12 px).
 - Depth: two elevation levels only — `0 1px 2px rgba(30,27,24,.06)` for cards, `0 8px 24px rgba(30,27,24,.10)` for overlays/sticky quote dock. No neumorphism, no double borders.
 - Motion: 150–200 ms ease-out for hovers, 250 ms for sheets/drawers; carousels never auto-advance faster than 6 s and pause on hover/focus; respect `prefers-reduced-motion`.

@@ -110,7 +110,7 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
   const rows = codes.data?.data ?? [];
   const withActions = rows.some((row) => adminCouponActions(row, promotion.status, can).length > 0);
   const columns: DataTableColumn<CouponCode>[] = [
-    { id: "code", header: t("columns.code"), cell: (row) => <span className="font-mono">{row.code}</span> },
+    { id: "code", header: t("columns.code"), cell: (row) => <span className="tabular-nums">{row.code}</span> },
     {
       id: "status",
       header: t("columns.status"),
@@ -267,7 +267,11 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
           />
           {kind === "single" ? (
             <Field label={t("code")} hint={t("codeHint")} required>
-              <Input className="font-mono uppercase" value={code} onChange={(event) => setCode(event.target.value)} />
+              <Input
+                className="uppercase tabular-nums"
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+              />
             </Field>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
@@ -276,7 +280,7 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
               </Field>
               <Field label={t("prefix")} hint={t("prefixHint")}>
                 <Input
-                  className="font-mono uppercase"
+                  className="uppercase tabular-nums"
                   value={prefix}
                   onChange={(event) => setPrefix(event.target.value)}
                 />

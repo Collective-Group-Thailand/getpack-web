@@ -80,7 +80,7 @@ export function CustomerDetail({
         meta={
           <>
             {customer.customerCode ? (
-              <span className="text-muted font-mono text-sm">{customer.customerCode}</span>
+              <span className="text-muted text-sm tabular-nums">{customer.customerCode}</span>
             ) : null}
             <Badge>{t(`types.${customer.customerType}`)}</Badge>
             {loyalty.data ? (
@@ -167,7 +167,7 @@ function Profile({ customer, loyalty }: { customer: Customer; loyalty: Loyalty |
             { term: t("spend12m"), description: loyalty ? format.thb(loyalty.spend12m) : "–" },
             {
               term: t("referralCode"),
-              description: <span className="font-mono">{customer.referralCode ?? "–"}</span>,
+              description: <span className="tabular-nums">{customer.referralCode ?? "–"}</span>,
             },
           ]}
         />
@@ -222,7 +222,7 @@ function Profile({ customer, loyalty }: { customer: Customer; loyalty: Loyalty |
                 ) : null}
               </p>
               <p className="text-muted">
-                <span className="font-mono">{profile.taxId}</span> ·{" "}
+                <span className="tabular-nums">{profile.taxId}</span> ·{" "}
                 {profile.branchType === "head_office" ? t("headOffice") : t("branch", { code: profile.branchCode })}
                 {profile.withholdsTax ? ` · ${t("withholds")}` : ""}
               </p>
@@ -283,11 +283,11 @@ function Points({ customerId }: { customerId: string }) {
       header: t("order"),
       cell: (row) =>
         row.orderId && row.orderCode ? (
-          <Link href={`/orders/${row.orderId}`} className="text-primary font-mono hover:underline">
+          <Link href={`/orders/${row.orderId}`} className="text-primary tabular-nums hover:underline">
             {row.orderCode}
           </Link>
         ) : (
-          <span className="font-mono">{row.orderCode ?? row.groupCode ?? "–"}</span>
+          <span className="tabular-nums">{row.orderCode ?? row.groupCode ?? "–"}</span>
         ),
     },
     {
@@ -413,7 +413,7 @@ function Referrals({ customer }: { customer: Customer }) {
       cell: (row) =>
         row.firstOrderGroupCode ? (
           <div className="text-sm">
-            <p className="font-mono">{row.firstOrderGroupCode}</p>
+            <p className="tabular-nums">{row.firstOrderGroupCode}</p>
             <p className="text-muted text-xs tabular-nums">
               {format.thb(row.firstOrderGrossAmount)}
               {row.firstOrderClaimWindowEndsAt ? (

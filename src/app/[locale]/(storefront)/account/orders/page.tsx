@@ -5,7 +5,12 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { listMyOrders, type OrderView } from "@/features/customer/orders/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
-import { artworkNoteTextOf, deliveryDatesOf, isPaymentOverdue, visibleActions } from "@/features/customer/orders/order-state";
+import {
+  artworkNoteTextOf,
+  deliveryDatesOf,
+  isPaymentOverdue,
+  visibleActions,
+} from "@/features/customer/orders/order-state";
 import { RequoteButton } from "@/features/customer/orders/RequoteButton";
 import { PortalTable } from "@/features/customer/account/PortalTable";
 import { latestDocuments } from "@/features/customer/repeat/api.server";
@@ -66,7 +71,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">{t(`documents.types.${doc.docType}`)}</p>
                   <p className="text-muted text-[13px]">
-                    <span className="font-mono">{doc.docNumber}</span> · {format.date(doc.documentDate)} ·{" "}
+                    <span className="tabular-nums">{doc.docNumber}</span> · {format.date(doc.documentDate)} ·{" "}
                     <span className="tabular-nums">{format.thb(doc.grossAmount)}</span>
                   </p>
                 </div>
@@ -139,7 +144,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
               id: order.id,
               phoneSubtitle: (
                 <>
-                  <span className="font-mono">{order.orderCode}</span> ·{" "}
+                  <span className="tabular-nums">{order.orderCode}</span> ·{" "}
                   {t("table.qty", {
                     quantity: format.number(order.quantityOrdered),
                     unit: tCatalog(`stock.units.${order.summary.unit}`),
@@ -161,7 +166,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
                         {productNameOf(locale, order.summary)}
                       </Link>
                       <span className="text-muted hidden text-xs font-normal md:block">
-                        <span className="font-mono">{order.orderCode}</span> ·{" "}
+                        <span className="tabular-nums">{order.orderCode}</span> ·{" "}
                         {t("table.qty", {
                           quantity: format.number(order.quantityOrdered),
                           unit: tCatalog(`stock.units.${order.summary.unit}`),

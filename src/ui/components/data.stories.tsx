@@ -67,7 +67,7 @@ const ROWS: Row[] = [
 const sla = (ms: number, overdue: boolean) => `${overdue ? "เกิน" : "เหลือ"} ${Math.round(Math.abs(ms) / 60_000)} นาที`;
 
 const COLUMNS: DataTableColumn<Row>[] = [
-  { id: "code", header: "รหัส", cell: (row) => <span className="font-mono">{row.code}</span>, sortable: true },
+  { id: "code", header: "รหัส", cell: (row) => <span className="tabular-nums">{row.code}</span>, sortable: true },
   { id: "customer", header: "ลูกค้า", cell: (row) => row.customer },
   { id: "total", header: "ยอดรวม", cell: (row) => row.total, numeric: true, sortable: true },
   { id: "sla", header: "SLA", cell: (row) => <SlaTimer dueAt={row.dueAt} format={sla} /> },

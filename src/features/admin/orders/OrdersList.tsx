@@ -141,7 +141,7 @@ function OrderCode({
     <div>
       <Link
         href={`/orders/${orderId}`}
-        className="text-primary font-mono text-sm font-medium whitespace-nowrap hover:underline"
+        className="text-primary text-sm font-medium whitespace-nowrap tabular-nums hover:underline"
       >
         {orderCode}
       </Link>

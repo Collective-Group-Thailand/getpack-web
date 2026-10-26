@@ -157,7 +157,7 @@ export default async function StatementPage({ params }: Props) {
             {
               key: "no",
               header: "#",
-              cell: (line) => <span className="text-muted font-mono text-sm">{line.lineNo}</span>,
+              cell: (line) => <span className="text-muted text-sm tabular-nums">{line.lineNo}</span>,
               className: "w-[1%]",
             },
             {
@@ -181,7 +181,7 @@ export default async function StatementPage({ params }: Props) {
             {
               key: "ref",
               header: t("table.ref"),
-              cell: (line) => <span className="font-mono text-sm">{line.reference ?? "—"}</span>,
+              cell: (line) => <span className="text-sm tabular-nums">{line.reference ?? "—"}</span>,
             },
             {
               key: "qty",

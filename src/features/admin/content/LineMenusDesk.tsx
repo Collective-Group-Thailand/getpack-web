@@ -37,12 +37,12 @@ export function LineMenusDesk() {
     queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/line/rich-menus")).data!,
   });
   const columns: DataTableColumn<Menu>[] = [
-    { id: "key", header: t("key"), cell: (row) => <span className="font-mono text-sm">{row.key}</span> },
+    { id: "key", header: t("key"), cell: (row) => <span className="text-sm tabular-nums">{row.key}</span> },
     { id: "audience", header: t("audience"), cell: (row) => t(`audiences.${row.audience}`) },
     {
       id: "provider",
       header: t("providerMenuId"),
-      cell: (row) => <span className="font-mono text-xs">{row.providerMenuId}</span>,
+      cell: (row) => <span className="text-xs tabular-nums">{row.providerMenuId}</span>,
     },
     {
       id: "active",
@@ -110,7 +110,7 @@ export function LineMenusDesk() {
           <Field label={t("key")} hint={t("keyHint")} required>
             <Input
               value={draft.key}
-              className="font-mono"
+              className="tabular-nums"
               disabled={!draft.isNew}
               onChange={(e) => setDraft({ ...draft, key: e.target.value.trim().toLowerCase() })}
             />
@@ -125,7 +125,7 @@ export function LineMenusDesk() {
           <Field label={t("providerMenuId")} hint={t("providerHint")} required>
             <Input
               value={draft.providerMenuId}
-              className="font-mono"
+              className="tabular-nums"
               onChange={(e) => setDraft({ ...draft, providerMenuId: e.target.value })}
             />
           </Field>

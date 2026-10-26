@@ -67,7 +67,7 @@ export function SlipsQueue({ initial }: { initial: InitialPage<SlipItem> | null 
         <div>
           <Link
             href={`/finance/payments/${row.paymentId}`}
-            className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
+            className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline"
           >
             {row.groupCode ?? t("review.noGroup")}
           </Link>

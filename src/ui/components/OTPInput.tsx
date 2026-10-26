@@ -89,7 +89,7 @@ export function OTPInput({
               controlVariants({ inputSize: "lg" }),
               // The indent matches the tracking so the digits stay optically centred: letter
               // spacing is added after each character, including the last.
-              "text-center indent-[0.5em] font-mono tracking-[0.5em] tabular-nums",
+              "text-center indent-[0.5em] tracking-[0.5em] tabular-nums",
               className,
             )
       }

@@ -27,7 +27,11 @@ test("a customer asks, CS quotes on the desk, and the customer accepts into the 
   await customer.getByRole("button", { name: "ส่งคำขอใบเสนอราคา" }).click();
 
   await expect(customer.getByText(/ส่งคำขอ \S*RFQ-\d{4}-\d+ แล้ว/)).toBeVisible({ timeout: 30_000 });
-  const code = (await customer.locator("p.font-mono").first().textContent())!.trim();
+  const code = (await customer
+    .locator("p")
+    .filter({ hasText: /^\S*RFQ-\d{4}-\d+$/ })
+    .first()
+    .textContent())!.trim();
   const rfqUrl = customer.url().split("?")[0]!;
   const rfqId = rfqUrl.split("/").at(-1)!;
 

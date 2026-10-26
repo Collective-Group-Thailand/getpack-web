@@ -83,7 +83,7 @@ export function BoardSheets() {
     {
       id: "factory",
       header: t("factory"),
-      cell: (row) => <span className="font-mono text-sm">{row.factory.code}</span>,
+      cell: (row) => <span className="text-sm tabular-nums">{row.factory.code}</span>,
     },
     {
       id: "board",
@@ -91,7 +91,7 @@ export function BoardSheets() {
       cell: (row) => (
         <div>
           <p>{name(row.material)}</p>
-          <p className="text-muted font-mono text-xs">
+          <p className="text-muted text-xs tabular-nums">
             {row.material.code}
             {row.material.flute ? ` · ${row.material.flute}` : ""}
           </p>

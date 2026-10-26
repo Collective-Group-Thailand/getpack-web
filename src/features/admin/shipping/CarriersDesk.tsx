@@ -184,7 +184,7 @@ export function CarriersDesk() {
           </Field>
           <Field label={t("secretRef")} hint={t("secretRefHint")} required>
             <Input
-              className="font-mono"
+              className="tabular-nums"
               value={adding.ref}
               onChange={(e) => setAdding({ ...adding, ref: e.target.value })}
             />

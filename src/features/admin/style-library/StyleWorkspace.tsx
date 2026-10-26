@@ -108,7 +108,7 @@ export function StyleWorkspace({ styleId, storefront }: { styleId: string; store
         description={style.nameEn}
         meta={
           <>
-            <span className="text-muted font-mono text-sm">{style.code}</span>
+            <span className="text-muted text-sm tabular-nums">{style.code}</span>
             <Badge tone={shown > 0 ? "success" : "warning"}>
               {shown > 0 ? t("shownCount", { shown, total: style.variants.active }) : t("notShown")}
             </Badge>
@@ -718,7 +718,7 @@ function Variants({
       ).data!,
   });
   const columns: DataTableColumn<AdminStyleVariant>[] = [
-    { id: "code", header: t("code"), cell: (row) => <span className="font-mono text-sm">{row.code}</span> },
+    { id: "code", header: t("code"), cell: (row) => <span className="text-sm tabular-nums">{row.code}</span> },
     {
       id: "options",
       header: t("options"),
@@ -852,7 +852,7 @@ function Recipes({ style, onChanged }: { style: AdminStyleDetail; onChanged: () 
       id: "checksum",
       header: t("checksum"),
       hideable: true,
-      cell: (row) => <span className="text-muted font-mono text-xs">{row.checksum.slice(0, 12)}</span>,
+      cell: (row) => <span className="text-muted text-xs tabular-nums">{row.checksum.slice(0, 12)}</span>,
     },
     {
       id: "approved",

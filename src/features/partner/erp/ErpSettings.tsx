@@ -446,7 +446,7 @@ export function WarehouseManager({ warehouses, canEdit }: { warehouses: Warehous
           <li key={warehouse.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
             <span className="min-w-0 flex-1">
               <span className="font-medium">{warehouse.name}</span>{" "}
-              <span className="text-muted font-mono text-sm">{warehouse.code}</span>
+              <span className="text-muted text-sm tabular-nums">{warehouse.code}</span>
             </span>
             {warehouse.isDefault ? <Badge tone="primary">{t("default")}</Badge> : null}
             {warehouse.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}

@@ -93,13 +93,15 @@
   /*
    * Money, quantities and codes line up in columns. design-system.md §2 asks for tabular
    * figures wherever a number is compared; `.tabular-nums` is applied by the components that
-   * render them (PriceSummary, DataTable), and monospace gets it unconditionally.
+   * render them (PriceSummary, DataTable), and code elements get it unconditionally. There is
+   * no monospace face: codes are Anuphan like everything else (ADR-0001 amendment), so the
+   * browser's default monospace for these elements is replaced by the inherited family.
    */
   code,
   kbd,
   samp,
   pre {
-    font-family: var(--font-mono);
+    font-family: inherit;
     font-variant-numeric: tabular-nums;
   }
 

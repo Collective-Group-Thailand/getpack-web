@@ -80,7 +80,7 @@ export function CampaignsList({ initial }: { initial: InitialPage<Campaign> | nu
           <Link href={`/marketing/campaigns/${row.id}`} className="text-primary font-medium hover:underline">
             {row.name}
           </Link>
-          <p className="text-muted font-mono text-xs">{row.code}</p>
+          <p className="text-muted text-xs tabular-nums">{row.code}</p>
         </div>
       ),
     },

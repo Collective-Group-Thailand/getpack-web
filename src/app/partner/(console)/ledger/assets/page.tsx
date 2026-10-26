@@ -93,7 +93,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
                 key: "no",
                 header: t("assetNo"),
                 primary: true,
-                cell: (row) => <span className="font-mono whitespace-nowrap">{row.assetNo}</span>,
+                cell: (row) => <span className="whitespace-nowrap tabular-nums">{row.assetNo}</span>,
               },
               {
                 key: "n",
@@ -166,7 +166,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
                 key: "e",
                 header: t("entry"),
                 hideOnPhone: true,
-                cell: (row) => <span className="font-mono">{row.entry?.number ?? "—"}</span>,
+                cell: (row) => <span className="tabular-nums">{row.entry?.number ?? "—"}</span>,
               },
               {
                 key: "n",
@@ -197,7 +197,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
                 header: t("accounts"),
                 hideOnPhone: true,
                 cell: (row) => (
-                  <span className="font-mono text-xs">
+                  <span className="text-xs tabular-nums">
                     {[row.assetAccount, row.accumulatedAccount, row.expenseAccount, row.gainLossAccount]
                       .map((a) => a.code)
                       .join(" · ")}

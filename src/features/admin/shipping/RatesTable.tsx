@@ -60,7 +60,7 @@ export function RatesTable<T extends RateRow>({
       header: t("zone"),
       cell: (row) => (
         <div>
-          <p className="font-mono text-sm">{row.zoneCode}</p>
+          <p className="text-sm tabular-nums">{row.zoneCode}</p>
           {row.zoneName ? <p className="text-muted text-xs">{row.zoneName}</p> : null}
         </div>
       ),
@@ -70,7 +70,7 @@ export function RatesTable<T extends RateRow>({
       header: t("postcode"),
       cell: (row) =>
         row.postcode ? (
-          <span className="font-mono">{row.postcode}</span>
+          <span className="tabular-nums">{row.postcode}</span>
         ) : (
           <span className="text-muted">{t("wholeZone")}</span>
         ),

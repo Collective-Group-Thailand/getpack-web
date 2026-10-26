@@ -44,7 +44,7 @@ export function PrepressList({ initial }: { initial: InitialPage<PrepressQueueIt
       cell: (row) => (
         <Link
           href={`/prepress/${row.orderId}${row.kind === "submissions" ? "" : "?tab=proofs"}`}
-          className="text-primary font-mono text-sm font-medium whitespace-nowrap hover:underline"
+          className="text-primary text-sm font-medium whitespace-nowrap tabular-nums hover:underline"
         >
           {row.orderCode}
         </Link>

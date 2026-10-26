@@ -469,7 +469,7 @@ export function ProofsTab({
                   ? [
                       {
                         term: t("locked"),
-                        description: <span className="font-mono text-xs break-all">{proof.approvedFileSha256}</span>,
+                        description: <span className="text-xs break-all tabular-nums">{proof.approvedFileSha256}</span>,
                         wide: true,
                       },
                     ]
@@ -545,7 +545,7 @@ export function TemplateTab({
             {drawings.map((job) => (
               <li key={job.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span className="flex items-center gap-2">
-                  <span className="font-mono uppercase">{job.format}</span>
+                  <span className="uppercase tabular-nums">{job.format}</span>
                   <StatusChip map={DRAWING_STATUS} value={job.status} />
                 </span>
                 {job.outputFileId ? (

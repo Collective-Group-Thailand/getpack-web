@@ -44,14 +44,14 @@ export default async function ClaimsPage() {
                 key: "no",
                 header: t("table.no"),
                 primary: true,
-                cell: (claim) => <span className="font-mono whitespace-nowrap">{claim.claimNo}</span>,
+                cell: (claim) => <span className="whitespace-nowrap tabular-nums">{claim.claimNo}</span>,
               },
               { key: "type", header: t("table.type"), cell: (claim) => t(`types.${claim.type}`) },
               {
                 key: "refs",
                 header: t("table.refs"),
                 cell: (claim) => (
-                  <span className="font-mono text-sm">
+                  <span className="text-sm tabular-nums">
                     {[claim.jobNo, claim.shipmentNo].filter(Boolean).join(" · ")}
                   </span>
                 ),

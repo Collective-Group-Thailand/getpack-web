@@ -56,7 +56,7 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
       <header className="flex flex-col gap-2">
         <h1 className="text-xl font-bold">{productNameOf(locale, order.summary)}</h1>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted font-mono text-sm">{order.orderCode}</span>
+          <span className="text-muted text-sm tabular-nums">{order.orderCode}</span>
           <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
           {order.artworkOwner !== null ? <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} /> : null}
         </div>

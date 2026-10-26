@@ -45,7 +45,7 @@ export function VariantCardFace({
       title={<Link href={variantHref(card, words.name)}>{words.name}</Link>}
       topLine={
         <>
-          {words.category} · <span className="font-mono">{card.code}</span>
+          {words.category} · <span className="tabular-nums">{card.code}</span>
         </>
       }
       image={

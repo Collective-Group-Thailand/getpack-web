@@ -360,7 +360,7 @@ export function FactoryLinksList({ initial }: { initial: InitialPage<AgentFactor
           <Link href={`/partners/${row.factoryId}`} className="text-primary truncate hover:underline">
             {row.factoryName}
           </Link>
-          <span className="text-muted font-mono text-xs">{row.factoryCode}</span>
+          <span className="text-muted text-xs tabular-nums">{row.factoryCode}</span>
         </div>
       ),
     },

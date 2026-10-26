@@ -66,13 +66,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
               .join(" · ");
             return {
               id: quote.id,
-              phoneSubtitle: quote.quoteCode ? <span className="font-mono">{quote.quoteCode}</span> : null,
+              phoneSubtitle: quote.quoteCode ? <span className="tabular-nums">{quote.quoteCode}</span> : null,
               cells: {
                 product: (
                   <span className="block min-w-0">
                     <span className="block font-semibold">{name}</span>
                     {quote.quoteCode ? (
-                      <span className="text-muted hidden font-mono text-xs font-normal md:block">
+                      <span className="text-muted hidden text-xs font-normal tabular-nums md:block">
                         {quote.quoteCode}
                       </span>
                     ) : null}

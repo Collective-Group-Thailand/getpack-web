@@ -87,12 +87,12 @@ export default async function Page() {
                     {entry.orderCode && entry.orderId ? (
                       <Link
                         href={`/account/orders/${entry.orderId}`}
-                        className="text-primary block font-mono text-xs underline-offset-4 hover:underline"
+                        className="text-primary block text-xs tabular-nums underline-offset-4 hover:underline"
                       >
                         {entry.orderCode}
                       </Link>
                     ) : entry.orderCode ? (
-                      <span className="text-muted block font-mono text-xs">{entry.orderCode}</span>
+                      <span className="text-muted block text-xs tabular-nums">{entry.orderCode}</span>
                     ) : null}
                     {entry.reason ? <span className="text-muted block text-xs">{entry.reason}</span> : null}
                   </td>

@@ -234,7 +234,7 @@ export function VariantPicker({
           <p className="text-sm font-medium">{t("detail.variant")}</p>
           {variant ? (
             <>
-              <p className="font-mono text-sm">{t("detail.variantCode", { code: variant.code })}</p>
+              <p className="text-sm tabular-nums">{t("detail.variantCode", { code: variant.code })}</p>
               <p className="text-sm">
                 <span className="text-muted me-2">{t("detail.price")}</span>
                 <Badge

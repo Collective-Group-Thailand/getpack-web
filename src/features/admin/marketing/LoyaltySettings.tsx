@@ -138,7 +138,7 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
       description={
         <>
           {tSetting(`${settingKey.replace(".", "_")}.note`)}{" "}
-          <span className="font-mono text-xs">{setting.decisionRefs.join(", ")}</span>
+          <span className="text-xs tabular-nums">{setting.decisionRefs.join(", ")}</span>
         </>
       }
       actions={

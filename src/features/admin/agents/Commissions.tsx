@@ -38,7 +38,7 @@ export function CommissionWhat({ row }: { row: AgentCommission }) {
   const subject =
     row.kind === "order" || row.kind === "reversal" ? (
       row.orderId && row.orderCode ? (
-        <Link href={`/orders/${row.orderId}`} className="text-primary font-mono hover:underline">
+        <Link href={`/orders/${row.orderId}`} className="text-primary tabular-nums hover:underline">
           {row.orderCode}
         </Link>
       ) : null
@@ -97,7 +97,7 @@ export function CommissionsList({ initial }: { initial: InitialPage<AgentCommiss
               {row.holdFlags.map((flag) => (t.has(`flags.${flag}`) ? t(`flags.${flag}`) : flag)).join(", ")}
             </span>
           ) : null}
-          {row.statementNo ? <span className="text-muted font-mono text-xs">{row.statementNo}</span> : null}
+          {row.statementNo ? <span className="text-muted text-xs tabular-nums">{row.statementNo}</span> : null}
         </div>
       ),
     },

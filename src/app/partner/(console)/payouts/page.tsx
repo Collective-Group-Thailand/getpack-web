@@ -158,7 +158,7 @@ export default async function PayoutsPage({ searchParams }: Props) {
                   // CONTRACT-GAP partner.payouts — the schedule names the job by number only, so it does not link to it.
                   cell: (row) => (
                     <span className="flex flex-col">
-                      <span className="font-mono text-sm whitespace-nowrap">{row.jobNo}</span>
+                      <span className="text-sm whitespace-nowrap tabular-nums">{row.jobNo}</span>
                       <span className="text-muted text-sm whitespace-nowrap">{t("po", { no: row.poNumber })}</span>
                     </span>
                   ),
@@ -240,7 +240,7 @@ export default async function PayoutsPage({ searchParams }: Props) {
                     className="border-border bg-surface hover:bg-surface-subtle flex min-h-16 flex-wrap items-center gap-2 rounded-xl border p-3"
                   >
                     <span className="min-w-0 flex-1">
-                      <span className="block font-mono font-semibold">{payout.pvNumber ?? t("noPv")}</span>
+                      <span className="block font-semibold tabular-nums">{payout.pvNumber ?? t("noPv")}</span>
                       <span className="text-muted text-sm">
                         {t(`kinds.${payout.kind}`)} ·{" "}
                         {payout.paidOn

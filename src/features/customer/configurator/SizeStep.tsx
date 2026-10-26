@@ -265,7 +265,7 @@ export function SizeStep({
         </Field>
       ) : pattern?.styleCode ? (
         <p className="text-sm">
-          <span className="text-muted">{t("styleCode")}</span> <span className="font-mono">{pattern.styleCode}</span>
+          <span className="text-muted">{t("styleCode")}</span> <span className="tabular-nums">{pattern.styleCode}</span>
           {pattern.internationalName ? <span className="text-muted"> · {pattern.internationalName}</span> : null}
         </p>
       ) : null}
@@ -315,7 +315,7 @@ export function SizeStep({
             }}
             options={sizes.map((size) => ({
               value: size.code,
-              label: <span className="font-mono text-base font-semibold">{size.code}</span>,
+              label: <span className="text-base font-semibold tabular-nums">{size.code}</span>,
               description: dimsText({ l: size.lengthMm, w: size.widthMm, d: size.heightMm }),
               footer: (
                 <PriceSlot pending={prices.pending} unitPrice={prices.price(sizeKey(size.code))?.unitPrice}>

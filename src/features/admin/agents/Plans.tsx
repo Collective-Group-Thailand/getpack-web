@@ -134,7 +134,7 @@ export function PlansList() {
           <Link href={`/agents/plans/${row.id}`} className="text-primary font-medium hover:underline">
             {row.nameTh}
           </Link>
-          <span className="text-muted font-mono text-xs">{row.code}</span>
+          <span className="text-muted text-xs tabular-nums">{row.code}</span>
         </div>
       ),
     },
@@ -399,7 +399,7 @@ export function PlanDetail({ planId }: { planId: string }) {
         title={plan.nameTh}
         meta={
           <>
-            <span className="text-muted font-mono text-sm">{plan.code}</span>
+            <span className="text-muted text-sm tabular-nums">{plan.code}</span>
             <KindBadge kind={plan.agentKind} />
             {plan.retiredAt ? <Badge icon="archive">{t("retired")}</Badge> : null}
             <span className="text-muted text-sm">{t("agents", { count: plan.agentCount })}</span>

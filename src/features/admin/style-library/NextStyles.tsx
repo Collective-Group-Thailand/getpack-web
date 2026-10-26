@@ -59,7 +59,7 @@ export function NextStyles() {
       cell: (row) => (
         <div>
           <p className="font-medium">{locale === "en" ? row.nameEn : row.nameTh}</p>
-          <p className="text-muted font-mono text-xs">{row.baseCode}</p>
+          <p className="text-muted text-xs tabular-nums">{row.baseCode}</p>
         </div>
       ),
     },

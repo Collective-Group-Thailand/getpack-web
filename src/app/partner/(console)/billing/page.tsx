@@ -96,7 +96,7 @@ export default async function BillingPage() {
                   key: "no",
                   header: t("table.no"),
                   primary: true,
-                  cell: (statement) => <span className="font-mono whitespace-nowrap">{statement.bsNumber}</span>,
+                  cell: (statement) => <span className="whitespace-nowrap tabular-nums">{statement.bsNumber}</span>,
                 },
                 {
                   key: "period",

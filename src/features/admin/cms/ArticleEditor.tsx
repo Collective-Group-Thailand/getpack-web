@@ -276,7 +276,7 @@ export function ArticleEditor({ articleId }: { articleId: string | null }) {
                 error={touched ? errors.slug : undefined}
               >
                 <Input
-                  className="font-mono"
+                  className="tabular-nums"
                   value={draft.slug}
                   onChange={(event) => update({ slug: event.target.value })}
                 />

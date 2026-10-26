@@ -98,7 +98,7 @@ export function CartCodes({
         <ul className="flex flex-col gap-1 text-sm">
           {cart.codes.map((entry) => (
             <li key={entry.code} className="flex flex-wrap items-center gap-2">
-              <span className="font-mono">{entry.code}</span>
+              <span className="tabular-nums">{entry.code}</span>
               {entry.status === "validated" ? (
                 <Badge size="sm" tone="success" icon="check">
                   {t("validated")}

@@ -131,7 +131,7 @@ export function Compliance({ factory }: { factory: Factory }) {
       header: t("account"),
       cell: (row) => (
         <div>
-          <p className="font-mono">{t("accountNo", { bank: row.bankCode, last4: row.accountNoLast4 })}</p>
+          <p className="tabular-nums">{t("accountNo", { bank: row.bankCode, last4: row.accountNoLast4 })}</p>
           <p className="text-muted text-xs">{row.accountName}</p>
         </div>
       ),
