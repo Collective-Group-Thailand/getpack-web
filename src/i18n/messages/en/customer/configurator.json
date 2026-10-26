@@ -324,6 +324,7 @@
     "oneOff": "Once per order",
     "structureFee": "Structure design",
     "shipping": "Delivery",
+    "shippingTo": "To {area}",
     "shippingPending": "Enter a postcode",
     "vat": "VAT",
     "vatInTotal": "Included in the total",
