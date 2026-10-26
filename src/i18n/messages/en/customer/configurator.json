@@ -40,7 +40,7 @@
   "size": {
     "pattern": "Style",
     "mode": "Size",
-    "standard": "Standard size",
+    "standard": "Standard sizes",
     "custom": "Custom size",
     "standardSizes": "Standard sizes",
     "standardHint": "Popular sizes, with templates ready to design on",
@@ -114,6 +114,17 @@
       "failed": "Couldn't convert the size — try again",
       "empty": "Enter every dimension to see the other sizes",
       "chooseBasis": "Choose a basis and the other sizes appear straight away"
+    },
+    "hintStandard": "{count} standard sizes · price at {quantity} {unit}",
+    "hintStandardNoPrice": "{count} standard sizes",
+    "hintCustom": "Custom size",
+    "showAs": "Show sizes in",
+    "orderNote": "Always length × width × height, in any unit",
+    "derivedToggle": "See inside, outside and over-crease sizes",
+    "switchTo": {
+      "mm": "millimetres",
+      "cm": "centimetres",
+      "in": "inches"
     }
   },
   "choices": {
@@ -693,5 +704,12 @@
     "summary": "Summary",
     "done": "done",
     "todo": "still to do"
+  },
+  "options": {
+    "perPiece": "{price}/{unit}",
+    "quoteOnly": "Request a quote",
+    "selected": "Selected",
+    "same": "Current price",
+    "default": "Default"
   }
 }

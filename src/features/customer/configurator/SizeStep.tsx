@@ -5,6 +5,8 @@ import { useState } from "react";
 
 import { pick } from "@/features/customer/catalog/localize";
 import { DimensionInput, fromMm, type LengthUnit } from "@/ui/components/DimensionInput";
+import { Button } from "@/ui/components/Button";
+import { DisclosureList } from "@/ui/components/DisclosureList";
 import { Field } from "@/ui/components/Field";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -14,6 +16,8 @@ import { cn } from "@/ui/lib/cn";
 
 import type { Converted } from "./conversion";
 import { sizeKindOf, type MeasurementBasis } from "./model";
+import { PriceSlot, useOptionFigures } from "./OptionFigure";
+import { sizeKey, type OptionPrices } from "./option-prices";
 import {
   axesOf,
   isConverted,
@@ -45,6 +49,10 @@ interface SizeStepProps {
   };
   /** The chosen material's name, for messages that depend on its caliper. */
   materialName: string | null;
+  /** The price of each standard size card at the quantity on screen (the batch answer). */
+  prices: OptionPrices;
+  /** The sales unit in the reader's language (`ชิ้น`). */
+  unit: string;
 }
 
 const HIGHLIGHT = "text-primary";
@@ -143,8 +151,11 @@ export function SizeStep({
   bases,
   conversion,
   materialName,
+  prices,
+  unit,
 }: SizeStepProps) {
   const t = useTranslations("configurator.size");
+  const figures = useOptionFigures();
   const locale = useLocale();
   const [active, setActive] = useState<string | null>(null);
   const kind = sizeKindOf(configurator);
@@ -287,11 +298,10 @@ export function SizeStep({
       ) : null}
 
       {state.sizeMode === "standard" && sizes.length > 0 ? (
-        <Field label={t("standardSizes")} hint={t("standardHint")}>
+        <div className="flex flex-col gap-3">
           <RadioCards
-            columns={3}
-            // Two to a row on a phone (round 2, responsive): eleven sizes in one column ran a screen long.
-            className="grid-cols-2"
+            columns={4}
+            aria-label={t("standardSizes")}
             value={state.standardSizeCode ?? undefined}
             onValueChange={(code) => {
               const size = sizes.find((entry) => entry.code === code);
@@ -305,11 +315,29 @@ export function SizeStep({
             }}
             options={sizes.map((size) => ({
               value: size.code,
-              label: size.name,
+              label: <span className="font-mono text-base font-semibold">{size.code}</span>,
               description: dimsText({ l: size.lengthMm, w: size.widthMm, d: size.heightMm }),
+              footer: (
+                <PriceSlot pending={prices.pending} unitPrice={prices.price(sizeKey(size.code))?.unitPrice}>
+                  {figures.unitPrice(prices.price(sizeKey(size.code)), unit)}
+                </PriceSlot>
+              ),
             }))}
           />
-        </Field>
+          <p className="text-muted flex flex-wrap items-center gap-x-1 text-xs">
+            {t("showAs")}
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="h-auto min-h-6 px-1 text-xs"
+              onClick={() => onUnitChange(state.unit === "mm" ? "cm" : "mm")}
+            >
+              {t(`switchTo.${state.unit === "mm" ? "cm" : "mm"}`)}
+            </Button>
+            · {t("orderNote")} · {t("standardHint")}
+          </p>
+        </div>
       ) : (
         <>
           {bases.length > 1 ? (
@@ -367,12 +395,22 @@ export function SizeStep({
       )}
 
       {kind === "box" && !state.flatStyle ? (
-        <DerivedSizes
-          basis={state.basis}
-          conversion={conversion}
-          show={(size) => dimsText(size)}
-          caliper={(mm) => `${Number(mm.toFixed(2))} ${unitLabels.mm}`}
-        />
+        (() => {
+          const derived = (
+            <DerivedSizes
+              basis={state.basis}
+              conversion={conversion}
+              show={(size) => dimsText(size)}
+              caliper={(mm) => `${Number(mm.toFixed(2))} ${unitLabels.mm}`}
+            />
+          );
+          // A standard size is an inside size already; the conversion stays one tap away.
+          return state.sizeMode === "standard" && sizes.length > 0 ? (
+            <DisclosureList items={[{ summary: t("derivedToggle"), content: derived }]} />
+          ) : (
+            derived
+          );
+        })()
       ) : (
         <p className="text-muted text-xs">{t("flatNote")}</p>
       )}

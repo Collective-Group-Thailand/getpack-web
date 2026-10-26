@@ -27,6 +27,7 @@ import { configurationSummary, lineChatUrl } from "./line";
 import { basesOf, groupsOf, isProcessInk, optionsById, sizeKindOf } from "./model";
 import { isCorrugate, refusedSide } from "./print-model";
 import { isApiError } from "@/lib/api/problem";
+import { useOptionPrices } from "./option-prices";
 import { useLivePrice } from "./pricing";
 import { PromoCode } from "./PromoCode";
 import { TierTable } from "./TierTable";
@@ -180,6 +181,8 @@ export function Configurator({
   const ready = readyToPrice(configurator, state, conversion.internal) && !conversion.caliperUnknown;
   const body = ready ? buildCalculateBody(configurator, state) : null;
   const price = useLivePrice(body);
+  // The option cards' prices: one batch request per settled state change (never one per card).
+  const optionPrices = useOptionPrices(configurator, state, ready);
   // 422 `pricing.print_combination_invalid`: one readable line per refused side, never a crash.
   const refusal =
     isApiError(price.error) && price.error.code === "pricing.print_combination_invalid" ? price.error : null;
@@ -423,7 +426,15 @@ export function Configurator({
   const summaryOf = (step: StepKey): string | undefined => {
     switch (step) {
       case "size":
-        return sizeSummary || undefined;
+        if (state.sizeMode === "standard" && configurator.standardSizes.length > 0 && kind === "box")
+          return state.quantity > 0
+            ? t("size.hintStandard", {
+                count: configurator.standardSizes.length,
+                quantity: format.number(state.quantity),
+                unit,
+              })
+            : t("size.hintStandardNoPrice", { count: configurator.standardSizes.length });
+        return sizeSummary || t("size.hintCustom");
       case "logistics":
         return loadSummary;
       case "quantity":
@@ -462,6 +473,8 @@ export function Configurator({
             bases={bases}
             conversion={conversion}
             materialName={materialName}
+            prices={optionPrices}
+            unit={unit}
           />
         );
       case "logistics":
