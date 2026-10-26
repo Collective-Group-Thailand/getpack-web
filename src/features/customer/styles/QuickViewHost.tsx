@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-import { trackCatalog } from "./catalog-events";
+import { trackCatalog } from "@/lib/analytics/catalog";
 import type { QuickViewProps } from "./QuickView";
 import { readParams, toSearch } from "./query";
 

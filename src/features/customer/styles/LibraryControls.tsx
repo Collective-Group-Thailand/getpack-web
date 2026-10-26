@@ -8,7 +8,7 @@ import { IconButton } from "@/ui/components/IconButton";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { toast } from "@/ui/components/Toast";
 
-import { trackCatalog } from "./catalog-events";
+import { trackCatalog } from "@/lib/analytics/catalog";
 import { defaultSort, listHref, toSearch, type ListParams } from "./query";
 
 /** The order of the results — a choice of the view, so it replaces the URL rather than adding to history. */
