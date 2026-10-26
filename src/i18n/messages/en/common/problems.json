@@ -360,6 +360,7 @@
   },
   "pricing": {
     "not_instant": "Not quoted instantly",
+    "print_combination_invalid": "Invalid print choice",
     "vat_rate_missing": "VAT rate not set"
   },
   "production": {
