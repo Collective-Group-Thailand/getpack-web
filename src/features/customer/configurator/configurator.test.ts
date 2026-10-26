@@ -18,13 +18,13 @@ import {
   missingChoices,
   NO_DIMS,
   readyToPrice,
-  seedFromDesign,
   sizeProblems,
   stepsOf,
   withTier,
   type ConfiguratorState,
 } from "./state";
 import { draftConfiguration } from "./useDraft";
+import { seedFromDesign } from "./url-state";
 
 /**
  * The configurator v2's pure core against the mock API, which serves the published configurator

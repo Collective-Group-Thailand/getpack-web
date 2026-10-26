@@ -38,7 +38,7 @@ beforeEach(() => {
 afterEach(cleanup);
 vi.setConfig({ testTimeout: 30_000 });
 
-async function open(change: (configurator: ConfiguratorData) => void = () => {}) {
+async function open(change: (configurator: ConfiguratorData) => void = () => {}, syncUrl = false) {
   const api = createApiClient({ baseUrl: "http://api.test" });
   const { data } = await api.GET("/v1/store/catalog/products/{slug}/configurator", {
     params: { path: { slug: "shipping-box" } },
@@ -57,6 +57,7 @@ async function open(change: (configurator: ConfiguratorData) => void = () => {})
           lineOaId={null}
           rfqPath="/rfq"
           pageUrl="http://localhost/configure/shipping-box"
+          syncUrl={syncUrl}
         />
       </NextIntlClientProvider>
     </QueryClientProvider>,
@@ -122,6 +123,28 @@ describe("size cards", () => {
     // The card that is selected now is the baseline of the next request, and equals the summary.
     await settled(2);
     expect(slotOf(card(/^M\d/)).getAttribute("data-option-price")).toBe(shown);
+  });
+
+  it("keeps the configuration in the address after a pause, with the defaults left out and other parameters kept", async () => {
+    const user = userEvent.setup();
+    window.history.replaceState(null, "", "/configure/shipping-box?from=pdp&calc=abc");
+    const replace = vi.spyOn(window.history, "replaceState");
+    await open(() => {}, true);
+    await settled(1);
+    // Nothing is written until the customer changes something.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    expect(replace).not.toHaveBeenCalled();
+
+    await user.click(card(/^M\d/));
+    await waitFor(() => expect(replace).toHaveBeenCalled(), { timeout: 3000 });
+    const params = new URLSearchParams(window.location.search);
+    expect(params.get("size")).toMatch(/^M/);
+    expect(params.get("from")).toBe("pdp");
+    expect(params.get("calc")).toBe("abc");
+    expect(params.has("postcode")).toBe(false);
+    expect(params.has("qty")).toBe(false);
+    replace.mockRestore();
+    window.history.replaceState(null, "", "/");
   });
 
   it("asks for the prices once per state change, after a pause, and never per card", async () => {

@@ -10,7 +10,8 @@ import { loadAllMessages } from "@/i18n/messages";
 import { createApiClient } from "@/lib/api/client";
 
 import { DesignStep } from "./DesignStep";
-import { designOptionOf, initialState, seedFromDesign, type Configurator, type ConfiguratorState } from "./state";
+import { designOptionOf, initialState, type Configurator, type ConfiguratorState } from "./state";
+import { seedFromDesign } from "./url-state";
 
 vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
