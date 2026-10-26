@@ -13,6 +13,7 @@ import { STYLES_HREF } from "@/features/customer/styles/paths";
 
 import { emptyContent } from "./content.server";
 import { DeferredAssistant, DeferredLocaleMenu } from "./DeferredMenus";
+import { HeaderNavLink } from "./HeaderNavLink";
 import { MobileProductsMenu } from "./ProductsMenu";
 import { Link } from "@/i18n/navigation";
 import { getFormat } from "@/features/shared/format/server";
@@ -33,10 +34,11 @@ import { Brand } from "@/ui/brand";
  * state — the drawer, the language menu, the cart count and the account menu — are client
  * components.
  *
- * Width budget (styles redesign, PLAN.md §2.4): the primary action only shows from 1184 px (the
- * "Studio" link is the same destination), the nav gap and the padding do not grow at `xl`, and
- * the English labels are single words, so both locales keep well over 24 px between the nav and
- * the tools at every width from 1040 up. `e2e/storefront-header.spec.ts` guards it.
+ * Width budget (styles redesign polish 1): the primary action shows at every width from 1040 px.
+ * Between 1040 and 1184 px the bar is compact — tighter logo-to-nav gap, link padding and CTA
+ * padding — and from 1184 px it takes the roomier spacing, so both locales keep at least 8 px
+ * between the logo, the nav and the tools throughout. The current section's link carries
+ * `aria-current="page"` and the tinted pill. `e2e/storefront-header.spec.ts` guards it.
  *
  * The bar becomes the drawer below 1040 px, and its middle track is `minmax(0, 1fr)` with the nav
  * centred *safely*, so the five links never spread over the logo or under the tools (styles
@@ -72,7 +74,7 @@ export async function SiteHeader() {
     ["/contact", t("nav.contact")],
   ];
   const navLink =
-    "text-muted hover:text-fg focus-visible:ring-focus-ring rounded-control inline-flex h-10 items-center text-[0.9375rem] font-medium whitespace-nowrap outline-none focus-visible:ring-2";
+    "text-muted hover:text-fg hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-control inline-flex h-10 items-center px-2.5 text-[0.9375rem] font-medium whitespace-nowrap outline-none focus-visible:ring-2 min-[74rem]:px-3";
 
   return (
     <>
@@ -95,7 +97,7 @@ export async function SiteHeader() {
           A phone: menu · logo in the middle · search and cart (owner, 2026-10-16). Wide screens: logo
           at the start, the primary nav in the middle, the actions at the end.
         */}
-        <div className="max-w-nav mx-auto grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 md:h-16 md:px-5 min-[65rem]:h-19 min-[65rem]:grid-cols-[auto_minmax(0,1fr)_auto] min-[65rem]:gap-6 min-[65rem]:px-6">
+        <div className="max-w-nav mx-auto grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 md:h-16 md:px-5 min-[65rem]:h-19 min-[65rem]:grid-cols-[auto_minmax(0,1fr)_auto] min-[65rem]:gap-4 min-[65rem]:px-6 min-[74rem]:gap-6">
           <div className="flex items-center gap-1">
             <MobileProductsMenu
               label={t("nav.menu")}
@@ -217,12 +219,12 @@ export async function SiteHeader() {
             <nav
               data-header-nav
               aria-label={t("nav.primary")}
-              className="hidden items-center justify-center gap-4 min-[65rem]:flex min-[74rem]:gap-6"
+              className="hidden items-center justify-center gap-0.5 min-[65rem]:flex min-[74rem]:gap-1"
             >
               {links.map(([href, label]) => (
-                <Link key={href} href={href} className={navLink}>
+                <HeaderNavLink key={href} href={href} className={navLink}>
                   {label}
-                </Link>
+                </HeaderNavLink>
               ))}
             </nav>
           </div>
@@ -244,7 +246,7 @@ export async function SiteHeader() {
                 name={actor?.displayName ?? null}
               />
             </span>
-            <Button asChild size="md" className="ms-2 hidden min-[74rem]:inline-flex">
+            <Button asChild size="md" className="ms-1 hidden px-3.5 min-[65rem]:inline-flex min-[74rem]:ms-2 min-[74rem]:px-5">
               <Link href="/studio">{t("nav.startFree")}</Link>
             </Button>
           </div>
