@@ -313,6 +313,9 @@ test.describe("cart and checkout", () => {
     await sheet.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท ทดสอบ จำกัด");
     await sheet.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("1234567890123");
     await sheet.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
+    // The postcode's one sub-district is picked once the lookup answers; saving before that is
+    // refused for the area too, which a parallel run reached.
+    await expect(sheet.getByRole("button", { name: /^แขวง\/ตำบล/ })).toContainText("คลองเตย");
     await sheet.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
     await sheet.getByRole("button", { name: "บันทึก", exact: true }).click();
     await expect(sheet.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();
