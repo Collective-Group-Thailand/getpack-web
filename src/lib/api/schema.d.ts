@@ -328745,6 +328745,7 @@ export interface operations {
                 size?: string;
                 /** @description Default: relevance with `q`, else popular */
                 sort?: components["schemas"]["StyleSort"];
+                /** @description One use case, or groups of them (styles redesign C0, the "ช่วยเลือกให้หน่อย" wizard): values joined by `,` are alternatives, groups joined by `;` must all hold — `food,snack;shipping,ecommerce` = (food or snack) and (shipping or e-commerce). A single value works as before. */
                 useCase?: string;
             };
             header?: {
