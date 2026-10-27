@@ -143,16 +143,16 @@ export function LibrarySearch({
               event.preventDefault();
               findBySize();
             }}
-            className="border-border bg-surface rounded-card flex flex-wrap items-end gap-2 border p-2.5 shadow-sm"
+            className="border-border bg-surface rounded-card flex flex-wrap items-center gap-x-1.5 gap-y-2.5 border p-2.5 shadow-sm sm:gap-x-2"
           >
             {(["w", "l", "h"] as const).map((key, index) => (
-              <span key={key} className="flex items-end gap-2">
+              <span key={key} className="flex items-center gap-1.5 sm:gap-2">
                 {index > 0 ? (
-                  <span aria-hidden="true" className="text-muted pb-2.5">
+                  <span aria-hidden="true" className="text-muted">
                     ×
                   </span>
                 ) : null}
-                <label className="text-muted flex flex-col gap-1 text-xs font-medium">
+                <label className="text-muted flex items-center gap-1 text-[0.8125rem] sm:gap-1.5">
                   {t(key === "w" ? "sizeWidth" : key === "l" ? "sizeLength" : "sizeHeight")}
                   <Input
                     type="number"
@@ -163,12 +163,12 @@ export function LibrarySearch({
                     required
                     value={dims[key]}
                     onChange={(event) => setDims((d) => ({ ...d, [key]: event.target.value }))}
-                    className="w-[4.75rem] tabular-nums"
+                    className="w-[3.25rem] [appearance:textfield] px-1.5 text-center tabular-nums sm:w-[4.5rem] [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </label>
               </span>
             ))}
-            <span className="text-muted pb-2.5 text-sm">{t("sizeUnit")}</span>
+            <span className="text-muted text-sm">{t("sizeUnit")}</span>
             <Button type="submit" loading={pending} className="ms-auto max-sm:w-full">
               {t("sizeSubmit")}
             </Button>
