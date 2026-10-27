@@ -18,6 +18,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import type { PriceStep } from "./pricing";
 import type { Configurator, ConfiguratorState } from "./state";
+import { arrivalRangeText, vatPercentOf } from "./store-fields";
 import type { KeptQuote, QuoteAction } from "./useQuoteActions";
 
 export interface ConfiguratorDockProps {
@@ -180,7 +181,13 @@ export function ConfiguratorDock({
               ...(shippingArea ? { hint: t("shippingTo", { area: shippingArea }) } : {}),
             },
         // The API's VAT amount exactly as sent: it is inside the total, never added to it (D-441).
-        { label: t("vatLine"), value: format.thb(priced.vatAmount) },
+        // C4-API-2: the rate in force as the API sends it ("0.07" → "VAT 7%"), never a constant here.
+        {
+          label: vatPercentOf(priced.vatRate)
+            ? t("vatLineRate", { rate: vatPercentOf(priced.vatRate)! })
+            : t("vatLine"),
+          value: format.thb(priced.vatAmount),
+        },
       ]
     : [];
 
@@ -275,7 +282,9 @@ export function ConfiguratorDock({
     ? t("total", { total: format.thb(priced.grossAmount), quantity: format.number(priced.quantity), unit })
     : null;
   const basis = priced ? specLabelText(specLabel, format.locale) : null;
-  // Where the shipment is going decides which date is shown: the arrival once a postcode is known.
+  // Where the shipment is going decides which date is shown: the arrival window once a postcode is known
+  // (C4-API-3: ready date + the zone's transit days), else a saved quote's arrival date.
+  const arrival = priced?.arrival ? arrivalRangeText(format, priced.arrival) : null;
   const arrivalDate = priced?.earliestDeliveryDate ?? lastQuote?.option.earliestDeliveryDate ?? null;
 
   return (
@@ -332,12 +341,16 @@ export function ConfiguratorDock({
                 className="border-border border-t pt-3"
               />
               <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
-                {arrivalDate || priced.earliestShipDate ? (
-                  <li className="flex items-start gap-2">
+                {arrival || arrivalDate || priced.earliestShipDate ? (
+                  <li className="flex items-start gap-2" data-arrival="">
                     <Icon name="truck" size={16} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />
-                    {arrivalDate
-                      ? t("receiveBy", { date: format.date(arrivalDate) })
-                      : t("shipBy", { date: format.date(priced.earliestShipDate) })}
+                    {arrival
+                      ? arrival.single
+                        ? t("arrivalOn", { date: arrival.date })
+                        : t("arrivalRange", { from: arrival.from, to: arrival.to })
+                      : arrivalDate
+                        ? t("receiveBy", { date: format.date(arrivalDate) })
+                        : t("shipBy", { date: format.date(priced.earliestShipDate) })}
                   </li>
                 ) : null}
                 {priced.leadTimeDays != null ? (

@@ -36624,6 +36624,8 @@ export interface components {
             steps: components["schemas"]["AdminQuoteStepDto"][];
         };
         AdminQuoteStepDto: {
+            /** @description C4-API-3 (D-101, ADR-0005): arrival window — the ready date (earliest ship date) plus the destination zone’s min / max transit working days from the effective-dated setting `shipping.transit_days`, national business calendar (holidays excluded). Without that setting: the C4-API-2 single date. Null when shipping is not priced */
+            arrival: components["schemas"]["QuoteArrivalDto"] | null;
             /** @example 0.00 */
             designFeeAmount: string | null;
             /**
@@ -36663,6 +36665,11 @@ export interface components {
              * @example null
              */
             reason: components["schemas"]["QuoteNoPriceReason"] | null;
+            /**
+             * @description C4-API-2: "ประหยัด x%" against the smallest priced quantity of this calculation — (1 − unitPrice ÷ that tier’s unitPrice) × 100, rounded half-up to a whole number; null for that tier itself, a tier without an instant price, or a result ≤ 0
+             * @example 12
+             */
+            savingPercent: number | null;
             /**
              * @description Shipping incl. VAT, its own line (D-013); null while not priced
              * @example 128.40
@@ -36727,6 +36734,13 @@ export interface components {
              * @example 875.33
              */
             vatAmount: string | null;
+            /**
+             * @description C4-API-2 (D-441, GLOBAL-RULES §5): the VAT rate `vatAmount` used, as a fraction (decimal string) — the approved `vat_standard` rate in force, the same rate as the shared VAT helper; null when `vatAmount` is null
+             * @example 0.07
+             */
+            vatRate: string | null;
+            /** @description C4-API-2: the customer-facing name of the destination zone the shipping estimate used (from the delivery postcode); null while shipping is not priced. Never an origin or factory location (GLOBAL-RULES §1) */
+            zoneName: components["schemas"]["LocalisedLabelDto"] | null;
         };
         AdminReferralDto: {
             /**
@@ -69185,6 +69199,20 @@ export interface components {
              */
             recommendationId: string;
         };
+        QuoteArrivalDto: {
+            /**
+             * Format: date
+             * @description Earliest arrival (Asia/Bangkok): ready date + the zone’s minimum transit working days
+             * @example 2026-10-10
+             */
+            from: string;
+            /**
+             * Format: date
+             * @description Latest arrival (Asia/Bangkok): ready date + the zone’s maximum transit working days; equals `from` when they are equal (or, without `shipping.transit_days`, the C4-API-2 single date)
+             * @example 2026-10-10
+             */
+            to: string;
+        };
         QuoteAssemblyInputDto: {
             /** @example 1 */
             amount?: number;
@@ -69810,6 +69838,8 @@ export interface components {
         /** @enum {string} */
         QuoteStatus: "calculated" | "saved" | "shared" | "converted" | "expired" | "superseded" | "declined" | "routed_to_rfq";
         QuoteStepDto: {
+            /** @description C4-API-3 (D-101, ADR-0005): arrival window — the ready date (earliest ship date) plus the destination zone’s min / max transit working days from the effective-dated setting `shipping.transit_days`, national business calendar (holidays excluded). Without that setting: the C4-API-2 single date. Null when shipping is not priced */
+            arrival: components["schemas"]["QuoteArrivalDto"] | null;
             /** @example 0.00 */
             designFeeAmount: string | null;
             /**
@@ -69848,6 +69878,11 @@ export interface components {
              * @example null
              */
             reason: components["schemas"]["StoreQuoteNoPriceReason"] | null;
+            /**
+             * @description C4-API-2: "ประหยัด x%" against the smallest priced quantity of this calculation — (1 − unitPrice ÷ that tier’s unitPrice) × 100, rounded half-up to a whole number; null for that tier itself, a tier without an instant price, or a result ≤ 0
+             * @example 12
+             */
+            savingPercent: number | null;
             /**
              * @description Shipping incl. VAT, its own line (D-013); null while not priced
              * @example 128.40
@@ -69912,6 +69947,13 @@ export interface components {
              * @example 875.33
              */
             vatAmount: string | null;
+            /**
+             * @description C4-API-2 (D-441, GLOBAL-RULES §5): the VAT rate `vatAmount` used, as a fraction (decimal string) — the approved `vat_standard` rate in force, the same rate as the shared VAT helper; null when `vatAmount` is null
+             * @example 0.07
+             */
+            vatRate: string | null;
+            /** @description C4-API-2: the customer-facing name of the destination zone the shipping estimate used (from the delivery postcode); null while shipping is not priced. Never an origin or factory location (GLOBAL-RULES §1) */
+            zoneName: components["schemas"]["LocalisedLabelDto"] | null;
         };
         QuoteStepGapDto: {
             /**
@@ -77020,6 +77062,11 @@ export interface components {
         StoreConfiguratorDesignDto: {
             /** @example own_file */
             default: components["schemas"]["DesignOption"];
+            /**
+             * @description C4-API-2 (D-071): free revision rounds included with `hired_design` ("แก้ฟรี {n} ครั้ง") — the setting `design.free_revision_rounds` in force (effective-dated, audited; the same value the design service charges by); null when not set
+             * @example 3
+             */
+            freeRevisions: number | null;
             /**
              * @example [
              *       "own_file",
@@ -133834,6 +133881,10 @@ export interface operations {
                      *       ],
                      *       "steps": [
                      *         {
+                     *           "arrival": {
+                     *             "from": "2026-10-12",
+                     *             "to": "2026-10-14"
+                     *           },
                      *           "designFeeAmount": "0.00",
                      *           "earliestDeliveryDate": "2026-10-10",
                      *           "earliestShipDate": "2026-10-09",
@@ -133874,6 +133925,7 @@ export interface operations {
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
+                     *           "savingPercent": null,
                      *           "shippingAmount": "128.40",
                      *           "shippingNetAmount": "120.00",
                      *           "shippingPending": false,
@@ -133887,7 +133939,12 @@ export interface operations {
                      *           "toolingAmount": "0.00",
                      *           "toolingWaiver": null,
                      *           "unitPrice": "13.38",
-                     *           "vatAmount": "883.73"
+                     *           "vatAmount": "883.73",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": {
+                     *             "en": "Bangkok and vicinity",
+                     *             "th": "กรุงเทพฯ และปริมณฑล"
+                     *           }
                      *         }
                      *       ]
                      *     }
@@ -134227,6 +134284,10 @@ export interface operations {
                      *       ],
                      *       "steps": [
                      *         {
+                     *           "arrival": {
+                     *             "from": "2026-10-12",
+                     *             "to": "2026-10-14"
+                     *           },
                      *           "designFeeAmount": "0.00",
                      *           "earliestDeliveryDate": "2026-10-10",
                      *           "earliestShipDate": "2026-10-09",
@@ -134267,6 +134328,7 @@ export interface operations {
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
+                     *           "savingPercent": null,
                      *           "shippingAmount": "128.40",
                      *           "shippingNetAmount": "120.00",
                      *           "shippingPending": false,
@@ -134280,7 +134342,12 @@ export interface operations {
                      *           "toolingAmount": "0.00",
                      *           "toolingWaiver": null,
                      *           "unitPrice": "13.38",
-                     *           "vatAmount": "883.73"
+                     *           "vatAmount": "883.73",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": {
+                     *             "en": "Bangkok and vicinity",
+                     *             "th": "กรุงเทพฯ และปริมณฑล"
+                     *           }
                      *         }
                      *       ]
                      *     }
@@ -134613,6 +134680,10 @@ export interface operations {
                      *       ],
                      *       "steps": [
                      *         {
+                     *           "arrival": {
+                     *             "from": "2026-10-12",
+                     *             "to": "2026-10-14"
+                     *           },
                      *           "designFeeAmount": "0.00",
                      *           "earliestDeliveryDate": "2026-10-10",
                      *           "earliestShipDate": "2026-10-09",
@@ -134653,6 +134724,7 @@ export interface operations {
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
+                     *           "savingPercent": null,
                      *           "shippingAmount": "128.40",
                      *           "shippingNetAmount": "120.00",
                      *           "shippingPending": false,
@@ -134666,7 +134738,12 @@ export interface operations {
                      *           "toolingAmount": "0.00",
                      *           "toolingWaiver": null,
                      *           "unitPrice": "13.38",
-                     *           "vatAmount": "883.73"
+                     *           "vatAmount": "883.73",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": {
+                     *             "en": "Bangkok and vicinity",
+                     *             "th": "กรุงเทพฯ และปริมณฑล"
+                     *           }
                      *         }
                      *       ]
                      *     }
@@ -134932,6 +135009,10 @@ export interface operations {
                      *       ],
                      *       "steps": [
                      *         {
+                     *           "arrival": {
+                     *             "from": "2026-10-12",
+                     *             "to": "2026-10-14"
+                     *           },
                      *           "designFeeAmount": "0.00",
                      *           "earliestDeliveryDate": "2026-10-10",
                      *           "earliestShipDate": "2026-10-09",
@@ -134972,6 +135053,7 @@ export interface operations {
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
+                     *           "savingPercent": null,
                      *           "shippingAmount": "128.40",
                      *           "shippingNetAmount": "120.00",
                      *           "shippingPending": false,
@@ -134985,7 +135067,12 @@ export interface operations {
                      *           "toolingAmount": "0.00",
                      *           "toolingWaiver": null,
                      *           "unitPrice": "13.38",
-                     *           "vatAmount": "883.73"
+                     *           "vatAmount": "883.73",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": {
+                     *             "en": "Bangkok and vicinity",
+                     *             "th": "กรุงเทพฯ และปริมณฑล"
+                     *           }
                      *         }
                      *       ]
                      *     }
@@ -135405,6 +135492,10 @@ export interface operations {
                      *       ],
                      *       "steps": [
                      *         {
+                     *           "arrival": {
+                     *             "from": "2026-10-12",
+                     *             "to": "2026-10-14"
+                     *           },
                      *           "designFeeAmount": "0.00",
                      *           "earliestDeliveryDate": "2026-10-10",
                      *           "earliestShipDate": "2026-10-09",
@@ -135445,6 +135536,7 @@ export interface operations {
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
+                     *           "savingPercent": null,
                      *           "shippingAmount": "128.40",
                      *           "shippingNetAmount": "120.00",
                      *           "shippingPending": false,
@@ -135458,7 +135550,12 @@ export interface operations {
                      *           "toolingAmount": "0.00",
                      *           "toolingWaiver": null,
                      *           "unitPrice": "13.38",
-                     *           "vatAmount": "883.73"
+                     *           "vatAmount": "883.73",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": {
+                     *             "en": "Bangkok and vicinity",
+                     *             "th": "กรุงเทพฯ และปริมณฑล"
+                     *           }
                      *         }
                      *       ]
                      *     }
@@ -135703,6 +135800,10 @@ export interface operations {
                      *       ],
                      *       "steps": [
                      *         {
+                     *           "arrival": {
+                     *             "from": "2026-10-12",
+                     *             "to": "2026-10-14"
+                     *           },
                      *           "designFeeAmount": "0.00",
                      *           "earliestDeliveryDate": "2026-10-10",
                      *           "earliestShipDate": "2026-10-09",
@@ -135743,6 +135844,7 @@ export interface operations {
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
+                     *           "savingPercent": null,
                      *           "shippingAmount": "128.40",
                      *           "shippingNetAmount": "120.00",
                      *           "shippingPending": false,
@@ -135756,7 +135858,12 @@ export interface operations {
                      *           "toolingAmount": "0.00",
                      *           "toolingWaiver": null,
                      *           "unitPrice": "13.38",
-                     *           "vatAmount": "883.73"
+                     *           "vatAmount": "883.73",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": {
+                     *             "en": "Bangkok and vicinity",
+                     *             "th": "กรุงเทพฯ และปริมณฑล"
+                     *           }
                      *         }
                      *       ]
                      *     }
@@ -136004,6 +136111,10 @@ export interface operations {
                      *       ],
                      *       "steps": [
                      *         {
+                     *           "arrival": {
+                     *             "from": "2026-10-12",
+                     *             "to": "2026-10-14"
+                     *           },
                      *           "designFeeAmount": "0.00",
                      *           "earliestDeliveryDate": "2026-10-10",
                      *           "earliestShipDate": "2026-10-09",
@@ -136044,6 +136155,7 @@ export interface operations {
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
+                     *           "savingPercent": null,
                      *           "shippingAmount": "128.40",
                      *           "shippingNetAmount": "120.00",
                      *           "shippingPending": false,
@@ -136057,7 +136169,12 @@ export interface operations {
                      *           "toolingAmount": "0.00",
                      *           "toolingWaiver": null,
                      *           "unitPrice": "13.38",
-                     *           "vatAmount": "883.73"
+                     *           "vatAmount": "883.73",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": {
+                     *             "en": "Bangkok and vicinity",
+                     *             "th": "กรุงเทพฯ และปริมณฑล"
+                     *           }
                      *         }
                      *       ]
                      *     }
@@ -291595,6 +291712,7 @@ export interface operations {
                      *       },
                      *       "design": {
                      *         "default": "own_file",
+                     *         "freeRevisions": 3,
                      *         "options": [
                      *           "own_file",
                      *           "online_designer",
@@ -318417,6 +318535,10 @@ export interface operations {
                      *       ],
                      *       "steps": [
                      *         {
+                     *           "arrival": {
+                     *             "from": "2026-10-12",
+                     *             "to": "2026-10-14"
+                     *           },
                      *           "designFeeAmount": "0.00",
                      *           "earliestDeliveryDate": "2026-10-10",
                      *           "earliestShipDate": "2026-10-09",
@@ -318426,6 +318548,7 @@ export interface operations {
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
+                     *           "savingPercent": null,
                      *           "shippingAmount": "128.40",
                      *           "shippingNetAmount": "120.00",
                      *           "shippingPending": false,
@@ -318439,7 +318562,12 @@ export interface operations {
                      *           "toolingAmount": "0.00",
                      *           "toolingWaiver": null,
                      *           "unitPrice": "13.38",
-                     *           "vatAmount": "883.73"
+                     *           "vatAmount": "883.73",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": {
+                     *             "en": "Bangkok and vicinity",
+                     *             "th": "กรุงเทพฯ และปริมณฑล"
+                     *           }
                      *         }
                      *       ],
                      *       "target": {
@@ -318622,6 +318750,10 @@ export interface operations {
                      *             ],
                      *             "steps": [
                      *               {
+                     *                 "arrival": {
+                     *                   "from": "2026-10-12",
+                     *                   "to": "2026-10-14"
+                     *                 },
                      *                 "designFeeAmount": "0.00",
                      *                 "earliestDeliveryDate": "2026-10-10",
                      *                 "earliestShipDate": "2026-10-09",
@@ -318631,6 +318763,7 @@ export interface operations {
                      *                 "productAmount": "13380.00",
                      *                 "quantity": 1000,
                      *                 "reason": null,
+                     *                 "savingPercent": null,
                      *                 "shippingAmount": "128.40",
                      *                 "shippingNetAmount": "120.00",
                      *                 "shippingPending": false,
@@ -318644,7 +318777,12 @@ export interface operations {
                      *                 "toolingAmount": "0.00",
                      *                 "toolingWaiver": null,
                      *                 "unitPrice": "13.38",
-                     *                 "vatAmount": "883.73"
+                     *                 "vatAmount": "883.73",
+                     *                 "vatRate": "0.07",
+                     *                 "zoneName": {
+                     *                   "en": "Bangkok and vicinity",
+                     *                   "th": "กรุงเทพฯ และปริมณฑล"
+                     *                 }
                      *               }
                      *             ],
                      *             "target": {
@@ -325730,6 +325868,10 @@ export interface operations {
                      *         ],
                      *         "steps": [
                      *           {
+                     *             "arrival": {
+                     *               "from": "2026-10-12",
+                     *               "to": "2026-10-14"
+                     *             },
                      *             "designFeeAmount": "0.00",
                      *             "earliestDeliveryDate": "2026-10-10",
                      *             "earliestShipDate": "2026-10-09",
@@ -325739,6 +325881,7 @@ export interface operations {
                      *             "productAmount": "13380.00",
                      *             "quantity": 1000,
                      *             "reason": null,
+                     *             "savingPercent": null,
                      *             "shippingAmount": "128.40",
                      *             "shippingNetAmount": "120.00",
                      *             "shippingPending": false,
@@ -325752,7 +325895,12 @@ export interface operations {
                      *             "toolingAmount": "0.00",
                      *             "toolingWaiver": null,
                      *             "unitPrice": "13.38",
-                     *             "vatAmount": "883.73"
+                     *             "vatAmount": "883.73",
+                     *             "vatRate": "0.07",
+                     *             "zoneName": {
+                     *               "en": "Bangkok and vicinity",
+                     *               "th": "กรุงเทพฯ และปริมณฑล"
+                     *             }
                      *           }
                      *         ],
                      *         "target": {
