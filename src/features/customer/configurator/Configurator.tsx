@@ -584,7 +584,7 @@ export function Configurator({
           />
         );
       case "delivery":
-        return <DeliveryStep state={state} onChange={updateIn("delivery")} />;
+        return <DeliveryStep state={state} onChange={updateIn("delivery")} priced={priced} />;
       case "design":
         return (
           <DesignStep
