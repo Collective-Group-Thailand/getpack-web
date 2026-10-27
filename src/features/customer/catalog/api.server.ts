@@ -434,7 +434,10 @@ export interface StyleListQuery {
   feature?: string;
   materialClass?: string;
   pricePath?: Schemas["QuoteMode"];
+  /** One use case, or groups `a,b;c` = (a or b) and c (C0 wizard). */
   useCase?: string;
+  /** The size search (C0): the product's outside `LxWxH` in mm. */
+  size?: string;
   q?: string;
   sort?: StyleSort;
   cursor?: string;

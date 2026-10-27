@@ -13,10 +13,12 @@ import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Sheet } from "@/ui/components/Sheet";
 import { Spinner } from "@/ui/components/Spinner";
+import { Icon } from "@/ui/icons";
 
 import { trackCatalog } from "@/lib/analytics/catalog";
 import { facetLabel, type StylesT } from "./labels";
 import { DIELINE_FRAGMENT, styleHref } from "./paths";
+import { cmOf, cmOfSize } from "./size";
 import { VariantPicker } from "./VariantPicker";
 
 export interface QuickViewProps {
@@ -27,7 +29,11 @@ export interface QuickViewProps {
   signedIn: boolean;
   /** Staff's note on tax invoices (`store.style-library.settings`); none, no row. */
   taxInvoiceNote: string | null;
+  /** The size search the list is under (`LxWxH` mm, C0): the panel then says whether and how it fits. */
+  size?: string;
 }
+
+type Fit = NonNullable<StyleDetail["fit"]>;
 
 type State = { key: string } & ({ status: "loading" } | { status: "error" } | { status: "ready"; style: StyleDetail });
 
@@ -39,7 +45,7 @@ type State = { key: string } & ({ status: "loading" } | { status: "error" } | { 
  *
  * Every fact is shown only when the API has it; prices are the API's, incl. VAT (D-220).
  */
-export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvoiceNote }: QuickViewProps) {
+export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvoiceNote, size }: QuickViewProps) {
   const t = useTranslations("styles");
   const words = t as unknown as StylesT;
   const locale = useLocale();
@@ -66,6 +72,30 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
       live = false;
     };
   }, [code, key]);
+
+  // C0: under a size search, the API's fit of this style (its rule, not the browser's): the inside size it recommends.
+  const [fit, setFit] = useState<{ key: string; fit: Fit | null }>({ key: "", fit: null });
+  const fitKey = `${code}:${size ?? ""}`;
+  useEffect(() => {
+    if (!size) return;
+    let live = true;
+    (async () => {
+      try {
+        const { browserApi } = await import("@/lib/api/browser");
+        const { data } = await browserApi().GET("/v1/store/styles", {
+          params: { query: { q: code, size, limit: 5 } },
+        });
+        if (live) setFit({ key: fitKey, fit: data?.data.find((c) => c.code === code)?.fit ?? null });
+      } catch {
+        if (live) setFit({ key: fitKey, fit: null });
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [code, size, fitKey]);
+  const shownFit = size && fit.key === fitKey ? fit.fit : null;
+  const product = cmOfSize(size);
 
   const style = state.status === "ready" ? state.style : null;
   const name = style ? (locale === "en" ? style.nameEn || style.nameTh : style.nameTh || style.nameEn) : code;
@@ -98,7 +128,35 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
               : null;
           })
           .filter((f): f is NonNullable<typeof f> => f !== null),
+        ...(style.fitRange
+          ? [
+              {
+                term: t("library.quickViewFitRange"),
+                description: (
+                  <span className="tabular-nums">
+                    {t("library.quickViewFitRangeValue", {
+                      l: `${cmOf(style.fitRange.minLMm)}–${cmOf(style.fitRange.maxLMm)}`,
+                      w: `${cmOf(style.fitRange.minWMm)}–${cmOf(style.fitRange.maxWMm)}`,
+                      h: `${cmOf(style.fitRange.minHMm)}–${cmOf(style.fitRange.maxHMm)}`,
+                    })}
+                  </span>
+                ),
+              },
+            ]
+          : []),
         { term: t("library.quickViewMaterial"), description: facetLabel(words, "materialClass", style.materialClass) },
+        ...(style.moqUnits
+          ? [
+              {
+                term: t("library.quickViewMoq"),
+                description: (
+                  <span className="tabular-nums">
+                    {t("library.quickViewMoqValue", { count: format.number(style.moqUnits) })}
+                  </span>
+                ),
+              },
+            ]
+          : []),
         ...(style.leadTime
           ? [
               {
@@ -136,6 +194,19 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
               {
                 term: t("library.quickViewUseCases"),
                 description: style.useCases.map((u) => facetLabel(words, "useCase", u)).join(", "),
+              },
+            ]
+          : []),
+        ...(style.recyclable || style.plasticFree
+          ? [
+              {
+                term: t("library.quickViewEco"),
+                description: [
+                  style.recyclable ? t("library.ecoRecyclable") : null,
+                  style.plasticFree ? t("library.ecoPlasticFree") : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
               },
             ]
           : []),
@@ -184,6 +255,25 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
             <Badge tone="instant" icon="zap" className="self-start">
               {t("library.quickViewInstant")}
             </Badge>
+          ) : null}
+          {shownFit && product ? (
+            <div
+              className="border-primary/30 bg-primary-subtle text-primary-subtle-fg rounded-card flex items-start gap-2.5 border p-3 text-sm"
+              data-quick-view-fit=""
+            >
+              <Icon name="check" size={18} aria-hidden="true" className="mt-0.5 shrink-0" />
+              <p>
+                <b className="font-semibold">{t("library.fitTitle", { ...product })}</b>
+                <br />
+                <span className="tabular-nums">
+                  {t("library.fitInside", {
+                    l: cmOf(shownFit.insideLMm),
+                    w: cmOf(shownFit.insideWMm),
+                    h: cmOf(shownFit.insideHMm),
+                  })}
+                </span>
+              </p>
+            </div>
           ) : null}
           <VariantPicker
             compact
