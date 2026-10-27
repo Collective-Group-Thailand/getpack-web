@@ -16644,7 +16644,7 @@ export interface paths {
         head?: never;
         /**
          * Curate a style-library base
-         * @description Marketing / Admin curation (D-246): featured, hidden (never published, D-243), order, Thai / English names and descriptions, the getpack product type, search synonyms and use cases. Changing a name clears both name approvals (D-212). Needs `If-Match` from `admin.styles.get`. Audited; publishability recomputed.
+         * @description Marketing / Admin curation (D-246): featured, hidden (never published, D-243), order, Thai / English names and descriptions, the getpack product type, search synonyms and use cases, and the commercial data /styles shows (`commercial`: inside size range for the size search, MOQ, sustainability facts — styles redesign C0, DECISIONS-STAGE-A §4). Changing a name clears both name approvals (D-212). Needs `If-Match` from `admin.styles.get`. Audited; publishability recomputed.
          *
          *     Implements: D-241, D-242, D-243, D-246, D-212.
          */
@@ -33432,7 +33432,7 @@ export interface paths {
         };
         /**
          * Browse the style library
-         * @description Published styles only — every listed style has at least one variant that is priced (instant or RFQ) and makeable by a partner (D-243). Facets with counts over the matching styles (category, family, closure, feature, use case, material class, price path), Thai / English search over names, codes and synonyms with typo tolerance, sorts `relevance` (with `q`), `popular`, `new`, `instant_first`, `name`, cursor pages (D-245). `favourite` is filled for a signed-in customer. No factory identity (D-050).
+         * @description Published styles only — every listed style has at least one variant that is priced (instant or RFQ) and makeable by a partner (D-243). Facets with counts over the matching styles (category, family, closure, feature, use case, material class, price path), Thai / English search over names, codes and synonyms with typo tolerance, sorts `relevance` (with `q`), `popular`, `new`, `instant_first`, `name`, cursor pages (D-245). `favourite` is filled for a signed-in customer. No factory identity (D-050). Styles redesign C0 (DECISIONS-STAGE-A §4): `size` keeps the styles a product of that outside size fits (inside = product + 5 mm per dimension, length/width may swap, within the entered inside range; incomplete ranges never match) and fills each card's `fit`; `meta.sizeSearchStyles` says how many styles have a range at all. Cards carry the entered `fitRange` and `moqUnits` and the rendered flat dieline (`dielineUrl`) when they exist.
          *
          *     Implements: D-245, D-246, D-243, D-050.
          */
@@ -37488,6 +37488,8 @@ export interface components {
             category: string;
             /** @example PK-TE-01 */
             code: string;
+            /** @description Commercial data shown on /styles (styles redesign C0) */
+            commercial: components["schemas"]["StyleCommercialDto"];
             /** @example M */
             complexity: string | null;
             /** @example Four side panels + glue flap; … */
@@ -79008,6 +79010,11 @@ export interface components {
             category: string;
             /** @example PK-TE-01 */
             code: string;
+            /**
+             * @description Short-lived signed URL of the style's own rendered flat dieline (`dieline_svg` asset, D-270) for the card's hover view; null when the style has none
+             * @example null
+             */
+            dielineUrl: string | null;
             /** @example tuck_end */
             family: string;
             /**
@@ -79017,8 +79024,23 @@ export interface components {
             favourite: boolean | null;
             /** @example false */
             featured: boolean;
+            /**
+             * @description Only with the `size` search: the inside size recommended for the product; null otherwise
+             * @example null
+             */
+            fit: components["schemas"]["StyleFitDto"] | null;
+            /**
+             * @description The inside size range for the card spec row and the size search; null until all six bounds are entered
+             * @example null
+             */
+            fitRange: components["schemas"]["StyleFitRangeDto"] | null;
             /** @example paperboard */
             materialClass: string;
+            /**
+             * @description Minimum order quantity in pieces as entered by the business; null = not shown
+             * @example null
+             */
+            moqUnits: number | null;
             /** @example Tuck-end carton (configurable ends) */
             nameEn: string;
             /** @example กล่องฝาเสียบ (ปรับฝาบน-ล่างได้) */
@@ -79054,6 +79076,52 @@ export interface components {
              */
             variantCount: number;
         };
+        StyleCommercialDto: {
+            /**
+             * @description Certification codes (snake_case), e.g. `fsc`
+             * @example []
+             */
+            certifications: string[];
+            /**
+             * @description Unit: mm.
+             * @example null
+             */
+            fitMaxHMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example null
+             */
+            fitMaxLMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example null
+             */
+            fitMaxWMm: number | null;
+            /**
+             * @description Inside height, minimum. Unit: mm.
+             * @example null
+             */
+            fitMinHMm: number | null;
+            /**
+             * @description Inside length, minimum. Unit: mm.
+             * @example null
+             */
+            fitMinLMm: number | null;
+            /**
+             * @description Inside width, minimum. Unit: mm.
+             * @example null
+             */
+            fitMinWMm: number | null;
+            /**
+             * @description Minimum order quantity (pieces)
+             * @example null
+             */
+            moqUnits: number | null;
+            /** @example null */
+            plasticFree: boolean | null;
+            /** @example null */
+            recyclable: boolean | null;
+        };
         StyleCoverageDto: {
             categories: components["schemas"]["CategoryCoverageDto"][];
             /**
@@ -79069,6 +79137,11 @@ export interface components {
             axes: components["schemas"]["StyleAxisDto"][];
             /** @example folding_carton */
             category: string;
+            /**
+             * @description Certification codes as entered by the business
+             * @example []
+             */
+            certifications: string[];
             /** @example PK-TE-01 */
             code: string;
             /** @example Four side panels + glue flap; … */
@@ -79077,6 +79150,11 @@ export interface components {
             descriptionEn: string | null;
             /** @example null */
             descriptionTh: string | null;
+            /**
+             * @description Short-lived signed URL of the style's own rendered flat dieline (`dieline_svg` asset, D-270) for the card's hover view; null when the style has none
+             * @example null
+             */
+            dielineUrl: string | null;
             /** @example tuck_end */
             family: string;
             /**
@@ -79086,9 +79164,24 @@ export interface components {
             favourite: boolean | null;
             /** @example false */
             featured: boolean;
+            /**
+             * @description Only with the `size` search: the inside size recommended for the product; null otherwise
+             * @example null
+             */
+            fit: components["schemas"]["StyleFitDto"] | null;
+            /**
+             * @description The inside size range for the card spec row and the size search; null until all six bounds are entered
+             * @example null
+             */
+            fitRange: components["schemas"]["StyleFitRangeDto"] | null;
             leadTime: components["schemas"]["LeadTimeRangeDto"] | null;
             /** @example paperboard */
             materialClass: string;
+            /**
+             * @description Minimum order quantity in pieces as entered by the business; null = not shown
+             * @example null
+             */
+            moqUnits: number | null;
             /** @example Tuck-end carton (configurable ends) */
             nameEn: string;
             /** @example กล่องฝาเสียบ (ปรับฝาบน-ล่างได้) */
@@ -79104,6 +79197,11 @@ export interface components {
             options: string[];
             /** @example null */
             photo: components["schemas"]["StylePhotoDto"] | null;
+            /**
+             * @description As entered by the business; null = unknown
+             * @example null
+             */
+            plasticFree: boolean | null;
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
             /**
@@ -79111,6 +79209,11 @@ export interface components {
              * @example folding_carton
              */
             productTypeCode: string | null;
+            /**
+             * @description As entered by the business; null = unknown
+             * @example null
+             */
+            recyclable: boolean | null;
             /**
              * @description Only once Prepress verified it (D-211)
              * @example null
@@ -79162,6 +79265,34 @@ export interface components {
              */
             addedAt: string;
             style: components["schemas"]["StyleCardDto"];
+        };
+        StyleFitDto: {
+            /** @example 85 */
+            insideHMm: number;
+            /**
+             * @description Recommended inside length. Unit: mm.
+             * @example 205
+             */
+            insideLMm: number;
+            /** @example 155 */
+            insideWMm: number;
+        };
+        StyleFitRangeDto: {
+            /** @example 150 */
+            maxHMm: number;
+            /** @example 300 */
+            maxLMm: number;
+            /** @example 200 */
+            maxWMm: number;
+            /** @example 20 */
+            minHMm: number;
+            /**
+             * @description Inside length, minimum. Unit: mm.
+             * @example 50
+             */
+            minLMm: number;
+            /** @example 40 */
+            minWMm: number;
         };
         StyleImportFileDto: {
             /**
@@ -79347,7 +79478,16 @@ export interface components {
             data: components["schemas"]["StyleCardDto"][];
             /** @description Counts over the styles matching the query and filters */
             facets: components["schemas"]["StyleFacetsDto"];
-            meta: components["schemas"]["CursorMeta"];
+            meta: components["schemas"]["StyleListMeta"];
+        };
+        StyleListMeta: {
+            /** @example eyJpZCI6IjEyMyJ9 */
+            nextCursor: string | null;
+            /**
+             * @description Published styles with a complete inside size range — the size search is offered only when this is above 0
+             * @example 0
+             */
+            sizeSearchStyles: number;
         };
         /**
          * @description Which approval this is (D-212): Marketing for the wording, Prepress for technical terms
@@ -82842,6 +82982,8 @@ export interface components {
             widthMm?: number | null;
         };
         UpdateStyleDto: {
+            /** @description Replaces the commercial data shown on /styles (styles redesign C0): every field, null = unknown. Each min must not exceed its max. */
+            commercial?: components["schemas"]["StyleCommercialDto"];
             /** @example A folding carton for cosmetics */
             descriptionEn?: string | null;
             /** @example กล่องกระดาษพับสำหรับเครื่องสำอาง */
@@ -205414,6 +205556,18 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
@@ -205574,6 +205728,18 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
@@ -205761,6 +205927,18 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
@@ -205928,6 +206106,18 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
@@ -206108,6 +206298,18 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
@@ -206294,6 +206496,18 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
@@ -206468,6 +206682,18 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
@@ -328252,10 +328478,14 @@ export interface operations {
                      *         "style": {
                      *           "category": "folding_carton",
                      *           "code": "PK-TE-01",
+                     *           "dielineUrl": null,
                      *           "family": "tuck_end",
                      *           "favourite": true,
                      *           "featured": false,
+                     *           "fit": null,
+                     *           "fitRange": null,
                      *           "materialClass": "paperboard",
+                     *           "moqUnits": null,
                      *           "nameEn": "Tuck-end carton (configurable ends)",
                      *           "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *           "options": [
@@ -328511,6 +328741,8 @@ export interface operations {
                 pricePath?: components["schemas"]["QuoteMode"];
                 /** @description Thai / English search over names, codes and synonyms (typos tolerated) */
                 q?: string;
+                /** @description Size search (styles redesign C0, DECISIONS-STAGE-A §4): the outside size of the customer's product, length × width × height in mm. Keeps the styles whose entered inside range takes it plus 5 mm per dimension (length and width may swap); styles without a complete range are left out. Each card then carries `fit`. */
+                size?: string;
                 /** @description Default: relevance with `q`, else popular */
                 sort?: components["schemas"]["StyleSort"];
                 useCase?: string;
@@ -328540,10 +328772,14 @@ export interface operations {
                      *         {
                      *           "category": "folding_carton",
                      *           "code": "PK-TE-01",
+                     *           "dielineUrl": null,
                      *           "family": "tuck_end",
                      *           "favourite": null,
                      *           "featured": false,
+                     *           "fit": null,
+                     *           "fitRange": null,
                      *           "materialClass": "paperboard",
+                     *           "moqUnits": null,
                      *           "nameEn": "Tuck-end carton (configurable ends)",
                      *           "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *           "options": [
@@ -328608,7 +328844,8 @@ export interface operations {
                      *         "useCase": []
                      *       },
                      *       "meta": {
-                     *         "nextCursor": null
+                     *         "nextCursor": null,
+                     *         "sizeSearchStyles": 0
                      *       }
                      *     }
                      */
@@ -328707,15 +328944,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "category": "folding_carton",
+                     *       "certifications": [],
                      *       "code": "PK-TE-01",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
+                     *       "dielineUrl": null,
                      *       "family": "tuck_end",
                      *       "favourite": null,
                      *       "featured": false,
+                     *       "fit": null,
+                     *       "fitRange": null,
                      *       "leadTime": null,
                      *       "materialClass": "paperboard",
+                     *       "moqUnits": null,
                      *       "nameEn": "Tuck-end carton (configurable ends)",
                      *       "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *       "options": [
@@ -328723,8 +328965,10 @@ export interface operations {
                      *         "window:front_window"
                      *       ],
                      *       "photo": null,
+                     *       "plasticFree": null,
                      *       "pricePath": "instant",
                      *       "productTypeCode": "folding_carton",
+                     *       "recyclable": null,
                      *       "referenceCode": null,
                      *       "sizeRanges": [
                      *         {
@@ -328866,15 +329110,20 @@ export interface operations {
                      *           }
                      *         ],
                      *         "category": "folding_carton",
+                     *         "certifications": [],
                      *         "code": "PK-TE-01",
                      *         "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *         "descriptionEn": null,
                      *         "descriptionTh": null,
+                     *         "dielineUrl": null,
                      *         "family": "tuck_end",
                      *         "favourite": null,
                      *         "featured": false,
+                     *         "fit": null,
+                     *         "fitRange": null,
                      *         "leadTime": null,
                      *         "materialClass": "paperboard",
+                     *         "moqUnits": null,
                      *         "nameEn": "Tuck-end carton (configurable ends)",
                      *         "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *         "options": [
@@ -328882,8 +329131,10 @@ export interface operations {
                      *           "window:front_window"
                      *         ],
                      *         "photo": null,
+                     *         "plasticFree": null,
                      *         "pricePath": "instant",
                      *         "productTypeCode": "folding_carton",
+                     *         "recyclable": null,
                      *         "referenceCode": null,
                      *         "sizeRanges": [
                      *           {
