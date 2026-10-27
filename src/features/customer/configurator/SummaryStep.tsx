@@ -53,11 +53,11 @@ export function SummaryStep({ priced, pattern, draft, draftBusy, onDraft }: Summ
             {t("tolerances")}
           </h3>
           <dl className="text-muted m-0 grid grid-cols-[4.5rem_1fr] gap-x-2.5 gap-y-1">
-            <dt className="text-subtle">{t("toleranceLabels.quantity")}</dt>
+            <dt>{t("toleranceLabels.quantity")}</dt>
             <dd className="m-0">{quantity}</dd>
-            <dt className="text-subtle">{t("toleranceLabels.size")}</dt>
+            <dt>{t("toleranceLabels.size")}</dt>
             <dd className="m-0">{size}</dd>
-            <dt className="text-subtle">{t("toleranceLabels.colour")}</dt>
+            <dt>{t("toleranceLabels.colour")}</dt>
             <dd className="m-0">{colour}</dd>
           </dl>
         </section>

@@ -301,7 +301,8 @@ export function ConfiguratorDock({
                     className={reason ? "pk-flash rounded-sm px-1" : undefined}
                   >
                     {format.thb(priced?.unitPrice)}
-                  </span>
+                  </span>{" "}
+                  {/* A real space, so the price reads and copies as "฿x / ชิ้น" like every other price. */}
                   <small className="text-muted font-sans text-[0.9375rem] font-medium tracking-normal">
                     {t("perUnit", { unit })}
                   </small>
