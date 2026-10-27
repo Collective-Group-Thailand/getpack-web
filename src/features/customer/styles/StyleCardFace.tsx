@@ -119,8 +119,9 @@ export function StyleCardFace({
       badges={
         instant || style.featured || (words.fit && style.fit) ? (
           <>
+            {/* "ใส่ได้" first in the badge row: at the top end (prototype) it collides with long badges on narrow cards. */}
             {words.fit && style.fit ? (
-              <Badge tone="primary" icon="check" data-fit="">
+              <Badge tone="primary" icon="check" data-fit="" className="rounded-full">
                 {words.fit}
               </Badge>
             ) : null}
