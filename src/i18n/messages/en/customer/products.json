@@ -1,0 +1,301 @@
+{
+  "meta": {
+    "title": "Products and prices",
+    "description": "Starting prices, minimum orders and production times of every kind of packaging on one page. Instant-price products can be ordered right away; made-to-spec work goes into one quotation request."
+  },
+  "head": {
+    "home": "Home",
+    "breadcrumb": "Products and prices",
+    "breadcrumbLabel": "Breadcrumb",
+    "title": "Products and prices",
+    "lede": "Starting prices, minimum orders and production times of every kind of packaging on one page. Order instant-price products right away, or put several made-to-spec items into one quotation request.",
+    "searchLabel": "Search products",
+    "searchPlaceholder": "Search products, e.g. mailer box, label, dropper bottle",
+    "searchClear": "Clear search",
+    "totals": "{items, number} items · {categories, number} categories",
+    "vatSwitch": "Show prices incl. VAT",
+    "vatIncludedNote": "Prices shown include VAT"
+  },
+  "modes": {
+    "label": "How to buy",
+    "instant": {
+      "name": "Instant price",
+      "description": "Choose size, quantity and print colours, see the price and order right away",
+      "line": "From <b>{price}</b>/{unit}",
+      "lineMoq": "From <b>{price}</b>/{unit} · min. {moq, number}"
+    },
+    "quote": {
+      "name": "Made to spec",
+      "description": "Boxes, labels and tags in your size and print, several items in one quotation request",
+      "lineRange": "Min. <b>{min, number}–{max, number}</b> pcs",
+      "lineOne": "Min. <b>{min, number}</b> pcs"
+    },
+    "stock": {
+      "name": "Ready to ship",
+      "description": "Standard bottles, jars and protective packaging, in stock",
+      "line": "Min. from <b>{min, number}</b>"
+    },
+    "service": {
+      "name": "Services",
+      "description": "Graphic design, real samples and printing plates",
+      "line": "Priced by scope of work"
+    },
+    "all": "All"
+  },
+  "sections": {
+    "label": "On this page",
+    "calc": "Price calculator",
+    "catalog": "All products",
+    "how": "How pricing works",
+    "materials": "Materials",
+    "process": "Process and timing",
+    "services": "Add-on services",
+    "faq": "FAQ"
+  },
+  "calc": {
+    "title": "Quick price calculator",
+    "lede": "For instant-price products: choose a product, quantity and print colours to see the price per piece. Adjust the size in the next step.",
+    "product": "Product",
+    "quantity": "Quantity ({unit})",
+    "customQuantity": "Custom quantity",
+    "belowMinimum": "Minimum order {min, number} {unit}",
+    "aboveMaximum": "Maximum order {max, number} {unit}",
+    "print": "Print colours",
+    "printNone": "No print",
+    "printSpots": "Spot colours",
+    "reference": "Reference spec: {spec}",
+    "referenceGeneric": "Priced at the product's standard spec; adjust size and material in the next step",
+    "summary": "Price per piece · {quantity, number} {unit} · {vat}",
+    "perUnit": "/{unit}",
+    "netAmount": "Before VAT",
+    "vatAmount": "VAT {rate}",
+    "vatAmountNoRate": "VAT",
+    "grossAmount": "Total (shipping not included)",
+    "tooling": "Dies and plates (first order)",
+    "barsLabel": "Price per piece by quantity",
+    "barLabel": "{quantity, number} {unit}: {price}",
+    "barNoPrice": "{quantity, number} {unit}: request a quote",
+    "leadTime": "Made in {days, number} working days",
+    "moq": "Min. {quantity, number} {unit}",
+    "warranty": "Work guarantee",
+    "cta": "Adjust size and order",
+    "shippingNote": "Shipping not included",
+    "toleranceNote": "The quantity delivered may be slightly under or over, within print industry standards",
+    "toleranceRange": "The quantity delivered may be up to {shortage}% under or {overage}% over, within print industry standards",
+    "toleranceLink": "See the work guarantee",
+    "pending": "Calculating",
+    "noPrice": "No instant price for this quantity — request a quote",
+    "quoteCta": "Request a quote",
+    "failed": "Could not calculate the price. Try again.",
+    "retry": "Try again",
+    "loading": "Loading the calculator"
+  },
+  "catalogue": {
+    "title": "All products",
+    "lede": "Filter by how to buy or category; switch to the price table to compare items side by side",
+    "tabs": "How to buy",
+    "categories": "Categories",
+    "allCategories": "All categories",
+    "sort": "Sort by",
+    "sorts": {
+      "recommended": "Sort: Recommended",
+      "price": "Sort: Starting price, low to high",
+      "moq": "Sort: Lowest minimum",
+      "lead": "Sort: Fastest production"
+    },
+    "view": "View",
+    "views": {
+      "grid": "Cards",
+      "table": "Price table"
+    },
+    "resultsFor": "Results for “{q}”",
+    "showing": "Showing {shown, number} of {total, number} items",
+    "loadMore": "Load more",
+    "emptyTitle": "No products here yet",
+    "emptyBody": "Try another way to buy, or request a quote for your own spec",
+    "emptyReset": "See all products",
+    "searchEmptyTitle": "No products match “{q}”",
+    "uncategorised": "Other",
+    "categoryPage": "See the whole {name} category"
+  },
+  "card": {
+    "instantBadge": "Instant price",
+    "stockBadge": "Ready to ship",
+    "outOfStock": "Temporarily out of stock",
+    "from": "From",
+    "perUnit": "/{unit} · at {quantity, number} {unit}",
+    "perUnitOnly": "/{unit}",
+    "quote": "Priced to spec",
+    "service": "Priced by scope of work",
+    "stockPrice": "See prices by quantity",
+    "moq": "Min. {quantity, number} {unit}",
+    "leadExact": "Made in {days, number} working days",
+    "leadRange": "Made in {min, number}–{max, number} working days",
+    "buy": "See price and order",
+    "rfqAdd": "Add to quote request",
+    "rfqIn": "In quote request",
+    "rfqAddLabel": "Add {name} to the quote request",
+    "rfqRemoveLabel": "Remove {name} from the quote request"
+  },
+  "table": {
+    "caption": "Starting price table",
+    "product": "Product",
+    "category": "Category",
+    "mode": "How to buy",
+    "price": "Starting price ({vat})",
+    "atQuantity": "At quantity",
+    "moq": "Minimum",
+    "lead": "Production",
+    "action": "Action",
+    "none": "—",
+    "leadExact": "{days, number} working days",
+    "leadRange": "{min, number}–{max, number} working days"
+  },
+  "rfq": {
+    "tray": "Quote request",
+    "count": "Quote request: <b>{count, number}</b> items",
+    "send": "Send request",
+    "clear": "Clear",
+    "added": "Added to the quote request",
+    "removed": "Removed from the quote request",
+    "cleared": "Quote request cleared",
+    "full": "A quote request holds at most {max, number} items",
+    "progress": "Quote request: item {index, number} of {total, number}",
+    "progressBody": "Fill in this item's spec and press “Add to request basket”; you then go on to the next item. Once all are in, send them together.",
+    "skip": "Skip this item"
+  },
+  "how": {
+    "title": "How pricing works",
+    "lede": "The price per piece depends on four things. Knowing them helps you budget and choose the best-value spec.",
+    "size": {
+      "title": "Size",
+      "body": "A bigger box uses more board; a size that fits the print sheet well wastes less and costs less"
+    },
+    "material": {
+      "title": "Material",
+      "body": "Paper grade, grammage and flute type decide both strength and cost"
+    },
+    "print": {
+      "title": "Print and finishing",
+      "body": "Number of colours, one or two sides and special finishes; offset printing has a plate cost per set"
+    },
+    "quantity": {
+      "title": "Quantity",
+      "body": "Set-up costs are shared across the quantity: the more you order, the lower the price per piece"
+    },
+    "included": "What the price includes",
+    "includes": {
+      "vat": "Prices shown include VAT",
+      "dieline": "Box templates are free to download",
+      "warranty": "Work guaranteed to standard criteria"
+    },
+    "excludes": {
+      "shipping": "Shipping is not included"
+    },
+    "includedLabel": "Included",
+    "excludedLabel": "Not included"
+  },
+  "materials": {
+    "title": "Corrugated board materials",
+    "lede": "Material options of the instant-price products: the letters are the liner grade, the number is the grammage",
+    "compare": "Compare all materials",
+    "caption": "Materials of the instant-price products",
+    "material": "Material",
+    "flute": "Flute",
+    "fluteFigure": "{flute} flute cross-section",
+    "use": "Good for",
+    "none": "—"
+  },
+  "process": {
+    "title": "Process and timing",
+    "lede": "Production time is counted in working days and shown on each product's card and page",
+    "steps": {
+      "choose": {
+        "title": "Choose product and spec",
+        "body": "Instant-price products show their price at once; made-to-spec items go into a quote request",
+        "tag": "Instant price / quotation"
+      },
+      "pay": {
+        "title": "Send files and pay",
+        "body": "Upload your artwork or design it in the Studio, then pay the way that suits you",
+        "tag": "Tax invoice available"
+      },
+      "produce": {
+        "title": "Production",
+        "body": "We produce to your spec; follow the status on your order page",
+        "tagRange": "Instant price {min, number}–{max, number} working days",
+        "tagExact": "Instant price {days, number} working days"
+      },
+      "deliver": {
+        "title": "Delivery and guarantee",
+        "body": "Delivered to your address; inspect and report issues under the work guarantee",
+        "tag": "Order tracking"
+      }
+    },
+    "payments": "Payment methods",
+    "paymentMethods": {
+      "transfer": "Bank transfer",
+      "promptpay": "PromptPay QR",
+      "card": "Credit/debit card"
+    }
+  },
+  "services": {
+    "title": "Add-on services",
+    "lede": "Order with your products or on their own; priced to the job"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "items": {
+      "vat": {
+        "q": "Do the prices include VAT?",
+        "a": "Product prices include VAT but not shipping. Shipping is calculated from the delivery postcode when you order."
+      },
+      "moq": {
+        "q": "What is the minimum order?",
+        "a": "It depends on the product; each item's minimum is shown on its card and in this page's price table."
+      },
+      "lead": {
+        "q": "How long does production take?",
+        "a": "Instant-price products show their production time in working days; made-to-spec work has its timing in the quotation."
+      },
+      "tolerance": {
+        "q": "Can the quantity delivered be slightly under or over?",
+        "a": "Printed work may be slightly under or over within print industry standards; see the work guarantee for details."
+      },
+      "payment": {
+        "q": "How can I pay?",
+        "a": "Bank transfer, PromptPay QR and credit/debit card."
+      },
+      "taxInvoice": {
+        "q": "Can I get a full tax invoice?",
+        "a": "Yes — a full tax invoice issued by Collective Group (Thailand) Co., Ltd.; enter your company details when you order."
+      },
+      "mockup": {
+        "q": "Can I see a real sample before mass production?",
+        "a": "Yes — order the “Real sample (mock-up)” service to check size, colour and print before a large order."
+      },
+      "dieline": {
+        "q": "Can I download box templates?",
+        "a": "Yes — box templates are free to download from each product page."
+      }
+    }
+  },
+  "cta": {
+    "title": "Several items, or a spec we don't list?",
+    "body": "Put everything into one quote request, or chat with the team on LINE",
+    "bodyHours": "Put everything into one quote request, or chat with the team on LINE {hours}",
+    "bodyNoLine": "Put everything into one quote request; the team replies with prices for every item",
+    "quote": "Request a quote",
+    "line": "Chat on LINE"
+  },
+  "styles": {
+    "title": "Box styles available",
+    "lede": "This product can be made in these box styles; open a style in the style library for details",
+    "open": "See style {name}"
+  },
+  "styleProducts": {
+    "title": "Products using this style",
+    "from": "From {price}/pc · {vat}",
+    "quote": "Priced to spec"
+  }
+}
