@@ -14,6 +14,7 @@ import { bangkokIso, mockId, problem } from "../support";
 import { addToCart, toCartDto } from "./cart";
 import { threads } from "./conversations";
 import { customerOf, type MockCustomer } from "./customers";
+import { productRefOf } from "./catalog";
 import { ownerIdOf } from "./owner";
 import { acceptStoreRfq, createStoreRfq, myRfq, rfqRefusal, rfqTypeNames, storeRfqDto } from "./rfq";
 
@@ -78,9 +79,15 @@ function itemOf(input: Schemas["RfqBasketItemInputDto"], sort: number): Schemas[
     specification: {
       spec: input.spec,
       quantities: input.quantities,
+      ...(input.catalogProductSlug ? { catalogProductSlug: input.catalogProductSlug } : {}),
+      ...(input.stockProductSku ? { stockProductSku: input.stockProductSku } : {}),
       ...(input.lengthMm ? { lengthMm: input.lengthMm, widthMm: input.widthMm, heightMm: input.heightMm ?? null } : {}),
     },
     design: input.design ?? null,
+    product: (() => {
+      const product = productRefOf(input);
+      return product && !("refused" in product) ? product : null;
+    })(),
     rfq: null,
   };
 }
@@ -121,6 +128,12 @@ export const rfqBasketHandlers = [
     if (!input.quantities?.length)
       return problem(422, "validation.failed", "ระบุจำนวนอย่างน้อยหนึ่งจำนวน", [
         { path: "quantities", code: "required", message: "required" },
+      ]);
+    // C1-API-3: a named product must be an active product of the line's type.
+    const product = productRefOf(input);
+    if (product && "refused" in product)
+      return problem(422, "validation.failed", "ไม่พบสินค้านี้ในประเภทที่เลือก", [
+        { path: product.refused, code: "exists", message: "exists" },
       ]);
     draft.items.push(itemOf(input, draft.items.length));
     draft.inputs.push(input);
@@ -182,6 +195,8 @@ export const rfqBasketHandlers = [
           ...(draft.targetDate ? { targetDate: draft.targetDate } : {}),
           ...(draft.notes ? { notes: draft.notes } : {}),
           fileIds: input.fileIds ?? [],
+          ...(input.catalogProductSlug ? { catalogProductSlug: input.catalogProductSlug } : {}),
+          ...(input.stockProductSku ? { stockProductSku: input.stockProductSku } : {}),
         } as Schemas["SubmitRfqDto"],
         en,
       ),

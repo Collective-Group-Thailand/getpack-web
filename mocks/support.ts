@@ -149,4 +149,6 @@ export const RFQ_V2_EMPTY = {
   targetPricePerUnit: null,
   style: null,
   design: null,
+  // C1-API-3: the product a request was asked from (none for the desk's fixture rows).
+  product: null,
 } as const;
