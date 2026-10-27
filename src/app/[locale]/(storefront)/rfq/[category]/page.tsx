@@ -13,7 +13,9 @@ import {
 import { pick } from "@/features/customer/catalog/localize";
 import { categorySegment, productHref, rfqHref } from "@/features/customer/catalog/paths";
 import { styleHref } from "@/features/customer/styles/paths";
+import { TrayProgress } from "@/features/customer/products/TrayProgress";
 import { RfqForm } from "@/features/customer/rfq/RfqForm";
+import { featureFlags } from "@/lib/env/server";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
@@ -26,7 +28,16 @@ type Params = { category: string };
 /** A calculation id from the configurator, checked for its shape only — the API decides the rest. */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type Search = { type?: string; from?: string; sku?: string; calc?: string; base?: string; style?: string };
+type Search = {
+  type?: string;
+  from?: string;
+  sku?: string;
+  calc?: string;
+  base?: string;
+  style?: string;
+  /** `1` when the products hub's RFQ tray walks its items through this form (C1). */
+  tray?: string;
+};
 /** A style code as the API writes it (`PK-TE-01`, `PK-TE-01-K7QD`). */
 const STYLE_CODE = /^[A-Z0-9][A-Z0-9-]{2,39}$/;
 
@@ -83,6 +94,21 @@ export default async function Page({
 
   const name = pick(locale, category.nameTh, category.nameEn);
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
+  // The tray item this form is for (C1): the product the hub's tray holds, by slug or SKU.
+  const trayItem =
+    query.tray === "1" && (product || stock)
+      ? product
+        ? { kind: "catalog" as const, key: product.slug }
+        : { kind: "stock" as const, key: stock!.sku }
+      : null;
+  // DECISIONS-STAGE-A §4: the request keeps the product it is for (sent once the API takes it).
+  const productRef = featureFlags.rfqProductRef
+    ? product
+      ? { catalogProductSlug: product.slug }
+      : stock
+        ? { stockProductSku: stock.sku }
+        : null
+    : null;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 md:py-10">
@@ -137,8 +163,11 @@ export default async function Page({
           <h2 id="rfq-form" className="text-lg font-semibold">
             {t("formHeading", { type: pick(locale, type.nameTh, type.nameEn) })}
           </h2>
+          {trayItem ? <TrayProgress current={trayItem} className="mt-4" /> : null}
           <div className="mt-4">
             <RfqForm
+              tray={trayItem}
+              productRef={productRef}
               form={withProductChoices(form!, product, tCatalog)}
               signedIn={Boolean(readAccessToken(jar))}
               fromProduct={

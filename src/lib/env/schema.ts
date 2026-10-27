@@ -122,6 +122,11 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
      */
     FEATURE_STYLES_WIZARD: optional(z.enum(["0", "1"])),
     FEATURE_PACKAGING_LANDINGS: optional(z.enum(["0", "1"])),
+    /**
+     * Stage C · C1: send the product an RFQ is asked from (`catalogProductSlug` / `stockProductSku`, getpack-api
+     * C1-API-3). Off until the API that accepts them is deployed — an older API refuses the unknown fields.
+     */
+    FEATURE_RFQ_PRODUCT_REF: optional(z.enum(["0", "1"])),
 
     SENTRY_DSN: optionalText,
     SENTRY_ENVIRONMENT: optionalText,
