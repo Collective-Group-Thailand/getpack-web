@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { getCatalogueTree, listFaqs } from "@/features/customer/catalog/api.server";
 import { categoryHref } from "@/features/customer/catalog/paths";
 import { pick } from "@/features/customer/catalog/localize";
+import { FAQ_KEYS as PRODUCTS_FAQ_KEYS } from "@/features/customer/products/content";
 import { PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
 import { routing } from "@/i18n/routing";
 import { featureFlags } from "@/lib/env/server";
@@ -101,6 +102,13 @@ export async function GET(): Promise<Response> {
         "",
       );
     }
+  }
+
+  // C1: the /products hub's questions (the same words as its FAQ and its FAQPage markup).
+  const tProducts = await getTranslations({ locale, namespace: "products" });
+  lines.push("", `## ${tProducts("head.title")} — ${tProducts("faq.title")} (${url("/products")})`, "");
+  for (const key of PRODUCTS_FAQ_KEYS) {
+    lines.push(`### ${tProducts(`faq.items.${key}.q`)}`, "", tProducts(`faq.items.${key}.a`), "");
   }
 
   lines.push("", `## ${t("llms.policiesHeading")}`, "", `- ${both("/legal/terms")}`, `- ${both("/legal/privacy")}`, "");
