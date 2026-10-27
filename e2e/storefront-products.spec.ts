@@ -96,7 +96,12 @@ test.describe("the products hub", () => {
 
   test("no horizontal scroll on a phone", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await gotoHydrated(page, `${HOSTS.customer}/products`);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+    for (const path of ["/products", "/products?view=table", "/products/corrugated?view=table"]) {
+      await gotoHydrated(page, `${HOSTS.customer}${path}`);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
+        path,
+      ).toBeLessThanOrEqual(0);
+    }
   });
 });

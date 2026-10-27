@@ -246,7 +246,7 @@ export async function MaterialsTable({ configurators }: { configurators: readonl
       }
     >
       <div
-        className="border-border bg-surface rounded-card overflow-x-auto border"
+        className="border-border bg-surface rounded-card relative overflow-x-auto border"
         tabIndex={0}
         role="region"
         aria-label={t("caption")}

@@ -48,7 +48,7 @@ export async function PriceTable({
   const head = "text-muted bg-bg-subtle px-4 py-3 text-start text-[0.8125rem] font-medium whitespace-nowrap";
   return (
     <div
-      className="border-border bg-surface rounded-card overflow-x-auto border"
+      className="border-border bg-surface rounded-card relative overflow-x-auto border"
       tabIndex={0}
       role="region"
       aria-label={t("table.caption")}
