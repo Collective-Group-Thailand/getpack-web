@@ -28,8 +28,18 @@ async function expectNoViolations(page: Page) {
 }
 
 const dock = (page: Page) => page.getByRole("complementary", { name: "ราคาของคุณ" });
-const step = (page: Page, label: string) =>
-  page.getByRole("button", { name: new RegExp(`^ขั้นที่ \\d+ จาก \\d+ ${label}`) }).first();
+/** The dock's per-piece figure alone — the line beside it gains a "price changed" badge. */
+const unitPrice = (page: Page) => dock(page).locator("[data-unit-price]");
+/** Every step is open in one scroll (C4); a step is its titled region. */
+const step = (page: Page, title: string | RegExp) => page.getByRole("region", { name: title });
+
+/** The budget sits behind a collapsed disclosure under the quantity cards (C4-7). */
+async function setTarget(page: Page, value: string) {
+  const quantity = step(page, "จำนวน");
+  const field = quantity.getByRole("textbox", { name: "งบต่อชิ้น" });
+  if (!(await field.isVisible())) await quantity.getByText("มีงบต่อชิ้นในใจ? (ไม่บังคับ)").click();
+  await field.fill(value);
+}
 
 test.describe("configurator v2", () => {
   test.beforeEach(async ({ page }) => acceptCookies(page));
@@ -66,12 +76,13 @@ test.describe("configurator v2", () => {
 
   test("prints in colour: a process ink is the full-colour pass, and the price follows", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
-    const headline = dock(page).getByText(/^฿[\d,]+\.\d{2} \/ ชิ้น$/);
-    await expect(headline).toBeVisible();
-    const plain = await headline.textContent();
-    await step(page, "การพิมพ์").click();
-    await page.getByRole("group", { name: "สีพิมพ์ด้านนอก" }).getByRole("checkbox", { name: /CMYK/ }).click();
-    await expect(headline).not.toHaveText(plain!, { timeout: 15_000 });
+    await expect(dock(page).getByText(/^฿[\d,]+\.\d{2} \/ ชิ้น$/)).toBeVisible();
+    const plain = await unitPrice(page).textContent();
+    await step(page, "การพิมพ์")
+      .getByRole("group", { name: "สีพิมพ์ด้านนอก" })
+      .getByRole("checkbox", { name: /CMYK/ })
+      .click();
+    await expect(unitPrice(page)).not.toHaveText(plain!, { timeout: 15_000 });
   });
 
   test("the Structure Advisor recommends a board, and taking one re-prices", async ({ page }) => {
@@ -83,7 +94,6 @@ test.describe("configurator v2", () => {
     await page.getByRole("textbox", { name: "กว้าง" }).fill("300");
     await page.getByRole("textbox", { name: "สูง" }).fill("250");
 
-    await step(page, "(วัสดุ|ลอนกระดาษ)").click();
     const advisor = page.getByRole("region", { name: "แนะนำลอนกระดาษ" });
     await expect(advisor).toContainText("ใส่น้ำหนักสินค้า");
     await advisor.getByRole("button", { name: "ใส่ข้อมูลสินค้าและการขนส่ง" }).click();
@@ -91,7 +101,6 @@ test.describe("configurator v2", () => {
     await page.getByLabel("จำนวนสินค้าต่อกล่อง").fill("10");
     await page.getByLabel("ซ้อนกี่ชั้น").fill("4");
 
-    await step(page, "(วัสดุ|ลอนกระดาษ)").click();
     await advisor.getByRole("button", { name: "ดูคำแนะนำ" }).click();
     await expect(advisor).toContainText("ค่าประมาณ ไม่ใช่การรับประกัน");
     await expect(advisor.getByText(/นิวตัน/).first()).toBeVisible();
@@ -103,8 +112,8 @@ test.describe("configurator v2", () => {
     await expectNoViolations(page);
     await why.getByRole("button", { name: "ปิด" }).first().click();
 
-    const headline = dock(page).getByText(/^฿[\d,]+\.\d{2} \/ ชิ้น$/);
-    await expect(headline).toBeVisible({ timeout: 15_000 });
+    const headline = unitPrice(page);
+    await expect(headline).toHaveText(/^฿[\d,]+\.\d{2}$/, { timeout: 15_000 });
     const before = await headline.textContent();
     // The recommended board is the cheapest that passes — not the heavy board the product starts on.
     await advisor.getByRole("button", { name: "ใช้ลอนนี้" }).first().click();
@@ -116,9 +125,8 @@ test.describe("configurator v2", () => {
 
   test("a target above the price brings the API's levers, and one is taken", async ({ page }) => {
     await signInAsCustomer(page, "/configure/tuck-end-box");
-    await step(page, "จำนวน").click();
-    await page.getByLabel(/ราคาเป้าหมายต่อ/).fill("0.50");
-    const target = page.getByRole("region", { name: /ราคาเป้าหมาย/ });
+    await setTarget(page, "0.50");
+    const target = page.getByRole("region", { name: /^ราคาเป้าหมาย/ });
     await expect(target.getByText("สูงกว่าเป้าหมาย", { exact: true })).toBeVisible({ timeout: 15_000 });
     await expect(dock(page)).toContainText("สูงกว่าเป้าหมาย");
     await expect(target).toContainText("เราไม่แสดงให้ผู้อื่นเห็น");
@@ -132,16 +140,14 @@ test.describe("configurator v2", () => {
     await expect(page.getByText(/จากทางเลือกนี้แล้ว/)).toBeVisible();
 
     // A generous target meets the price.
-    await step(page, "จำนวน").click();
-    await page.getByLabel(/ราคาเป้าหมายต่อ/).fill("999");
+    await setTarget(page, "999");
     await expect(target.getByText("ราคานี้อยู่ในเป้าหมายแล้ว")).toBeVisible({ timeout: 15_000 });
   });
 
   test("talking to sales turns the quote into a pre-filled request", async ({ page }) => {
     await signInAsCustomer(page, "/configure/tuck-end-box");
-    await step(page, "จำนวน").click();
-    await page.getByLabel(/ราคาเป้าหมายต่อ/).fill("0.50");
-    const target = page.getByRole("region", { name: /ราคาเป้าหมาย/ });
+    await setTarget(page, "0.50");
+    const target = page.getByRole("region", { name: /^ราคาเป้าหมาย/ });
     await target.getByRole("button", { name: "คุยกับทีมขาย" }).click();
     const dialog = page.getByRole("dialog", { name: "ส่งให้ทีมขายช่วยหาราคา" });
     await dialog.getByLabel(/ข้อความถึงทีมขาย/).fill("ยืดหยุ่นเรื่องวัสดุได้");
@@ -158,13 +164,14 @@ test.describe("configurator v2", () => {
     await page.getByRole("textbox", { name: "กว้าง" }).fill("90");
     await page.getByRole("textbox", { name: "สูง" }).fill("60");
 
-    await step(page, "สรุปและบันทึก").click();
-    await expect(page.getByRole("meter", { name: "ความครบถ้วน" })).toBeVisible();
-    await expect(page.getByText("รหัสแบบ").first()).toBeVisible();
-    await expect(page.getByText(/ขนาด: ± 1 มม\./)).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("button", { name: "บันทึกเป็นร่าง" }).click();
+    const summary = step(page, "มาตรฐานงานและขั้นตอนต่อไป");
+    await expect(dock(page).getByRole("meter", { name: "ความครบถ้วนของการตั้งค่า" })).toBeAttached();
+    await expect(summary.getByText("รหัสแบบ").first()).toBeVisible();
+    await expect(summary.getByRole("region", { name: "มาตรฐานความคลาดเคลื่อน" })).toContainText("± 1 มม.", {
+      timeout: 15_000,
+    });
+    await summary.getByRole("button", { name: "บันทึกเป็นร่าง" }).click();
     await expect(page.getByText(/บันทึกร่างแล้ว เก็บไว้ถึง/)).toBeVisible();
-    await expect(page.getByText(/ครบ 100%/).first()).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("button", { name: "แชร์ลิงก์การตั้งค่า" }).click();
@@ -191,9 +198,9 @@ test.describe("own file from /studio/upload", () => {
   test("?design=own_file opens with 'มีไฟล์งานแล้ว' chosen, and the collapsed step says so", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/configure/shipping-box?design=own_file`);
     const design = step(page, "งานออกแบบและตัวอย่าง");
-    await expect(design).toContainText("มีไฟล์งานแล้ว");
-    await expect(design).not.toContainText("ออกแบบออนไลน์");
-    await design.click();
-    await expect(page.getByRole("radio", { name: /มีไฟล์งานแล้ว/ })).toBeChecked();
+    // The step's one-line summary under its title, then the chosen path card.
+    await expect(design.getByRole("paragraph").first()).toHaveText("มีไฟล์งานแล้ว");
+    await expect(design.getByRole("radio", { name: /มีไฟล์งานแล้ว/ })).toBeChecked();
+    await expect(design.getByRole("radio", { name: /ออกแบบในสตูดิโอ/ })).not.toBeChecked();
   });
 });

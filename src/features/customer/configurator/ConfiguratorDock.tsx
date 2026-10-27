@@ -9,16 +9,16 @@ import { specLabelText } from "@/features/shared/spec-label";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
-import { PriceBreakTable, PriceSummary, type PriceRow } from "@/ui/components/PriceSummary";
-import { QuoteDock } from "@/ui/components/QuoteDock";
+import { Meter } from "@/ui/components/Meter";
+import { PriceSummary, type PriceRow } from "@/ui/components/PriceSummary";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Icon } from "@/ui/icons";
 
 import type { Schemas } from "@/lib/api/types";
 
 import type { PriceStep } from "./pricing";
-import { mergeEqualTiers, tierRowLabels } from "./tiers";
 import type { Configurator, ConfiguratorState } from "./state";
+import { arrivalRangeText, vatPercentOf } from "./store-fields";
 import type { KeptQuote, QuoteAction } from "./useQuoteActions";
 
 export interface ConfiguratorDockProps {
@@ -28,7 +28,6 @@ export interface ConfiguratorDockProps {
   unit: string;
   /** The API's gap to the target for the quantity on screen (D-247), when a target was given. */
   gap: Schemas["QuoteStepGapDto"] | null;
-  onSelectQuantity: (quantity: number) => void;
   /** Why no price can be asked for yet ("เลือกวัสดุ"), in the order the stepper asks. */
   missing: string[];
   steps: PriceStep[] | undefined;
@@ -41,6 +40,8 @@ export interface ConfiguratorDockProps {
   refusal?: string[] | null;
   onRetry: () => void;
   onAction: (action: QuoteAction) => void;
+  /** A link of the summary followed (analytics): the quotation form, the Studio, the LINE chat. */
+  onLink?: (link: "rfq" | "studio" | "line") => void;
   busy: QuoteAction | null;
   lastQuote: KeptQuote | null;
   /** Where to ask for a quote instead, with the configuration carried along. */
@@ -49,6 +50,17 @@ export interface ConfiguratorDockProps {
   designHref: string | null;
   /** "Ask CS" on LINE, with the configuration as the message — `null` without an account id. */
   lineHref: string | null;
+  /** How many of the steps that need an answer the customer has given one (the chips' "done"). */
+  completeness?: { done: number; total: number };
+  /** Scrolls to the shipping step: the link in the shipping line and in the completeness row. */
+  onGoToShipping?: () => void;
+  /**
+   * The area the postcode resolves to ("กรุงเทพมหานคร"), under the shipping line. The calculation names no
+   * shipping zone, so this is the geo lookup's province (OPEN QUESTION in the C4 report).
+   */
+  shippingArea?: string | null;
+  /** The discount code field, when the configurator offers one. */
+  promo?: React.ReactNode;
 }
 
 /**
@@ -65,7 +77,6 @@ export function ConfiguratorDock({
   state,
   unit,
   gap,
-  onSelectQuantity,
   missing,
   steps,
   specLabel,
@@ -75,11 +86,16 @@ export function ConfiguratorDock({
   refusal,
   onRetry,
   onAction,
+  onLink,
   busy,
   lastQuote,
   rfqHref,
   designHref,
   lineHref,
+  completeness,
+  onGoToShipping,
+  shippingArea,
+  promo,
 }: ConfiguratorDockProps) {
   const t = useTranslations("configurator.dock");
   const tActions = useTranslations("configurator.actions");
@@ -89,13 +105,6 @@ export function ConfiguratorDock({
   const priced = step?.instant ? step : null;
   const noPrice = step && !step.instant ? step : null;
   const ready = missing.length === 0;
-  const tierGroups = steps ? mergeEqualTiers(steps) : [];
-  const labelsOf = (group: (typeof tierGroups)[number]) =>
-    tierRowLabels(group, {
-      number: (value) => format.number(value),
-      range: (from, to) => t("breaksRange", { from, to, unit }),
-      withUnit: (quantity) => t("breaksSelect", { quantity, unit }),
-    });
   const reason = usePriceChange(priced?.unitPrice ? { unitPrice: priced.unitPrice, quantity: priced.quantity } : null);
 
   // Quoted on request (`instant: false`, D-043): no price is asked for, the RFQ form is the way on.
@@ -143,12 +152,20 @@ export function ConfiguratorDock({
     </div>
   ) : undefined;
 
+  const toShipping = (
+    <button
+      type="button"
+      onClick={onGoToShipping}
+      className="text-primary focus-visible:ring-focus-ring rounded-sm underline underline-offset-4 outline-none focus-visible:ring-2"
+    >
+      {t("shippingPending")}
+    </button>
+  );
   const rows: PriceRow[] = priced
     ? [
         {
           label: t("product", { quantity: format.number(priced.quantity), unit }),
           value: format.thb(priced.productAmount),
-          hint: t("vatIncluded"),
         },
         ...(priced.designFeeAmount && priced.designFeeAmount !== "0.00"
           ? [{ label: t("designFee"), value: format.thb(priced.designFeeAmount), hint: t("oneOff") }]
@@ -157,9 +174,20 @@ export function ConfiguratorDock({
           ? [{ label: t("structureFee"), value: format.thb(priced.structureDesignFeeAmount), hint: t("oneOff") }]
           : []),
         priced.shippingPending
-          ? { label: t("shipping"), value: t("shippingPending"), tone: "muted" as const }
-          : { label: t("shipping"), value: format.thb(priced.shippingAmount) },
-        { label: t("vat"), value: format.thb(priced.vatAmount), tone: "muted" as const, hint: t("vatInTotal") },
+          ? { label: t("shipping"), value: onGoToShipping ? toShipping : t("shippingPending") }
+          : {
+              label: t("shipping"),
+              value: format.thb(priced.shippingAmount),
+              ...(shippingArea ? { hint: t("shippingTo", { area: shippingArea }) } : {}),
+            },
+        // The API's VAT amount exactly as sent: it is inside the total, never added to it (D-441).
+        // C4-API-2: the rate in force as the API sends it ("0.07" → "VAT 7%"), never a constant here.
+        {
+          label: vatPercentOf(priced.vatRate)
+            ? t("vatLineRate", { rate: vatPercentOf(priced.vatRate)! })
+            : t("vatLine"),
+          value: format.thb(priced.vatAmount),
+        },
       ]
     : [];
 
@@ -176,41 +204,43 @@ export function ConfiguratorDock({
     )
   ) : (
     <Button block asChild variant={noPrice || !configurator.instant ? "primary" : "secondary"}>
-      <Link href={rfqHref}>{tActions("requestQuote")}</Link>
+      <Link href={rfqHref} onClick={() => onLink?.("rfq")}>
+        {tActions("requestQuote")}
+      </Link>
     </Button>
   );
 
+  // The three ways to keep this price (prototype `.acts3`): a quotation held for its validity, a link, a PDF.
+  const keepActions: { action: QuoteAction; icon: "save" | "link" | "download"; label: string }[] = [
+    { action: "save", icon: "save", label: tActions("quote") },
+    { action: "share", icon: "link", label: tActions("share") },
+    { action: "pdf", icon: "download", label: tActions("pdf") },
+  ];
   const secondary = (
     <>
-      {priced && designHref ? (
-        <Button block variant="secondary" asChild iconStart="palette">
-          <Link href={designHref}>{tActions("designNow")}</Link>
-        </Button>
-      ) : null}
       {priced ? (
-        <div className="grid grid-cols-3 gap-2">
-          <Button size="sm" variant="ghost" iconStart="save" loading={busy === "save"} onClick={() => onAction("save")}>
-            {tActions("save")}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            iconStart="link"
-            loading={busy === "share"}
-            onClick={() => onAction("share")}
-          >
-            {tActions("share")}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            iconStart="download"
-            loading={busy === "pdf"}
-            onClick={() => onAction("pdf")}
-          >
-            {tActions("pdf")}
-          </Button>
+        <div className="grid grid-cols-3 gap-1.5">
+          {keepActions.map(({ action, icon, label }) => (
+            <Button
+              key={action}
+              size="sm"
+              variant="secondary"
+              iconStart={icon}
+              loading={busy === action}
+              onClick={() => onAction(action)}
+              className="h-auto min-h-16 flex-col gap-1 px-1 py-2.5 text-xs"
+            >
+              {label}
+            </Button>
+          ))}
         </div>
+      ) : null}
+      {priced && designHref ? (
+        <Button block size="sm" variant="ghost" asChild iconStart="palette">
+          <Link href={designHref} onClick={() => onLink?.("studio")}>
+            {tActions("designNow")}
+          </Link>
+        </Button>
       ) : null}
       {priced ? (
         <Button
@@ -226,7 +256,7 @@ export function ConfiguratorDock({
       ) : null}
       {lineHref ? (
         <Button block size="sm" variant="ghost" asChild iconStart="chat">
-          <a href={lineHref} target="_blank" rel="noopener noreferrer">
+          <a href={lineHref} target="_blank" rel="noopener noreferrer" onClick={() => onLink?.("line")}>
             {tActions("askCs")}
           </a>
         </Button>
@@ -234,124 +264,185 @@ export function ConfiguratorDock({
     </>
   );
 
-  return (
-    <QuoteDock
-      title={t("title")}
-      headline={
-        priced ? (
-          // A changed price is highlighted once, with why it changed (U5.7 §1): what the customer
-          // changed, never a computed difference — the figures are the API's.
-          <span className="flex flex-wrap items-center gap-2">
-            <span key={priced.unitPrice ?? "none"} className={reason ? "pk-flash rounded-sm px-1" : undefined}>
-              {t("perPiece", { price: format.thb(priced.unitPrice), unit })}
-            </span>
-            {reason ? (
-              <Badge size="sm" tone="info" icon="info">
-                {t(`changed.${reason}`)}
-              </Badge>
-            ) : null}
-          </span>
-        ) : (
-          ""
-        )
-      }
-      subline={
-        priced
-          ? t("total", { total: format.thb(priced.grossAmount), quantity: format.number(priced.quantity), unit })
-          : undefined
-      }
-      basis={priced ? specLabelText(specLabel, format.locale) : null}
-      status={status}
-      primaryAction={primary}
-      secondaryActions={secondary}
-      detailsLabel={t("details")}
-      closeLabel={t("close")}
-    >
-      {priced ? (
-        <div className={pending ? "opacity-60 transition-opacity" : undefined} aria-busy={pending || undefined}>
-          <PriceSummary
-            aria-label={t("summary")}
-            rows={rows}
-            total={{ label: t("grandTotal"), value: format.thb(priced.grossAmount) }}
-          />
-          <ul className="mt-4 flex flex-col gap-1.5 text-sm">
-            <li className="flex items-center gap-2">
-              <Icon name="clock" size={16} aria-hidden="true" />
-              {t("leadTime", { days: priced.leadTimeDays ?? 0 })}
-            </li>
-            <li className="flex items-center gap-2">
-              <Icon name="truck" size={16} aria-hidden="true" />
-              {t("shipBy", { date: format.date(priced.earliestShipDate) })}
-            </li>
-            {lastQuote?.option.earliestDeliveryDate ? (
-              <li className="flex items-center gap-2">
-                <Icon name="package-check" size={16} aria-hidden="true" />
-                {t("receiveBy", { date: format.date(lastQuote.option.earliestDeliveryDate) })}
-              </li>
-            ) : null}
-            {gap ? (
-              <li className="flex items-start gap-2">
-                <Icon name="flag" size={16} aria-hidden="true" className="mt-0.5" />
-                {gap.meetsTarget ? t("targetMet") : t("targetAbove", { gap: format.thb(gap.gapPerUnit), unit })}
-              </li>
-            ) : null}
-            {priced.toleranceShortagePct && priced.toleranceOveragePct ? (
-              <li className="flex items-start gap-2">
-                <Icon name="scale" size={16} aria-hidden="true" className="mt-0.5" />
-                {t("tolerance", {
-                  shortage: format.percent(priced.toleranceShortagePct, 1),
-                  overage: format.percent(priced.toleranceOveragePct, 1),
-                })}
-              </li>
-            ) : null}
-          </ul>
-          <p className="text-muted mt-3 text-xs">{t("validity", { days: configurator.quoteValidityDays })}</p>
-          {state.promoCode.trim() ? <p className="text-muted mt-1 text-xs">{t("appliedOnQuote")}</p> : null}
-        </div>
+  const headline = priced ? (
+    // A changed price is highlighted once, with why it changed (U5.7 §1): what the customer
+    // changed, never a computed difference — the figures are the API's.
+    <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <span key={priced.unitPrice ?? "none"} className={reason ? "pk-flash rounded-sm px-1" : undefined}>
+        {t("perPiece", { price: format.thb(priced.unitPrice), unit })}
+      </span>
+      {reason ? (
+        <Badge size="sm" tone="info" icon="info">
+          {t(`changed.${reason}`)}
+        </Badge>
       ) : null}
+    </span>
+  ) : null;
+  const subline = priced
+    ? t("total", { total: format.thb(priced.grossAmount), quantity: format.number(priced.quantity), unit })
+    : null;
+  const basis = priced ? specLabelText(specLabel, format.locale) : null;
+  // Where the shipment is going decides which date is shown: the arrival window once a postcode is known
+  // (C4-API-3: ready date + the zone's transit days), else a saved quote's arrival date.
+  const arrival = priced?.arrival ? arrivalRangeText(format, priced.arrival) : null;
+  const arrivalDate = priced?.earliestDeliveryDate ?? lastQuote?.option.earliestDeliveryDate ?? null;
 
-      {steps && steps.length > 1 ? (
-        <PriceBreakTable
-          caption={t("breaksCaption")}
-          headers={{
-            quantity: t("breaksQuantity"),
-            perPiece: t("breaksPerPiece"),
-            total: t("breaksTotal"),
-          }}
-          rows={tierGroups.map((group) => {
-            const { first } = group;
-            const merged = group.steps.length > 1;
-            const labels = labelsOf(group);
-            const chosen = group.steps.find((entry) => entry.quantity === state.quantity);
-            return {
-              key: String(first.quantity),
-              quantity: labels.quantity,
-              perPiece: format.thb(first.unitPrice),
-              // One row stands for several quantities, each with its own total: the chosen one's, else none.
-              total: merged
-                ? chosen
-                  ? format.thb(chosen.grossAmount)
-                  : t("breaksTotalVaries")
-                : format.thb(first.grossAmount),
-              selected: chosen !== undefined,
-              unavailable: first.instant ? undefined : t(`reasons.${first.reason ?? "no_price_path"}`),
-            };
-          })}
-          onSelect={(key) => {
-            // A row of several quantities keeps the one already chosen inside it.
-            const group = tierGroups.find((candidate) => String(candidate.first.quantity) === key);
-            if (group && !group.steps.some((entry) => entry.quantity === state.quantity))
-              onSelectQuantity(group.first.quantity);
-          }}
-          selectLabel={(row) => {
-            const group = tierGroups.find((candidate) => String(candidate.first.quantity) === row.key);
-            return group ? labelsOf(group).select : String(row.quantity);
-          }}
-          selectText={t("breaksChoose")}
-          selectedText={t("breaksChosen")}
-        />
-      ) : null}
-    </QuoteDock>
+  return (
+    <>
+      {/*
+        The price summary (prototype `.sum`): beside the steps from 1100 px, sticky under the storefront
+        header so the total and the button stay in view while every step is scrolled; below that it is
+        the last block of the single column, and the bar underneath carries the price and the action.
+      */}
+      <aside
+        aria-label={t("title")}
+        className="flex flex-col gap-3 min-[1100px]:sticky min-[1100px]:top-[calc(var(--site-sticky-top)+1rem)] min-[1100px]:max-h-[calc(100dvh-var(--site-sticky-top)-2rem)] min-[1100px]:self-start min-[1100px]:overflow-y-auto"
+      >
+        <div className="border-border bg-surface rounded-card shadow-card flex flex-col gap-3.5 border p-5 sm:p-[1.375rem]">
+          <h2 className="text-muted m-0 text-sm font-normal">{t("title")}</h2>
+          <div aria-live="polite" aria-atomic="true">
+            {status ?? (
+              <>
+                <p className="serif m-0 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-4xl leading-none tabular-nums">
+                  <span
+                    key={priced?.unitPrice ?? "none"}
+                    data-unit-price=""
+                    className={reason ? "pk-flash rounded-sm px-1" : undefined}
+                  >
+                    {format.thb(priced?.unitPrice)}
+                  </span>{" "}
+                  {/* A real space, so the price reads and copies as "฿x / ชิ้น" like every other price. */}
+                  <small className="text-muted font-sans text-[0.9375rem] font-medium tracking-normal">
+                    {t("perUnit", { unit })}
+                  </small>
+                  {reason ? (
+                    <Badge size="sm" tone="info" icon="info" className="ms-1 self-center">
+                      {t(`changed.${reason}`)}
+                    </Badge>
+                  ) : null}
+                </p>
+                {subline ? <p className="text-muted mt-2 mb-0 text-sm tabular-nums">{subline}</p> : null}
+                {basis ? <p className="text-muted mt-1 mb-0 text-xs leading-snug">{basis}</p> : null}
+              </>
+            )}
+          </div>
+          {priced ? (
+            <div
+              className={pending ? "flex flex-col gap-3.5 opacity-60 transition-opacity" : "flex flex-col gap-3.5"}
+              aria-busy={pending || undefined}
+            >
+              <PriceSummary
+                aria-label={t("summary")}
+                rows={rows}
+                total={{
+                  label: priced.shippingPending ? t("totalNoShipping") : t("grandTotal"),
+                  value: format.thb(priced.grossAmount),
+                }}
+                className="border-border border-t pt-3"
+              />
+              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
+                {arrival || arrivalDate || priced.earliestShipDate ? (
+                  <li className="flex items-start gap-2" data-arrival="">
+                    <Icon name="truck" size={16} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />
+                    {arrival
+                      ? arrival.single
+                        ? t("arrivalOn", { date: arrival.date })
+                        : t("arrivalRange", { from: arrival.from, to: arrival.to })
+                      : arrivalDate
+                        ? t("receiveBy", { date: format.date(arrivalDate) })
+                        : t("shipBy", { date: format.date(priced.earliestShipDate) })}
+                  </li>
+                ) : null}
+                {priced.leadTimeDays != null ? (
+                  <li className="flex items-start gap-2">
+                    <Icon name="clock" size={16} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />
+                    {t("leadTime", { days: priced.leadTimeDays })}
+                  </li>
+                ) : null}
+                {priced.toleranceShortagePct && priced.toleranceOveragePct ? (
+                  <li className="flex items-start gap-2">
+                    <Icon name="scale" size={16} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />
+                    {t("toleranceLine", {
+                      shortage: format.percent(priced.toleranceShortagePct, 1),
+                      overage: format.percent(priced.toleranceOveragePct, 1),
+                    })}
+                  </li>
+                ) : null}
+                {gap ? (
+                  <li className="flex items-start gap-2">
+                    <Icon name="flag" size={16} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />
+                    {gap.meetsTarget ? t("targetMet") : t("targetAbove", { gap: format.thb(gap.gapPerUnit), unit })}
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+          ) : null}
+          <div className="flex flex-col gap-2">
+            {primary}
+            {secondary}
+          </div>
+          {priced ? (
+            <p className="text-muted m-0 text-xs">
+              {t("retention", { days: configurator.quoteValidityDays })}
+              {state.promoCode.trim() ? ` · ${t("appliedOnQuote")}` : ""}
+            </p>
+          ) : null}
+        </div>
+
+        {completeness || promo ? (
+          <div className="border-border bg-surface rounded-card flex flex-col gap-2.5 border px-4.5 py-4">
+            {completeness ? (
+              <div className="flex items-center gap-2.5 text-sm">
+                <span className="shrink-0 tabular-nums">
+                  {t("completeness", { done: completeness.done, total: completeness.total })}
+                </span>
+                <Meter
+                  className="flex-1"
+                  label={t("completenessLabel")}
+                  value={completeness.total > 0 ? (completeness.done / completeness.total) * 100 : 0}
+                  valueText={t("completeness", { done: completeness.done, total: completeness.total })}
+                  tone={completeness.done >= completeness.total ? "success" : "primary"}
+                />
+                {onGoToShipping && priced?.shippingPending ? (
+                  <button
+                    type="button"
+                    onClick={onGoToShipping}
+                    className="text-primary focus-visible:ring-focus-ring shrink-0 rounded-sm text-xs underline underline-offset-4 outline-none focus-visible:ring-2"
+                  >
+                    {t("addPostcode")}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+            {promo}
+          </div>
+        ) : null}
+      </aside>
+
+      {/*
+        The phone / tablet bar (prototype `.mbar2`): price per piece, quantity and total, and the one
+        action. It sits above the storefront's bottom nav (`--mobile-tab-h`; none from md up), and the
+        LINE button lifts over it (`LineFloat` reads `data-quote-bar`).
+      */}
+      <div
+        data-quote-bar
+        className="border-border bg-surface z-sticky shadow-overlay fixed inset-x-0 bottom-(--mobile-tab-h) border-t px-4 py-2.5 min-[1100px]:hidden md:bottom-0 print:hidden"
+      >
+        <div className="mx-auto flex min-h-12 max-w-3xl items-center gap-3">
+          <div className="min-w-0 flex-1" aria-live="polite" aria-atomic="true">
+            {priced ? (
+              <>
+                <p className="m-0 truncate text-lg leading-tight font-semibold tabular-nums">{headline}</p>
+                <p className="text-muted m-0 truncate text-xs tabular-nums">{subline}</p>
+              </>
+            ) : (
+              <div className="text-sm [&_p]:m-0 [&_p]:leading-snug [&_ul]:hidden">{status}</div>
+            )}
+          </div>
+          <div className="shrink-0">{primary}</div>
+        </div>
+      </div>
+    </>
   );
 }
 

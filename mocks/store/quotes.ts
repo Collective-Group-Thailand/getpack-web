@@ -148,7 +148,7 @@ interface Configurator {
   };
   groups: Group[];
   quantity: { presets: number[]; min: number; max: number; default: number; maxTiers: number };
-  design: { options: Schemas["DesignOption"][]; default: Schemas["DesignOption"] };
+  design: { options: Schemas["DesignOption"][]; default: Schemas["DesignOption"]; freeRevisions: number | null };
   mockup: { options: Schemas["MockupOption"][] };
   fixedInputs: Record<string, string>;
   quoteValidityDays: number;
@@ -563,6 +563,8 @@ export function configuratorOf(product: Row): Configurator | null {
           ? ["own_file", "online_designer", "hired_design"]
           : ["own_file", "hired_design"],
       default: "own_file",
+      // C4-API-2: the D-071 free revision rounds (mock: the seeded 3).
+      freeRevisions: 3,
     },
     mockup: { options: calculator === "service" ? ["none"] : ["none", "with_print", "without_print"] },
     fixedInputs: difficulty ? { difficultyLevelId: String(difficulty.id) } : {},
@@ -1001,6 +1003,10 @@ export function stepOf(inputs: Inputs, quantity: number, postcode: string | unde
     shippingVatAmount: null,
     shippingPending: false,
     shippingPendingReason: null,
+    savingPercent: null,
+    vatRate: null,
+    zoneName: null,
+    arrival: null,
   });
   // D-101: the one mock factory's weekly capacity. D-043: its machines stop at 450 mm.
   if (quantity > 200_000) return noPrice("not_instant");
@@ -1041,7 +1047,35 @@ export function stepOf(inputs: Inputs, quantity: number, postcode: string | unde
     shippingVatAmount: postcode ? baht(vat(shippingNet)) : null,
     shippingPending: !postcode,
     shippingPendingReason: postcode ? null : "no_postcode",
+    // C4-API-2/3 store fields (mock): savings are filled across the tiers by `withSavings`.
+    savingPercent: null,
+    vatRate: "0.07",
+    zoneName: postcode ? MOCK_ZONE : null,
+    arrival: postcode
+      ? {
+          from: bangkokIso((Math.round(lead * 1.4) + 1) * DAY).slice(0, 10),
+          to: bangkokIso((Math.round(lead * 1.4) + 2) * DAY).slice(0, 10),
+        }
+      : null,
   };
+}
+
+const MOCK_ZONE = { th: "กรุงเทพฯ และปริมณฑล", en: "Bangkok and vicinity" };
+
+/**
+ * C4-API-2, mocked like the engine: each tier's saving against the smallest priced tier, a whole percent
+ * (half-up), null for that tier itself, unpriced tiers and results ≤ 0.
+ */
+export function withSavings(steps: Step[]): Step[] {
+  const priced = steps.filter((s) => s.instant && s.unitPrice !== null);
+  const base = priced.reduce<Step | null>((min, s) => (min === null || s.quantity < min.quantity ? s : min), null);
+  if (!base) return steps;
+  const baseUnit = Number(base.unitPrice);
+  return steps.map((s) => {
+    if (s === base || !s.instant || s.unitPrice === null || baseUnit <= 0) return s;
+    const pct = Math.round((1 - Number(s.unitPrice) / baseUnit) * 100);
+    return { ...s, savingPercent: pct > 0 ? pct : null };
+  });
 }
 
 /**
@@ -1065,7 +1099,7 @@ export function boxStepsOf(
     ...box,
     ...design,
   } satisfies Inputs;
-  return quantities.map((quantity) => stepOf(inputs, quantity, postcode));
+  return withSavings(quantities.map((quantity) => stepOf(inputs, quantity, postcode)));
 }
 
 /* ------------------------------------------------------------------------------ saved quotes */
@@ -1518,37 +1552,119 @@ export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
 
+/** Test-only knobs and the log of the batch endpoint's mock (see its handler). */
+export const MAX_BATCH_VARIANTS = 24;
+export const mockBatch: {
+  mode: "ok" | "missing" | "throttled";
+  requests: (Schemas["CalculateQuoteBatchDto"] | null)[];
+} = { mode: "ok", requests: [] };
+
+/** The mock's difference of two decimal strings, signed and with two decimals; null when either is missing. */
+function signedDifference(value: string | null | undefined, base: string | null | undefined): string | null {
+  if (value == null || base == null) return null;
+  const satang = Math.round(Number(value) * 100) - Math.round(Number(base) * 100);
+  return satang > 0 ? `+${baht(satang)}` : baht(satang);
+}
+
+/** `store.quotes.calculate` as the mock answers it; a refusal is the Response the API would send. */
+function calculationOf(body: Schemas["CalculateQuoteDto"] | null): Schemas["QuoteCalculationDto"] | Response {
+  if (!body?.productTypeCode || !body.configuration)
+    return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+      { path: "configuration", code: "required", message: "required" },
+    ]);
+  const inputs = inputsOf(body.productTypeCode, body.configuration as unknown as Record<string, unknown>);
+  if (inputs instanceof Response) return inputs;
+  if (!Array.isArray(inputs.quantities) || inputs.quantities.length === 0 || inputs.quantities.length > 10)
+    return invalid("configuration.quantities", "ระบุจำนวน 1–10 ระดับ");
+  const steps = withSavings(inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode)));
+  const target = body.targetPricePerUnit;
+  return {
+    // The mock records no calculations.
+    calculationId: null,
+    calculatorVersion: "mock-0.0.0",
+    dimensions: inputs.dimensions,
+    ...calculationSpecOf(inputs, body.configuration as unknown as Record<string, unknown>),
+    target: target
+      ? {
+          targetPricePerUnit: target,
+          steps: steps
+            .filter((step) => step.instant && step.unitPrice)
+            .map((step) => ({ quantity: step.quantity, ...gapOf(step.unitPrice!, target) })),
+        }
+      : null,
+    steps,
+  };
+}
+
 export const storeQuoteHandlers: HttpHandler[] = [
   // Published (B2.3), mocked for every instant type in its own published configuration.
   http.post("*/v1/store/quotes/actions/calculate", async ({ request }) => {
     const body = (await request.json().catch(() => null)) as Schemas["CalculateQuoteDto"] | null;
-    if (!body?.productTypeCode || !body.configuration)
-      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
-        { path: "configuration", code: "required", message: "required" },
-      ]);
-    const inputs = inputsOf(body.productTypeCode, body.configuration as unknown as Record<string, unknown>);
-    if (inputs instanceof Response) return inputs;
-    if (!Array.isArray(inputs.quantities) || inputs.quantities.length === 0 || inputs.quantities.length > 10)
-      return invalid("configuration.quantities", "ระบุจำนวน 1–10 ระดับ");
-    const steps = inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode));
-    const target = body.targetPricePerUnit;
-    const result: Schemas["QuoteCalculationDto"] = {
-      // The mock records no calculations.
-      calculationId: null,
-      calculatorVersion: "mock-0.0.0",
-      dimensions: inputs.dimensions,
-      ...calculationSpecOf(inputs, body.configuration as unknown as Record<string, unknown>),
-      target: target
-        ? {
-            targetPricePerUnit: target,
-            steps: steps
-              .filter((step) => step.instant && step.unitPrice)
-              .map((step) => ({ quantity: step.quantity, ...gapOf(step.unitPrice!, target) })),
-          }
-        : null,
-      steps,
-    };
-    return HttpResponse.json(result);
+    const result = calculationOf(body);
+    return result instanceof Response ? result : HttpResponse.json(result);
+  }),
+
+  // Published (Stage C, C4): the option cards' prices in one request. Each variant is priced by the
+  // SAME mock calculation as `calculate`; the deltas are the mock's own (test-only) difference of
+  // two decimal strings against the baseline. Stateful: `batchRequests` records what was asked, and
+  // `mockBatch.mode` lets a test or the dev mock answer 404 / 429 like an API without the endpoint.
+  http.post("*/v1/store/quotes/actions/calculate-batch", async ({ request }) => {
+    const body = (await request.json().catch(() => null)) as Schemas["CalculateQuoteBatchDto"] | null;
+    mockBatch.requests.push(body);
+    if (mockBatch.mode === "missing") return problem(404, "http.not_found", "ไม่พบเส้นทางนี้");
+    if (mockBatch.mode === "throttled") return problem(429, "http.rate_limited", "เรียกบ่อยเกินไป");
+    if (!body?.productTypeCode || !Array.isArray(body.variants) || body.variants.length === 0)
+      return invalid("variants", "required");
+    if (body.variants.length > MAX_BATCH_VARIANTS) return invalid("variants", `ไม่เกิน ${MAX_BATCH_VARIANTS} รูปแบบ`);
+    if (body.baselineKey !== undefined && !body.variants.some((variant) => variant.key === body.baselineKey))
+      return invalid("baselineKey", "ต้องเป็น key ของรูปแบบหนึ่งในรายการ");
+    const results = await Promise.all(
+      body.variants.map(async (variant) => {
+        const configuration = body.quantities
+          ? { ...(variant.configuration as Record<string, unknown>), quantities: body.quantities }
+          : variant.configuration;
+        const outcome = calculationOf({ productTypeCode: body.productTypeCode, configuration });
+        if (outcome instanceof Response) {
+          const detail = (await outcome
+            .clone()
+            .json()
+            .catch(() => null)) as { code?: string; detail?: string } | null;
+          return {
+            key: variant.key,
+            calculation: null,
+            deltas: null,
+            problem: { code: detail?.code ?? "validation.failed", message: detail?.detail ?? "" },
+          };
+        }
+        return {
+          key: variant.key,
+          calculation: outcome,
+          deltas: null as Schemas["QuoteBatchDeltaDto"][] | null,
+          problem: null,
+        };
+      }),
+    );
+    const baseline = results.find((result) => result.key === body.baselineKey)?.calculation ?? null;
+    if (body.baselineKey !== undefined) {
+      for (const result of results) {
+        if (!result.calculation) continue;
+        result.deltas = result.calculation.steps.map((step) => {
+          const base = baseline?.steps.find((entry) => entry.quantity === step.quantity);
+          return {
+            quantity: step.quantity,
+            unitPriceDelta: signedDifference(
+              step.instant ? step.unitPrice : null,
+              base?.instant ? base.unitPrice : null,
+            ),
+            totalDelta: signedDifference(
+              step.instant ? step.productAmount : null,
+              base?.instant ? base.productAmount : null,
+            ),
+          };
+        });
+      }
+    }
+    return HttpResponse.json({ results });
   }),
 
   // Published (`store.catalog.getConfigurator`, v0.3.0): the mock's view in the published shape.

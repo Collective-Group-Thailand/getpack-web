@@ -8,12 +8,14 @@ import { pick } from "@/features/customer/catalog/localize";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { specLabelText } from "@/features/shared/spec-label";
 import { useRouter } from "@/i18n/navigation";
+import { trackConfigurator } from "@/lib/analytics/configurator";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import type { LengthUnit } from "@/ui/components/DimensionInput";
-import { QuoteDockSpacer } from "@/ui/components/QuoteDock";
 import { Skeleton } from "@/ui/components/Skeleton";
-import { Stepper, type StepStatus } from "@/ui/components/Stepper";
+import { StepCard } from "@/ui/components/StepCard";
+import { scrollToStep, StepChips, type StepChip } from "@/ui/components/StepChips";
+import type { StepStatus } from "@/ui/components/Stepper";
 
 import { quantityBand } from "../analytics/bands";
 import { loadOf, useAdvisor, useAdvisorMethod, type AdvisorOption } from "./advisor";
@@ -26,7 +28,13 @@ import { configurationSummary, lineChatUrl } from "./line";
 import { basesOf, groupsOf, isProcessInk, optionsById, sizeKindOf } from "./model";
 import { isCorrugate, refusedSide } from "./print-model";
 import { isApiError } from "@/lib/api/problem";
-import { useLivePrice } from "./pricing";
+import { useOptionPrices } from "./option-prices";
+import { useChangeTracker } from "./tracking";
+import { queryOf, searchWith } from "./url-state";
+import { PRICE_DEBOUNCE_MS, useLivePrice } from "./pricing";
+import { rememberedPostcode, usePostcodeArea } from "./postcode";
+import { PromoCode } from "./PromoCode";
+import { PreviewSide, type PreviewDimensions } from "./PreviewSide";
 import { SizeStep } from "./SizeStep";
 import {
   axesOf,
@@ -103,6 +111,11 @@ export interface ConfiguratorProps {
   rfqPath: string;
   /** This page's canonical address, for the link in a LINE message. */
   pageUrl: string;
+  /**
+   * Keep the configuration in the address (a refresh, or a link copied from the bar, comes back to it). Off
+   * when a draft, a saved or shared quotation is open: that is what a refresh reopens.
+   */
+  syncUrl?: boolean;
 }
 
 /**
@@ -124,6 +137,7 @@ export function Configurator({
   draft: resumed = null,
   rfqPath,
   pageUrl,
+  syncUrl = false,
 }: ConfiguratorProps) {
   const t = useTranslations("configurator");
   const tUnits = useTranslations("catalog.stock.units");
@@ -140,7 +154,6 @@ export function Configurator({
   const method = useAdvisorMethod(configurator);
   const advisorOn = method.data?.available === true;
   const steps = useMemo(() => stepsOf(configurator, { advisor: advisorOn }), [configurator, advisorOn]);
-  const [current, setCurrent] = useState<StepKey>(steps[0]!);
 
   // Steps the customer changed or confirmed; a draft, shared or saved configuration is theirs already.
   const [touched, setTouched] = useState<ReadonlySet<StepKey>>(() =>
@@ -148,10 +161,14 @@ export function Configurator({
   );
   const touch = (step: StepKey) =>
     setTouched((previous) => (previous.has(step) ? previous : new Set(previous).add(step)));
-  const update = (patch: Partial<ConfiguratorState>) => {
-    touch(current);
+  const update = (patch: Partial<ConfiguratorState>, step?: StepKey) => {
+    if (step) touch(step);
+    // One customer action, one analytics event (the cards' `delta` is the API's, read from the batch answer).
+    report(state, { ...state, ...patch }, optionPrices);
     setState((previous) => ({ ...previous, ...patch }));
   };
+  /** A step's own changes mark it as the customer's (it stops reading "ค่าเริ่มต้น"). */
+  const updateIn = (step: StepKey) => (patch: Partial<ConfiguratorState>) => update(patch, step);
 
   // D-182: the bases this pattern is measured on, as the API's conversion knows its construction.
   // A style the API builds flat is measured on its finished size only, so that is its basis; a
@@ -175,14 +192,19 @@ export function Configurator({
   const ready = readyToPrice(configurator, state, conversion.internal) && !conversion.caliperUnknown;
   const body = ready ? buildCalculateBody(configurator, state) : null;
   const price = useLivePrice(body);
+  // The option cards' prices: one batch request per settled state change (never one per card).
+  const optionPrices = useOptionPrices(configurator, state, ready);
   // 422 `pricing.print_combination_invalid`: one readable line per refused side, never a crash.
-  const refusal = isApiError(price.error) && price.error.code === "pricing.print_combination_invalid" ? price.error : null;
+  const refusal =
+    isApiError(price.error) && price.error.code === "pricing.print_combination_invalid" ? price.error : null;
   const refusedLines = refusal
     ? (() => {
         const lines = refusal.errors.flatMap((entry) => {
           const side = refusedSide(entry.path ?? "");
           if (!side) return [];
-          const reason = t.has(`printProblem.${entry.code}`) ? t(`printProblem.${entry.code}`) : t("printProblem.other");
+          const reason = t.has(`printProblem.${entry.code}`)
+            ? t(`printProblem.${entry.code}`)
+            : t("printProblem.other");
           return [t("printProblem.side", { side: t(`printProblem.${side}`), reason })];
         });
         return lines.length > 0 ? lines : [t("printProblem.other")];
@@ -207,10 +229,13 @@ export function Configurator({
     const recommendation = advisor.recommend.data;
     if (!recommendation) return;
     await advisor.choose.mutateAsync({ recommendationId: recommendation.id, option });
-    update({
-      choices: { ...state.choices, material: [option.board.id] },
-      advisory: { recommendationId: recommendation.id, boardId: option.board.id },
-    });
+    update(
+      {
+        choices: { ...state.choices, material: [option.board.id] },
+        advisory: { recommendationId: recommendation.id, boardId: option.board.id },
+      },
+      "material",
+    );
   };
 
   const reseed = (quote: SavedQuote) =>
@@ -246,21 +271,21 @@ export function Configurator({
       .filter(Boolean)
       .join(" · ");
   })();
-  /** A corrugate print as the customer chose it: "ด้านนอก: CMYK · ด้านใน: ไม่พิมพ์" (D-443). */
-  const printSummary = (print: { print_front: string[]; print_back: string[] }) => {
-    const side = (ids: string[]) => {
-      if (ids.length === 0) return t("choices.print.none");
-      return ids
-        .map((id) => {
-          const option = byId.get(id);
-          if (!option) return null;
-          return isProcessInk(option) ? t("choices.print.cmyk") : pick(locale, option.nameTh, option.nameEn);
-        })
-        .filter(Boolean)
-        .join(" + ");
-    };
-    return t("choices.print.summary", { outside: side(print.print_front), inside: side(print.print_back) });
+  /** One side of a corrugate print as the customer chose it ("CMYK", "ดำ", "ไม่พิมพ์"). */
+  const printSide = (ids: string[]) => {
+    if (ids.length === 0) return t("choices.print.none");
+    return ids
+      .map((id) => {
+        const option = byId.get(id);
+        if (!option) return null;
+        return isProcessInk(option) ? t("choices.print.cmyk") : pick(locale, option.nameTh, option.nameEn);
+      })
+      .filter(Boolean)
+      .join(" + ");
   };
+  /** A corrugate print as the customer chose it: "ด้านนอก: CMYK · ด้านใน: ไม่พิมพ์" (D-443). */
+  const printSummary = (print: { print_front: string[]; print_back: string[] }) =>
+    t("choices.print.summary", { outside: printSide(print.print_front), inside: printSide(print.print_back) });
   const choiceSummary = (step: StepKey): string => {
     const parts = partsOf(configurator, state);
     if (step === "printing" && isCorrugate(configurator)) {
@@ -338,6 +363,60 @@ export function Configurator({
     setState((previous) => (previous.unit === remembered ? previous : { ...previous, unit: remembered }));
   }, [session]);
 
+  // The delivery postcode is remembered in this browser (the contract has no account setting for it): read
+  // after hydration, never over one a draft or a link brought; kept once it is complete.
+  const postcodeRead = useRef(false);
+  useEffect(() => {
+    if (postcodeRead.current) return;
+    postcodeRead.current = true;
+    const remembered = rememberedPostcode();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (remembered) setState((previous) => (previous.postcode === "" ? { ...previous, postcode: remembered } : previous));
+  }, []);
+  useEffect(() => {
+    if (POSTCODE.test(state.postcode)) rememberedPostcode(state.postcode);
+  }, [state.postcode]);
+  const { area: postcodeArea } = usePostcodeArea(state.postcode);
+  const report = useChangeTracker(configurator, state.postcode, postcodeArea?.province.nameEn ?? null);
+
+  // The configuration in the address, after a pause and without a navigation (`history.replaceState` is how the
+  // App Router takes a search change without fetching the page again). Defaults are left out; the first render
+  // writes nothing, so a link is only rewritten once the customer has changed something.
+  const queryKey = JSON.stringify(queryOf(configurator, state));
+  const addressSynced = useRef(false);
+  useEffect(() => {
+    if (!syncUrl) return;
+    if (!addressSynced.current) {
+      addressSynced.current = true;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      try {
+        const next = searchWith(window.location.search, JSON.parse(queryKey) as Record<string, string>);
+        if (next === new URLSearchParams(window.location.search).toString()) return;
+        const { pathname, hash } = window.location;
+        window.history.replaceState(window.history.state, "", `${pathname}${next ? `?${next}` : ""}${hash}`);
+      } catch {
+        // An address that cannot be written (a sandboxed frame) is only a link that does not follow.
+      }
+    }, PRICE_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [syncUrl, queryKey]);
+
+  // The sticky chip bar's real height, so a step scrolled to lands just under it (and the header).
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const container = root.current;
+    const bar = container?.querySelector<HTMLElement>("[data-step-chips]");
+    if (!container || !bar || typeof ResizeObserver === "undefined") return;
+    const measure = () =>
+      container.style.setProperty("--step-scroll-mt", `calc(var(--site-sticky-top) + ${bar.offsetHeight}px + 1rem)`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, []);
+
   // D-102: the funnel's "configure" step, once per visit; "quote shown" when a price arrives.
   const opened = useRef(false);
   useEffect(() => {
@@ -345,6 +424,17 @@ export function Configurator({
     opened.current = true;
     track("configurator_opened", { route: "/configure/[slug]", productType: configurator.productTypeCode });
   }, [configurator.productTypeCode]);
+  // The API has no instant price for this size and quantity: counted once per combination (demand it cannot serve).
+  const noPriceQuantity = price.data?.steps.find((step) => step.quantity === state.quantity && !step.instant)?.quantity ?? null;
+  const quoteOnlyShown = useRef<string | null>(null);
+  useEffect(() => {
+    if (noPriceQuantity === null) return;
+    const size = state.sizeMode === "standard" && state.standardSizeCode ? state.standardSizeCode : "custom";
+    const key = `${size}:${noPriceQuantity}`;
+    if (quoteOnlyShown.current === key) return;
+    quoteOnlyShown.current = key;
+    trackConfigurator("cfg_quote_only_shown", { size, qty: noPriceQuantity });
+  }, [noPriceQuantity, state.sizeMode, state.standardSizeCode]);
   const shownFor = useRef<string | null>(null);
   useEffect(() => {
     if (!priced) return;
@@ -395,21 +485,18 @@ export function Configurator({
     })();
     return own;
   };
-  // Steps are ticked in order (UX audit, configure): a later step that has its defaults is not
-  // shown as done while an earlier one still waits, which read as "steps 5–6 done, 4 not".
-  const statusOf = (step: StepKey): StepStatus => {
-    const index = steps.indexOf(step);
-    const earlierOpen = steps.slice(0, index).some((earlier) => ownStatusOf(earlier) !== "complete");
-    const own = ownStatusOf(step);
-    const ordered = own === "complete" && earlierOpen ? "upcoming" : own;
-    if (step !== current) return ordered;
-    return ordered === "error" ? "error" : "current";
-  };
-
   const summaryOf = (step: StepKey): string | undefined => {
     switch (step) {
       case "size":
-        return sizeSummary || undefined;
+        if (state.sizeMode === "standard" && configurator.standardSizes.length > 0 && kind === "box")
+          return state.quantity > 0
+            ? t("size.hintStandard", {
+                count: configurator.standardSizes.length,
+                quantity: format.number(state.quantity),
+                unit,
+              })
+            : t("size.hintStandardNoPrice", { count: configurator.standardSizes.length });
+        return sizeSummary || t("size.hintCustom");
       case "logistics":
         return loadSummary;
       case "quantity":
@@ -431,23 +518,6 @@ export function Configurator({
     }
   };
 
-  const next = (step: StepKey) => steps[steps.indexOf(step) + 1];
-  const nextButton = (step: StepKey) => {
-    const following = next(step);
-    return following ? (
-      <button
-        type="button"
-        onClick={() => {
-          touch(step);
-          setCurrent(following);
-        }}
-        className="text-primary mt-4 inline-flex min-h-10 items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
-      >
-        {t("next", { step: t(`steps.${following}`) })}
-      </button>
-    ) : null;
-  };
-
   const materialName = (() => {
     const material = state.choices.material?.[0] ? byId.get(state.choices.material[0]) : undefined;
     return material ? pick(locale, material.nameTh, material.nameEn) : null;
@@ -460,15 +530,17 @@ export function Configurator({
           <SizeStep
             configurator={configurator}
             state={state}
-            onChange={update}
+            onChange={updateIn("size")}
             onUnitChange={changeUnit}
             bases={bases}
             conversion={conversion}
             materialName={materialName}
+            prices={optionPrices}
+            unit={unit}
           />
         );
       case "logistics":
-        return <LogisticsStep load={state.load} onChange={update} />;
+        return <LogisticsStep load={state.load} onChange={updateIn("logistics")} />;
       case "material":
       case "printing":
       case "finishing":
@@ -483,7 +555,7 @@ export function Configurator({
                 recommending={advisor.recommend.isPending}
                 recommendError={advisor.recommend.error}
                 onRecommend={recommend}
-                onEditLoad={() => setCurrent("logistics")}
+                onEditLoad={() => scrollToStep(anchorOf("logistics"))}
                 chosenBoardId={state.advisory?.boardId ?? null}
                 onChoose={chooseBoard}
                 choosing={advisor.choose.isPending}
@@ -494,40 +566,49 @@ export function Configurator({
               configurator={configurator}
               groups={groupsIn(configurator, step)}
               state={state}
-              onChange={update}
+              onChange={updateIn(step)}
               missing={new Set(missingGroups.map((group) => group.kind))}
+              prices={optionPrices}
             />
           </div>
         );
       case "quantity":
-        return <QuantityStep configurator={configurator} state={state} onChange={update} unit={unit} />;
+        return (
+          <QuantityStep
+            configurator={configurator}
+            state={state}
+            onChange={updateIn("quantity")}
+            unit={unit}
+            steps={price.data?.steps}
+            pending={price.pending}
+          />
+        );
       case "delivery":
-        return <DeliveryStep state={state} onChange={update} />;
+        return <DeliveryStep state={state} onChange={updateIn("delivery")} priced={priced} />;
       case "design":
         return (
           <DesignStep
             configurator={configurator}
             state={state}
-            onChange={update}
+            onChange={updateIn("design")}
             designerAvailable={designerAvailable}
+            studioLink={studioLink}
+            sample={{
+              checked: actions.sampleFor !== null || actions.busy === "sample",
+              // A sample is asked for on a kept quotation, so there must be a price to keep.
+              disabled: !priced,
+              onChange: (on) => {
+                trackConfigurator("cfg_sample_toggle", { on });
+                if (on) actions.run("sample");
+              },
+            }}
           />
         );
       case "summary":
         return (
           <SummaryStep
-            sections={steps
-              .filter((section) => section !== "summary")
-              .map((section) => ({
-                step: section,
-                label: t(`steps.${section}`),
-                summary: summaryOf(section),
-                status: statusOf(section) === "current" ? "complete" : statusOf(section),
-              }))}
-            onEdit={setCurrent}
-            pattern={pattern}
             priced={priced}
-            pricedSpec={pricedSpec}
-            unit={unit}
+            pattern={pattern}
             draft={drafts.draft}
             draftBusy={drafts.busy}
             onDraft={drafts.run}
@@ -560,6 +641,18 @@ export function Configurator({
           step: "design",
         })
       : null;
+  // The Studio on this product: with the inside size once it is known (the box is drawn at once), else on the
+  // product, pattern and board alone. It takes nothing of print or quantity (`StudioEntry`).
+  const studioLink =
+    designerAvailable && configurator.design.options.includes("online_designer")
+      ? (designHref ??
+        studioHref({
+          product: configurator.slug,
+          pattern: state.patternId,
+          material: state.choices.material?.[0] ?? null,
+          step: "start",
+        }))
+      : null;
   // Once priced, the spec is the API's own label (B-API-3); before that, the answers given so far.
   const facts = [
     ...(pricedSpec
@@ -583,40 +676,105 @@ export function Configurator({
   const calculationId = price.data?.calculationId;
   const rfqHref = `${rfqPath}?from=${encodeURIComponent(configurator.slug)}${calculationId ? `&calc=${calculationId}` : ""}`;
 
+  /* ------------------------------------------------------------------ the preview's side panel */
+
+  // The API's sizes on every basis: the calculation's, or — while a new price is on its way, or before
+  // the first — the conversion's for what is entered now; never composed here.
+  const priceDimensions = price.data?.dimensions ?? null;
+  const previewDimensions: PreviewDimensions | null =
+    (price.pending ? (conversion.converted ?? priceDimensions) : (priceDimensions ?? conversion.converted)) ?? null;
+  const previewParts = partsOf(configurator, state);
+  const perPartPrint = previewParts.length > 1 && previewParts.some((part) => state.partPrints[part.subPatternId]);
+  const previewRows: { label: string; value: string }[] = [
+    ...(materialName ? [{ label: t("preview.material"), value: materialName }] : []),
+    // A box printed differently per part has no single "outside" to name here: its steps say so.
+    ...(perPartPrint
+      ? []
+      : isCorrugate(configurator)
+        ? (() => {
+            const print = printOfPart(state, undefined);
+            return [
+              { label: t("preview.printOutside"), value: printSide(print.print_front) },
+              { label: t("preview.printInside"), value: printSide(print.print_back) },
+              ...(state.printArea &&
+              configurator.printAreas.length > 0 &&
+              (print.print_front.length > 0 || print.print_back.length > 0)
+                ? [{ label: t("preview.printArea"), value: t(`choices.printAreas.${state.printArea}`) }]
+                : []),
+            ];
+          })()
+        : choiceSummary("printing")
+          ? [{ label: t("preview.printing"), value: choiceSummary("printing") }]
+          : []),
+  ];
+  const standardSize =
+    state.sizeMode === "standard" && state.standardSizeCode
+      ? configurator.standardSizes.find((size) => size.code === state.standardSizeCode)
+      : undefined;
+
+  const chips: StepChip[] = steps.map((step) => {
+    const own = ownStatusOf(step);
+    // The summary only reviews, and the shipping-load questions are the advisor's optional input:
+    // neither is a to-do that blocks the order.
+    const optional = step === "summary" || step === "logistics";
+    const state: StepChip["state"] =
+      step === "summary"
+        ? "idle"
+        : own === "complete"
+          ? isDefaultStep(step, touched)
+            ? "default"
+            : "done"
+          : optional
+            ? "idle"
+            : "todo";
+    return {
+      id: anchorOf(step),
+      label: t(`chips.${step}`),
+      state,
+      stateLabel: t("stepper.defaulted"),
+      srLabel: state === "done" ? t("chips.done") : state === "todo" ? t("chips.todo") : undefined,
+    };
+  });
+
+  // "ครบ 3/6": the steps that ask for an answer (not the summary, not the optional shipping-load
+  // questions) with a confirmed one — the same count the chips show as done.
+  const counted = chips.filter((chip) => chip.id !== anchorOf("summary") && chip.id !== anchorOf("logistics"));
+  const completeness = { done: counted.filter((chip) => chip.state === "done").length, total: counted.length };
+
   return (
-    // 7:5 — the preview and the steps on the left, the price panel (with add-to-cart) on the right,
-    // sticky so the total and the button stay in view (UX audit, configure).
-    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_21rem] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
-      <div className="flex min-w-0 flex-col gap-6">
-        <ConfiguratorPreview configurator={configurator} state={state} productName={name} />
-        <Stepper
-          aria-label={t("stepsLabel")}
-          headingLevel={2}
-          current={current}
-          onSelect={(id) => {
-            setCurrent(id as StepKey);
-            track("configuration_changed", { route: "/configure/[slug]", productType: configurator.productTypeCode });
-          }}
-          labels={{
-            complete: t("stepper.complete"),
-            defaulted: t("stepper.defaulted"),
-            error: t("stepper.error"),
-            stepOf: (index, total) => t("stepper.stepOf", { index, total }),
-          }}
-          steps={steps.map((step) => ({
-            id: step,
-            label: t(`steps.${step}`),
-            summary: summaryOf(step),
-            status: statusOf(step),
-            defaulted: isDefaultStep(step, touched),
-            content: (
-              <>
-                {contentOf(step)}
-                {nextButton(step)}
-              </>
-            ),
-          }))}
+    // The prototype's two columns: the preview, the progress chips and every step on the left, the
+    // sticky price summary on the right; one column under 1100 px (summary last, bar at the bottom).
+    <div
+      ref={root}
+      className="grid items-start gap-8 min-[1100px]:grid-cols-[minmax(0,1fr)_25rem]"
+      style={{ "--step-scroll-mt": "8rem" } as React.CSSProperties}
+    >
+      <div className="flex min-w-0 flex-col gap-5">
+        <ConfiguratorPreview
+          configurator={configurator}
+          state={state}
+          productName={name}
+          side={
+            <PreviewSide
+              title={standardSize?.name ?? t("preview.customSize")}
+              dimensions={previewDimensions}
+              rows={previewRows}
+            />
+          }
         />
+        <StepChips aria-label={t("stepsLabel")} chips={chips} className="-mx-5 px-5 md:mx-0 md:px-0" />
+        {steps.map((step, index) => (
+          <StepCard
+            key={step}
+            id={anchorOf(step)}
+            number={index + 1}
+            title={step === "summary" ? t("summary.cardTitle") : t(`steps.${step}`)}
+            hint={step === "summary" ? undefined : summaryOf(step)}
+          >
+            {/* Any press inside a step is the customer's answer, even the option already selected. */}
+            <div onClickCapture={() => touch(step)}>{contentOf(step)}</div>
+          </StepCard>
+        ))}
         {gap && TARGET.test(state.target) ? (
           <TargetPanel
             configurator={configurator}
@@ -630,7 +788,6 @@ export function Configurator({
             busy={actions.busy === "levers" || actions.busy === "sendToCs"}
           />
         ) : null}
-        <QuoteDockSpacer />
       </div>
 
       <ConfiguratorDock
@@ -638,7 +795,6 @@ export function Configurator({
         state={state}
         unit={unit}
         gap={gap}
-        onSelectQuantity={(quantity) => update({ quantity })}
         missing={missing}
         steps={price.data?.steps}
         specLabel={price.data?.specLabel}
@@ -647,19 +803,35 @@ export function Configurator({
         failed={price.isError}
         refusal={refusedLines}
         onRetry={() => void price.refetch()}
-        onAction={actions.run}
+        onAction={(action) => {
+          // The summary's own buttons; the target panel's levers are not counted as a way out.
+          const cta = { cart: "cart", save: "save", share: "share", pdf: "pdf", sample: "sample" } as const;
+          if (action in cta) trackConfigurator("cfg_cta", { cta: cta[action as keyof typeof cta] });
+          actions.run(action);
+        }}
+        onLink={(cta) => trackConfigurator("cfg_cta", { cta })}
         busy={actions.busy}
         lastQuote={actions.lastQuote}
         rfqHref={rfqHref}
         designHref={designHref}
         lineHref={lineHref}
+        completeness={completeness}
+        onGoToShipping={() => scrollToStep(anchorOf("delivery"))}
+        shippingArea={postcodeArea ? pick(locale, postcodeArea.province.nameTh, postcodeArea.province.nameEn) : null}
+        promo={<PromoCode configurator={configurator} state={state} onChange={updateIn("summary")} />}
       />
+      {/* Room for the phone bar, so the last field is never under it. */}
+      <div aria-hidden className="h-16 min-[1100px]:hidden" />
 
       {actions.sampleFor ? (
         <RequestSampleDialog
           quoteId={actions.sampleFor}
           open
-          onOpenChange={(open) => !open && actions.closeSample()}
+          onOpenChange={(open) => {
+            if (open) return;
+            trackConfigurator("cfg_sample_toggle", { on: false });
+            actions.closeSample();
+          }}
           defaultPostcode={state.postcode}
         />
       ) : null}
@@ -681,6 +853,9 @@ export function Configurator({
     </div>
   );
 }
+
+/** The anchor of a step's card, for the progress chips and every "go to the step" link. */
+const anchorOf = (step: StepKey) => `step-${step}`;
 
 const GUEST_UNIT_KEY = "getpack.displayUnit";
 

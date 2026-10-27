@@ -12,6 +12,15 @@ export interface RadioCardOption<T extends string = string> {
   /** Image, dieline preview, material swatch — "show the box" (design-system.md §1.2). */
   visual?: React.ReactNode;
   disabled?: boolean;
+  /** A short tag after the label ("ค่าเริ่มต้น"). */
+  badge?: React.ReactNode;
+  /**
+   * Beside the label and description, aligned to the end (a price change, "เลือกอยู่"). Its box is the
+   * caller's to reserve: a card whose figure arrives later must not change height when it does.
+   */
+  trailing?: React.ReactNode;
+  /** Under the description: a figure such as the price per piece. Reserve its height in the caller. */
+  footer?: React.ReactNode;
 }
 
 export interface RadioCardsProps<T extends string = string> {
@@ -23,7 +32,7 @@ export interface RadioCardsProps<T extends string = string> {
   /** Accessible name for the group when it is not inside a `<Field>`. */
   "aria-label"?: string;
   /** Column count at `sm` and up; one column on phones. */
-  columns?: 1 | 2 | 3;
+  columns?: 1 | 2 | 3 | 4;
   className?: string;
 }
 
@@ -54,7 +63,13 @@ export function RadioCards<T extends string = string>({
       {...groupProps}
       // An explicit aria-label wins, for a group used outside a Field.
       aria-label={props["aria-label"]}
-      className={cn("grid gap-2", columns === 3 && "sm:grid-cols-3", columns === 2 && "sm:grid-cols-2", className)}
+      className={cn(
+        "grid gap-2",
+        columns === 3 && "sm:grid-cols-3",
+        columns === 2 && "sm:grid-cols-2",
+        columns === 4 && "grid-cols-2 sm:grid-cols-4",
+        className,
+      )}
     >
       {options.map((option) => (
         <RadioGroupPrimitive.Item
@@ -71,8 +86,29 @@ export function RadioCards<T extends string = string>({
           )}
         >
           {option.visual ? <div className="mb-1">{option.visual}</div> : null}
-          <span className="text-sm font-medium">{option.label}</span>
-          {option.description ? <span className="text-muted text-xs">{option.description}</span> : null}
+          {option.trailing !== undefined ? (
+            <span className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5">
+              <span className="text-sm font-medium">
+                {option.label}
+                {option.badge ? <span className="ms-2 align-middle">{option.badge}</span> : null}
+              </span>
+              <span className="text-muted col-start-2 row-span-2 row-start-1 self-center text-xs font-semibold whitespace-nowrap tabular-nums">
+                {option.trailing}
+              </span>
+              {option.description ? <span className="text-muted text-xs">{option.description}</span> : null}
+            </span>
+          ) : (
+            <>
+              <span className="text-sm font-medium">
+                {option.label}
+                {option.badge ? <span className="ms-2 align-middle">{option.badge}</span> : null}
+              </span>
+              {option.description ? <span className="text-muted text-xs">{option.description}</span> : null}
+            </>
+          )}
+          {option.footer !== undefined ? (
+            <span className="mt-1 text-xs font-semibold tabular-nums">{option.footer}</span>
+          ) : null}
         </RadioGroupPrimitive.Item>
       ))}
     </RadioGroupPrimitive.Root>

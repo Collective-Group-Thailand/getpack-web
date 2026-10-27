@@ -327,7 +327,7 @@ export async function ProductView({
                         {instant ? (
                           // The whole row opens the configurator at this size (UX audit, product detail).
                           <Link
-                            href={`${configureHref(product.slug)}?size=${encodeURIComponent(size.code)}`}
+                            href={configureHref(product.slug, { size: size.code })}
                             className="outline-none after:absolute after:inset-0 after:content-[''] focus-visible:underline"
                           >
                             {size.name}

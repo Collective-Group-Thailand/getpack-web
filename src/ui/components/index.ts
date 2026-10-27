@@ -101,6 +101,15 @@ export { SlaTimer, type SlaState, type SlaTimerProps } from "./SlaTimer";
 export { Sheet, type SheetProps } from "./Sheet";
 export { Slider, type SliderProps } from "./Slider";
 export { Spinner, type SpinnerProps } from "./Spinner";
+export { StepCard, type StepCardProps } from "./StepCard";
+export {
+  StepChips,
+  scrollToStep,
+  useActiveStep,
+  type StepChip,
+  type StepChipState,
+  type StepChipsProps,
+} from "./StepChips";
 export { Stepper, type StepperLabels, type StepperProps, type StepperStep, type StepStatus } from "./Stepper";
 export { Stat, type StatProps } from "./Stat";
 export { StatusBadge, type StatusBadgeProps } from "./StatusBadge";

@@ -1,21 +1,26 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
-import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
-import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
-import { Input } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
+import { Icon, type IconName } from "@/ui/icons";
 
 import { designOptionsOf, type Configurator, type ConfiguratorState, type DesignOption } from "./state";
+
+/** One icon per way in; an option the prototype has no card for (a promotion's free design) gets the designer's. */
+const PATH_ICON: Partial<Record<DesignOption, IconName>> = {
+  own_file: "upload",
+  online_designer: "edit",
+  hired_design: "palette",
+};
 
 interface DesignStepProps {
   configurator: Configurator;
@@ -23,20 +28,27 @@ interface DesignStepProps {
   onChange: (patch: Partial<ConfiguratorState>) => void;
   /** Whether the online designer can draw this product (a box style `@getpack/dieline` knows). */
   designerAvailable: boolean;
+  /** The Studio opened on this product, size and board (`studioHref`); `null` where it cannot open. */
+  studioLink?: string | null;
+  /** The sample request (T5): the existing dialog, opened from here. */
+  sample?: { checked: boolean; disabled: boolean; onChange: (on: boolean) => void };
 }
 
 /**
- * How the artwork gets made and a promotion code. (The physical mockup add-on became the sample
- * of D-192: it is ordered on its own path, U2.F3, not chosen here.)
- *
- * The code is checked as soon as it is entered so the customer knows it works for this product
- * (`store.promotions.checkCode`, D-053); what it takes off is the quotation's and the checkout's
- * to compute, so this says what the code gives — the offer's own percent or amount — never what
- * it would take off this order.
+ * How the artwork gets made: three ways in as cards (own file, the Studio, a hired designer), then the
+ * optional real sample. The hired designer's card names the free revision rounds the API sends (C4-API-2, D-071). The step opens on the API's own default (`configurator.design.default`) — "มีไฟล์งานแล้ว"
+ * only when the link asked for it. (The physical mockup add-on became the sample of D-192; the discount code
+ * and the completeness meter live in the price summary.)
  */
-export function DesignStep({ configurator, state, onChange, designerAvailable }: DesignStepProps) {
+export function DesignStep({
+  configurator,
+  state,
+  onChange,
+  designerAvailable,
+  studioLink = null,
+  sample,
+}: DesignStepProps) {
   const t = useTranslations("configurator.design");
-  const format = useFormat();
   const designOptions = designOptionsOf(configurator, designerAvailable);
   // The Studio design this order carries (the studio's "order this"): named here so the customer
   // sees it is attached, and can drop it to order the box blank or with an upload instead.
@@ -49,43 +61,34 @@ export function DesignStep({ configurator, state, onChange, designerAvailable }:
     enabled: !!attached,
     staleTime: 60_000,
   });
-  const check = useMutation({
-    mutationFn: async (code: string) =>
-      (
-        await browserApi().POST("/v1/store/promotions/actions/check", {
-          body: {
-            code,
-            productTypeCode: configurator.productTypeCode,
-            ...(state.quantity > 0 ? { quantity: state.quantity } : {}),
-          },
-        })
-      ).data!,
-  });
-  const result = check.data;
-  const offer = result?.offer ?? null;
-
-  /** What the offer gives, in its own terms (the amount off this order is the cart's). */
-  const benefitText = (benefit: Schemas["OfferBenefitDto"]) => {
-    const cap = benefit.maxAmount ? t("promoBenefit.cap", { amount: format.thb(benefit.maxAmount) }) : "";
-    if (benefit.pct) return `${t("promoBenefit.percent", { pct: format.percent(benefit.pct) })}${cap}`;
-    if (benefit.amount) return `${t("promoBenefit.fixed", { amount: format.thb(benefit.amount) })}${cap}`;
-    return null;
-  };
-
   return (
-    <div className="flex flex-col gap-6">
-      <Field label={t("option")}>
+    <div className="flex flex-col gap-5">
+      <Field label={t("paths")}>
         <RadioCards
-          columns={2}
+          columns={3}
           value={state.designOption}
           onValueChange={(designOption) => onChange({ designOption: designOption as DesignOption })}
           options={designOptions.map((option) => ({
             value: option,
+            visual: (
+              <Icon name={PATH_ICON[option] ?? "palette"} size={22} aria-hidden="true" className="text-primary" />
+            ),
             label: t(`options.${option}.label`),
-            description: t(`options.${option}.description`),
+            description:
+              option === "hired_design" && configurator.design.freeRevisions != null
+                ? `${t(`options.${option}.description`)} ${t("options.hired_design.freeRevisions", { count: configurator.design.freeRevisions })}`
+                : t(`options.${option}.description`),
           }))}
         />
       </Field>
+
+      {state.designOption === "online_designer" && studioLink && !attached ? (
+        <div>
+          <Button asChild size="sm" variant="secondary" iconStart="edit">
+            <Link href={studioLink}>{t("openStudio")}</Link>
+          </Button>
+        </div>
+      ) : null}
 
       {attached ? (
         <Callout tone="success" title={t("attached.title")}>
@@ -105,61 +108,17 @@ export function DesignStep({ configurator, state, onChange, designerAvailable }:
         </Callout>
       ) : null}
 
-      <form
-        className="flex flex-col gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (state.promoCode.trim()) check.mutate(state.promoCode.trim());
-        }}
-      >
-        <div className="flex items-start gap-2">
-          <Field label={t("promo")} hint={t("promoHint")} className="flex-1">
-            <Input
-              value={state.promoCode}
-              autoComplete="off"
-              autoCapitalize="characters"
-              onChange={(event) => {
-                check.reset();
-                onChange({ promoCode: event.target.value.toUpperCase() });
-              }}
-              className="uppercase"
-            />
-          </Field>
-          <Button
-            type="submit"
-            variant="secondary"
-            className="mt-[1.625rem]"
-            loading={check.isPending}
-            disabled={!state.promoCode.trim()}
-          >
-            {t("promoCheck")}
-          </Button>
+      {sample ? (
+        <div className="bg-bg-subtle rounded-card px-3.5 py-3">
+          <Checkbox
+            label={t("sample.label")}
+            description={sample.disabled && !sample.checked ? t("sample.needsPrice") : t("sample.hint")}
+            checked={sample.checked}
+            disabled={sample.disabled && !sample.checked}
+            onCheckedChange={(on) => sample.onChange(on === true)}
+          />
         </div>
-        {result?.valid ? (
-          <Callout tone="success" live title={offer?.title ?? result.code}>
-            {offer ? (
-              <>
-                {offer.description ?? benefitText(offer.benefit)}
-                {offer.validUntil ? (
-                  <span className="text-muted block text-xs">
-                    {t("promoValidUntil", { date: format.dateTime(offer.validUntil) })}
-                  </span>
-                ) : null}
-              </>
-            ) : null}
-          </Callout>
-        ) : null}
-        {result && !result.valid ? (
-          <Callout tone="warning" live>
-            {t(`promoReasons.${result.reason ?? "not_found"}`)}
-          </Callout>
-        ) : null}
-        {check.isError ? (
-          <Callout tone="danger" live>
-            {isApiError(check.error) && check.error.status === 429 ? t("promoTooMany") : t("promoFailed")}
-          </Callout>
-        ) : null}
-      </form>
+      ) : null}
     </div>
   );
 }

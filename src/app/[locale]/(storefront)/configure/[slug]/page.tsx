@@ -17,7 +17,8 @@ import { getMyDisplayUnit, getMyDraft, getMyQuote, listMyDraftsOf } from "@/feat
 import { seedFromConfiguration } from "@/features/customer/configurator/build";
 import { Configurator } from "@/features/customer/configurator/Configurator";
 import { seedFromDefaults } from "@/features/customer/configurator/defaults";
-import { seedFromDesign, type ConfiguratorState } from "@/features/customer/configurator/state";
+import { type ConfiguratorState } from "@/features/customer/configurator/state";
+import { seedFromDesign } from "@/features/customer/configurator/url-state";
 import { getDefaults } from "@/features/customer/account/api.server";
 import { getPathname, Link, redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -46,6 +47,10 @@ type Search = {
   ink?: string;
   /** How the artwork comes (`/studio/upload` sends `own_file`). */
   design?: string;
+  /** The basis of a custom size, and the print of each side (the configurator keeps them in the address). */
+  basis?: string;
+  pf?: string;
+  pb?: string;
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
@@ -124,7 +129,7 @@ export default async function Page({
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
 
   return (
-    <div className="max-w-content mx-auto px-5 py-6 md:px-8 md:py-10">
+    <div className="max-w-nav mx-auto px-5 py-6 md:px-8 md:py-10">
       <Breadcrumbs
         label={tCatalog("breadcrumbs.label")}
         items={[
@@ -201,6 +206,7 @@ export default async function Page({
           lineOaId={support?.lineOaId ?? null}
           seed={seed}
           draft={ownDraft}
+          syncUrl={!source && !quote}
           rfqPath={rfqPath}
           pageUrl={`${origin}${localised(`/configure/${slug}`)}`}
         />

@@ -8,12 +8,23 @@
  * search engines and people expect of a path.
  */
 
+import { PARAMS } from "@/features/customer/configurator/url-state";
+
 export const categorySegment = (code: string) => code.replaceAll("_", "-");
 
 export const categoryHref = (code: string) => `/products/${categorySegment(code)}`;
 export const productHref = (slug: string) => `/products/${slug}`;
 export const stockProductHref = (sku: string) => `/products/${encodeURIComponent(sku)}`;
-export const configureHref = (slug: string) => `/configure/${slug}`;
+/**
+ * The configurator, opened on what the caller already knows (`size`: a standard size's code, `material`,
+ * `qty`, …). The parameter names are the configurator's own (`configurator/url-state.ts`).
+ */
+export const configureHref = (slug: string, query: Partial<Record<keyof typeof PARAMS, string>> = {}) => {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) if (value) params.set(PARAMS[key as keyof typeof PARAMS], value);
+  const search = params.toString();
+  return `/configure/${slug}${search ? `?${search}` : ""}`;
+};
 export const rfqHref = (categoryCode: string) => `/rfq/${categorySegment(categoryCode)}`;
 export const articleHref = (slug: string) => `/articles/${slug}`;
 

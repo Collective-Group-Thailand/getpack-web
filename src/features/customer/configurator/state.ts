@@ -270,7 +270,8 @@ function normaliseInkChoices(configurator: Configurator, state: ConfiguratorStat
         : normaliseInks(byId, ids)
       : ids;
   const choices = { ...state.choices };
-  for (const kind of ["print_front", "print_back"] as const) if (choices[kind]) choices[kind] = fix(kind, choices[kind]);
+  for (const kind of ["print_front", "print_back"] as const)
+    if (choices[kind]) choices[kind] = fix(kind, choices[kind]);
   return {
     ...state,
     choices,
@@ -451,107 +452,6 @@ export function withTier(configurator: Configurator, tiers: number[], quantity: 
 export function chosenOf(configurator: Configurator, state: ConfiguratorState, kind: GroupKind): StoreOption[] {
   const byId = optionsById(configurator);
   return (state.choices[kind] ?? []).flatMap((id) => (byId.has(id) ? [byId.get(id)!] : []));
-}
-
-/**
- * A configuration started from a design (F4 C.2, the designer's "order this"): its catalogue
- * pattern, inside size and material where this product offers them, and the online-designer
- * option. Anything this product does not offer is left at its defaults.
- */
-const DESIGN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-export function seedFromDesign(
-  configurator: Configurator,
-  query: {
-    pattern?: string;
-    material?: string;
-    l?: string;
-    w?: string;
-    d?: string;
-    qty?: string;
-    from?: string;
-    /** A standard size's code, from a row of the product page's size table (UX audit). */
-    size?: string;
-    /**
-     * Front ink colours, comma-separated option ids — the home page's Studio panel (Phase 4) sends
-     * its print choice so the configurator opens on the very configuration it priced. `none` = blank.
-     */
-    ink?: string;
-    /**
-     * How the artwork comes (`DesignOption`) — `/studio/upload` opens the configurator on `own_file` —
-     * or a Studio design's id: the studio's "order this" (`OrderAction`), which orders that design.
-     */
-    design?: string;
-  },
-): Partial<ConfiguratorState> | undefined {
-  const mm = (value: string | undefined) => (value && /^\d{1,4}(\.\d)?$/.test(value) ? Number(value) : null);
-  const [l, w, d] = [mm(query.l), mm(query.w), mm(query.d)];
-  // The home page's quick start sends the quantity too (U-F3); one the product does not take is ignored.
-  const qty = query.qty && /^\d{1,7}$/.test(query.qty) ? Number(query.qty) : null;
-  const tiers = qty !== null ? withTier(configurator, initialState(configurator).quantities, qty) : null;
-  const pattern = configurator.patterns.find((candidate) => candidate.id === query.pattern);
-  const material = groupsOf(configurator)
-    .find((group) => group.kind === "material")
-    ?.options.find((option) => option.id === query.material);
-  const standard = query.size
-    ? configurator.standardSizes.find((candidate) => candidate.code === query.size)
-    : undefined;
-  const front = groupsOf(configurator).find((group) => group.kind === "print_front");
-  const inks =
-    query.ink === "none"
-      ? []
-      : query.ink
-        ? query.ink.split(",").filter((id) => front?.options.some((option) => option.id === id))
-        : null;
-  const designId = query.design && DESIGN_ID.test(query.design) ? query.design : null;
-  const design = designId
-    ? configurator.design.options.find((option) => option === "online_designer")
-    : configurator.design.options.find((option) => option === query.design);
-  if (!pattern && !material && !(l && w) && !tiers && !standard && !inks && !design) return undefined;
-  const seed: Partial<ConfiguratorState> = {};
-  if (standard) {
-    seed.sizeMode = "standard";
-    seed.standardSizeCode = standard.code;
-    seed.dims = { ...NO_DIMS, l: standard.lengthMm, w: standard.widthMm, d: standard.heightMm };
-    seed.basis = "internal";
-  }
-  if (tiers && qty !== null) {
-    seed.quantities = tiers;
-    seed.quantity = qty;
-  }
-  if (pattern) seed.patternId = pattern.id;
-  if (l && w) {
-    seed.sizeMode = "custom";
-    seed.standardSizeCode = null;
-    seed.dims = { ...NO_DIMS, l, w, d };
-    // The designer draws a box on its inside size (F4).
-    seed.basis = sizeKindOf(configurator) === "box" ? "internal" : "product";
-  }
-  if (material || inks) {
-    const base = initialState(configurator);
-    // The home hero (`ink`) prices its board and outside inks and nothing else (getpack-api's
-    // `heroCalculateBody`), so an optional default the hero does not send — an inside print, a
-    // coating — starts unanswered here, or `/configure` would price more than the hero showed.
-    const defaults =
-      inks === null
-        ? base.choices
-        : Object.fromEntries(
-            groupsOf(configurator).map((group) => [group.kind, group.required ? (base.choices[group.kind] ?? []) : []]),
-          );
-    seed.choices = {
-      ...defaults,
-      ...(material ? { material: [material.id] } : {}),
-      ...(inks && front ? { print_front: inks } : {}),
-    };
-  }
-  // An asked-for option wins (`/studio/upload`'s `own_file`, a design's "order this"); without one,
-  // a configuration from the designer keeps the online designer and the home page's quick start
-  // leaves the choice open.
-  if (design) seed.designOption = design;
-  if (design && designId) seed.designDocumentId = designId;
-  else if (!design && query.from !== "home" && configurator.design.options.includes("online_designer"))
-    seed.designOption = "online_designer";
-  return seed;
 }
 
 /**
