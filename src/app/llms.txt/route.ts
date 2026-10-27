@@ -4,7 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { getCatalogueTree, listFaqs } from "@/features/customer/catalog/api.server";
 import { categoryHref } from "@/features/customer/catalog/paths";
 import { pick } from "@/features/customer/catalog/localize";
+import { PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
 import { routing } from "@/i18n/routing";
+import { featureFlags } from "@/lib/env/server";
 import { localePath, publicOrigin } from "@/lib/seo";
 import { ZONE_CONFIG, ZONE_HEADER, isZone } from "@/lib/zones";
 import { BRAND_COMPANY, BRAND_NAME, BRAND_TAGLINE } from "@/ui/brand";
@@ -71,6 +73,22 @@ export async function GET(): Promise<Response> {
           .join(", ")}`,
     ),
   ];
+
+  // C0: the packaging landing pages, only while their flag is on.
+  if (featureFlags.packagingLandings) {
+    const tStyles = await getTranslations({ locale, namespace: "styles" });
+    lines.push(
+      "",
+      `## ${tStyles("library.landingTitle")}`,
+      "",
+      ...PACKAGING_LANDINGS.map(
+        (landing) =>
+          `- [${tStyles(`useCasePages.${landing.useCase}.title` as never)}](${url(packagingHref(landing.slug))}): ${tStyles(
+            `useCasePages.${landing.useCase}.intro` as never,
+          )} — EN: ${url(packagingHref(landing.slug), "en")}`,
+      ),
+    );
+  }
 
   const entries = faqs.flatMap((group) => group.faqs);
   if (entries.length > 0) {

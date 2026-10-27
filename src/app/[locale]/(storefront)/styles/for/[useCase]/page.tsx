@@ -6,11 +6,13 @@ import { listStyles, listStyleVariants } from "@/features/customer/catalog/api.s
 import { pick } from "@/features/customer/catalog/localize";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
+import { landingOfUseCase, packagingHref } from "@/features/customer/styles/packaging-landings";
 import { styleHref, STYLES_HREF, forUseCaseHref } from "@/features/customer/styles/paths";
 import { StyleCardGrid } from "@/features/customer/styles/StyleCardGrid";
 import { isUseCase } from "@/features/customer/styles/use-cases";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { featureFlags } from "@/lib/env/server";
 import { alternateUrls, breadcrumbSchema, publicOrigin } from "@/lib/seo";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 
@@ -30,7 +32,13 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const [t, found, origin] = await Promise.all([getTranslations("styles"), load(useCase), publicOrigin()]);
   if (!found) return {};
   const title = t(`useCasePages.${found.useCase}.title`);
-  const { canonical, languages } = alternateUrls(origin, forUseCaseHref(found.useCase), locale as Locale);
+  // C0: with the packaging landing pages on, the use case's landing page is the canonical one.
+  const landing = featureFlags.packagingLandings ? landingOfUseCase(found.useCase) : undefined;
+  const { canonical, languages } = alternateUrls(
+    origin,
+    landing ? packagingHref(landing.slug) : forUseCaseHref(found.useCase),
+    locale as Locale,
+  );
   return {
     title: t("useCasePage.metaTitle", { title }),
     description: t("useCasePage.metaDescription", { title, intro: t(`useCasePages.${found.useCase}.intro`) }),
