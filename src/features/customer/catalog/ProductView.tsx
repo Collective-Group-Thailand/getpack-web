@@ -47,8 +47,9 @@ export async function ProductView({
   type?: ProductType;
   category?: CatalogueCategory;
 }) {
-  const [t, locale, format, origin, hints, faqs] = await Promise.all([
+  const [t, tProducts, locale, format, origin, hints, faqs] = await Promise.all([
     getTranslations("catalog"),
+    getTranslations("products"),
     getLocale(),
     getFormat(),
     publicOrigin(),
@@ -285,6 +286,33 @@ export async function ProductView({
                   </div>
                 ))}
               </dl>
+            </section>
+          ) : null}
+
+          {/* Products Phase 2: the published box styles this product is made in (product ↔ style mapping, C1-API-4). */}
+          {product.styles?.length ? (
+            <section aria-labelledby="product-styles">
+              <h2 id="product-styles" className="text-lg font-semibold">
+                {tProducts("styles.title")}
+              </h2>
+              <p className="text-muted mt-1 text-sm">{tProducts("styles.lede")}</p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {product.styles.map((style) => {
+                  const styleName = pick(locale, style.nameTh, style.nameEn);
+                  return (
+                    <li key={style.code}>
+                      <Link
+                        href={`/styles?style=${encodeURIComponent(style.code)}`}
+                        aria-label={tProducts("styles.open", { name: styleName })}
+                        className="border-border bg-surface rounded-control hover:border-primary focus-visible:ring-focus-ring inline-flex min-h-10 items-center gap-2 border px-3 text-sm outline-none focus-visible:ring-2"
+                      >
+                        <span className="text-muted font-mono text-xs">{style.code}</span>
+                        {styleName}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </section>
           ) : null}
         </div>

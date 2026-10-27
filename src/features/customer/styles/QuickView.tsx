@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import type { StyleDetail } from "@/features/customer/catalog/api.server";
-import { configureHref } from "@/features/customer/catalog/paths";
+import { configureHref, productHref } from "@/features/customer/catalog/paths";
 import { displayPrice, figuresOf } from "@/features/shared/format/price";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
@@ -47,6 +47,7 @@ type State = { key: string } & ({ status: "loading" } | { status: "error" } | { 
  */
 export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvoiceNote, size }: QuickViewProps) {
   const t = useTranslations("styles");
+  const tProducts = useTranslations("products.styleProducts");
   const words = t as unknown as StylesT;
   const locale = useLocale();
   const format = useFormat();
@@ -300,6 +301,37 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
             <DescriptionList items={facts} columns={1} />
             {style.startingPrice ? <p className="text-muted mt-3 text-xs">{t("library.quickViewVat")}</p> : null}
           </section>
+          {/* Products Phase 2: the catalogue products made in this style, each with its own starting price (C1-API-4). */}
+          {style.products?.length ? (
+            <section aria-labelledby="quick-view-products">
+              <h2 id="quick-view-products" className="mb-3 text-lg font-semibold">
+                {tProducts("title")}
+              </h2>
+              <ul className="divide-border border-border rounded-card divide-y border">
+                {style.products.map((item) => {
+                  const price = item.startingPrice
+                    ? displayPrice(figuresOf(item.startingPrice.unitPrice), "incl", format.thb, {
+                        incl: t("library.vatLabelIncl"),
+                        excl: t("library.vatLabelExcl"),
+                      })
+                    : null;
+                  return (
+                    <li key={item.slug}>
+                      <Link
+                        href={productHref(item.slug)}
+                        className="hover:bg-bg-subtle focus-visible:ring-focus-ring flex items-center justify-between gap-3 px-4 py-3 text-sm outline-none focus-visible:ring-2"
+                      >
+                        <span className="font-medium">{locale === "en" ? item.nameEn : item.nameTh}</span>
+                        <span className="text-muted shrink-0 text-end tabular-nums">
+                          {price ? tProducts("from", { price: price.amount, vat: price.vatLabel }) : tProducts("quote")}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ) : null}
         </div>
       ) : null}
     </Sheet>

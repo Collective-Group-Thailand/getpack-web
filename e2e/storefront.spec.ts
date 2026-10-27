@@ -54,15 +54,17 @@ async function signIn(page: Page, phone: string, locale: keyof typeof SIGN_IN = 
 test.describe("the catalogue", () => {
   test("browses from the catalogue to a category to a product", async ({ page }) => {
     await page.goto(`${HOSTS.customer}/products`);
-    await expect(page.getByRole("heading", { level: 1, name: "สินค้าและบรรจุภัณฑ์" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "สินค้าและราคา" })).toBeVisible();
     // A draft in the back office is not in the shop.
     await expect(page.getByRole("link", { name: "กล่องถาด" })).toHaveCount(0);
 
-    // Category tiles, instant-price categories first (UX audit, /products).
+    // C1: the catalogue's category chips filter in place; the chosen category links to its own page.
     await page
-      .getByRole("region", { name: "หมวดสินค้า" })
+      .getByRole("navigation", { name: "หมวดสินค้า" })
       .getByRole("link", { name: /^กล่องกระดาษลูกฟูก/ })
       .click();
+    await expect(page).toHaveURL(/cat=corrugated/);
+    await page.getByRole("link", { name: /ดูหน้าหมวดกล่องกระดาษลูกฟูก/ }).click();
     await expect(page).toHaveURL(`${HOSTS.customer}/products/corrugated`);
     await expect(page.getByRole("heading", { level: 1, name: "กล่องกระดาษลูกฟูก" })).toBeVisible();
 
