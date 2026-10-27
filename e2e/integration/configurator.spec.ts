@@ -12,8 +12,13 @@ import { DEV_INSTANT_PRODUCT, runId, signInCustomer } from "./support";
  */
 
 const dock = (page: Page) => page.getByRole("complementary", { name: "ราคาของคุณ" });
-const step = (page: Page, label: string) =>
-  page.getByRole("button", { name: new RegExp(`^ขั้นที่ \\d+ จาก \\d+ ${label}`) }).first();
+/** Every step is open in one scroll (C4); the budget sits behind a disclosure in the quantity step. */
+async function setTarget(page: Page, value: string) {
+  const quantity = page.getByRole("region", { name: "จำนวน" });
+  const field = quantity.getByRole("textbox", { name: "งบต่อชิ้น" });
+  if (!(await field.isVisible())) await quantity.getByText("มีงบต่อชิ้นในใจ? (ไม่บังคับ)").click();
+  await field.fill(value);
+}
 
 test("configure → advisor → alternative → target lever → cart, on the real API", async ({ context, page }) => {
   test.slow();
@@ -22,7 +27,7 @@ test("configure → advisor → alternative → target lever → cart, on the re
   await page.locator("html[data-hydrated]").waitFor();
 
   // The standard size is the catalogue's inside size; every other basis comes from the API.
-  await expect(page.getByRole("radio", { name: /ขนาดมาตรฐาน/ })).toBeChecked();
+  await expect(page.getByRole("radio", { name: /เบอร์มาตรฐาน/ })).toBeChecked();
   await page.getByRole("radio", { name: "กำหนดเอง" }).click();
   await page.getByRole("radio", { name: /ขนาดภายนอก/ }).click();
   await page.getByRole("textbox", { name: "ยาว" }).fill("406");
@@ -39,19 +44,16 @@ test("configure → advisor → alternative → target lever → cart, on the re
   await page.getByRole("textbox", { name: "สูง" }).fill("250");
 
   // The goods and their journey.
-  await step(page, "สินค้าและการขนส่ง").click();
   await page.getByLabel("น้ำหนักสินค้าต่อชิ้น").fill("500");
   await page.getByLabel("จำนวนสินค้าต่อกล่อง").fill("10");
   await page.getByLabel("ซ้อนกี่ชั้น").fill("4");
 
   // A quantity first: the advisor prices the boards at it.
-  await step(page, "จำนวน").click();
-  await page.getByLabel("เพิ่มจำนวน").fill("1000");
-  await page.getByRole("button", { name: "เพิ่ม", exact: true }).click();
+  await page.getByLabel("จำนวนอื่น").fill("1000");
+  await page.getByRole("button", { name: "ดูราคา", exact: true }).click();
   await expect(dock(page).getByText(/\/ ชิ้น$/)).toBeVisible({ timeout: 30_000 });
 
   // The advisor: a recommendation with its range and the indicative notice, then an alternative.
-  await step(page, "วัสดุ").click();
   const advisor = page.getByRole("region", { name: "แนะนำลอนกระดาษ" });
   await advisor.getByRole("button", { name: "ดูคำแนะนำ" }).click();
   await expect(advisor.getByText(/ค่าประมาณ ไม่ใช่การรับประกัน/).first()).toBeVisible({ timeout: 30_000 });
@@ -67,9 +69,8 @@ test("configure → advisor → alternative → target lever → cart, on the re
   await expect(dock(page).getByText(/\/ ชิ้น$/)).toBeVisible({ timeout: 30_000 });
 
   // A target well below the price: the API's gap, then its levers, one taken.
-  await step(page, "จำนวน").click();
-  await page.getByLabel(/ราคาเป้าหมายต่อ/).fill("0.50");
-  const target = page.getByRole("region", { name: /ราคาเป้าหมาย/ });
+  await setTarget(page, "0.50");
+  const target = page.getByRole("region", { name: /^ราคาเป้าหมาย/ });
   await expect(target.getByText("สูงกว่าเป้าหมาย", { exact: true })).toBeVisible({ timeout: 30_000 });
   await target.getByRole("button", { name: "ดูวิธีลดราคา" }).click();
   const levers = target.getByRole("list", { name: "วิธีลดราคาที่คำนวณได้" });
@@ -81,8 +82,9 @@ test("configure → advisor → alternative → target lever → cart, on the re
   }
 
   // The summary shows the style code the API published for the pattern.
-  await step(page, "สรุปและบันทึก").click();
-  await expect(page.getByText("รหัสแบบ").first()).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "มาตรฐานงานและขั้นตอนต่อไป" }).getByText("รหัสแบบ").first(),
+  ).toBeVisible();
 
   await expect(dock(page).getByText(/\/ ชิ้น$/)).toBeVisible({ timeout: 30_000 });
   await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();

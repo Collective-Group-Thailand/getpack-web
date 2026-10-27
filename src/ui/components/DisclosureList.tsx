@@ -6,6 +6,8 @@ export interface DisclosureItem {
   id?: string;
   summary: React.ReactNode;
   content: React.ReactNode;
+  /** Starts open (a form whose field already holds an answer); the reader may close it. */
+  defaultOpen?: boolean;
 }
 
 export interface DisclosureListProps {
@@ -24,7 +26,7 @@ export function DisclosureList({ items, headingLevel: Heading, className }: Disc
   return (
     <div className={cn("divide-border border-border divide-y rounded-xl border", className)}>
       {items.map((item, index) => (
-        <details key={item.id ?? index} id={item.id} className="group">
+        <details key={item.id ?? index} id={item.id} open={item.defaultOpen} className="group">
           <summary className="focus-visible:ring-focus-ring flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-3 font-medium outline-none focus-visible:ring-2 [&::-webkit-details-marker]:hidden">
             {Heading ? (
               <Heading className="text-base font-medium">{item.summary}</Heading>

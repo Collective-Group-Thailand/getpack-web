@@ -40,7 +40,7 @@
   "size": {
     "pattern": "Style",
     "mode": "Size",
-    "standard": "Standard size",
+    "standard": "Standard sizes",
     "custom": "Custom size",
     "standardSizes": "Standard sizes",
     "standardHint": "Popular sizes, with templates ready to design on",
@@ -114,6 +114,17 @@
       "failed": "Couldn't convert the size — try again",
       "empty": "Enter every dimension to see the other sizes",
       "chooseBasis": "Choose a basis and the other sizes appear straight away"
+    },
+    "hintStandard": "{count} standard sizes · price at {quantity} {unit}",
+    "hintStandardNoPrice": "{count} standard sizes",
+    "hintCustom": "Custom size",
+    "showAs": "Show sizes in",
+    "orderNote": "Always length × width × height, in any unit",
+    "derivedToggle": "See inside, outside and over-crease sizes",
+    "switchTo": {
+      "mm": "millimetres",
+      "cm": "centimetres",
+      "in": "inches"
     }
   },
   "choices": {
@@ -174,7 +185,11 @@
       "spotPick": "Choose special colours (up to {max})",
       "addOn": "Add special colours (up to {max})",
       "summary": "Outside: {outside} · Inside: {inside}",
-      "cmyk": "CMYK"
+      "cmyk": "CMYK",
+      "outside": "Outside",
+      "inside": "Inside",
+      "noneOutside": "Plain box",
+      "noneInside": "Plain inside"
     }
   },
   "quantity": {
@@ -182,18 +197,21 @@
     "tier": "{quantity} {unit}",
     "remove": "Remove {quantity} {unit}",
     "selectedHint": "Tap a quantity to order it. The more you order, the less each piece costs.",
-    "add": "Add a quantity",
+    "add": "Another quantity",
     "range": "Orders of {min}–{max} {unit}",
-    "addButton": "Add",
+    "addButton": "See price",
     "presets": "Popular quantities",
     "tooMany": "You can compare up to {count} quantities. Remove one first.",
     "outOfRange": "Order between {min} and {max} {unit}",
     "summary": "{quantity} {unit} · comparing {tiers, plural, one {# quantity} other {# quantities}}",
     "invalid": "Enter a whole number of 1 or more",
-    "target": "Budget per piece in mind (optional)",
-    "targetHint": "Baht per {unit}, VAT included, shipping excluded — compared with the real price; never shown to anyone else",
+    "target": "Have a budget per piece in mind? (optional)",
+    "targetHint": "Baht per {unit}, VAT included, shipping excluded — compared with the real price",
     "targetInvalid": "Enter an amount in baht with up to two decimals",
-    "targetSummary": "target {target}/{unit}"
+    "targetSummary": "target {target}/{unit}",
+    "targetLabel": "Budget per piece",
+    "targetPrivate": "This figure is used inside our team only and is not shown to anyone else.",
+    "saving": "Save {percent}%"
   },
   "delivery": {
     "postcode": "Delivery postcode",
@@ -211,12 +229,13 @@
         "description": "Upload it after ordering; our team checks it before production"
       },
       "online_designer": {
-        "label": "Design online",
-        "description": "Design it yourself on a true-size template, free"
+        "label": "Design in the studio",
+        "description": "Place your logo and text on the real box, in the browser"
       },
       "hired_design": {
         "label": "Hire a designer",
-        "description": "Send a brief and a getpack designer does it, with 3 free revisions"
+        "description": "Send a brief and a getpack designer does it",
+        "freeRevisions": "{count, plural, one {# free revision} other {# free revisions}}"
       },
       "free_design": {
         "label": "Free design",
@@ -245,6 +264,13 @@
       "cap": " (up to {amount})"
     },
     "promoValidUntil": "Valid until {date}",
+    "paths": "How the artwork is made",
+    "openStudio": "Open the studio",
+    "sample": {
+      "label": "Ask for a real sample before production",
+      "hint": "Check size, colour and print before a large run",
+      "needsPrice": "See the price first, then ask for a sample"
+    },
     "attached": {
       "title": "Studio design attached",
       "body": "“{title}” version {version} will be this order's artwork; we check the file and send a proof before printing.",
@@ -266,7 +292,22 @@
     "reset": "Reset the view",
     "caption": "Drawn to the proportions you chose. Drag to turn the box.",
     "flatItemLabel": "{name}, {w} × {l} mm, {material}",
-    "caption2d": "Drawn to the proportions you chose."
+    "caption2d": "Drawn to the proportions you chose.",
+    "mm": "mm",
+    "customSize": "Custom size",
+    "dimensions": {
+      "product": "Finished",
+      "internal": "Inside",
+      "external": "Outside",
+      "overCrease": "Over creases"
+    },
+    "caliperNote": "Worked out from a board thickness of {mm} mm. These sizes are for reference; the team confirms them again when the die-line is made.",
+    "material": "Material",
+    "printing": "Printing",
+    "printOutside": "Print outside",
+    "printInside": "Print inside",
+    "printArea": "Print area",
+    "captionPrinted": "Drawn to scale · print position is approximate · drag to turn the box"
   },
   "dock": {
     "title": "Your price",
@@ -292,6 +333,7 @@
     "oneOff": "Once per order",
     "structureFee": "Structure design",
     "shipping": "Delivery",
+    "shippingTo": "To {area}",
     "shippingPending": "Enter a postcode",
     "vat": "VAT",
     "vatInTotal": "Included in the total",
@@ -301,7 +343,7 @@
     "close": "Close",
     "summary": "Price summary",
     "grandTotal": "Total",
-    "leadTime": "Made in {days} business days",
+    "leadTime": "Made in {days} business days after the proof is approved",
     "shipBy": "Ready to ship from {date}",
     "receiveBy": "Arrives around {date}",
     "tolerance": "You may receive up to {shortage} fewer or {overage} more, as is normal in production; any shortfall comes back as credit.",
@@ -324,14 +366,25 @@
       "quantity": "Price per piece changed with the quantity",
       "spec": "Price changed with the specification"
     },
-    "printRefused": "This print choice can't be priced — please choose the print again"
+    "printRefused": "This print choice can't be priced — please choose the print again",
+    "vatLine": "VAT (included in the total)",
+    "totalNoShipping": "Total (excluding shipping)",
+    "toleranceLine": "Quantity: up to {shortage} under or {overage} over; any shortfall is credited",
+    "retention": "A quotation holds its price for {days} days · drafts are kept 90 days · a shared link works for 15 days",
+    "completeness": "{done} of {total} done",
+    "completenessLabel": "How much of the configuration is done",
+    "addPostcode": "Add postcode",
+    "perUnit": "/ {unit}",
+    "vatLineRate": "VAT {rate}% (included in the total)",
+    "arrivalRange": "Arrives around {from}–{to}",
+    "arrivalOn": "Arrives around {date}"
   },
   "actions": {
     "addToCart": "Add to cart",
     "requestQuote": "Request a quote",
     "designNow": "Design it now",
     "save": "Save",
-    "share": "Share",
+    "share": "Share link",
     "pdf": "PDF",
     "askCs": "Ask our team on LINE",
     "requestSample": "Ask for a sample first",
@@ -351,7 +404,8 @@
     "viewRfqs": "View requests",
     "leverApplied": "Created quotation {code} from this option",
     "leverAppliedNoCode": "Created a new quotation from this option",
-    "goToCart": "Go to cart"
+    "goToCart": "Go to cart",
+    "quote": "Quote"
   },
   "savedFrom": "Opened from your saved quotation {code}. The price below is worked out again at today's prices.",
   "savedFromNoCode": "Opened from a quotation you saved — priced again at today’s prices",
@@ -610,9 +664,9 @@
     "noInternationalName": "Shown once our team has verified it",
     "tolerances": "Tolerances",
     "tolerancesPending": "Shown once there is a price",
-    "toleranceQuantity": "Quantity: up to {shortage} short or {overage} over",
-    "toleranceDimensional": "Size: ± {mm} mm",
-    "toleranceColour": "Colour: ΔE2000 up to {deltaE} against the approved proof",
+    "toleranceQuantity": "Up to {shortage} under or {overage} over; any shortfall is credited",
+    "toleranceDimensional": "± {mm} mm",
+    "toleranceColour": "ΔE2000 of {deltaE} or less against the approved proof",
     "next": "What happens next",
     "nextSteps": {
       "artwork": "Send your artwork or design it online",
@@ -621,7 +675,8 @@
       "productionDays": "About {days} business days of production after the proof is approved",
       "delivery": "Delivery once production is done",
       "shipBy": "Ready to ship from {ship}",
-      "deliveryBy": "Ready to ship from {ship}, with you around {receive}"
+      "deliveryBy": "Ready to ship from {ship}, with you around {receive}",
+      "deliveryByRange": "Ready to ship from {ship}, arriving around {from}–{to}"
     },
     "nextNote": "Dates are for the chosen quantity, in business days",
     "saveDraft": "Save as draft",
@@ -629,7 +684,18 @@
     "shareDraft": "Share the configuration",
     "draftKept": "Draft kept until {date}",
     "draftHint": "Drafts are kept 90 days after the last change; a shared link works for 15 days",
-    "pricedSpec": "Specification priced"
+    "pricedSpec": "Specification priced",
+    "cardTitle": "Standards and next steps",
+    "standard": {
+      "quantity": "Up to 5% under or over; any shortfall is credited",
+      "size": "± 3 mm",
+      "colour": "ΔE2000 of 3 or less against the approved proof"
+    },
+    "toleranceLabels": {
+      "quantity": "Quantity",
+      "size": "Size",
+      "colour": "Colour"
+    }
   },
   "printProblem": {
     "intro": "This print choice can't be ordered",
@@ -644,5 +710,27 @@
     "colour_repeated": "A colour can't be chosen twice",
     "colour_not_allowed": "This colour isn't available for this product",
     "other": "Please choose the print again"
-  }
+  },
+  "chips": {
+    "size": "Size",
+    "logistics": "Shipping load",
+    "material": "Material",
+    "printing": "Printing",
+    "finishing": "Finishing",
+    "assembly": "Die-cut",
+    "quantity": "Quantity",
+    "delivery": "Delivery",
+    "design": "Design",
+    "summary": "Summary",
+    "done": "done",
+    "todo": "still to do"
+  },
+  "options": {
+    "perPiece": "{price}/{unit}",
+    "quoteOnly": "Request a quote",
+    "selected": "Selected",
+    "same": "Current price",
+    "default": "Default"
+  },
+  "materialNotes": {}
 }

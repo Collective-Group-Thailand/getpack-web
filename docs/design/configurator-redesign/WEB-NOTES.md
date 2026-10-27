@@ -33,3 +33,23 @@ web built from this branch, UAT API (old contract, may predate the API's pricing
 number: the web bug (ดำ + CMYK sendable together) was real and is fixed, but the listing ฿15.70 vs configurator ฿17.26
 gap on UAT has another cause (the API's A3 report suspects a stale cached starting price / UAT price data ~9.9 % above a
 fresh seed). Re-check with the new API running (default spec = reference spec, D-441).
+
+---
+
+# C4 web-2 — C4-API-2/3 fields (branch design/configurator-redesign)
+
+Contract re-vendored from getpack-api `design/configurator-redesign` (C4-API-3; unreleased pin as before) and
+`pnpm gen:api` run. Everything is shown as the API sends it; nothing is computed.
+
+| Field | Where | Copy |
+|---|---|---|
+| `design.freeRevisions` | Design step, hired-designer card | "แก้ไขฟรี {n} ครั้ง" (hidden when null) |
+| `steps[].savingPercent` | Quantity cards | "ประหยัด {n}%" (hidden when null) |
+| `steps[].zoneName` + `arrival` | Delivery step (under the postcode area) and the summary's truck line | "{zone} · ถึงประมาณ {from}–{to}", one date when equal |
+| `steps[].vatRate` | Summary VAT line | "VAT {rate×100}% (รวมในยอดแล้ว)"; the rate is shifted as text (`store-fields.ts`); old label when null |
+
+Mocks: `stepOf` fills the new fields; `withSavings` mirrors the engine's saving rule for mocked tiers.
+Gates run in the cloud: typecheck · eslint (changed files) · `gen:api --check` · vitest 1,519/1,519 · e2e
+`storefront-configurator-v2` 7/7 (mock backend on a dev server, 90 s timeout). `next build` was killed for memory in
+the cloud container — run `pnpm build` and `pnpm e2e` locally. Checked at 1440 and 390 px against the prototype
+(quantity savings, designer card, VAT line, zone + arrival line).

@@ -9,7 +9,8 @@
 import { http, HttpResponse } from "msw";
 
 import { buildCalculateBody } from "@/features/customer/configurator/build";
-import { initialState, seedFromDesign } from "@/features/customer/configurator/state";
+import { initialState } from "@/features/customer/configurator/state";
+import { seedFromDesign } from "@/features/customer/configurator/url-state";
 import type { Schemas } from "@/lib/api/types";
 
 import { bangkokIso, problem } from "../support";

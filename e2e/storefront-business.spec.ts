@@ -85,9 +85,9 @@ test.describe("getpack for business", () => {
     // Two lines of 3,000 go over the company's THB 50,000 threshold.
     for (let line = 0; line < 2; line += 1) {
       await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
-      await dock(page)
-        .getByRole("table", { name: "ราคาต่อจำนวน" })
-        .getByRole("button", { name: /เลือก\S*\s*3,000 ชิ้น/ })
+      await page
+        .getByRole("radiogroup", { name: "จำนวนที่ต้องการเปรียบเทียบ" })
+        .getByRole("radio", { name: /^3,000 / })
         .click();
       await expect(dock(page)).toContainText("3,000 ชิ้น");
       await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
