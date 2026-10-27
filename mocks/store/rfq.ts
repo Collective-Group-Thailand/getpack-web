@@ -18,6 +18,7 @@ import { customers as fakeCustomers } from "../admin/commerce";
 import { addCustomerRfq, customerAcceptQuote, rfqMessages, rfqs } from "../admin/rfq";
 import type { RfqRow } from "../admin/rfq-model";
 import { bangkokIso, mockId, paginate, problem, RFQ_V2_EMPTY } from "../support";
+import { productRefOf } from "./catalog";
 import { customerOf, type MockCustomer } from "./customers";
 import { nextQuoteId, quotesOf, QUOTE_VALIDITY_DAYS, type StoreQuote } from "./quotes";
 import { RFQ_QUOTE_STATUS, RFQ_STATUS } from "@/domain/status";
@@ -229,6 +230,7 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
   const closed = ["accepted", "declined", "expired"].includes(rfq.status);
   return {
     ...RFQ_V2_EMPTY,
+    product: rfqProducts.get(rfq.id) ?? null,
     id: rfq.id,
     rfqCode: rfq.rfqCode,
     status: rfq.status,
@@ -355,12 +357,18 @@ export function fileRoutedRfq(
 
 /** Why an RFQ would be refused (an unknown type, a required answer missing), or `null` — checked before anything is filed. */
 export function rfqRefusal(
-  body: Pick<Schemas["SubmitRfqDto"], "productTypeCode" | "spec">,
+  body: Pick<Schemas["SubmitRfqDto"], "productTypeCode" | "spec" | "catalogProductSlug" | "stockProductSku">,
   path = "",
 ): Response | null {
   const spec = body.spec as Record<string, unknown>;
   const form = formOf(body.productTypeCode);
   if (!form) return problem(422, "validation.failed", "ไม่พบประเภทสินค้านี้");
+  // C1-API-3: a named product must be an active product of this type.
+  const product = productRefOf(body);
+  if (product && "refused" in product)
+    return problem(422, "validation.failed", "ไม่พบสินค้านี้ในประเภทที่เลือก", [
+      { path: `${path}${product.refused}`, code: "exists", message: "exists" },
+    ]);
   const missing = form.fields.find(
     (field) => field.required && (spec[field.key] === undefined || spec[field.key] === ""),
   );
@@ -370,6 +378,9 @@ export function rfqRefusal(
       ])
     : null;
 }
+
+/** C1-API-3: the product each customer RFQ was asked from (the desk's fixture rows name none). */
+const rfqProducts = new Map<string, Schemas["RfqProductRefDto"]>();
 
 /** A customer's RFQ as `store.rfqs.submit` files it — also one item of a submitted basket (D-301). */
 export function createStoreRfq(
@@ -397,6 +408,8 @@ export function createStoreRfq(
   };
   submitted += 1;
   const n = 900 + submitted;
+  const product = productRefOf(body);
+  if (product && !("refused" in product)) rfqProducts.set(mockId("rfq", n), product);
   const owner = ownerOf(customer);
   const now = bangkokIso();
   const fileIds = body.fileIds ?? [];

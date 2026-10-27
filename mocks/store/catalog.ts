@@ -15,7 +15,7 @@ import type { Schemas } from "@/lib/api/types";
 import { catalogueRows } from "../admin/catalogue";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
 import { startingOf } from "./quotes";
-import { styleSearchHits } from "./styles";
+import { publishedStyle, styleSearchHits } from "./styles";
 
 export type Row = ReturnType<typeof catalogueRows>[number];
 
@@ -182,6 +182,11 @@ function detail(product: Row, request: Request): Schemas["StoreProductDetailDto"
           ]
         : [];
     }),
+    // C1: the published styles of the product's patterns (product ↔ style mapping).
+    styles: patterns.flatMap((entry) => {
+      const style = publishedStyle(str(byId(catalogueRows("patterns"), entry.patternId)?.styleCode));
+      return style ? [style] : [];
+    }),
     standardSizes: sortBy(
       live(catalogueRows("standardSizes")).filter((size) => size.catalogProductId === product.id),
       "sort",
@@ -330,6 +335,33 @@ function inCategory(product: Row, code: string): boolean {
     if (category.code === code) return true;
   }
   return false;
+}
+
+/**
+ * C1-API-3: the product an RFQ (or a basket line) names — an active catalogue or stock product of the
+ * request's type; `"refused"` names the field the API answers 422 on.
+ */
+export function productRefOf(input: {
+  productTypeCode: string;
+  catalogProductSlug?: string | null;
+  stockProductSku?: string | null;
+}): Schemas["RfqProductRefDto"] | null | { refused: "catalogProductSlug" | "stockProductSku" } {
+  if (input.catalogProductSlug && input.stockProductSku) return { refused: "stockProductSku" };
+  if (input.catalogProductSlug) {
+    const row = catalogProducts().find(
+      (p) => p.slug === input.catalogProductSlug && typeCodeOf(p) === input.productTypeCode,
+    );
+    return row
+      ? { kind: "catalog_product", key: String(row.slug), nameTh: String(row.nameTh), nameEn: String(row.nameEn) }
+      : { refused: "catalogProductSlug" };
+  }
+  if (input.stockProductSku) {
+    const row = stockProducts().find((p) => p.sku === input.stockProductSku && typeCodeOf(p) === input.productTypeCode);
+    return row
+      ? { kind: "stock_product", key: String(row.sku), nameTh: String(row.nameTh), nameEn: String(row.nameEn) }
+      : { refused: "stockProductSku" };
+  }
+  return null;
 }
 
 /* ---------------------------------------------------------------------------- handlers */
