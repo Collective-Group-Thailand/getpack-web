@@ -28,6 +28,7 @@ import { Callout } from "@/ui/components/Callout";
 import { loadLibrary, needsLibrary } from "./library";
 import { PriceDock } from "./PriceDock";
 import { maxSpotColours, useStudioRules } from "./rules";
+import { SpotColourWarning } from "./SpotColourWarning";
 import type { PrintRule } from "@/features/designer/lib/checks";
 import { artworkColours } from "./state";
 import { studioFieldsOf } from "./spec";
@@ -473,6 +474,9 @@ export function Studio({
                     ? t("mode.flexoLimited", { used: colours, max: maxSpot })
                     : t("mode.flexo", { used: colours })}
                 </Badge>
+              ) : null}
+              {shown === "design" ? (
+                <SpotColourWarning configurator={configurator.data ?? null} maxSpot={maxSpot} />
               ) : null}
             </>
           ),
