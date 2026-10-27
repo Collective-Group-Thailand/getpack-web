@@ -17,15 +17,11 @@ test("a sample asked for from a saved quotation reaches the CS queue, on the rea
   await signInCustomer(context, runId("sample"));
   await page.goto(`${HOSTS.customer}/configure/${DEV_INSTANT_PRODUCT}`);
   await page.locator("html[data-hydrated]").waitFor();
-  await page
-    .getByRole("button", { name: /^ขั้นที่ \d+ จาก \d+ จำนวน/ })
-    .first()
-    .click();
   await page.getByLabel("จำนวนอื่น").fill("1000");
   await page.getByRole("button", { name: "ดูราคา", exact: true }).click();
   const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
   await expect(dock.getByText(/\/ ชิ้น$/)).toBeVisible({ timeout: 30_000 });
-  await dock.getByRole("button", { name: "บันทึก" }).click();
+  await dock.getByRole("button", { name: "ใบเสนอราคา", exact: true }).click();
   await expect(page.getByText(/บันทึกใบเสนอราคาแล้ว/)).toBeVisible({ timeout: 30_000 });
 
   await page.goto(`${HOSTS.customer}/account/quotes`);
