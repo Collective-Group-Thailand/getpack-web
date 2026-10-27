@@ -103,7 +103,13 @@ test.describe("the account", () => {
 
   test("a saved quotation reopens in the configurator", async ({ page }) => {
     // A saved quotation names its product (`summary.product`), so it reopens in that configurator.
-    await signInAsCustomer(page, "/account/quotes");
+    // It saves its own: run in parallel, no other test is sure to have saved one first.
+    await signInAsCustomer(page, "/configure/tuck-end-box");
+    const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
+    await expect(dock.getByText(/\/ ชิ้น$/)).toBeVisible();
+    await dock.getByRole("button", { name: "บันทึก" }).click();
+    await expect(page.getByText(/บันทึกใบเสนอราคาแล้ว/)).toBeVisible();
+    await gotoHydrated(page, `${HOSTS.customer}/account/quotes`);
     await page
       .getByRole("link", { name: /เปิดอีกครั้ง/ })
       .first()
