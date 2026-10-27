@@ -31,7 +31,7 @@ interface QuantityStepProps {
  * The quantities to compare and the one to order, as cards (the prototype's `.qgrid`): the smallest
  * first, each with the API's price per piece at that quantity, the selected one highlighted. Quantities
  * the API prices at the same figure share a card ("100–500"), as the price table used to merge them.
- * A saving is shown only if the API sends one — it does not today, so none is drawn and none is computed.
+ * A card shows the API's `savingPercent` of its quantity ("ประหยัด 12%", C4-API-2); none is computed here.
  *
  * A quantity of the customer's own is added through the field under the cards: it must fit the API's
  * range and the number of quantities it prices at once (`maxTiers`), and the new card is priced by the
@@ -91,6 +91,9 @@ export function QuantityStep({ configurator, state, onChange, unit, steps, pendi
     if (!group.first.instant || !group.first.unitPrice) return tOptions("quoteOnly");
     return tOptions("perPiece", { price: format.thb(group.first.unitPrice), unit });
   };
+  // C4-API-2: the API's saving for the card's quantity (null for the smallest priced tier and unpriced ones).
+  const savingOf = (group: (typeof cards)[number]) =>
+    known.has(group.first.quantity) && group.first.instant ? (group.first.savingPercent ?? null) : null;
   const selected = cards.find((group) => group.steps.some((step) => step.quantity === state.quantity));
 
   return (
@@ -110,9 +113,16 @@ export function QuantityStep({ configurator, state, onChange, unit, steps, pendi
             value: String(group.first.quantity),
             label: <span className="text-base font-semibold tabular-nums">{labelsOf(group).quantity}</span>,
             description: (
-              <PriceSlot pending={pending} unitPrice={known.has(group.first.quantity) ? group.first.unitPrice : null}>
-                {figureOf(group)}
-              </PriceSlot>
+              <>
+                <PriceSlot pending={pending} unitPrice={known.has(group.first.quantity) ? group.first.unitPrice : null}>
+                  {figureOf(group)}
+                </PriceSlot>
+                {savingOf(group) ? (
+                  <span data-saving="" className="text-primary block text-[0.71875rem] leading-[1.2] font-semibold">
+                    {t("saving", { percent: format.number(savingOf(group)!) })}
+                  </span>
+                ) : null}
+              </>
             ),
           }))}
         />

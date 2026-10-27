@@ -148,7 +148,7 @@ interface Configurator {
   };
   groups: Group[];
   quantity: { presets: number[]; min: number; max: number; default: number; maxTiers: number };
-  design: { options: Schemas["DesignOption"][]; default: Schemas["DesignOption"] };
+  design: { options: Schemas["DesignOption"][]; default: Schemas["DesignOption"]; freeRevisions: number | null };
   mockup: { options: Schemas["MockupOption"][] };
   fixedInputs: Record<string, string>;
   quoteValidityDays: number;
@@ -563,6 +563,8 @@ export function configuratorOf(product: Row): Configurator | null {
           ? ["own_file", "online_designer", "hired_design"]
           : ["own_file", "hired_design"],
       default: "own_file",
+      // C4-API-2: the D-071 free revision rounds (mock: the seeded 3).
+      freeRevisions: 3,
     },
     mockup: { options: calculator === "service" ? ["none"] : ["none", "with_print", "without_print"] },
     fixedInputs: difficulty ? { difficultyLevelId: String(difficulty.id) } : {},
@@ -1001,6 +1003,10 @@ export function stepOf(inputs: Inputs, quantity: number, postcode: string | unde
     shippingVatAmount: null,
     shippingPending: false,
     shippingPendingReason: null,
+    savingPercent: null,
+    vatRate: null,
+    zoneName: null,
+    arrival: null,
   });
   // D-101: the one mock factory's weekly capacity. D-043: its machines stop at 450 mm.
   if (quantity > 200_000) return noPrice("not_instant");
@@ -1041,7 +1047,35 @@ export function stepOf(inputs: Inputs, quantity: number, postcode: string | unde
     shippingVatAmount: postcode ? baht(vat(shippingNet)) : null,
     shippingPending: !postcode,
     shippingPendingReason: postcode ? null : "no_postcode",
+    // C4-API-2/3 store fields (mock): savings are filled across the tiers by `withSavings`.
+    savingPercent: null,
+    vatRate: "0.07",
+    zoneName: postcode ? MOCK_ZONE : null,
+    arrival: postcode
+      ? {
+          from: bangkokIso((Math.round(lead * 1.4) + 1) * DAY).slice(0, 10),
+          to: bangkokIso((Math.round(lead * 1.4) + 2) * DAY).slice(0, 10),
+        }
+      : null,
   };
+}
+
+const MOCK_ZONE = { th: "กรุงเทพฯ และปริมณฑล", en: "Bangkok and vicinity" };
+
+/**
+ * C4-API-2, mocked like the engine: each tier's saving against the smallest priced tier, a whole percent
+ * (half-up), null for that tier itself, unpriced tiers and results ≤ 0.
+ */
+export function withSavings(steps: Step[]): Step[] {
+  const priced = steps.filter((s) => s.instant && s.unitPrice !== null);
+  const base = priced.reduce<Step | null>((min, s) => (min === null || s.quantity < min.quantity ? s : min), null);
+  if (!base) return steps;
+  const baseUnit = Number(base.unitPrice);
+  return steps.map((s) => {
+    if (s === base || !s.instant || s.unitPrice === null || baseUnit <= 0) return s;
+    const pct = Math.round((1 - Number(s.unitPrice) / baseUnit) * 100);
+    return { ...s, savingPercent: pct > 0 ? pct : null };
+  });
 }
 
 /**
@@ -1065,7 +1099,7 @@ export function boxStepsOf(
     ...box,
     ...design,
   } satisfies Inputs;
-  return quantities.map((quantity) => stepOf(inputs, quantity, postcode));
+  return withSavings(quantities.map((quantity) => stepOf(inputs, quantity, postcode)));
 }
 
 /* ------------------------------------------------------------------------------ saved quotes */
@@ -1542,7 +1576,7 @@ function calculationOf(body: Schemas["CalculateQuoteDto"] | null): Schemas["Quot
   if (inputs instanceof Response) return inputs;
   if (!Array.isArray(inputs.quantities) || inputs.quantities.length === 0 || inputs.quantities.length > 10)
     return invalid("configuration.quantities", "ระบุจำนวน 1–10 ระดับ");
-  const steps = inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode));
+  const steps = withSavings(inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode)));
   const target = body.targetPricePerUnit;
   return {
     // The mock records no calculations.
