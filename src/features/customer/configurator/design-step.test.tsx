@@ -36,9 +36,13 @@ async function product(): Promise<Configurator> {
 }
 
 /** A product whose API default is not "own_file", so "own_file" showing up by accident is visible. */
-const defaultingTo = (configurator: Configurator, option: "hired_design" | "online_designer"): Configurator => ({
+const defaultingTo = (
+  configurator: Configurator,
+  option: "hired_design" | "online_designer",
+  freeRevisions: number | null = 3,
+): Configurator => ({
   ...configurator,
-  design: { options: ["own_file", "online_designer", "hired_design"], default: option },
+  design: { options: ["own_file", "online_designer", "hired_design"], default: option, freeRevisions },
 });
 
 describe("the design step opens on the API's default", () => {
@@ -74,7 +78,7 @@ describe("DesignStep", () => {
     );
   }
 
-  it("shows the three paths with the exact own-file copy and no invented revision count", async () => {
+  it("shows the three paths with the exact own-file copy and the API's free revision rounds", async () => {
     const configurator = defaultingTo(await product(), "hired_design");
     await renderStep({ configurator });
     const names = screen.getAllByRole("radio").map((radio) => radio.textContent);
@@ -83,9 +87,16 @@ describe("DesignStep", () => {
     expect(names[0]).toContain("อัปโหลดไฟล์หลังสั่งซื้อ ทีมงานตรวจไฟล์ให้ก่อนผลิต");
     expect(names[1]).toContain("ออกแบบในสตูดิโอ");
     expect(names[2]).toContain("จ้างนักออกแบบ");
-    expect(document.body.textContent).not.toMatch(/ฟรี 3 ครั้ง|3 ครั้ง/);
+    // C4-API-2: the count is the API's `design.freeRevisions`, on the hired designer's card only.
+    expect(names[2]).toContain("แก้ไขฟรี 3 ครั้ง");
+    expect(names[0]).not.toMatch(/ครั้ง/);
     expect(screen.getByRole("radio", { name: /จ้างนักออกแบบ/ })).toBeChecked();
     expect(screen.getByRole("radio", { name: /มีไฟล์งานแล้ว/ })).not.toBeChecked();
+  });
+
+  it("invents no revision count when the API sends none", async () => {
+    await renderStep({ configurator: defaultingTo(await product(), "hired_design", null) });
+    expect(document.body.textContent).not.toMatch(/ครั้ง/);
   });
 
   it("hides the Studio card where the product cannot open in the Studio", async () => {

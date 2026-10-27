@@ -65,6 +65,33 @@ async function show(over: Partial<ConfiguratorDockProps> = {}, step: PriceStep =
   );
 }
 
+describe("C4-API-2/3 fields in the summary", () => {
+  it("labels VAT with the API's rate and shows the arrival window as a range", async () => {
+    await show({}, {
+      ...priced,
+      vatRate: "0.07",
+      shippingPending: false,
+      shippingAmount: "128.40",
+      earliestDeliveryDate: "2026-11-04",
+      arrival: { from: "2026-11-04", to: "2026-11-06" },
+    } as unknown as PriceStep);
+    const lines = screen.getByRole("complementary", { name: "ราคาของคุณ" });
+    expect(within(lines).getByText("VAT 7% (รวมในยอดแล้ว)")).toBeInTheDocument();
+    expect(within(lines).getByText("฿338.58")).toBeInTheDocument();
+    expect(within(lines).getByText(/^ถึงประมาณ 4–6 พ\.ย\.$/)).toBeInTheDocument();
+  });
+
+  it("shows one date when the window's ends are the same day", async () => {
+    await show({}, {
+      ...priced,
+      shippingPending: false,
+      shippingAmount: "128.40",
+      arrival: { from: "2026-11-04", to: "2026-11-04" },
+    } as unknown as PriceStep);
+    expect(screen.getByText(/^ถึงประมาณ 4 พ\.ย\.$/)).toBeInTheDocument();
+  });
+});
+
 describe("the price summary", () => {
   it("shows the API's VAT amount as sent and labels the total as without shipping while no postcode is known", async () => {
     await show();
