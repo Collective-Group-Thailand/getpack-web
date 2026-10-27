@@ -342,19 +342,23 @@ describe("quantity cards", () => {
     return found;
   };
 
-  it("shows the smallest quantity first with the API's price per piece, and no saving it was not given", async () => {
+  it("shows the smallest quantity first with the API's price per piece and the API's saving", async () => {
     await open();
     await settled(1);
     const group = await tiers();
     const names = group.getAllByRole("radio").map((radio) => radio.textContent ?? "");
     expect(names.map((name) => name.split("฿")[0])).toEqual(["500", "1,000", "2,000", "3,000"]);
-    expect(names.every((name) => /฿\d+\.\d{2}\/ชิ้น$/.test(name))).toBe(true);
+    expect(names.every((name) => /฿\d+\.\d{2}\/ชิ้น(ประหยัด \d+%)?$/.test(name))).toBe(true);
     // The selected card is the one the summary shows.
     const selected = await tierCard("1,000");
     expect(selected).toBeChecked();
     expect(slotOf(selected).textContent).toBe(`${dockPrice()}/ชิ้น`);
-    // The API sends no saving figure: none is shown, and none is worked out from the prices.
-    expect(document.body.textContent).not.toMatch(/ประหยัด/);
+    // C4-API-2: the saving is the API's `savingPercent`, shown as sent; the smallest tier has none.
+    expect(names[0]).not.toMatch(/ประหยัด/);
+    const savings = group
+      .getAllByRole("radio")
+      .map((radio) => radio.querySelector("[data-saving]")?.textContent ?? null);
+    expect(savings.slice(1).every((text) => text === null || /^ประหยัด \d+%$/.test(text))).toBe(true);
   });
 
   it("selecting a tier through its card gives the summary the price the card showed, and touches no other step", async () => {

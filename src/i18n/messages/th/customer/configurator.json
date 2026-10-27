@@ -210,7 +210,8 @@
     "targetInvalid": "ใส่เป็นจำนวนเงินบาท ทศนิยมไม่เกิน 2 ตำแหน่ง",
     "targetSummary": "เป้าหมาย {target}/{unit}",
     "targetLabel": "งบต่อชิ้น",
-    "targetPrivate": "ตัวเลขนี้ใช้ภายในทีมงานเท่านั้น ไม่แสดงต่อผู้อื่น"
+    "targetPrivate": "ตัวเลขนี้ใช้ภายในทีมงานเท่านั้น ไม่แสดงต่อผู้อื่น",
+    "saving": "ประหยัด {percent}%"
   },
   "delivery": {
     "postcode": "รหัสไปรษณีย์ปลายทาง",
@@ -233,7 +234,8 @@
       },
       "hired_design": {
         "label": "จ้างนักออกแบบ",
-        "description": "ส่งบรีฟ นักออกแบบของ getpack ทำให้"
+        "description": "ส่งบรีฟ นักออกแบบของ getpack ทำให้",
+        "freeRevisions": "แก้ไขฟรี {count} ครั้ง"
       },
       "free_design": {
         "label": "ออกแบบฟรี",
@@ -372,7 +374,10 @@
     "completeness": "ครบ {done}/{total}",
     "completenessLabel": "ความครบถ้วนของการตั้งค่า",
     "addPostcode": "ใส่รหัสไปรษณีย์",
-    "perUnit": "/ {unit}"
+    "perUnit": "/ {unit}",
+    "vatLineRate": "VAT {rate}% (รวมในยอดแล้ว)",
+    "arrivalRange": "ถึงประมาณ {from}–{to}",
+    "arrivalOn": "ถึงประมาณ {date}"
   },
   "actions": {
     "addToCart": "เพิ่มลงตะกร้า",
