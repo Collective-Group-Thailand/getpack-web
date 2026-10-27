@@ -23,6 +23,8 @@ async function expectNoViolations(page: Page) {
 }
 
 const dock = (page: Page) => page.getByRole("complementary", { name: "ราคาของคุณ" });
+/** The quantities compared with their prices — tier cards in the quantity step (C4-7). */
+const tiers = (page: Page) => page.getByRole("radiogroup", { name: "จำนวนที่ต้องการเปรียบเทียบ" });
 
 test.describe("the configurator", () => {
   test.beforeEach(async ({ page }) => acceptCookies(page));
@@ -32,12 +34,12 @@ test.describe("the configurator", () => {
     await expect(page.getByRole("heading", { level: 1, name: "ปรับแต่งกล่องฝาเสียบ" })).toBeVisible();
     await expect(page.getByRole("img", { name: /กล่องฝาเสียบ ขนาด 100 × 100 × 50 มม./ })).toBeVisible();
 
-    const headline = dock(page).getByText(/^฿[\d,]+\.\d{2} \/ ชิ้น$/);
-    await expect(headline).toBeVisible();
+    await expect(dock(page).getByText(/^฿[\d,]+\.\d{2} \/ ชิ้น$/)).toBeVisible();
+    const headline = dock(page).locator("[data-unit-price]");
     const first = await headline.textContent();
     await expect(dock(page)).toContainText("ระบุรหัสไปรษณีย์");
-    await expect(dock(page)).toContainText("ราคานี้คงที่ 15 วัน");
-    await expect(dock(page).getByRole("table", { name: "ราคาต่อจำนวน" }).getByRole("row")).toHaveCount(5);
+    await expect(dock(page)).toContainText("ใบเสนอราคาคงราคา 15 วัน");
+    await expect(tiers(page).getByRole("radio")).toHaveCount(4);
 
     // A custom size: the preview and the price follow it.
     await page.getByRole("radio", { name: "กำหนดเอง" }).click();
@@ -58,7 +60,6 @@ test.describe("the configurator", () => {
     await expect(page.getByRole("img", { name: /ขนาด 220 × 150 × 50 มม./ })).toBeVisible();
 
     // Delivery is priced once there is a postcode, and the area is named.
-    await page.getByRole("button", { name: /การจัดส่ง/ }).click();
     await page.getByLabel("รหัสไปรษณีย์ปลายทาง").fill("10110");
     await expect(page.getByText("จัดส่งถึง คลองเตย กรุงเทพมหานคร")).toBeVisible();
     await expect(dock(page)).not.toContainText("ระบุรหัสไปรษณีย์");
@@ -69,9 +70,9 @@ test.describe("the configurator", () => {
 
   test("choosing a quantity from the price breaks moves the headline", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
-    const breaks = dock(page).getByRole("table", { name: "ราคาต่อจำนวน" });
-    await breaks.getByRole("button", { name: "เลือก 2,000 ชิ้น" }).click();
-    await expect(breaks.getByRole("button", { name: "เลือกอยู่ 2,000 ชิ้น" })).toHaveAttribute("aria-pressed", "true");
+    const card = tiers(page).getByRole("radio", { name: /^2,000 / });
+    await card.click();
+    await expect(card).toBeChecked();
     await expect(dock(page)).toContainText("2,000 ชิ้น");
   });
 
@@ -80,7 +81,7 @@ test.describe("the configurator", () => {
     await page.getByRole("radio", { name: "กำหนดเอง" }).click();
     await page.getByRole("radio", { name: /ขนาดภายใน/ }).click();
     await page.getByRole("textbox", { name: "ยาว" }).fill("480");
-    await expect(dock(page)).toContainText("จำนวนนี้ยังไม่มีราคาทันที");
+    await expect(dock(page)).toContainText("ขอใบเสนอราคา 1,000 ชิ้น");
     await expect(dock(page)).toContainText("สเปกนี้ต้องให้ทีมงานประเมินราคา");
     await dock(page).getByRole("link", { name: "ขอใบเสนอราคา" }).click();
     await expect(page).toHaveURL(`${HOSTS.customer}/rfq/folding-carton?from=tuck-end-box`);
@@ -101,14 +102,13 @@ test.describe("the configurator", () => {
 
     // A shipping carton has no coatings or die-cut to choose.
     await gotoHydrated(page, `${HOSTS.customer}/configure/shipping-box`);
-    await expect(page.getByRole("button", { name: /ลอนกระดาษ|วัสดุ/ }).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /งานเคลือบและตกแต่ง/ })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /ไดคัทและการขึ้นรูป/ })).toHaveCount(0);
+    await expect(page.getByRole("region", { name: /ลอนกระดาษ|วัสดุ/ }).first()).toBeVisible();
+    await expect(page.getByRole("region", { name: "งานเคลือบและตกแต่ง" })).toHaveCount(0);
+    await expect(page.getByRole("region", { name: "ไดคัทและการขึ้นรูป" })).toHaveCount(0);
   });
 
   test("a promotion code is checked for this product", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
-    await page.getByRole("button", { name: /งานออกแบบและตัวอย่าง/ }).click();
     await page.getByLabel("โค้ดส่วนลด").fill("corrugate5");
     await page.getByRole("button", { name: "ตรวจสอบ" }).click();
     await expect(page.getByText("โค้ดนี้ใช้กับสินค้านี้ไม่ได้")).toBeVisible();
@@ -172,8 +172,8 @@ test.describe("keeping the price", () => {
     const bar = page.locator("[data-quote-bar]");
     await expect(bar.getByRole("button", { name: "เพิ่มลงตะกร้า" })).toBeVisible();
     await expect(bar).toContainText(/\/ ชิ้น/);
-    // The price table sits with the quantity step now, not in a sheet.
-    await expect(page.getByRole("table", { name: "ราคาต่อจำนวน" })).toBeAttached();
+    // The prices per quantity sit with the quantity step, not in a sheet.
+    await expect(tiers(page)).toBeAttached();
     await context.close();
   });
 });

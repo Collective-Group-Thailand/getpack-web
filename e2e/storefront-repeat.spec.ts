@@ -55,7 +55,8 @@ test("a call-off: asked for on a saved quotation, accepted, released into the ca
   await signInAsCustomer(page, "/configure/tuck-end-box", COMPANY_ADMIN);
   const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
   await expect(dock.getByText(/\/ ชิ้น$/)).toBeVisible();
-  await dock.getByRole("button", { name: "บันทึก" }).click();
+  // Keeping the price as a quotation is the dock's "ใบเสนอราคา" (C4-11).
+  await dock.getByRole("button", { name: "ใบเสนอราคา", exact: true }).click();
   await expect(page.getByText(/บันทึกใบเสนอราคาแล้ว/)).toBeVisible();
 
   await gotoHydrated(page, `${HOSTS.customer}/account/quotes`);

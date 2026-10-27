@@ -29,9 +29,10 @@ const dock = (page: Page) => page.getByRole("complementary", { name: "ราค�
 /** Configures a tuck-end box at `quantity` and puts it in the cart. */
 async function addBox(page: Page, quantity: string) {
   await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
-  await dock(page)
-    .getByRole("table", { name: "ราคาต่อจำนวน" })
-    .getByRole("button", { name: new RegExp(`เลือก\\S*\\s*${quantity} ชิ้น`) })
+  // The quantity step's tier cards (C4-7): "3,000 ฿x/ชิ้น".
+  await page
+    .getByRole("radiogroup", { name: "จำนวนที่ต้องการเปรียบเทียบ" })
+    .getByRole("radio", { name: new RegExp(`^${quantity} `) })
     .click();
   await expect(dock(page)).toContainText(`${quantity} ชิ้น`);
   await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
