@@ -29,9 +29,10 @@ const dock = (page: Page) => page.getByRole("complementary", { name: "ราค�
 /** Configures a tuck-end box at `quantity` and puts it in the cart. */
 async function addBox(page: Page, quantity: string) {
   await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
-  await dock(page)
-    .getByRole("table", { name: "ราคาต่อจำนวน" })
-    .getByRole("button", { name: new RegExp(`เลือก\\S*\\s*${quantity} ชิ้น`) })
+  // The quantity step's tier cards (C4-7): "3,000 ฿x/ชิ้น".
+  await page
+    .getByRole("radiogroup", { name: "จำนวนที่ต้องการเปรียบเทียบ" })
+    .getByRole("radio", { name: new RegExp(`^${quantity} `) })
     .click();
   await expect(dock(page)).toContainText(`${quantity} ชิ้น`);
   await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
@@ -312,6 +313,9 @@ test.describe("cart and checkout", () => {
     await sheet.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท ทดสอบ จำกัด");
     await sheet.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("1234567890123");
     await sheet.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
+    // The postcode's one sub-district is picked once the lookup answers; saving before that is
+    // refused for the area too, which a parallel run reached.
+    await expect(sheet.getByRole("button", { name: /^แขวง\/ตำบล/ })).toContainText("คลองเตย");
     await sheet.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
     await sheet.getByRole("button", { name: "บันทึก", exact: true }).click();
     await expect(sheet.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();

@@ -35,7 +35,8 @@ let requestUrl = "";
 
 test("a customer who cannot find a style asks for a structural design", async ({ page }) => {
   await signInAsCustomer(page, "/styles", RECEIVER);
-  await page.getByRole("link", { name: "ขอให้ออกแบบโครงสร้าง" }).click();
+  // The library's "ยังไม่เจอแบบที่ใช่?" callout (styles redesign) leads to the request form.
+  await page.getByRole("link", { name: "ปรึกษาทีมโครงสร้าง" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "ขอให้ออกแบบโครงสร้างกล่อง" })).toBeVisible();
   await page
     .getByRole("textbox", { name: /ใส่อะไร ใช้อย่างไร/ })

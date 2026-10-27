@@ -67,7 +67,8 @@ export async function signInAsStaff(page: Page, persona: Persona = "cs"): Promis
   await page.getByLabel(/^อีเมล/).fill(personaEmail(persona));
   await page.getByLabel(/^รหัสผ่าน/).fill(MOCK_STAFF.password);
   await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
-  await expect(accountButton(page)).toBeVisible();
+  // Sign-in and the redirect outlast 5 s when the whole suite runs in parallel.
+  await expect(accountButton(page)).toBeVisible({ timeout: 15_000 });
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }
 
@@ -111,7 +112,8 @@ export async function signInAsPartner(page: Page, persona: PartnerPersona = "pla
   await page.getByLabel(/^อีเมล/).fill(PARTNER_EMAILS[persona]);
   await page.getByLabel(/^รหัสผ่าน/).fill(MOCK_PARTNER.password);
   await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
-  await expect(accountButton(page)).toBeVisible();
+  // Sign-in and the redirect outlast 5 s when the whole suite runs in parallel.
+  await expect(accountButton(page)).toBeVisible({ timeout: 15_000 });
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }
 

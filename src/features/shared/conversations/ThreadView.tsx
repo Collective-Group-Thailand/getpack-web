@@ -167,9 +167,11 @@ export function Composer({
     setBusy("send");
     setError(null);
     try {
-      await onSend({ body: body.trim(), fileIds: files.map((file) => file.id) });
-      setBody("");
-      setFiles([]);
+      const sent = { body, fileIds: files.map((file) => file.id) };
+      await onSend({ body: sent.body.trim(), fileIds: sent.fileIds });
+      // Only what was sent is cleared: text typed while the send was in flight stays in the box.
+      setBody((current) => (current === sent.body ? "" : current));
+      setFiles((current) => current.filter((file) => !sent.fileIds.includes(file.id)));
     } catch (failure) {
       setError(failure instanceof Error && failure.message ? failure.message : t("failed"));
     } finally {
