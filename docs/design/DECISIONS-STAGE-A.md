@@ -84,3 +84,18 @@ Decided by the product owner after the Stage A API review (`STAGE-A-REPORT-API.m
 | Return address (`entity.return_address`) | The product owner enters it in settings. Bookings stay refused until then. |
 | Customer file access | **Stage B:** role-based access to customer files (not every staff role) plus an access audit log of every download. |
 | Own-file upload before payment | Allowed. The automatic file check may run at once; the prepress review queue includes only paid orders; unpaid orders show the customer "ไฟล์ได้รับแล้ว ทีมงานจะตรวจหลังชำระเงิน". Production starts only after payment. |
+
+---
+
+## 8. Material descriptions (approved)
+
+Approved customer-facing descriptions of the four corrugated materials shown on the configurator's material cards.
+Entered through the back-office admin API (`PATCH /v1/admin/catalog/materials/{id}`), never by direct SQL. On UAT an
+admin enters the same text in the back office.
+
+| Material | TH | EN |
+|---|---|---|
+| KA125 ลอน B (3 ชั้น) | ผิวคราฟท์ เกรดมาตรฐาน เหมาะกับกล่องไปรษณีย์ทั่วไป | Standard kraft finish, ideal for everyday mailer boxes |
+| KT125 ลอน B (3 ชั้น) | ผิวคราฟท์ น้ำหนักเบา ราคาประหยัด สำหรับสินค้าน้ำหนักไม่มาก | Lightweight kraft at a lower price, for lighter products |
+| KA185 ลอน B (3 ชั้น) | ผิวหนาขึ้น แข็งแรงกว่า สำหรับสินค้าหนักหรือซ้อนหลายชั้น | Heavier liner and stronger, for heavy or stacked goods |
+| KA125 ลอน E (3 ชั้น) | ลอนเล็ก ผิวเรียบ พิมพ์คมสวย เหมาะกับกล่องโชว์สินค้า | Fine flute with a smooth surface for sharp print, great for display boxes |
