@@ -26,7 +26,9 @@ const urlWith = (style: string | undefined) => {
  * returning focus to the card. A shared link with `style=` opens it on arrival.
  */
 export function QuickViewHost(props: Omit<QuickViewProps, "code" | "onClose">) {
-  const code = useSearchParams().get("style")?.toUpperCase() ?? null;
+  const search = useSearchParams();
+  const code = search.get("style")?.toUpperCase() ?? null;
+  const size = readParams({ size: search.get("size") ?? undefined }).size;
   const pushed = useRef(false);
   const opener = useRef<HTMLElement | null>(null);
 
@@ -66,6 +68,7 @@ export function QuickViewHost(props: Omit<QuickViewProps, "code" | "onClose">) {
     <QuickView
       {...props}
       code={code}
+      size={size}
       onClose={() => {
         if (pushed.current) {
           pushed.current = false;
