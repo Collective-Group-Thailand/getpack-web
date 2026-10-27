@@ -210,7 +210,8 @@
     "targetInvalid": "Enter an amount in baht with up to two decimals",
     "targetSummary": "target {target}/{unit}",
     "targetLabel": "Budget per piece",
-    "targetPrivate": "This figure is used inside our team only and is not shown to anyone else."
+    "targetPrivate": "This figure is used inside our team only and is not shown to anyone else.",
+    "saving": "Save {percent}%"
   },
   "delivery": {
     "postcode": "Delivery postcode",
@@ -233,7 +234,8 @@
       },
       "hired_design": {
         "label": "Hire a designer",
-        "description": "Send a brief and a getpack designer does it"
+        "description": "Send a brief and a getpack designer does it",
+        "freeRevisions": "{count, plural, one {# free revision} other {# free revisions}}"
       },
       "free_design": {
         "label": "Free design",
@@ -372,7 +374,10 @@
     "completeness": "{done} of {total} done",
     "completenessLabel": "How much of the configuration is done",
     "addPostcode": "Add postcode",
-    "perUnit": "/ {unit}"
+    "perUnit": "/ {unit}",
+    "vatLineRate": "VAT {rate}% (included in the total)",
+    "arrivalRange": "Arrives around {from}–{to}",
+    "arrivalOn": "Arrives around {date}"
   },
   "actions": {
     "addToCart": "Add to cart",
