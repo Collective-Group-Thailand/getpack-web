@@ -152,6 +152,26 @@ const favouritesOf = (customerId: string) => {
   return set;
 };
 
+/** The mock's fake inside fit range (mm): first-wave boxes only, from the category's size band; flats have none. */
+function fitRangeOf(s: MockStyle): Card["fitRange"] {
+  if (s.row.wave !== 1 || s.row.category === "label" || s.row.category === "tag_sleeve") return null;
+  return s.row.category === "corrugated"
+    ? { minLMm: 100, maxLMm: 800, minWMm: 80, maxWMm: 600, minHMm: 40, maxHMm: 600 }
+    : { minLMm: 20, maxLMm: 400, minWMm: 15, maxWMm: 300, minHMm: 20, maxHMm: 450 };
+}
+
+/** The API's fit rule (DECISIONS-STAGE-A §4) over the mock's ranges: +5 mm, L/W may swap. */
+function fitOf(s: MockStyle, size: { l: number; w: number; h: number }): Card["fit"] {
+  const r = fitRangeOf(s);
+  if (!r) return null;
+  const [a, b, h] = [size.l + 5, size.w + 5, size.h + 5];
+  const inside = (v: number, min: number, max: number) => v >= min && v <= max;
+  if (!inside(h, r.minHMm, r.maxHMm)) return null;
+  if (inside(a, r.minLMm, r.maxLMm) && inside(b, r.minWMm, r.maxWMm)) return { insideLMm: a, insideWMm: b, insideHMm: h };
+  if (inside(b, r.minLMm, r.maxLMm) && inside(a, r.minWMm, r.maxWMm)) return { insideLMm: b, insideWMm: a, insideHMm: h };
+  return null;
+}
+
 function card(s: MockStyle, favourite: boolean | null): Card {
   return {
     category: s.row.category,
@@ -172,6 +192,11 @@ function card(s: MockStyle, favourite: boolean | null): Card {
     })(),
     thumbnailUrl: null,
     photo: null,
+    fitRange: fitRangeOf(s),
+    // Fake MOQ for the first wave only, so the card's spec row has something to show in the mock.
+    moqUnits: s.row.wave === 1 ? 500 : null,
+    dielineUrl: s.row.wave === 1 ? `/style-previews/${s.row.code}` : null,
+    fit: null,
   };
 }
 
@@ -215,6 +240,9 @@ function detail(s: MockStyle, favourite: boolean | null): Detail {
     ],
     useCases: caseCodesOf(s.row),
     variants: s.variants,
+    recyclable: null,
+    plasticFree: null,
+    certifications: [],
   };
 }
 
@@ -315,25 +343,32 @@ export const storeStyleHandlers: HttpHandler[] = [
     const sort = p("sort") ?? (q ? "relevance" : "popular");
     const limit = Math.min(100, Math.max(1, Number(p("limit")) || 24));
     const start = Number(p("cursor") ?? 0) || 0;
-    const rows = filterStyles(filters, q);
+    const sizeMatch = /^(\d+(?:\.\d)?)x(\d+(?:\.\d)?)x(\d+(?:\.\d)?)$/i.exec(p("size") ?? "");
+    if (p("size") && !sizeMatch) return problem(422, "validation.failed", "size is length x width x height in mm");
+    const size = sizeMatch ? { l: Number(sizeMatch[1]), w: Number(sizeMatch[2]), h: Number(sizeMatch[3]) } : null;
+    const fits = (s: MockStyle) => !size || fitOf(s, size) !== null;
+    const rows = filterStyles(filters, q).filter(fits);
     if (sort !== "relevance") rows.sort(SORTS[sort] ?? SORTS.popular);
     const customer = customerOf(request);
     const mine = customer ? favouritesOf(customer.id) : null;
     const page = rows.slice(start, start + limit);
     // Facet counts over the matches, each ignoring its own filter so its other values stay offered.
     const facets: Schemas["StyleFacetsDto"] = {
-      category: count(filterStyles(filters, q, "category"), (s) => [s.row.category]),
-      family: count(filterStyles(filters, q, "family"), (s) => [s.row.family]),
-      closure: count(filterStyles(filters, q, "closure"), (s) => optionFacets(s).closure),
-      feature: count(filterStyles(filters, q, "feature"), (s) => optionFacets(s).feature),
-      materialClass: count(filterStyles(filters, q, "materialClass"), (s) => [s.row.material_class]),
-      pricePath: count(filterStyles(filters, q, "pricePath"), (s) => [s.pricePath]),
-      useCase: count(filterStyles(filters, q, "useCase"), (s) => caseCodesOf(s.row)),
+      category: count(filterStyles(filters, q, "category").filter(fits), (s) => [s.row.category]),
+      family: count(filterStyles(filters, q, "family").filter(fits), (s) => [s.row.family]),
+      closure: count(filterStyles(filters, q, "closure").filter(fits), (s) => optionFacets(s).closure),
+      feature: count(filterStyles(filters, q, "feature").filter(fits), (s) => optionFacets(s).feature),
+      materialClass: count(filterStyles(filters, q, "materialClass").filter(fits), (s) => [s.row.material_class]),
+      pricePath: count(filterStyles(filters, q, "pricePath").filter(fits), (s) => [s.pricePath]),
+      useCase: count(filterStyles(filters, q, "useCase").filter(fits), (s) => caseCodesOf(s.row)),
     };
     return HttpResponse.json({
-      data: page.map((s) => card(s, mine ? mine.has(s.row.code) : null)),
+      data: page.map((s) => ({ ...card(s, mine ? mine.has(s.row.code) : null), fit: size ? fitOf(s, size) : null })),
       facets,
-      meta: { nextCursor: start + limit < rows.length ? String(start + limit) : null },
+      meta: {
+        nextCursor: start + limit < rows.length ? String(start + limit) : null,
+        sizeSearchStyles: STYLES.filter((s) => fitRangeOf(s) !== null).length,
+      },
     } satisfies Schemas["StyleListDto"]);
   }),
 
