@@ -36,7 +36,7 @@ interface DesignStepProps {
 
 /**
  * How the artwork gets made: three ways in as cards (own file, the Studio, a hired designer), then the
- * optional real sample. The step opens on the API's own default (`configurator.design.default`) — "มีไฟล์งานแล้ว"
+ * optional real sample. The hired designer's card names the free revision rounds the API sends (C4-API-2, D-071). The step opens on the API's own default (`configurator.design.default`) — "มีไฟล์งานแล้ว"
  * only when the link asked for it. (The physical mockup add-on became the sample of D-192; the discount code
  * and the completeness meter live in the price summary.)
  */
@@ -70,9 +70,14 @@ export function DesignStep({
           onValueChange={(designOption) => onChange({ designOption: designOption as DesignOption })}
           options={designOptions.map((option) => ({
             value: option,
-            visual: <Icon name={PATH_ICON[option] ?? "palette"} size={22} aria-hidden="true" className="text-primary" />,
+            visual: (
+              <Icon name={PATH_ICON[option] ?? "palette"} size={22} aria-hidden="true" className="text-primary" />
+            ),
             label: t(`options.${option}.label`),
-            description: t(`options.${option}.description`),
+            description:
+              option === "hired_design" && configurator.design.freeRevisions != null
+                ? `${t(`options.${option}.description`)} ${t("options.hired_design.freeRevisions", { count: configurator.design.freeRevisions })}`
+                : t(`options.${option}.description`),
           }))}
         />
       </Field>
