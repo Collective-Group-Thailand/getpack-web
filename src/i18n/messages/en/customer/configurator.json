@@ -675,7 +675,8 @@
       "productionDays": "About {days} business days of production after the proof is approved",
       "delivery": "Delivery once production is done",
       "shipBy": "Ready to ship from {ship}",
-      "deliveryBy": "Ready to ship from {ship}, with you around {receive}"
+      "deliveryBy": "Ready to ship from {ship}, with you around {receive}",
+      "deliveryByRange": "Ready to ship from {ship}, arriving around {from}–{to}"
     },
     "nextNote": "Dates are for the chosen quantity, in business days",
     "saveDraft": "Save as draft",
