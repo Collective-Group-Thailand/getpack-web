@@ -129,7 +129,7 @@ export default function StyleWizard({ params, onClose }: { params: ListParams; o
     >
       <div className="flex gap-1.5" aria-hidden="true">
         {Array.from({ length: steps }, (_, i) => (
-          <i key={i} className={cn("h-1 flex-1 rounded-full", i <= step ? "bg-primary" : "bg-border")} />
+          <i key={i} className={cn("h-1 flex-1 rounded-sm", i <= step ? "bg-primary" : "bg-border")} />
         ))}
       </div>
       <p className="text-muted mt-4 text-xs">{t("library.wizardStep", { step: step + 1, total: steps })}</p>
