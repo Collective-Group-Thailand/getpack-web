@@ -4,7 +4,9 @@ import { headers } from "next/headers";
 import { getSitemapEntries, listAllStyles, type SitemapEntry } from "@/features/customer/catalog/api.server";
 import { styleHref, styleTopicHref, topicHubHref, forUseCaseHref } from "@/features/customer/styles/paths";
 import { topicsOf } from "@/features/customer/styles/topics";
+import { PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
 import { USE_CASES } from "@/features/customer/styles/use-cases";
+import { featureFlags } from "@/lib/env/server";
 import { articleHref, categoryHref, productHref, stockProductHref } from "@/features/customer/catalog/paths";
 import { routing } from "@/i18n/routing";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
@@ -79,6 +81,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ? [...new Set(styles.flatMap((style) => topicsOf(style.options ?? []).map((topic) => topic.id)))].map(
           (topic) => ({ path: topicHubHref(topic), priority: 0.7, changeFrequency: "weekly" as const }),
         )
+      : []),
+    // C0: the packaging landing pages, only while their flag is on.
+    ...(styles.length && featureFlags.packagingLandings
+      ? PACKAGING_LANDINGS.map((landing) => ({
+          path: packagingHref(landing.slug),
+          priority: 0.8,
+          changeFrequency: "weekly" as const,
+        }))
       : []),
     ...(styles.length
       ? USE_CASES.map((useCase) => ({

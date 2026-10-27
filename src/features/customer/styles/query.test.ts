@@ -155,10 +155,29 @@ describe("the style library's URL state (styles redesign)", () => {
     expect(listHref(params, { page: 3 })).toBe("/styles?use=gift&page=3");
   });
 
-  it("keeps eco and size out of the API query and out of the filter count", () => {
-    const params = readParams({ eco: "recyclable", size: "1x1x1" });
+  it("keeps eco out of the API query and out of the filter count", () => {
+    const params = readParams({ eco: "recyclable" });
     expect(toQuery(params, 24)).toEqual({ limit: 24 });
     expect(activeFilterCount(params)).toBe(0);
     expect(isFiltered(params)).toBe(false);
+  });
+
+  it("sends the size search to the API's fit filter (C0) and treats it as a filtered view", () => {
+    const params = readParams({ size: "120x80x50" });
+    expect(toQuery(params, 24)).toEqual({ limit: 24, size: "120x80x50" });
+    expect(isFiltered(params)).toBe(true);
+    expect(clearFilters(params).size).toBeUndefined();
+    expect(readParams({ size: "12.55x8x5" }).size).toBeUndefined();
+  });
+
+  it("reads, writes and queries the wizard's answers as useCase groups (C0)", () => {
+    const params = readParams({ wiz: "p:ship;i:snack,food,bogus", use: "gift" });
+    expect(params.wizard).toEqual({ items: ["snack", "food"], place: ["ship"] });
+    expect(toSearch(params)).toBe("use=gift&wiz=i:food,snack;p:ship");
+    expect(toQuery(params, 24).useCase).toBe("gift;snack,bakery,food;shipping,ecommerce");
+    expect(toQuery(readParams({ wiz: "i:*" }), 24).useCase).toBeUndefined();
+    expect(readParams({ wiz: "x:1" }).wizard).toBeUndefined();
+    expect(isFiltered(readParams({ wiz: "i:*" }))).toBe(true);
+    expect(clearFilters(params).wizard).toBeUndefined();
   });
 });

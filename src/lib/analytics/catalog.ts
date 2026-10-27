@@ -19,6 +19,13 @@ export interface CatalogEvents {
   catalog_quickview: { style_code: string; position?: number; source: "grid" | "compare" | "link" };
   catalog_cta: { style_code: string; cta: "design" | "sample" | "quote" | "cart" | "dieline" | "page" };
   catalog_compare: { style_codes: string[] };
+  /** The "ช่วยเลือกให้หน่อย" wizard (C0): opened, a step answered, finished (with its matches) or closed. */
+  catalog_wizard: {
+    action: "open" | "answer" | "complete" | "close";
+    step: number;
+    answers?: string;
+    result_count?: number;
+  };
 }
 
 export type CatalogEventName = keyof CatalogEvents;

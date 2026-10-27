@@ -8,6 +8,7 @@ import { Icon } from "@/ui/icons";
 
 import { illustrationOf } from "./illustration";
 import { previewSrc, styleHref } from "./paths";
+import { cmOf } from "./size";
 import { topicsOf } from "./topics";
 
 /** How many option chips a card shows before "+N" — one line, so every card in a row keeps one height. */
@@ -43,10 +44,14 @@ export interface StyleCardWords {
   /** "18 ตัวเลือก". */
   variants: string;
   /**
-   * The spec row — size range, MOQ, lead time — each only when the API has it. The card DTO carries
-   * none of them today (CONTRACT-REQUEST store.styles.card-commercial), so the row is not drawn.
+   * The spec row — size range, MOQ, lead time — each only when the API has it (C0: `fitRange`,
+   * `moqUnits`; the card has no lead time yet, so that item is never drawn).
    */
   specs: Array<{ icon: "ruler" | "layers" | "clock"; text: string }>;
+  /** "ใส่ได้", only on a card the size search returned (`fit`). */
+  fit?: string;
+  /** "แบบคลี่", the label over the hover dieline. */
+  dieline: string;
   /** The features it offers ("หน้าต่าง", "หูแขวน", "ก้นล็อก"), the first few, and how many more. */
   chips: string[];
   /** "+n" counting every chip after the first, for phones (one chip fits a 2-column card). */
@@ -109,9 +114,17 @@ export function StyleCardFace({
         thumb ? { src: thumb, alt: words.alt } : { src: previewSrc(style.code, {}), alt: words.alt, fit: "contain" }
       }
       fallback={{ family: illustrationOf(style) }}
+      // The style's own rendered dieline (C0), only over a real picture: without one the card already shows the drawing.
+      hoverImage={thumb && style.dielineUrl ? { src: style.dielineUrl, label: words.dieline } : undefined}
       badges={
-        instant || style.featured ? (
+        instant || style.featured || (words.fit && style.fit) ? (
           <>
+            {/* "ใส่ได้" first in the badge row: at the top end (prototype) it collides with long badges on narrow cards. */}
+            {words.fit && style.fit ? (
+              <Badge tone="primary" icon="check" data-fit="">
+                {words.fit}
+              </Badge>
+            ) : null}
             {instant ? (
               <Badge tone="instant" icon="zap">
                 {words.instant}
@@ -123,7 +136,7 @@ export function StyleCardFace({
       }
       imageFoot={
         style.variantCount > 1 ? (
-          <span className="bg-surface/90 text-fg-2 border-border inline-flex items-center gap-[5px] rounded-control border py-[3px] ps-[7px] pe-[9px] text-xs font-medium tabular-nums backdrop-blur-sm">
+          <span className="bg-surface/90 text-fg-2 border-border rounded-control inline-flex items-center gap-[5px] border py-[3px] ps-[7px] pe-[9px] text-xs font-medium tabular-nums backdrop-blur-sm">
             <Icon name="layers" size={13} aria-hidden="true" />
             {words.variants}
           </span>
@@ -228,7 +241,24 @@ export function cardWords(
     meta: style.referenceCode ? t("card.reference", { code: style.referenceCode }) : "",
     instant: t("library.cardInstant"),
     featured: t("card.featured"),
-    specs: [],
+    specs: [
+      ...(style.fitRange
+        ? [
+            {
+              icon: "ruler" as const,
+              text: t("library.cardSizeRange", {
+                min: cmOf(Math.min(style.fitRange.minLMm, style.fitRange.minWMm, style.fitRange.minHMm)),
+                max: cmOf(Math.max(style.fitRange.maxLMm, style.fitRange.maxWMm, style.fitRange.maxHMm)),
+              }),
+            },
+          ]
+        : []),
+      ...(style.moqUnits
+        ? [{ icon: "layers" as const, text: t("library.cardMoq", { count: format.number(style.moqUnits) }) }]
+        : []),
+    ],
+    fit: style.fit ? t("library.fitPill") : undefined,
+    dieline: t("library.dielineLabel"),
     variants: t("library.cardOptions", { count: style.variantCount }),
     chips: chips.slice(0, CHIPS),
     moreChips: chips.length > CHIPS ? t("library.cardMore", { count: chips.length - CHIPS }) : null,
