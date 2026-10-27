@@ -28087,6 +28087,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/catalog/price-hints/{slug}/tiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the tier table of a product's default spec
+         * @description C1-API-2 (products R2, DECISIONS-STAGE-A §4): the product's default spec (D-441, the reference configuration the configurator opens on) priced at every quantity preset of its configurator (ascending, ≤ 10) through the one store pricing path — each tier exactly as `store.quotes.calculate` answers it for that configuration with no delivery postcode (shipping pending), including `netAmount` and `vatRate`. Pure calculation: no calculate log, no quote, cart or customer record. Reused for 60 s. `tiers` is empty (and `basis` null) when the product has no instant default spec — the page then offers the quotation route, never an estimate (D-181). No factory named (D-050).
+         *
+         *     Implements: D-441, D-220, D-181, D-050.
+         */
+        get: operations["store.catalog.getPriceTiers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/catalog/product-categories": {
         parameters: {
             query?: never;
@@ -36653,6 +36675,11 @@ export interface components {
             internal: components["schemas"]["QuoteInternalDto"] | null;
             /** @example 7 */
             leadTimeDays: number | null;
+            /**
+             * @description C1-API-1 (D-441, GLOBAL-RULES §5): the total before VAT — `grossAmount` minus `vatAmount`, both as sent (decimal maths in the API), so pages show "ก่อน VAT · VAT · รวม" without computing money; null when either is null
+             * @example 12624.67
+             */
+            netAmount: string | null;
             /**
              * @description Pieces incl. VAT
              * @example 13380.00
@@ -67472,6 +67499,26 @@ export interface components {
              */
             proposalId: string;
         };
+        PriceTiersDto: {
+            /** @description The default spec the tiers are priced at (D-441) — the spec the configurator opens on; `quantity` is the reference quantity of the "starting from" price. Null when the product has no instant default spec */
+            basis: components["schemas"]["PriceHintBasisDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-01T09:00:00+07:00
+             */
+            computedAt: string | null;
+            /** @example THB */
+            currency: components["schemas"]["Currency"];
+            /**
+             * @description Catalogue product slug
+             * @example tuck-end-box
+             */
+            key: string;
+            /** @example folding_carton */
+            productTypeCode: string;
+            /** @description One entry per configurator quantity preset (ascending, ≤ 10), each exactly as `store.quotes.calculate` answers it for the default spec without a delivery postcode (shipping pending). Empty when the product has no instant default spec */
+            tiers: components["schemas"]["QuoteStepDto"][];
+        };
         /** @enum {string} */
         PriceVersionOrigin: "factory_proposal" | "platform_rate_card" | "assisted_entry" | "import";
         PricingArrangementDto: {
@@ -69869,6 +69916,11 @@ export interface components {
             /** @example 7 */
             leadTimeDays: number | null;
             /**
+             * @description C1-API-1 (D-441, GLOBAL-RULES §5): the total before VAT — `grossAmount` minus `vatAmount`, both as sent (decimal maths in the API), so pages show "ก่อน VAT · VAT · รวม" without computing money; null when either is null
+             * @example 12624.67
+             */
+            netAmount: string | null;
+            /**
              * @description Pieces incl. VAT
              * @example 13380.00
              */
@@ -72005,6 +72057,16 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e7402
              */
             id: string;
+            /**
+             * @description C1 (DECISIONS-STAGE-A §4): the catalogue or stock product the line is for (`catalogProductSlug` / `stockProductSku` of the item); null for a line asked from a category form
+             * @example {
+             *       "key": "mailer-box-b",
+             *       "kind": "catalog_product",
+             *       "nameEn": "Mailer box (B flute)",
+             *       "nameTh": "กล่องไปรษณีย์ ฝาชน (ลอน B)"
+             *     }
+             */
+            product: components["schemas"]["RfqProductRefDto"] | null;
             productType: components["schemas"]["CodeNameRefDto"];
             /** @description Its RFQ once submitted — status, getpack’s quotations per quantity, acceptance */
             rfq: components["schemas"]["RfqDto"] | null;
@@ -72027,6 +72089,11 @@ export interface components {
             };
         };
         RfqBasketItemInputDto: {
+            /**
+             * @description C1 (DECISIONS-STAGE-A §4): the catalogue product the request is asked from — an active product of `productTypeCode`; CS sees it with the request. Never together with `stockProductSku`
+             * @example mailer-box-b
+             */
+            catalogProductSlug?: string;
             /** @description The design version the item is for */
             design?: components["schemas"]["BasketDesignRefDto"];
             /**
@@ -72078,6 +72145,11 @@ export interface components {
              * @example 1
              */
             specSchemaVersion?: number;
+            /**
+             * @description C1: the stock product the request is asked from — an active stock product of `productTypeCode`. Never together with `catalogProductSlug`
+             * @example PKO-BTL-0250
+             */
+            stockProductSku?: string;
             /**
              * @description The style-library variant this configuration builds (D-241). It must be publishable and belong to the configuration’s pattern; otherwise no quantity is priced instantly (reason `style_variant_not_publishable`, D-243), so the configuration cannot be saved, carted or ordered
              * @example PK-TE-01-K7QD
@@ -72184,6 +72256,8 @@ export interface components {
             nextActions: components["schemas"]["NextActionDto"][];
             /** @example Logo on both sides (fake) */
             notes: string;
+            /** @description C1: the catalogue or stock product the request was asked from; null for a category request */
+            product: components["schemas"]["RfqProductRefDto"] | null;
             /** @example paper_bag */
             productTypeCode: string;
             /** @example ถุงกระดาษ */
@@ -72352,6 +72426,19 @@ export interface components {
         RfqMessageInputDto: {
             /** @example Can the handles be flat? (fake) */
             body: string;
+        };
+        RfqProductRefDto: {
+            /**
+             * @description Catalogue product slug or stock product SKU
+             * @example mailer-box-b
+             */
+            key: string;
+            /** @example catalog_product */
+            kind: components["schemas"]["PriceHintKind"];
+            /** @example Mailer box (B flute) */
+            nameEn: string;
+            /** @example กล่องไปรษณีย์ ฝาชน (ลอน B) */
+            nameTh: string;
         };
         RfqQuotationDto: {
             /**
@@ -75844,6 +75931,8 @@ export interface components {
              * @example false
              */
             overdue: boolean;
+            /** @description C1: the catalogue or stock product the request was asked from; null for a category request */
+            product: components["schemas"]["RfqProductRefDto"] | null;
             /** @example paper_bag */
             productTypeCode: string;
             /** @example ถุงกระดาษ */
@@ -76069,6 +76158,11 @@ export interface components {
         };
         StaffSubmitRfqDto: {
             /**
+             * @description C1 (DECISIONS-STAGE-A §4): the catalogue product the request is asked from — an active product of `productTypeCode`; CS sees it with the request. Never together with `stockProductSku`
+             * @example mailer-box-b
+             */
+            catalogProductSlug?: string;
+            /**
              * Format: uuid
              * @description The customer the RFQ is for (CS on behalf)
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e705
@@ -76129,6 +76223,11 @@ export interface components {
              * @example 1
              */
             specSchemaVersion?: number;
+            /**
+             * @description C1: the stock product the request is asked from — an active stock product of `productTypeCode`. Never together with `catalogProductSlug`
+             * @example PKO-BTL-0250
+             */
+            stockProductSku?: string;
             /**
              * @description The style-library variant this configuration builds (D-241). It must be publishable and belong to the configuration’s pattern; otherwise no quantity is priced instantly (reason `style_variant_not_publishable`, D-243), so the configuration cannot be saved, carted or ordered
              * @example PK-TE-01-K7QD
@@ -77862,9 +77961,27 @@ export interface components {
              * @example 4.50
              */
             startingPricePerPiece: string | null;
+            /** @description C1 (products Phase 2): the published styles of its patterns (product ↔ style mapping, D-184), in pattern order; empty while unmapped */
+            styles: components["schemas"]["StoreProductStyleDto"][];
             /** @example drawing */
             templateAvailability: components["schemas"]["TemplateAvailability"];
             videos: components["schemas"]["StoreVideoDto"][];
+        };
+        StoreProductStyleDto: {
+            /**
+             * @description The style's library category (the /styles category facet)
+             * @example folding_carton
+             */
+            category: string;
+            /**
+             * @description Style code (the /styles quick view)
+             * @example PK-TE-01
+             */
+            code: string;
+            /** @example Tuck end box */
+            nameEn: string;
+            /** @example กล่องฝาเสียบ */
+            nameTh: string;
         };
         StoreProductTypeDto: {
             /**
@@ -79204,6 +79321,8 @@ export interface components {
             plasticFree: boolean | null;
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
+            /** @description C1 (products Phase 2): active catalogue products whose pattern is this style (product ↔ style mapping), cheapest "starting from" first, products without a price last; empty while unmapped */
+            products: components["schemas"]["StyleProductDto"][];
             /**
              * @description The product type the style is priced and quoted as (its RFQ form, `store.rfqs.getForm`); null while unmapped (D-407).
              * @example folding_carton
@@ -79640,6 +79759,19 @@ export interface components {
         };
         /** @enum {string} */
         StyleProcessScope: "source_product_type" | "category" | "family" | "option";
+        StyleProductDto: {
+            /** @example Tuck end box */
+            nameEn: string;
+            /** @example กล่องฝาเสียบ */
+            nameTh: string;
+            /**
+             * @description Catalogue product slug (`/products/{slug}`)
+             * @example tuck-end-box
+             */
+            slug: string;
+            /** @description Its own "starting from" price (D-220, D-441); null for a product without an instant price */
+            startingPrice: components["schemas"]["StylePriceDto"] | null;
+        };
         /** @enum {string} */
         StylePublishReason: "retired" | "hidden" | "wave_not_open" | "no_product_type" | "no_recipe" | "recipe_not_approved" | "names_not_approved" | "not_makeable" | "not_drawable";
         StyleReasonCountDto: {
@@ -79996,6 +80128,11 @@ export interface components {
             rating: number;
         };
         SubmitRfqDto: {
+            /**
+             * @description C1 (DECISIONS-STAGE-A §4): the catalogue product the request is asked from — an active product of `productTypeCode`; CS sees it with the request. Never together with `stockProductSku`
+             * @example mailer-box-b
+             */
+            catalogProductSlug?: string;
             /** @example 10110 */
             deliveryPostcode: string;
             /**
@@ -80051,6 +80188,11 @@ export interface components {
              * @example 1
              */
             specSchemaVersion?: number;
+            /**
+             * @description C1: the stock product the request is asked from — an active stock product of `productTypeCode`. Never together with `catalogProductSlug`
+             * @example PKO-BTL-0250
+             */
+            stockProductSku?: string;
             /**
              * @description The style-library variant this configuration builds (D-241). It must be publishable and belong to the configuration’s pattern; otherwise no quantity is priced instantly (reason `style_variant_not_publishable`, D-243), so the configuration cannot be saved, carted or ordered
              * @example PK-TE-01-K7QD
@@ -134064,6 +134206,7 @@ export interface operations {
                      *             "tooling": null
                      *           },
                      *           "leadTimeDays": 7,
+                     *           "netAmount": "12624.67",
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
@@ -134467,6 +134610,7 @@ export interface operations {
                      *             "tooling": null
                      *           },
                      *           "leadTimeDays": 7,
+                     *           "netAmount": "12624.67",
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
@@ -134863,6 +135007,7 @@ export interface operations {
                      *             "tooling": null
                      *           },
                      *           "leadTimeDays": 7,
+                     *           "netAmount": "12624.67",
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
@@ -135192,6 +135337,7 @@ export interface operations {
                      *             "tooling": null
                      *           },
                      *           "leadTimeDays": 7,
+                     *           "netAmount": "12624.67",
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
@@ -135675,6 +135821,7 @@ export interface operations {
                      *             "tooling": null
                      *           },
                      *           "leadTimeDays": 7,
+                     *           "netAmount": "12624.67",
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
@@ -135983,6 +136130,7 @@ export interface operations {
                      *             "tooling": null
                      *           },
                      *           "leadTimeDays": 7,
+                     *           "netAmount": "12624.67",
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
@@ -136294,6 +136442,7 @@ export interface operations {
                      *             "tooling": null
                      *           },
                      *           "leadTimeDays": 7,
+                     *           "netAmount": "12624.67",
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
@@ -188749,6 +188898,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -189034,6 +189184,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -189286,6 +189437,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -189544,6 +189696,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -189820,6 +189973,7 @@ export interface operations {
                      *           ],
                      *           "notes": "Logo on both sides (fake)",
                      *           "overdue": false,
+                     *           "product": null,
                      *           "productTypeCode": "paper_bag",
                      *           "productTypeName": "ถุงกระดาษ",
                      *           "quantities": [
@@ -190060,6 +190214,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -190316,6 +190471,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -190555,6 +190711,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -190817,6 +190974,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -191076,6 +191234,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -191331,6 +191490,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -191688,6 +191848,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -191947,6 +192108,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -192209,6 +192371,7 @@ export interface operations {
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
                      *       "overdue": false,
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -291388,6 +291551,126 @@ export interface operations {
             };
         };
     };
+    "store.catalog.getPriceTiers": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Catalogue product slug */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tier table */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "basis": {
+                     *         "includesDelivery": false,
+                     *         "includesVat": true,
+                     *         "label": {
+                     *           "en": "60 × 60 × 150 mm",
+                     *           "th": "60 × 60 × 150 มม."
+                     *         },
+                     *         "quantity": 1000,
+                     *         "sizeCode": null,
+                     *         "specs": [
+                     *           {
+                     *             "key": "size",
+                     *             "labelEn": "Size (L × W × H)",
+                     *             "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *             "valueEn": "60 × 60 × 150 mm",
+                     *             "valueTh": "60 × 60 × 150 มม."
+                     *           }
+                     *         ]
+                     *       },
+                     *       "computedAt": "2026-10-01T09:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "key": "tuck-end-box",
+                     *       "productTypeCode": "folding_carton",
+                     *       "tiers": [
+                     *         {
+                     *           "arrival": null,
+                     *           "designFeeAmount": "0.00",
+                     *           "earliestDeliveryDate": null,
+                     *           "earliestShipDate": "2026-10-09",
+                     *           "grossAmount": "13380.00",
+                     *           "instant": true,
+                     *           "leadTimeDays": 7,
+                     *           "netAmount": "12504.67",
+                     *           "productAmount": "13380.00",
+                     *           "quantity": 1000,
+                     *           "reason": null,
+                     *           "savingPercent": null,
+                     *           "shippingAmount": null,
+                     *           "shippingNetAmount": null,
+                     *           "shippingPending": true,
+                     *           "shippingPendingReason": null,
+                     *           "shippingVatAmount": null,
+                     *           "structureDesignFeeAmount": "0.00",
+                     *           "toleranceColourDeltaE": "3.00",
+                     *           "toleranceDimensionalMm": "1.00",
+                     *           "toleranceOveragePct": "5.0000",
+                     *           "toleranceShortagePct": "5.0000",
+                     *           "toolingAmount": "0.00",
+                     *           "toolingWaiver": null,
+                     *           "unitPrice": "13.38",
+                     *           "vatAmount": "875.33",
+                     *           "vatRate": "0.07",
+                     *           "zoneName": null
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PriceTiersDto"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.catalog.listProductCategories": {
         parameters: {
             query?: never;
@@ -291802,6 +292085,14 @@ export interface operations {
                      *         ]
                      *       },
                      *       "startingPricePerPiece": "4.50",
+                     *       "styles": [
+                     *         {
+                     *           "category": "folding_carton",
+                     *           "code": "PK-TE-01",
+                     *           "nameEn": "Tuck end box",
+                     *           "nameTh": "กล่องฝาเสียบ"
+                     *         }
+                     *       ],
                      *       "templateAvailability": "drawing",
                      *       "videos": [
                      *         {
@@ -318771,6 +319062,7 @@ export interface operations {
                      *           "grossAmount": "13508.40",
                      *           "instant": true,
                      *           "leadTimeDays": 7,
+                     *           "netAmount": "12624.67",
                      *           "productAmount": "13380.00",
                      *           "quantity": 1000,
                      *           "reason": null,
@@ -318986,6 +319278,7 @@ export interface operations {
                      *                 "grossAmount": "13508.40",
                      *                 "instant": true,
                      *                 "leadTimeDays": 7,
+                     *                 "netAmount": "12624.67",
                      *                 "productAmount": "13380.00",
                      *                 "quantity": 1000,
                      *                 "reason": null,
@@ -320313,6 +320606,7 @@ export interface operations {
                      *           {
                      *             "design": null,
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7402",
+                     *             "product": null,
                      *             "productType": {
                      *               "code": "paper_bag",
                      *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7404",
@@ -320420,6 +320714,7 @@ export interface operations {
                      *         {
                      *           "design": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7402",
+                     *           "product": null,
                      *           "productType": {
                      *             "code": "paper_bag",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7404",
@@ -320554,6 +320849,7 @@ export interface operations {
                      *           {
                      *             "design": null,
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7402",
+                     *             "product": null,
                      *             "productType": {
                      *               "code": "paper_bag",
                      *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7404",
@@ -320794,6 +321090,7 @@ export interface operations {
                      *         {
                      *           "design": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7402",
+                     *           "product": null,
                      *           "productType": {
                      *             "code": "paper_bag",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7404",
@@ -320902,6 +321199,7 @@ export interface operations {
                      *         {
                      *           "design": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7402",
+                     *           "product": null,
                      *           "productType": {
                      *             "code": "paper_bag",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7404",
@@ -321105,6 +321403,7 @@ export interface operations {
                      *         {
                      *           "design": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7402",
+                     *           "product": null,
                      *           "productType": {
                      *             "code": "paper_bag",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7404",
@@ -321256,6 +321555,7 @@ export interface operations {
                      *         {
                      *           "design": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7402",
+                     *           "product": null,
                      *           "productType": {
                      *             "code": "paper_bag",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7404",
@@ -321396,6 +321696,7 @@ export interface operations {
                      *         {
                      *           "design": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7402",
+                     *           "product": null,
                      *           "productType": {
                      *             "code": "paper_bag",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e7404",
@@ -321788,6 +322089,7 @@ export interface operations {
                      *             }
                      *           ],
                      *           "notes": "Logo on both sides (fake)",
+                     *           "product": null,
                      *           "productTypeCode": "paper_bag",
                      *           "productTypeName": "ถุงกระดาษ",
                      *           "quantities": [
@@ -321958,6 +322260,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -322129,6 +322432,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -322309,6 +322613,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -322516,6 +322821,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -322713,6 +323019,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -326104,6 +326411,7 @@ export interface operations {
                      *             "grossAmount": "13508.40",
                      *             "instant": true,
                      *             "leadTimeDays": 7,
+                     *             "netAmount": "12624.67",
                      *             "productAmount": "13380.00",
                      *             "quantity": 1000,
                      *             "reason": null,
@@ -326563,6 +326871,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "notes": "Logo on both sides (fake)",
+                     *       "product": null,
                      *       "productTypeCode": "paper_bag",
                      *       "productTypeName": "ถุงกระดาษ",
                      *       "quantities": [
@@ -328969,6 +329278,7 @@ export interface operations {
                      *       "plasticFree": null,
                      *       "pricePath": "instant",
                      *       "productTypeCode": "folding_carton",
+                     *       "products": [],
                      *       "recyclable": null,
                      *       "referenceCode": null,
                      *       "sizeRanges": [
@@ -329135,6 +329445,7 @@ export interface operations {
                      *         "plasticFree": null,
                      *         "pricePath": "instant",
                      *         "productTypeCode": "folding_carton",
+                     *         "products": [],
                      *         "recyclable": null,
                      *         "referenceCode": null,
                      *         "sizeRanges": [
