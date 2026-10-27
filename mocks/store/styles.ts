@@ -167,8 +167,10 @@ function fitOf(s: MockStyle, size: { l: number; w: number; h: number }): Card["f
   const [a, b, h] = [size.l + 5, size.w + 5, size.h + 5];
   const inside = (v: number, min: number, max: number) => v >= min && v <= max;
   if (!inside(h, r.minHMm, r.maxHMm)) return null;
-  if (inside(a, r.minLMm, r.maxLMm) && inside(b, r.minWMm, r.maxWMm)) return { insideLMm: a, insideWMm: b, insideHMm: h };
-  if (inside(b, r.minLMm, r.maxLMm) && inside(a, r.minWMm, r.maxWMm)) return { insideLMm: b, insideWMm: a, insideHMm: h };
+  if (inside(a, r.minLMm, r.maxLMm) && inside(b, r.minWMm, r.maxWMm))
+    return { insideLMm: a, insideWMm: b, insideHMm: h };
+  if (inside(b, r.minLMm, r.maxLMm) && inside(a, r.minWMm, r.maxWMm))
+    return { insideLMm: b, insideWMm: a, insideHMm: h };
   return null;
 }
 
@@ -288,7 +290,15 @@ function filterStyles(filters: Filters, q: string | undefined, skip?: keyof Filt
     if (f.family && s.row.family !== f.family) return false;
     if (f.materialClass && s.row.material_class !== f.materialClass) return false;
     if (f.pricePath && s.pricePath !== f.pricePath) return false;
-    if (f.useCase && !caseCodesOf(s.row).includes(f.useCase)) return false;
+    // `a,b;c` = (a or b) and c (the API's useCase groups, C0); one value is one group.
+    if (
+      f.useCase &&
+      !f.useCase
+        .split(";")
+        .filter(Boolean)
+        .every((group) => group.split(",").some((code) => caseCodesOf(s.row).includes(code)))
+    )
+      return false;
     const options = optionFacets(s);
     if (f.closure && !options.closure.has(f.closure)) return false;
     if (f.feature && !options.feature.has(f.feature)) return false;
