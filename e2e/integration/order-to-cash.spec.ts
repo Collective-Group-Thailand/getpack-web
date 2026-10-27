@@ -26,7 +26,6 @@ test("a customer prices the carton online and adds it to the cart", async ({ con
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
   // The seed's product has no default quantity: the customer asks for 1,000.
-  await page.getByRole("button", { name: /^ขั้นที่ \d+ จาก \d+ จำนวน/ }).click();
   await page.getByLabel(/^จำนวนอื่น/).fill("1000");
   await page.getByRole("button", { name: "ดูราคา", exact: true }).click();
 
