@@ -470,5 +470,11 @@
     "none": "No product has an instant price right now — send your file and spec and the team will quote it",
     "contact": "Contact the team",
     "noFile": "No file yet? <studio>Design it in the studio</studio> or <templates>download a dieline from the templates</templates>"
+  },
+  "spotShortfall": {
+    "title": "Your design has more colours than this price covers",
+    "body": "The design uses {needed, number} colours, but this price covers {priced, number} spot colours. Choose a print method that prints them all before you order.",
+    "toCmyk": "Switch to CMYK",
+    "moreColours": "Add colours"
   }
 }
