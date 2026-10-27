@@ -1499,6 +1499,7 @@ export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {
   "store.catalog.getImage": {"method":"GET","path":"/v1/store/catalog/images/{fileId}","problems":{"http.not_found":404,"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.catalog.merchantFeed": {"method":"GET","path":"/v1/store/catalog/merchant-feed.xml","problems":{"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.catalog.listPriceHints": {"method":"GET","path":"/v1/store/catalog/price-hints","problems":{"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
+  "store.catalog.getPriceTiers": {"method":"GET","path":"/v1/store/catalog/price-hints/{slug}/tiers","problems":{"http.not_found":404,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.catalog.listProductCategories": {"method":"GET","path":"/v1/store/catalog/product-categories","problems":{"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.catalog.listProductTypes": {"method":"GET","path":"/v1/store/catalog/product-types","problems":{"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
   "store.catalog.listProducts": {"method":"GET","path":"/v1/store/catalog/products","problems":{"validation.failed":422,"http.too_many_requests":429,"internal.unexpected":500}},
