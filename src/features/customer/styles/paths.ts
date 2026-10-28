@@ -26,6 +26,13 @@ export const styleHref = (code: string, name: string) => `/styles/${encodeURICom
 
 export const STYLES_HREF = "/styles";
 
+/**
+ * The fragment that opens /styles on its "ค้นหาด้วยขนาดสินค้า" tab (the existing size search). The product page's
+ * "หาเบอร์จากขนาดสินค้า" links here (owner 2026-10-28 14:36, DECISIONS-STAGE-A §14.9) — no product-scoped finder.
+ */
+export const SIZE_SEARCH_FRAGMENT = "size-search";
+export const SIZE_SEARCH_HREF = `${STYLES_HREF}#${SIZE_SEARCH_FRAGMENT}`;
+
 /** The fragment a style page opens its free-dieline form at — where signing in for it returns to (T12). */
 export const DIELINE_FRAGMENT = "dieline";
 

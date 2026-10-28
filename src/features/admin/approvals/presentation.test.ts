@@ -66,6 +66,22 @@ describe("Superadmin powers (D-449)", () => {
     expect(canOfferSelfApproval({ ...base, status: "approved" }, superadmin, { active: true })).toBe(false);
   });
 
+  it("offers self-approval again on the next step of a multi-step policy, not twice on one step (C1f)", () => {
+    const action = {
+      action: "approve" as const,
+      actor: { id: "cs-1", displayName: "CS" },
+      at: "2026-10-28T10:00:00+07:00",
+      comment: null,
+      onBehalfOf: null,
+      selfApproved: true,
+      selfApprovalReason: "ขั้นแรก: ไม่มีผู้อนุมัติคนอื่น",
+      stepNo: 1,
+    };
+    const stepTwo = { ...base, currentStepNo: 2, actions: [action] };
+    expect(canOfferSelfApproval(stepTwo, superadmin, { active: true })).toBe(true);
+    expect(canOfferSelfApproval({ ...stepTwo, currentStepNo: 1 }, superadmin, { active: true })).toBe(false);
+  });
+
   it("normalises a typed amount to two decimals without arithmetic", () => {
     expect(moneyInput("500000")).toBe("500000.00");
     expect(moneyInput("500,000.5")).toBe("500000.50");

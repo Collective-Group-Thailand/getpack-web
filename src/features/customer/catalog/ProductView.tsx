@@ -22,13 +22,13 @@ import { Button } from "@/ui/components/Button";
 import { productFamilyOf } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
+import { SIZE_SEARCH_HREF } from "@/features/customer/styles/paths";
 import { studioHref } from "@/features/customer/studio/paths";
 
 import {
   getConfigurator,
   getPriceHints,
   getProductFaqs,
-  getRfqForm,
   getSupportChannels,
   type CatalogueCategory,
   type ProductDetail,
@@ -87,8 +87,6 @@ export async function ProductView({
   ]);
   // The buy box needs a configurator the API prices instantly; without one the page keeps the quotation path.
   const live = configurator?.instant ? configurator : null;
-  // How quickly CS answers an RFQ for this type, as the form states it (D-100).
-  const rfqForm = type && !instant ? await getRfqForm(type.code).catch(() => null) : null;
   const signedIn = Boolean(readAccessToken(jar));
   const hint = hints.get(product.slug);
   const text = await priceHintText(hint);
@@ -249,7 +247,7 @@ export async function ProductView({
               categoryCode={category?.code ?? null}
               hintText={text}
               hintPrice={hint?.startingFromPerPiece ?? null}
-              rfqHours={rfqForm?.slaTargetHours ?? null}
+              responseDays={product.quoteResponseBusinessDays}
               dielineHref={
                 online
                   ? studioHref({ product: product.slug, step: "start" })
@@ -270,6 +268,12 @@ export async function ProductView({
             id="size"
             title={t("sizes.title", { count: (live?.standardSizes ?? product.standardSizes).length })}
             lede={t("sizes.lede")}
+            aside={
+              // §14.9 (owner 2026-10-28 14:36): the existing /styles size search, not a product-scoped finder.
+              <Button asChild variant="ghost" iconStart="ruler">
+                <Link href={SIZE_SEARCH_HREF}>{t("sizes.findBySize")}</Link>
+              </Button>
+            }
           >
             {live ? <PdpSizesTable buyBoxId={BUY_BOX_ID} /> : <StaticSizes product={product} />}
             {live || instant ? (
@@ -384,7 +388,7 @@ async function QuoteBox({
   categoryCode,
   hintText,
   hintPrice,
-  rfqHours,
+  responseDays,
   dielineHref,
 }: {
   product: ProductDetail;
@@ -392,7 +396,11 @@ async function QuoteBox({
   categoryCode: string | null;
   hintText: Awaited<ReturnType<typeof priceHintText>>;
   hintPrice: string | null;
-  rfqHours: number | null;
+  /**
+   * C1f (C3 open item, DECISIONS-STAGE-A §9.3 / §14.8): how many working days the team takes to answer a quote for
+   * this product, from the API (`quoteResponseBusinessDays`) as on the style pages; null → no timing.
+   */
+  responseDays: number | null;
   dielineHref: string;
 }) {
   const [t, tCatalog, format] = await Promise.all([
@@ -443,7 +451,9 @@ async function QuoteBox({
       </div>
       <div className="text-muted flex flex-col gap-1 text-xs leading-relaxed">
         <p className="m-0">{instant ? tCatalog("product.priceNote") : tCatalog("product.rfqNote")}</p>
-        {rfqHours ? <p className="m-0">{tCatalog("product.rfqSla", { hours: rfqHours })}</p> : null}
+        {!instant && responseDays ? (
+          <p className="m-0">{tCatalog("product.quoteResponse", { days: responseDays })}</p>
+        ) : null}
         <p className="m-0">
           {tCatalog("product.toleranceNote")}{" "}
           <Link href={GUARANTEE} className="underline underline-offset-4">

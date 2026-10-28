@@ -155,6 +155,54 @@
     "data": "Recorded data",
     "redacted": "Personal data was redacted before storage"
   },
+  "fileAccess": {
+    "title": "Customer file access log",
+    "description": "Every time a customer's original file, a production copy or an approved proof copy was opened or downloaded: who, when, which order, and the reason a Superadmin typed before opening it. This log cannot be edited.",
+    "filters": "Filters",
+    "clear": "Clear filters",
+    "columns": {
+      "when": "Time",
+      "actor": "Opened by",
+      "order": "Order",
+      "kind": "File kind",
+      "access": "Access",
+      "reason": "Typed reason",
+      "details": "Details"
+    },
+    "kinds": {
+      "customer_original": "Customer original",
+      "production_copy": "Production copy",
+      "approved_proof_copy": "Approved proof copy",
+      "reason": "Opened by a Superadmin with a reason"
+    },
+    "purposes": {
+      "download": "Download",
+      "thumbnail": "Thumbnail"
+    },
+    "channels": {
+      "admin": "Back office",
+      "partner": "Partner",
+      "store": "Storefront"
+    },
+    "actorTypes": {
+      "user": "User",
+      "api_client": "External system"
+    },
+    "withReason": "Reason given",
+    "orderPlaceholder": "e.g. GP-2611-00012",
+    "fileId": "File id",
+    "fileIdPlaceholder": "Paste a file id",
+    "from": "From",
+    "to": "To",
+    "empty": "No file access matches these filters",
+    "loadMore": "Load more",
+    "openEntry": "Open file access details {order}",
+    "entryTitle": "File access details",
+    "close": "Close",
+    "noOrder": "Not in an order yet",
+    "noReason": "None (not a Superadmin access with a reason)",
+    "requestId": "Request id"
+  },
   "flags": {
     "title": "Feature flags",
     "description": "Switches for capabilities not yet on for everyone (R2 work, gradual rollouts). Flags are defined in code; here they are switched and scoped.",

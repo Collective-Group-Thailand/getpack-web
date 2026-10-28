@@ -10,6 +10,7 @@ import { Button } from "@/ui/components/Button";
 import { DisclosureList } from "@/ui/components/DisclosureList";
 
 import { pick } from "../localize";
+import { PdpToleranceAnswer } from "./PdpToleranceAnswer";
 import { hasStandardSizes, printChoicesOf, startOf } from "./model";
 
 /**
@@ -93,7 +94,10 @@ export async function PdpOrderFlow({ configurator }: { configurator: Configurato
 
 export interface FaqEntry {
   question: string;
+  /** The answer as text — what the FAQPage JSON-LD carries. */
   answer: string;
+  /** What the page shows instead, when the answer depends on live data (the tolerance, §14.9). */
+  display?: React.ReactNode;
 }
 
 /**
@@ -124,7 +128,9 @@ export async function pdpFaqEntries({
   const own: FaqEntry[] = [
     { question: t("included.q"), answer: t("included.a") },
     ...(hasStandardSizes(configurator) ? [{ question: t("insideOutside.q"), answer: t("insideOutside.a") }] : []),
-    { question: t("tolerance.q"), answer: t("tolerance.a") },
+    // §14.9 (owner 2026-10-28 14:36): the API's tolerance figures (as the buy box), never a fixed ±5 %; the
+    // structured data keeps the figure-free answer, which is true for every calculation.
+    { question: t("tolerance.q"), answer: t("tolerance.aNoFigure"), display: <PdpToleranceAnswer /> },
     ...(configurator.quoteValidityDays
       ? [{ question: t("priceLock.q"), answer: t("priceLock.a", { days: configurator.quoteValidityDays }) }]
       : []),
@@ -140,7 +146,7 @@ export async function PdpFaq({ entries }: { entries: readonly FaqEntry[] }) {
   const items = entries.map((entry, index) => ({
     id: `pdp-faq-${index}`,
     summary: entry.question,
-    content: entry.answer,
+    content: entry.display ?? entry.answer,
   }));
   const half = Math.ceil(items.length / 2);
   return (

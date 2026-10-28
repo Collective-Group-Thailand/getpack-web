@@ -45,3 +45,16 @@ test.describe("approval threshold (D-449 B)", () => {
     await expect(page.getByLabel(/อนุมัติอัตโนมัติเมื่อยอดไม่เกิน/)).toBeVisible();
   });
 });
+
+test.describe("solo-owner mode on every step (C1f, D-451)", () => {
+  test("a Superadmin's own multi-step request offers self-approval again on the next step", async ({ page }) => {
+    // Needs a two-step request of the Superadmin in the mock (e.g. a company bank-account change); the offer follows
+    // the current step: approved step 1 by self-approval → "อนุมัติด้วยตนเอง" offered again on step 2.
+    await signInAsStaff(page, "superadmin");
+    await gotoHydrated(page, `${HOSTS.admin}/approvals?tab=mine`);
+    const own = page.getByRole("link", { name: "อนุมัติด้วยตนเอง" });
+    test.skip((await own.count()) === 0, "no own pending multi-step request in this mock state");
+    await own.first().click();
+    await expect(page.getByRole("button", { name: "อนุมัติด้วยตนเอง" })).toBeVisible();
+  });
+});

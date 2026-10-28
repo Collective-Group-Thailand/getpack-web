@@ -104,5 +104,24 @@ test.describe("the product page", () => {
     await expect(page.getByText("ราคาตามสเปก", { exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "ขอใบเสนอราคา" })).toBeVisible();
     await expect(page.locator("[data-pdp-bar]")).toHaveCount(0);
+    // C1f (§14.8): the answer time in working days from the API (`quoteResponseBusinessDays`), as on /styles.
+    await expect(page.getByText(/ทีมงานตอบภายใน \d+ วันทำการ/)).toBeVisible();
+  });
+
+  test("C1f: find a size from the product goes to the /styles size search; FAQ tolerance from the API", async ({
+    page,
+  }) => {
+    await gotoHydrated(page, PRODUCT);
+    await expect(page.locator("#buy").getByText(price).first()).toBeVisible({ timeout: 15_000 });
+    // The FAQ's tolerance answer carries the calculation's figure, not a fixed 5 %.
+    const faq = page.locator("#faq");
+    await faq.getByText("ได้รับไม่ครบจำนวนทำอย่างไร?").click();
+    await expect(faq.getByText(/จำนวนที่ได้รับอาจ(น้อยหรือมากกว่าได้|ขาด) \d/)).toBeVisible();
+
+    const finder = page.locator("#size").getByRole("link", { name: "หาเบอร์จากขนาดสินค้า" });
+    await expect(finder).toHaveAttribute("href", "/styles#size-search");
+    await finder.click();
+    await expect(page).toHaveURL(/\/styles#size-search$/);
+    await expect(page.getByRole("tab", { name: /ขนาด/ })).toHaveAttribute("aria-selected", "true");
   });
 });
