@@ -131,18 +131,31 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
           .filter((f): f is NonNullable<typeof f> => f !== null),
         ...(style.fitRange
           ? [
-              {
-                term: t("library.quickViewFitRange"),
-                description: (
-                  <span className="tabular-nums">
-                    {t("library.quickViewFitRangeValue", {
-                      l: `${cmOf(style.fitRange.minLMm)}–${cmOf(style.fitRange.maxLMm)}`,
-                      w: `${cmOf(style.fitRange.minWMm)}–${cmOf(style.fitRange.maxWMm)}`,
-                      h: `${cmOf(style.fitRange.minHMm)}–${cmOf(style.fitRange.maxHMm)}`,
-                    })}
-                  </span>
-                ),
-              },
+              // C1e (§13.2): a round style's range is its diameter (the footprint's bounding square) × height.
+              style.sizeClass === "cylinder"
+                ? {
+                    term: t("library.quickViewFitRangeRound"),
+                    description: (
+                      <span className="tabular-nums">
+                        {t("library.quickViewFitRangeRoundValue", {
+                          d: `${cmOf(style.fitRange.minLMm)}–${cmOf(style.fitRange.maxLMm)}`,
+                          h: `${cmOf(style.fitRange.minHMm)}–${cmOf(style.fitRange.maxHMm)}`,
+                        })}
+                      </span>
+                    ),
+                  }
+                : {
+                    term: t("library.quickViewFitRange"),
+                    description: (
+                      <span className="tabular-nums">
+                        {t("library.quickViewFitRangeValue", {
+                          l: `${cmOf(style.fitRange.minLMm)}–${cmOf(style.fitRange.maxLMm)}`,
+                          w: `${cmOf(style.fitRange.minWMm)}–${cmOf(style.fitRange.maxWMm)}`,
+                          h: `${cmOf(style.fitRange.minHMm)}–${cmOf(style.fitRange.maxHMm)}`,
+                        })}
+                      </span>
+                    ),
+                  },
             ]
           : []),
         { term: t("library.quickViewMaterial"), description: facetLabel(words, "materialClass", style.materialClass) },
@@ -267,11 +280,13 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
                 <b className="font-semibold">{t("library.fitTitle", { ...product })}</b>
                 <br />
                 <span className="tabular-nums">
-                  {t("library.fitInside", {
-                    l: cmOf(shownFit.insideLMm),
-                    w: cmOf(shownFit.insideWMm),
-                    h: cmOf(shownFit.insideHMm),
-                  })}
+                  {style.sizeClass === "cylinder"
+                    ? t("library.fitInsideRound", { d: cmOf(shownFit.insideLMm), h: cmOf(shownFit.insideHMm) })
+                    : t("library.fitInside", {
+                        l: cmOf(shownFit.insideLMm),
+                        w: cmOf(shownFit.insideWMm),
+                        h: cmOf(shownFit.insideHMm),
+                      })}
                 </span>
               </p>
             </div>

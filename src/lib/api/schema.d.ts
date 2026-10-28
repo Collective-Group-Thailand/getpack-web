@@ -16567,9 +16567,9 @@ export interface paths {
         get: operations["admin.styleLibrary.getSettings"];
         /**
          * Change the style library page content
-         * @description C1c (DECISIONS-STAGE-A §11.5, D-448; D-246: curation by Admin or Marketing with `styles.curate`): adds a version of `storefront.style_library` from `effectiveFrom` (now by default, never in the past) through the settings platform — validated against the setting’s schema, audited (`setting.changed` with before / after and the reason), evented, caches invalidated. Only real content: certificates, documents, photos and logos the business holds (logos need the customer’s permission, recorded in `permission`).
+         * @description C1c (DECISIONS-STAGE-A §11.5, D-448; D-246: curation by Admin or Marketing with `styles.curate`): adds a version of `storefront.style_library` from `effectiveFrom` (now by default, never in the past) through the settings platform — validated against the setting’s schema, audited (`setting.changed` with before / after and the reason), evented, caches invalidated. Only real content: certificates, documents, photos and logos the business holds (logos need the customer’s permission, recorded in `permission`). C1e (§13.3, D-450): photos, logos and swatches are uploaded pictures (`/v1/store/catalog/images/{fileId}`, purpose `image`); documents are uploaded files (`/v1/store/style-library/documents/{fileId}`, purpose `document` or `image`) or an external https link; a referenced file that is not uploaded, infected or of the wrong kind is refused (`validation.failed`, code `fileReady`).
          *
-         *     Implements: D-448, D-246, D-010, D-125.
+         *     Implements: D-448, D-246, D-010, D-125, D-450.
          */
         put: operations["admin.styleLibrary.updateSettings"];
         post?: never;
@@ -16858,9 +16858,9 @@ export interface paths {
         put?: never;
         /**
          * Fill empty fit ranges from the system's own size data
-         * @description C0b / C1c (owner decisions 2026-10-28, DECISIONS-STAGE-A §9.1, §11.1; curation D-246): each style whose inside fit range is empty gets one through the same path as `admin.styles.update` — audited per style as `style_base.curated` — each bound taken from the first source that gives it: (a) the approved recipe’s size range (D-241), (b) the style’s own standard sizes (its catalogue products’ standard sizes, the recipe’s presets), (c) the production envelope (its pattern’s calculator size rules ∩ the dieline engine’s limits). Each bound’s source is stored; nothing is mapped by hand. A range the business entered is never overwritten; a backfilled range follows newer data. A style without all six bounds stays empty and is listed in `incomplete`. Idempotent (a second run changes nothing); `dryRun` reports without writing (`changes` = preview).
+         * @description C0b / C1c (owner decisions 2026-10-28, DECISIONS-STAGE-A §9.1, §11.1; curation D-246): each style whose inside fit range is empty gets one through the same path as `admin.styles.update` — audited per style as `style_base.curated` — each bound taken from the first source that gives it: (a) the approved recipe’s size range (D-241), (b) the style’s own standard sizes (its catalogue products’ standard sizes, the recipe’s presets), (c) the production envelope (its pattern’s calculator size rules ∩ the dieline engine’s limits). Each bound’s source is stored. A range the business entered is never overwritten; a backfilled range follows newer data. A style without all six bounds stays empty and is listed in `incomplete`. Idempotent (a second run changes nothing); `dryRun` reports without writing (`changes` = preview). C1e (§13.2, D-450): each style's size class is set from the documented rule and read by it — bags (PK-PG-*, PK-PB-*) as width × gusset (depth) × height, cups / bowls / tubes (sized by a body diameter) as the diameter's bounding square × height; labels, tags, sleeves, inserts and flat folders are `notApplicable` (no range — a backfilled one is `cleared` — never in `incomplete`); `coverage` = applicable styles with a range.
          *
-         *     Implements: D-241, D-242, D-243, D-246, D-448.
+         *     Implements: D-241, D-242, D-243, D-246, D-448, D-450.
          */
         post: operations["admin.styles.backfillFitRanges"];
         delete?: never;
@@ -33589,6 +33589,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/style-library/documents/{fileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a trust-section document
+         * @description C1e (DECISIONS-STAGE-A §13.3, D-450; D-448): a certificate or food-grade document uploaded through the file service and referenced by the published content of `storefront.style_library` — served only while that content shows it (an expired certificate is not shown), the upload is complete and its malware scan is clean; anything else is 404 (contract §3 "Files", the public-image rule of `store.catalog.getImage`). PDF or a picture, inline, cacheable for an hour. No factory data (D-050).
+         *
+         *     Implements: D-450, D-448, D-050.
+         */
+        get: operations["store.styleLibrary.getDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/style-library/settings": {
         parameters: {
             query?: never;
@@ -37772,6 +37794,11 @@ export interface components {
              * @example null
              */
             referenceVerifiedAt: string | null;
+            /**
+             * @description C1e (DECISIONS-STAGE-A §13.2): how the size search reads the style — `box` (inside L × W × H as stated), `bag` (paper / plastic bags: width × gusset (depth) × height), `cylinder` (cups, bowls, tubes: diameter × diameter bounding square × height; the product's L × W is fitted inside the square) or `not_applicable` (labels, shrink sleeves, tags, sleeves, inserts, flat folders: no fit range, left out of the size search, not counted as missing). Set by the fit-range backfill from the documented rule. Read-only.
+             * @example box
+             */
+            sizeClass: components["schemas"]["StyleSizeClass"];
             /** @example 0 */
             sort: number;
             /**
@@ -48098,8 +48125,8 @@ export interface components {
         CustomerFileKind: "customer_original" | "production_copy" | "approved_proof_copy";
         CustomerLogoDto: {
             /**
-             * @description An https link or a path on getpack’s own site
-             * @example https://example.invalid/logo.svg
+             * @description An uploaded picture: `/v1/store/catalog/images/{fileId}` (file purpose `image`, PNG / JPEG / WebP; C1e)
+             * @example /v1/store/catalog/images/0190a4b2-0000-7000-8000-000000000002
              */
             logoUrl: string;
             /** @example ร้านตัวอย่าง */
@@ -60362,15 +60389,31 @@ export interface components {
         FitRangeBackfillResult: {
             /** @description C1c: backfilled bounds per source */
             boundsBySource: components["schemas"]["FitRangeSourceCountsDto"];
+            /** @description C1e: active styles per size class */
+            bySizeClass: components["schemas"]["FitRangeSizeClassCountsDto"];
             /** @description C1c: backfilled styles (filled, refreshed or unchanged) per summary source */
             bySource: components["schemas"]["FitRangeSummaryCountsDto"];
             /** @description C1c: what the run writes (or, with `dryRun`, would write) */
             changes: components["schemas"]["FitRangeChangeDto"][];
             /**
+             * @description C1e: codes whose size class changes while their range stays as it is
+             * @example []
+             */
+            classified: string[];
+            /**
+             * @description C1e: codes whose backfilled range is removed because size search does not apply to them
+             * @example [
+             *       "PK-SP-12"
+             *     ]
+             */
+            cleared: string[];
+            /**
              * @description Active styles
              * @example 122
              */
             considered: number;
+            /** @description C1e: applicable styles with a range / applicable styles */
+            coverage: components["schemas"]["FitRangeCoverageDto"];
             /** @example false */
             dryRun: boolean;
             /**
@@ -60380,7 +60423,7 @@ export interface components {
              *     ]
              */
             filled: string[];
-            /** @description C1c: styles left empty, with what is missing */
+            /** @description C1c: styles left empty, with what is missing (C1e: never a style whose size search does not apply) */
             incomplete: components["schemas"]["FitRangeIncompleteDto"][];
             /**
              * @description Codes left alone because the business entered their range
@@ -60395,6 +60438,14 @@ export interface components {
              *     ]
              */
             noRecipeRange: string[];
+            /**
+             * @description C1e: codes whose size search does not apply (no range; not counted as missing)
+             * @example [
+             *       "PK-LA-01",
+             *       "PK-SP-12"
+             *     ]
+             */
+            notApplicable: string[];
             /**
              * @description Codes whose backfilled range followed newer data (or gained its per-bound sources)
              * @example []
@@ -60426,21 +60477,51 @@ export interface components {
             fitMinWMm: components["schemas"]["FitRangeBoundSourceDto"];
         };
         FitRangeChangeDto: {
-            /** @example filled */
+            /**
+             * @description `filled` (empty → range), `refreshed` (a backfilled range follows newer data), `cleared` (C1e: a backfilled range removed because size search does not apply), `classified` (C1e: only the size class changes)
+             * @example filled
+             */
             action: components["schemas"]["StyleFitRangeChangeAction"];
-            after: components["schemas"]["FitRangeValuesDto"];
+            /** @description The range after (null = empty) */
+            after: components["schemas"]["FitRangeValuesDto"] | null;
             /** @description The range before (null = empty) */
             before: components["schemas"]["FitRangeValuesDto"] | null;
-            bounds: components["schemas"]["FitRangeBoundSourcesDto"];
+            /** @description Each bound's source when the run writes a range; null otherwise */
+            bounds: components["schemas"]["FitRangeBoundSourcesDto"] | null;
             /** @example PK-SP-01 */
             code: string;
-            /** @example combined */
-            source: components["schemas"]["StyleFitRangeSource"];
+            /**
+             * @description C1e: size class after
+             * @example bag
+             */
+            sizeClass: components["schemas"]["StyleSizeClass"];
+            /**
+             * @description C1e: size class before
+             * @example box
+             */
+            sizeClassBefore: components["schemas"]["StyleSizeClass"];
+            /**
+             * @description Source of the range after (null = no range)
+             * @example combined
+             */
+            source: components["schemas"]["StyleFitRangeSource"] | null;
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ae001
              */
             styleId: string;
+        };
+        FitRangeCoverageDto: {
+            /**
+             * @description Active styles whose size search applies
+             * @example 101
+             */
+            applicable: number;
+            /**
+             * @description Of those, styles with all six bounds after the run (backfilled or business)
+             * @example 93
+             */
+            withRange: number;
         };
         FitRangeIncompleteDto: {
             /** @example PK-LA-01 */
@@ -60458,6 +60539,16 @@ export interface components {
              *     ]
              */
             missing: string[];
+        };
+        FitRangeSizeClassCountsDto: {
+            /** @example 10 */
+            bag: number;
+            /** @example 103 */
+            box: number;
+            /** @example 3 */
+            cylinder: number;
+            /** @example 6 */
+            not_applicable: number;
         };
         FitRangeSourceCountsDto: {
             /** @example 0 */
@@ -63677,7 +63768,7 @@ export interface components {
              */
             colour: string | null;
             /**
-             * @description An https link or a path on getpack’s own site
+             * @description An uploaded picture: `/v1/store/catalog/images/{fileId}` (file purpose `image`, PNG / JPEG / WebP; C1e)
              * @example null
              */
             imageUrl: string | null;
@@ -77930,8 +78021,8 @@ export interface components {
         StoreCreditSource: "shortage_credit" | "cancellation" | "claim" | "refund_alternative" | "applied_to_order" | "manual" | "refunded";
         StoreCustomerLogoDto: {
             /**
-             * @description An https link or a path on getpack’s own site
-             * @example https://example.invalid/logo.svg
+             * @description An uploaded picture: `/v1/store/catalog/images/{fileId}` (file purpose `image`, PNG / JPEG / WebP; C1e)
+             * @example /v1/store/catalog/images/0190a4b2-0000-7000-8000-000000000002
              */
             logoUrl: string;
             /** @example ร้านตัวอย่าง */
@@ -79123,7 +79214,7 @@ export interface components {
         };
         StoreTrustCertificationDto: {
             /**
-             * @description An https link or a path on getpack’s own site
+             * @description An uploaded document `/v1/store/style-library/documents/{fileId}` (purpose `document` or `image`) or an external https link (C1e)
              * @example null
              */
             documentUrl: string | null;
@@ -79747,7 +79838,7 @@ export interface components {
             /** @example false */
             featured: boolean;
             /**
-             * @description Only with the `size` search: the inside size recommended for the product; null otherwise
+             * @description Only with the `size` search: the inside size recommended for the product; null otherwise. For a `cylinder` style length = width = the diameter (C1e)
              * @example null
              */
             fit: components["schemas"]["StyleFitDto"] | null;
@@ -79790,6 +79881,11 @@ export interface components {
              * @example null
              */
             referenceCode: string | null;
+            /**
+             * @description C1e (DECISIONS-STAGE-A §13.2): how the size search reads the style — `box`, `bag` (width × gusset × height), `cylinder` (inside length = width = the diameter; show it as ⌀ × height) or `not_applicable` (never in the size search)
+             * @example box
+             */
+            sizeClass: components["schemas"]["StyleSizeClass"];
             /** @description Null without a price hint (D-220) */
             startingPrice: components["schemas"]["StylePriceDto"] | null;
             /**
@@ -79892,7 +79988,7 @@ export interface components {
             /** @example false */
             featured: boolean;
             /**
-             * @description Only with the `size` search: the inside size recommended for the product; null otherwise
+             * @description Only with the `size` search: the inside size recommended for the product; null otherwise. For a `cylinder` style length = width = the diameter (C1e)
              * @example null
              */
             fit: components["schemas"]["StyleFitDto"] | null;
@@ -79953,6 +80049,11 @@ export interface components {
              * @example null
              */
             referenceCode: string | null;
+            /**
+             * @description C1e (DECISIONS-STAGE-A §13.2): how the size search reads the style — `box`, `bag` (width × gusset × height), `cylinder` (inside length = width = the diameter; show it as ⌀ × height) or `not_applicable` (never in the size search)
+             * @example box
+             */
+            sizeClass: components["schemas"]["StyleSizeClass"];
             sizeRanges: components["schemas"]["StyleSizeRangeDto"][];
             /** @description Null without a price hint (D-220) */
             startingPrice: components["schemas"]["StylePriceDto"] | null;
@@ -80018,8 +80119,11 @@ export interface components {
             /** @example 155 */
             insideWMm: number;
         };
-        /** @enum {string} */
-        StyleFitRangeChangeAction: "filled" | "refreshed";
+        /**
+         * @description `filled` (empty → range), `refreshed` (a backfilled range follows newer data), `cleared` (C1e: a backfilled range removed because size search does not apply), `classified` (C1e: only the size class changes)
+         * @enum {string}
+         */
+        StyleFitRangeChangeAction: "filled" | "refreshed" | "cleared" | "classified";
         StyleFitRangeDto: {
             /** @example 150 */
             maxHMm: number;
@@ -80237,7 +80341,7 @@ export interface components {
             /** @example eyJpZCI6IjEyMyJ9 */
             nextCursor: string | null;
             /**
-             * @description Published styles with a complete inside size range — the size search is offered only when this is above 0
+             * @description Published styles with a complete inside size range whose size search applies (C1e: never `not_applicable`) — the size search is offered only when this is above 0
              * @example 0
              */
             sizeSearchStyles: number;
@@ -80455,6 +80559,11 @@ export interface components {
             /** @example 1 */
             version: number;
         };
+        /**
+         * @description C1e (DECISIONS-STAGE-A §13.2): how the size search reads the style — `box`, `bag` (width × gusset × height), `cylinder` (inside length = width = the diameter; show it as ⌀ × height) or `not_applicable` (never in the size search)
+         * @enum {string}
+         */
+        StyleSizeClass: "box" | "bag" | "cylinder" | "not_applicable";
         StyleSizeRangeDto: {
             /** @example paperboard */
             materialClass: string;
@@ -82090,7 +82199,7 @@ export interface components {
         };
         TrustDocumentDto: {
             /**
-             * @description An https link or a path on getpack’s own site
+             * @description An uploaded document `/v1/store/style-library/documents/{fileId}` (purpose `document` or `image`) or an external https link (C1e)
              * @example null
              */
             documentUrl: string | null;
@@ -82100,7 +82209,7 @@ export interface components {
             /** @description Alt text (product and process only, GLOBAL-RULES §1) */
             alt: components["schemas"]["LocalisedTextDto"];
             /**
-             * @description An https link or a path on getpack’s own site
+             * @description An uploaded picture: `/v1/store/catalog/images/{fileId}` (file purpose `image`, PNG / JPEG / WebP; C1e)
              * @example /v1/store/catalog/images/0190a4b2-0000-7000-8000-000000000001
              */
             url: string;
@@ -207005,6 +207114,7 @@ export interface operations {
                      *       "recipes": [],
                      *       "referenceCode": null,
                      *       "referenceVerifiedAt": null,
+                     *       "sizeClass": "box",
                      *       "sort": 0,
                      *       "sourceProductType": "folding",
                      *       "status": "active",
@@ -207179,6 +207289,7 @@ export interface operations {
                      *       "recipes": [],
                      *       "referenceCode": null,
                      *       "referenceVerifiedAt": null,
+                     *       "sizeClass": "box",
                      *       "sort": 0,
                      *       "sourceProductType": "folding",
                      *       "status": "active",
@@ -207380,6 +207491,7 @@ export interface operations {
                      *       "recipes": [],
                      *       "referenceCode": null,
                      *       "referenceVerifiedAt": null,
+                     *       "sizeClass": "box",
                      *       "sort": 0,
                      *       "sourceProductType": "folding",
                      *       "status": "active",
@@ -207561,6 +207673,7 @@ export interface operations {
                      *       "recipes": [],
                      *       "referenceCode": null,
                      *       "referenceVerifiedAt": null,
+                     *       "sizeClass": "box",
                      *       "sort": 0,
                      *       "sourceProductType": "folding",
                      *       "status": "active",
@@ -207755,6 +207868,7 @@ export interface operations {
                      *       "recipes": [],
                      *       "referenceCode": null,
                      *       "referenceVerifiedAt": null,
+                     *       "sizeClass": "box",
                      *       "sort": 0,
                      *       "sourceProductType": "folding",
                      *       "status": "active",
@@ -207955,6 +208069,7 @@ export interface operations {
                      *       "recipes": [],
                      *       "referenceCode": null,
                      *       "referenceVerifiedAt": null,
+                     *       "sizeClass": "box",
                      *       "sort": 0,
                      *       "sourceProductType": "folding",
                      *       "status": "active",
@@ -208143,6 +208258,7 @@ export interface operations {
                      *       "recipes": [],
                      *       "referenceCode": null,
                      *       "referenceVerifiedAt": null,
+                     *       "sizeClass": "box",
                      *       "sort": 0,
                      *       "sourceProductType": "folding",
                      *       "status": "active",
@@ -208406,13 +208522,19 @@ export interface operations {
                      * @example {
                      *       "boundsBySource": {
                      *         "production_envelope": 0,
-                     *         "recipe": 490,
+                     *         "recipe": 484,
                      *         "standard_sizes": 2
+                     *       },
+                     *       "bySizeClass": {
+                     *         "bag": 1,
+                     *         "box": 81,
+                     *         "cylinder": 0,
+                     *         "not_applicable": 2
                      *       },
                      *       "bySource": {
                      *         "combined": 1,
                      *         "production_envelope": 0,
-                     *         "recipe": 81,
+                     *         "recipe": 80,
                      *         "standard_sizes": 0
                      *       },
                      *       "changes": [
@@ -208466,18 +208588,46 @@ export interface operations {
                      *             }
                      *           },
                      *           "code": "PK-SP-01",
+                     *           "sizeClass": "box",
+                     *           "sizeClassBefore": "box",
                      *           "source": "combined",
+                     *           "styleId": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001"
+                     *         },
+                     *         {
+                     *           "action": "cleared",
+                     *           "after": null,
+                     *           "before": {
+                     *             "fitMaxHMm": 450,
+                     *             "fitMaxLMm": 330,
+                     *             "fitMaxWMm": 4,
+                     *             "fitMinHMm": 200,
+                     *             "fitMinLMm": 150,
+                     *             "fitMinWMm": 4
+                     *           },
+                     *           "bounds": null,
+                     *           "code": "PK-SP-12",
+                     *           "sizeClass": "not_applicable",
+                     *           "sizeClassBefore": "box",
+                     *           "source": null,
                      *           "styleId": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001"
                      *         }
                      *       ],
+                     *       "classified": [],
+                     *       "cleared": [
+                     *         "PK-SP-12"
+                     *       ],
                      *       "considered": 122,
+                     *       "coverage": {
+                     *         "applicable": 82,
+                     *         "withRange": 81
+                     *       },
                      *       "dryRun": true,
                      *       "filled": [
                      *         "PK-SP-01"
                      *       ],
                      *       "incomplete": [
                      *         {
-                     *           "code": "PK-LA-01",
+                     *           "code": "PK-PB-01",
                      *           "conflicting": [],
                      *           "missing": [
                      *             "fitMinLMm",
@@ -208491,10 +208641,14 @@ export interface operations {
                      *       ],
                      *       "keptBusiness": [],
                      *       "noRecipeRange": [
-                     *         "PK-LA-01"
+                     *         "PK-PB-01"
+                     *       ],
+                     *       "notApplicable": [
+                     *         "PK-LA-01",
+                     *         "PK-SP-12"
                      *       ],
                      *       "refreshed": [],
-                     *       "unchanged": 81
+                     *       "unchanged": 80
                      *     }
                      */
                     "application/json": components["schemas"]["FitRangeBackfillResult"];
@@ -330474,6 +330628,7 @@ export interface operations {
                      *           "pricePath": "instant",
                      *           "quoteResponseBusinessDays": null,
                      *           "referenceCode": null,
+                     *           "sizeClass": "box",
                      *           "startingPrice": {
                      *             "catalogProductSlug": "dev-tuck-end-box",
                      *             "computedAt": "2026-10-03T10:00:00+07:00",
@@ -330705,6 +330860,104 @@ export interface operations {
             };
         };
     };
+    "store.styleLibrary.getDocument": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Uploaded document referenced by the trust section in force */
+                fileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The document bytes */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example (binary PDF) */
+                    "application/pdf": string;
+                    /** @example (binary image) */
+                    "image/jpeg": string;
+                    /** @example (binary image) */
+                    "image/png": string;
+                    /** @example (binary image) */
+                    "image/webp": string;
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.styleLibrary.getSettings": {
         parameters: {
             query?: never;
@@ -330862,6 +331115,7 @@ export interface operations {
                      *           "pricePath": "instant",
                      *           "quoteResponseBusinessDays": null,
                      *           "referenceCode": null,
+                     *           "sizeClass": "box",
                      *           "startingPrice": {
                      *             "catalogProductSlug": "dev-tuck-end-box",
                      *             "computedAt": "2026-10-03T10:00:00+07:00",
@@ -331045,6 +331299,7 @@ export interface operations {
                      *       "quoteResponseBusinessDays": null,
                      *       "recyclable": null,
                      *       "referenceCode": null,
+                     *       "sizeClass": "box",
                      *       "sizeRanges": [
                      *         {
                      *           "materialClass": "paperboard",
@@ -331213,6 +331468,7 @@ export interface operations {
                      *         "quoteResponseBusinessDays": null,
                      *         "recyclable": null,
                      *         "referenceCode": null,
+                     *         "sizeClass": "box",
                      *         "sizeRanges": [
                      *           {
                      *             "materialClass": "paperboard",

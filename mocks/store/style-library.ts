@@ -33,4 +33,14 @@ export const styleLibraryHandlers: HttpHandler[] = [
       },
     } satisfies Schemas["StoreStyleLibrarySettingsDto"]);
   }),
+  // C1e (§13.3): a trust-section document is served only while the content shows it; the mock holds no real files,
+  // so a referenced one answers with an empty placeholder PDF and anything else is 404.
+  http.get("*/v1/store/style-library/documents/:fileId", ({ params }) => {
+    const path = `/v1/store/style-library/documents/${String(params.fileId)}`;
+    const { certifications, foodGrade } = styleLibraryContent().trust;
+    const shown = [...certifications, ...foodGrade].some((d) => d.documentUrl === path);
+    return shown
+      ? new HttpResponse("%PDF-1.4\n%%EOF\n", { headers: { "Content-Type": "application/pdf" } })
+      : HttpResponse.json({ code: "http.not_found", status: 404, title: "Not found" }, { status: 404 });
+  }),
 ];

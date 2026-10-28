@@ -17,11 +17,13 @@ import {
   CERTIFICATION_CODE,
   type CommercialForm,
   DIMENSIONS,
+  dimensionLabelKey,
   dimensionSources,
   type FitSource,
   fitChanged,
   formOf,
   type FormError,
+  sizeSearchApplies,
   toCommercial,
   type Tri,
 } from "./commercial-form";
@@ -40,7 +42,9 @@ const SOURCE_TONE: Record<FitSource, "neutral" | "primary" | "info" | "accent" |
  * inside fit range per dimension with where each came from (the recipe, standard sizes, the
  * production envelope, or the business), MOQ, recyclable, plastic-free and certification codes.
  * Saved with the curation PATCH under `If-Match` (`styles.curate`); a changed range becomes business
- * data, which the backfill never overwrites.
+ * data, which the backfill never overwrites. C1e (§13.2): the style's size class (set by the backfill)
+ * names the dimensions — a bag's width × gusset × height, a round style's diameter × height — and a
+ * style whose size search does not apply shows "ไม่ใช้กับการค้นหาด้วยขนาด" instead of a range.
  */
 export function StyleCommercial({
   style,
@@ -112,56 +116,74 @@ export function StyleCommercial({
     >
       {!canCurate ? <Callout tone="info" title={t("readOnly")} /> : null}
       <Section title={t("fitTitle")} description={t("fitIntro")}>
-        <div className="flex flex-col gap-4">
-          {DIMENSIONS.map(({ dim, min, max }) => {
-            const source = sources[dim];
-            return (
-              <fieldset key={dim} className="grid items-end gap-3 md:grid-cols-[10rem_1fr_1fr_minmax(0,1.4fr)]">
-                <legend className="sr-only">{t(`dimensions.${dim}`)}</legend>
-                <p className="text-sm font-medium md:pb-2.5" aria-hidden="true">
-                  {t(`dimensions.${dim}`)}
-                </p>
-                <Field label={t("min")} error={errorOf(min)}>
-                  <NumberInput
-                    unit="mm"
-                    min={1}
-                    max={5000}
-                    step={1}
-                    value={form.fit[min]}
-                    disabled={!canCurate}
-                    onChange={(e) => setFit(min, e.target.value)}
-                  />
-                </Field>
-                <Field label={t("max")} error={errorOf(max) ?? errorOf(dim)}>
-                  <NumberInput
-                    unit="mm"
-                    min={1}
-                    max={5000}
-                    step={1}
-                    value={form.fit[max]}
-                    disabled={!canCurate}
-                    onChange={(e) => setFit(max, e.target.value)}
-                  />
-                </Field>
-                <div className="flex flex-wrap items-center gap-1.5 md:pb-2" data-source={source.source ?? "none"}>
-                  <span className="text-muted text-xs">{t("source")}</span>
-                  {source.source ? (
-                    <Badge tone={SOURCE_TONE[source.source]}>{t(`sources.${source.source}`)}</Badge>
-                  ) : (
-                    <Badge>{t("sources.none")}</Badge>
-                  )}
-                  {source.basis.map((b) => (
-                    <span key={b} className="text-muted text-xs">
-                      {t(`basis.${b}`)}
-                    </span>
-                  ))}
-                </div>
-              </fieldset>
-            );
-          })}
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm" data-size-class={style.sizeClass}>
+          <span className="text-muted text-xs">{t("sizeClassLabel")}</span>
+          <Badge tone={style.sizeClass === "not_applicable" ? "neutral" : "info"}>
+            {t(`sizeClass.${style.sizeClass}`)}
+          </Badge>
+          <span className="text-muted text-xs">{t(`sizeClassRule.${style.sizeClass}`)}</span>
         </div>
-        {willBecomeBusiness ? <Callout tone="warning" className="mt-4" title={t("becomesBusiness")} /> : null}
-        <p className="text-muted mt-3 text-xs">{t("fitRule")}</p>
+        {!sizeSearchApplies(style.sizeClass) ? (
+          <Callout tone="info" title={t("notApplicableTitle")} data-testid="size-search-not-applicable">
+            {t("notApplicable")}
+            {sources.length.source === "business" ? <> {t("notApplicableKept")}</> : null}
+          </Callout>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {DIMENSIONS.map(({ dim, min, max }) => {
+              const source = sources[dim];
+              return (
+                <fieldset key={dim} className="grid items-end gap-3 md:grid-cols-[10rem_1fr_1fr_minmax(0,1.4fr)]">
+                  <legend className="sr-only">{t(`dimensions.${dimensionLabelKey(style.sizeClass, dim)}`)}</legend>
+                  <p className="text-sm font-medium md:pb-2.5" aria-hidden="true">
+                    {t(`dimensions.${dimensionLabelKey(style.sizeClass, dim)}`)}
+                  </p>
+                  <Field label={t("min")} error={errorOf(min)}>
+                    <NumberInput
+                      unit="mm"
+                      min={1}
+                      max={5000}
+                      step={1}
+                      value={form.fit[min]}
+                      disabled={!canCurate}
+                      onChange={(e) => setFit(min, e.target.value)}
+                    />
+                  </Field>
+                  <Field label={t("max")} error={errorOf(max) ?? errorOf(dim)}>
+                    <NumberInput
+                      unit="mm"
+                      min={1}
+                      max={5000}
+                      step={1}
+                      value={form.fit[max]}
+                      disabled={!canCurate}
+                      onChange={(e) => setFit(max, e.target.value)}
+                    />
+                  </Field>
+                  <div className="flex flex-wrap items-center gap-1.5 md:pb-2" data-source={source.source ?? "none"}>
+                    <span className="text-muted text-xs">{t("source")}</span>
+                    {source.source ? (
+                      <Badge tone={SOURCE_TONE[source.source]}>{t(`sources.${source.source}`)}</Badge>
+                    ) : (
+                      <Badge>{t("sources.none")}</Badge>
+                    )}
+                    {source.basis.map((b) => (
+                      <span key={b} className="text-muted text-xs">
+                        {t(`basis.${b}`)}
+                      </span>
+                    ))}
+                  </div>
+                </fieldset>
+              );
+            })}
+          </div>
+        )}
+        {willBecomeBusiness && sizeSearchApplies(style.sizeClass) ? (
+          <Callout tone="warning" className="mt-4" title={t("becomesBusiness")} />
+        ) : null}
+        {sizeSearchApplies(style.sizeClass) ? (
+          <p className="text-muted mt-3 text-xs">{t(style.sizeClass === "cylinder" ? "fitRuleRound" : "fitRule")}</p>
+        ) : null}
       </Section>
 
       <Section title={t("orderTitle")} description={t("orderIntro")}>
@@ -210,7 +232,9 @@ export function StyleCommercial({
                     type="button"
                     className="ms-1.5 underline underline-offset-2"
                     aria-label={t("removeCertification", { code })}
-                    onClick={() => setForm((f) => ({ ...f, certifications: f.certifications.filter((c) => c !== code) }))}
+                    onClick={() =>
+                      setForm((f) => ({ ...f, certifications: f.certifications.filter((c) => c !== code) }))
+                    }
                   >
                     {t("remove")}
                   </button>

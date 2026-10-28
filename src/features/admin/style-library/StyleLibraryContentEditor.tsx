@@ -14,6 +14,7 @@ import { Input, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, problemMessage, QueryError, Section, useCan } from "../console";
+import { ContentDocumentField, ContentImageField } from "./ContentFileField";
 import {
   cleanContent,
   contentErrors,
@@ -41,7 +42,8 @@ async function read() {
  * photos, customer logos with where the customer's permission is recorded, the tax-invoice note.
  * Saved as a new version of `storefront.style_library` with a reason (audited); Admin and Marketing
  * (`styles.curate`) edit, others read. Nothing is pre-filled: the storefront hides a part while it
- * is empty.
+ * is empty. C1e (§13.3): photos and logos are uploaded pictures; documents are uploaded files or,
+ * for documents only, an external https link.
  */
 export function StyleLibraryContentEditor() {
   const query = useQuery({ queryKey: KEY, queryFn: read });
@@ -188,13 +190,13 @@ function Editor({ loaded }: { loaded: Loaded }) {
                   onChange={(e) => update("certifications", i, { expiresOn: e.target.value || null })}
                 />
               </Field>
-              <Field label={t("documentUrl")} hint={t("urlHint")} error={errorAt(`trust.certifications.${i}.documentUrl`)}>
-                <Input
-                  value={c.documentUrl ?? ""}
-                  disabled={disabled}
-                  onChange={(e) => update("certifications", i, { documentUrl: e.target.value })}
-                />
-              </Field>
+              <ContentDocumentField
+                label={t("documentUrl")}
+                value={c.documentUrl}
+                disabled={disabled}
+                error={errorAt(`trust.certifications.${i}.documentUrl`)}
+                onChange={(documentUrl) => update("certifications", i, { documentUrl })}
+              />
             </li>
           ))}
         </ol>
@@ -215,9 +217,13 @@ function Editor({ loaded }: { loaded: Loaded }) {
                 th: t("documentTh"),
                 en: t("documentEn"),
               })}
-              <Field label={t("documentUrl")} hint={t("urlHint")} error={errorAt(`trust.foodGrade.${i}.documentUrl`)}>
-                <Input value={f.documentUrl ?? ""} disabled={disabled} onChange={(e) => update("foodGrade", i, { documentUrl: e.target.value })} />
-              </Field>
+              <ContentDocumentField
+                label={t("documentUrl")}
+                value={f.documentUrl}
+                disabled={disabled}
+                error={errorAt(`trust.foodGrade.${i}.documentUrl`)}
+                onChange={(documentUrl) => update("foodGrade", i, { documentUrl })}
+              />
               <div className="md:col-span-3">{removeButton(() => remove("foodGrade", i))}</div>
             </li>
           ))}
@@ -235,9 +241,14 @@ function Editor({ loaded }: { loaded: Loaded }) {
         <ol className="flex flex-col gap-4">
           {content.trust.productionPhotos.map((p, i) => (
             <li key={i} className="border-border rounded-card grid gap-3 border p-4 md:grid-cols-3" data-row="photo">
-              <Field label={t("photoUrl")} hint={t("urlHint")} required error={errorAt(`trust.productionPhotos.${i}.url`)}>
-                <Input value={p.url} disabled={disabled} onChange={(e) => update("productionPhotos", i, { url: e.target.value })} />
-              </Field>
+              <ContentImageField
+                label={t("photoUrl")}
+                alt={p.alt.th}
+                value={p.url}
+                disabled={disabled}
+                error={errorAt(`trust.productionPhotos.${i}.url`)}
+                onChange={(url) => update("productionPhotos", i, { url })}
+              />
               {localisedFields(`trust.productionPhotos.${i}.alt`, p.alt, (alt) => update("productionPhotos", i, { alt }), {
                 th: t("altTh"),
                 en: t("altEn"),
@@ -262,9 +273,14 @@ function Editor({ loaded }: { loaded: Loaded }) {
               <Field label={t("logoName")} required error={errorAt(`trust.customerLogos.${i}.name`)}>
                 <Input value={l.name} disabled={disabled} onChange={(e) => update("customerLogos", i, { name: e.target.value })} />
               </Field>
-              <Field label={t("logoUrl")} hint={t("urlHint")} required error={errorAt(`trust.customerLogos.${i}.logoUrl`)}>
-                <Input value={l.logoUrl} disabled={disabled} onChange={(e) => update("customerLogos", i, { logoUrl: e.target.value })} />
-              </Field>
+              <ContentImageField
+                label={t("logoUrl")}
+                alt={l.name}
+                value={l.logoUrl}
+                disabled={disabled}
+                error={errorAt(`trust.customerLogos.${i}.logoUrl`)}
+                onChange={(logoUrl) => update("customerLogos", i, { logoUrl })}
+              />
               <Field label={t("permission")} hint={t("permissionHint")} required error={errorAt(`trust.customerLogos.${i}.permission`)}>
                 <Input value={l.permission} disabled={disabled} onChange={(e) => update("customerLogos", i, { permission: e.target.value })} />
               </Field>
