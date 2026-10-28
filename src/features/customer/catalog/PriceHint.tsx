@@ -16,10 +16,15 @@ export async function priceHintText(hint: PriceHint | undefined) {
   if (!hint) return { price: null, vatLabel: null, basis: null, leadTime: null, specs: null };
 
   // The hint's own basis says what the amount is; the shared helper labels it, never converts it.
-  const shown = displayPrice(figuresOf(hint.startingFromPerPiece, hint.basis?.includesVat ?? true), "incl", format.thb, {
-    incl: t("price.vatIncluded"),
-    excl: t("price.vatExcluded"),
-  });
+  const shown = displayPrice(
+    figuresOf(hint.startingFromPerPiece, hint.basis?.includesVat ?? true),
+    "incl",
+    format.thb,
+    {
+      incl: t("price.vatIncluded"),
+      excl: t("price.vatExcluded"),
+    },
+  );
   const price = shown ? t("price.from", { price: shown.amount }) : t("price.onRequest");
   const vatLabel = shown?.vatLabel ?? null;
 

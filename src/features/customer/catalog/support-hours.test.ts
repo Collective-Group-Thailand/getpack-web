@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { formatSupportHours, schemaOpeningHours } from "./support-hours";
 
 const TH = {
-  days: (d: string) => ({ daily: "ทุกวัน", business_days: "วันทำการ", mon_fri: "จันทร์–ศุกร์", mon_sat: "จันทร์–เสาร์" })[d]!,
+  days: (d: string) =>
+    ({ daily: "ทุกวัน", business_days: "วันทำการ", mon_fri: "จันทร์–ศุกร์", mon_sat: "จันทร์–เสาร์" })[d]!,
   text: (p: { days: string; open: string; close: string }) => `${p.days} ${p.open}–${p.close}`,
 };
 const EN = {

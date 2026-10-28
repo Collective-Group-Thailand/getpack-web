@@ -105,7 +105,10 @@ describe("the configurator's address", () => {
     const start = initialState(configurator);
     const front = groupsOf(configurator).find((group) => group.kind === "print_front")!;
     const other = front.options.find((option) => !start.choices.print_front?.includes(option.id))!;
-    const state: ConfiguratorState = { ...start, choices: { ...start.choices, print_front: [other.id], print_back: [] } };
+    const state: ConfiguratorState = {
+      ...start,
+      choices: { ...start.choices, print_front: [other.id], print_back: [] },
+    };
     const query = queryOf(configurator, state);
     expect(query[PARAMS.printFront]).toBe(other.id);
     expect(roundTrip(configurator, state).choices.print_front).toEqual([other.id]);
@@ -114,7 +117,12 @@ describe("the configurator's address", () => {
 
   it("never carries the postcode, the target price or the promotion code", async () => {
     const configurator = await configuratorOf("shipping-box");
-    const state: ConfiguratorState = { ...initialState(configurator), postcode: "10110", target: "12.5", promoCode: "SAVE" };
+    const state: ConfiguratorState = {
+      ...initialState(configurator),
+      postcode: "10110",
+      target: "12.5",
+      promoCode: "SAVE",
+    };
     expect(JSON.stringify(queryOf(configurator, state))).not.toMatch(/10110|12\.5|SAVE/);
   });
 });
@@ -142,12 +150,16 @@ describe("reading an address", () => {
       expect(seedFromDesign(configurator, query)?.choices).toBeUndefined();
     }
     expect(seedFromDesign(configurator, { qty: "abc" })).toBeUndefined();
-    expect(seedFromDesign(configurator, { size: "x", material: "not-a-board", pf: "nope", design: "nonsense" })).toBeUndefined();
+    expect(
+      seedFromDesign(configurator, { size: "x", material: "not-a-board", pf: "nope", design: "nonsense" }),
+    ).toBeUndefined();
   });
 
   it("does not throw on a repeated parameter (an array) or an empty one", async () => {
     const configurator = await configuratorOf("shipping-box");
-    expect(seedFromDesign(configurator, { qty: ["1000", "2000"], size: ["00"], design: ["own_file"], pf: "" })).toBeUndefined();
+    expect(
+      seedFromDesign(configurator, { qty: ["1000", "2000"], size: ["00"], design: ["own_file"], pf: "" }),
+    ).toBeUndefined();
   });
 
   it("ignores what this product does not offer: a size code, a board, an ink, a quantity beyond its bounds", async () => {

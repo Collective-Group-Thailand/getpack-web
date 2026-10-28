@@ -80,7 +80,7 @@ export function CategoryRail({ items, label }: { items: RailItem[]; label: strin
         ref={scroller}
         aria-label={label}
         onScroll={measure}
-        className="overflow-x-auto overscroll-x-contain px-5 pb-1 [scrollbar-width:none] md:px-8 xl:px-12 [&::-webkit-scrollbar]:hidden"
+        className="[scrollbar-width:none] overflow-x-auto overscroll-x-contain px-5 pb-1 md:px-8 xl:px-12 [&::-webkit-scrollbar]:hidden"
       >
         <ul className="flex gap-2.5">
           {items.map((item) => (
@@ -91,7 +91,7 @@ export function CategoryRail({ items, label }: { items: RailItem[]; label: strin
                 className={cn(
                   "rounded-card focus-visible:ring-focus-ring flex h-full min-w-36 items-center gap-3 border p-3 outline-none focus-visible:ring-2",
                   "md:min-w-0 md:flex-col md:items-start md:gap-3.5 md:px-3.5 md:pt-3.5 md:pb-3",
-                  "transition-colors duration-fast motion-reduce:transition-none",
+                  "duration-fast transition-colors motion-reduce:transition-none",
                   item.current
                     ? "border-primary bg-primary-subtle text-primary-subtle-fg ring-primary ring-1"
                     : "border-border bg-surface hover:border-border-strong",
@@ -117,22 +117,8 @@ export function CategoryRail({ items, label }: { items: RailItem[]; label: strin
           ))}
         </ul>
       </nav>
-      <span
-        aria-hidden="true"
-        className={cn(
-          fade,
-          "start-0",
-          more.before ? "opacity-100" : "opacity-0",
-        )}
-      />
-      <span
-        aria-hidden="true"
-        className={cn(
-          fade,
-          "end-0",
-          more.after ? "opacity-100" : "opacity-0",
-        )}
-      />
+      <span aria-hidden="true" className={cn(fade, "start-0", more.before ? "opacity-100" : "opacity-0")} />
+      <span aria-hidden="true" className={cn(fade, "end-0", more.after ? "opacity-100" : "opacity-0")} />
       {more.before ? (
         <button type="button" aria-label={t("railPrevious")} onClick={() => step(-1)} className={cn(arrow, "start-3")}>
           <Icon name="chevron-left" size={18} className="rtl:rotate-180" />
