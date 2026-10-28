@@ -51,7 +51,8 @@
     "branchCode": "Branch number",
     "postcodeInvalid": "A five-digit postcode",
     "editTitle": "Edit tax profile: {name}",
-    "fixedHint": "The type, tax ID and branch cannot change — for a new tax ID, add a new profile"
+    "fixedHint": "The type, tax ID and branch cannot change — for a new tax ID, add a new profile",
+    "sameAsShipping": "Same as the delivery address"
   },
   "nav": {
     "label": "My account",
