@@ -72,6 +72,8 @@ function LineChat({ lineOaId }: { lineOaId: string }) {
         "[body:has([data-rfq-tray])_&]:bottom-40 md:[body:has([data-rfq-tray])_&]:bottom-24",
         // Above the configurator's price bar (phones and tablets; it is not drawn from 1100 px).
         "max-[1099px]:[body:has([data-quote-bar])_&]:bottom-[calc(var(--mobile-tab-h)+5.5rem)] md:max-[1099px]:[body:has([data-quote-bar])_&]:bottom-24",
+        // Above the product page's buy bar (phones only; pdp redesign item 1).
+        "max-md:[body:has([data-pdp-bar])_&]:bottom-[calc(var(--mobile-tab-h)+5rem)]",
       )}
     >
       {open ? (

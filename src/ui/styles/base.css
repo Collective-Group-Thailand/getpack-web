@@ -364,6 +364,13 @@
   }
 }
 
+/* The product page's phone buy bar (pdp redesign, `PdpMobileBar`): the page ends above it, so it covers nothing. */
+@media (max-width: 47.999rem) {
+  body:has([data-pdp-bar]) {
+    padding-bottom: 4.5rem;
+  }
+}
+
 @media (min-width: 65rem) {
   :root {
     --site-header-h: 4.75rem;

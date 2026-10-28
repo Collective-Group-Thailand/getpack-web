@@ -2,6 +2,7 @@ import { getStyle, REFERENCE_MATERIALS, resolveStyleId } from "@getpack/dieline"
 
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { ProductPlate, type ProductFamily } from "@/ui/components/ProductIllustration";
+import { cn } from "@/ui/lib/cn";
 
 /**
  * A product's picture before it has a photo: its own flat dieline on the designer's dotted canvas,
@@ -15,6 +16,7 @@ export function ProductPicture({
   badge,
   label,
   caption,
+  className,
 }: {
   dielineKey: string | null;
   size: { lengthMm: number; widthMm: number; heightMm: number } | null;
@@ -22,6 +24,8 @@ export function ProductPicture({
   badge?: React.ReactNode;
   label: string;
   caption: string;
+  /** The frame's shape where the page wants another (the product page's square gallery). */
+  className?: string;
 }) {
   const id = resolveStyleId(dielineKey);
   const values = id
@@ -40,7 +44,12 @@ export function ProductPicture({
     }
   }
   return (
-    <figure className="border-border bg-surface pk-dot-grid rounded-card relative aspect-[4/3] overflow-hidden border">
+    <figure
+      className={cn(
+        "border-border bg-surface pk-dot-grid rounded-card relative aspect-[4/3] overflow-hidden border",
+        className,
+      )}
+    >
       {style ? (
         <div className="absolute inset-[12%]">
           <BoxPreview styleId={style} values={values!} label={label} />
