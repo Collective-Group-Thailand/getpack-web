@@ -237,7 +237,10 @@ export function cardWords(
       : undefined,
     priceLabel: t("library.cardFrom"),
     quote: t("library.cardQuote"),
-    quoteHint: t("library.cardQuoteHint"),
+    // C0b (DECISIONS-STAGE-A §9.3): never an estimate — the team's response time when the API gives one.
+    quoteHint: style.quoteResponseBusinessDays
+      ? t("library.cardQuoteResponse", { days: style.quoteResponseBusinessDays })
+      : t("library.cardQuoteHint"),
     meta: style.referenceCode ? t("card.reference", { code: style.referenceCode }) : "",
     instant: t("library.cardInstant"),
     featured: t("card.featured"),

@@ -5,7 +5,7 @@ import { getCatalogueTree, listFaqs } from "@/features/customer/catalog/api.serv
 import { categoryHref } from "@/features/customer/catalog/paths";
 import { pick } from "@/features/customer/catalog/localize";
 import { FAQ_KEYS as PRODUCTS_FAQ_KEYS } from "@/features/customer/products/content";
-import { PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
+import { isLandingPublished, PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
 import { routing } from "@/i18n/routing";
 import { featureFlags } from "@/lib/env/server";
 import { localePath, publicOrigin } from "@/lib/seo";
@@ -75,14 +75,15 @@ export async function GET(): Promise<Response> {
     ),
   ];
 
-  // C0: the packaging landing pages, only while their flag is on.
-  if (featureFlags.packagingLandings) {
+  // C0: the packaging landing pages, only while their flag is on — and (C0b) once their copy is approved.
+  const published = PACKAGING_LANDINGS.filter((landing) => isLandingPublished(landing.slug));
+  if (featureFlags.packagingLandings && published.length > 0) {
     const tStyles = await getTranslations({ locale, namespace: "styles" });
     lines.push(
       "",
       `## ${tStyles("library.landingTitle")}`,
       "",
-      ...PACKAGING_LANDINGS.map(
+      ...published.map(
         (landing) =>
           `- [${tStyles(`useCasePages.${landing.useCase}.title` as never)}](${url(packagingHref(landing.slug))}): ${tStyles(
             `useCasePages.${landing.useCase}.intro` as never,

@@ -74,3 +74,28 @@ approved 300–600-word intros + FAQs (`packagingPages.<slug>.intro/faq` in `sty
 **Local checks for the owner:** `pnpm db:migrate` (migration `20261221000001_style_commercial_fields`, hand-written) + `pnpm test:int` + `pnpm test:e2e` in getpack-api ·
 `pnpm build` in web · e2e against the real API (`storefront-styles`, studio specs) · enter fit ranges for a few styles and check the size tab appears ·
 turn both flags on in UAT to review wizard and landings · Lighthouse mobile on /styles and /packaging/* (flag on).
+
+## C0b — owner decisions after C0 (web + API `design/styles-catalog-redesign`, 2026-10-28)
+
+Run unattended in the cloud (mock backend, no UAT/DB/Docker). Decisions recorded as DECISIONS-STAGE-A §9 (both repos).
+| Item | Status | Commits (api / web) |
+|---|---|---|
+| 1 Fit ranges from approved recipes: audited idempotent backfill via the curation path, source `recipe`/`business`, admin action + `pnpm styles:fit-ranges` + UAT seed step 4b; migration `20261223000001_style_fit_range_source` (hand-written) | PASS (no DB run) — seed data: **81 of 122 filled**, 41 without a complete recipe range | api `d03c9023` |
+| 2 CSV size columns = inside mm: recorded (§9.2, API-CHANGES) | PASS (docs; importer not built) | — |
+| 3 No estimates: "ขอราคาได้ ทีมงานตอบภายใน {n} วันทำการ" from `quoteResponseBusinessDays` (`rfq.sla_business_hours`, none → no time) on card, quick view, style page; RFQ path unchanged; no budget step | PASS | api `d03c9023` · web `2d1b6ea6` |
+| 4a Dielines from the vendored engine at default size (base `dieline_svg` in `styles.render_assets` → card hover + "แบบคลี่") | PASS — 113 of 122 drawable; none for PK-LA-07, PK-PB-01…08 | api `d03c9023` · web `2d1b6ea6` (mock) |
+| 4b Draft landing copy ×8 (TH+EN, 4–6 FAQs, `status: draft`, noindex, no FAQ JSON-LD/sitemap/llms until `approved`) | PASS — for owner review | web `8932de06` |
+| 4c Trust: tax-invoice note only (D-010, D-125); `TRUST-CONTENT-CHECKLIST.md` | PASS | web `8932de06` |
+| 5 Corrugate colours beyond the instant price → quote path (configurator keeps them, dock "ขอใบเสนอราคา"; Studio "เพิ่มจำนวนสี" → quote link); `catalog.print_limits` untouched | PASS | api `d03c9023` · web `8ac447f0` |
+Gates: API typecheck ✓, eslint changed ✓, unit (styles, print-model, pricing) 265 ✓, contract:build + lint ✓. Web typecheck ✓, eslint changed ✓, `gen:api --check` ✓,
+`test:app` 1537/1537 ✓, e2e (mock) `storefront-styles` 8/8, `storefront-studio` + `-design` 6/6, `storefront-configurator-v2` 7/7 ✓. `pnpm build` not run (OOM).
+Copy to review: `src/i18n/messages/{th,en}/customer/styles.json` → `packagingPages.<slug>` (cake-boxes, mailer-boxes, gift-boxes, cosmetic-boxes, food-boxes, fruit-boxes,
+apparel-boxes, tea-coffee-boxes); generator facts only (approved material texts §8, fit rule §4, D-072/D-153/D-186/D-010). Approve = set `status` to `approved` in both locales.
+Thai intros ≈1,850–2,200 characters (≈350–450 Thai words); English 390–470 words.
+**Open questions:** (1) `rfq.sla_business_hours` has no value on UAT/seed → no timing shown until Admin sets it; the API converts hours ÷ 24 rounded up (RFQ due time counts
+every hour of a working day) — use `calendar.business_hours` (9 h/day) instead? (2) the CSV template's size headers say `*_cm` but the decision says mm — rename to `*_mm`?
+(3) CMYK + extra spot colours on corrugate is also offered as a quote (up to the offered spot inks) — confirm, or spot-only? (4) Trust tile wording (default, D-010/D-125)
+— approve or replace via settings (`store.style-library.settings` is still a contract request; no back-office editor yet). (5) Admin style workspace has no commercial-field editor.
+**Local checks for the owner:** getpack-api `pnpm db:migrate` + `pnpm test:int` + `pnpm test:e2e` (`dieline-downloads` adds a style-dieline case) · `pnpm styles:fit-ranges` (dry run, then
+`--confirm`) on UAT, or `pnpm uat:styles --confirm` · let `styles.render_assets` run, check card hover / "แบบคลี่" · set `rfq.sla_business_hours` and check the quote message ·
+web `pnpm build` · e2e against the real API (styles, studio, configurator) · configurator corrugate: pick 2 spot colours → "ขอใบเสนอราคา" with `calc`.
