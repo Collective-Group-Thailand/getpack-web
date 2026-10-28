@@ -44,7 +44,8 @@ test.describe("the product page", () => {
     await expect(configure).toHaveAttribute("href", /size=B/);
     await expect(configure).toHaveAttribute("href", /qty=2000/);
 
-    // The configurator reads the link: size B, board E, black outside, 2,000 pieces.
+    // The configurator reads the link: size B, board E, black outside, 2,000 pieces — the price once it has settled.
+    await expect(buy.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
     const pagePrice = await buy.getByText(price).first().textContent();
     await configure.click();
     await expect(page).toHaveURL(/\/configure\/mailer-box\?/);

@@ -39,10 +39,16 @@ test.describe("solo-owner mode (D-449 A)", () => {
 
 test.describe("approval threshold (D-449 B)", () => {
   test("the Superadmin's proposal dialog has the auto-approve amount field", async ({ page }) => {
+    // The mock's only policy has a proposal pending, which disables "เสนอฉบับใหม่" ("มีข้อเสนอรออนุมัติอยู่แล้ว");
+    // the dialog is reached from a policy with nothing pending.
+    await page.route("**/bff/v1/admin/approval-policies", async (route) => {
+      const response = await route.fetch();
+      const policies = (await response.json()) as { pending: unknown }[];
+      await route.fulfill({ response, json: policies.map((policy) => ({ ...policy, pending: null })) });
+    });
     await signInAsStaff(page, "superadmin");
     await gotoHydrated(page, `${HOSTS.admin}/approvals?tab=matrix`);
-    // A row with a proposal already pending offers the button disabled ("มีข้อเสนอรออนุมัติอยู่แล้ว").
-    await page.getByRole("button", { name: "เสนอฉบับใหม่", disabled: false }).first().click();
+    await page.getByRole("button", { name: "เสนอฉบับใหม่" }).first().click();
     await expect(page.getByLabel(/อนุมัติอัตโนมัติเมื่อยอดไม่เกิน/)).toBeVisible();
   });
 });

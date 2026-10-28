@@ -32,7 +32,7 @@ test.describe("customer file access log", () => {
     await expect(sheet).toContainText("เหตุผลที่ระบุ");
 
     await page.keyboard.press("Escape");
-    await page.getByLabel("คำสั่งซื้อ").fill("DEVOR-2610-00003");
+    await page.getByRole("textbox", { name: "คำสั่งซื้อ", exact: true }).fill("DEVOR-2610-00003");
     await expect(page).toHaveURL(/orderCode=DEVOR-2610-00003/);
     await expect(page.getByRole("button", { name: "ส่งออก" })).toBeVisible();
   });
@@ -46,6 +46,8 @@ test.describe("customer file access log", () => {
     await nav.getByRole("link", { name: "บันทึกการเปิดไฟล์ลูกค้า" }).click();
     await expect(page).toHaveURL(/\/customer-file-access-logs$/);
 
+    // A signed-in browser is sent past /login; sign the Auditor out first.
+    await page.context().clearCookies();
     await signInAsStaff(page, "prepress");
     await gotoHydrated(page, `${HOSTS.admin}/`);
     await expect(
