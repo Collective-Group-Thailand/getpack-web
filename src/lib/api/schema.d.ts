@@ -15044,9 +15044,9 @@ export interface paths {
         put?: never;
         /**
          * Change a setting from a date (new version)
-         * @description Adds a version effective from `effectiveFrom` (now or later). Only the setting's owner role may change it (Superadmin for platform thresholds, D-063). When the setting names an approval policy the version waits for approval (ADR-0006); otherwise it is approved at once. Audited; emits `setting.changed`.
+         * @description Adds a version effective from `effectiveFrom` (now or later). Only the setting's owner role may change it (Superadmin for platform thresholds, D-063) — or Superadmin for any setting, acting on the owner's behalf (DECISIONS-STAGE-A §11.6, audited as the Superadmin). When the setting names an approval policy the version waits for approval (ADR-0006); otherwise it is approved at once. Audited; emits `setting.changed`.
          *
-         *     Implements: ADR-0005, D-063.
+         *     Implements: ADR-0005, D-063, D-448.
          */
         post: operations["admin.settings.changeValue"];
         delete?: never;
@@ -16501,6 +16501,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/style-library/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read the style library page content
+         * @description C1c (DECISIONS-STAGE-A §11.5, D-448): the content in force of `storefront.style_library` with its version (staff fields included: certificate expiry, logo permission references). Empty while unset.
+         *
+         *     Implements: D-448, D-246, D-010, D-125.
+         */
+        get: operations["admin.styleLibrary.getSettings"];
+        /**
+         * Change the style library page content
+         * @description C1c (DECISIONS-STAGE-A §11.5, D-448; D-246: curation by Admin or Marketing with `styles.curate`): adds a version of `storefront.style_library` from `effectiveFrom` (now by default, never in the past) through the settings platform — validated against the setting’s schema, audited (`setting.changed` with before / after and the reason), evented, caches invalidated. Only real content: certificates, documents, photos and logos the business holds (logos need the customer’s permission, recorded in `permission`).
+         *
+         *     Implements: D-448, D-246, D-010, D-125.
+         */
+        put: operations["admin.styleLibrary.updateSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/style-price-rules": {
         parameters: {
             query?: never;
@@ -16779,10 +16807,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Fill empty fit ranges from approved recipes
-         * @description C0b (owner decision 2026-10-28, DECISIONS-STAGE-A §9.1; curation D-246): each style whose inside fit range is empty gets the approved recipe’s size range (D-241, mm, inside basis; the style’s own material class, else what every complete class allows), through the same path as `admin.styles.update` — audited per style as `style_base.curated` with source `recipe`. A range the business entered is never overwritten; a range filled here earlier follows a newer approved recipe. Idempotent (a second run changes nothing); `dryRun` reports without writing.
+         * Fill empty fit ranges from the system's own size data
+         * @description C0b / C1c (owner decisions 2026-10-28, DECISIONS-STAGE-A §9.1, §11.1; curation D-246): each style whose inside fit range is empty gets one through the same path as `admin.styles.update` — audited per style as `style_base.curated` — each bound taken from the first source that gives it: (a) the approved recipe’s size range (D-241), (b) the style’s own standard sizes (its catalogue products’ standard sizes, the recipe’s presets), (c) the production envelope (its pattern’s calculator size rules ∩ the dieline engine’s limits). Each bound’s source is stored; nothing is mapped by hand. A range the business entered is never overwritten; a backfilled range follows newer data. A style without all six bounds stays empty and is listed in `incomplete`. Idempotent (a second run changes nothing); `dryRun` reports without writing (`changes` = preview).
          *
-         *     Implements: D-241, D-242, D-243, D-246.
+         *     Implements: D-241, D-242, D-243, D-246, D-448.
          */
         post: operations["admin.styles.backfillFitRanges"];
         delete?: never;
@@ -33511,6 +33539,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/style-library/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the style library page content staff keep
+         * @description C1c (owner decision 2026-10-28, DECISIONS-STAGE-A §11.5, D-448): the "ค้นหาบ่อย" terms, material swatches and the trust section (certificates with number, issuer and expiry, food-grade documents, production-process photos, customer logos the customer permitted, the tax-invoice note) from the effective-dated setting `storefront.style_library`; `compareLimit` is D-246’s 3. Empty while unset — every part is hidden; expired certificates are left out. Nothing here is generated; no factory names (D-050).
+         *
+         *     Implements: D-448, D-246, D-010, D-125, D-050.
+         */
+        get: operations["store.styleLibrary.getSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/styles": {
         parameters: {
             query?: never;
@@ -37607,8 +37657,10 @@ export interface components {
             family: string;
             /** @example false */
             featured: boolean;
+            /** @description C1c: for a backfilled range, the source and basis of each of the six bounds; null for a business range or none. Read-only. */
+            fitRangeBounds: components["schemas"]["FitRangeBoundSourcesDto"] | null;
             /**
-             * @description Where the fit range in `commercial` came from (C0b, DECISIONS-STAGE-A §9.1): `recipe` = filled from the approved recipe by the backfill (replaced by any value curation saves), `business` = entered by curation / the CSV (never overwritten by the backfill); null = no range. Read-only.
+             * @description Where the fit range in `commercial` came from (C0b/C1c, DECISIONS-STAGE-A §9.1, §11.1): a backfill source — `recipe` (approved recipe range), `standard_sizes` (the style's standard sizes), `production_envelope` (calculator size rules ∩ dieline engine limits) or `combined` (bounds from several; see `fitRangeBounds`) — replaced by any value curation saves; `business` = entered by curation / the CSV, never overwritten by the backfill; null = no range. Read-only.
              * @example null
              */
             fitRangeSource: components["schemas"]["StyleFitRangeSource"] | null;
@@ -37776,6 +37828,26 @@ export interface components {
             version: number;
             /** @example 1 */
             wave: number;
+        };
+        AdminStyleLibrarySettingsDto: {
+            /** @description The content in force (empty while unset) */
+            content: components["schemas"]["StyleLibraryContentDto"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            effectiveFrom: string | null;
+            /**
+             * Format: uuid
+             * @description The setting (`admin.settings.get`, version history); null before the reference seed ran
+             * @example null
+             */
+            settingId: string | null;
+            /**
+             * @description Version in force; null = unset
+             * @example null
+             */
+            versionNo: number | null;
         };
         AdminStylePhotoDto: {
             alt: components["schemas"]["LocalisedLabelDto"];
@@ -47944,6 +48016,20 @@ export interface components {
         CustomerDocumentType: "iv" | "tr" | "rc" | "cn" | "dn";
         /** @enum {string} */
         CustomerFileKind: "customer_original" | "production_copy" | "approved_proof_copy";
+        CustomerLogoDto: {
+            /**
+             * @description An https link or a path on getpack’s own site
+             * @example https://example.invalid/logo.svg
+             */
+            logoUrl: string;
+            /** @example ร้านตัวอย่าง */
+            name: string;
+            /**
+             * @description Where the customer's permission to show the logo is recorded — staff only, never published
+             * @example อีเมลอนุญาตจากลูกค้า 2026-10-01 (CS ticket …)
+             */
+            permission: string;
+        };
         /**
          * @description THE status to show a customer (D-437), derived by the API from payment, artwork, production, shipment, receipt, claims and cancellation; every customer surface (overview, list, detail, e-mail, LINE) uses it. `status` is the stored fact status (staff)
          * @enum {string}
@@ -60182,42 +60268,136 @@ export interface components {
             dryRun: boolean;
         };
         FitRangeBackfillResult: {
+            /** @description C1c: backfilled bounds per source */
+            boundsBySource: components["schemas"]["FitRangeSourceCountsDto"];
+            /** @description C1c: backfilled styles (filled, refreshed or unchanged) per summary source */
+            bySource: components["schemas"]["FitRangeSummaryCountsDto"];
+            /** @description C1c: what the run writes (or, with `dryRun`, would write) */
+            changes: components["schemas"]["FitRangeChangeDto"][];
             /**
-             * @description Styles with an approved recipe
+             * @description Active styles
              * @example 122
              */
             considered: number;
             /** @example false */
             dryRun: boolean;
             /**
-             * @description Codes whose empty range was filled from the recipe (source `recipe`)
+             * @description Codes whose empty range was filled
              * @example [
              *       "PK-CB-01"
              *     ]
              */
             filled: string[];
+            /** @description C1c: styles left empty, with what is missing */
+            incomplete: components["schemas"]["FitRangeIncompleteDto"][];
             /**
              * @description Codes left alone because the business entered their range
              * @example []
              */
             keptBusiness: string[];
             /**
-             * @description Codes whose recipe states no complete size range (stay out of the size search)
+             * @deprecated
+             * @description Codes no source gives a complete range (stay out of the size search) — same as `incomplete[].code`
              * @example [
-             *       "PK-CB-02"
+             *       "PK-LA-01"
              *     ]
              */
             noRecipeRange: string[];
             /**
-             * @description Codes whose earlier recipe range followed a newer approved recipe
+             * @description Codes whose backfilled range followed newer data (or gained its per-bound sources)
              * @example []
              */
             refreshed: string[];
             /**
-             * @description Recipe ranges already in place
+             * @description Backfilled ranges already in place
              * @example 0
              */
             unchanged: number;
+        };
+        FitRangeBoundSourceDto: {
+            /**
+             * @description The data read: `recipe_size_range` (approved recipe solver range), `catalogue_standard_sizes` (standard sizes of the catalogue products of its pattern), `recipe_presets` (the approved recipe's preset sizes), `calculator_size_rules` (its pattern's size rules), `engine_limits` (the dieline engine's limits)
+             * @example [
+             *       "recipe_size_range"
+             *     ]
+             */
+            basis: components["schemas"]["StyleFitBasis"][];
+            /** @example recipe */
+            source: components["schemas"]["StyleFitBackfillSource"];
+        };
+        FitRangeBoundSourcesDto: {
+            fitMaxHMm: components["schemas"]["FitRangeBoundSourceDto"];
+            fitMaxLMm: components["schemas"]["FitRangeBoundSourceDto"];
+            fitMaxWMm: components["schemas"]["FitRangeBoundSourceDto"];
+            fitMinHMm: components["schemas"]["FitRangeBoundSourceDto"];
+            fitMinLMm: components["schemas"]["FitRangeBoundSourceDto"];
+            fitMinWMm: components["schemas"]["FitRangeBoundSourceDto"];
+        };
+        FitRangeChangeDto: {
+            /** @example filled */
+            action: components["schemas"]["StyleFitRangeChangeAction"];
+            after: components["schemas"]["FitRangeValuesDto"];
+            /** @description The range before (null = empty) */
+            before: components["schemas"]["FitRangeValuesDto"] | null;
+            bounds: components["schemas"]["FitRangeBoundSourcesDto"];
+            /** @example PK-SP-01 */
+            code: string;
+            /** @example combined */
+            source: components["schemas"]["StyleFitRangeSource"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ae001
+             */
+            styleId: string;
+        };
+        FitRangeIncompleteDto: {
+            /** @example PK-LA-01 */
+            code: string;
+            /**
+             * @description Dimensions (`length`, `width`, `height`) whose bounds, as the sources give them, leave no size
+             * @example []
+             */
+            conflicting: string[];
+            /**
+             * @description Bounds no source gives (`fitMinLMm` … `fitMaxHMm`)
+             * @example [
+             *       "fitMinHMm",
+             *       "fitMaxHMm"
+             *     ]
+             */
+            missing: string[];
+        };
+        FitRangeSourceCountsDto: {
+            /** @example 0 */
+            production_envelope: number;
+            /** @example 81 */
+            recipe: number;
+            /** @example 0 */
+            standard_sizes: number;
+        };
+        FitRangeSummaryCountsDto: {
+            /** @example 9 */
+            combined: number;
+            /** @example 0 */
+            production_envelope: number;
+            /** @example 81 */
+            recipe: number;
+            /** @example 0 */
+            standard_sizes: number;
+        };
+        FitRangeValuesDto: {
+            /** @example 35 */
+            fitMaxHMm: number;
+            /** @example 400 */
+            fitMaxLMm: number;
+            /** @example 300 */
+            fitMaxWMm: number;
+            /** @example 25 */
+            fitMinHMm: number;
+            /** @example 60 */
+            fitMinLMm: number;
+            /** @example 50 */
+            fitMinWMm: number;
         };
         FixedAssetDto: {
             /** @example 1000.00 */
@@ -63147,6 +63327,12 @@ export interface components {
             /** @example ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่แบบตัวอย่างสำหรับอนุมัติพิมพ์ */
             th: string;
         };
+        LocalisedTextDto: {
+            /** @example A full tax invoice with every order */
+            en: string | null;
+            /** @example ใบกำกับภาษีเต็มรูปแบบทุกคำสั่งซื้อ */
+            th: string;
+        };
         LoyaltySummaryDto: {
             /**
              * @description Points that can be redeemed now
@@ -63392,6 +63578,20 @@ export interface components {
         };
         /** @enum {string} */
         MaterialKind: "paper" | "board" | "corrugated_board" | "film" | "foil" | "label_stock" | "other";
+        MaterialSwatchDto: {
+            /**
+             * @description Board colour (#RRGGBB)
+             * @example #C8A27A
+             */
+            colour: string | null;
+            /**
+             * @description An https link or a path on getpack’s own site
+             * @example null
+             */
+            imageUrl: string | null;
+            /** @example corrugated */
+            materialClass: string;
+        };
         /**
          * @description Basis of w / l / d: internal, external or over_crease; another basis than internal is converted with the material caliper (D-182). Absent: internal (assumed, deprecated)
          * @enum {string}
@@ -69384,6 +69584,11 @@ export interface components {
         QcResult: "pass" | "fail" | "conditional";
         /** @enum {string} */
         QrErrorCorrection: "L" | "M" | "Q" | "H";
+        QuickSearchTermDto: {
+            label: components["schemas"]["LocalisedTextDto"];
+            /** @example เมลเลอร์ */
+            query: string;
+        };
         QuoteAdvisoryDto: {
             /**
              * Format: uuid
@@ -77581,6 +77786,15 @@ export interface components {
         };
         /** @enum {string} */
         StoreCreditSource: "shortage_credit" | "cancellation" | "claim" | "refund_alternative" | "applied_to_order" | "manual" | "refunded";
+        StoreCustomerLogoDto: {
+            /**
+             * @description An https link or a path on getpack’s own site
+             * @example https://example.invalid/logo.svg
+             */
+            logoUrl: string;
+            /** @example ร้านตัวอย่าง */
+            name: string;
+        };
         StoredPartDto: {
             /**
              * @description Send it back with `complete`
@@ -78699,6 +78913,18 @@ export interface components {
              */
             usable: boolean;
         };
+        StoreStyleLibrarySettingsDto: {
+            /**
+             * @description Styles compared side by side (D-246)
+             * @example 3
+             */
+            compareLimit: number;
+            materialSwatches: components["schemas"]["MaterialSwatchDto"][];
+            /** @description "ค้นหาบ่อย" in this order; empty hides the row */
+            quickSearch: components["schemas"]["QuickSearchTermDto"][];
+            /** @description Each part is hidden on the storefront while empty */
+            trust: components["schemas"]["StoreTrustContentDto"];
+        };
         StoreSupportChannelsDto: {
             /** @example support@example.com */
             email: string | null;
@@ -78752,6 +78978,41 @@ export interface components {
              * @example 1
              */
             unread: number;
+        };
+        StoreTrustCertificationDto: {
+            /**
+             * @description An https link or a path on getpack’s own site
+             * @example null
+             */
+            documentUrl: string | null;
+            /**
+             * Format: date
+             * @description Last valid day (Asia/Bangkok); an expired certificate is not shown to customers
+             * @example null
+             */
+            expiresOn: string | null;
+            /**
+             * @description Who issued it
+             * @example null
+             */
+            issuer: string | null;
+            /**
+             * @description The certificate's own number
+             * @example null
+             */
+            number: string | null;
+            title: components["schemas"]["LocalisedTextDto"];
+        };
+        StoreTrustContentDto: {
+            /** @description Not expired only */
+            certifications: components["schemas"]["StoreTrustCertificationDto"][];
+            /** @description Logos the customer permitted */
+            customerLogos: components["schemas"]["StoreCustomerLogoDto"][];
+            foodGrade: components["schemas"]["TrustDocumentDto"][];
+            /** @description Production-process photos ("รูปงานจริงระหว่างผลิต") */
+            productionPhotos: components["schemas"]["TrustPhotoDto"][];
+            /** @description null = the storefront’s default note (D-010) */
+            taxInvoiceNote: components["schemas"]["LocalisedTextDto"] | null;
         };
         StoreVideoDto: {
             /** @example youtube */
@@ -79378,7 +79639,7 @@ export interface components {
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
             /**
-             * @description C0b (D-100, D-220, DECISIONS-STAGE-A §9.3): the first-response time of a quotation request for this style, in working days — `rfq.sla_business_hours` of its product type (platform fallback) in whole working days, the way the RFQ due time is counted (every hour of a working day). Null when the setting is not set or the style has no product type: then no timing is shown. Never a price or an estimate.
+             * @description C0b / C1c (D-100, D-175, D-220, DECISIONS-STAGE-A §9.3, §11.2): the first-response time of a quotation request for this style, in working days — `ceil(rfq.sla_business_hours ÷ hours of one business day)`, the SLA taken at its product type (platform fallback) and the day length from `calendar.business_hours` (09:00–18:00 = 9 h). Null when either setting is missing or unusable or the style has no product type: then no timing is shown. Never a price or an estimate.
              * @example 2
              */
             quoteResponseBusinessDays: number | null;
@@ -79536,7 +79797,7 @@ export interface components {
              */
             productTypeCode: string | null;
             /**
-             * @description C0b (D-100, D-220, DECISIONS-STAGE-A §9.3): the first-response time of a quotation request for this style, in working days — `rfq.sla_business_hours` of its product type (platform fallback) in whole working days, the way the RFQ due time is counted (every hour of a working day). Null when the setting is not set or the style has no product type: then no timing is shown. Never a price or an estimate.
+             * @description C0b / C1c (D-100, D-175, D-220, DECISIONS-STAGE-A §9.3, §11.2): the first-response time of a quotation request for this style, in working days — `ceil(rfq.sla_business_hours ÷ hours of one business day)`, the SLA taken at its product type (platform fallback) and the day length from `calendar.business_hours` (09:00–18:00 = 9 h). Null when either setting is missing or unusable or the style has no product type: then no timing is shown. Never a price or an estimate.
              * @example 2
              */
             quoteResponseBusinessDays: number | null;
@@ -79597,6 +79858,13 @@ export interface components {
             addedAt: string;
             style: components["schemas"]["StyleCardDto"];
         };
+        /** @enum {string} */
+        StyleFitBackfillSource: "recipe" | "standard_sizes" | "production_envelope";
+        /**
+         * @description The data read: `recipe_size_range` (approved recipe solver range), `catalogue_standard_sizes` (standard sizes of the catalogue products of its pattern), `recipe_presets` (the approved recipe's preset sizes), `calculator_size_rules` (its pattern's size rules), `engine_limits` (the dieline engine's limits)
+         * @enum {string}
+         */
+        StyleFitBasis: "recipe_size_range" | "catalogue_standard_sizes" | "recipe_presets" | "calculator_size_rules" | "engine_limits";
         StyleFitDto: {
             /** @example 85 */
             insideHMm: number;
@@ -79608,6 +79876,8 @@ export interface components {
             /** @example 155 */
             insideWMm: number;
         };
+        /** @enum {string} */
+        StyleFitRangeChangeAction: "filled" | "refreshed";
         StyleFitRangeDto: {
             /** @example 150 */
             maxHMm: number;
@@ -79626,10 +79896,10 @@ export interface components {
             minWMm: number;
         };
         /**
-         * @description Where the fit range in `commercial` came from (C0b, DECISIONS-STAGE-A §9.1): `recipe` = filled from the approved recipe by the backfill (replaced by any value curation saves), `business` = entered by curation / the CSV (never overwritten by the backfill); null = no range. Read-only.
+         * @description Where the fit range in `commercial` came from (C0b/C1c, DECISIONS-STAGE-A §9.1, §11.1): a backfill source — `recipe` (approved recipe range), `standard_sizes` (the style's standard sizes), `production_envelope` (calculator size rules ∩ dieline engine limits) or `combined` (bounds from several; see `fitRangeBounds`) — replaced by any value curation saves; `business` = entered by curation / the CSV, never overwritten by the backfill; null = no range. Read-only.
          * @enum {string}
          */
-        StyleFitRangeSource: "recipe" | "business";
+        StyleFitRangeSource: "recipe" | "standard_sizes" | "production_envelope" | "combined" | "business";
         StyleImportFileDto: {
             /**
              * Format: uuid
@@ -79810,6 +80080,11 @@ export interface components {
         StyleIntakeOutcome: "recipe" | "template";
         /** @enum {string} */
         StyleIntakeStatus: "submitted" | "matched" | "approved_recipe" | "approved_template" | "rejected";
+        StyleLibraryContentDto: {
+            materialSwatches: components["schemas"]["MaterialSwatchDto"][];
+            quickSearch: components["schemas"]["QuickSearchTermDto"][];
+            trust: components["schemas"]["TrustContentDto"];
+        };
         StyleListDto: {
             data: components["schemas"]["StyleCardDto"][];
             /** @description Counts over the styles matching the query and filters */
@@ -81664,6 +81939,30 @@ export interface components {
             /** @example 100000.00 */
             opening: string;
         };
+        TrustContentDto: {
+            certifications: components["schemas"]["StoreTrustCertificationDto"][];
+            customerLogos: components["schemas"]["CustomerLogoDto"][];
+            foodGrade: components["schemas"]["TrustDocumentDto"][];
+            productionPhotos: components["schemas"]["TrustPhotoDto"][];
+            taxInvoiceNote: components["schemas"]["LocalisedTextDto"] | null;
+        };
+        TrustDocumentDto: {
+            /**
+             * @description An https link or a path on getpack’s own site
+             * @example null
+             */
+            documentUrl: string | null;
+            title: components["schemas"]["LocalisedTextDto"];
+        };
+        TrustPhotoDto: {
+            /** @description Alt text (product and process only, GLOBAL-RULES §1) */
+            alt: components["schemas"]["LocalisedTextDto"];
+            /**
+             * @description An https link or a path on getpack’s own site
+             * @example /v1/store/catalog/images/0190a4b2-0000-7000-8000-000000000001
+             */
+            url: string;
+        };
         UnidentifiedReceiptDto: {
             /** @example 5350.00 */
             amount: string;
@@ -83374,6 +83673,20 @@ export interface components {
              *     ]
              */
             useCases?: string[];
+        };
+        UpdateStyleLibrarySettingsDto: {
+            content: components["schemas"]["StyleLibraryContentDto"];
+            /**
+             * Format: date-time
+             * @description From when (now or later); default now
+             * @example 2026-11-01T00:00:00+07:00
+             */
+            effectiveFrom?: string;
+            /**
+             * @description Why (kept with the version, audited)
+             * @example เพิ่มใบรับรอง FSC ที่ได้รับ
+             */
+            reason: string;
         };
         UpdateSubPatternDto: {
             /** @example null */
@@ -205108,6 +205421,232 @@ export interface operations {
             };
         };
     };
+    "admin.styleLibrary.getSettings": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The content in force */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "content": {
+                     *         "materialSwatches": [],
+                     *         "quickSearch": [],
+                     *         "trust": {
+                     *           "certifications": [],
+                     *           "customerLogos": [],
+                     *           "foodGrade": [],
+                     *           "productionPhotos": [],
+                     *           "taxInvoiceNote": null
+                     *         }
+                     *       },
+                     *       "effectiveFrom": null,
+                     *       "settingId": null,
+                     *       "versionNo": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminStyleLibrarySettingsDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.styleLibrary.updateSettings": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStyleLibrarySettingsDto"];
+            };
+        };
+        responses: {
+            /** @description The content in force after the change */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "content": {
+                     *         "materialSwatches": [],
+                     *         "quickSearch": [],
+                     *         "trust": {
+                     *           "certifications": [],
+                     *           "customerLogos": [],
+                     *           "foodGrade": [],
+                     *           "productionPhotos": [],
+                     *           "taxInvoiceNote": null
+                     *         }
+                     *       },
+                     *       "effectiveFrom": null,
+                     *       "settingId": null,
+                     *       "versionNo": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminStyleLibrarySettingsDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `settings.pending_exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `settings.backdated`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.stylePriceRules.list": {
         parameters: {
             query?: {
@@ -205954,6 +206493,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeBounds": null,
                      *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
@@ -206127,6 +206667,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeBounds": null,
                      *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
@@ -206327,6 +206868,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeBounds": null,
                      *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
@@ -206507,6 +207049,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeBounds": null,
                      *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
@@ -206700,6 +207243,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeBounds": null,
                      *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
@@ -206899,6 +207443,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeBounds": null,
                      *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
@@ -207086,6 +207631,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeBounds": null,
                      *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
@@ -207381,17 +207927,97 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "boundsBySource": {
+                     *         "production_envelope": 0,
+                     *         "recipe": 490,
+                     *         "standard_sizes": 2
+                     *       },
+                     *       "bySource": {
+                     *         "combined": 1,
+                     *         "production_envelope": 0,
+                     *         "recipe": 81,
+                     *         "standard_sizes": 0
+                     *       },
+                     *       "changes": [
+                     *         {
+                     *           "action": "filled",
+                     *           "after": {
+                     *             "fitMaxHMm": 35,
+                     *             "fitMaxLMm": 400,
+                     *             "fitMaxWMm": 300,
+                     *             "fitMinHMm": 25,
+                     *             "fitMinLMm": 60,
+                     *             "fitMinWMm": 51
+                     *           },
+                     *           "before": null,
+                     *           "bounds": {
+                     *             "fitMaxHMm": {
+                     *               "basis": [
+                     *                 "recipe_presets"
+                     *               ],
+                     *               "source": "standard_sizes"
+                     *             },
+                     *             "fitMaxLMm": {
+                     *               "basis": [
+                     *                 "recipe_size_range"
+                     *               ],
+                     *               "source": "recipe"
+                     *             },
+                     *             "fitMaxWMm": {
+                     *               "basis": [
+                     *                 "recipe_size_range"
+                     *               ],
+                     *               "source": "recipe"
+                     *             },
+                     *             "fitMinHMm": {
+                     *               "basis": [
+                     *                 "recipe_presets"
+                     *               ],
+                     *               "source": "standard_sizes"
+                     *             },
+                     *             "fitMinLMm": {
+                     *               "basis": [
+                     *                 "recipe_size_range"
+                     *               ],
+                     *               "source": "recipe"
+                     *             },
+                     *             "fitMinWMm": {
+                     *               "basis": [
+                     *                 "recipe_size_range"
+                     *               ],
+                     *               "source": "recipe"
+                     *             }
+                     *           },
+                     *           "code": "PK-SP-01",
+                     *           "source": "combined",
+                     *           "styleId": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001"
+                     *         }
+                     *       ],
                      *       "considered": 122,
                      *       "dryRun": true,
                      *       "filled": [
-                     *         "PK-CB-01"
+                     *         "PK-SP-01"
+                     *       ],
+                     *       "incomplete": [
+                     *         {
+                     *           "code": "PK-LA-01",
+                     *           "conflicting": [],
+                     *           "missing": [
+                     *             "fitMinLMm",
+                     *             "fitMaxLMm",
+                     *             "fitMinWMm",
+                     *             "fitMaxWMm",
+                     *             "fitMinHMm",
+                     *             "fitMaxHMm"
+                     *           ]
+                     *         }
                      *       ],
                      *       "keptBusiness": [],
                      *       "noRecipeRange": [
-                     *         "PK-CB-02"
+                     *         "PK-LA-01"
                      *       ],
                      *       "refreshed": [],
-                     *       "unchanged": 0
+                     *       "unchanged": 81
                      *     }
                      */
                     "application/json": components["schemas"]["FitRangeBackfillResult"];
@@ -329548,6 +330174,98 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.styleLibrary.getSettings": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The content in force */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "compareLimit": 3,
+                     *       "materialSwatches": [],
+                     *       "quickSearch": [],
+                     *       "trust": {
+                     *         "certifications": [],
+                     *         "customerLogos": [],
+                     *         "foodGrade": [],
+                     *         "productionPhotos": [],
+                     *         "taxInvoiceNote": null
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StoreStyleLibrarySettingsDto"];
+                };
             };
             /** @description Problem: `auth.unauthenticated` */
             401: {

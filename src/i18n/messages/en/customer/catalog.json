@@ -247,5 +247,14 @@
   },
   "tiles": {
     "types": "{count, plural, one {# type} other {# types}}"
+  },
+  "supportHours": {
+    "text": "{days}, {open}–{close}",
+    "days": {
+      "daily": "Daily",
+      "business_days": "Business days",
+      "mon_fri": "Mon–Fri",
+      "mon_sat": "Mon–Sat"
+    }
   }
 }

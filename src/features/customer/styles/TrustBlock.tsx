@@ -19,7 +19,7 @@ export const hasTrust = (trust: Trust | null | undefined): trust is Trust =>
 /**
  * "ความน่าเชื่อถือ" (styles redesign Phase 2 §6, C0): certificates, food-grade documents, production
  * photos, the tax-invoice note and permitted customer logos — only what staff entered in
- * `store.style-library.settings`; each part is hidden when empty, and the section when all are.
+ * `store.styleLibrary.getSettings` (D-448; expired certificates already left out by the API); each part is hidden when empty, and the section when all are.
  * Production photos are labelled "รูปงานจริงระหว่างผลิต" (GLOBAL-RULES §1: product and process only).
  */
 export async function TrustBlock({ trust: entered, locale }: { trust: Trust | null | undefined; locale: string }) {
@@ -48,6 +48,7 @@ export async function TrustBlock({ trust: entered, locale }: { trust: Trust | nu
               {c.number ? (
                 <span className="tabular-nums"> · {t("trustCertificateNumber", { number: c.number })}</span>
               ) : null}
+              {c.issuer ? <span> · {t("trustCertificateIssuer", { issuer: c.issuer })}</span> : null}
               {c.documentUrl ? (
                 <>
                   {" "}

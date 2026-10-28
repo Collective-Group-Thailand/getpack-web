@@ -906,6 +906,7 @@
     "trustTitle": "Why trust getpack",
     "trustCertifications": "Material certificates",
     "trustCertificateNumber": "No. {number}",
+    "trustCertificateIssuer": "issued by {issuer}",
     "trustFoodGrade": "Food-contact materials",
     "trustPhotos": "Real production photos",
     "trustTaxInvoice": "Full tax invoice",

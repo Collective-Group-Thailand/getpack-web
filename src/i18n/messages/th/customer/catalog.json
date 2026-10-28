@@ -247,5 +247,14 @@
   },
   "tiles": {
     "types": "{count} ประเภท"
+  },
+  "supportHours": {
+    "text": "{days} {open}–{close}",
+    "days": {
+      "daily": "ทุกวัน",
+      "business_days": "วันทำการ",
+      "mon_fri": "จันทร์–ศุกร์",
+      "mon_sat": "จันทร์–เสาร์"
+    }
   }
 }
