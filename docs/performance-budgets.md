@@ -393,3 +393,27 @@ out of heap first), so every set had grown past its ratchet unmeasured. Measured
   down, not absorbed: the targets above are unchanged.
 - The other sets' growth is the shared shells (admin menu search and folding groups, the partner
   ERP's entry points, the storefront header).
+
+## Stage C CI repair — ratchets restated (2026-10-28)
+
+CI on `main` had been red since the configurator redesign merged (2026-10-27): Prettier failed first,
+so no later gate was read, and the Lighthouse sets grew past their ratchets merge by merge. Measured
+by CI on `main` at `982e92a` (plain production build, mock mode):
+
+| Set | Heaviest page | Before | Measured | Ratchet |
+|---|---|---|---|---|
+| customer-marketing | `/products/tuck-end-box` | 295,900 | 318,063 (`/` 302,398 · `/products` 307,002 · `/styles` 297,758) | 295,900 → **318,500** |
+| customer-app | `/configure/tuck-end-box` | 354,900 | 379,844 | 354,900 → **380,300** |
+| studio | `/studio/new?product=tuck-end-box…` | 563,600 | 570,428 | 563,600 → **570,900** |
+| admin-crud | `/partners` | 508,300 | 508,994 | 508,300 → **509,400** |
+| admin-lists | `/orders`, an order | 393,300 | 393,823 | 393,300 → **394,300** |
+| partner | `/settings` | 309,000 | 309,433 | 309,000 → **309,900** |
+
+- **Product page (+22 KB)** — the C3 PDP is a client page now: the live buy box bound to the
+  configurator state (useLivePrice, batch prices), tiers, sizes, sections. **Configurator (+25 KB)** —
+  the C4 one-page configurator (every step mounted, the dock, the tier cards). Both are the first
+  levers to work down: the sections below the fold can load on view.
+- `/`, `/products`, `/styles` and the admin, partner and studio sets grew by the shared shells
+  (header, products hub, menu) — 0.4–11 KB.
+- Raised by the owner's decision for this repair (2026-10-28: "raise ratchets to measured"); the
+  targets above are unchanged and this is recorded to be worked down, not absorbed.
