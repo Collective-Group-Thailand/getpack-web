@@ -30,6 +30,8 @@ import {
 } from "@/features/designer/data/persistence";
 import { dielineOf, hingesOf, insideSize, readDesign, sizeOf } from "@/features/designer/document";
 import { exportPng, exportPrintPdf, makeThumbnail, renderDieline } from "@/features/designer/export";
+import { takeHandoff } from "@/features/designer/handoff";
+import { newImageFromSrc, newText } from "@/features/designer/lib/create";
 import { finishesIn, finishMask, type Finish } from "@/features/designer/lib/finishes";
 import { uprightAngles } from "@/features/designer/lib/upright";
 import { useFaceNames } from "@/features/designer/lib/useFaceNames";
@@ -193,6 +195,9 @@ function useSize<T extends HTMLElement>() {
  * A box to start a new design from — the configurator's product, pattern, size and material
  * (F3 3.2, F4 C.2), an order line's box, or a template.
  */
+/** The brand text's colour when the hero's print was full colour (C7): getpack's green, a CMYK-only colour. */
+const HANDOFF_FULL_COLOUR = "#0f5f4e";
+
 export interface EditorSeed {
   style: BoxStyleId;
   /** The inside size; absent for a variant that is not sized by length × width × height (C7) — then `values` size it. */
@@ -366,6 +371,8 @@ export default function Editor({
   const stageRef = useRef<Konva.Stage | null>(null);
   const [wrapRef, size] = useSize<HTMLDivElement>();
   const [loaded, setLoaded] = useState(false);
+  /** A seeded new box waits for the Studio front door's hand-off (C7). */
+  const handoffDue = useRef(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -480,6 +487,7 @@ export default function Editor({
         editor.load({ id: id === "new" ? nanoid(10) : id, name: t("untitled"), spec: null });
         const seeded = editable && chrome?.applySeed ? seedSpec() : null;
         if (seeded) {
+          handoffDue.current = true;
           editor.setSpec(seeded);
           // eslint-disable-next-line react-hooks/set-state-in-effect
           setFitSignal((signal) => signal + 1);
@@ -492,6 +500,36 @@ export default function Editor({
     // The frame's wish is read once, when the design loads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, t, session, editable]);
+
+  // C7: the brand name or logo from the Studio front door's mini editor, placed once on a freshly seeded box —
+  // centred on its largest face, the logo as an ordinary image element (uploaded only when the design is saved).
+  useEffect(() => {
+    if (!handoffDue.current || !loaded || !canvasDieline) return;
+    handoffDue.current = false;
+    const handoff = takeHandoff();
+    if (!handoff) return;
+    const faces = allFaces(canvasDieline).map((face) => faceBounds(face));
+    const main = faces.sort((a, b) => b.width * b.height - a.width * a.height)[0];
+    const at = main ? { x: main.x + main.width / 2, y: main.y + main.height / 2 } : { x: 0, y: 0 };
+    const add = useEditor.getState().addElement;
+    if (handoff.logo) {
+      void newImageFromSrc(at, handoff.logo.src)
+        .then((element) => {
+          const fit = main ? Math.min(1, (main.width * 0.6) / (element as { width: number }).width) : 1;
+          add({
+            ...element,
+            width: (element as { width: number }).width * fit,
+            height: (element as { height: number }).height * fit,
+            x: at.x - ((element as { width: number }).width * fit) / 2,
+            y: at.y - ((element as { height: number }).height * fit) / 2,
+          } as typeof element);
+        })
+        .catch(() => undefined);
+    } else if (handoff.brand?.trim()) {
+      const text = newText(at, handoff.brand.trim());
+      add(handoff.print === "full" && text.type === "text" ? { ...text, fill: HANDOFF_FULL_COLOUR } : text);
+    }
+  }, [loaded, canvasDieline]);
 
   // Images placed in an account design are uploaded once as design assets; the document then
   // keeps the asset id and its signed URL instead of the whole picture.
