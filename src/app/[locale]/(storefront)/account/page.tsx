@@ -1,99 +1,104 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getDefaults, getLaunchpad, getPoints } from "@/features/customer/account/api.server";
+import {
+  getDefaults,
+  getLaunchpad,
+  getPoints,
+  getSavedQuotes,
+  getStoreCredit,
+} from "@/features/customer/account/api.server";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
-import { getApprovals, getMyCompany } from "@/features/customer/business/api.server";
-import { DocumentLink } from "@/features/customer/orders/DocumentLink";
-import { latestDocuments } from "@/features/customer/repeat/api.server";
-import { listMyRfqs } from "@/features/customer/rfq/api.server";
-import { Stat } from "@/ui/components/Stat";
 import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { listMyOrders } from "@/features/customer/orders/api.server";
-import { OrderActions } from "@/features/customer/orders/OrderActions";
-import { isPaymentOverdue, visibleActions } from "@/features/customer/orders/order-state";
-import { RequoteButton } from "@/features/customer/orders/RequoteButton";
+import { getApprovals, getMyCompany } from "@/features/customer/business/api.server";
+import { listOrderPage } from "@/features/customer/orders/api.server";
+import { OrderCard } from "@/features/customer/orders/list/OrderCard";
+import { TodoStrip } from "@/features/customer/orders/list/TodoStrip";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
-import { StatusChip } from "@/features/shared/status/StatusChip";
-import { CUSTOMER_ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
-import { ProductThumb, productFamilyOf } from "@/ui/components/ProductIllustration";
+import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.home");
   return { title: t("title"), robots: { index: false, follow: false } };
 }
 
+/** A section of the overview with its heading and a "see all" link. */
+function Section({
+  id,
+  title,
+  more,
+  children,
+}: {
+  id: string;
+  title: string;
+  more?: { href: string; label: string };
+  children: React.ReactNode;
+}) {
+  return (
+    <section aria-labelledby={id} className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id={id} className="text-lg font-semibold">
+          {title}
+        </h2>
+        {more ? (
+          <Link href={more.href} className="text-primary text-sm font-medium underline-offset-4 hover:underline">
+            {more.label}
+          </Link>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 /**
- * The account's front page (F3 3.4), a personal launchpad since U5.1 (D-297): the recommended next
- * step, the designs to continue and what to order again lead; then where things stand, what needs
- * doing, documents and points.
+ * The account's front page (account pack Phase 4): what needs doing now (the orders list's "ต้องทำตอนนี้" cards)
+ * and the latest three orders as the list shows them; then the designs to continue and what to order again (the
+ * launchpad, D-297), quotations whose price is still locked, points, store credit and the tier with the rule of what
+ * counts (`spendBasisTh`); for a company member, what waits for their approval and the company's shortcuts.
+ * Each read beyond the orders is a convenience: a failure hides its part, never the page.
  */
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, tOrders, format, active, points, rfqs, launchpad, defaults, documents] = await Promise.all([
+  const [t, format, latest, active, points, credit, launchpad, defaults, quotes, company] = await Promise.all([
     getTranslations("account.home"),
-    getTranslations("account.nav"),
-    getTranslations("myOrders"),
     getFormat(),
-    listMyOrders("active"),
-    getPoints(),
-    // The dashboard's other reads never take the page down with them.
-    listMyRfqs().catch(() => []),
+    listOrderPage("active", "", 1, 3).catch(() => null),
+    listOrderPage("active", "", 1, 100).catch(() => null),
+    getPoints().catch(() => null),
+    getStoreCredit().catch(() => null),
     getLaunchpad().catch(() => null),
     getDefaults().catch(() => null),
-    latestDocuments(5).catch(() => []),
+    getSavedQuotes().catch(() => []),
+    getMyCompany().catch(() => null),
   ]);
-  // A company approver's queue leads (round 2, B2): "nothing to do" was said over an order the
-  // company was waiting on them for.
-  const company = await getMyCompany().catch(() => null);
+  // A company approver's queue leads (round 2, B2).
   const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
-  // Where things stand, by the API's own statuses (U2.F5): nothing is computed from dates here.
-  const openRfqs = rfqs.filter((rfq) => ["submitted", "in_review", "need_info", "quoted"].includes(rfq.status)).length;
-  // The one customer status (D-437) — a delivered order with an open claim is neither "on its way" nor "in production".
-  const making = active.filter(({ order }) => order.customerStatus === "in_production").length;
-  const onTheWay = active.filter(({ order }) => order.customerStatus === "shipping").length;
-  // What needs doing: the orders' own actions, and a group waiting for its payment.
-  const todo = active
-    .map((row) => ({ ...row, actions: visibleActions(row.order, row.actions) }))
-    .filter((row) => row.actions.length > 0 || row.group.status === "waiting_payment");
+  const latestOrders = (latest?.groups ?? [])
+    .flatMap((group) => group.orders.map((order) => ({ order, group })))
+    .slice(0, 3);
+  const activeOrders = (active?.groups ?? []).flatMap((group) => group.orders);
+  // A quotation is open while its price is locked (D-051) — the API says which.
+  const openQuotes = quotes.filter((quote) => quote.priceLocked).slice(0, 3);
 
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-title leading-tight">{t("greeting", { name: me.displayName })}</h1>
-        <p className="text-muted mt-1">{t("intro")}</p>
+        <h1 className="text-[clamp(1.75rem,3vw,2.25rem)] leading-[1.1] font-bold tracking-[-0.02em]">
+          {t("greeting", { name: me.displayName })}
+        </h1>
+        <p className="text-muted mt-1.5">{t("intro")}</p>
       </div>
-
-      {launchpad ? (
-        <LaunchpadPanel launchpad={launchpad} hasBrandKit={defaults?.companies.some((c) => c.hasBrandKit) ?? false} />
-      ) : null}
-
-      <section aria-labelledby="account-where">
-        <h2 id="account-where" className="text-lg font-semibold">
-          {t("where")}
-        </h2>
-        <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
-          <Stat as={Link} href="/account/rfqs" label={t("openRequests")} value={format.number(openRfqs)} icon="inbox" />
-          <Stat
-            as={Link}
-            href="/account/orders"
-            label={t("inProduction")}
-            value={format.number(making)}
-            icon="factory"
-          />
-          <Stat as={Link} href="/account/orders" label={t("onTheWay")} value={format.number(onTheWay)} icon="truck" />
-        </div>
-      </section>
 
       {forMe.length > 0 ? (
         <Link
           href="/business/approvals"
-          className="border-warning/40 bg-warning-subtle hover:border-warning rounded-card flex flex-wrap items-center justify-between gap-3 border p-5"
+          className="border-warning/40 bg-warning-subtle hover:border-warning flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-5"
         >
           <span>
             <span className="block text-lg font-semibold">{t("approvalsForYou", { count: forMe.length })}</span>
@@ -105,94 +110,120 @@ export default async function Page() {
         </Link>
       ) : null}
 
-      <section aria-labelledby="account-todo">
-        <h2 id="account-todo" className="text-lg font-semibold">
-          {t("todo")}
-        </h2>
-        {todo.length === 0 && forMe.length === 0 ? (
-          <p className="text-muted mt-2 text-sm">{t("nothingToDo")}</p>
-        ) : (
-          <ul className="border-border bg-surface divide-border rounded-card mt-3 divide-y border">
-            {todo.map(({ order, group, actions }) => (
-              <li key={order.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3.5 sm:px-5">
-                <ProductThumb
-                  family={productFamilyOf(order.summary.productTypeCode)}
-                  className="hidden size-12 rounded-xl sm:flex"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">
-                    <Link href={`/account/orders/${order.id}`} className="underline-offset-4 hover:underline">
-                      {productNameOf(locale, order.summary)}
-                    </Link>
-                  </p>
-                  <p className="text-muted mt-0.5 flex flex-wrap items-center gap-2 text-[13px]">
-                    <span className="tabular-nums">{order.orderCode}</span>
-                    <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
-                  </p>
-                </div>
-                <div className="flex basis-full flex-wrap items-center gap-2 sm:basis-auto">
-                  {isPaymentOverdue(order) ? (
-                    <RequoteButton
-                      size="sm"
-                      groupId={order.payment.groupId}
-                      payHref={`/account/orders/${order.id}#instalments`}
-                    />
-                  ) : group.status === "waiting_payment" ? (
-                    <Button asChild size="sm" iconStart="credit-card">
-                      <Link href={`/account/orders/${order.id}#instalments`}>{t("payDue")}</Link>
-                    </Button>
-                  ) : null}
-                  {actions.length > 0 ? (
-                    <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={actions} />
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <TodoStrip orders={activeOrders} />
 
-      {documents.length > 0 ? (
-        <section aria-labelledby="account-documents">
-          <h2 id="account-documents" className="text-lg font-semibold">
-            {t("documents")}
-          </h2>
-          <ul className="border-border bg-surface divide-border rounded-card mt-3 divide-y border">
-            {documents.map((doc) => (
-              <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold">{tOrders(`documents.types.${doc.docType}`)}</p>
-                  <p className="text-muted text-[13px]">
-                    {t("documentRow", {
-                      number: doc.docNumber,
-                      date: format.date(doc.documentDate),
-                      amount: format.thb(doc.grossAmount),
-                    })}
-                  </p>
-                </div>
-                <DocumentLink documentId={doc.id} number={doc.docNumber} />
-              </li>
+      <Section id="account-latest" title={t("latest")} more={{ href: "/account/orders", label: t("allOrders") }}>
+        {latestOrders.length === 0 ? (
+          <div className="border-border-strong text-muted rounded-[18px] border border-dashed p-8 text-center">
+            <p>{t("noOrders")}</p>
+            <Button asChild className="mt-4">
+              <Link href="/products">{t("browse")}</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {latestOrders.map(({ order, group }) => (
+              <OrderCard key={order.id} order={order} placedAt={group.placedAt} />
             ))}
-          </ul>
-        </section>
+          </div>
+        )}
+      </Section>
+
+      {launchpad ? (
+        <LaunchpadPanel launchpad={launchpad} hasBrandKit={defaults?.companies.some((c) => c.hasBrandKit) ?? false} />
       ) : null}
 
-      <section aria-labelledby="account-points" className="border-border bg-surface rounded-card border p-5">
-        <h2 id="account-points" className="font-semibold">
-          {tNav("points")}
-        </h2>
-        <p className="serif mt-2 text-3xl tabular-nums">
-          {t("points", { points: format.number(points.availablePoints) })}
-        </p>
-        <p className="text-muted text-sm">{t("pointsValue", { amount: format.thb(points.availableValue) })}</p>
-        <p className="mt-3 text-sm">
-          {t("tierNow", { tier: t(`tiers.${points.tier}`), spend: format.thb(points.spend12m) })}
-        </p>
-        <TierProgress points={points} className="mt-2 text-sm" />
-        <Button asChild variant="link" className="mt-2 px-0">
-          <Link href="/account/points">{t("seePoints")}</Link>
-        </Button>
-      </section>
+      {openQuotes.length > 0 ? (
+        <Section id="account-quotes" title={t("openQuotes")} more={{ href: "/account/quotes", label: t("allQuotes") }}>
+          <ul className="border-border bg-surface divide-border divide-y rounded-2xl border">
+            {openQuotes.map((quote) => (
+              <li key={quote.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{productNameOf(locale, quote.summary)}</p>
+                  <p className="text-muted text-[0.8125rem] tabular-nums">
+                    {quote.quoteCode} · {t("lockedUntil", { date: format.dateTime(quote.validUntil) })}
+                  </p>
+                </div>
+                <Button asChild size="sm" variant="secondary">
+                  <Link href="/account/quotes">{t("openQuote")}</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {points || credit ? (
+        <Section id="account-rewards" title={t("rewards")} more={{ href: "/account/points", label: t("seePoints") }}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {points ? (
+              <div className="border-border bg-surface flex flex-col gap-1.5 rounded-2xl border p-5">
+                <p className="text-muted text-sm">{t("pointsTitle")}</p>
+                <p className="text-[1.625rem] font-bold tabular-nums">
+                  {t("points", { points: format.number(points.availablePoints) })}
+                </p>
+                <p className="text-muted text-sm">{t("pointsValue", { amount: format.thb(points.availableValue) })}</p>
+                <p className="mt-2 text-sm">
+                  {t("tierNow", { tier: t(`tiers.${points.tier}`), spend: format.thb(points.spend12m) })}
+                </p>
+                {/* The rule of what counts (the API's words) is part of the tier progress. */}
+                <TierProgress points={points} className="text-sm" />
+              </div>
+            ) : null}
+            {credit ? (
+              <div className="border-border bg-surface flex flex-col gap-1.5 rounded-2xl border p-5">
+                <p className="text-muted text-sm">{t("creditTitle")}</p>
+                <p className="text-[1.625rem] font-bold tabular-nums">{format.thb(credit.balance)}</p>
+                <p className="text-muted text-sm">{t("creditBody")}</p>
+                <Link
+                  href="/account/wallet"
+                  className="text-primary mt-auto pt-2 text-sm font-medium underline-offset-4 hover:underline"
+                >
+                  {t("seeCredit")}
+                </Link>
+              </div>
+            ) : null}
+          </div>
+        </Section>
+      ) : null}
+
+      {company ? (
+        // A company member's shortcuts (business pack): the company's catalogue, approvals and credit.
+        <Section id="account-company" title={t("company", { name: company.tradeName ?? company.legalName })}>
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {[
+              ...(company.can.order
+                ? [{ href: "/business/reorder", icon: "refresh" as const, label: t("companyCatalogue") }]
+                : []),
+              ...(company.can.approveOrders
+                ? [
+                    {
+                      href: "/business/approvals",
+                      icon: "check" as const,
+                      label: t("companyApprovals", { count: forMe.length }),
+                    },
+                  ]
+                : []),
+              ...(company.can.viewFinance
+                ? [{ href: "/business/credit", icon: "wallet" as const, label: t("companyCredit") }]
+                : []),
+              { href: "/business", icon: "building" as const, label: t("companyOrders") },
+            ].map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="border-border bg-surface hover:border-primary flex items-center gap-3 rounded-2xl border p-4 text-sm font-medium"
+                >
+                  <span className="bg-primary-subtle text-primary-subtle-fg grid size-10 place-items-center rounded-xl">
+                    <Icon name={item.icon} size={20} aria-hidden="true" />
+                  </span>
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
     </div>
   );
 }
