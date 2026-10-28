@@ -308,3 +308,19 @@ configurator's own `store.quotes.calculateBatch` (one request for every standard
 - **C4 `store.catalog.custom-size`:** explicit custom-size support and range per pattern; today an instant product is taken as "กำหนดขนาดเองได้" (its configurator takes dimensions).
 - **C6 style ↔ catalogue category:** `StoreProductCategoryDto.styleCategory`; today the page links `/styles?cat=<same code>` only when the library facet has that code (corrugated, folding_carton, tag_sleeve), else an approved content mapping.
 - **Web meanwhile:** as above; nothing invented.
+
+## Studio editor (C8, editor redesign Phases 1–3, 2026-10-29)
+
+Made in getpack-api (D-456): `StoreMeDto.editorMode` + `PATCH /v1/store/me/preferences { editorMode }`. Still requested:
+
+- **C8-1 `designs.document-fields`:** `evaluateDocument` and the order render understand the additive fields
+  (`hidden` not printed / checked / priced; `fillGradient` as process print; `strokeDash`; open `shape` paths with
+  `open: true`; `flipX/flipY`; `mono` images as one ink; `guides` ignored). Web meanwhile: the browser's checks and
+  ink inference handle them; the print files are drawn from the canvas.
+- **C8-2 `store.studio.quote` per variant:** price and order one design in N versions, each with its quantity, and the
+  per-variant minimum (business value). Web meanwhile: no "รุ่น" panel.
+- **C8-3 `store.studio.quote` for another print:** the same saved version priced with another print method, so
+  "เปลี่ยนเป็น CMYK" can say the price change before it is applied. Web meanwhile: the switch applies, the dock reprices.
+- **C8-4 print-file export / import:** PDF/X-4 (CMYK, outlined text, separate die-cut layer, bleed), `.ai` with layers,
+  PDF/`.ai` import on the dieline with the same preflight — after Prepress's file spec. Web meanwhile: the existing
+  exports; the chooser's "อัปโหลดไฟล์ PDF หรือ .ai" goes to `/studio/upload`.
