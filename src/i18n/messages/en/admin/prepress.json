@@ -307,7 +307,14 @@
     "open": "Open",
     "openFile": "Open {name}",
     "downloadFile": "Download {name}",
-    "downloadFailed": "Could not download the file"
+    "downloadFailed": "Could not download the file",
+    "reasonDialog": {
+      "title": "Give a reason before opening the customer file",
+      "body": "\"{name}\" is a customer original / artwork. A Superadmin opens it only with a reason; the reason, who, file, order and time are kept in the access log.",
+      "reason": "Reason",
+      "hint": "At least {min} characters",
+      "confirm": "Log the reason and get the file"
+    }
   },
   "onBehalf": {
     "button": "Record the customer's answer",
