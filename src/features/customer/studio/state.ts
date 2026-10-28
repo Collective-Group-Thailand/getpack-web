@@ -24,13 +24,21 @@ export function inferPrint(content: DesignContent): { printed: boolean; colours:
   const colours = new Set<string>();
   let photo = false;
   for (const el of content.elements) {
-    if (el.type === "image") photo = true;
-    else if (el.type === "text") colours.add(el.fill.toLowerCase());
-    else if (el.type === "code") {
+    // C8: a hidden element is not printed; a gradient needs continuous tone (process print, like a photo); a
+    // one-ink image ("ภาพสีเดียว") prints with a single ink.
+    if (el.hidden) continue;
+    if (el.type === "image") {
+      if (el.mono) colours.add("mono-image");
+      else photo = true;
+    } else if (el.type === "text") {
+      if (el.fillGradient) photo = true;
+      colours.add(el.fill.toLowerCase());
+    } else if (el.type === "code") {
       colours.add(el.fill.toLowerCase());
       colours.add(el.background.toLowerCase());
     } else {
-      colours.add(el.fill.toLowerCase());
+      if (el.fillGradient) photo = true;
+      if (!el.open) colours.add(el.fill.toLowerCase());
       if (el.strokeWidth > 0) colours.add(el.stroke.toLowerCase());
     }
   }

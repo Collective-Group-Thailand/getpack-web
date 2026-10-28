@@ -53,6 +53,7 @@ import type {
 import type { DesignIssue } from "@/features/designer/lib/checks";
 import { newText } from "@/features/designer/lib/create";
 import { constrain45, dragBox, newPath, newRectangle, polylineOf } from "@/features/designer/lib/draw";
+import { fitAreas } from "@/features/designer/lib/fit";
 import { inkOf } from "@/features/designer/lib/ink";
 import { measureText } from "@/features/designer/lib/measure";
 import type { EditorMode, EditorTool } from "@/features/designer/store/mode";
@@ -194,28 +195,7 @@ export interface CanvasStudio {
 
 const RATIO_TYPES = new Set(["image", "text", "code"]);
 
-/** The fit's candidate areas: the view less its insets, and — with the 3D card — below it or beside it. */
-export function fitAreas(
-  width: number,
-  height: number,
-  insets: CanvasStudio["insets"],
-  pip: CanvasStudio["pip"],
-  pad: number,
-): { x: number; y: number; width: number; height: number }[] {
-  const base = {
-    x: insets.left + pad,
-    y: insets.top + pad,
-    width: width - insets.left - insets.right - 2 * pad,
-    height: height - insets.top - insets.bottom - 2 * pad,
-  };
-  if (!pip) return [base];
-  const below = Math.max(base.y, pip.top + pip.height + pad);
-  const besideRight = Math.min(base.x + base.width, width - pip.right - pip.width - pad);
-  return [
-    { ...base, y: below, height: base.y + base.height - below },
-    { ...base, width: besideRight - base.x },
-  ].filter((a) => a.width > 40 && a.height > 40);
-}
+
 
 /** How each finish shows on the flat sheet (a preview: the 3D model and the print file use masks). */
 const FINISH_LOOK: Record<NonNullable<DesignElement["finish"]>, string> = {

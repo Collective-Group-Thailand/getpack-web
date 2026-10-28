@@ -481,7 +481,10 @@
     "side": {
       "outside": "ด้านนอก ({count, number})",
       "inside": "ด้านใน ({count, number})"
-    }
+    },
+    "hidden": "ซ่อนอยู่",
+    "hide": "ซ่อน {name} (ไม่พิมพ์ ไม่ตรวจ)",
+    "show": "แสดง {name}"
   },
   "templates": {
     "applied": "ใช้แม่แบบ {name} แล้ว",

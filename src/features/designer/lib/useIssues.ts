@@ -77,8 +77,9 @@ export function useDesignIssues(
   const undeclared = context.undeclared;
   return useMemo(() => {
     if (!sheet || !inside) return [];
-    const outer = elements.filter((e) => e.side !== "inside");
-    const inner = elements.filter((e) => e.side === "inside");
+    // A hidden element (C8 layers) is neither printed nor checked.
+    const outer = elements.filter((e) => e.side !== "inside" && !e.hidden);
+    const inner = elements.filter((e) => e.side === "inside" && !e.hidden);
     const common = { cornersOf, rules, undeclared };
     return [
       ...designIssues({ ...sheet, ...common, elements: outer, pattern }),

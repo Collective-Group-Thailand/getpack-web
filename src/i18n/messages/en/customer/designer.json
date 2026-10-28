@@ -481,7 +481,10 @@
     "side": {
       "outside": "Outside ({count, number})",
       "inside": "Inside ({count, number})"
-    }
+    },
+    "hidden": "Hidden",
+    "hide": "Hide {name} (not printed or checked)",
+    "show": "Show {name}"
   },
   "templates": {
     "applied": "Template {name} applied",
