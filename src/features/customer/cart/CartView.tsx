@@ -9,6 +9,7 @@ import { MobileBar, OrderSummary } from "@/features/customer/checkout/flow/Order
 import { cartBlockers, stepHref, type Blocker } from "@/features/customer/checkout/flow/steps";
 import { useTrustLines } from "@/features/customer/checkout/flow/trust";
 import { useFormat } from "@/features/shared/format/useFormat";
+import { shippingAmountText } from "@/features/shared/format/shipping";
 import { Link, useRouter } from "@/i18n/navigation";
 import { trackCheckout } from "@/lib/analytics/checkout";
 import { browserApi } from "@/lib/api/browser";
@@ -51,6 +52,7 @@ type Removed = Pick<CartItem, "quoteId" | "quoteOptionId" | "designOption" | "de
 export function CartView({ initialCart }: { initialCart: Cart; initialAddresses?: Address[] }) {
   const t = useTranslations("cart");
   const tFlow = useTranslations("checkout.flow");
+  const tShipping = useTranslations("common.shipping");
   const tUnits = useTranslations("catalog.stock.units");
   const locale = useLocale();
   const format = useFormat();
@@ -277,7 +279,7 @@ export function CartView({ initialCart }: { initialCart: Cart; initialAddresses?
       ? {
           label: tFlow("summary.shipping"),
           hint: tFlow("summary.shippingEstimate", { postcode: estimate.postcode }),
-          value: format.thb(estimate.shippingGrossAmount),
+          value: shippingAmountText(estimate.shippingGrossAmount, format.thb, tShipping("free")),
         }
       : { label: tFlow("summary.shipping"), value: tFlow("summary.shippingLater"), tone: "muted" },
     ...((estimate?.vatAmount ?? cart.vatAmount)

@@ -29,6 +29,7 @@ import { timelineTitle } from "@/features/customer/orders/timeline";
 import { TrackingLinkButton } from "@/features/customer/orders/TrackingLinkButton";
 import { listMySamples } from "@/features/customer/samples/api.server";
 import { getFormat } from "@/features/shared/format/server";
+import { shippingAmountText } from "@/features/shared/format/shipping";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import {
   ARTWORK_STATUS,
@@ -127,10 +128,11 @@ export default async function Page({
 }) {
   await requireCustomer();
   const [{ orderId }, query] = await Promise.all([params, searchParams]);
-  const [t, tList, tCatalog, format, locale, detail, design, samples] = await Promise.all([
+  const [t, tList, tCatalog, tShipping, format, locale, detail, design, samples] = await Promise.all([
     getTranslations("myOrders"),
     getTranslations("myOrders.list"),
     getTranslations("catalog"),
+    getTranslations("common.shipping"),
     getFormat(),
     getLocale(),
     getMyOrder(orderId),
@@ -507,7 +509,11 @@ export default async function Page({
               rows={[
                 ...order.lines.map((line) => ({
                   label: pick(locale, line.descriptionTh, line.descriptionEn),
-                  value: format.thb(line.grossAmount),
+                  // C2b (§15.4): a shipping line the API priced at exactly "0.00" reads "ส่งฟรี".
+                  value:
+                    line.lineType === "shipping"
+                      ? shippingAmountText(line.grossAmount, format.thb, tShipping("free"))
+                      : format.thb(line.grossAmount),
                 })),
                 ...(order.totals.discountAmount !== "0.00"
                   ? [

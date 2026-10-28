@@ -11,6 +11,7 @@ import type { EditorChromeContext } from "@/features/designer/components/Editor"
 import type { PrintRule } from "@/features/designer/lib/checks";
 import { useEditor } from "@/features/designer/store/editor";
 import { ScanError } from "@/features/shared/files/upload";
+import { isFreeShipping } from "@/features/shared/format/shipping";
 import { formatDate, formatPercent, formatTHB } from "@/i18n/format";
 import { Link, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
@@ -77,6 +78,7 @@ export function OrderSheet({
   onChecks,
 }: OrderSheetProps) {
   const t = useTranslations("studio.orderSheet");
+  const tShipping = useTranslations("common.shipping");
   const locale = useLocale() as "th" | "en";
   const router = useRouter();
   const spec = useEditor((s) => s.spec);
@@ -311,9 +313,11 @@ export function OrderSheet({
             <li>
               {chosen.shippingPending
                 ? t("includes.shippingPending")
-                : chosen.shippingAmount
-                  ? t("includes.shipping", { amount: formatTHB(chosen.shippingAmount, locale) })
-                  : t("includes.noShipping")}
+                : isFreeShipping(chosen.shippingAmount)
+                  ? tShipping("free")
+                  : chosen.shippingAmount
+                    ? t("includes.shipping", { amount: formatTHB(chosen.shippingAmount, locale) })
+                    : t("includes.noShipping")}
             </li>
           </ul>
           {chosen.toleranceShortagePct !== null || chosen.toleranceDimensionalMm !== null ? (
