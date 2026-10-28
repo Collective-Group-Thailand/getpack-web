@@ -35,25 +35,50 @@ export function sideModelOf(configurator: Configurator, kind: PrintKind): PrintS
 
 const unique = (ids: readonly string[]) => [...new Set(ids)];
 
+/**
+ * C0b (DECISIONS-STAGE-A §9.5): how many spot colours a side may hold — the instantly priced count, or more up to the
+ * API's `quote.spotMaxColours`. A selection past the priced count is never refused or trimmed: `calculate` answers
+ * `rfq_required` and the dock offers the quotation request with the spec (the existing quote path).
+ */
+export function spotLimit(side: PrintSide): number {
+  return Math.max(side.spot?.maxColours ?? 0, side.quote?.spotMaxColours ?? 0);
+}
+
+/** C0b: spot colours that may stand beside CMYK — the priced add-on, or more up to `quote.cmykAddOnMaxColours`. */
+export function addOnLimit(side: PrintSide): number {
+  const priced = side.cmyk?.addOn.enabled ? side.cmyk.addOn.maxColours : 0;
+  return Math.max(priced, side.quote?.cmykAddOnMaxColours ?? 0);
+}
+
+/** C0b: true when the side holds more colours than the API prices at once — the selection goes to a quotation. */
+export function beyondPriced(side: PrintSide, ids: readonly string[]): boolean {
+  if (ids.length === 0) return false;
+  if (side.cmyk && ids.includes(side.cmyk.inkColourId)) {
+    const priced = side.cmyk.addOn.enabled ? side.cmyk.addOn.maxColours : 0;
+    return ids.length - 1 > priced;
+  }
+  return ids.length > (side.spot?.maxColours ?? 0);
+}
+
 /** The ids a side's default selection stands for, kept to what the model offers. */
 export function defaultIds(side: PrintSide): string[] {
   const { method, spotInkColourIds, cmykAddOnInkColourIds } = side.default;
   if (method === "cmyk" && side.cmyk) {
-    const addOn = side.cmyk.addOn.enabled ? cmykAddOns(side, cmykAddOnInkColourIds) : [];
+    const addOn = side.cmyk.addOn.enabled ? cmykAddOns(side, cmykAddOnInkColourIds, false) : [];
     return [side.cmyk.inkColourId, ...addOn];
   }
   if (method === "spot" && side.spot) return unique(spotInkColourIds).slice(0, side.spot.maxColours);
   return [];
 }
 
-/** The spot inks that may stand beside CMYK, at most M. */
-function cmykAddOns(side: PrintSide, ids: readonly string[]): string[] {
-  const addOn = side.cmyk?.addOn;
-  if (!side.cmyk || !addOn?.enabled) return [];
+/** The spot inks that may stand beside CMYK: at most M priced, or (`quote`) more for a quotation (C0b). */
+function cmykAddOns(side: PrintSide, ids: readonly string[], quote = true): string[] {
+  const limit = quote ? addOnLimit(side) : side.cmyk?.addOn.enabled ? side.cmyk.addOn.maxColours : 0;
+  if (!side.cmyk || limit === 0) return [];
   const allowed = new Set(side.spot?.inkColourIds ?? []);
   return unique(ids)
     .filter((id) => id !== side.cmyk!.inkColourId && allowed.has(id))
-    .slice(0, addOn.maxColours);
+    .slice(0, limit);
 }
 
 /** Which method a list of ink ids is, on this side. */
@@ -66,17 +91,22 @@ export function methodOf(side: PrintSide, ids: readonly string[]): PrintMethod {
  * Brings any list of ink ids (a draft, a seed, a saved quote in the old shape) to one valid choice
  * of the model: CMYK stands alone (beside only the add-on inks, when enabled), spot is at most N
  * offered inks, and anything the model does not offer falls back to the side's default. CMYK
- * together with a spot ink is never produced.
+ * together with a spot ink is produced only as the add-on.
+ *
+ * C0b: with `quote` (the configurator, where the customer picks the inks), a side keeps more colours
+ * than the instant price covers, up to the API's `quote` counts — the calculation answers
+ * `rfq_required` and the dock offers the quotation request. Without it (the Studio's derived inks),
+ * only what is priced at once is kept; the Studio says what is left out (SpotColourWarning).
  */
-export function normaliseSide(side: PrintSide, ids: readonly string[]): string[] {
+export function normaliseSide(side: PrintSide, ids: readonly string[], quote = false): string[] {
   const wanted = unique(ids);
   if (wanted.length === 0) return side.methods.includes("none") ? [] : defaultIds(side);
   if (side.cmyk && side.methods.includes("cmyk") && wanted.includes(side.cmyk.inkColourId)) {
-    return [side.cmyk.inkColourId, ...cmykAddOns(side, wanted)];
+    return [side.cmyk.inkColourId, ...cmykAddOns(side, wanted, quote)];
   }
   if (side.spot && side.methods.includes("spot")) {
     const allowed = new Set(side.spot.inkColourIds);
-    const spots = wanted.filter((id) => allowed.has(id)).slice(0, side.spot.maxColours);
+    const spots = wanted.filter((id) => allowed.has(id)).slice(0, quote ? spotLimit(side) : side.spot.maxColours);
     if (spots.length > 0) return spots;
   }
   return defaultIds(side);
@@ -99,9 +129,10 @@ export function normaliseCorrugateSide(
   options: ReadonlyMap<string, StoreOption>,
   kind: PrintKind,
   ids: readonly string[],
+  quote = false,
 ): string[] {
   const side = sideModelOf(configurator, kind);
-  return side ? normaliseSide(side, ids) : normaliseSingleInk(options, ids);
+  return side ? normaliseSide(side, ids, quote) : normaliseSingleInk(options, ids);
 }
 
 /* ----------------------------------------------------------------------------- the radio choices */
@@ -155,7 +186,7 @@ export function idsOfChoice(side: PrintSide, choice: PrintChoice, current: reado
 /** The ink ids of a side that sit beside the method: spot inks (N > 1) or the CMYK add-on. */
 export function withExtraInks(side: PrintSide, ids: readonly string[], extra: readonly string[]): string[] {
   if (side.cmyk && ids.includes(side.cmyk.inkColourId)) return [side.cmyk.inkColourId, ...cmykAddOns(side, extra)];
-  return unique(extra).slice(0, side.spot?.maxColours ?? 0);
+  return unique(extra).slice(0, spotLimit(side));
 }
 
 /** The model's starting ids for a side, or `null` when the product has none for it. */

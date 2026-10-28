@@ -142,6 +142,7 @@
     },
     "onRequest": "Request a quote",
     "sla": "We reply within {hours, number} working hours",
+    "beyondPrint": "You chose more colours than we can price instantly. Ask for a quotation and the team replies with a price.",
     "requestQuote": "Request a quote",
     "order": "Order",
     "calculating": "Calculating the price…",
@@ -475,6 +476,7 @@
     "title": "Your design has more colours than this price covers",
     "body": "The design uses {needed, number} colours, but this price covers {priced, number} spot colours. Choose a print method that prints them all before you order.",
     "toCmyk": "Switch to CMYK",
-    "moreColours": "Add colours"
+    "moreColours": "Add colours",
+    "moreQuote": "Corrugated boxes can print more colours; colours beyond the instant price are quoted by the team (request a quotation)."
   }
 }
