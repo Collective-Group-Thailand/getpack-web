@@ -11,6 +11,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { PhoneInput } from "@/ui/components/PhoneInput";
+import { useFocusFirstInvalid } from "@/features/shared/forms/focus-first-invalid";
 
 import type { Address } from "./address";
 import { PostcodeAreaField, type ChosenArea } from "./PostcodeArea";
@@ -72,6 +73,7 @@ function CreateAddress({ onSaved, onCancel }: { onSaved: (address: Address) => v
   const [postcode, setPostcode] = useState("");
   const [area, setArea] = useState<ChosenArea | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof Draft | "postcode" | "subdistrict", string>>>({});
+  const formRef = useFocusFirstInvalid(errors);
   const [failure, setFailure] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const set = (patch: Partial<Draft>) => setDraft((current) => ({ ...current, ...patch }));
@@ -114,7 +116,7 @@ function CreateAddress({ onSaved, onCancel }: { onSaved: (address: Address) => v
   }
 
   return (
-    <form noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
+    <form ref={formRef} noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
       {failure ? (
         <Callout tone="danger" live>
           {failure}
@@ -189,6 +191,7 @@ function EditAddress({
   const t = useTranslations("account.addressForm");
   const [draft, setDraft] = useState<Draft>(() => fromAddress(address));
   const [errors, setErrors] = useState<Partial<Record<keyof Draft | "postcode" | "subdistrict", string>>>({});
+  const formRef = useFocusFirstInvalid(errors);
   const [failure, setFailure] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const set = (patch: Partial<Draft>) => setDraft((current) => ({ ...current, ...patch }));
@@ -254,7 +257,7 @@ function EditAddress({
   }
 
   return (
-    <form noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
+    <form ref={formRef} noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
       {failure ? (
         <Callout tone="danger" live>
           {failure}
