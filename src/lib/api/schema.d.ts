@@ -33809,6 +33809,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/styles/studio-featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the styles the Studio features
+         * @description D-455 (C7, DECISIONS-STAGE-A §2): the Studio's "แบบที่คนเริ่มบ่อย" — up to 6 published styles. Until there is enough real usage, the admins' ordered list in the effective-dated, audited setting `studio.featured_styles` (each style on/off); once the Studio designs started within `usage.windowDays` reach `usage.minDesigns`, the styles most designs were started from (`source: usage`). Unset or nothing published → `source: none`, empty: the storefront hides the section. Cards as `store.styles.list`; no factory identity (D-050).
+         *
+         *     Implements: D-455, D-245, D-050.
+         */
+        get: operations["store.styles.studioFeatured"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/styles/variants": {
         parameters: {
             query?: never;
@@ -79714,6 +79736,20 @@ export interface components {
         };
         /** @enum {string} */
         StudioElementKind: "shape" | "icon" | "mark";
+        /**
+         * @description `curated` = the admins' ordered list (`studio.featured_styles`); `usage` = ranked by Studio designs started in the window once they reach the configured threshold; `none` = nothing chosen and no usage ranking (hide the section)
+         * @enum {string}
+         */
+        StudioFeaturedSource: "curated" | "usage" | "none";
+        StudioFeaturedStylesDto: {
+            /** @description Up to 6 published styles, in order */
+            data: components["schemas"]["StyleCardDto"][];
+            /**
+             * @description `curated` = the admins' ordered list (`studio.featured_styles`); `usage` = ranked by Studio designs started in the window once they reach the configured threshold; `none` = nothing chosen and no usage ranking (hide the section)
+             * @example curated
+             */
+            source: components["schemas"]["StudioFeaturedSource"];
+        };
         StudioFunnelReportDto: {
             /** @description % of sessions adding artwork that add to cart */
             artworkToCartPct: components["schemas"]["StudioMetricDto"];
@@ -332980,6 +333016,127 @@ export interface operations {
             };
             /** @description Problem: `styles.variant_not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.styles.studioFeatured": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The featured styles and where their order comes from */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "category": "folding_carton",
+                     *           "code": "PK-TE-01",
+                     *           "dielineUrl": null,
+                     *           "family": "tuck_end",
+                     *           "favourite": null,
+                     *           "featured": false,
+                     *           "fit": null,
+                     *           "fitRange": null,
+                     *           "materialClass": "paperboard",
+                     *           "moqUnits": null,
+                     *           "nameEn": "Tuck-end carton (configurable ends)",
+                     *           "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
+                     *           "options": [
+                     *             "tuck_bottom:crash_lock",
+                     *             "window:front_window"
+                     *           ],
+                     *           "photo": null,
+                     *           "pricePath": "instant",
+                     *           "quoteResponseBusinessDays": null,
+                     *           "referenceCode": null,
+                     *           "sizeClass": "box",
+                     *           "startingPrice": {
+                     *             "catalogProductSlug": "dev-tuck-end-box",
+                     *             "computedAt": "2026-10-03T10:00:00+07:00",
+                     *             "currency": "THB",
+                     *             "label": {
+                     *               "en": "RSC · 140 × 97.5 × 60 mm (inside) · KA125 B-flute (3-ply) · Print (outside): 1 spot colour (ดำ)",
+                     *               "th": "กล่องฝาชน · 140 × 97.5 × 60 มม. (ด้านใน) · ลูกฟูก KA125 ลอน B (3 ชั้น) · พิมพ์ด้านนอก: สีพิเศษ 1 สี (ดำ)"
+                     *             },
+                     *             "quantity": 1000,
+                     *             "unitPrice": "4.85"
+                     *           },
+                     *           "thumbnailUrl": null,
+                     *           "variantCount": 183
+                     *         }
+                     *       ],
+                     *       "source": "curated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StudioFeaturedStylesDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
