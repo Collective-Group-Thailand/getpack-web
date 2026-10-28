@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -36,6 +36,10 @@ export interface RequoteButtonProps extends Omit<ButtonProps, "onClick" | "child
   groupId: string;
   /** Where the customer pays once the new price is written (the order's payment section). */
   payHref: string;
+  /** Called when the customer starts the re-quote (analytics). */
+  onOpen?: () => void;
+  /** Start at once — the order page opened from the overdue reminder's link (`?requote=1`, D-453). */
+  autoOpen?: boolean;
 }
 
 /**
@@ -44,7 +48,7 @@ export interface RequoteButtonProps extends Omit<ButtonProps, "onClick" | "child
  * only then writes it (`confirmRequote`, with the preview's total and an `Idempotency-Key`). Payment
  * is the existing flow, from the page it lands on. Every amount and date is the API's.
  */
-export function RequoteButton({ groupId, payHref, ...button }: RequoteButtonProps) {
+export function RequoteButton({ groupId, payHref, onOpen, autoOpen = false, ...button }: RequoteButtonProps) {
   const t = useTranslations("myOrders.requote");
   const format = useFormat();
   const router = useRouter();
@@ -70,6 +74,14 @@ export function RequoteButton({ groupId, payHref, ...button }: RequoteButtonProp
     [groupId],
   );
 
+  // The reminder's link: open the preview once, on arrival.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!autoOpen || autoStarted.current) return;
+    autoStarted.current = true;
+    void load(false);
+  }, [autoOpen, load]);
+
   async function confirm(preview: RequotePreview) {
     setPhase({ kind: "confirming", preview });
     try {
@@ -92,7 +104,14 @@ export function RequoteButton({ groupId, payHref, ...button }: RequoteButtonProp
 
   return (
     <>
-      <Button {...button} iconStart="refresh" onClick={() => void load(false)}>
+      <Button
+        {...button}
+        iconStart="refresh"
+        onClick={() => {
+          onOpen?.();
+          void load(false);
+        }}
+      >
         {t("action")}
       </Button>
       <Dialog

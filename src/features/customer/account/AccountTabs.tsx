@@ -34,10 +34,13 @@ export function TabBar({
   label,
   items,
   className,
+  onSelect,
 }: {
   label: string;
   items: { key: string; href: string; label: string; current: boolean; count?: number | null }[];
   className?: string;
+  /** Called with the tab's key when it is chosen (analytics). */
+  onSelect?: (key: string) => void;
 }) {
   return (
     <nav aria-label={label} className={cn("max-w-full", className)}>
@@ -47,6 +50,7 @@ export function TabBar({
             <Link
               href={item.href}
               aria-current={item.current ? "page" : undefined}
+              onClick={onSelect ? () => onSelect(item.key) : undefined}
               className={cn(
                 "inline-flex min-h-9 items-center gap-1.5 rounded-[9px] px-3 text-[0.84375rem] whitespace-nowrap",
                 item.current ? "bg-surface text-fg shadow-card font-semibold" : "text-muted hover:text-fg font-medium",

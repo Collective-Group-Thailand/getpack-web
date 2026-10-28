@@ -384,5 +384,114 @@
     "notDue": "คำสั่งซื้อนี้ยังไม่ถึงกำหนดตรวจราคาใหม่",
     "failed": "ตรวจราคาใหม่ไม่สำเร็จ กรุณาลองอีกครั้ง",
     "retry": "ลองอีกครั้ง"
+  },
+  "list": {
+    "title": "คำสั่งซื้อ",
+    "intro": "ติดตามทุกคำสั่งซื้อ ชำระเงิน ส่งไฟล์ และสั่งซ้ำได้ที่นี่",
+    "export": "ส่งออก",
+    "newOrder": "สั่งซื้อใหม่",
+    "placed": "สั่งซื้อ {code} แล้ว",
+    "tabsLabel": "สถานะคำสั่งซื้อ",
+    "tabs": {
+      "active": "กำลังดำเนินการ",
+      "todo": "ต้องทำ",
+      "in_production": "กำลังผลิต",
+      "shipping": "กำลังจัดส่ง",
+      "completed": "เสร็จสิ้น",
+      "cancelled": "ยกเลิก"
+    },
+    "searchLabel": "ค้นหาคำสั่งซื้อ",
+    "searchPlaceholder": "ค้นหาเลขคำสั่งซื้อ สินค้า หรือเลข PO",
+    "searchClear": "ล้างการค้นหา",
+    "searchResults": "{count, plural, =0 {ไม่พบคำสั่งซื้อ} other {พบ # คำสั่งซื้อ}}",
+    "empty": {
+      "active": "ไม่มีคำสั่งซื้อที่กำลังดำเนินการ",
+      "todo": "ไม่มีอะไรต้องทำตอนนี้",
+      "in_production": "ไม่มีคำสั่งซื้อที่กำลังผลิต",
+      "shipping": "ไม่มีคำสั่งซื้อที่กำลังจัดส่ง",
+      "completed": "ยังไม่มีคำสั่งซื้อที่เสร็จสิ้น",
+      "cancelled": "ไม่มีคำสั่งซื้อที่ยกเลิก"
+    },
+    "emptyBody": "คำสั่งซื้อใหม่จะแสดงที่นี่ พร้อมขั้นตอนถัดไปที่ต้องทำ",
+    "emptySearch": "ไม่พบคำสั่งซื้อที่ตรงกับ “{q}”",
+    "browse": "เลือกสินค้า",
+    "qty": "{quantity} {unit}",
+    "placedOn": "สั่ง {date}",
+    "overdue": "เลยกำหนดชำระ",
+    "file": "ไฟล์: {status}",
+    "due": {
+      "afterPayment": "วันส่งคำนวณใหม่หลังชำระเงิน",
+      "eta": "คาดว่าได้รับ <b>{date}</b>",
+      "shipBy": "กำหนดส่ง <b>{date}</b>",
+      "received": "ได้รับ <b>{received} / {ordered}</b> ชิ้น",
+      "receivedCredit": "ได้รับ <b>{received} / {ordered}</b> ชิ้น · เครดิตคืน <b>{credit}</b>",
+      "deliveredOn": "ส่งถึงเมื่อ {date}"
+    },
+    "actions": {
+      "pay": "ชำระเงิน",
+      "viewClaim": "ดูเคลม"
+    },
+    "stages": {
+      "payment": "ชำระเงิน",
+      "artwork": "ไฟล์งาน",
+      "approval": "อนุมัติแบบ",
+      "production": "ผลิต",
+      "delivery": "จัดส่ง",
+      "receipt": "รับของ",
+      "currentOf": "ขั้นตอนที่ {n} จาก {total}: {stage}",
+      "allDone": "ครบทุกขั้นตอนแล้ว"
+    },
+    "group": {
+      "label": "ชำระรวม {code}",
+      "title": "ชำระรวม {code}",
+      "count": "{count} คำสั่งซื้อ",
+      "dueBy": "ภายใน {date}",
+      "late": "เลยกำหนดชำระ",
+      "pay": "ชำระรวม {amount}"
+    },
+    "todo": {
+      "title": "ต้องทำตอนนี้",
+      "pay": "ชำระ {amount}",
+      "payGroup": "ชำระรวม {amount}",
+      "orderCount": "{count} คำสั่งซื้อ",
+      "dueBy": "ภายใน {date}",
+      "late": "เลยกำหนดชำระ",
+      "payAction": "ชำระเงิน",
+      "uploadOne": "ส่งไฟล์งาน {code}",
+      "uploadMany": "ส่งไฟล์งาน {count} รายการ",
+      "uploadDetail": "ดาวน์โหลดแบบไดคัท วางงาน แล้วอัปโหลด",
+      "uploadAction": "ส่งไฟล์งาน",
+      "dielineTitle": "ไฟล์งาน {code}",
+      "dielineDetail": "ทีมงานกำลังเตรียมแบบไดคัทให้ ได้รับแล้วจะแจ้งให้วางงานและส่งไฟล์",
+      "details": "ดูรายละเอียด",
+      "receiveOne": "ยืนยันรับของ {code}",
+      "receiveMany": "ยืนยันรับของ {count} รายการ",
+      "receiveDetail": "ได้รับครบแล้ว ยืนยันเพื่อปิดคำสั่งซื้อ หากมีปัญหาแจ้งได้จากหน้าคำสั่งซื้อ",
+      "receiveAction": "ยืนยันรับของ",
+      "claims": "เคลมกำลังตรวจ {count} เรื่อง",
+      "claimDetail": "{claim} · คำสั่งซื้อ {code}",
+      "claimAction": "ดูความคืบหน้า"
+    },
+    "pagination": {
+      "nav": "หน้ารายการคำสั่งซื้อ",
+      "previous": "ก่อนหน้า",
+      "next": "ถัดไป",
+      "page": "หน้า {page}"
+    },
+    "exportColumns": {
+      "order": "เลขที่คำสั่งซื้อ",
+      "product": "สินค้า",
+      "quantity": "จำนวน",
+      "unit": "หน่วย",
+      "placed": "สั่งเมื่อ",
+      "status": "สถานะ",
+      "artwork": "ไฟล์งาน",
+      "shipBy": "กำหนดส่ง",
+      "total": "ยอดรวม (บาท รวม VAT)",
+      "group": "เลขที่ชำระรวม",
+      "po": "เลขที่ PO",
+      "afterPayment": "คำนวณหลังชำระเงิน"
+    },
+    "loading": "กำลังโหลดคำสั่งซื้อ…"
   }
 }
