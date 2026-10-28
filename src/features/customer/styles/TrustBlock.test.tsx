@@ -16,10 +16,18 @@ vi.mock("next-intl/server", async () => {
 const empty = { certifications: [], foodGrade: [], productionPhotos: [], customerLogos: [], taxInvoiceNote: null };
 
 describe("the trust section (C0)", () => {
-  it("is left out when staff entered nothing", async () => {
+  it("shows only the decision-backed tax-invoice note when staff entered nothing (C0b: D-010, D-125)", async () => {
     expect(hasTrust(empty)).toBe(false);
     expect(hasTrust(null)).toBe(false);
-    expect(await TrustBlock({ trust: empty, locale: "th" })).toBeNull();
+    for (const trust of [empty, null]) {
+      const { unmount } = render((await TrustBlock({ trust, locale: "th" }))!);
+      expect(screen.getByText("ใบกำกับภาษีเต็มรูปแบบ")).toBeInTheDocument();
+      expect(screen.getByText(th.library.trustTaxInvoiceDefault)).toBeInTheDocument();
+      expect(screen.queryByText("ใบรับรองวัสดุ")).toBeNull();
+      expect(screen.queryByText("รูปงานจริงระหว่างผลิต")).toBeNull();
+      expect(document.body.textContent).not.toMatch(/โรงงาน/);
+      unmount();
+    }
   });
 
   it("shows only the parts that have content, with the production-photo label of GLOBAL-RULES §1", async () => {
