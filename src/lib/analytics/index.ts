@@ -25,3 +25,4 @@ export { trackCategory, type CategoryEventName, type CategoryEvents } from "./ca
 export { trackCheckout, type CheckoutEventName, type CheckoutEvents, type CheckoutStep } from "./checkout";
 export { trackAccount, type AccountEventName, type AccountEvents } from "./account";
 export { trackStudioHub, type StudioHubEventName, type StudioHubEvents } from "./studio-hub";
+export { trackEditor, type EditorEventName, type EditorEvents, type EditorModeName } from "./editor";
