@@ -26,11 +26,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       </div>
     );
   }
-  const { cart, addresses } = await getCartAndBook();
+  const { cart } = await getCartAndBook();
+  // Step 1 of 4 (checkout redesign Phase 1): the stepper, then the cart box, whose heading is the page's h1.
   return (
-    <div className="max-w-content mx-auto px-5 py-8 md:px-8">
-      <h1 className="text-title leading-tight">{t("title")}</h1>
-      <CartView initialCart={cart} initialAddresses={addresses} />
+    <div className="max-w-nav mx-auto px-4 pt-1 pb-8 md:px-5 min-[65rem]:px-6">
+      {cart.items.length === 0 ? <h1 className="text-title mt-7 leading-tight">{t("title")}</h1> : null}
+      <CartView initialCart={cart} />
     </div>
   );
 }

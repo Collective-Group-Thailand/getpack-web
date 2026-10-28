@@ -35,8 +35,18 @@ export interface PromoCodeBoxProps {
   savings?: string | null;
   /** The last apply the API refused outright (rate limit, unknown code) — shown inline. */
   error?: string | null;
-  /** How many codes the cart may hold (`promotions.max_codes_per_cart`, D-053); the box stops at it. */
-  maxCodes?: number;
+  /**
+   * How many codes the cart may hold (`CartDto.maxCodes` = `promotions.max_codes_per_cart`, D-452); the box stops at
+   * it. Null: the API enforces its limit and the box names none.
+   */
+  maxCodes?: number | null;
+  /**
+   * `coupon` (default): the coupon-shaped box. `compact`: the order summary's form, chips and one line of small print
+   * (checkout redesign item 6) — same states, same words.
+   */
+  variant?: "coupon" | "compact";
+  /** Small print after the limit (compact): "คะแนนสะสมใช้ได้ในขั้นชำระเงิน". */
+  note?: string;
   className?: string;
 }
 
@@ -58,7 +68,9 @@ export function PromoCodeBox({
   applied = [],
   savings = null,
   error = null,
-  maxCodes = 3,
+  maxCodes = null,
+  variant = "coupon",
+  note,
   className,
 }: PromoCodeBoxProps) {
   const t = useTranslations("cart.promo");
@@ -70,7 +82,7 @@ export function PromoCodeBox({
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
 
-  const full = codes.length >= maxCodes;
+  const full = maxCodes !== null && codes.length >= maxCodes;
   const normalised = draft.trim().toUpperCase();
   const duplicate = normalised !== "" && codes.some((entry) => entry.code === normalised);
   const canApply = normalised !== "" && !duplicate && !full && !pending;
@@ -83,13 +95,113 @@ export function PromoCodeBox({
     setDraft("");
   }
 
+  const hint = full
+    ? t("full", { max: maxCodes ?? 0 })
+    : maxCodes !== null
+      ? t("hint", { max: maxCodes })
+      : t("hintNoMax");
+
+  if (variant === "compact")
+    return (
+      <div className={cn("flex flex-col gap-2", className)}>
+        <form onSubmit={submit} className="flex items-stretch gap-1.5">
+          <label htmlFor={inputId} className="sr-only">
+            {t("label")}
+          </label>
+          <Input
+            id={inputId}
+            value={draft}
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            maxLength={32}
+            disabled={full || pending}
+            placeholder={t("placeholderCompact")}
+            aria-describedby={error ? `${hintId} ${errorId}` : hintId}
+            aria-invalid={error ? true : undefined}
+            inputSize="md"
+            className="bg-surface min-w-0 flex-1 text-sm uppercase placeholder:normal-case"
+            onChange={(event) => setDraft(event.target.value)}
+          />
+          <Button type="submit" variant="secondary" disabled={!canApply} loading={pending} className="shrink-0">
+            {t("apply")}
+          </Button>
+        </form>
+        {duplicate ? (
+          <p className="text-muted m-0 text-[13px]" role="status">
+            {t("duplicate", { code: normalised })}
+          </p>
+        ) : null}
+        {error ? (
+          <p id={errorId} className="text-danger m-0 flex items-start gap-1.5 text-[13px]" role="alert">
+            <Icon name="error" size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+            <span>{error}</span>
+          </p>
+        ) : null}
+        {codes.length > 0 ? (
+          <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label={t("appliedList")}>
+            {codes.map((entry) => {
+              const ok = entry.status === "validated";
+              return (
+                <li
+                  key={entry.code}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-md py-0.5 ps-2.5 pe-0.5 text-[12.5px] font-semibold tracking-wider",
+                    ok ? "bg-primary-subtle text-primary" : "bg-warning-subtle text-warning-subtle-fg",
+                  )}
+                  title={ok ? t("accepted") : t("rejected", { reason: entry.rejectReason ?? t("rejectedUnknown") })}
+                >
+                  {ok ? null : <Icon name="warning" size={14} aria-hidden="true" />}
+                  {entry.code}
+                  <span className="sr-only">
+                    {ok ? t("accepted") : t("rejected", { reason: entry.rejectReason ?? t("rejectedUnknown") })}
+                  </span>
+                  <IconButton
+                    name="close"
+                    size="sm"
+                    variant="ghost"
+                    label={t("remove", { code: entry.code })}
+                    disabled={pending}
+                    onClick={() => onRemove(entry.code)}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+        {codes.some((entry) => entry.status !== "validated") ? (
+          <p className="text-warning-subtle-fg m-0 text-xs">
+            {codes
+              .filter((entry) => entry.status !== "validated")
+              .map((entry) => `${entry.code}: ${entry.rejectReason ?? t("rejectedUnknown")}`)
+              .join(" · ")}
+          </p>
+        ) : null}
+        {applied.length > 0 ? (
+          <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[13px]" aria-label={t("savingsList")}>
+            {applied.map((promotion, index) => (
+              <li key={`${promotion.name}-${index}`} className="flex justify-between gap-3">
+                <span className="text-muted min-w-0">{promotion.name}</span>
+                <span className="text-success-subtle-fg shrink-0 font-medium tabular-nums">
+                  {t("minus", { amount: format.thb(promotion.amount) })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <small id={hintId} className="text-muted text-xs">
+          {note ? `${hint} · ${note}` : hint}
+        </small>
+      </div>
+    );
+
   return (
     <CouponFrame
       className={className}
       titleId={titleId}
       hintId={hintId}
       title={hasSavings ? t("savingTitle", { amount: format.thb(savings) }) : t("title")}
-      hint={full ? t("full", { max: maxCodes }) : t("hint", { max: maxCodes })}
+      hint={hint}
     >
       <form onSubmit={submit} className="mt-3 flex items-stretch gap-2">
         <label htmlFor={inputId} className="sr-only">
