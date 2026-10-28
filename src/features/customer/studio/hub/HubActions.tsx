@@ -8,7 +8,7 @@ import { storeDesigns } from "@/features/designer/data/api";
 import { Link, useRouter } from "@/i18n/navigation";
 import { trackStudioHub, type StudioHubEvents } from "@/lib/analytics";
 import { browserApi, isApiError } from "@/lib/api/browser";
-import { Button } from "@/ui/components/Button";
+import { Button, buttonVariants } from "@/ui/components/Button";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -39,18 +39,13 @@ export function PathLink({
   );
 }
 
+/** A button look for a link, picked on the server and drawn here (`buttonVariants` is a client function). */
+type Look = Parameters<typeof buttonVariants>[0];
+
 /** "ลองกับแบบตัวอย่าง" — counted (`studio_try_sample`). */
-export function SampleLink({
-  href,
-  className,
-  children,
-}: {
-  href: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
+export function SampleLink({ href, look, children }: { href: string; look?: Look; children: React.ReactNode }) {
   return (
-    <Link href={href} className={className} onClick={() => trackStudioHub("studio_try_sample", {})}>
+    <Link href={href} className={buttonVariants(look)} onClick={() => trackStudioHub("studio_try_sample", {})}>
       {children}
     </Link>
   );
@@ -193,17 +188,9 @@ export function DuplicateDesign({ id, name }: { id: string; name: string }) {
 }
 
 /** A recent design's "เปิด" — counted (`studio_draft_open`). */
-export function DraftLink({
-  href,
-  className,
-  children,
-}: {
-  href: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
+export function DraftLink({ href, look, children }: { href: string; look?: Look; children: React.ReactNode }) {
   return (
-    <Link href={href} className={className} onClick={() => trackStudioHub("studio_draft_open", {})}>
+    <Link href={href} className={buttonVariants(look)} onClick={() => trackStudioHub("studio_draft_open", {})}>
       {children}
     </Link>
   );

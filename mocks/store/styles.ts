@@ -563,6 +563,15 @@ export const storeStyleHandlers: HttpHandler[] = [
     return HttpResponse.json(found.map((s) => detail(s!, mine ? mine.has(s!.row.code) : null)));
   }),
 
+  // C7 (D-455): "แบบที่คนเริ่มบ่อย" — mock only: an admin's curated list (the first six mock styles that open in the
+  // Studio); the real list is the setting `studio.featured_styles`.
+  http.get("*/v1/store/styles/studio-featured", () =>
+    HttpResponse.json({
+      source: "curated",
+      data: STYLES.slice(0, 6).map((s) => card(s, null)),
+    } satisfies Schemas["StudioFeaturedStylesDto"]),
+  ),
+
   http.get("*/v1/store/styles/:code", ({ request, params }) => {
     const s = byCode.get(String(params.code));
     if (!s) return notFound();

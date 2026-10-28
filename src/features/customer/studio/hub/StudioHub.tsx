@@ -12,7 +12,7 @@ import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { STYLES_HREF } from "@/features/customer/styles/paths";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
-import { buttonVariants } from "@/ui/components/Button";
+import { Button } from "@/ui/components/Button";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -102,10 +102,10 @@ export async function StudioHub(props: StudioHubProps) {
               <span className="lg:hidden">{t("hero.ledeNarrow")}</span>
             </p>
             <div className="mt-6 flex flex-wrap gap-2.5">
-              <a href="#paths" className={buttonVariants({ size: "lg" })}>
-                {t("hero.start")}
-              </a>
-              <SampleLink href={sample} className={buttonVariants({ size: "lg", variant: "secondary" })}>
+              <Button asChild size="lg">
+                <a href="#paths">{t("hero.start")}</a>
+              </Button>
+              <SampleLink href={sample} look={{ size: "lg", variant: "secondary" }}>
                 <Icon name="sparkles" size={18} aria-hidden="true" />
                 {t("hero.sample")}
               </SampleLink>
@@ -223,9 +223,9 @@ export async function StudioHub(props: StudioHubProps) {
                 </h2>
                 <p className="text-muted mt-1.5 text-[14.5px]">{t("popularLead")}</p>
               </div>
-              <Link href={STYLES_HREF} className={buttonVariants({ variant: "secondary" })}>
-                {t("allTemplates")}
-              </Link>
+              <Button asChild variant="secondary">
+                <Link href={STYLES_HREF}>{t("allTemplates")}</Link>
+              </Button>
             </div>
             <ul className="grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-6">
               {featured.map((style) => {
@@ -292,10 +292,7 @@ export async function StudioHub(props: StudioHubProps) {
                     </small>
                   </span>
                   <span className="col-span-2 flex gap-2 sm:col-span-1">
-                    <DraftLink
-                      href={`/studio/${design.id}`}
-                      className={buttonVariants({ size: "sm", variant: "secondary" })}
-                    >
+                    <DraftLink href={`/studio/${design.id}`} look={{ size: "sm", variant: "secondary" }}>
                       {t("open")}
                     </DraftLink>
                     <DuplicateDesign id={design.id} name={design.title} />
@@ -322,7 +319,7 @@ export async function StudioHub(props: StudioHubProps) {
                       })}
                 </small>
               </div>
-              <SampleLink href={sample} className={buttonVariants({ variant: "secondary" })}>
+              <SampleLink href={sample} look={{ variant: "secondary" }}>
                 {t("trySample")}
               </SampleLink>
             </div>

@@ -230,7 +230,7 @@ export function HeroMiniEditor({ shape, initial }: { shape: HeroShape | null; in
               ))}
             </g>
           </svg>
-          <div className="border-border bg-surface rounded-card absolute start-3 bottom-3 w-[9.5rem] border p-1.5">
+          <div className="border-border bg-surface rounded-card w-[9.5rem] justify-self-start border p-1.5 sm:absolute sm:start-3 sm:bottom-3">
             <small className="text-muted ms-0.5 mb-1 block text-[10.5px]">{t("flat")}</small>
             <div className="relative aspect-[8/5]">
               {shape?.styleId && size ? (
@@ -376,7 +376,7 @@ export function HeroMiniEditor({ shape, initial }: { shape: HeroShape | null; in
                   {format.thb(priced.preview.unitPrice)}
                 </b>
                 <small className="text-muted text-[11.5px]">
-                  {tPanel("priceCaption", { qty: format.number(priced.selection.qty) })} · {sizeName}
+                  {tPanel("priceCaption", { qty: format.number(priced.selection.qty) })}
                 </small>
               </>
             ) : preview.isError ? (
