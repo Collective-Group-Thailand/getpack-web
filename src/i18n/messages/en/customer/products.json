@@ -14,7 +14,10 @@
     "searchClear": "Clear search",
     "totals": "{items, number} items · {categories, number} categories",
     "vatSwitch": "Show prices incl. VAT",
-    "vatIncludedNote": "Prices shown include VAT"
+    "vatIncludedNote": "Prices shown include VAT",
+    "vatLabel": "Show prices",
+    "vatIncl": "Incl. VAT",
+    "vatExcl": "Excl. VAT"
   },
   "modes": {
     "label": "How to buy",
@@ -135,7 +138,10 @@
     "rfqAdd": "Add to quote request",
     "rfqIn": "In quote request",
     "rfqAddLabel": "Add {name} to the quote request",
-    "rfqRemoveLabel": "Remove {name} from the quote request"
+    "rfqRemoveLabel": "Remove {name} from the quote request",
+    "perUnitMin": "/{unit} (min. order {quantity, number})",
+    "addToCart": "Add {quantity, number} {unit} to cart",
+    "inCart": "In cart"
   },
   "table": {
     "caption": "Starting price table",
@@ -162,7 +168,8 @@
     "full": "A quote request holds at most {max, number} items",
     "progress": "Quote request: item {index, number} of {total, number}",
     "progressBody": "Fill in this item's spec and press “Add to request basket”; you then go on to the next item. Once all are in, send them together.",
-    "skip": "Skip this item"
+    "skip": "Skip this item",
+    "failed": "Could not add it to the quote request — try again"
   },
   "how": {
     "title": "How pricing works",
@@ -203,8 +210,8 @@
     "material": "Material",
     "flute": "Flute",
     "fluteFigure": "{flute} flute cross-section",
-    "use": "Good for",
-    "none": "—"
+    "none": "—",
+    "note": "Notes"
   },
   "process": {
     "title": "Process and timing",
@@ -241,7 +248,8 @@
   },
   "services": {
     "title": "Add-on services",
-    "lede": "Order with your products or on their own; priced to the job"
+    "lede": "Order with your products or on their own; priced to the job",
+    "all": "See all services"
   },
   "faq": {
     "title": "Frequently asked questions",
@@ -268,7 +276,8 @@
       },
       "taxInvoice": {
         "q": "Can I get a full tax invoice?",
-        "a": "Yes — a full tax invoice issued by Collective Group (Thailand) Co., Ltd.; enter your company details when you order."
+        "a": "Yes — a full tax invoice issued by {company}; enter your company details when you order.",
+        "aNoName": "Yes — a full tax invoice; enter your company details when you order."
       },
       "mockup": {
         "q": "Can I see a real sample before mass production?",

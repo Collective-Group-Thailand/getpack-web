@@ -12,7 +12,7 @@ import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
-import { trayStore } from "@/features/customer/products/rfq-store";
+import { nextTrayHref, useQuoteTray } from "@/features/customer/products/quote-tray";
 import { TRAY_DONE_HREF, trayItemHref } from "@/features/customer/products/tray-flow";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -86,6 +86,7 @@ export function RfqForm({
   tray = null,
 }: RfqFormProps) {
   const t = useTranslations("quoteRequests.form");
+  const quoteTray = useQuoteTray();
   const locale = useLocale();
   const format = useFormat();
   const router = useRouter();
@@ -180,7 +181,8 @@ export function RfqForm({
         quantityBand: quantityBand(rfq!.quantities[0] ?? 0),
         quoteMode: "rfq",
       });
-      if (tray) trayStore.remove(tray);
+      // Asked on its own: the item leaves the tray (signed in, its waiting basket line, D-447 §10.9).
+      if (tray) await quoteTray.remove(tray).catch(() => undefined);
       router.push(`/account/rfqs/${rfq!.id}?submitted=1`);
     } catch (error) {
       // A new attempt after a refusal is a new intent; a network failure may be retried as is.
@@ -231,10 +233,9 @@ export function RfqForm({
           },
         });
       if (tray) {
-        // The tray item is now a basket line: it leaves the tray, and the next one (if any) opens.
-        trayStore.remove(tray);
-        const next = trayStore.items()[0];
-        router.push(next ? trayItemHref(next) : TRAY_DONE_HREF);
+        // The tray item is now a basket line (a waiting line of the same product is filled, D-447 §10.9): it leaves
+        // the tray, a guest tray joins the basket now that the customer is signed in, and the next item opens.
+        router.push(await nextTrayHref(tray, Boolean(productRef), trayItemHref, TRAY_DONE_HREF));
         return;
       }
       router.push("/rfq/basket?added=1");

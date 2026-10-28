@@ -10,6 +10,8 @@ const item = (specification: Record<string, unknown>): Schemas["RfqBasketItemDto
   productType: { id: "t", code: "paper_bag", nameTh: "ถุงกระดาษ", nameEn: "Paper bag" },
   specification,
   design: null,
+  formPending: false,
+  categoryCode: "paper_packaging",
   product: null,
   rfq: null,
 });

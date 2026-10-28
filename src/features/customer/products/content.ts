@@ -31,3 +31,16 @@ export const BUSINESS_REVIEW_KEYS = [
   "modes.stock.description",
   "modes.service.description",
 ] as const;
+
+/**
+ * One FAQ answer. The tax-invoice answer names the issuing company from its settings (owner decision D-447 §10.8,
+ * `PublicConfigDto.issuer`), never from copy; without a name it says the same without one.
+ */
+export function faqAnswer(
+  t: (key: string, values?: Record<string, string>) => string,
+  key: (typeof FAQ_KEYS)[number],
+  company: string | null,
+): string {
+  if (key !== "taxInvoice") return t(`items.${key}.a`);
+  return company ? t("items.taxInvoice.a", { company }) : t("items.taxInvoice.aNoName");
+}

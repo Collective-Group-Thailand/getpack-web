@@ -213,7 +213,10 @@
     "viewCart": "View cart",
     "listTitle": "Quote request baskets",
     "draftRow": "Basket not sent yet · {count} items",
-    "sentRow": "{count} items"
+    "sentRow": "{count} items",
+    "pending": "Details not filled in yet",
+    "fill": "Fill in the details",
+    "pendingHint": "Fill in the details of every waiting item before you send the request"
   },
   "stockNote": "Ready-to-ship item: {name} (SKU {sku}) · minimum {minimum}"
 }

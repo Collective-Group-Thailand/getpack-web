@@ -24,6 +24,8 @@ export interface HubItem {
   kind: "catalog" | "stock";
   /** Catalogue slug or stock SKU — the item's key everywhere (links, RFQ tray). */
   key: string;
+  /** Stock only: the product's id, which the cart prices it by (`standard_product`); null for the catalogue. */
+  id: string | null;
   nameTh: string;
   nameEn: string;
   mode: HubMode;
@@ -32,9 +34,14 @@ export interface HubItem {
   productTypeCode: string | null;
   imageUrl: string | null;
   imageAlt: { th: string; en?: string } | null;
-  /** "เริ่มต้น" per piece incl. VAT (D-220), as the API sent it; null = no instant price. */
+  /**
+   * "เริ่มต้น" per piece incl. VAT (D-220), as the API sent it; null = no instant price. For a stock item it is the
+   * unit price at its minimum order (the first price tier, D-447 / DECISIONS-STAGE-A §10.5).
+   */
   startingPrice: string | null;
-  /** The quantity that price is for ("ที่ 300 หน่วย"). */
+  /** The same price without VAT, as the API sent it (D-447 §10.6); null when the API gave none. */
+  startingPriceExVat: string | null;
+  /** The quantity that price is for ("ที่ 300 หน่วย"; for stock the minimum order). */
   priceQuantity: number | null;
   /** The spec that price is for, in the API's words (D-441). */
   specLabel: Schemas["LocalisedLabelDto"] | null;
@@ -56,8 +63,8 @@ export function isServiceCategory(code: string | null | undefined): boolean {
 
 /**
  * A catalogue product's mode: a service category → บริการ; an instant (or partial) price →
- * ราคาทันที; otherwise สั่งผลิตตามสเปก. `partial` ("บางสเปก", none on UAT) counts as instant — the
- * card then still shows only what the API priced (OPEN QUESTION in the C1 report).
+ * ราคาทันที; otherwise สั่งผลิตตามสเปก. `partial` ("บางสเปก") counts as instant — owner decision
+ * D-447 / DECISIONS-STAGE-A §10.1; the card still shows only what the API priced.
  */
 export function catalogMode(
   card: Pick<Schemas["StoreProductCardDto"], "availability">,
@@ -167,3 +174,36 @@ export function instantLeadBand(items: readonly HubItem[]): { min: number; max: 
 
 /** Whether an item is asked for by quotation (the card's "เพิ่มในใบขอราคา"). */
 export const quotable = (item: Pick<HubItem, "mode">) => item.mode !== "instant";
+
+/**
+ * Stock (D-447 / DECISIONS-STAGE-A §10.2, §10.4): a stock item goes in the cart only when it is on hand and the API
+ * prices it instantly (its "starting from" at the minimum order); an out-of-stock item shows "สินค้าหมด" and may still
+ * go in the quote tray.
+ */
+export const stockCartable = (item: Pick<HubItem, "kind" | "id" | "inStock" | "startingPrice" | "priceQuantity">) =>
+  item.kind === "stock" &&
+  item.id !== null &&
+  item.inStock === true &&
+  item.startingPrice !== null &&
+  item.priceQuantity !== null;
+
+export const outOfStock = (item: Pick<HubItem, "kind" | "inStock">) => item.kind === "stock" && item.inStock === false;
+
+/**
+ * The add-on services the hub shows (D-447 / §10.3): staff's chosen ones in their order (up to 3) when they chose any
+ * that are on the list; otherwise the first 3 of the list in the API's order. `more` = there are services not shown
+ * ("ดูบริการทั้งหมด").
+ */
+export const SERVICES_SHOWN = 3;
+
+export function featuredServices<T extends { key: string }>(
+  services: readonly T[],
+  curated: { curated: boolean; slugs: readonly string[] } | null,
+): { shown: T[]; more: boolean } {
+  const byKey = new Map(services.map((service) => [service.key, service]));
+  const chosen = curated?.curated
+    ? curated.slugs.flatMap((slug) => (byKey.has(slug) ? [byKey.get(slug)!] : [])).slice(0, SERVICES_SHOWN)
+    : [];
+  const shown = chosen.length ? chosen : services.slice(0, SERVICES_SHOWN);
+  return { shown, more: services.length > shown.length };
+}

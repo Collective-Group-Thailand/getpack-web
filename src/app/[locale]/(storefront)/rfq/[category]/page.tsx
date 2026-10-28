@@ -13,6 +13,7 @@ import {
 import { pick } from "@/features/customer/catalog/localize";
 import { categorySegment, productHref, rfqHref } from "@/features/customer/catalog/paths";
 import { styleHref } from "@/features/customer/styles/paths";
+import { QuoteTrayProvider } from "@/features/customer/products/quote-tray";
 import { TrayProgress } from "@/features/customer/products/TrayProgress";
 import { RfqForm } from "@/features/customer/rfq/RfqForm";
 import { featureFlags } from "@/lib/env/server";
@@ -111,96 +112,98 @@ export default async function Page({
     : null;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 md:py-10">
-      <Breadcrumbs
-        label={tCatalog("breadcrumbs.label")}
-        items={[
-          { label: tCatalog("breadcrumbs.home"), href: localised("/") },
-          { label: tCatalog("breadcrumbs.products"), href: localised("/products") },
-          ...(product
-            ? [{ label: pick(locale, product.nameTh, product.nameEn), href: localised(productHref(product.slug)) }]
-            : []),
-          { label: t("breadcrumb") },
-        ]}
-      />
-      <h1 className="mt-4 text-2xl font-bold md:text-3xl">{t("heading", { name })}</h1>
-      <p className="text-muted mt-2">{t("intro")}</p>
-      <ol className="text-muted mt-4 grid gap-2 text-sm sm:grid-cols-3">
-        {(["step1", "step2", "step3"] as const).map((step, index) => (
-          <li key={step} className="bg-surface border-border flex gap-2 rounded-lg border p-3">
-            <span className="text-primary font-semibold tabular-nums">{index + 1}</span>
-            {t(`how.${step}`)}
-          </li>
-        ))}
-      </ol>
+    <QuoteTrayProvider signedIn={Boolean(readAccessToken(jar))} account={featureFlags.rfqProductRef}>
+      <div className="mx-auto max-w-3xl px-4 py-6 md:py-10">
+        <Breadcrumbs
+          label={tCatalog("breadcrumbs.label")}
+          items={[
+            { label: tCatalog("breadcrumbs.home"), href: localised("/") },
+            { label: tCatalog("breadcrumbs.products"), href: localised("/products") },
+            ...(product
+              ? [{ label: pick(locale, product.nameTh, product.nameEn), href: localised(productHref(product.slug)) }]
+              : []),
+            { label: t("breadcrumb") },
+          ]}
+        />
+        <h1 className="mt-4 text-2xl font-bold md:text-3xl">{t("heading", { name })}</h1>
+        <p className="text-muted mt-2">{t("intro")}</p>
+        <ol className="text-muted mt-4 grid gap-2 text-sm sm:grid-cols-3">
+          {(["step1", "step2", "step3"] as const).map((step, index) => (
+            <li key={step} className="bg-surface border-border flex gap-2 rounded-lg border p-3">
+              <span className="text-primary font-semibold tabular-nums">{index + 1}</span>
+              {t(`how.${step}`)}
+            </li>
+          ))}
+        </ol>
 
-      {!type ? (
-        <section aria-labelledby="rfq-types" className="mt-8">
-          <h2 id="rfq-types" className="text-lg font-semibold">
-            {t("chooseType")}
-          </h2>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {category.types.map((candidate) => (
-              <li key={candidate.code}>
-                <Card className="p-0">
-                  <Link
-                    href={`${rfqHref(category.code)}?${new URLSearchParams({
-                      type: candidate.code,
-                      ...(chosenVariant ? { base: styleBase!.code, style: chosenVariant.code } : {}),
-                    }).toString()}`}
-                    className="hover:bg-bg-subtle flex items-center justify-between gap-3 rounded-xl p-4 font-medium"
-                  >
-                    {pick(locale, candidate.nameTh, candidate.nameEn)}
-                    <Icon name="chevron-right" size={16} aria-hidden="true" />
-                  </Link>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : (
-        <section aria-labelledby="rfq-form" className="mt-8">
-          <h2 id="rfq-form" className="text-lg font-semibold">
-            {t("formHeading", { type: pick(locale, type.nameTh, type.nameEn) })}
-          </h2>
-          {trayItem ? <TrayProgress current={trayItem} className="mt-4" /> : null}
-          <div className="mt-4">
-            <RfqForm
-              tray={trayItem}
-              productRef={productRef}
-              form={withProductChoices(form!, product, tCatalog)}
-              signedIn={Boolean(readAccessToken(jar))}
-              fromProduct={
-                product
-                  ? { slug: product.slug, name: pick(locale, product.nameTh, product.nameEn) }
-                  : stock
-                    ? { slug: stock.sku, name: pick(locale, stock.nameTh, stock.nameEn) }
+        {!type ? (
+          <section aria-labelledby="rfq-types" className="mt-8">
+            <h2 id="rfq-types" className="text-lg font-semibold">
+              {t("chooseType")}
+            </h2>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {category.types.map((candidate) => (
+                <li key={candidate.code}>
+                  <Card className="p-0">
+                    <Link
+                      href={`${rfqHref(category.code)}?${new URLSearchParams({
+                        type: candidate.code,
+                        ...(chosenVariant ? { base: styleBase!.code, style: chosenVariant.code } : {}),
+                      }).toString()}`}
+                      className="hover:bg-bg-subtle flex items-center justify-between gap-3 rounded-xl p-4 font-medium"
+                    >
+                      {pick(locale, candidate.nameTh, candidate.nameEn)}
+                      <Icon name="chevron-right" size={16} aria-hidden="true" />
+                    </Link>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : (
+          <section aria-labelledby="rfq-form" className="mt-8">
+            <h2 id="rfq-form" className="text-lg font-semibold">
+              {t("formHeading", { type: pick(locale, type.nameTh, type.nameEn) })}
+            </h2>
+            {trayItem ? <TrayProgress current={trayItem} className="mt-4" /> : null}
+            <div className="mt-4">
+              <RfqForm
+                tray={trayItem}
+                productRef={productRef}
+                form={withProductChoices(form!, product, tCatalog)}
+                signedIn={Boolean(readAccessToken(jar))}
+                fromProduct={
+                  product
+                    ? { slug: product.slug, name: pick(locale, product.nameTh, product.nameEn) }
+                    : stock
+                      ? { slug: stock.sku, name: pick(locale, stock.nameTh, stock.nameEn) }
+                      : null
+                }
+                initialNotes={
+                  stock
+                    ? t("stockNote", {
+                        name: pick(locale, stock.nameTh, stock.nameEn),
+                        sku: stock.sku,
+                        minimum: stock.minOrderQty,
+                      })
+                    : ""
+                }
+                calculationId={product && UUID.test(query.calc ?? "") ? query.calc! : null}
+                style={
+                  chosenVariant && styleBase
+                    ? {
+                        code: chosenVariant.code,
+                        name: pick(locale, styleBase.nameTh, styleBase.nameEn),
+                        href: styleHref(styleBase.code, pick(locale, styleBase.nameTh, styleBase.nameEn)),
+                      }
                     : null
-              }
-              initialNotes={
-                stock
-                  ? t("stockNote", {
-                      name: pick(locale, stock.nameTh, stock.nameEn),
-                      sku: stock.sku,
-                      minimum: stock.minOrderQty,
-                    })
-                  : ""
-              }
-              calculationId={product && UUID.test(query.calc ?? "") ? query.calc! : null}
-              style={
-                chosenVariant && styleBase
-                  ? {
-                      code: chosenVariant.code,
-                      name: pick(locale, styleBase.nameTh, styleBase.nameEn),
-                      href: styleHref(styleBase.code, pick(locale, styleBase.nameTh, styleBase.nameEn)),
-                    }
-                  : null
-              }
-            />
-          </div>
-        </section>
-      )}
-    </div>
+                }
+              />
+            </div>
+          </section>
+        )}
+      </div>
+    </QuoteTrayProvider>
   );
 }
 

@@ -1,15 +1,18 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { Link } from "@/i18n/navigation";
+import { STOCK_AVAILABILITY } from "@/domain/status";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import { StatusBadge } from "@/ui/components/StatusBadge";
 import { Icon } from "@/ui/icons";
 
-import type { HubItem } from "./hub";
-import { itemHref, itemWords, trayItemOf } from "./HubCard";
+import { outOfStock, type HubItem } from "./hub";
+import { itemHref, itemWords, trayItemOf, VatFigure } from "./HubCard";
 import { RfqToggle } from "./RfqToggle";
+import { StockCartButton } from "./StockCartButton";
 
 /**
  * The price table (prompt item 7, prototype `.ptable`): one row per item — สินค้า (thumbnail and name),
@@ -25,13 +28,14 @@ export async function PriceTable({
 }: {
   items: readonly HubItem[];
   categoryNames: ReadonlyMap<string, string>;
-  vatLabel: string;
+  /** The header's basis words; the column follows the page's VAT switch (D-447 §10.6). */
+  vatLabel: { incl: string; excl: string };
   labels: Record<HubItem["mode"], string>;
 }) {
-  const locale = await getLocale();
+  const [locale, tStatus] = await Promise.all([getLocale(), getTranslations("status")]);
   const rows = await Promise.all(
     items.map(async (item) => {
-      const { t, format, unit, price, fallbackText } = await itemWords(item);
+      const { t, format, unit, figures, fallbackText, cartLabel } = await itemWords(item);
       const moq = item.moq !== null ? `${format.number(item.moq)} ${unit}` : null;
       const lead = item.leadTime
         ? item.leadTime.min === item.leadTime.max
@@ -40,11 +44,12 @@ export async function PriceTable({
         : null;
       const name = pick(locale, item.nameTh, item.nameEn);
       const src = storeImageSrc(item.imageUrl, "thumb");
-      return { item, t, format, price, fallbackText, moq, lead, name, src };
+      return { item, t, format, figures, fallbackText, moq, lead, name, src, cartLabel };
     }),
   );
   const t = rows[0]?.t;
   if (!t) return null;
+  const anyExVat = rows.some((row) => row.figures.excl !== null);
   const head = "text-muted bg-bg-subtle px-4 py-3 text-start text-[0.8125rem] font-medium whitespace-nowrap";
   return (
     <div
@@ -67,7 +72,18 @@ export async function PriceTable({
               {t("table.mode")}
             </th>
             <th scope="col" className={head}>
-              {t("table.price", { vat: vatLabel })}
+              {anyExVat ? (
+                <>
+                  <span data-vat-figure="incl" className="contents">
+                    {t("table.price", { vat: vatLabel.incl })}
+                  </span>
+                  <span data-vat-figure="excl" className="contents">
+                    {t("table.price", { vat: vatLabel.excl })}
+                  </span>
+                </>
+              ) : (
+                t("table.price", { vat: vatLabel.incl })
+              )}
             </th>
             <th scope="col" className={head}>
               {t("table.atQuantity")}
@@ -84,7 +100,7 @@ export async function PriceTable({
           </tr>
         </thead>
         <tbody className="divide-border divide-y">
-          {rows.map(({ item, format, price, fallbackText, moq, lead, name, src }) => (
+          {rows.map(({ item, format, figures, fallbackText, moq, lead, name, src, cartLabel }) => (
             <tr key={`${item.kind}:${item.key}`}>
               <th scope="row" className="px-4 py-3 text-start font-medium">
                 <Link
@@ -113,16 +129,28 @@ export async function PriceTable({
                 >
                   {labels[item.mode]}
                 </Badge>
+                {outOfStock(item) ? (
+                  // D-447 §10.4: no cart for an out-of-stock item; the quote tray stays.
+                  <StatusBadge
+                    size="sm"
+                    className="ms-1.5 whitespace-nowrap"
+                    meta={STOCK_AVAILABILITY.out_of_stock}
+                    label={tStatus(STOCK_AVAILABILITY.out_of_stock.labelKey)}
+                  />
+                ) : null}
               </td>
               <td className="px-4 py-3 whitespace-nowrap tabular-nums">
-                {price ? (
-                  <b className="text-primary text-[0.9375rem] font-semibold">{price.amount}</b>
+                {figures.incl ? (
+                  <VatFigure
+                    figures={figures}
+                    render={(price) => <b className="text-primary text-[0.9375rem] font-semibold">{price.amount}</b>}
+                  />
                 ) : (
                   <span className="text-muted">{fallbackText}</span>
                 )}
               </td>
               <td className="px-4 py-3 whitespace-nowrap tabular-nums">
-                {price && item.priceQuantity !== null ? format.number(item.priceQuantity) : t("table.none")}
+                {figures.incl && item.priceQuantity !== null ? format.number(item.priceQuantity) : t("table.none")}
               </td>
               <td className="px-4 py-3 whitespace-nowrap tabular-nums">{moq ?? t("table.none")}</td>
               <td className="px-4 py-3 whitespace-nowrap">{lead ?? t("table.none")}</td>
@@ -131,6 +159,17 @@ export async function PriceTable({
                   <Button asChild size="sm" variant="secondary">
                     <Link href={itemHref(item)}>{t("card.buy")}</Link>
                   </Button>
+                ) : cartLabel && item.id && item.priceQuantity !== null ? (
+                  // D-447 §10.2: the cart and the quote tray both for a stock item on hand with a price.
+                  <span className="inline-flex flex-wrap justify-end gap-2">
+                    <StockCartButton
+                      stockProductId={item.id}
+                      quantity={item.priceQuantity}
+                      name={name}
+                      label={cartLabel}
+                    />
+                    <RfqToggle item={trayItemOf(item)} name={name} size="sm" />
+                  </span>
                 ) : (
                   <RfqToggle item={trayItemOf(item)} name={name} size="sm" />
                 )}

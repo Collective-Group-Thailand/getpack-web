@@ -8,7 +8,7 @@ import { DisclosureList } from "@/ui/components/DisclosureList";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { FAQ_KEYS } from "./content";
+import { FAQ_KEYS, faqAnswer } from "./content";
 
 /** One section of the hub: an anchor target under the sticky bars, with its heading and lede. */
 export function HubSection({
@@ -225,14 +225,16 @@ function FluteFigure({ flute, label }: { flute: string; label: string }) {
 
 /**
  * "วัสดุกล่องลูกฟูก" (prompt item 10): the boards the instant corrugated products offer — name, flute
- * (with its cross-section) and what each is good for, in the admin's approved words (DECISIONS-STAGE-A §8,
- * the material's `description`). Hidden when no instant product is corrugated. "เปรียบเทียบวัสดุทั้งหมด"
- * opens the existing comparison.
+ * (with its cross-section) and, in the "หมายเหตุ" column, the admin's approved description (DECISIONS-STAGE-A §8, the
+ * material's `description`; owner decision D-447 §10.10). A material without one leaves its cell empty — no invented
+ * note — and the column goes when none has one. Hidden when no instant product is corrugated.
+ * "เปรียบเทียบวัสดุทั้งหมด" opens the existing comparison.
  */
 export async function MaterialsTable({ configurators }: { configurators: readonly Configurator[] }) {
   const [t, locale] = await Promise.all([getTranslations("products.materials"), getLocale()]);
   const rows = materialRows(configurators, locale);
   if (rows.length === 0) return null;
+  const notes = rows.some((row) => row.use);
   const head = "text-muted bg-bg-subtle px-4 py-3 text-start text-[0.8125rem] font-medium";
   return (
     <HubSection
@@ -261,9 +263,11 @@ export async function MaterialsTable({ configurators }: { configurators: readonl
               <th scope="col" className={head}>
                 {t("flute")}
               </th>
-              <th scope="col" className={head}>
-                {t("use")}
-              </th>
+              {notes ? (
+                <th scope="col" className={head}>
+                  {t("note")}
+                </th>
+              ) : null}
             </tr>
           </thead>
           <tbody className="divide-border divide-y">
@@ -279,7 +283,7 @@ export async function MaterialsTable({ configurators }: { configurators: readonl
                     t("none")
                   )}
                 </td>
-                <td className="text-muted px-4 py-3.5 align-top">{row.use ?? t("none")}</td>
+                {notes ? <td className="text-muted px-4 py-3.5 align-top">{row.use ?? ""}</td> : null}
               </tr>
             ))}
           </tbody>
@@ -359,14 +363,33 @@ export interface ServiceLink {
 const SERVICE_ICONS: IconName[] = ["palette", "box", "layers", "pen-tool", "wrench"];
 
 /**
- * "บริการเสริม" (prompt item 12): the service products as link cards — every one the API lists (UAT has
- * five; OPEN QUESTION whether staff pick three), with its own description. Hidden when there are none.
+ * "บริการเสริม" (prompt item 12; owner decision D-447 / DECISIONS-STAGE-A §10.3): at most three service products as
+ * link cards — the ones staff chose, in their order (`featuredServices`), else the first three the API lists — each
+ * with its own description, and "ดูบริการทั้งหมด" (the hub filtered to services) when there are more. Hidden when
+ * there are none.
  */
-export async function ServiceLinks({ services }: { services: readonly ServiceLink[] }) {
+export async function ServiceLinks({
+  services,
+  allHref,
+}: {
+  services: readonly ServiceLink[];
+  allHref: string | null;
+}) {
   const t = await getTranslations("products.services");
   if (services.length === 0) return null;
   return (
-    <HubSection id="services" title={t("title")} lede={t("lede")}>
+    <HubSection
+      id="services"
+      title={t("title")}
+      lede={t("lede")}
+      aside={
+        allHref ? (
+          <Button asChild variant="secondary">
+            <Link href={allHref}>{t("all")}</Link>
+          </Button>
+        ) : undefined
+      }
+    >
       <ul className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         {services.map((service, index) => (
           <li key={service.key}>
@@ -397,12 +420,12 @@ export async function ServiceLinks({ services }: { services: readonly ServiceLin
 /* ---------------------------------------------------------------------------------------- FAQ */
 
 /** "คำถามที่พบบ่อย" (prompt item 13): eight questions from `products.faq` (BUSINESS-REVIEW), in two columns. */
-export async function HubFaq() {
+export async function HubFaq({ company }: { company: string | null }) {
   const t = await getTranslations("products.faq");
   const items = FAQ_KEYS.map((key) => ({
     id: `faq-${key}`,
     summary: t(`items.${key}.q`),
-    content: t(`items.${key}.a`),
+    content: faqAnswer(t, key, company),
   }));
   const half = Math.ceil(items.length / 2);
   return (

@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
 import {
   getConfigurator,
+  getFeaturedServices,
   getProduct,
+  getPublicConfig,
   getSupportChannels,
   type Configurator,
 } from "@/features/customer/catalog/api.server";
@@ -13,8 +16,14 @@ import { categoryHref, productHref, stockProductHref } from "@/features/customer
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { LineFloat } from "@/features/customer/shell/LineFloat";
 import { loadHubItems } from "@/features/customer/products/catalogue.server";
-import { FAQ_KEYS } from "@/features/customer/products/content";
-import { instantLeadBand, modeSummary, type HubItem, type HubMode } from "@/features/customer/products/hub";
+import { FAQ_KEYS, faqAnswer } from "@/features/customer/products/content";
+import {
+  featuredServices,
+  instantLeadBand,
+  modeSummary,
+  type HubItem,
+  type HubMode,
+} from "@/features/customer/products/hub";
 import { HubCatalogue } from "@/features/customer/products/HubCatalogue";
 import { HubSearch } from "@/features/customer/products/HubSearch";
 import {
@@ -28,14 +37,19 @@ import {
   ServiceLinks,
 } from "@/features/customer/products/HubSections";
 import { HubTracker } from "@/features/customer/products/HubTracker";
+import { HubVatSwitch } from "@/features/customer/products/HubVatSwitch";
 import { ModeCards } from "@/features/customer/products/ModeCards";
 import { DEFAULT_PARAMS, hubHref, isFilteredHub, readHubParams } from "@/features/customer/products/query";
 import { QuickCalcLazy } from "@/features/customer/products/QuickCalcLazy";
+import { QuoteTrayProvider } from "@/features/customer/products/quote-tray";
 import { RfqTray } from "@/features/customer/products/RfqTray";
+import { vatSwitchAvailable } from "@/features/shared/format/price";
 import { getFormat } from "@/features/shared/format/server";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { readAccessToken } from "@/lib/auth/session";
 import { clientEnv } from "@/lib/env";
+import { featureFlags } from "@/lib/env/server";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
 import { breadcrumbSchema, faqPageSchema, productSchema } from "@/lib/seo/structured-data";
 import { AnchorNav } from "@/ui/components/AnchorNav";
@@ -82,14 +96,22 @@ export default async function ProductsPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const query = readHubParams(await searchParams);
-  const [t, tCatalog, origin, format, data, support] = await Promise.all([
+  const [t, tCatalog, origin, format, data, support, featured, config, jar] = await Promise.all([
     getTranslations("products"),
     getTranslations("catalog"),
     publicOrigin(),
     getFormat(),
     loadHubItems({ q: query.q }),
     getSupportChannels(),
+    getFeaturedServices(),
+    getPublicConfig(),
+    cookies(),
   ]);
+  // D-447 §10.8: the tax-invoice answer names the issuing company from its settings.
+  const company = config
+    ? pick(locale, config.issuer.legalNameTh ?? "", config.issuer.legalNameEn ?? config.issuer.legalNameTh ?? "") ||
+      null
+    : null;
   // The calculator, the mode cards and the sections speak of the whole catalogue, whatever is searched.
   const everything = query.q ? await loadHubItems() : data;
   const all = everything.items;
@@ -104,7 +126,12 @@ export default async function ProductsPage({
     .map((item) => ({ slug: item.key, nameTh: item.nameTh, nameEn: item.nameEn, imageUrl: item.imageUrl }));
   const hasMaterials = materialRows(configurators, locale).length > 0;
 
-  const serviceItems = all.filter((item) => item.mode === "service" && item.kind === "catalog");
+  // D-447 §10.3: staff's chosen services (≤ 3, their order), else the first three of the list; details for those only.
+  const serviceList = featuredServices(
+    all.filter((item) => item.mode === "service" && item.kind === "catalog"),
+    featured,
+  );
+  const serviceItems = serviceList.shown;
   const serviceDetails = await Promise.all(serviceItems.map((item) => getProduct(item.key).catch(() => null)));
   const services = serviceItems.map((item, index) => {
     const detail = serviceDetails[index];
@@ -117,6 +144,11 @@ export default async function ProductsPage({
   });
 
   const categories = new Set(items.flatMap((item) => (item.categoryCode ? [item.categoryCode] : [])));
+  const vatSwitch = vatSwitchAvailable(
+    items.flatMap((item) =>
+      item.startingPrice !== null ? [{ incl: item.startingPrice, excl: item.startingPriceExVat }] : [],
+    ),
+  );
   const summary = modeSummary(all);
   const unitOf = (unit: HubItem["unit"]) => tCatalog(`stock.units.${unit ?? "piece"}`);
   const bold = (chunks: React.ReactNode) => <b>{chunks}</b>;
@@ -165,7 +197,7 @@ export default async function ProductsPage({
   const container = "max-w-nav mx-auto px-5 md:px-8 xl:px-12";
 
   return (
-    <>
+    <QuoteTrayProvider signedIn={Boolean(readAccessToken(jar))} account={featureFlags.rfqProductRef}>
       {!isFilteredHub(query) ? (
         <JsonLd
           data={[
@@ -199,7 +231,10 @@ export default async function ProductsPage({
               }),
             },
             faqPageSchema(
-              FAQ_KEYS.map((key) => ({ question: t(`faq.items.${key}.q`), answer: t(`faq.items.${key}.a`) })),
+              FAQ_KEYS.map((key) => ({
+                question: t(`faq.items.${key}.q`),
+                answer: faqAnswer((k, values) => t(`faq.${k}`, values), key, company),
+              })),
             ),
           ]}
         />
@@ -223,9 +258,13 @@ export default async function ProductsPage({
             <HubSearch params={query} base={BASE} action={getPathname({ href: BASE, locale: locale as Locale })} />
             <div className="text-muted mt-2.5 flex flex-wrap items-center justify-between gap-3 text-[0.8125rem]">
               <span aria-live="polite">{t("head.totals", { items: items.length, categories: categories.size })}</span>
-              {/* The VAT switch is drawn only when the API sends both figures (`vatSwitchAvailable`); it sends
-                  the VAT-inclusive one only (R3), so every price says so instead. */}
-              <span className="text-muted">{t("head.vatIncludedNote")}</span>
+              {/* D-447 §10.6: "ราคารวม VAT / ไม่รวม VAT" only when the API sent both figures for every price
+                  listed (`vatSwitchAvailable`); otherwise every price says it includes VAT. */}
+              {vatSwitch ? (
+                <HubVatSwitch label={t("head.vatLabel")} incl={t("head.vatIncl")} excl={t("head.vatExcl")} />
+              ) : (
+                <span className="text-muted">{t("head.vatIncludedNote")}</span>
+              )}
             </div>
           </div>
         </header>
@@ -258,13 +297,16 @@ export default async function ProductsPage({
         <HowPricing />
         <MaterialsTable configurators={configurators} />
         <ProcessSteps leadBand={instantLeadBand(all)} />
-        <ServiceLinks services={services} />
-        <HubFaq />
+        <ServiceLinks
+          services={services}
+          allHref={serviceList.more ? `${hubHref(BASE, DEFAULT_PARAMS, { mode: "service" })}#catalog` : null}
+        />
+        <HubFaq company={company} />
         <CtaBand quoteHref={quoteHref} lineOaId={lineOaId} hours={support?.hours ?? null} />
       </div>
 
       <RfqTray />
       <LineFloat apiLineOaId={support?.lineOaId} />
-    </>
+    </QuoteTrayProvider>
   );
 }

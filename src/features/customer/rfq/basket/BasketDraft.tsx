@@ -4,6 +4,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { pick } from "@/features/customer/catalog/localize";
+import { lineTrayItem } from "@/features/customer/products/quote-tray";
+import { trayItemHref } from "@/features/customer/products/tray-flow";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
@@ -42,6 +44,8 @@ export function BasketDraft({ initial }: { initial: Basket }) {
   const [failure, setFailure] = useState<string | null>(null);
   const [discarding, setDiscarding] = useState(false);
   const submitKey = useRef(newIdempotencyKey());
+  /** D-447 §10.9: the basket is sent only once every waiting product's form is filled. */
+  const pending = basket.items.some((item) => item.formPending);
 
   async function remove(itemId: string) {
     setBusy(itemId);
@@ -123,6 +127,8 @@ export function BasketDraft({ initial }: { initial: Basket }) {
         <ol className="mt-3 flex flex-col gap-3">
           {basket.items.map((item, index) => {
             const facts = itemFacts(item);
+            // D-447 §10.9: a product put in from the quote tray waits for its form; the link opens it.
+            const waiting = lineTrayItem(item);
             return (
               <li
                 key={item.id}
@@ -130,21 +136,34 @@ export function BasketDraft({ initial }: { initial: Basket }) {
               >
                 <div className="min-w-0">
                   <p className="font-medium">
-                    {index + 1}. {pick(locale, item.productType.nameTh, item.productType.nameEn)}
+                    {index + 1}.{" "}
+                    {item.product
+                      ? pick(locale, item.product.nameTh, item.product.nameEn)
+                      : pick(locale, item.productType.nameTh, item.productType.nameEn)}
                   </p>
-                  <p className="text-muted text-sm">
-                    {facts.size
-                      ? t("size", {
-                          l: format.number(facts.size[0]),
-                          w: format.number(facts.size[1]),
-                          h: facts.size[2] === null ? "—" : format.number(facts.size[2]),
-                        })
-                      : t("noSize")}
-                    {" · "}
-                    {t("quantities", { list: facts.quantities.map((q) => format.number(q)).join(", ") })}
-                    {" · "}
-                    {t("answers", { count: facts.answers })}
-                  </p>
+                  {waiting ? (
+                    <p className="text-muted text-sm">
+                      {t("pending")}
+                      {" · "}
+                      <Link href={trayItemHref(waiting)} className="text-primary font-medium underline">
+                        {t("fill")}
+                      </Link>
+                    </p>
+                  ) : (
+                    <p className="text-muted text-sm">
+                      {facts.size
+                        ? t("size", {
+                            l: format.number(facts.size[0]),
+                            w: format.number(facts.size[1]),
+                            h: facts.size[2] === null ? "—" : format.number(facts.size[2]),
+                          })
+                        : t("noSize")}
+                      {" · "}
+                      {t("quantities", { list: facts.quantities.map((q) => format.number(q)).join(", ") })}
+                      {" · "}
+                      {t("answers", { count: facts.answers })}
+                    </p>
+                  )}
                   {itemError(errors, index) ? (
                     <p className="text-danger mt-1 text-sm">{itemError(errors, index)}</p>
                   ) : null}
@@ -193,10 +212,16 @@ export function BasketDraft({ initial }: { initial: Basket }) {
         </Field>
       </section>
 
+      {pending ? <Callout tone="warning" title={t("pendingHint")} /> : null}
       {failure ? <Callout tone="danger" title={failure} /> : null}
 
       <div className="bg-surface border-border sticky bottom-0 flex flex-wrap items-center gap-3 border-t py-3 md:static md:border-0">
-        <Button type="submit" size="lg" loading={busy === "submit"} disabled={busy !== null && busy !== "submit"}>
+        <Button
+          type="submit"
+          size="lg"
+          loading={busy === "submit"}
+          disabled={pending || (busy !== null && busy !== "submit")}
+        >
           {t("submit", { count: basket.items.length })}
         </Button>
         <Button type="button" variant="ghost" onClick={() => setDiscarding(true)} disabled={busy !== null}>

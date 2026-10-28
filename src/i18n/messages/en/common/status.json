@@ -1073,5 +1073,9 @@
     "claimInReview": "Received · claim under review",
     "completed": "Completed",
     "cancelled": "Cancelled"
+  },
+  "stockAvailability": {
+    "in_stock": "In stock",
+    "out_of_stock": "Out of stock"
   }
 }
