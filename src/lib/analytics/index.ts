@@ -22,3 +22,4 @@ export { trackConfigurator, type ConfiguratorEventName, type ConfiguratorEvents 
 export { trackProducts, type ProductsEventName, type ProductsEvents } from "./products";
 export { trackPdp, type PdpEventName, type PdpEvents } from "./pdp";
 export { trackCategory, type CategoryEventName, type CategoryEvents } from "./category";
+export { trackCheckout, type CheckoutEventName, type CheckoutEvents, type CheckoutStep } from "./checkout";

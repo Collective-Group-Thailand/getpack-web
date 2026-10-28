@@ -16,6 +16,8 @@ export interface PriceSummaryProps {
   footnote?: React.ReactNode;
   /** Names the list for assistive technology, e.g. "สรุปราคา". */
   "aria-label"?: string;
+  /** `strong`: the total a size up (the checkout summary, where the total is what the customer pays). */
+  emphasis?: "default" | "strong";
   className?: string;
 }
 
@@ -26,13 +28,13 @@ export interface PriceSummaryProps {
  * A description list, so a screen reader pairs each label with its amount. Figures are tabular
  * and end-aligned so a column of money lines up. It shows; it never adds anything up.
  */
-export function PriceSummary({ rows, total, footnote, className, ...props }: PriceSummaryProps) {
+export function PriceSummary({ rows, total, footnote, emphasis = "default", className, ...props }: PriceSummaryProps) {
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       <dl aria-label={props["aria-label"]} className="flex flex-col gap-2 text-sm">
         {rows.map((row, index) => (
           <div key={index} className="flex items-start justify-between gap-4">
-            <dt className={cn("min-w-0", row.tone === "muted" && "text-muted")}>
+            <dt className={cn("min-w-0", row.tone === "muted" ? "text-muted" : emphasis === "strong" && "text-fg/80")}>
               {row.label}
               {row.hint ? <span className="text-muted block text-xs">{row.hint}</span> : null}
             </dt>
@@ -48,11 +50,18 @@ export function PriceSummary({ rows, total, footnote, className, ...props }: Pri
           </div>
         ))}
         <div className="border-border flex items-start justify-between gap-4 border-t pt-3">
-          <dt className="font-semibold">
+          <dt className={cn("font-semibold", emphasis === "strong" && "text-xl leading-tight")}>
             {total.label}
             {total.hint ? <span className="text-muted block text-xs font-normal">{total.hint}</span> : null}
           </dt>
-          <dd className="shrink-0 text-end text-lg font-bold tabular-nums">{total.value}</dd>
+          <dd
+            className={cn(
+              "shrink-0 text-end tabular-nums",
+              emphasis === "strong" ? "text-xl leading-tight font-semibold" : "text-lg font-bold",
+            )}
+          >
+            {total.value}
+          </dd>
         </div>
       </dl>
       {footnote ? <div className="text-muted text-xs">{footnote}</div> : null}

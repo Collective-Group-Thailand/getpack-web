@@ -82,11 +82,48 @@
     "appliedList": "Codes on your cart",
     "savingsList": "Discounts applied",
     "atCheckout": "Code discounts are calculated at checkout",
-    "minus": "−{amount}"
+    "minus": "−{amount}",
+    "hintNoMax": "Enter your codes; automatic promotions apply by themselves",
+    "placeholderCompact": "Discount code, e.g. WELCOME10"
   },
   "attachedDesign": {
     "named": "“{title}” version {version} ·",
     "loading": "Loading the design… ·",
     "open": "Open in Studio"
-  }
+  },
+  "box": {
+    "sub": "{count, plural, one {# item} other {# items}} · prices are calculated by getpack and confirmed again before payment"
+  },
+  "lock": "Price fixed until {date}",
+  "lockCode": "Quotation {code}",
+  "quantity": "Quantity",
+  "decrease": "{step} fewer",
+  "increase": "{step} more",
+  "quantityMin": "Minimum {min}",
+  "quantityLocked": "Change the quantity on the spec page",
+  "lineTotal": "Item total",
+  "perUnit": "{price} per {unit} · {quantity} {unit}",
+  "tierHint": "Order {quantity} {unit} and the price per {unit} drops to <b>{price}</b> ({total} in all)",
+  "tierAccept": "Change to {quantity}",
+  "qtyUpdated": "Quantity changed to {quantity} {unit}",
+  "requoted": "The new quantity is priced as of today, fixed until {date}",
+  "editSpec": "Edit spec",
+  "saveForLater": "Save for later",
+  "savedForLater": "Saved under quotations in your account",
+  "openQuotes": "View quotations",
+  "removed": "{name} removed from the cart",
+  "undo": "Undo",
+  "undone": "Item restored",
+  "undoFailed": "Could not restore it; the quotation may have expired. Find it under quotations in your account",
+  "ship": {
+    "title": "Choose the delivery address in the next step",
+    "body": "Ship to one address or split over several · enter a postcode now for an estimate",
+    "postcode": "Postcode for a delivery estimate",
+    "placeholder": "Postcode",
+    "estimate": "Estimated delivery {amount}",
+    "unavailable": "We cannot estimate delivery to this postcode; it is calculated once you choose the address",
+    "invalid": "5-digit postcode",
+    "pending": "Estimating delivery…"
+  },
+  "specs": "Specification"
 }
