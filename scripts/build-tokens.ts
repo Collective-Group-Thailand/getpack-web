@@ -114,6 +114,11 @@ export function buildTokensCss(): string {
     `@media (prefers-color-scheme: dark) {\n${indent(block(":root:not([data-theme])", semanticVars("dark")))}\n}`,
     block('[data-theme="dark"]', semanticVars("dark")),
     block('[data-theme="hc"]', semanticVars("hc")),
+    "/* A themed part of a page (the Studio's dark stage band, C7): custom properties resolve where they are declared,\n   so the aliases are declared again inside a nested [data-theme] to follow its --sem-* values. */",
+    block(
+      ":root [data-theme]",
+      SEMANTIC_KEYS.map((key) => `--color-${key}: var(--sem-${key});`),
+    ),
     "",
   ].join("\n\n");
 }
