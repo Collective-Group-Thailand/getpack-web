@@ -8,7 +8,11 @@ import { DisclosureList } from "@/ui/components/DisclosureList";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
+import { fluteOf } from "@/features/customer/catalog/flute";
+
 import { FAQ_KEYS, faqAnswer } from "./content";
+
+export { fluteOf };
 
 /** One section of the hub: an anchor target under the sticky bars, with its heading and lede. */
 export function HubSection({
@@ -154,19 +158,6 @@ export async function HowPricing() {
 
 type MaterialRow = { id: string; name: string; flute: string | null; use: string | null };
 
-/** The flute a material is made on, from its attributes (`flute`) or its name ("ลอน B"); null if neither says. */
-export function fluteOf(option: {
-  nameTh: string;
-  nameEn: string;
-  attributes: Record<string, unknown>;
-}): string | null {
-  const attribute = typeof option.attributes.flute === "string" ? option.attributes.flute.toUpperCase() : "";
-  const fromAttribute = /(BC|EB|[ABCEF])$/.exec(attribute)?.[1];
-  if (fromAttribute) return fromAttribute;
-  const fromName = /(?:ลอน|flute)\s*(BC|EB|[ABCEF])\b/i.exec(`${option.nameTh} ${option.nameEn}`)?.[1];
-  return fromName ? fromName.toUpperCase() : null;
-}
-
 /**
  * The materials of the instant corrugated products (configurator option groups), one row each, in offer order.
  * `anyCalculator`: every product's boards, not only corrugated ones (a product page lists its own, whatever it is).
@@ -196,7 +187,7 @@ export function materialRows(
 }
 
 /** A flute's cross-section (prototype `.flute`): liners and one wave, a finer wave for E, two for BC. */
-function FluteFigure({ flute, label }: { flute: string; label: string }) {
+export function FluteFigure({ flute, label }: { flute: string; label: string }) {
   const wave = "var(--color-primary)";
   if (flute === "BC" || flute === "EB")
     return (

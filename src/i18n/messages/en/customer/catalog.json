@@ -457,5 +457,154 @@
       "titleAny": "More in this category",
       "all": "See the whole category"
     }
+  },
+  "categoryPage": {
+    "lede": {
+      "instant": "Pick a product, set the size, material and print, and see the price and production time straight away",
+      "quote": "Send your spec to the team and get a quotation within a working day",
+      "mixed": "Some items are priced instantly; for the others, send your spec for a quotation",
+      "service": "Services from the getpack design team",
+      "stock": "Ready-to-ship items, ordered from each item's minimum quantity"
+    },
+    "facts": {
+      "label": "Category summary",
+      "start": "From ({vat})",
+      "perUnit": "{price}/pc",
+      "moq": "Minimum",
+      "moqOne": "{min, number} pcs",
+      "moqRange": "{min, number}–{max, number} pcs",
+      "lead": "Production",
+      "leadOne": "{min, number} working days",
+      "leadRange": "{min, number}–{max, number} working days",
+      "count": "Products",
+      "countValue": "{count, number} items",
+      "mode": "How to buy",
+      "modes": {
+        "instant": "Instant price on every item",
+        "quote": "By quotation",
+        "mixed": "Instant price on some items",
+        "service": "Priced by scope",
+        "stock": "Ready to ship"
+      },
+      "quote": "Quotation",
+      "quoteValue": "Within a working day"
+    },
+    "siblings": "Other categories",
+    "sections": {
+      "label": "Page sections",
+      "list": "Products",
+      "sizes": "Find a box size",
+      "flute": "Choose a flute",
+      "material": "Choose a material",
+      "custom": "Made to spec",
+      "faq": "FAQ"
+    },
+    "list": {
+      "title": "Products in this category",
+      "ledeUses": "Choose by use, or switch to the table to compare every spec and price",
+      "lede": "Switch to the table to compare every spec and price",
+      "uses": "Use",
+      "allUses": "All",
+      "view": "View",
+      "rows": "List",
+      "table": "Comparison table"
+    },
+    "row": {
+      "unknown": "See product page",
+      "sizes": "{count, number} standard sizes",
+      "sizesCustom": "{count, number} standard sizes + custom",
+      "custom": "Custom size",
+      "flute": "{flutes} flute",
+      "more": "+{count, number}",
+      "configure": "Customise and see price",
+      "surface": "{surface} surface"
+    },
+    "compare": {
+      "caption": "Comparison of the products in this category",
+      "product": "Product",
+      "price": "From",
+      "use": "Good for",
+      "structure": "Structure",
+      "flute": "Flute / ply",
+      "material": "Material",
+      "surface": "Surface",
+      "size": "Size",
+      "moq": "Minimum",
+      "lead": "Production",
+      "action": "Order",
+      "at": "at {quantity, number} pcs",
+      "view": "See price"
+    },
+    "finder": {
+      "title": "Find your {product} size",
+      "lede": "{product} comes in {count, number} standard sizes. Enter your product's size and we suggest the closest fit",
+      "products": "Products with standard sizes",
+      "yours": "Your product's size",
+      "length": "Length (cm)",
+      "width": "Width (cm)",
+      "height": "Height (cm)",
+      "note": "Measure the outside of your product. We add 0.5 cm on each dimension (length, width, height) and may turn the product on its base to fit",
+      "incompleteTitle": "Enter length, width and height",
+      "incompleteBody": "In centimetres",
+      "recommend": "Size {code} · {dims} cm",
+      "withPrice": "{text} · {price}/pc",
+      "utilisation": "Your product fills about {percent, number}% of the box",
+      "rotated": "turned 90° on its base",
+      "lowFit": "If it moves around a lot, a custom size needs less void fill",
+      "noneCode": "None",
+      "noneTitle": "No standard size fits",
+      "noneBody": "Set your own size in the configurator and see the price straight away",
+      "custom": "Custom size",
+      "pick": "Or pick a size",
+      "chartTitle": "True-scale comparison (front, length × height)",
+      "chartScale": "Same scale for every size",
+      "chartLabel": "Every {product} size compared",
+      "sizeTitle": "Size {code}: {dims} cm",
+      "selected": "Size {code}",
+      "dims": "{dims} cm (length × width × height, inside)",
+      "at": "at {quantity, number} pcs · {vat}",
+      "order": "Order size {code}",
+      "dieline": "Download the box file",
+      "multi": "+ Add to multi-size list",
+      "quote": "Priced to spec",
+      "preview": "Size {code} box drawn to scale"
+    },
+    "guide": {
+      "fluteTitle": "Choose the right flute",
+      "fluteLede": "The flute is the wavy paper inside corrugated board. These are the flutes and boards the products in this category offer",
+      "flute": "{flute} flute",
+      "caliper": "{mm, number} mm thick",
+      "usedBy": "In this category: {products}",
+      "compare": "Compare all materials",
+      "figure": "{flute} flute cross-section"
+    },
+    "custom": {
+      "title": "Need something else?",
+      "styles": "See {count, number} {category} structures in the style library",
+      "stylesBody": "Other box styles in this category, made to your spec",
+      "stylesCta": "Go to the style library"
+    },
+    "faq": {
+      "title": "{category} FAQ"
+    }
+  },
+  "categoryContent": {
+    "corrugated": {
+      "intro": "DRAFT — Corrugated boxes for shipping, moving and storage. Pick a standard size or set your own in the configurator and see the price straight away",
+      "faq": {
+        "customSize": {
+          "q": "DRAFT — Can I set my own box size?",
+          "a": "DRAFT — Yes. Enter the inside length × width × height in the configurator and the price is calculated straight away"
+        },
+        "vat": {
+          "q": "DRAFT — Do prices include VAT and shipping?",
+          "a": "DRAFT — Prices include VAT; shipping is not included"
+        },
+        "fit": {
+          "q": "DRAFT — How do I find the box size that fits?",
+          "a": "DRAFT — Enter your product's outside size in \"Find a box size\". We add 0.5 cm on each dimension and suggest the smallest standard size that fits"
+        }
+      }
+    }
   }
 }
