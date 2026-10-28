@@ -297,3 +297,14 @@ widens the vendored type until that contract build is adopted (`DielineDownload.
 - **Today:** `StoreConfiguratorPatternDto.dielineVariantCodes` lists the pattern's published variants (code order). Nothing ties a variant to a size: variants differ by option axes (window, insert, tuck…), the solver's size range is the style base's, and `dieline_renders` are a cache, not a publication. So no variant can be said to "match" a standard size from the data.
 - **Ask:** on `StoreConfiguratorSizeDto`, `dielineVariantCode: string | null` — the published variant the API (engine) draws cleanly at that size (no rule violations), chosen by the API; null = none fits.
 - **Web meanwhile:** `dielineTargetOf` keeps the fallback the decision names — the first published variant, with the selected size's millimetres in the link (`l`/`w`/`h`) — and will prefer the size's own variant once the field exists.
+
+## Category page data (C2, category redesign Phase 1, 2026-10-28)
+
+The category page (`/products/[category]`) is built from today's contract; these would replace web-side reads or fill
+"ดูในหน้าสินค้า" cells (category redesign PLAN.md §6). Per-size prices need **no** new endpoint: the finder uses the
+configurator's own `store.quotes.calculateBatch` (one request for every standard size of the opening spec).
+- **C2 `store.catalog.product-spec-summary`:** on `StoreProductCardDto` — `structureNames[]`, `materialNames[]`, `standardSizeCount`, `customSize {allowed, minMm, maxMm}` — so rows and the comparison table need no detail read per item (today ≤ 8 `getProduct` reads; > 8 items use the grid).
+- **C3 `store.catalog.material-flute`:** on material option `attributes` — `fluteLabelTh/En`, `ply`, `surface` as API values. Today the flute comes from the `flute` attribute or the material name (`fluteOf`); ply/surface are not shown ("ผิว" row hidden, "ดูในหน้าสินค้า").
+- **C4 `store.catalog.custom-size`:** explicit custom-size support and range per pattern; today an instant product is taken as "กำหนดขนาดเองได้" (its configurator takes dimensions).
+- **C6 style ↔ catalogue category:** `StoreProductCategoryDto.styleCategory`; today the page links `/styles?cat=<same code>` only when the library facet has that code (corrugated, folding_carton, tag_sleeve), else an approved content mapping.
+- **Web meanwhile:** as above; nothing invented.
