@@ -1,7 +1,13 @@
 import { expect, test } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
-import { acceptCookies } from "./helpers/customer";
+import {
+  acceptCookies,
+  completeSignIn,
+  MOCK_DESIGNER_PHONE,
+  MOCK_RECEIVER_PHONE,
+  signInAsCustomer,
+} from "./helpers/customer";
 import { gotoHydrated } from "./helpers/session";
 
 /**
@@ -103,5 +109,73 @@ test.describe("the products hub", () => {
         path,
       ).toBeLessThanOrEqual(0);
     }
+  });
+
+  /** C1b (D-447 / DECISIONS-STAGE-A §10.2, §10.4, §10.5): stock items — mock data. */
+  test("stock: the price at the minimum order, cart and quote tray side by side, out of stock without a cart", async ({
+    page,
+  }) => {
+    await gotoHydrated(page, `${HOSTS.customer}/products?mode=stock`);
+    const catalogue = page.locator("#catalog");
+    const bottle = catalogue.getByRole("listitem").filter({ has: page.getByRole("link", { name: "ขวด PET 500 มล." }) });
+    await expect(bottle).toContainText("สั่งขั้นต่ำ 100");
+    await expect(bottle).toContainText("พร้อมส่ง");
+    await expect(bottle.getByRole("button", { name: /ใส่ตะกร้า 100 ชิ้น/ })).toBeVisible();
+    await expect(bottle.getByRole("button", { name: "เพิ่ม ขวด PET 500 มล. ในใบขอราคา" })).toBeVisible();
+
+    const jar = catalogue.getByRole("listitem").filter({ has: page.getByRole("link", { name: "กระปุก PP 100 มล." }) });
+    await expect(jar).toContainText("สินค้าหมด");
+    await expect(jar.getByRole("button", { name: /ใส่ตะกร้า/ })).toHaveCount(0);
+    await jar.getByRole("button", { name: "เพิ่ม กระปุก PP 100 มล. ในใบขอราคา" }).click();
+    await expect(page.getByRole("region", { name: "ใบขอราคา" })).toContainText("1 รายการ");
+  });
+
+  /** C1b (D-447 §10.6): "ราคารวม VAT / ไม่รวม VAT" shows the API's own ex-VAT figure; inclusive by default. */
+  test("the VAT switch shows each price with or without VAT", async ({ page }) => {
+    await gotoHydrated(page, `${HOSTS.customer}/products?mode=stock`);
+    const vat = page.getByRole("radiogroup", { name: "แสดงราคา" });
+    await expect(vat.getByRole("radio", { name: "ราคารวม VAT" })).toHaveAttribute("aria-checked", "true");
+    const bottle = page
+      .locator("#catalog")
+      .getByRole("listitem")
+      .filter({ has: page.getByRole("link", { name: "ขวด PET 500 มล." }) });
+    await expect(bottle.getByText("รวม VAT", { exact: true })).toBeVisible();
+    await vat.getByRole("radio", { name: "ไม่รวม VAT" }).click();
+    await expect(bottle.getByText("ไม่รวม VAT", { exact: true })).toBeVisible();
+    await expect(bottle.getByText("รวม VAT", { exact: true })).toBeHidden();
+    // Remembered in this browser.
+    await page.reload();
+    await expect(
+      page.getByRole("radiogroup", { name: "แสดงราคา" }).getByRole("radio", { name: "ไม่รวม VAT" }),
+    ).toHaveAttribute("aria-checked", "true");
+  });
+
+  /** C1b (D-447 §10.9): signed in, the quote tray is the draft basket — products wait there for their form. */
+  test("signed in, the quote tray is the draft basket and follows the account", async ({ page }) => {
+    await signInAsCustomer(page, "/products?mode=quote", MOCK_DESIGNER_PHONE);
+    const catalogue = page.locator("#catalog");
+    await catalogue.getByRole("button", { name: "เพิ่ม กล่องแข็งฝาแม่เหล็ก ในใบขอราคา" }).click();
+    await expect(page.getByRole("region", { name: "ใบขอราคา" })).toContainText("1 รายการ");
+    // Not in this browser's storage: in the account's basket.
+    expect(await page.evaluate(() => window.localStorage.getItem("pk_rfq_tray"))).toBeNull();
+    await gotoHydrated(page, `${HOSTS.customer}/rfq/basket`);
+    await expect(page.getByText("ยังไม่ได้กรอกรายละเอียด")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^ส่งคำขอ/ })).toBeDisabled();
+    await page.getByRole("link", { name: "กรอกรายละเอียด" }).click();
+    await expect(page).toHaveURL(/\/rfq\/.*from=magnetic-gift-box.*tray=1/);
+    await expect(page.getByText("ใบขอราคา: รายการที่ 1 จาก 1")).toBeVisible();
+  });
+
+  test("a guest tray joins the basket at sign-in", async ({ page }) => {
+    await gotoHydrated(page, `${HOSTS.customer}/products?mode=quote`);
+    await page.locator("#catalog").getByRole("button", { name: "เพิ่ม ถุงกระดาษคราฟท์หูเกลียว ในใบขอราคา" }).click();
+    await expect(page.getByRole("region", { name: "ใบขอราคา" })).toContainText("1 รายการ");
+    await gotoHydrated(page, `${HOSTS.customer}/sign-in?returnTo=${encodeURIComponent("/products?mode=quote")}`);
+    await completeSignIn(page, MOCK_RECEIVER_PHONE, "page");
+    await expect(page).toHaveURL(/\/products\?mode=quote$/, { timeout: 15_000 });
+    await expect(page.getByRole("region", { name: "ใบขอราคา" })).toContainText("1 รายการ", { timeout: 30_000 });
+    await expect
+      .poll(() => page.evaluate(() => JSON.parse(window.localStorage.getItem("pk_rfq_tray") ?? "[]").length))
+      .toBe(0);
   });
 });
