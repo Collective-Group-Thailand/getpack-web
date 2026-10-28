@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { useJustAdded } from "@/features/customer/cart/cart-events";
+import { shippingAmountText } from "@/features/shared/format/shipping";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { specLabelText } from "@/features/shared/spec-label";
 import { Link } from "@/i18n/navigation";
@@ -99,6 +100,7 @@ export function ConfiguratorDock({
 }: ConfiguratorDockProps) {
   const t = useTranslations("configurator.dock");
   const tActions = useTranslations("configurator.actions");
+  const tShipping = useTranslations("common.shipping");
   const justAdded = useJustAdded();
   const format = useFormat();
   const step = steps?.find((candidate) => candidate.quantity === state.quantity);
@@ -177,7 +179,7 @@ export function ConfiguratorDock({
           ? { label: t("shipping"), value: onGoToShipping ? toShipping : t("shippingPending") }
           : {
               label: t("shipping"),
-              value: format.thb(priced.shippingAmount),
+              value: shippingAmountText(priced.shippingAmount, format.thb, tShipping("free")),
               ...(shippingArea ? { hint: t("shippingTo", { area: shippingArea }) } : {}),
             },
         // The API's VAT amount exactly as sent: it is inside the total, never added to it (D-441).

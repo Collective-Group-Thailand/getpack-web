@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 import { quantityBand } from "@/features/customer/analytics/bands";
 import { TrackOnView } from "@/features/customer/analytics/TrackOnView";
 import { useDebounced } from "@/features/customer/configurator/pricing";
+import { shippingAmountText } from "@/features/shared/format/shipping";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
@@ -47,6 +48,7 @@ export function ReorderView({
   unit: string;
 }) {
   const t = useTranslations("fulfilment.reorder");
+  const tShipping = useTranslations("common.shipping");
   const format = useFormat();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -186,7 +188,10 @@ export function ReorderView({
                 : []),
               {
                 label: t("shipping"),
-                value: preview.shippingAmount !== null ? format.thb(preview.shippingAmount) : t("shippingAtCheckout"),
+                value:
+                  preview.shippingAmount !== null
+                    ? shippingAmountText(preview.shippingAmount, format.thb, tShipping("free"))
+                    : t("shippingAtCheckout"),
                 tone: preview.shippingAmount !== null ? ("default" as const) : ("muted" as const),
               },
               { label: t("vat"), value: format.thb(preview.vatAmount), tone: "muted" as const },

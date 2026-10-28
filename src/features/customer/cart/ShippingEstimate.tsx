@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useState } from "react";
 
+import { isFreeShipping } from "@/features/shared/format/shipping";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -29,6 +30,7 @@ export function ShippingEstimate({
 }) {
   const t = useTranslations("cart.ship");
   const tAddress = useTranslations("checkout.flow.address");
+  const tShipping = useTranslations("common.shipping");
   const format = useFormat();
   const locale = useLocale();
   const id = useId();
@@ -81,7 +83,9 @@ export function ShippingEstimate({
                 : estimate
                   ? estimate.available && estimate.shippingGrossAmount
                     ? [
-                        t("estimate", { amount: format.thb(estimate.shippingGrossAmount) }),
+                        isFreeShipping(estimate.shippingGrossAmount)
+                          ? tShipping("free")
+                          : t("estimate", { amount: format.thb(estimate.shippingGrossAmount) }),
                         estimate.zone
                           ? tAddress("zone", { zone: locale === "en" ? estimate.zone.en : estimate.zone.th })
                           : null,

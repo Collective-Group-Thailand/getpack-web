@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ONLINE_PAYMENT_METHODS, type PaymentMethod } from "@/domain/payment-methods";
+import { isFreeShipping, shippingAmountText } from "@/features/shared/format/shipping";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link, useRouter } from "@/i18n/navigation";
 import { trackCheckout } from "@/lib/analytics/checkout";
@@ -150,6 +151,7 @@ export function CheckoutView({
 }: CheckoutViewProps) {
   const t = useTranslations("checkout");
   const tFlow = useTranslations("checkout.flow");
+  const tShipping = useTranslations("common.shipping");
   const tMethods = useTranslations("checkout.methods");
   const tNotices = useTranslations("checkout.notices");
   const tDesign = useTranslations("configurator.design.options");
@@ -481,7 +483,7 @@ export function CheckoutView({
           : []),
         {
           label: split ? tFlow("summary.shippingSplit", { count: destinationCount }) : tFlow("summary.shipping"),
-          value: format.thb(figures.shipping),
+          value: shippingAmountText(figures.shipping, format.thb, tShipping("free")),
         },
         { label: tFlow("summary.vat"), value: format.thb(figures.vat) },
       ]
@@ -674,7 +676,9 @@ export function CheckoutView({
                     ) : figures ? (
                       <p className="text-muted m-0">
                         {[
-                          tFlow("address.shippingAmount", { amount: format.thb(figures.shipping) }),
+                          isFreeShipping(figures.shipping)
+                            ? tShipping("free")
+                            : tFlow("address.shippingAmount", { amount: format.thb(figures.shipping) }),
                           !split && estimate.data?.zone
                             ? tFlow("address.zone", {
                                 zone: locale === "en" ? estimate.data.zone.en : estimate.data.zone.th,

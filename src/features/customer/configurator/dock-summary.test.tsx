@@ -120,6 +120,13 @@ describe("the price summary", () => {
     expect(onAction.mock.calls.map(([action]) => action)).toEqual(["save", "share", "pdf"]);
   });
 
+  it('shows "ส่งฟรี" for shipping priced at exactly 0.00, never "฿0.00" (C2b, §15.4)', async () => {
+    await show({}, { ...priced, shippingPending: false, shippingAmount: "0.00" } as PriceStep);
+    const lines = screen.getByRole("complementary", { name: "ราคาของคุณ" });
+    expect(within(lines).getByText("ส่งฟรี")).toBeInTheDocument();
+    expect(within(lines).queryByText("฿0.00")).toBeNull();
+  });
+
   it("drops the no-shipping wording once shipping is priced, and hides a date the API did not send", async () => {
     await show({}, {
       ...priced,

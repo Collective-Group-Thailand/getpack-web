@@ -164,5 +164,8 @@
   "select": {
     "search": "Type to search…",
     "empty": "No matching option"
+  },
+  "shipping": {
+    "free": "Free shipping"
   }
 }
