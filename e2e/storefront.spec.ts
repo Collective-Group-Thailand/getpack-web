@@ -72,20 +72,16 @@ test.describe("the catalogue", () => {
     await expect(page.getByRole("heading", { level: 1, name: "กล่องไปรษณีย์" })).toBeVisible();
   });
 
-  test("a product page shows its price with its basis, its sizes and FAQs, and one next step", async ({ page }) => {
+  test("a product page shows its price with its spec, its sizes and FAQs, and one next step", async ({ page }) => {
     await page.goto(`${HOSTS.customer}/products/tuck-end-box`);
 
-    await expect(
-      page
-        .locator("main")
-        .getByText(/^฿\d+\.\d{2}$/)
-        .first(),
-    ).toBeVisible();
-    await expect(page.locator("main")).toContainText(/เริ่มต้น\s*฿\d+\.\d{2}\s*\/ ชิ้น/);
-    await expect(page.getByText(/ที่ 1,000 ชิ้น · รวม VAT/)).toBeVisible();
-    await expect(page.getByText("ผลิต 7–10 วันทำการ")).toBeVisible();
+    // C3 (pdp redesign): the buy box prices the configurator's default spec live, with its line.
+    const buy = page.locator("#buy");
+    await expect(buy.getByText(/^฿[\d,]+\.\d{2}$/).first()).toBeVisible({ timeout: 15_000 });
+    await expect(buy.getByText(/ชิ้น · เบอร์ .+ · รวม VAT แล้ว · ไม่รวมค่าจัดส่ง/)).toBeVisible();
+    await expect(page.getByText("ผลิต 7–10 วันทำการ").first()).toBeVisible();
     await expect(page.getByRole("table", { name: /ขนาดมาตรฐาน/ }).getByRole("row")).toHaveCount(4);
-    await expect(page.getByRole("link", { name: "ปรับแต่งและดูราคา" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "ปรับแต่งต่อและสั่งซื้อ" })).toHaveAttribute(
       "href",
       "/configure/tuck-end-box",
     );
