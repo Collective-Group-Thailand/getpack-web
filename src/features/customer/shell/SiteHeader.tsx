@@ -13,6 +13,7 @@ import { STYLES_HREF } from "@/features/customer/styles/paths";
 
 import { emptyContent } from "./content.server";
 import { DeferredAssistant, DeferredLocaleMenu } from "./DeferredMenus";
+import { HeaderCta } from "./HeaderCta";
 import { HeaderNavLink } from "./HeaderNavLink";
 import { MobileProductsMenu } from "./ProductsMenu";
 import { Link } from "@/i18n/navigation";
@@ -246,9 +247,11 @@ export async function SiteHeader() {
                 name={actor?.displayName ?? null}
               />
             </span>
-            <Button asChild size="md" className="ms-1 hidden px-3.5 min-[65rem]:inline-flex min-[74rem]:ms-2 min-[74rem]:px-5">
-              <Link href="/studio">{t("nav.startFree")}</Link>
-            </Button>
+            <HeaderCta
+              className="ms-1 hidden px-3.5 min-[65rem]:inline-flex min-[74rem]:ms-2 min-[74rem]:px-5"
+              startLabel={t("nav.startFree")}
+              productsLabel={t("nav.productsPricing")}
+            />
           </div>
         </div>
       </header>
