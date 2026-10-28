@@ -58,17 +58,20 @@ export function VariantActions({
     onAction?.("design");
     setOpening(true);
     const found = await recipeOfVariant(base, variant.options).catch(() => null);
-    const [l, w, h] = [found?.values.length, found?.values.width, found?.values.height];
-    if (!found || typeof l !== "number" || typeof w !== "number" || typeof h !== "number") {
+    if (!found) {
       setNoStudio(variant.code);
       setOpening(false);
       return;
     }
+    const [l, w, h] = [found.values.length, found.values.width, found.values.height];
+    // C7 (DECISIONS-STAGE-A §2): every drawable variant opens — a box on its inside size, anything sized otherwise
+    // (bags, cups, labels, hexagonal boxes…) on its own preset values through the variant.
+    const boxed = typeof l === "number" && typeof w === "number" && typeof h === "number";
     router.push(
       studioHref({
         product: productSlug,
         style: found.recipe.id,
-        dims: { l, w, h },
+        dims: boxed ? { l, w, h } : null,
         variant: { base, code: variant.code, key: found.key },
         step: "box",
       }),

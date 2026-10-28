@@ -27,11 +27,15 @@ export interface StudioEntry {
 export function studioHref(entry: StudioEntry = {}): string {
   const query = new URLSearchParams();
   if (entry.product) query.set("product", entry.product);
-  if (entry.style && entry.dims) {
+  // A box is known by its style and inside size — or, for a library variant not sized by L × W × H (a bag, a cup,
+  // a label, C7), by its style and variant alone: the studio opens on the variant's own preset size.
+  if (entry.style && (entry.dims || entry.variant)) {
     query.set("style", entry.style);
-    query.set("l", String(entry.dims.l));
-    query.set("w", String(entry.dims.w));
-    query.set("h", String(entry.dims.h));
+    if (entry.dims) {
+      query.set("l", String(entry.dims.l));
+      query.set("w", String(entry.dims.w));
+      query.set("h", String(entry.dims.h));
+    }
     if (entry.variant) {
       query.set("base", entry.variant.base);
       query.set("sv", entry.variant.code);
@@ -46,7 +50,7 @@ export function studioHref(entry: StudioEntry = {}): string {
     query.set("item", entry.order.itemId);
     query.set("orderCode", entry.order.orderCode);
   }
-  const step = entry.step ?? (entry.designId || (entry.style && entry.dims) ? "design" : "start");
+  const step = entry.step ?? (entry.designId || (entry.style && (entry.dims || entry.variant)) ? "design" : "start");
   query.set("step", step);
   return `/studio/${entry.designId ?? "new"}?${query.toString()}`;
 }

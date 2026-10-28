@@ -7,7 +7,7 @@ import { pick } from "@/features/customer/catalog/localize";
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { BoxPreview3D } from "@/features/designer/components/BoxPreview3D";
 import { ProductMockup2D, type MockupKind } from "@/features/designer/components/ProductMockup2D";
-import { resolveStyleId } from "@getpack/dieline";
+import { RECIPES, resolveStyleId } from "@getpack/dieline";
 
 import type { BoxStyleId } from "@/features/designer/types";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -17,7 +17,11 @@ import { patternOf, type Configurator, type ConfiguratorState } from "./state";
 
 /** The `@getpack/dieline` style of the chosen pattern, when it draws one (aliases like `rte` resolved). */
 export function boxStyleOf(configurator: Configurator, state: ConfiguratorState): BoxStyleId | null {
-  return resolveStyleId(patternOf(configurator, state)?.dielineKey);
+  const pattern = patternOf(configurator, state);
+  // C7 (DECISIONS-STAGE-A §2): a pattern without a dieline key the engine knows still opens when its code is a
+  // style-library base (D-184: the pricing pattern shares the base's code) that one of the engine's core recipes draws.
+  const recipe = pattern ? RECIPES.find((entry) => entry.base === pattern.code) : undefined;
+  return resolveStyleId(pattern?.dielineKey) ?? (recipe ? resolveStyleId(recipe.id) : null);
 }
 
 const MOCKUP_OF: Partial<Record<Configurator["calculator"], MockupKind>> = {

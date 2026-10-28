@@ -195,7 +195,8 @@ function useSize<T extends HTMLElement>() {
  */
 export interface EditorSeed {
   style: BoxStyleId;
-  dims: BoxDims;
+  /** The inside size; absent for a variant that is not sized by length × width × height (C7) — then `values` size it. */
+  dims?: BoxDims;
   /** The engine values that make a library variant (D-407): its closures, inserts, windows — the size still `dims`. */
   values?: ParamValues;
   /** The published variant the box is (D-407), priced and quoted as that variant. */
@@ -446,7 +447,7 @@ export default function Editor({
     return {
       specVersion: SPEC_VERSION,
       styleId: seed.style,
-      values: { ...seed.values, ...seed.dims },
+      values: { ...seed.values, ...(seed.dims ?? {}) },
       ...(chosen ? withMaterial(chosen, locale) : fallbackMaterial(seed.style)),
       patternId: seed.patternId ?? null,
       ...(seed.variant ? { studio: { ...seed.variant } } : {}),
