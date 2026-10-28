@@ -39,7 +39,9 @@ export function rangeText(r: Change["after"] | null): string {
 /**
  * The fit-range backfill (C0b/C1c — DECISIONS-STAGE-A §9.1, §11.1): a dry run first shows what
  * would be filled, from which source, and which styles stay empty and why; confirming runs the same
- * audited curation path. A business-entered range is never touched. `styles.curate` only.
+ * audited curation path. A business-entered range is never touched. `styles.curate` only. C1e
+ * (§13.2): each style's size class, the coverage of the styles size search applies to, and the
+ * styles it does not apply to (never counted as empty).
  */
 export function FitRangeBackfill() {
   const t = useTranslations("styleLibrary.fitRanges");
@@ -71,6 +73,18 @@ export function FitRangeBackfill() {
     },
     { id: "action", header: t("columns.action"), cell: (row) => <Badge>{t(`actions.${row.action}`)}</Badge> },
     {
+      id: "sizeClass",
+      header: t("columns.sizeClass"),
+      cell: (row) => (
+        <span className="text-sm">
+          {row.sizeClassBefore !== row.sizeClass ? (
+            <span className="text-muted">{t(`sizeClass.${row.sizeClassBefore}`)} → </span>
+          ) : null}
+          {t(`sizeClass.${row.sizeClass}`)}
+        </span>
+      ),
+    },
+    {
       id: "range",
       header: t("columns.range"),
       cell: (row) => <span className="tabular-nums">{rangeText(row.after)}</span>,
@@ -83,7 +97,12 @@ export function FitRangeBackfill() {
     {
       id: "source",
       header: t("columns.source"),
-      cell: (row) => <Badge tone="info">{t(`sources.${row.source}`)}</Badge>,
+      cell: (row) =>
+        row.source && row.source !== "business" ? (
+          <Badge tone="info">{t(`sources.${row.source}`)}</Badge>
+        ) : (
+          <span className="text-muted">{t("noSource")}</span>
+        ),
     },
   ];
   const incompleteColumns: DataTableColumn<Incomplete>[] = [
@@ -93,9 +112,7 @@ export function FitRangeBackfill() {
       header: t("columns.why"),
       cell: (row) => (
         <span className="text-sm">
-          {row.missing.length
-            ? t("missing", { bounds: row.missing.map((b) => t(`bounds.${b}`)).join(", ") })
-            : null}
+          {row.missing.length ? t("missing", { bounds: row.missing.map((b) => t(`bounds.${b}`)).join(", ") }) : null}
           {row.conflicting.length
             ? ` ${t("conflicting", { dims: row.conflicting.map((d) => t(`dimensions.${d}`)).join(", ") })}`
             : null}
@@ -113,6 +130,9 @@ export function FitRangeBackfill() {
           <li>{t("order.envelope")}</li>
         </ol>
         <p className="text-muted mt-3 text-sm">{t("never")}</p>
+        <p className="mt-3 text-sm">
+          <b className="font-semibold">{t("classesTitle")}</b> · <span className="text-muted">{t("classes")}</span>
+        </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button type="button" variant="secondary" loading={dry.isPending} onClick={() => dry.mutate()}>
             {t("dryRun")}
@@ -132,11 +152,7 @@ export function FitRangeBackfill() {
 
       {shown ? (
         <>
-          <Callout
-            tone={done ? "success" : "info"}
-            live
-            title={done ? t("doneTitle") : t("previewTitle")}
-          >
+          <Callout tone={done ? "success" : "info"} live title={done ? t("doneTitle") : t("previewTitle")}>
             {t("summary", {
               considered: shown.considered,
               filled: shown.filled.length,
@@ -144,9 +160,12 @@ export function FitRangeBackfill() {
               unchanged: shown.unchanged,
               business: shown.keptBusiness.length,
               empty: shown.incomplete.length,
+              cleared: shown.cleared.length,
+              notApplicable: shown.notApplicable.length,
             })}
           </Callout>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="fit-sources">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" data-testid="fit-sources">
+            <Stat label={t("coverageLabel")} value={t("coverageValue", shown.coverage)} hint={t("coverageHint")} />
             {(["recipe", "standard_sizes", "production_envelope", "combined"] as const).map((s) => (
               <Stat key={s} label={t(`sources.${s}`)} value={shown.bySource[s]} />
             ))}
@@ -175,6 +194,22 @@ export function FitRangeBackfill() {
               <EmptyState title={t("allComplete")} />
             )}
           </Section>
+          {shown.notApplicable.length ? (
+            <Section
+              title={t("notApplicableTitle", { count: shown.notApplicable.length })}
+              description={t("notApplicableIntro")}
+            >
+              <ul className="flex flex-wrap gap-2" data-testid="fit-not-applicable">
+                {shown.notApplicable.map((code) => (
+                  <li key={code}>
+                    <Badge>
+                      <span className="tabular-nums">{code}</span>
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ) : null}
         </>
       ) : null}
 
@@ -189,7 +224,7 @@ export function FitRangeBackfill() {
             const result = await run(false);
             setDone(result);
             setConfirming(false);
-            toast.success(t("done", { count: result.filled.length + result.refreshed.length }));
+            toast.success(t("done", { count: result.changes.length }));
             void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "style") });
           } catch (error) {
             toast.error(problemMessage(error, t("failed")));

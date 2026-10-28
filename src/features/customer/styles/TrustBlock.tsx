@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import type { StyleLibrarySettings } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
-import { storeImageSrc } from "@/features/customer/catalog/images";
+import { storeDocumentHref, storeImageSrc } from "@/features/customer/catalog/images";
 import { Icon, type IconName } from "@/ui/icons";
 
 type Trust = StyleLibrarySettings["trust"];
@@ -49,10 +49,14 @@ export async function TrustBlock({ trust: entered, locale }: { trust: Trust | nu
                 <span className="tabular-nums"> · {t("trustCertificateNumber", { number: c.number })}</span>
               ) : null}
               {c.issuer ? <span> · {t("trustCertificateIssuer", { issuer: c.issuer })}</span> : null}
-              {c.documentUrl ? (
+              {storeDocumentHref(c.documentUrl) ? (
                 <>
                   {" "}
-                  <a href={c.documentUrl} className="text-primary underline underline-offset-2" rel="noopener">
+                  <a
+                    href={storeDocumentHref(c.documentUrl)!}
+                    className="text-primary underline underline-offset-2"
+                    rel="noopener"
+                  >
                     {t("trustDocument")}
                   </a>
                 </>
@@ -72,10 +76,14 @@ export async function TrustBlock({ trust: entered, locale }: { trust: Trust | nu
           {trust.foodGrade.map((f, i) => (
             <li key={i}>
               {pick(locale, f.title.th, f.title.en)}
-              {f.documentUrl ? (
+              {storeDocumentHref(f.documentUrl) ? (
                 <>
                   {" "}
-                  <a href={f.documentUrl} className="text-primary underline underline-offset-2" rel="noopener">
+                  <a
+                    href={storeDocumentHref(f.documentUrl)!}
+                    className="text-primary underline underline-offset-2"
+                    rel="noopener"
+                  >
                     {t("trustDocument")}
                   </a>
                 </>
@@ -139,7 +147,13 @@ export async function TrustBlock({ trust: entered, locale }: { trust: Trust | nu
             {trust.customerLogos.map((logo) => (
               <li key={logo.name}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- a permitted customer logo from the API */}
-                <img src={logo.logoUrl} alt={logo.name} height={32} className="h-8 w-auto" loading="lazy" />
+                <img
+                  src={storeImageSrc(logo.logoUrl) ?? logo.logoUrl}
+                  alt={logo.name}
+                  height={32}
+                  className="h-8 w-auto"
+                  loading="lazy"
+                />
               </li>
             ))}
           </ul>

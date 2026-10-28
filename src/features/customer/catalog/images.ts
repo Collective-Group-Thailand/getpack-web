@@ -15,6 +15,17 @@ export function storeImageSrc(url: string | null | undefined, size: "full" | "th
   return `/bff${url}${size === "thumb" && url.startsWith("/v1/store/catalog/images/") ? "?size=thumb" : ""}`;
 }
 
+/**
+ * Where the browser opens a document the API publishes (C1e, DECISIONS-STAGE-A §13.3): an uploaded trust-section
+ * document (`/v1/store/style-library/documents/{fileId}`) through the storefront BFF, or an external https link as it
+ * is. Anything else is not linked.
+ */
+export function storeDocumentHref(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (/^https:\/\//.test(url)) return url;
+  return url.startsWith("/v1/store/") ? `/bff${url}` : null;
+}
+
 /** The same image as an absolute URL, for structured data and Open Graph. */
 export function absoluteImageUrl(origin: string, url: string | null | undefined): string | null {
   const src = storeImageSrc(url);

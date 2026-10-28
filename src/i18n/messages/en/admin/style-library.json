@@ -453,7 +453,14 @@
     "dimensions": {
       "length": "Length",
       "width": "Width",
-      "height": "Height"
+      "height": "Height",
+      "bag": {
+        "length": "Width (bag)",
+        "width": "Gusset (depth)"
+      },
+      "cylinder": {
+        "diameter": "Diameter"
+      }
     },
     "min": "Minimum",
     "max": "Maximum",
@@ -504,7 +511,24 @@
     },
     "save": "Save commercial data",
     "saved": "Saved",
-    "failed": "Could not save"
+    "failed": "Could not save",
+    "sizeClassLabel": "Size reading",
+    "sizeClass": {
+      "box": "Box",
+      "bag": "Bag",
+      "cylinder": "Round (cups, bowls, tubes)",
+      "not_applicable": "Not used for size search"
+    },
+    "sizeClassRule": {
+      "box": "length × width × height as the recipe states it",
+      "bag": "width × gusset (depth) × height",
+      "cylinder": "diameter × diameter (bounding square) × height",
+      "not_applicable": "labels, sleeves, tags, inserts, folders — no size range"
+    },
+    "notApplicableTitle": "Not used for size search",
+    "notApplicable": "This style is left out of the product-size search and is not counted as missing data (DECISIONS-STAGE-A §13.2).",
+    "notApplicableKept": "A range the business entered is kept but not searched.",
+    "fitRuleRound": "Rule: the product's length and width must fit inside the diameter's bounding square (the longer side + 5 mm is the diameter); height does not rotate (DECISIONS-STAGE-A §13.2)"
   },
   "fitRanges": {
     "title": "Fill fit ranges",
@@ -522,7 +546,7 @@
     "readOnly": "Confirming needs styles.curate",
     "previewTitle": "Check result (nothing saved)",
     "doneTitle": "Ranges filled",
-    "summary": "{considered} styles · {filled} filled · {refreshed} refreshed · {unchanged} unchanged · {business} business · {empty} still empty",
+    "summary": "{considered} styles · filled {filled} · refreshed {refreshed} · cleared {cleared} · unchanged {unchanged} · entered by the business {business} · still empty {empty} · not used for size search {notApplicable}",
     "sources": {
       "recipe": "Approved recipe",
       "standard_sizes": "Standard sizes",
@@ -540,11 +564,14 @@
       "range": "New range L × W × H (mm)",
       "before": "Before",
       "source": "Source",
-      "why": "Why"
+      "why": "Why",
+      "sizeClass": "Size reading"
     },
     "actions": {
       "filled": "Filled",
-      "refreshed": "Refreshed"
+      "refreshed": "Refreshed",
+      "cleared": "Range cleared",
+      "classified": "Size reading set"
     },
     "missing": "Missing: {bounds}",
     "conflicting": "No size left in: {dims}",
@@ -564,7 +591,21 @@
     "confirmTitle": "Fill the ranges?",
     "confirmBody": "Saves the range of {count} styles as checked; every change is audited.",
     "done": "{count} styles saved",
-    "failed": "Could not run"
+    "failed": "Could not run",
+    "classesTitle": "Size reading by product class",
+    "classes": "Bags (PK-PG, PK-PB): width × gusset (depth) × height · Round (cups, bowls, tubes): diameter (bounding square) × height · Labels, tags, sleeves, inserts, folders: not used for size search",
+    "coverageLabel": "Styles searchable by size",
+    "coverageValue": "{withRange} / {applicable}",
+    "coverageHint": "of the styles size search applies to",
+    "notApplicableTitle": "Not used for size search: {count} styles",
+    "notApplicableIntro": "Labels, sleeves, tags, inserts, folders — no size range, not counted as empty",
+    "sizeClass": {
+      "box": "Box",
+      "bag": "Bag",
+      "cylinder": "Round",
+      "not_applicable": "Not used for size search"
+    },
+    "noSource": "—"
   },
   "content": {
     "title": "Style library page content",
@@ -587,8 +628,7 @@
     "issuer": "Issuer",
     "expiresOn": "Expires on",
     "expiresOnHint": "Last valid day; empty when it does not expire",
-    "documentUrl": "Document link",
-    "urlHint": "https://… or a path on getpack’s site",
+    "documentUrl": "Document",
     "foodGradeTitle": "Food-grade documents",
     "foodGradeIntro": "Documents backing food-contact materials",
     "addFoodGrade": "Add document",
@@ -597,14 +637,14 @@
     "photosTitle": "Production-process photos",
     "photosIntro": "Product and process only",
     "addPhoto": "Add photo",
-    "photoUrl": "Photo link",
+    "photoUrl": "Photo",
     "altTh": "Alt text (Thai)",
     "altEn": "Alt text (English)",
     "logosTitle": "Permitted customer logos",
     "logosIntro": "Only customers who gave written permission",
     "addLogo": "Add logo",
     "logoName": "Customer name",
-    "logoUrl": "Logo link",
+    "logoUrl": "Logo",
     "permission": "Permission record",
     "permissionHint": "e.g. an email of … or a CS ticket — staff only",
     "taxTitle": "Tax-invoice note",
@@ -620,9 +660,32 @@
     "fixErrors": "Some fields need fixing",
     "errors": {
       "required": "Required",
-      "url": "Must be https://… or a path starting with /",
+      "url": "Must be an uploaded file or an https://… link",
       "date": "Use YYYY-MM-DD",
-      "tooMany": "Too many"
+      "tooMany": "Too many",
+      "upload": "Upload a picture (PNG, JPEG or WebP)"
+    },
+    "files": {
+      "imageHint": "Upload a PNG, JPEG or WebP picture up to 20 MB — the storefront shows it once saved",
+      "documentHint": "Upload a PDF or a picture of the document, up to 50 MB",
+      "linkHint": "An external link starting with https:// (documents only)",
+      "linkLabel": "External link to the document",
+      "sourceLabel": "Document source",
+      "sourceFile": "Upload a file",
+      "sourceLink": "External link",
+      "dropImage": "Drop a picture here, or",
+      "dropDocument": "Drop a PDF or picture here, or",
+      "browse": "choose a file",
+      "uploading": "Uploading…",
+      "tooLarge": "{name} is larger than {mb} MB",
+      "wrongTypeImage": "{name} is not a PNG, JPEG or WebP",
+      "wrongTypeDocument": "{name} is not a PDF, PNG, JPEG or WebP",
+      "removeImage": "Remove picture",
+      "removeDocument": "Remove file",
+      "legacyLink": "Earlier link {url} — upload the picture instead before saving",
+      "failed": "Upload failed",
+      "none": "None yet",
+      "linkPlaceholder": "https://…"
     }
   }
 }
