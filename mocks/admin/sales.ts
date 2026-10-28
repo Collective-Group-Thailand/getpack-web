@@ -394,6 +394,9 @@ function cartOf(customerId: string) {
         items: [],
         codes: [],
         productGrossAmount: "0.00",
+        vatAmount: null,
+        maxCodes: 3,
+        quantityStep: 50,
         currency: "THB",
         updatedAt: bangkokIso(),
       },
@@ -693,6 +696,11 @@ export const salesHandlers = [
       pendingReprice: null,
       reorderOf: null,
       reusesApprovedArtwork: false,
+      quantityEditable: true,
+      quantityLimits: null,
+      tierHint: null,
+      earliestShipDate: null,
+      leadTimeDays: null,
     });
     touch(entry);
     return withEtag(entry.cart, cartTag(entry), 201);
