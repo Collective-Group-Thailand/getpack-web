@@ -118,7 +118,11 @@ test("a product page states its MOQ and where tolerances are explained", async (
       .getByText(/ขั้นต่ำ/)
       .first(),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "ดูเกณฑ์ในการรับประกัน" })).toBeVisible();
+  // The PDP (C3) links the guarantee from the buy box and "อ่านราคาอย่างไร".
+  await expect(page.getByRole("main").getByRole("link", { name: "การรับประกันงาน" }).first()).toHaveAttribute(
+    "href",
+    /\/guarantee$/,
+  );
 });
 
 test("on a tablet the header fits and the menu sheet carries the same five links", async ({ page }) => {

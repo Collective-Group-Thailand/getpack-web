@@ -17,6 +17,8 @@ import { choiceList } from "./helpers/select";
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function expectNoViolations(page: Page) {
+  // The summary dims while a new estimate loads (`aria-busy`); audit what it settles on.
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
   expect(
     violations,

@@ -6,8 +6,9 @@ import { gotoHydrated } from "../helpers/session";
 import { expect, test } from "./fixture";
 import { priceT1Box } from "./t1-box";
 
-const step = (page: Page, label: string) =>
-  page.getByRole("button", { name: new RegExp(`^ขั้นที่ \\d+ จาก \\d+ ${label}`) }).first();
+/** The configurator is one page since C4: its steps are anchors in "ขั้นตอนการปรับแต่ง". */
+const stepLink = (page: Page, label: string) =>
+  page.getByRole("navigation", { name: "ขั้นตอนการปรับแต่ง" }).getByRole("link", { name: new RegExp(`^${label}`) });
 
 /**
  * T6 "งบของคุณคือ 8 บาท/ใบ — ทำให้ได้ราคาใกล้เคียงที่สุด" — judged by whether a lever is found unaided
@@ -23,13 +24,21 @@ test("T6 get as close as possible to 8 ฿ a piece", async ({ page, journey }) =
   await priceT1Box(page);
   await j.startHere();
 
-  const target = page.getByRole("region", { name: /ราคาเป้าหมาย/ });
+  const quantity = page.getByRole("region", { name: "จำนวน" });
+  const target = page.getByRole("region", { name: /^ราคาเป้าหมาย/ });
+  const budget = quantity.getByRole("textbox", { name: "งบต่อชิ้น" });
   await j.screen(
     "quantity step",
-    () => step(page, "จำนวน").click(),
-    () => expect(page.getByLabel(/ราคาเป้าหมายต่อ/)).toBeVisible(),
+    () => stepLink(page, "จำนวน").click(),
+    () => expect(quantity.getByText("มีงบต่อชิ้นในใจ? (ไม่บังคับ)")).toBeVisible(),
   );
-  await j.decide("target 8 ฿", () => page.getByLabel(/ราคาเป้าหมายต่อ/).fill("8"));
+  // The budget sits behind a collapsed disclosure under the quantity cards (C4-7).
+  await j.screen(
+    "budget",
+    () => quantity.getByText("มีงบต่อชิ้นในใจ? (ไม่บังคับ)").click(),
+    () => expect(budget).toBeVisible(),
+  );
+  await j.decide("target 8 ฿", () => budget.fill("8"));
   await expect(target.getByText("สูงกว่าเป้าหมาย", { exact: true })).toBeVisible({ timeout: 15_000 });
   await j.decide("ways to lower the price", () => target.getByRole("button", { name: "ดูวิธีลดราคา" }).click());
   const levers = target.getByRole("list", { name: "วิธีลดราคาที่คำนวณได้" });

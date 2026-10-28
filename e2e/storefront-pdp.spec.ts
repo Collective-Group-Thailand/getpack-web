@@ -49,7 +49,7 @@ test.describe("the product page", () => {
     await configure.click();
     await expect(page).toHaveURL(/\/configure\/mailer-box\?/);
     await page.locator("html[data-hydrated]").waitFor();
-    await expect(page.getByRole("radio", { name: /เบอร์ B/ }).first()).toBeChecked();
+    await expect(page.getByRole("radiogroup", { name: "ขนาดมาตรฐาน" }).getByRole("radio", { name: /^B / })).toBeChecked();
     await expect(page.getByRole("radio", { name: /ลอน E/ }).first()).toBeChecked();
     const dock = page.getByRole("region", { name: "ราคาและการสั่งผลิต" });
     await expect(dock.getByText(pagePrice!).first()).toBeVisible({ timeout: 15_000 });

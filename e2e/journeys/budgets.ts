@@ -40,7 +40,8 @@ export const JOURNEYS: Record<JourneyId, JourneyBudget> = {
     journey: "discovery → price",
     budget: { unit: "steps", max: 4 },
     start: "home page, signed out",
-    requiredFields: [],
+    // The configurator marks its material "จำเป็น" since C4 (2026-10-28); it arrives chosen, so it adds no step.
+    requiredFields: ["วัสดุ"],
   },
   T2: {
     id: "T2",
@@ -68,7 +69,8 @@ export const JOURNEYS: Record<JourneyId, JourneyBudget> = {
     journey: "sample",
     budget: { unit: "steps", max: 4 },
     start: "product page of the T1 box",
-    requiredFields: [],
+    // The configurator marks its material "จำเป็น" since C4 (2026-10-28); it arrives chosen, so it adds no step.
+    requiredFields: ["วัสดุ"],
   },
   T6: {
     id: "T6",
