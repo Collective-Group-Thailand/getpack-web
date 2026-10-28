@@ -3,6 +3,11 @@ import { describe, expect, it } from "vitest";
 import {
   cleanContent,
   contentErrors,
+  documentPath,
+  documentSourceOf,
+  fileIdOf,
+  IMAGE_PREFIX,
+  imagePath,
   isExpired,
   newCertification,
   newLogo,
@@ -22,7 +27,7 @@ describe("style library content editor (C1c, DECISIONS-STAGE-A §11.5)", () => {
     expect(cleanContent(empty()).quickSearch).toEqual(empty().quickSearch);
   });
 
-  it("needs names, https or site links, dates and a logo's recorded permission", () => {
+  it("needs names, uploaded pictures, https or uploaded documents, dates and a logo's recorded permission", () => {
     const c = empty();
     c.trust.certifications.push({ ...newCertification(), expiresOn: "31/12/2026", documentUrl: "http://x" });
     c.trust.productionPhotos.push(newPhoto());
@@ -33,8 +38,28 @@ describe("style library content editor (C1c, DECISIONS-STAGE-A §11.5)", () => {
       { path: "trust.certifications.0.documentUrl", code: "url" },
       { path: "trust.productionPhotos.0.url", code: "required" },
       { path: "trust.productionPhotos.0.alt", code: "required" },
+      { path: "trust.customerLogos.0.logoUrl", code: "upload" },
       { path: "trust.customerLogos.0.permission", code: "required" },
     ]);
+  });
+
+  it("takes pictures only as uploaded files and documents as uploads or https links (C1e, §13.3)", () => {
+    const id = "0192f3a0-7c1e-7d2a-9b1f-00000000d001";
+    const c = empty();
+    c.trust.productionPhotos.push({ url: imagePath(id), alt: { th: "งานพิมพ์", en: null } });
+    c.trust.customerLogos.push({ name: "ร้าน", logoUrl: "https://example.invalid/l.png", permission: "อีเมล" });
+    c.trust.foodGrade.push({ title: { th: "เอกสาร", en: null }, documentUrl: documentPath(id) });
+    c.trust.foodGrade.push({ title: { th: "เอกสาร", en: null }, documentUrl: "https://issuer.example/a.pdf" });
+    c.trust.foodGrade.push({ title: { th: "เอกสาร", en: null }, documentUrl: "/docs/a.pdf" });
+    expect(contentErrors(c)).toEqual([
+      { path: "trust.foodGrade.2.documentUrl", code: "url" },
+      { path: "trust.customerLogos.0.logoUrl", code: "upload" },
+    ]);
+    expect(fileIdOf(imagePath(id), IMAGE_PREFIX)).toBe(id);
+    expect(fileIdOf(documentPath(id), IMAGE_PREFIX)).toBeNull();
+    expect(documentSourceOf(documentPath(id))).toBe("file");
+    expect(documentSourceOf("https://issuer.example/a.pdf")).toBe("link");
+    expect(documentSourceOf(null)).toBe("file");
   });
 
   it("trims, turns empty optional text into null and drops an empty tax note", () => {

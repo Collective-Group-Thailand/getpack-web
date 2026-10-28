@@ -51,4 +51,24 @@ describe("the trust section (C0)", () => {
     expect(screen.queryByText("แบรนด์ที่ไว้วางใจ")).toBeNull();
     expect(document.body.textContent).not.toMatch(/โรงงาน/);
   });
+
+  it("opens uploaded documents and logos through the storefront BFF, external document links as they are (C1e)", async () => {
+    const id = "0192f3a0-7c1e-7d2a-9b1f-00000000d001";
+    render(
+      (await TrustBlock({
+        trust: {
+          ...empty,
+          certifications: [
+            { title: { th: "ใบรับรอง A", en: null }, number: null, issuer: null, expiresOn: null, documentUrl: `/v1/store/style-library/documents/${id}` },
+          ],
+          foodGrade: [{ title: { th: "เอกสาร B", en: null }, documentUrl: "https://issuer.example/b.pdf" }],
+          customerLogos: [{ name: "ร้าน C", logoUrl: `/v1/store/catalog/images/${id}` }],
+        },
+        locale: "th",
+      }))!,
+    );
+    const links = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
+    expect(links).toEqual([`/bff/v1/store/style-library/documents/${id}`, "https://issuer.example/b.pdf"]);
+    expect(screen.getByAltText("ร้าน C").getAttribute("src")).toBe(`/bff/v1/store/catalog/images/${id}`);
+  });
 });

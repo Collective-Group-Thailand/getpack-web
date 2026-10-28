@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { dimensionSources, fitChanged, formOf, toCommercial, type Commercial } from "./commercial-form";
+import {
+  dimensionLabelKey,
+  dimensionSources,
+  fitChanged,
+  formOf,
+  sizeSearchApplies,
+  toCommercial,
+  type Commercial,
+} from "./commercial-form";
 
 const EMPTY: Commercial = {
   fitMinLMm: null,
@@ -74,5 +82,27 @@ describe("style commercial form (C1c)", () => {
     });
     expect(dimensionSources({ commercial: RANGE, fitRangeSource: "business", fitRangeBounds: null }).length.source).toBe("business");
     expect(dimensionSources({ commercial: EMPTY, fitRangeSource: null, fitRangeBounds: null }).length.source).toBeNull();
+  });
+});
+
+describe("size classes in the commercial tab (C1e, DECISIONS-STAGE-A §13.2)", () => {
+  it("names a bag's dimensions width × gusset × height and a round style's diameter × height", () => {
+    expect(["length", "width", "height"].map((d) => dimensionLabelKey("bag", d as never))).toEqual([
+      "bag.length",
+      "bag.width",
+      "height",
+    ]);
+    expect(["length", "width", "height"].map((d) => dimensionLabelKey("cylinder", d as never))).toEqual([
+      "cylinder.diameter",
+      "cylinder.diameter",
+      "height",
+    ]);
+    expect(dimensionLabelKey("box", "width")).toBe("width");
+  });
+
+  it("has no size search for a not-applicable style", () => {
+    expect(sizeSearchApplies("not_applicable")).toBe(false);
+    expect(sizeSearchApplies("bag")).toBe(true);
+    expect(sizeSearchApplies(undefined)).toBe(true);
   });
 });

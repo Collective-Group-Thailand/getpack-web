@@ -140,3 +140,19 @@ export function dimensionSources(
   }
   return out;
 }
+
+/** C1e (DECISIONS-STAGE-A §13.2): how the size search reads a style (set by the backfill, read-only here). */
+export type SizeClass = Schemas["StyleSizeClass"];
+
+/** True when the size search applies to the style (a `not_applicable` style has no range to edit). */
+export const sizeSearchApplies = (sizeClass: SizeClass | null | undefined) => sizeClass !== "not_applicable";
+
+/**
+ * The label key of a dimension under the style's size class: a bag's length is its width and its width the gusset
+ * (depth); a round style's length and width are both its diameter (the footprint's bounding square).
+ */
+export function dimensionLabelKey(sizeClass: SizeClass | null | undefined, dim: Dimension): string {
+  if (sizeClass === "bag" && dim !== "height") return `bag.${dim}`;
+  if (sizeClass === "cylinder" && dim !== "height") return "cylinder.diameter";
+  return dim;
+}

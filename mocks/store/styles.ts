@@ -205,8 +205,22 @@ const favouritesOf = (customerId: string) => {
   return set;
 };
 
+/**
+ * The API's size classes (C1e, DECISIONS-STAGE-A §13.2, `size-classes.ts`): the code lists as decided; the mock has no
+ * recipe parameters, so its round styles are named by code.
+ */
+const NOT_APPLICABLE = ["PK-SL-03", "PK-IN-02", "PK-CI-02", "PK-DS-04", "PK-SP-13", "PK-SP-12"];
+const ROUND = ["PK-SP-23", "PK-SP-24", "PK-RG-07"];
+function sizeClassOf(s: MockStyle): Card["sizeClass"] {
+  const code = s.row.code;
+  if (code.startsWith("PK-LA-") || code.startsWith("PK-TG-") || NOT_APPLICABLE.includes(code)) return "not_applicable";
+  if (code.startsWith("PK-PG-") || code.startsWith("PK-PB-")) return "bag";
+  return ROUND.includes(code) ? "cylinder" : "box";
+}
+
 /** The mock's fake inside fit range (mm): first-wave boxes only, from the category's size band; flats have none. */
 function fitRangeOf(s: MockStyle): Card["fitRange"] {
+  if (sizeClassOf(s) === "not_applicable") return null;
   if (s.row.wave !== 1 || s.row.category === "label" || s.row.category === "tag_sleeve") return null;
   return s.row.category === "corrugated"
     ? { minLMm: 100, maxLMm: 800, minWMm: 80, maxWMm: 600, minHMm: 40, maxHMm: 600 }
@@ -220,6 +234,13 @@ function fitOf(s: MockStyle, size: { l: number; w: number; h: number }): Card["f
   const [a, b, h] = [size.l + 5, size.w + 5, size.h + 5];
   const inside = (v: number, min: number, max: number) => v >= min && v <= max;
   if (!inside(h, r.minHMm, r.maxHMm)) return null;
+  if (sizeClassOf(s) === "cylinder") {
+    // C1e: the product's L × W inside the diameter's bounding square.
+    const d = Math.max(a, b);
+    return inside(d, r.minLMm, r.maxLMm) && inside(d, r.minWMm, r.maxWMm)
+      ? { insideLMm: d, insideWMm: d, insideHMm: h }
+      : null;
+  }
   if (inside(a, r.minLMm, r.maxLMm) && inside(b, r.minWMm, r.maxWMm))
     return { insideLMm: a, insideWMm: b, insideHMm: h };
   if (inside(b, r.minLMm, r.maxLMm) && inside(a, r.minWMm, r.maxWMm))
@@ -248,6 +269,7 @@ function card(s: MockStyle, favourite: boolean | null): Card {
     thumbnailUrl: null,
     photo: null,
     fitRange: fitRangeOf(s),
+    sizeClass: sizeClassOf(s),
     // Fake MOQ for the first wave only, so the card's spec row has something to show in the mock.
     moqUnits: s.row.wave === 1 ? 500 : null,
     dielineUrl: s.row.wave === 1 ? `/style-previews/${s.row.code}` : null,
