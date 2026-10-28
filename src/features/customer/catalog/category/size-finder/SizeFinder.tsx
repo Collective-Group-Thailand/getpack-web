@@ -290,7 +290,8 @@ export function SizeFinder({
             <h3 className="m-0 text-[1.0625rem] font-semibold">{t("chartTitle")}</h3>
             <small className="text-muted text-[0.78125rem]">{t("chartScale")}</small>
           </div>
-          <div className="relative overflow-x-auto">
+          {/* Scrolls sideways on a phone: focusable, so a keyboard can scroll it (axe scrollable-region-focusable). */}
+          <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label={t("chartTitle")}>
             <svg
               viewBox={`-4 -4 ${total + 8} ${maxH + font * 2.9 + 8}`}
               role="img"

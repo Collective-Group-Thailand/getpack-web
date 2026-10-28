@@ -41,7 +41,10 @@ export function PdpTiers({ guaranteeHref }: { guaranteeHref: string }) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <div className="border-border bg-surface rounded-card border p-5">
-        <table className={cn("w-full border-collapse text-[0.9375rem] tabular-nums", price.pending && "opacity-70")}>
+        <table
+          aria-busy={price.pending || undefined}
+          className={cn("w-full border-collapse text-[0.9375rem] tabular-nums", price.pending && "opacity-70")}
+        >
           <caption className="sr-only">{t("caption")}</caption>
           <thead>
             <tr>
