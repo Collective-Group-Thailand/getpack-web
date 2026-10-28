@@ -30,3 +30,9 @@ export const zoneHosts: ZoneHosts = {
 
 /** The zones this deployment answers for; every zone unless `ZONES` narrows it. */
 export const enabledZones: readonly Zone[] = serverEnv.ZONES ?? ZONES;
+
+/** Stage C feature flags (`FEATURE_*`, off unless `1`). */
+export const featureFlags = {
+  stylesWizard: serverEnv.FEATURE_STYLES_WIZARD === "1",
+  packagingLandings: serverEnv.FEATURE_PACKAGING_LANDINGS === "1",
+} as const;

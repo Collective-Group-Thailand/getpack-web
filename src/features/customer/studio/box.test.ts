@@ -11,7 +11,7 @@ import { createApiClient } from "@/lib/api/client";
 
 import { studioHref } from "./paths";
 import { maxSpotColours } from "./rules";
-import { inksFor, stateForDesign } from "./state";
+import { inksFor, spotShortfall, stateForDesign } from "./state";
 import { suggestBoxes } from "./suggest";
 
 const server = setupServer(...handlers);
@@ -84,6 +84,47 @@ describe("the print method configures the inks (U4.2)", () => {
     if (coating) expect(state.choices.coating_front).toEqual([coating.id]);
     const none = stateForDesign(c, { ...spec, studio: { printMethod: "none", printSides: "none" } }, twoColours, 500);
     expect(none.choices.print_front).toEqual([]);
+  });
+
+  it("never trims spot colours silently: says what the price leaves out and the ways out (C0)", async () => {
+    const c = await configurator();
+    const inks = groupsOf(c).find((g) => g.kind === "print_front")!.options;
+    const spots = inks.filter((ink) => !isProcessInk(ink)).length;
+    const spec = (printMethod: "flexo" | "digital" | null): DesignSpec => ({
+      specVersion: SPEC_VERSION,
+      styleId: "tuck-end",
+      values: { length: 70, width: 40, height: 150 },
+      material: { caliperMm: 0.45, kind: "paperboard" },
+      materialId: null,
+      studio: { printMethod, printSides: "outside" },
+    });
+    // Flexo limited to one colour by Prepress: two colours are not covered, and CMYK is offered.
+    const limited = spotShortfall(c, spec("flexo"), twoColours, 1);
+    expect(limited).toMatchObject({ needed: 2, priced: 1, more: false });
+    expect(limited!.cmyk).toBe(inks.some(isProcessInk));
+    // A full-colour method covers every colour; so does a blank design.
+    expect(spotShortfall(c, spec("digital"), twoColours, 1)).toBeNull();
+    expect(spotShortfall(c, spec("flexo"), blank, 1)).toBeNull();
+    // Without a limit and with enough spot inks, flexo prices one per colour: nothing left out.
+    if (spots >= 2) expect(spotShortfall(c, spec("flexo"), twoColours, null)).toBeNull();
+  });
+
+  it("on corrugate, 'เพิ่มจำนวนสี' leads to the quote path, never a silent trim (C0b, DECISIONS-STAGE-A §9.5)", async () => {
+    const c = (
+      await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", {
+        params: { path: { slug: "shipping-box" } },
+      })
+    ).data! as Configurator;
+    const spec: DesignSpec = {
+      specVersion: SPEC_VERSION,
+      styleId: "rsc",
+      values: { length: 200, width: 150, height: 100 },
+      material: { caliperMm: 3, kind: "corrugated" },
+      materialId: null,
+      studio: { printMethod: "flexo", printSides: "outside" },
+    };
+    const gap = spotShortfall(c, spec, twoColours, null);
+    expect(gap).toMatchObject({ needed: 2, priced: 1, more: true, quote: true });
   });
 
   it("reads the flexo limit from the rules only when Prepress set it", () => {

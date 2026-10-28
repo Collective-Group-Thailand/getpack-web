@@ -97,6 +97,29 @@ test.describe("the style library", () => {
     await expect(first).toBeFocused();
   });
 
+  test("searches by product size: a removable chip, 'ใส่ได้' cards and the inside size in the quick view (C0)", async ({
+    page,
+  }) => {
+    await gotoHydrated(page, `${HOSTS.customer}/styles`);
+    await page.getByRole("tab", { name: "ค้นหาด้วยขนาดสินค้า" }).click();
+    await page.getByRole("spinbutton", { name: "กว้าง", exact: true }).fill("8");
+    await page.getByRole("spinbutton", { name: "ยาว", exact: true }).fill("12");
+    await page.getByRole("spinbutton", { name: "สูง", exact: true }).fill("5");
+    await page.getByRole("button", { name: "หาแบบที่ใส่ได้" }).click();
+    await expect(page).toHaveURL(/size=120x80x50/);
+    const chip = page.getByRole("link", { name: /ขนาดสินค้า 8 × 12 × 5 ซม\./ });
+    await expect(chip).toBeVisible();
+    await expect(grid(page).locator("[data-fit]").first()).toHaveText("ใส่ได้");
+    await grid(page).locator("a[data-style-code]").first().click();
+    const panel = page.getByRole("dialog");
+    await expect(panel.locator("[data-quick-view-fit]")).toContainText("ขนาดภายในแนะนำ");
+    await expect(panel.locator("[data-quick-view-fit]")).toContainText("ซม.");
+    await page.keyboard.press("Escape");
+    await chip.click();
+    await expect(page).not.toHaveURL(/size=/);
+    await expect(grid(page).locator("[data-fit]")).toHaveCount(0);
+  });
+
   test("compares up to three styles side by side", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/styles`);
     const boxes = grid(page).getByRole("checkbox", { name: /^เปรียบเทียบ: / });

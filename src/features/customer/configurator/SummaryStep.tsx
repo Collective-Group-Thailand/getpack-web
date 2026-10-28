@@ -6,6 +6,7 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { Button } from "@/ui/components/Button";
 
 import type { PriceStep } from "./pricing";
+import { arrivalRangeText } from "./store-fields";
 import type { Pattern } from "./model";
 import type { Draft } from "./useDraft";
 
@@ -30,6 +31,7 @@ export interface SummaryStepProps {
 export function SummaryStep({ priced, pattern, draft, draftBusy, onDraft }: SummaryStepProps) {
   const t = useTranslations("configurator.summary");
   const format = useFormat();
+  const arrival = priced?.arrival ? arrivalRangeText(format, priced.arrival) : null;
 
   const quantity =
     priced?.toleranceShortagePct && priced.toleranceOveragePct
@@ -74,12 +76,21 @@ export function SummaryStep({ priced, pattern, draft, draftBusy, onDraft }: Summ
             ) : null}
             {priced?.earliestShipDate ? (
               <li>
-                {priced.earliestDeliveryDate
-                  ? t("nextSteps.deliveryBy", {
-                      ship: format.date(priced.earliestShipDate),
-                      receive: format.date(priced.earliestDeliveryDate),
-                    })
-                  : t("nextSteps.shipBy", { ship: format.date(priced.earliestShipDate) })}
+                {/* C4-API-3: the arrival window, the same words as the delivery step and the summary. */}
+                {arrival
+                  ? arrival.single
+                    ? t("nextSteps.deliveryBy", { ship: format.date(priced.earliestShipDate), receive: arrival.date })
+                    : t("nextSteps.deliveryByRange", {
+                        ship: format.date(priced.earliestShipDate),
+                        from: arrival.from,
+                        to: arrival.to,
+                      })
+                  : priced.earliestDeliveryDate
+                    ? t("nextSteps.deliveryBy", {
+                        ship: format.date(priced.earliestShipDate),
+                        receive: format.date(priced.earliestDeliveryDate),
+                      })
+                    : t("nextSteps.shipBy", { ship: format.date(priced.earliestShipDate) })}
               </li>
             ) : null}
           </ol>

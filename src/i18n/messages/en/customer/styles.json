@@ -360,6 +360,8 @@
     "configure": "Configure and price",
     "designInStudio": "Design in 3D Studio",
     "requestQuote": "Request a quote",
+    "quoteResponse": "Ask for a price — the team replies within {days, plural, one {# working day} other {# working days}}",
+    "quoteResponseNoTime": "Ask for a price",
     "rfqNote": "No instant price for this one yet — design it in the 3D Studio, then ask for a quotation. Our team assesses it and replies with a price.",
     "studioUnavailable": "This variant can't open in the studio yet — request a quotation with its code instead.",
     "startDesign": "Start designing this",
@@ -379,7 +381,8 @@
     "allVariants": "Every variant code",
     "allVariantsIntro": "Pick a code to choose that variant above.",
     "optionPages": "{name} by feature",
-    "choose": "Choose this one"
+    "choose": "Choose this one",
+    "dielineLegend": "Solid line = cut · dashed line = fold"
   },
   "preview3d": {
     "canvas": "The box in 3D — drag to turn",
@@ -804,6 +807,7 @@
     "cardAtQuantity": "at {quantity} pieces",
     "cardQuote": "Request a quote",
     "cardQuoteHint": "Priced by size and quantity",
+    "cardQuoteResponse": "Reply within {days, plural, one {# working day} other {# working days}}",
     "cardMore": "+{count}",
     "compare": "Compare",
     "compareTray": "Styles to compare",
@@ -852,6 +856,306 @@
     "quickViewVat": "Prices include VAT · delivery not included",
     "quickViewInstant": "Instant price, order now",
     "quickViewFullPage": "See this style in full",
-    "retry": "Try again"
+    "retry": "Try again",
+    "searchTabSize": "Search by product size",
+    "sizeWidth": "Width",
+    "sizeLength": "Length",
+    "sizeHeight": "Height",
+    "sizeUnit": "cm",
+    "sizeSubmit": "Find boxes that fit",
+    "sizeHint": "Measure the outside of your product; we add 0.5 cm on every side.",
+    "sizeChip": "Product {w} × {l} × {h} cm",
+    "fitPill": "Fits",
+    "fitTitle": "Fits a {w} × {l} × {h} cm product",
+    "fitInside": "Recommended inside size {l} × {w} × {h} cm",
+    "cardSizeRange": "{min}–{max} cm",
+    "cardMoq": "Min. {count}",
+    "dielineLabel": "Dieline",
+    "quickViewMoq": "Minimum order",
+    "quickViewMoqValue": "{count} pcs",
+    "quickViewFitRange": "Inside size range (L × W × H)",
+    "quickViewFitRangeValue": "{l} × {w} × {h} cm",
+    "quickViewEco": "Sustainability",
+    "ecoRecyclable": "Recyclable",
+    "ecoPlasticFree": "Plastic-free",
+    "wizardOpen": "Help me choose",
+    "wizardTitle": "Help me choose a box",
+    "wizardStep": "Step {step} of {total}",
+    "wizardItemsQ": "What will go inside?",
+    "wizardItemsHint": "Choose one or more",
+    "wizardPlaceQ": "Where will the box go?",
+    "wizardPlaceHint": "Helps us pick strength and opening style",
+    "wizardItemAny": "General products",
+    "wizardItemAnyHint": "Not sure yet",
+    "wizardItemSnack": "Snacks and bakery",
+    "wizardPlaceShip": "Shipping / online sales",
+    "wizardPlaceShipHint": "Strong, protects in transit",
+    "wizardPlaceShelf": "On a store shelf",
+    "wizardPlaceShelfHint": "Shows the product, can hang",
+    "wizardPlaceGift": "Gift / premium",
+    "wizardPlaceGiftHint": "An unboxing experience",
+    "wizardPlaceServe": "Serving / food",
+    "wizardCount": "{count, plural, one {# match} other {# matches}}",
+    "wizardCounting": "Counting…",
+    "wizardBack": "Back",
+    "wizardNext": "Next",
+    "wizardShow": "Show {count, plural, one {# style} other {# styles}}",
+    "wizardClose": "Close",
+    "wizardChip": "Help me choose: {answers}",
+    "wizardAll": "All",
+    "trustTitle": "Why trust getpack",
+    "trustCertifications": "Material certificates",
+    "trustCertificateNumber": "No. {number}",
+    "trustFoodGrade": "Food-contact materials",
+    "trustPhotos": "Real production photos",
+    "trustTaxInvoice": "Full tax invoice",
+    "trustTaxInvoiceDefault": "A full tax invoice for every order, for the full amount paid, with your branch if you need it.",
+    "trustLogos": "Brands that trust us",
+    "trustDocument": "View document",
+    "landingFaq": "Frequently asked questions",
+    "landingTitle": "Choose by use",
+    "landingBody": "Styles that suit each kind of product"
+  },
+  "packagingPages": {
+    "cake-boxes": {
+      "status": "draft",
+      "intro": "You can order cake and bakery boxes from getpack online, from choosing a style to tracking the delivery: pick a style below, enter the inside size in millimetres (length × width × height), then choose the board, print and quantity. Styles marked \"Instant price\" show the price including VAT as soon as the spec is complete; for the others, press \"Request a quotation\" and your spec goes to the team, who reply with a price — nothing is guessed in advance.\n\nThe styles on this page suit cakes, bread and pastries — lid-and-base boxes, trays and special shapes. Many come with structural options such as a display window, a carry handle or a locking lid, where the style supports it; see each style's page, and compare several side by side before you choose.\n\nIf you know your product's size but not the box size, measure the outside of the product and use the size search in the style library: it adds 0.5 cm of room on every side and shows the styles that fit, with a recommended inside size. Each style can be turned around in 3D on its page before you decide. For a cake, include the decoration and the cake board in the height.\n\nThe board, print, coating and finishes each style supports are listed on its own set-up page, and the outside and inside are printed separately. Styles with an instant price show the new price each time you change an option; for styles that need a quotation, every option you chose goes to the team in one request.\n\nThere are three ways to the artwork: design it yourself in the 3D Studio on the real box shape, upload your own file — the team checks it before production — or have the team design it for you, with the design fee shown in the price. Signed-in customers can download each style's dieline for their own design software.\n\nBefore production you check and approve the artwork. The production time and the estimated arrival date are shown with the price and count from artwork approval and payment. The accepted tolerances for size, colour and quantity are shown before you buy and stated in the quotation. If you want to see a real one before a large run, you can ask for a sample (charged). Every order comes with a full tax invoice for the amount paid, you follow production and delivery in your account, and a reorder reuses the same spec and files, priced again at current cost. If food touches the box directly, tell the team in your quotation request or before ordering so they can advise on the board.",
+      "faq": [
+        {
+          "question": "How much do cake and bakery boxes cost?",
+          "answer": "It depends on the style, size, board, print and quantity. Styles marked \"Instant price\" show the price including VAT once the spec is complete, and some show a per-piece starting price on the card. For styles that need a quotation, the team prices your actual spec and replies; nothing is guessed in advance."
+        },
+        {
+          "question": "What is the minimum order?",
+          "answer": "It depends on the style and how it is made. The set-up page shows the quantities you can choose, and a style with a minimum order states it on its card."
+        },
+        {
+          "question": "How long do production and delivery take?",
+          "answer": "The production time and the estimated arrival date are shown with the price before you buy, counted from artwork approval and payment. You follow the status in your account."
+        },
+        {
+          "question": "How do I choose the size of a cake box?",
+          "answer": "Measure the cake with its board and its highest decoration, then use the size search in the style library: it adds 0.5 cm on every side inside and recommends an inside size. Box sizes are entered in millimetres, length × width × height, inside."
+        },
+        {
+          "question": "I have no design yet, or I already have a file — what do I do?",
+          "answer": "Without a design, create one in the 3D Studio or have the team design it (the fee is shown in the price). With a file, upload it and the team checks it before production. To design in your own software, download the dieline once signed in."
+        },
+        {
+          "question": "Can I get a tax invoice?",
+          "answer": "Yes. Every order comes with a full tax invoice for the amount paid, and your branch can be stated."
+        }
+      ]
+    },
+    "mailer-boxes": {
+      "status": "draft",
+      "intro": "You can order mailer and shipping boxes from getpack online, from choosing a style to tracking the delivery: pick a style below, enter the inside size in millimetres (length × width × height), then choose the board, print and quantity. Styles marked \"Instant price\" show the price including VAT as soon as the spec is complete; for the others, press \"Request a quotation\" and your spec goes to the team, who reply with a price — nothing is guessed in advance.\n\nThe styles on this page are corrugated boxes for parcels, shipping and storage — slotted boxes, die-cut folders, telescope boxes and large bulk boxes. Each offers the structural options it supports; see each style's page, and compare several side by side before you choose.\n\nIf you know your product's size but not the box size, measure the outside of the product and use the size search in the style library: it adds 0.5 cm of room on every side and shows the styles that fit, with a recommended inside size. Each style can be turned around in 3D on its page before you decide.\n\nCorrugated boards are chosen by product weight and use, for example KA125 B-flute (3-ply), a standard kraft finish for everyday mailer boxes; KT125 B-flute, lightweight kraft at a lower price for lighter products; KA185 B-flute, a heavier liner for heavy or stacked goods; and KA125 E-flute, a fine flute with a smooth surface for sharp print on display boxes. Each style's own page lists the boards it actually offers. Print is chosen for the outside and the inside separately: no print, special (spot) colours or CMYK. If you want more colours than we can price instantly, choose them anyway — you are taken to a quotation request with your spec and the team quotes it.\n\nThere are three ways to the artwork: design it yourself in the 3D Studio on the real box shape, upload your own file — the team checks it before production — or have the team design it for you, with the design fee shown in the price. Signed-in customers can download each style's dieline for their own design software.\n\nBefore production you check and approve the artwork. The production time and the estimated arrival date are shown with the price and count from artwork approval and payment. The accepted tolerances for size, colour and quantity are shown before you buy and stated in the quotation. If you want to see a real one before a large run, you can ask for a sample (charged). Every order comes with a full tax invoice for the amount paid, you follow production and delivery in your account, and a reorder reuses the same spec and files, priced again at current cost.",
+      "faq": [
+        {
+          "question": "How much do mailer and shipping boxes cost?",
+          "answer": "It depends on the style, size, board, print and quantity. Styles marked \"Instant price\" show the price including VAT once the spec is complete, and some show a per-piece starting price on the card. For styles that need a quotation, the team prices your actual spec and replies; nothing is guessed in advance."
+        },
+        {
+          "question": "What is the minimum order?",
+          "answer": "It depends on the style and how it is made. The set-up page shows the quantities you can choose, and a style with a minimum order states it on its card."
+        },
+        {
+          "question": "How long do production and delivery take?",
+          "answer": "The production time and the estimated arrival date are shown with the price before you buy, counted from artwork approval and payment. You follow the status in your account."
+        },
+        {
+          "question": "Which corrugated board should I choose?",
+          "answer": "Choose by product weight and use: KA125 B-flute for everyday mailers, KT125 B-flute for lighter products, KA185 B-flute for heavy or stacked goods, and KA125 E-flute for a smooth surface and sharp print. Each style's set-up page lists the boards it offers."
+        },
+        {
+          "question": "I have no design yet, or I already have a file — what do I do?",
+          "answer": "Without a design, create one in the 3D Studio or have the team design it (the fee is shown in the price). With a file, upload it and the team checks it before production. To design in your own software, download the dieline once signed in."
+        },
+        {
+          "question": "Can I get a tax invoice?",
+          "answer": "Yes. Every order comes with a full tax invoice for the amount paid, and your branch can be stated."
+        }
+      ]
+    },
+    "gift-boxes": {
+      "status": "draft",
+      "intro": "You can order gift boxes from getpack online, from choosing a style to tracking the delivery: pick a style below, enter the inside size in millimetres (length × width × height), then choose the board, print and quantity. Styles marked \"Instant price\" show the price including VAT as soon as the spec is complete; for the others, press \"Request a quotation\" and your spec goes to the team, who reply with a price — nothing is guessed in advance.\n\nThe styles on this page suit gifts and souvenirs: folding cartons, lid-and-base boxes, trays and sleeves, corrugated boxes for sending gifts, and rigid boxes. Many offer structural options such as closures, inserts or windows where the style supports them; see each style's page, and compare several side by side before you choose.\n\nIf you know your product's size but not the box size, measure the outside of the product and use the size search in the style library: it adds 0.5 cm of room on every side and shows the styles that fit, with a recommended inside size. Each style can be turned around in 3D on its page before you decide.\n\nThe board, print, coating and finishes each style supports are listed on its own set-up page, and the outside and inside are printed separately. Styles with an instant price show the new price each time you change an option; for styles that need a quotation, every option you chose goes to the team in one request.\n\nThere are three ways to the artwork: design it yourself in the 3D Studio on the real box shape, upload your own file — the team checks it before production — or have the team design it for you, with the design fee shown in the price. Signed-in customers can download each style's dieline for their own design software.\n\nBefore production you check and approve the artwork. The production time and the estimated arrival date are shown with the price and count from artwork approval and payment. The accepted tolerances for size, colour and quantity are shown before you buy and stated in the quotation. If you want to see a real one before a large run, you can ask for a sample (charged). Every order comes with a full tax invoice for the amount paid, you follow production and delivery in your account, and a reorder reuses the same spec and files, priced again at current cost.",
+      "faq": [
+        {
+          "question": "How much do gift boxes cost?",
+          "answer": "It depends on the style, size, board, print and quantity. Styles marked \"Instant price\" show the price including VAT once the spec is complete, and some show a per-piece starting price on the card. For styles that need a quotation, the team prices your actual spec and replies; nothing is guessed in advance."
+        },
+        {
+          "question": "What is the minimum order?",
+          "answer": "It depends on the style and how it is made. The set-up page shows the quantities you can choose, and a style with a minimum order states it on its card."
+        },
+        {
+          "question": "How long do production and delivery take?",
+          "answer": "The production time and the estimated arrival date are shown with the price before you buy, counted from artwork approval and payment. You follow the status in your account."
+        },
+        {
+          "question": "Can the inside of the box be printed?",
+          "answer": "Yes, on styles that support it: the outside and the inside are chosen separately on the set-up page, and styles with an instant price show the new price each time you change an option."
+        },
+        {
+          "question": "I have no design yet, or I already have a file — what do I do?",
+          "answer": "Without a design, create one in the 3D Studio or have the team design it (the fee is shown in the price). With a file, upload it and the team checks it before production. To design in your own software, download the dieline once signed in."
+        },
+        {
+          "question": "Can I get a tax invoice?",
+          "answer": "Yes. Every order comes with a full tax invoice for the amount paid, and your branch can be stated."
+        }
+      ]
+    },
+    "cosmetic-boxes": {
+      "status": "draft",
+      "intro": "You can order cosmetics boxes from getpack online, from choosing a style to tracking the delivery: pick a style below, enter the inside size in millimetres (length × width × height), then choose the board, print and quantity. Styles marked \"Instant price\" show the price including VAT as soon as the spec is complete; for the others, press \"Request a quotation\" and your spec goes to the team, who reply with a price — nothing is guessed in advance.\n\nThe styles on this page suit creams, serums, lipsticks and skincare: tuck-end cartons, flip-top boxes, display boxes, sleeves and rigid boxes. Many offer structural options such as different top and bottom closures, a window, a hang tab or a bottle insert where the style supports them; see each style's page, and compare several side by side before you choose.\n\nIf you know your product's size but not the box size, measure the outside of the product and use the size search in the style library: it adds 0.5 cm of room on every side and shows the styles that fit, with a recommended inside size. Each style can be turned around in 3D on its page before you decide.\n\nThe board, print, coating and finishes each style supports are listed on its own set-up page, and the outside and inside are printed separately. Styles with an instant price show the new price each time you change an option; for styles that need a quotation, every option you chose goes to the team in one request.\n\nThere are three ways to the artwork: design it yourself in the 3D Studio on the real box shape, upload your own file — the team checks it before production — or have the team design it for you, with the design fee shown in the price. Signed-in customers can download each style's dieline for their own design software.\n\nBefore production you check and approve the artwork. The production time and the estimated arrival date are shown with the price and count from artwork approval and payment. The accepted tolerances for size, colour and quantity are shown before you buy and stated in the quotation. If you want to see a real one before a large run, you can ask for a sample (charged). Every order comes with a full tax invoice for the amount paid, you follow production and delivery in your account, and a reorder reuses the same spec and files, priced again at current cost.",
+      "faq": [
+        {
+          "question": "How much do cosmetics boxes cost?",
+          "answer": "It depends on the style, size, board, print and quantity. Styles marked \"Instant price\" show the price including VAT once the spec is complete, and some show a per-piece starting price on the card. For styles that need a quotation, the team prices your actual spec and replies; nothing is guessed in advance."
+        },
+        {
+          "question": "What is the minimum order?",
+          "answer": "It depends on the style and how it is made. The set-up page shows the quantities you can choose, and a style with a minimum order states it on its card."
+        },
+        {
+          "question": "How long do production and delivery take?",
+          "answer": "The production time and the estimated arrival date are shown with the price before you buy, counted from artwork approval and payment. You follow the status in your account."
+        },
+        {
+          "question": "Can I choose the closures of a tuck-end carton?",
+          "answer": "Yes. Tuck-end styles let you choose the top and bottom closures they support; each combination has its own variant code, and you see it in 3D with its price path on the style's page."
+        },
+        {
+          "question": "I have no design yet, or I already have a file — what do I do?",
+          "answer": "Without a design, create one in the 3D Studio or have the team design it (the fee is shown in the price). With a file, upload it and the team checks it before production. To design in your own software, download the dieline once signed in."
+        },
+        {
+          "question": "Can I get a tax invoice?",
+          "answer": "Yes. Every order comes with a full tax invoice for the amount paid, and your branch can be stated."
+        }
+      ]
+    },
+    "food-boxes": {
+      "status": "draft",
+      "intro": "You can order food boxes from getpack online, from choosing a style to tracking the delivery: pick a style below, enter the inside size in millimetres (length × width × height), then choose the board, print and quantity. Styles marked \"Instant price\" show the price including VAT as soon as the spec is complete; for the others, press \"Request a quotation\" and your spec goes to the team, who reply with a price — nothing is guessed in advance.\n\nThe styles on this page suit food: food boxes and trays, tuck-end cartons, sleeves and special shapes. Each offers the structural options it supports; see each style's page, and compare several side by side before you choose.\n\nIf you know your product's size but not the box size, measure the outside of the product and use the size search in the style library: it adds 0.5 cm of room on every side and shows the styles that fit, with a recommended inside size. Each style can be turned around in 3D on its page before you decide.\n\nThe board, print, coating and finishes each style supports are listed on its own set-up page, and the outside and inside are printed separately. Styles with an instant price show the new price each time you change an option; for styles that need a quotation, every option you chose goes to the team in one request.\n\nThere are three ways to the artwork: design it yourself in the 3D Studio on the real box shape, upload your own file — the team checks it before production — or have the team design it for you, with the design fee shown in the price. Signed-in customers can download each style's dieline for their own design software.\n\nBefore production you check and approve the artwork. The production time and the estimated arrival date are shown with the price and count from artwork approval and payment. The accepted tolerances for size, colour and quantity are shown before you buy and stated in the quotation. If you want to see a real one before a large run, you can ask for a sample (charged). Every order comes with a full tax invoice for the amount paid, you follow production and delivery in your account, and a reorder reuses the same spec and files, priced again at current cost. If food touches the box directly, tell the team in your quotation request or before ordering so they can advise on the board.",
+      "faq": [
+        {
+          "question": "How much do food boxes cost?",
+          "answer": "It depends on the style, size, board, print and quantity. Styles marked \"Instant price\" show the price including VAT once the spec is complete, and some show a per-piece starting price on the card. For styles that need a quotation, the team prices your actual spec and replies; nothing is guessed in advance."
+        },
+        {
+          "question": "What is the minimum order?",
+          "answer": "It depends on the style and how it is made. The set-up page shows the quantities you can choose, and a style with a minimum order states it on its card."
+        },
+        {
+          "question": "How long do production and delivery take?",
+          "answer": "The production time and the estimated arrival date are shown with the price before you buy, counted from artwork approval and payment. You follow the status in your account."
+        },
+        {
+          "question": "What if the food touches the box directly?",
+          "answer": "Say so in your quotation request or before ordering, and the team advises on a board that suits your use."
+        },
+        {
+          "question": "I have no design yet, or I already have a file — what do I do?",
+          "answer": "Without a design, create one in the 3D Studio or have the team design it (the fee is shown in the price). With a file, upload it and the team checks it before production. To design in your own software, download the dieline once signed in."
+        },
+        {
+          "question": "Can I get a tax invoice?",
+          "answer": "Yes. Every order comes with a full tax invoice for the amount paid, and your branch can be stated."
+        }
+      ]
+    },
+    "fruit-boxes": {
+      "status": "draft",
+      "intro": "You can order fruit and vegetable boxes from getpack online, from choosing a style to tracking the delivery: pick a style below, enter the inside size in millimetres (length × width × height), then choose the board, print and quantity. Styles marked \"Instant price\" show the price including VAT as soon as the spec is complete; for the others, press \"Request a quotation\" and your spec goes to the team, who reply with a price — nothing is guessed in advance.\n\nThe styles on this page are corrugated boxes and trays for fruit, vegetables and farm produce — slotted boxes, telescope boxes, die-cut boxes and large bulk boxes. Some offer options such as vent holes, hand holes or a lid where the style supports them; see each style's page, and compare several side by side before you choose.\n\nIf you know your product's size but not the box size, measure the outside of the product and use the size search in the style library: it adds 0.5 cm of room on every side and shows the styles that fit, with a recommended inside size. Each style can be turned around in 3D on its page before you decide.\n\nCorrugated boards are chosen by product weight and use, for example KA125 B-flute (3-ply), a standard kraft finish for everyday mailer boxes; KT125 B-flute, lightweight kraft at a lower price for lighter products; KA185 B-flute, a heavier liner for heavy or stacked goods; and KA125 E-flute, a fine flute with a smooth surface for sharp print on display boxes. Each style's own page lists the boards it actually offers. Print is chosen for the outside and the inside separately: no print, special (spot) colours or CMYK. If you want more colours than we can price instantly, choose them anyway — you are taken to a quotation request with your spec and the team quotes it.\n\nThere are three ways to the artwork: design it yourself in the 3D Studio on the real box shape, upload your own file — the team checks it before production — or have the team design it for you, with the design fee shown in the price. Signed-in customers can download each style's dieline for their own design software.\n\nBefore production you check and approve the artwork. The production time and the estimated arrival date are shown with the price and count from artwork approval and payment. The accepted tolerances for size, colour and quantity are shown before you buy and stated in the quotation. If you want to see a real one before a large run, you can ask for a sample (charged). Every order comes with a full tax invoice for the amount paid, you follow production and delivery in your account, and a reorder reuses the same spec and files, priced again at current cost.",
+      "faq": [
+        {
+          "question": "How much do fruit and vegetable boxes cost?",
+          "answer": "It depends on the style, size, board, print and quantity. Styles marked \"Instant price\" show the price including VAT once the spec is complete, and some show a per-piece starting price on the card. For styles that need a quotation, the team prices your actual spec and replies; nothing is guessed in advance."
+        },
+        {
+          "question": "What is the minimum order?",
+          "answer": "It depends on the style and how it is made. The set-up page shows the quantities you can choose, and a style with a minimum order states it on its card."
+        },
+        {
+          "question": "How long do production and delivery take?",
+          "answer": "The production time and the estimated arrival date are shown with the price before you buy, counted from artwork approval and payment. You follow the status in your account."
+        },
+        {
+          "question": "Which board suits fruit boxes that are stacked?",
+          "answer": "For heavy or stacked goods, KA185 B-flute (3-ply) has a heavier liner and is stronger. Each style's set-up page lists the boards it offers; if unsure, request a quotation with the weight and stacking and the team advises."
+        },
+        {
+          "question": "I have no design yet, or I already have a file — what do I do?",
+          "answer": "Without a design, create one in the 3D Studio or have the team design it (the fee is shown in the price). With a file, upload it and the team checks it before production. To design in your own software, download the dieline once signed in."
+        },
+        {
+          "question": "Can I get a tax invoice?",
+          "answer": "Yes. Every order comes with a full tax invoice for the amount paid, and your branch can be stated."
+        }
+      ]
+    },
+    "apparel-boxes": {
+      "status": "draft",
+      "intro": "You can order apparel and shoe boxes from getpack online, from choosing a style to tracking the delivery: pick a style below, enter the inside size in millimetres (length × width × height), then choose the board, print and quantity. Styles marked \"Instant price\" show the price including VAT as soon as the spec is complete; for the others, press \"Request a quotation\" and your spec goes to the team, who reply with a price — nothing is guessed in advance.\n\nThe styles on this page suit clothing and shoe brands: corrugated die-cut mailers, lid-and-base boxes, trays, rigid boxes and hang tags. Each offers the structural options it supports; see each style's page, and compare several side by side before you choose.\n\nIf you know your product's size but not the box size, measure the outside of the product and use the size search in the style library: it adds 0.5 cm of room on every side and shows the styles that fit, with a recommended inside size. Each style can be turned around in 3D on its page before you decide.\n\nThe board, print, coating and finishes each style supports are listed on its own set-up page, and the outside and inside are printed separately. Styles with an instant price show the new price each time you change an option; for styles that need a quotation, every option you chose goes to the team in one request.\n\nThere are three ways to the artwork: design it yourself in the 3D Studio on the real box shape, upload your own file — the team checks it before production — or have the team design it for you, with the design fee shown in the price. Signed-in customers can download each style's dieline for their own design software.\n\nBefore production you check and approve the artwork. The production time and the estimated arrival date are shown with the price and count from artwork approval and payment. The accepted tolerances for size, colour and quantity are shown before you buy and stated in the quotation. If you want to see a real one before a large run, you can ask for a sample (charged). Every order comes with a full tax invoice for the amount paid, you follow production and delivery in your account, and a reorder reuses the same spec and files, priced again at current cost.",
+      "faq": [
+        {
+          "question": "How much do apparel and shoe boxes cost?",
+          "answer": "It depends on the style, size, board, print and quantity. Styles marked \"Instant price\" show the price including VAT once the spec is complete, and some show a per-piece starting price on the card. For styles that need a quotation, the team prices your actual spec and replies; nothing is guessed in advance."
+        },
+        {
+          "question": "What is the minimum order?",
+          "answer": "It depends on the style and how it is made. The set-up page shows the quantities you can choose, and a style with a minimum order states it on its card."
+        },
+        {
+          "question": "How long do production and delivery take?",
+          "answer": "The production time and the estimated arrival date are shown with the price before you buy, counted from artwork approval and payment. You follow the status in your account."
+        },
+        {
+          "question": "Can I print my logo on an apparel mailer?",
+          "answer": "Yes. Print the outside or the inside separately, in special colours or CMYK as the style supports, and place your logo in the 3D Studio or upload your own file."
+        },
+        {
+          "question": "I have no design yet, or I already have a file — what do I do?",
+          "answer": "Without a design, create one in the 3D Studio or have the team design it (the fee is shown in the price). With a file, upload it and the team checks it before production. To design in your own software, download the dieline once signed in."
+        },
+        {
+          "question": "Can I get a tax invoice?",
+          "answer": "Yes. Every order comes with a full tax invoice for the amount paid, and your branch can be stated."
+        }
+      ]
+    },
+    "tea-coffee-boxes": {
+      "status": "draft",
+      "intro": "You can order tea and coffee boxes from getpack online, from choosing a style to tracking the delivery: pick a style below, enter the inside size in millimetres (length × width × height), then choose the board, print and quantity. Styles marked \"Instant price\" show the price including VAT as soon as the spec is complete; for the others, press \"Request a quotation\" and your spec goes to the team, who reply with a price — nothing is guessed in advance.\n\nThe styles on this page suit tea, coffee and brewed drinks: tuck-end cartons, flip-top boxes, sleeves, special shapes and rigid boxes. Many offer structural options such as different top and bottom closures or a window where the style supports them; see each style's page, and compare several side by side before you choose.\n\nIf you know your product's size but not the box size, measure the outside of the product and use the size search in the style library: it adds 0.5 cm of room on every side and shows the styles that fit, with a recommended inside size. Each style can be turned around in 3D on its page before you decide.\n\nThe board, print, coating and finishes each style supports are listed on its own set-up page, and the outside and inside are printed separately. Styles with an instant price show the new price each time you change an option; for styles that need a quotation, every option you chose goes to the team in one request.\n\nThere are three ways to the artwork: design it yourself in the 3D Studio on the real box shape, upload your own file — the team checks it before production — or have the team design it for you, with the design fee shown in the price. Signed-in customers can download each style's dieline for their own design software.\n\nBefore production you check and approve the artwork. The production time and the estimated arrival date are shown with the price and count from artwork approval and payment. The accepted tolerances for size, colour and quantity are shown before you buy and stated in the quotation. If you want to see a real one before a large run, you can ask for a sample (charged). Every order comes with a full tax invoice for the amount paid, you follow production and delivery in your account, and a reorder reuses the same spec and files, priced again at current cost.",
+      "faq": [
+        {
+          "question": "How much do tea and coffee boxes cost?",
+          "answer": "It depends on the style, size, board, print and quantity. Styles marked \"Instant price\" show the price including VAT once the spec is complete, and some show a per-piece starting price on the card. For styles that need a quotation, the team prices your actual spec and replies; nothing is guessed in advance."
+        },
+        {
+          "question": "What is the minimum order?",
+          "answer": "It depends on the style and how it is made. The set-up page shows the quantities you can choose, and a style with a minimum order states it on its card."
+        },
+        {
+          "question": "How long do production and delivery take?",
+          "answer": "The production time and the estimated arrival date are shown with the price before you buy, counted from artwork approval and payment. You follow the status in your account."
+        },
+        {
+          "question": "Can one brand have tea boxes in several sizes?",
+          "answer": "Yes. Each style takes your own inside size within the range it supports; order each size as its own cart line, or request a quotation for several items at once."
+        },
+        {
+          "question": "I have no design yet, or I already have a file — what do I do?",
+          "answer": "Without a design, create one in the 3D Studio or have the team design it (the fee is shown in the price). With a file, upload it and the team checks it before production. To design in your own software, download the dieline once signed in."
+        },
+        {
+          "question": "Can I get a tax invoice?",
+          "answer": "Yes. Every order comes with a full tax invoice for the amount paid, and your branch can be stated."
+        }
+      ]
+    }
   }
 }

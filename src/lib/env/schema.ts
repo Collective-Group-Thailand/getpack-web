@@ -115,6 +115,14 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
           .optional()
           .or(z.literal("").transform(() => undefined)),
 
+    /**
+     * Stage C · C0 feature flags (off unless `1`): parts of the /styles redesign whose business data or copy is
+     * not approved yet. `FEATURE_STYLES_WIZARD` — "ช่วยเลือกให้หน่อย" (its budget step waits for price data);
+     * `FEATURE_PACKAGING_LANDINGS` — the `/packaging/[slug]` landing pages (their intros wait for approved copy).
+     */
+    FEATURE_STYLES_WIZARD: optional(z.enum(["0", "1"])),
+    FEATURE_PACKAGING_LANDINGS: optional(z.enum(["0", "1"])),
+
     SENTRY_DSN: optionalText,
     SENTRY_ENVIRONMENT: optionalText,
     SENTRY_RELEASE: optionalText,

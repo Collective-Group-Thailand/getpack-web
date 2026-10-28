@@ -137,6 +137,11 @@ export function VariantPicker({
             <Icon name="box" size={64} className="text-subtle" aria-hidden="true" />
           )}
         </div>
+        {pictureView === "dieline" && dielineAsset && !show3d ? (
+          <p className="text-muted text-xs" data-dieline-legend="">
+            {t("detail.dielineLegend")}
+          </p>
+        ) : null}
         {dielineAsset && !show3d ? (
           <SegmentedControl
             label={t("detail.viewLabel")}
