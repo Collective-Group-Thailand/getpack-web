@@ -256,5 +256,203 @@
       "mon_fri": "Mon–Fri",
       "mon_sat": "Mon–Sat"
     }
+  },
+  "pdp": {
+    "breadcrumbProducts": "Products & prices",
+    "pills": {
+      "instant": "Instant price",
+      "moq": "Min. {quantity} {unit}",
+      "lead": "Made in {days} business days",
+      "leadRange": "Made in {min}–{max} business days",
+      "rfq": "Quote on request"
+    },
+    "price": {
+      "perUnit": "/{unit}",
+      "total": "total {total}",
+      "sub": "{qty} {unit} · size {size} · VAT included · shipping excluded",
+      "subNoSize": "{qty} {unit} · VAT included · shipping excluded",
+      "loading": "Calculating the price",
+      "error": "The price could not be calculated",
+      "retry": "Try again",
+      "quoteOnly": "This spec needs a quotation",
+      "quoteOnlyNote": "Continue to customise to send the spec to our team for a price",
+      "incomplete": "Choose a spec to see the price"
+    },
+    "options": {
+      "size": "Size",
+      "sizeInside": "Inside {l} × {w} × {h} mm",
+      "sizeButton": "Size {size}, inside {l} × {w} × {h} mm",
+      "custom": "Custom",
+      "material": "Material",
+      "materialHelp": "How to choose",
+      "print": "Outside print",
+      "printNone": "No print",
+      "printCmyk": "4-colour (CMYK)",
+      "printSpot": "Spot colours",
+      "quantity": "Quantity",
+      "quantityHint": "Lower price per piece at higher quantities",
+      "quantityQuote": "Quote"
+    },
+    "cta": {
+      "configure": "Customise and order",
+      "configureShort": "Customise",
+      "saveQuote": "Save as quotation",
+      "dieline": "Dieline, size {size}",
+      "dielineAny": "Dieline",
+      "designOnline": "Design online",
+      "ask": "Ask us",
+      "requestQuote": "Request a quote"
+    },
+    "assure": {
+      "ready": "Ready to ship from <b>{date}</b>",
+      "lead": "made in {days} business days",
+      "saving": "Order {qty} {unit} and pay <b>{price}</b> per piece ({pct}% less)",
+      "tolerance": "Quantity may vary ±{pct} by production standards; any shortfall is <b>refunded as credit</b>",
+      "toleranceSplit": "Quantity may be up to {short} short or {over} over by production standards; any shortfall is <b>refunded as credit</b>",
+      "lock": "Save as a quotation: <b>price held for {days} days</b>",
+      "guarantee": "Our work guarantee"
+    },
+    "bar": {
+      "quantity": "{qty} {unit}",
+      "size": "size {size}",
+      "noPrice": "Choose a spec, then customise"
+    },
+    "nav": {
+      "label": "On this page",
+      "size": "Sizes",
+      "price": "Price by quantity",
+      "materials": "Materials & print",
+      "design": "Artwork",
+      "how": "How to order",
+      "faq": "FAQ"
+    },
+    "gallery": {
+      "views": "Views",
+      "photo": "Photo {index} of {count}",
+      "drawing": "Dieline",
+      "size": "Actual size",
+      "sizeCaption": "Size {size} · inside",
+      "sizeFigure": "Box size {size}, inside length {l} × width {w} × height {h} mm",
+      "length": "L {mm} mm",
+      "width": "W {mm} mm",
+      "height": "H {mm} mm"
+    },
+    "sizes": {
+      "title": "All {count} sizes",
+      "lede": "The inside size is the space for your goods. The outside size is worked out from the chosen material's thickness and is for reference.",
+      "caption": "Every standard size, inside and outside (mm), with the price per piece",
+      "code": "Size",
+      "inside": "Inside L × W × H (mm)",
+      "outside": "Outside (mm) · reference",
+      "scale": "Scale",
+      "price": "Per piece at {qty} pcs",
+      "action": "Choose",
+      "pick": "Choose this size",
+      "picked": "Chosen",
+      "pickLabel": "Choose size {size}",
+      "pickedLabel": "Size {size} is chosen",
+      "quote": "Quote",
+      "customTitle": "Not a standard size?",
+      "customBody": "Enter your own length × width × height and get the price at once.",
+      "customCta": "Custom size"
+    },
+    "tiers": {
+      "title": "Price by quantity",
+      "lede": "{spec} · VAT included",
+      "caption": "Price per piece and total by quantity",
+      "quantity": "Quantity",
+      "quantityCell": "{qty} {unit}",
+      "unit": "Per piece",
+      "total": "Total",
+      "quote": "Quote",
+      "howTitle": "Reading the price",
+      "how": {
+        "vat": "Prices <b>include VAT</b> and exclude shipping; enter a postcode when customising to see it",
+        "lock": "Saved as a quotation, the <b>price is held for {days} days</b>",
+        "tolerance": "The quantity delivered may be <b>{pct} lower or higher</b> by production standards; any shortfall is refunded as credit",
+        "toleranceSplit": "The quantity delivered may be <b>up to {short} short or {over} over</b> by production standards; any shortfall is refunded as credit",
+        "guarantee": "Covered by <link>our work guarantee</link>"
+      }
+    },
+    "materials": {
+      "title": "Materials & print",
+      "lede": "The options this product offers"
+    },
+    "print": {
+      "spot": {
+        "title": "Spot colours",
+        "body": "Logos and text in flat colours, one ink at a time, for a clean look",
+        "inks": "Available: {inks}"
+      },
+      "cmyk": {
+        "title": "4-colour (CMYK)",
+        "body": "Full images and brand colours; on kraft the colours print warmer than on white board"
+      }
+    },
+    "design": {
+      "title": "Box artwork",
+      "lede": "Pick the way that suits you; each keeps the spec chosen on this page",
+      "own_file": {
+        "title": "I have artwork",
+        "body": "Download the free dieline, lay out your artwork, and upload the file after ordering; our team checks it before production",
+        "cta": "Use my file"
+      },
+      "studio": {
+        "title": "Design in the Studio",
+        "body": "Place your logo, text and images on the box in your browser and preview it before you order",
+        "cta": "Open the Studio"
+      },
+      "hired_design": {
+        "title": "Have our team design it",
+        "body": "Our team designs the box from your logo and brand details; the fee shows when you customise",
+        "cta": "Choose the design service"
+      }
+    },
+    "flow": {
+      "title": "How to order",
+      "lede": "{count} steps when you customise; what you chose here is already set",
+      "fromPage": "Set on this page",
+      "inConfigurator": "Chosen when customising",
+      "delivery": "Enter a postcode",
+      "design": "Your file, the Studio or our team",
+      "summary": "Quotation or order"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": {
+        "included": {
+          "q": "What does the price include?",
+          "a": "The product in the spec you chose, with VAT. Shipping is extra; enter a postcode when customising to see it."
+        },
+        "insideOutside": {
+          "q": "Are the sizes inside or outside sizes?",
+          "a": "Size codes and the main figures are inside sizes, the space for your goods. Outside sizes are worked out from the chosen material's thickness and are for reference."
+        },
+        "tolerance": {
+          "q": "What if I receive fewer pieces?",
+          "a": "The quantity delivered may be up to 5% lower or higher by production standards; any shortfall is refunded as credit."
+        },
+        "priceLock": {
+          "q": "Will the price change if I order later?",
+          "a": "Save it as a quotation and the price is held for {days} days."
+        },
+        "artwork": {
+          "q": "Do I need artwork first?",
+          "a": "No.",
+          "studio": "You can design in the Studio",
+          "hired": "or choose the design service.",
+          "ownFile": "If you have artwork, download the dieline, lay it out and upload the file after ordering; our team checks it before production."
+        },
+        "leadTime": {
+          "q": "How long does it take?",
+          "a": "Production takes {lead} business days after artwork approval. This page shows the earliest ship date for the spec you chose."
+        }
+      }
+    },
+    "related": {
+      "title": "More in {category}",
+      "titleAny": "More in this category",
+      "all": "See the whole category"
+    }
   }
 }
