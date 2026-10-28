@@ -7295,7 +7295,7 @@ export interface paths {
          * Get a customer’s CS cart
          * @description The active cart (the customer’s CS cart), created on first use. Each item is a saved quotation option with its price lock (D-051); `priceLocked: false` means re-price and confirm before checkout. Shipping is priced per destination at checkout.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         get: operations["admin.cart.get"];
         put?: never;
@@ -7383,9 +7383,9 @@ export interface paths {
         put?: never;
         /**
          * Add a quotation option to the cart
-         * @description A live saved quotation of this customer (instant or accepted RFQ), one item per option. `hired_design` needs a quotation priced with the design fee; a mockup add-on (D-072) is refused until it can be priced. Destinations default to the default delivery address and must add up to the quantity.
+         * @description A live saved quotation of this customer (instant or accepted RFQ), one item per option. `hired_design` needs a quotation priced with the design fee; a mockup add-on (D-072) is refused until it can be priced. Destinations default to the default delivery address and must add up to the quantity. D-454: the minimum order counts per size — a customer's instant quotation option must meet its catalogue product's `quantityMin` / `quantityMax` on its own (422 `validation.failed`, path `quoteOptionId`, code `min` / `max`); other items of the same product (other sizes) never count towards it.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         post: operations["admin.cart.addItem"];
         delete?: never;
@@ -7408,7 +7408,7 @@ export interface paths {
          * Remove an item
          * @description The quotation stays saved and can be added again while it is live (D-051).
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         delete: operations["admin.cart.removeItem"];
         options?: never;
@@ -7417,7 +7417,7 @@ export interface paths {
          * Change an item’s design or mockup option
          * @description Guarded by the cart’s `If-Match` (D-072).
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         patch: operations["admin.cart.updateItem"];
         trace?: never;
@@ -7435,7 +7435,7 @@ export interface paths {
          * Change an item’s quantity
          * @description D-452: an instant item takes another quantity. When its locked quotation already has that quantity the item switches to it (same price lock); otherwise the configuration is priced again by the quote engine into a new saved quotation at today’s prices with a new lock (D-051) — the response shows the new unit price and lock. Within the product’s `quantityLimits`. One destination follows the new quantity; a split over several addresses is cleared and set again at checkout. RFQ quotations, Studio design pins (D-277), reorders (D-153) and items with a re-price waiting are refused (`cart.quantity_unavailable`). Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         post: operations["admin.cart.changeQuantity"];
         delete?: never;
@@ -7457,7 +7457,7 @@ export interface paths {
          * Accept the re-priced item
          * @description The item takes the new quotation, its price and a new lock (D-051). Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         post: operations["admin.cart.confirmReprice"];
         delete?: never;
@@ -7479,7 +7479,7 @@ export interface paths {
          * Re-price an item whose price lock passed
          * @description After the 15-day lock (D-051) the configuration is re-priced into a new quotation; the item shows `pendingReprice` with the difference until the client confirms it. A live lock is kept (`cart.price_locked`); RFQ quotations are not re-priced (ask for a new quotation).
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         post: operations["admin.cart.repriceItem"];
         delete?: never;
@@ -7500,7 +7500,7 @@ export interface paths {
          * Split an item over delivery addresses
          * @description Replaces the destinations; each is one of the customer’s delivery addresses (copied as a snapshot, D-142) and the quantities add up to the item quantity. Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         put: operations["admin.cart.setDestinations"];
         post?: never;
@@ -27752,7 +27752,7 @@ export interface paths {
          * Get my cart
          * @description The active cart (my cart), created on first use. Each item is a saved quotation option with its price lock (D-051); `priceLocked: false` means re-price and confirm before checkout. Shipping is priced per destination at checkout.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         get: operations["store.cart.get"];
         put?: never;
@@ -27840,9 +27840,9 @@ export interface paths {
         put?: never;
         /**
          * Add a quotation option to the cart
-         * @description A live saved quotation of this customer (instant or accepted RFQ), one item per option. `hired_design` needs a quotation priced with the design fee; a mockup add-on (D-072) is refused until it can be priced. Destinations default to the default delivery address and must add up to the quantity.
+         * @description A live saved quotation of this customer (instant or accepted RFQ), one item per option. `hired_design` needs a quotation priced with the design fee; a mockup add-on (D-072) is refused until it can be priced. Destinations default to the default delivery address and must add up to the quantity. D-454: the minimum order counts per size — a customer's instant quotation option must meet its catalogue product's `quantityMin` / `quantityMax` on its own (422 `validation.failed`, path `quoteOptionId`, code `min` / `max`); other items of the same product (other sizes) never count towards it.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         post: operations["store.cart.addItem"];
         delete?: never;
@@ -27865,7 +27865,7 @@ export interface paths {
          * Remove an item
          * @description The quotation stays saved and can be added again while it is live (D-051).
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         delete: operations["store.cart.removeItem"];
         options?: never;
@@ -27874,7 +27874,7 @@ export interface paths {
          * Change an item’s design or mockup option
          * @description Guarded by the cart’s `If-Match` (D-072).
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         patch: operations["store.cart.updateItem"];
         trace?: never;
@@ -27892,7 +27892,7 @@ export interface paths {
          * Change an item’s quantity
          * @description D-452: an instant item takes another quantity. When its locked quotation already has that quantity the item switches to it (same price lock); otherwise the configuration is priced again by the quote engine into a new saved quotation at today’s prices with a new lock (D-051) — the response shows the new unit price and lock. Within the product’s `quantityLimits`. One destination follows the new quantity; a split over several addresses is cleared and set again at checkout. RFQ quotations, Studio design pins (D-277), reorders (D-153) and items with a re-price waiting are refused (`cart.quantity_unavailable`). Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         post: operations["store.cart.changeQuantity"];
         delete?: never;
@@ -27914,7 +27914,7 @@ export interface paths {
          * Accept the re-priced item
          * @description The item takes the new quotation, its price and a new lock (D-051). Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         post: operations["store.cart.confirmReprice"];
         delete?: never;
@@ -27936,7 +27936,7 @@ export interface paths {
          * Re-price an item whose price lock passed
          * @description After the 15-day lock (D-051) the configuration is re-priced into a new quotation; the item shows `pendingReprice` with the difference until the client confirms it. A live lock is kept (`cart.price_locked`); RFQ quotations are not re-priced (ask for a new quotation).
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         post: operations["store.cart.repriceItem"];
         delete?: never;
@@ -27957,7 +27957,7 @@ export interface paths {
          * Split an item over delivery addresses
          * @description Replaces the destinations; each is one of the customer’s delivery addresses (copied as a snapshot, D-142) and the quantities add up to the item quantity. Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142, D-452.
+         *     Implements: D-051, D-072, D-142, D-452, D-454.
          */
         put: operations["store.cart.setDestinations"];
         post?: never;
@@ -78186,7 +78186,7 @@ export interface components {
              * @example 400
              */
             lengthMm: number;
-            /** @example 30×40×25 ซม. */
+            /** @example 40×30×25 ซม. */
             name: string;
             /**
              * @description Unit: mm.
@@ -78217,7 +78217,7 @@ export interface components {
              * @example 400
              */
             lengthMm: number;
-            /** @example 30×40×25 ซม. */
+            /** @example 40×30×25 ซม. */
             name: string;
             /**
              * @description Unit: mm.
@@ -295356,7 +295356,7 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e005",
                      *           "isDefault": true,
                      *           "lengthMm": 400,
-                     *           "name": "30×40×25 ซม.",
+                     *           "name": "40×30×25 ซม.",
                      *           "widthMm": 300
                      *         }
                      *       ],
