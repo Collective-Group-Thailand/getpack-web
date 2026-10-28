@@ -1,228 +1,69 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { CheckoutStepper } from "@/features/customer/checkout/flow/CheckoutStepper";
+import { MobileBar, OrderSummary } from "@/features/customer/checkout/flow/OrderSummary";
+import { cartBlockers, stepHref, type Blocker } from "@/features/customer/checkout/flow/steps";
+import { useTrustLines } from "@/features/customer/checkout/flow/trust";
 import { useFormat } from "@/features/shared/format/useFormat";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { trackCheckout } from "@/lib/analytics/checkout";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Field } from "@/ui/components/Field";
-import { IconButton } from "@/ui/components/IconButton";
-import { NumberInput } from "@/ui/components/Input";
-import { PriceSummary } from "@/ui/components/PriceSummary";
-import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
+import type { PriceRow } from "@/ui/components/PriceSummary";
 import { toast } from "@/ui/components/Toast";
-import { productFamilyOf, ProductThumb } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
 
-import { geoName, type Address } from "../account/address";
-import { rfqHref } from "../catalog/paths";
-import { productNameOf, specLinesOf } from "../orders/summary";
-import { AttachedDesign } from "./AttachedDesign";
-import { editCart, lineBlockers, readCart, type Cart, type CartItem } from "./cart-client";
+import type { Address } from "../account/address";
+import { shareOrCopy } from "../configurator/useQuoteActions";
+import { productNameOf } from "../orders/summary";
+import { CartItemCard } from "./CartItemCard";
+import { editCart, readCart, type Cart, type CartItem } from "./cart-client";
 import { PromoCodeBox } from "./PromoCodeBox";
+import { quotePdf, quoteShareLink } from "./quote-actions";
+import { ShippingEstimate, type ShippingEstimateResult } from "./ShippingEstimate";
 import { useGuestCartMerge } from "./useGuestCartMerge";
 
-const AddressSheet = dynamic(() => import("./AddressSheet").then((module) => module.AddressSheet), { ssr: false });
-
 export type { Cart };
-type Item = CartItem;
-
-/** Every design option the contract names (CONTRACT-GAP store.cart: the line does not say which it may switch to). */
-const DESIGN_OPTIONS: readonly Schemas["DesignOption"][] = ["own_file", "online_designer", "hired_design"];
 
 export const cartKey = [...queryKeys.resource("customer", "cart")];
 export const addressesKey = [...queryKeys.resource("customer", "addresses")];
 
-/** A line's quantity split across addresses (D-110) — edited here, checked by the API. */
-function Destinations({
-  item,
-  addresses,
-  onSave,
-  saving,
-  onAddAddress,
-}: {
-  item: Item;
-  addresses: Address[];
-  onSave: (rows: { addressId: string; quantity: number }[]) => void;
-  saving: boolean;
-  onAddAddress: () => void;
-}) {
-  const t = useTranslations("cart.destinations");
-  const locale = useLocale();
-  const format = useFormat();
-  // A fresh line has no destination yet: start with one row for the whole quantity, open, so a
-  // first-time buyer is asked for an address right here instead of finding the pay button dim
-  // with "ระบุที่อยู่จัดส่ง" and no way to do it (customer walkthrough 2026-10-16).
-  const [rows, setRows] = useState(() =>
-    item.destinations.length > 0
-      ? item.destinations.map((destination) => ({
-          addressId: destination.addressId ?? "",
-          quantity: String(destination.quantity),
-        }))
-      : [{ addressId: "", quantity: String(item.quantity) }],
-  );
-  const incomplete = item.destinations.length === 0 || item.destinations.some((destination) => !destination.addressId);
-  const [editing, setEditing] = useState(incomplete);
-  const total = rows.reduce((sum, row) => sum + (Number(row.quantity) || 0), 0);
-
-  if (!editing) {
-    return (
-      <div className="flex flex-col gap-1 text-sm">
-        {incomplete ? (
-          <p className="text-warning flex items-center gap-2 font-medium">
-            <Icon name="warning" size={16} aria-hidden="true" />
-            {t("choosePrompt")}
-          </p>
-        ) : null}
-        <ul className="flex flex-col gap-1">
-          {item.destinations.map((destination) => (
-            <li key={destination.id} className="flex items-start gap-2">
-              <Icon name="map-pin" size={16} aria-hidden="true" className="text-muted mt-0.5" />
-              <span>
-                {t("line", {
-                  quantity: format.number(destination.quantity),
-                  name: destination.address.recipientName,
-                  province: destination.address.provinceNameTh,
-                })}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <Button
-          size="sm"
-          variant={incomplete ? "primary" : "link"}
-          className={incomplete ? "self-start" : "self-start px-0"}
-          onClick={() => setEditing(true)}
-        >
-          {incomplete ? t("chooseAction") : item.destinations.length > 1 ? t("edit") : t("split")}
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <fieldset className="bg-surface border-border flex flex-col gap-3 rounded-lg border p-3">
-      <legend className="px-1 text-sm font-medium">
-        {t(rows.length > 1 ? "legend" : "legendOne", { quantity: format.number(item.quantity) })}
-      </legend>
-      {addresses.length === 0 ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="text-muted text-sm">{t("noAddresses")}</p>
-          <Button size="sm" iconStart="map-pin" onClick={onAddAddress}>
-            {t("newAddress")}
-          </Button>
-        </div>
-      ) : null}
-      {rows.map((row, index) => (
-        <div key={index} className="flex flex-wrap items-end gap-2">
-          <Field label={t("address", { index: index + 1 })} className="min-w-48 flex-1">
-            <SearchableSelect
-              value={row.addressId || undefined}
-              placeholder={t("choose")}
-              onValueChange={(addressId) =>
-                setRows((current) => current.map((entry, at) => (at === index ? { ...entry, addressId } : entry)))
-              }
-              options={addresses.map((address) => ({
-                value: address.id,
-                label: `${address.label} — ${address.recipientName}, ${geoName(locale, address.province)} ${address.postcode}`,
-              }))}
-            />
-          </Field>
-          <Field label={t("quantity")} className="w-32">
-            <NumberInput
-              min={1}
-              value={row.quantity}
-              onChange={(event) =>
-                setRows((current) =>
-                  current.map((entry, at) => (at === index ? { ...entry, quantity: event.target.value } : entry)),
-                )
-              }
-            />
-          </Field>
-          {rows.length > 1 ? (
-            <IconButton
-              name="trash"
-              variant="ghost"
-              label={t("remove", { index: index + 1 })}
-              onClick={() => setRows((current) => current.filter((_, at) => at !== index))}
-            />
-          ) : null}
-        </div>
-      ))}
-      <p
-        className={total === item.quantity ? "text-muted text-xs" : "text-danger text-xs font-medium"}
-        aria-live="polite"
-      >
-        {t("total", { total: format.number(total), quantity: format.number(item.quantity) })}
-      </p>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant="secondary"
-          iconStart="plus"
-          onClick={() => setRows((current) => [...current, { addressId: "", quantity: "" }])}
-        >
-          {t("addRow")}
-        </Button>
-        {addresses.length > 0 ? (
-          <Button size="sm" variant="ghost" iconStart="map-pin" onClick={onAddAddress}>
-            {t("newAddress")}
-          </Button>
-        ) : null}
-        <Button
-          size="sm"
-          loading={saving}
-          disabled={total !== item.quantity || rows.some((row) => !row.addressId)}
-          onClick={() => {
-            onSave(rows.map((row) => ({ addressId: row.addressId, quantity: Number(row.quantity) })));
-            setEditing(false);
-          }}
-        >
-          {t(rows.length > 1 ? "save" : "saveOne")}
-        </Button>
-      </div>
-    </fieldset>
-  );
-}
+/** What a removed line needs to come back (`store.cart.addItem`) while its quotation is live. */
+type Removed = Pick<CartItem, "quoteId" | "quoteOptionId" | "designOption" | "designDocumentId" | "designVersionNo">;
 
 /**
- * The cart (F3 3.3, D-110): quotation lines, each with its design option and its quantity split
- * across saved addresses. A line whose price lock ended is priced again on the customer's word
- * (`store.cart.repriceItem`) and shows the difference until they confirm it (confirm-reprice,
- * D-051, design-system.md §1.3). Every edit goes through `editCart`, under the cart's `ETag`.
- *
- * A line says what it is (`summary`: product, spec lines, unit) and, for a reorder, which order it
- * repeats. Whether the cart can go to checkout is the checkout preview's to say (U-B0.1); the page
- * asks only for what a line itself shows is missing.
+ * The cart, step 1 of 4 (checkout redesign Phase 1, F3 3.3): quotation lines with their price lock (D-051), quantity
+ * (`store.cart.changeQuantity`, D-452), design option and tier hint; the delivery address is step 2's — here only an
+ * optional postcode estimate. The summary shows the API's figures: goods incl. VAT and the VAT in them
+ * (`CartDto.vatAmount`), the estimate's delivery and total, the codes (at most `CartDto.maxCodes`, enforced by the
+ * API). Every edit goes through `editCart`, under the cart's `ETag`.
  *
  * CONTRACT-GAP store.cart — a line does not list the design options it may switch to.
  */
-export function CartView({ initialCart, initialAddresses }: { initialCart: Cart; initialAddresses: Address[] }) {
+export function CartView({ initialCart }: { initialCart: Cart; initialAddresses?: Address[] }) {
   const t = useTranslations("cart");
+  const tFlow = useTranslations("checkout.flow");
   const tUnits = useTranslations("catalog.stock.units");
   const locale = useLocale();
-  const tDesign = useTranslations("configurator.design.options");
   const format = useFormat();
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const [addressFor, setAddressFor] = useState<string | null>(null);
   const [codeError, setCodeError] = useState<string | null>(null);
+  const [estimate, setEstimate] = useState<ShippingEstimateResult | null>(null);
+  const [busy, setBusy] = useState<"pdf" | "share" | null>(null);
+  const [lastRemoved, setLastRemoved] = useState<Removed | null>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
 
   const cart = useQuery({ queryKey: cartKey, queryFn: readCart, initialData: initialCart }).data;
-  const addresses = useQuery({
-    queryKey: addressesKey,
-    queryFn: async () =>
-      (await browserApi().GET("/v1/store/addresses", { params: { query: { perPage: 100 } } })).data!.data,
-    initialData: initialAddresses,
-  }).data;
+  const api = browserApi();
 
   const mutate = useMutation({
     mutationFn: async (run: () => Promise<Cart>) => run(),
@@ -241,9 +82,147 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
     }
     if (merge.failed.length > 0) toast.error(t("guest.mergeFailed", { count: merge.failed.length }));
   }, [merge.merged, merge.failed, queryClient, t]);
-  const api = browserApi();
-  const nameOf = (item: Item) => productNameOf(locale, item.summary);
-  const blocked = cart.items.flatMap((item) => lineBlockers(item).map((kind) => ({ item, kind })));
+
+  const viewed = useRef(false);
+  useEffect(() => {
+    if (viewed.current) return;
+    viewed.current = true;
+    trackCheckout("checkout_step_view", { step: "cart" });
+  }, []);
+
+  const onEstimate = useCallback((next: ShippingEstimateResult | null) => setEstimate(next), []);
+  const nameOf = (item: CartItem) => productNameOf(locale, item.summary);
+  const unitOf = (item: CartItem) => tUnits(item.summary.unit);
+  const blockers = cartBlockers(cart);
+  const trust = useTrustLines({ items: cart.items, readyDate: estimate?.readyDate ?? null });
+
+  async function changeQuantity(item: CartItem, quantity: number, viaHint: boolean) {
+    trackCheckout(viaHint ? "checkout_tier_hint_accept" : "checkout_qty_change", { from: item.quantity, to: quantity });
+    try {
+      const next = await editCart((ifMatch) =>
+        api.POST("/v1/store/cart/items/{itemId}/actions/change-quantity", {
+          params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
+          body: { quantity },
+        }),
+      );
+      queryClient.setQueryData(cartKey, next);
+      const line = next.items.find((candidate) => candidate.id === item.id);
+      toast.success(t("qtyUpdated", { quantity: format.number(quantity), unit: unitOf(item) }), {
+        description:
+          line && line.quoteId !== item.quoteId
+            ? t("requoted", { date: format.date(line.priceLockedUntil) })
+            : undefined,
+      });
+    } catch (error) {
+      toast.error(isApiError(error) ? error.detail : t("failed"));
+      void queryClient.invalidateQueries({ queryKey: cartKey });
+    }
+  }
+
+  async function restore(removed: Removed) {
+    try {
+      const next = await editCart((ifMatch) =>
+        api.POST("/v1/store/cart/items", {
+          params: { header: { "If-Match": ifMatch } },
+          body: {
+            quoteId: removed.quoteId,
+            quoteOptionId: removed.quoteOptionId,
+            designOption: removed.designOption as Schemas["DesignOption"],
+            ...(removed.designDocumentId
+              ? {
+                  designDocumentId: removed.designDocumentId,
+                  ...(removed.designVersionNo !== null ? { designVersionNo: removed.designVersionNo } : {}),
+                }
+              : {}),
+          },
+        }),
+      );
+      queryClient.setQueryData(cartKey, next);
+      setLastRemoved(null);
+      toast.success(t("undone"));
+    } catch {
+      toast.error(t("undoFailed"));
+    }
+  }
+
+  function remove(item: CartItem, forLater: boolean) {
+    const removed: Removed = {
+      quoteId: item.quoteId,
+      quoteOptionId: item.quoteOptionId,
+      designOption: item.designOption,
+      designDocumentId: item.designDocumentId,
+      designVersionNo: item.designVersionNo,
+    };
+    mutate.mutate(
+      () => editCart(() => api.DELETE("/v1/store/cart/items/{itemId}", { params: { path: { itemId: item.id } } })),
+      {
+        onSuccess: () => {
+          setLastRemoved(removed);
+          if (forLater) {
+            trackCheckout("checkout_save_for_later", { productType: item.productTypeCode });
+            // OPEN Q-4 (recommended): saved for later = the quotation stays in /account/quotes while it is live.
+            toast.success(t("savedForLater"), {
+              action: { label: t("openQuotes"), onClick: () => router.push("/account/quotes") },
+            });
+          } else {
+            toast.success(t("removed", { name: nameOf(item) }), {
+              action: { label: t("undo"), onClick: () => void restore(removed) },
+            });
+          }
+        },
+      },
+    );
+  }
+
+  // The cart's secondary actions reuse the quotation's own PDF and share link (GLOBAL-RULES §5), so they show for a
+  // cart of one quotation; several quotations in one PDF / approval link is Phase 2 (PLAN GAP-2).
+  const only = cart.items.length === 1 ? cart.items[0]! : null;
+  const quoteActions = only && only.source === "instant" && only.summary.product ? only : null;
+
+  async function pdf() {
+    if (!quoteActions) return;
+    setBusy("pdf");
+    try {
+      const ready = await quotePdf(quoteActions.quoteId);
+      toast.success(tFlow("summary.pdfReady", { code: ready.code ?? "" }), {
+        action: { label: tFlow("summary.pdfOpen"), onClick: () => window.open(ready.url, "_blank", "noopener") },
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === "pdf.pending") toast.info(tFlow("summary.pdfPending"));
+      else toast.error(isApiError(error) ? error.detail : tFlow("summary.actionFailed"));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function share() {
+    if (!quoteActions?.summary.product) return;
+    setBusy("share");
+    try {
+      const link = await quoteShareLink(quoteActions.quoteId, quoteActions.summary.product.slug);
+      await shareOrCopy(
+        link.url,
+        nameOf(quoteActions),
+        tFlow("summary.shareCopied"),
+        tFlow("summary.shareUntil", { date: format.date(link.expiresAt) }),
+      );
+    } catch (error) {
+      toast.error(isApiError(error) ? error.detail : tFlow("summary.actionFailed"));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function onBlocked() {
+    const first = blockers[0];
+    if (!first) return;
+    trackCheckout("checkout_blocked", { step: "cart", reason: first.reason });
+    const target = first.itemId
+      ? document.getElementById(`cart-item-${first.itemId}`)
+      : itemsRef.current?.querySelector<HTMLElement>("h1, h2");
+    target?.scrollIntoView({ block: "center" });
+    target?.closest("article")?.querySelector<HTMLElement>("button, a")?.focus();
+  }
 
   if (cart.items.length === 0 && merge.merging) {
     return (
@@ -267,6 +246,11 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
             <Button asChild>
               <Link href="/products">{t("browse")}</Link>
             </Button>
+            {lastRemoved ? (
+              <Button variant="secondary" iconStart="undo" onClick={() => void restore(lastRemoved)}>
+                {t("undo")}
+              </Button>
+            ) : null}
             <Button asChild variant="secondary" iconStart="receipt">
               <Link href="/account/quotes">{t("emptyQuotes")}</Link>
             </Button>
@@ -279,262 +263,170 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
     );
   }
 
+  const blockerText = (blocker: Blocker) => {
+    const item = cart.items.find((candidate) => candidate.id === blocker.itemId);
+    return tFlow(`blockers.${blocker.reason}`, { name: item ? nameOf(item) : "", quantity: item?.quantity ?? 0 });
+  };
+  const rows: PriceRow[] = [
+    {
+      label: tFlow("summary.goods", { count: cart.items.length }),
+      hint: tFlow("summary.vatIncluded"),
+      value: format.thb(cart.productGrossAmount),
+    },
+    estimate?.shippingGrossAmount
+      ? {
+          label: tFlow("summary.shipping"),
+          hint: tFlow("summary.shippingEstimate", { postcode: estimate.postcode }),
+          value: format.thb(estimate.shippingGrossAmount),
+        }
+      : { label: tFlow("summary.shipping"), value: tFlow("summary.shippingLater"), tone: "muted" },
+    ...((estimate?.vatAmount ?? cart.vatAmount)
+      ? [{ label: tFlow("summary.vat"), value: format.thb((estimate?.vatAmount ?? cart.vatAmount)!) }]
+      : []),
+  ];
+  const totalValue = format.thb(estimate?.totalGrossAmount ?? cart.productGrossAmount);
+  const totalHint = estimate?.totalGrossAmount ? undefined : tFlow("summary.totalNoShipping");
+  const primary = { label: tFlow("continue"), href: stepHref("address") };
+
   return (
-    <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
-      <ul className="flex flex-col gap-4" aria-label={t("itemsLabel")}>
-        {cart.items.map((item) => (
-          <li key={item.id} className="bg-surface border-border rounded-2xl border p-4">
-            <article aria-labelledby={`cart-item-${item.id}`} className="flex flex-col gap-4">
-              <div className="flex items-start gap-4">
-                {item.summary.product?.imageUrl ? (
-                  <div className="bg-bg-subtle flex size-16 shrink-0 overflow-hidden rounded-lg">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- catalogue image from the API */}
-                    <img src={item.summary.product.imageUrl} alt="" className="size-full object-cover" />
-                  </div>
-                ) : (
-                  <ProductThumb family={productFamilyOf(item.summary.product?.slug)} />
-                )}
-                <div className="min-w-0 flex-1">
-                  <h2 id={`cart-item-${item.id}`} className="font-semibold">
-                    {nameOf(item)}
-                  </h2>
-                  {item.summary.specs.length > 0 ? (
-                    <p className="text-muted mt-1 text-sm">
-                      {specLinesOf(locale, item.summary)
-                        .map((line) => `${line.term} ${line.description}`)
-                        .join(" · ")}
-                    </p>
-                  ) : null}
-                  {item.reorderOf ? (
-                    <p className="text-muted mt-1 text-xs">
-                      {t(item.reusesApprovedArtwork ? "reorderOfReused" : "reorderOf", {
-                        code: item.reorderOf.orderCode,
-                      })}
-                    </p>
-                  ) : null}
-                  <p className="text-muted mt-1 text-xs">
-                    {item.quoteCode
-                      ? t("quote", { code: item.quoteCode, date: format.date(item.priceLockedUntil) })
-                      : t("quoteNoCode", { date: format.date(item.priceLockedUntil) })}
-                  </p>
-                </div>
-                <div className="text-end">
-                  <p className="font-semibold tabular-nums">{format.thb(item.productGrossAmount)}</p>
-                  <p className="text-muted text-xs tabular-nums">
-                    {t("perUnitOf", {
-                      price: format.thb(item.unitPrice),
-                      quantity: format.number(item.quantity),
-                      unit: tUnits(item.summary.unit),
-                    })}
-                  </p>
-                </div>
-              </div>
-
-              {item.pendingReprice ? (
-                <Callout tone="warning" title={t("repricedTitle")}>
-                  <div className="flex flex-col items-start gap-2">
-                    <span>
-                      {t("repriced", {
-                        before: format.thb(item.pendingReprice.previousGrossAmount),
-                        after: format.thb(item.pendingReprice.newGrossAmount),
-                      })}
-                    </span>
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        mutate.mutate(() =>
-                          editCart((ifMatch) =>
-                            api.POST("/v1/store/cart/items/{itemId}/actions/confirm-reprice", {
-                              params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
-                            }),
-                          ),
-                        )
-                      }
-                    >
-                      {t("acceptReprice")}
-                    </Button>
-                  </div>
-                </Callout>
-              ) : !item.priceLocked ? (
-                <Callout tone="warning" title={t("expiredTitle")}>
-                  <div className="flex flex-col items-start gap-2">
-                    <span>{t("expired")}</span>
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        mutate.mutate(() =>
-                          editCart(() =>
-                            api.POST("/v1/store/cart/items/{itemId}/actions/reprice", {
-                              params: { path: { itemId: item.id } },
-                            }),
-                          ),
-                        )
-                      }
-                    >
-                      {t("reprice")}
-                    </Button>
-                    {/* When today's configuration needs a quote (D-043) or this was an RFQ quotation, ask instead (U-F4). */}
-                    <Link
-                      href={`${rfqHref(item.summary.productTypeCode)}${item.summary.product ? `?from=${encodeURIComponent(item.summary.product.slug)}` : ""}`}
-                      className="text-primary text-sm underline underline-offset-4"
-                    >
-                      {t("orQuote")}
-                    </Link>
-                  </div>
-                </Callout>
-              ) : null}
-
-              <div className="grid gap-4 sm:grid-cols-[14rem_minmax(0,1fr)]">
-                {item.source === "instant" ? (
-                  <Field label={t("designOption")} hint={t("designOptionHint")}>
-                    <SearchableSelect
-                      value={item.designOption}
-                      onValueChange={(designOption) =>
-                        mutate.mutate(() =>
-                          editCart((ifMatch) =>
-                            api.PATCH("/v1/store/cart/items/{itemId}", {
-                              params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
-                              body: { designOption: designOption as Item["designOption"] },
-                            }),
-                          ),
-                        )
-                      }
-                      options={DESIGN_OPTIONS.map((option) => ({ value: option, label: tDesign(`${option}.label`) }))}
-                    />
-                    {item.designOption === "online_designer" && item.designDocumentId ? (
-                      <AttachedDesign designId={item.designDocumentId} versionNo={item.designVersionNo} />
-                    ) : null}
-                  </Field>
-                ) : (
-                  <p className="text-sm">
-                    <span className="text-muted block text-xs">{t("designOption")}</span>
-                    {tDesign(`${item.designOption}.label`)}
-                  </p>
-                )}
-                <div>
-                  <p className="text-muted mb-1 text-xs">{t("deliverTo")}</p>
-                  <Destinations
-                    key={item.destinations
-                      .map((destination) => `${destination.addressId}:${destination.quantity}`)
-                      .join("|")}
+    <>
+      <CheckoutStepper current="cart" reachable={blockers.length > 0 ? "cart" : "address"} />
+      <div className="grid items-start gap-8 pt-4 pb-28 min-[1100px]:grid-cols-[minmax(0,1fr)_23.75rem] sm:pb-24">
+        <div ref={itemsRef} className="flex min-w-0 flex-col gap-4">
+          <section
+            aria-labelledby="cart-title"
+            className="border-border bg-surface rounded-card border px-4 py-4.5 sm:px-6 sm:py-5.5"
+          >
+            <h1 id="cart-title" className="m-0 text-[19px] leading-snug font-semibold">
+              {t("title")}
+            </h1>
+            <p className="text-muted m-0 mt-1 mb-4 text-sm">{t("box.sub", { count: cart.items.length })}</p>
+            <ul className="m-0 flex list-none flex-col p-0" aria-label={t("itemsLabel")}>
+              {cart.items.map((item, index) => (
+                <li key={item.id} className={index > 0 ? "border-border mt-5 border-t pt-5" : undefined}>
+                  <CartItemCard
                     item={item}
-                    addresses={addresses}
-                    saving={mutate.isPending}
-                    onAddAddress={() => setAddressFor(item.id)}
-                    onSave={(rows) =>
+                    quantityStep={cart.quantityStep}
+                    pending={mutate.isPending}
+                    onQuantity={(quantity) => void changeQuantity(item, quantity, false)}
+                    onTierAccept={(quantity) => void changeQuantity(item, quantity, true)}
+                    onDesign={(designOption) =>
                       mutate.mutate(() =>
                         editCart((ifMatch) =>
-                          api.PUT("/v1/store/cart/items/{itemId}/destinations", {
+                          api.PATCH("/v1/store/cart/items/{itemId}", {
                             params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
-                            body: { destinations: rows },
+                            body: { designOption },
+                          }),
+                        ),
+                      )
+                    }
+                    onSaveForLater={() => remove(item, true)}
+                    onRemove={() => remove(item, false)}
+                    onReprice={() =>
+                      mutate.mutate(() =>
+                        editCart(() =>
+                          api.POST("/v1/store/cart/items/{itemId}/actions/reprice", {
+                            params: { path: { itemId: item.id } },
+                          }),
+                        ),
+                      )
+                    }
+                    onConfirmReprice={() =>
+                      mutate.mutate(() =>
+                        editCart((ifMatch) =>
+                          api.POST("/v1/store/cart/items/{itemId}/actions/confirm-reprice", {
+                            params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
                           }),
                         ),
                       )
                     }
                   />
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  iconStart="trash"
-                  onClick={() =>
-                    mutate.mutate(() =>
-                      editCart(() =>
-                        api.DELETE("/v1/store/cart/items/{itemId}", { params: { path: { itemId: item.id } } }),
-                      ),
-                    )
-                  }
-                >
-                  {t("remove")}
-                  <span className="sr-only"> {nameOf(item)}</span>
-                </Button>
-              </div>
-            </article>
-          </li>
-        ))}
-      </ul>
-
-      <aside
-        aria-labelledby="cart-summary"
-        className="bg-surface border-border h-fit rounded-2xl border p-5 lg:sticky lg:top-20"
-      >
-        <h2 id="cart-summary" className="text-lg font-semibold">
-          {t("summary")}
-        </h2>
-        <PriceSummary
-          className="mt-4"
-          rows={[
-            {
-              label: t("itemsCount", { count: cart.items.length }),
-              value: format.thb(cart.productGrossAmount),
-              hint: t("vatIncluded"),
-            },
-          ]}
-          total={{ label: t("subtotal"), value: format.thb(cart.productGrossAmount), hint: t("atCheckout") }}
-        />
-        <PromoCodeBox
-          className="mt-4"
-          codes={cart.codes}
-          pending={mutate.isPending}
-          error={codeError}
-          onApply={async (code) => {
-            setCodeError(null);
-            try {
-              queryClient.setQueryData(
-                cartKey,
-                await editCart((ifMatch) =>
-                  api.POST("/v1/store/cart/codes", { params: { header: { "If-Match": ifMatch } }, body: { code } }),
-                ),
-              );
-            } catch (error) {
-              setCodeError(isApiError(error) ? error.detail : t("failed"));
-            }
-          }}
-          onRemove={(code) => {
-            setCodeError(null);
-            mutate.mutate(() =>
-              editCart((ifMatch) =>
-                api.DELETE("/v1/store/cart/codes/{code}", {
-                  params: { path: { code }, header: { "If-Match": ifMatch } },
-                }),
-              ),
-            );
-          }}
-        />
-        {blocked.length > 0 ? (
-          <Callout tone="warning" className="mt-4" title={t("blockedTitle")}>
-            <ul className="list-disc ps-5">
-              {blocked.map(({ item, kind }) => (
-                <li key={`${item.id}-${kind}`}>{t(`blockers.${kind}`, { name: nameOf(item) })}</li>
+                </li>
               ))}
             </ul>
-          </Callout>
-        ) : null}
-        {blocked.length === 0 ? (
-          <Button asChild block size="lg" className="mt-4">
-            <Link href="/checkout">{t("checkout")}</Link>
-          </Button>
-        ) : (
-          <Button block size="lg" className="mt-4" disabled>
-            {t("checkout")}
-          </Button>
-        )}
-        <p className="text-muted mt-3 text-xs">{t("secureNote")}</p>
-      </aside>
+          </section>
+          <section className="border-border bg-surface rounded-card border px-4 py-4.5 sm:px-6 sm:py-5.5">
+            <ShippingEstimate cartVersion={cart.updatedAt} onEstimate={onEstimate} />
+          </section>
+        </div>
 
-      {addressFor ? (
-        <AddressSheet
-          open={addressFor !== null}
-          onOpenChange={(open) => !open && setAddressFor(null)}
-          onSaved={(address) => {
-            queryClient.setQueryData<Address[]>(addressesKey, (current) => [...(current ?? []), address]);
-            setAddressFor(null);
-          }}
+        <OrderSummary
+          rows={rows}
+          total={{ label: tFlow("summary.total"), value: totalValue, hint: totalHint }}
+          pending={mutate.isPending}
+          codes={
+            <PromoCodeBox
+              variant="compact"
+              codes={cart.codes}
+              maxCodes={cart.maxCodes}
+              note={tFlow("summary.codesNote")}
+              pending={mutate.isPending}
+              error={codeError}
+              onApply={async (code) => {
+                setCodeError(null);
+                try {
+                  const next = await editCart((ifMatch) =>
+                    api.POST("/v1/store/cart/codes", { params: { header: { "If-Match": ifMatch } }, body: { code } }),
+                  );
+                  queryClient.setQueryData(cartKey, next);
+                  const entry = next.codes.find((candidate) => candidate.code === code);
+                  trackCheckout("checkout_code_apply", {
+                    result: entry?.status === "validated" ? "validated" : "rejected",
+                  });
+                } catch (error) {
+                  trackCheckout("checkout_code_apply", { result: "error" });
+                  setCodeError(isApiError(error) ? error.detail : t("failed"));
+                }
+              }}
+              onRemove={(code) => {
+                setCodeError(null);
+                mutate.mutate(() =>
+                  editCart((ifMatch) =>
+                    api.DELETE("/v1/store/cart/codes/{code}", {
+                      params: { path: { code }, header: { "If-Match": ifMatch } },
+                    }),
+                  ),
+                );
+              }}
+            />
+          }
+          blockers={blockers.map(blockerText)}
+          primary={primary}
+          onBlocked={onBlocked}
+          secondary={
+            quoteActions ? (
+              <div className="grid grid-cols-2 gap-1.5">
+                <Button
+                  variant="secondary"
+                  className="px-2 text-[13px]"
+                  loading={busy === "pdf"}
+                  onClick={() => void pdf()}
+                >
+                  <Icon name="document" size={16} aria-hidden="true" />
+                  {tFlow("summary.pdf")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="px-2 text-[13px]"
+                  loading={busy === "share"}
+                  onClick={() => void share()}
+                >
+                  <Icon name="users" size={16} aria-hidden="true" />
+                  {tFlow("summary.approver")}
+                </Button>
+              </div>
+            ) : null
+          }
+          trust={trust}
         />
-      ) : null}
-    </div>
+      </div>
+      <MobileBar
+        total={totalValue}
+        note={estimate?.totalGrossAmount ? tFlow("summary.totalWithShipping") : tFlow("summary.totalNoShipping")}
+        action={{ ...primary, label: tFlow("nextShort") }}
+        blocked={blockers.length > 0}
+        onBlocked={onBlocked}
+      />
+    </>
   );
 }

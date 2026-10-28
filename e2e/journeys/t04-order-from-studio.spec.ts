@@ -64,14 +64,17 @@ test("T4 order 1,000 pcs from the studio, up to payment", async ({ page, journey
   await page.locator("html[data-hydrated]").waitFor();
   // The company address and tax profile are the account's defaults: accepting them costs nothing.
   const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
+  // Checkout redesign Phase 1: address → tax invoice & payment → review, then confirm (no dialog).
+  await summary.getByRole("button", { name: /^ต่อไป: ใบกำกับภาษี/ }).click();
   await j.screen(
     "confirm",
-    () => summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click(),
-    () => expect(page.getByRole("alertdialog", { name: "ยืนยันคำสั่งซื้อ" })).toBeVisible(),
+    () => summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" }).click(),
+    () => expect(page.getByRole("region", { name: "ทบทวนคำสั่งซื้อ" })).toBeVisible(),
   );
+  await page.getByRole("checkbox", { name: /ยอมรับข้อกำหนดการใช้งาน/ }).check();
   await j.screen(
     "payment",
-    () => page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click(),
+    () => summary.getByRole("button", { name: "ยืนยันคำสั่งซื้อและชำระเงิน" }).click(),
     () => expect(page).toHaveURL(/\/checkout\/pay\//),
   );
 
