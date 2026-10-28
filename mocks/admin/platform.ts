@@ -196,6 +196,8 @@ function approval(
     currency: "THB",
     pct: null,
     flags: [],
+    selfApproved: false,
+    autoApprovedReason: null,
     payload,
     currentStepNo: approvalSteps.find((step) => step.status === "pending")?.stepNo ?? null,
     steps: approvalSteps,
@@ -243,6 +245,8 @@ export function openApproval(input: {
     currency: "THB",
     pct: input.pct ?? null,
     flags: [],
+    selfApproved: false,
+    autoApprovedReason: null,
     payload: input.payload,
     currentStepNo: 1,
     steps: known
@@ -371,6 +375,8 @@ const approvals: Approval[] = [
           comment: "ตรวจสอบสลิปแล้ว",
           stepNo: 1,
           onBehalfOf: null,
+          selfApproved: false,
+          selfApprovalReason: null,
         },
       ],
     },
@@ -379,6 +385,20 @@ const approvals: Approval[] = [
 
 let delegations: Schemas["DelegationDto"][] = [];
 
+/** D-449 A: solo-owner mode (`approvals.solo_owner_mode`), off until a Superadmin turns it on; max 90 days. */
+const SOLO_MAX_DAYS = 90;
+let soloOwner: Schemas["SoloOwnerModeDto"] = {
+  enabled: false,
+  expiresAt: null,
+  active: false,
+  maxDays: SOLO_MAX_DAYS,
+  changedAt: null,
+  changedBy: null,
+};
+function soloOwnerActive(): boolean {
+  return soloOwner.enabled && soloOwner.expiresAt !== null && Date.parse(soloOwner.expiresAt) > Date.now();
+}
+
 export function mayDecide(item: Approval, persona: StaffPersona): boolean {
   if (item.status !== "pending") return false;
   if (item.requester.id === persona.id) return false; // maker-checker
@@ -386,6 +406,8 @@ export function mayDecide(item: Approval, persona: StaffPersona): boolean {
   const step = item.steps.find((candidate) => candidate.stepNo === item.currentStepNo);
   if (!step) return false;
   if (persona.roles.includes(step.role)) return true;
+  // D-449: a Superadmin decides a step of any staff role (never a customer company's own approver).
+  if (persona.roles.includes("superadmin") && step.role !== "company_approver") return true;
   const now = Date.now();
   return delegations.some(
     (delegation) =>
@@ -802,7 +824,10 @@ export const platformHandlers = [
   http.get("*/v1/admin/approvals/inbox", ({ request }) => {
     const { persona } = actor(request);
     if (!can(persona, "approvals.act")) return forbidden();
-    return HttpResponse.json(approvals.filter((item) => mayDecide(item, persona!)));
+    // D-449 A: under solo-owner mode a Superadmin also sees their own pending requests.
+    const own = (item: Approval) =>
+      item.status === "pending" && item.requester.id === persona!.id && persona!.roles.includes("superadmin");
+    return HttpResponse.json(approvals.filter((item) => mayDecide(item, persona!) || (soloOwnerActive() && own(item))));
   }),
   http.get("*/v1/admin/approvals", ({ request }) => {
     const url = new URL(request.url);
@@ -832,11 +857,21 @@ export const platformHandlers = [
       const item = approvals.find((candidate) => candidate.id === params.requestId);
       if (!item) return notFound();
       if (item.status !== "pending") return problem(409, "approval.not_pending", "คำขอนี้ไม่ได้รออนุมัติแล้ว");
-      if (item.requester.id === persona?.id)
+      const body = (await request.json().catch(() => ({}))) as { comment?: string; selfApprovalReason?: string };
+      // D-449 A: a Superadmin's own request under solo-owner mode, with a typed reason (≥ 10 characters).
+      const self = verb === "approve" && item.requester.id === persona?.id && body.selfApprovalReason !== undefined;
+      if (self) {
+        if (!persona?.roles.includes("superadmin"))
+          return problem(403, "approval.self_approval", "ผู้ขออนุมัติอนุมัติคำขอของตัวเองไม่ได้");
+        if (body.selfApprovalReason!.trim().length < 10)
+          return problem(422, "validation.failed", "กรุณาระบุเหตุผลอย่างน้อย 10 ตัวอักษร", [
+            { path: "selfApprovalReason", code: "minLength", message: "อย่างน้อย 10 ตัวอักษร" },
+          ]);
+        if (!soloOwnerActive()) return problem(409, "approval.solo_owner_mode_off", "โหมดเจ้าของคนเดียวปิดอยู่");
+      } else if (item.requester.id === persona?.id)
         return problem(403, "approval.self_approval", "ผู้ขออนุมัติอนุมัติคำขอของตัวเองไม่ได้");
-      if (!persona || !mayDecide(item, persona))
+      else if (!persona || !mayDecide(item, persona))
         return problem(403, "approval.not_authorised", "ขั้นนี้ไม่ได้รอการอนุมัติจากคุณ");
-      const body = (await request.json().catch(() => ({}))) as { comment?: string };
       if (verb === "reject" && !body.comment?.trim()) {
         return problem(422, "validation.failed", "กรุณาระบุเหตุผล", [
           { path: "comment", code: "isNotEmpty", message: "กรุณาระบุเหตุผล" },
@@ -852,7 +887,10 @@ export const platformHandlers = [
         comment: body.comment ?? null,
         stepNo: step.stepNo,
         onBehalfOf: null,
+        selfApproved: self,
+        selfApprovalReason: self ? body.selfApprovalReason!.trim() : null,
       });
+      if (self) item.selfApproved = true;
       const next = item.steps.find((candidate) => candidate.status === "pending");
       if (verb === "reject" || !next) {
         item.status = verb === "approve" ? "approved" : "rejected";
@@ -882,8 +920,32 @@ export const platformHandlers = [
       comment: body.reason,
       stepNo: null,
       onBehalfOf: null,
+      selfApproved: false,
+      selfApprovalReason: null,
     });
     return HttpResponse.json(item);
+  }),
+  http.get("*/v1/admin/approval-solo-owner-mode", () => HttpResponse.json({ ...soloOwner, active: soloOwnerActive() })),
+  http.put("*/v1/admin/approval-solo-owner-mode", async ({ request }) => {
+    const { persona } = actor(request);
+    if (!persona?.roles.includes("superadmin"))
+      return problem(403, "settings.not_owner", "เปลี่ยนได้เฉพาะซูเปอร์แอดมิน");
+    const body = (await request.json()) as Schemas["SetSoloOwnerModeDto"];
+    const max = Date.now() + SOLO_MAX_DAYS * 86_400_000;
+    const expires = body.enabled ? (body.expiresAt ? Date.parse(body.expiresAt) : max) : null;
+    if (expires !== null && (!(expires > Date.now()) || expires > max))
+      return problem(422, "validation.failed", `วันหมดอายุต้องหลังตอนนี้และไม่เกิน ${SOLO_MAX_DAYS} วัน`, [
+        { path: "expiresAt", code: "soloOwnerMode", message: `at most ${SOLO_MAX_DAYS} days from now` },
+      ]);
+    soloOwner = {
+      enabled: body.enabled,
+      expiresAt: expires === null ? null : bangkokIso((expires - Date.now()) / 60_000),
+      active: false,
+      maxDays: SOLO_MAX_DAYS,
+      changedAt: bangkokIso(),
+      changedBy: ref(persona),
+    };
+    return HttpResponse.json({ ...soloOwner, active: soloOwnerActive() });
   }),
   http.get("*/v1/admin/approval-delegations", ({ request }) => {
     const { persona } = actor(request);

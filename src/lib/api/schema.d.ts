@@ -1309,11 +1309,39 @@ export interface paths {
         put?: never;
         /**
          * Propose a new version of an approval policy
-         * @description Its steps (approver roles, scope, conditions, quorum, SLA) from `effectiveFrom` (now or later), with a reason. Routed through `approval_policy_change`: a Superadmin approves and the proposer never approves; once approved it applies from its date, and the running version is never edited (D-063). One proposal per policy at a time (409 `approval.already_pending`). The expiry rule is carried over from the version in force. Requires `Idempotency-Key`. Audited.
+         * @description Its steps (approver roles, scope, conditions, quorum, SLA) from `effectiveFrom` (now or later), with a reason. Routed through `approval_policy_change`: a Superadmin approves and the proposer never approves; once approved it applies from its date, and the running version is never edited (D-063). One proposal per policy at a time (409 `approval.already_pending`). The expiry rule is carried over from the version in force. Requires `Idempotency-Key`. Audited. D-449 B: `autoApproveMaxAmount` (THB) approves requests at or below it at creation ("below threshold", audited, `approval.approved` with `autoApproved`); only on a policy whose steps have an amount condition (422), set / changed / removed by a Superadmin only (403 `approval.threshold_superadmin_only`); omitted = the value in force is carried over, null = none.
          *
-         *     Implements: D-063.
+         *     Implements: D-063, D-449.
          */
         post: operations["admin.approvalPolicies.proposeVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/approval-solo-owner-mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Solo-owner mode of the approvals
+         * @description D-449 A: whether a Superadmin may approve their own maker-checker request now (on and not expired), its expiry, the longest duration (`approvals.solo_owner_mode_max_days`, 90 days) and who changed it last. Even while on, it never applies to a step another active user could decide.
+         *
+         *     Implements: D-449.
+         */
+        get: operations["admin.approvalSoloOwnerMode.get"];
+        /**
+         * Turn solo-owner mode on or off (Superadmin)
+         * @description D-449 A: only a Superadmin (owner of the setting `approvals.solo_owner_mode`; anyone else 403 `settings.not_owner`). On: expires at `expiresAt`, default and latest now + `approvals.solo_owner_mode_max_days` (90 days; renew by turning it on again). A new effective-dated version from now, audited (`setting.changed`) and evented; it turns itself off at expiry (worker `approvals.solo_owner_mode_expiry`).
+         *
+         *     Implements: D-449, D-063.
+         */
+        put: operations["admin.approvalSoloOwnerMode.set"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1375,9 +1403,9 @@ export interface paths {
         put?: never;
         /**
          * Approve the current step
-         * @description Needs the step's role (or a delegation from someone who holds it). The requester never approves, one person approves at most one step, and SoD rules are checked. The last step approves the request (`approval.approved`).
+         * @description Needs the step's role (or a delegation from someone who holds it); a Superadmin may decide a step of any staff role (D-449). The requester never approves, one person approves at most one step, and SoD rules are checked. The last step approves the request (`approval.approved`). D-449 A: a Superadmin may approve their own request only with `selfApprovalReason` (≥ 10 characters) while solo-owner mode is on (409 `approval.solo_owner_mode_off`) and no other active user could decide the step (409 `approval.other_approver_exists`); the action is flagged "อนุมัติด้วยตนเอง", audited, evented (`approval.self_approved`) and listed in the daily digest to Superadmins.
          *
-         *     Implements: ADR-0006, D-166, D-169.
+         *     Implements: ADR-0006, D-166, D-169, D-449.
          */
         post: operations["admin.approvals.approve"];
         delete?: never;
@@ -1439,9 +1467,9 @@ export interface paths {
         };
         /**
          * Requests waiting for my decision
-         * @description Pending requests whose current step I can decide through my roles or an active delegation; my own requests and requests I already approved a step of are excluded (maker-checker, ADR-0006).
+         * @description Pending requests whose current step I can decide through my roles or an active delegation; my own requests and requests I already approved a step of are excluded (maker-checker, ADR-0006). D-449: a Superadmin sees every staff role's steps, and also their own requests while solo-owner mode is on.
          *
-         *     Implements: ADR-0006.
+         *     Implements: ADR-0006, D-449.
          */
         get: operations["admin.approvals.inbox"];
         put?: never;
@@ -9684,6 +9712,28 @@ export interface paths {
          *     Implements: ADR-0003.
          */
         post: operations["admin.files.complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/files/{fileId}/actions/download-with-reason": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open a customer's original with a typed reason (Superadmin)
+         * @description D-449 (1): a Superadmin may open a customer's original, its production copy or Studio / design artwork (or a thumbnail of one) only after typing a reason (at least 10 characters). The customer file access log row (reason, actor, file, order, time), an audit row and the `customer_file.read_with_reason` event are written in one transaction before the 5-minute signed URL is returned. Other files: `admin.files.download`. Admin and Auditor have no access to originals (D-444 / D-445 unchanged).
+         *
+         *     Implements: D-449, D-444.
+         */
+        post: operations["admin.files.downloadWithReason"];
         delete?: never;
         options?: never;
         head?: never;
@@ -39377,11 +39427,26 @@ export interface components {
             comment: string | null;
             /** @description Delegator when acting through a delegation */
             onBehalfOf: components["schemas"]["UserRefDto"] | null;
+            /**
+             * @description The typed reason of a self-approval; null otherwise
+             * @example null
+             */
+            selfApprovalReason: string | null;
+            /**
+             * @description D-449 A: a Superadmin approved their own request under solo-owner mode ("อนุมัติด้วยตนเอง")
+             * @example false
+             */
+            selfApproved: boolean;
             /** @example 1 */
             stepNo: number | null;
         };
         /** @enum {string} */
         ApprovalActionKind: "approve" | "reject" | "withdraw" | "delegate" | "comment" | "escalate";
+        /**
+         * @description D-449 B: `below_threshold` = approved at creation because the amount is at or below the policy version's auto-approve amount (no second approval); null otherwise
+         * @enum {string}
+         */
+        ApprovalAutoApprovedReason: "below_threshold";
         ApprovalPolicyDto: {
             /** @description The version in force now */
             current: components["schemas"]["PolicyVersionDto"] | null;
@@ -39414,6 +39479,11 @@ export interface components {
              * @example 120000.00
              */
             amount: string | null;
+            /**
+             * @description D-449 B: `below_threshold` = approved at creation because the amount is at or below the policy version's auto-approve amount (no second approval); null otherwise
+             * @example null
+             */
+            autoApprovedReason: components["schemas"]["ApprovalAutoApprovedReason"] | null;
             /**
              * Format: date-time
              * @example 2026-09-23T14:05:00+07:00
@@ -39464,6 +39534,11 @@ export interface components {
              */
             policy: string;
             requester: components["schemas"]["UserRefDto"];
+            /**
+             * @description D-449 A: at least one step was self-approved by its requester (a Superadmin, solo-owner mode)
+             * @example false
+             */
+            selfApproved: boolean;
             /** @example pending */
             status: components["schemas"]["ApprovalStatus"];
             steps: components["schemas"]["ApprovalStepDto"][];
@@ -39521,6 +39596,11 @@ export interface components {
         ApproveDto: {
             /** @example Verified by phone with the factory */
             comment?: string;
+            /**
+             * @description D-449 A: only for approving your own request as a Superadmin under solo-owner mode — why (at least 10 characters); stored on the action, flagged "อนุมัติด้วยตนเอง", audited and listed in the daily digest
+             * @example ยังไม่มีผู้อนุมัติคนอื่น ตรวจเอกสารธนาคารครบแล้ว
+             */
+            selfApprovalReason?: string;
         };
         ApproveNamesDto: {
             /**
@@ -50058,6 +50138,13 @@ export interface components {
             /** @example https://getpack-files.s3.example.com/…&X-Amz-Expires=300 */
             url: string;
         };
+        DownloadWithReasonDto: {
+            /**
+             * @description Why the file is opened; at least 10 characters after trimming; stored with the access-log row
+             * @example ลูกค้าแจ้งไฟล์งานพิมพ์ผิด ตรวจสอบตามคำร้องเรียน #C-2610-0012
+             */
+            reason: string;
+        };
         DraftAgentPlanVersionDto: {
             /** @example 12 */
             attributionMonths: number;
@@ -59901,6 +59988,11 @@ export interface components {
             order: components["schemas"]["FileAccessOrderDto"] | null;
             /** @example download */
             purpose: components["schemas"]["FileAccessPurpose"];
+            /**
+             * @description D-449 (1): the reason a Superadmin typed before opening the file; null for every other access
+             * @example null
+             */
+            reason: string | null;
             /** @example req-3f2a9c1d */
             requestId: string | null;
         };
@@ -66682,6 +66774,11 @@ export interface components {
              */
             approvalId: string | null;
             /**
+             * @description D-449 B: requests at or below this amount (THB) are approved at creation ("below threshold"); null = none
+             * @example 500000.00
+             */
+            autoApproveMaxAmount: string | null;
+            /**
              * Format: date-time
              * @example 2026-10-05T10:00:00+07:00
              */
@@ -69050,6 +69147,11 @@ export interface components {
             rules: components["schemas"]["GuaranteeRuleDto"][];
         };
         ProposePolicyVersionDto: {
+            /**
+             * @description D-449 B: requests at or below this amount (THB, 2 decimals) are approved at creation without the second approval; only on a policy whose steps have an amount condition; Superadmin only; omit to keep the value in force, null to remove it
+             * @example 500000.00
+             */
+            autoApproveMaxAmount?: string | null;
             /**
              * Format: date-time
              * @description Now or later
@@ -74660,6 +74762,18 @@ export interface components {
              */
             stampSeal: boolean;
         };
+        SetSoloOwnerModeDto: {
+            /** @example true */
+            enabled: boolean;
+            /**
+             * Format: date-time
+             * @description When it turns off; default and latest = now + max days (90); ignored when turning off
+             * @example 2027-01-26T10:00:00+07:00
+             */
+            expiresAt?: string;
+            /** @example บริษัทยังมีผู้อนุมัติคนเดียวช่วงเปิดตัว */
+            reason: string;
+        };
         SetStylePhotoDto: {
             /** @example Tuck-end carton, photographed sample */
             altEn?: string;
@@ -75927,6 +76041,34 @@ export interface components {
             transform: {
                 [key: string]: number | string;
             };
+        };
+        SoloOwnerModeDto: {
+            /**
+             * @description On and not expired — self-approval is possible now
+             * @example true
+             */
+            active: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-10-28T10:00:00+07:00
+             */
+            changedAt: string | null;
+            changedBy: components["schemas"]["UserRefDto"] | null;
+            /**
+             * @description The value in force: on or off
+             * @example true
+             */
+            enabled: boolean;
+            /**
+             * Format: date-time
+             * @example 2027-01-26T10:00:00+07:00
+             */
+            expiresAt: string | null;
+            /**
+             * @description Default and longest duration in days (setting `approvals.solo_owner_mode_max_days`)
+             * @example 90
+             */
+            maxDays: number | null;
         };
         /** @enum {string} */
         SortOrder: "asc" | "desc";
@@ -93134,6 +93276,7 @@ export interface operations {
                      *       {
                      *         "current": {
                      *           "approvalId": null,
+                     *           "autoApproveMaxAmount": "500000.00",
                      *           "createdAt": "2026-10-05T10:00:00+07:00",
                      *           "createdBy": {
                      *             "displayName": "Dev Superadmin",
@@ -93170,6 +93313,7 @@ export interface operations {
                      *         "key": "credit_limit",
                      *         "pending": {
                      *           "approvalId": "0192f3a0-7c1e-7d2a-9b1f-00000000e0a1",
+                     *           "autoApproveMaxAmount": "500000.00",
                      *           "createdAt": "2026-10-05T10:00:00+07:00",
                      *           "createdBy": {
                      *             "displayName": "Dev Superadmin",
@@ -93277,6 +93421,7 @@ export interface operations {
                      * @example [
                      *       {
                      *         "approvalId": "0192f3a0-7c1e-7d2a-9b1f-00000000e0a1",
+                     *         "autoApproveMaxAmount": "500000.00",
                      *         "createdAt": "2026-10-05T10:00:00+07:00",
                      *         "createdBy": {
                      *           "displayName": "Dev Superadmin",
@@ -93407,6 +93552,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "approvalId": "0192f3a0-7c1e-7d2a-9b1f-00000000e0a1",
+                     *       "autoApproveMaxAmount": "500000.00",
                      *       "createdAt": "2026-10-05T10:00:00+07:00",
                      *       "createdBy": {
                      *         "displayName": "Dev Superadmin",
@@ -93459,7 +93605,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `approval.threshold_superadmin_only`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -93490,6 +93636,192 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.approvalSoloOwnerMode.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The mode */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "active": true,
+                     *       "changedAt": "2026-10-28T10:00:00+07:00",
+                     *       "changedBy": {
+                     *         "displayName": "Dev Superadmin",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01"
+                     *       },
+                     *       "enabled": true,
+                     *       "expiresAt": "2027-01-26T10:00:00+07:00",
+                     *       "maxDays": 90
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SoloOwnerModeDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.approvalSoloOwnerMode.set": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetSoloOwnerModeDto"];
+            };
+        };
+        responses: {
+            /** @description The mode now */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "active": true,
+                     *       "changedAt": "2026-10-28T10:00:00+07:00",
+                     *       "changedBy": {
+                     *         "displayName": "Dev Superadmin",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01"
+                     *       },
+                     *       "enabled": true,
+                     *       "expiresAt": "2027-01-26T10:00:00+07:00",
+                     *       "maxDays": 90
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SoloOwnerModeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `settings.not_owner` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -93569,10 +93901,13 @@ export interface operations {
                      *               "at": "2026-09-23T15:00:00+07:00",
                      *               "comment": "Verified by phone with the factory",
                      *               "onBehalfOf": null,
+                     *               "selfApprovalReason": null,
+                     *               "selfApproved": false,
                      *               "stepNo": 1
                      *             }
                      *           ],
                      *           "amount": null,
+                     *           "autoApprovedReason": null,
                      *           "createdAt": "2026-09-23T14:05:00+07:00",
                      *           "currency": "THB",
                      *           "currentStepNo": 2,
@@ -93590,6 +93925,7 @@ export interface operations {
                      *             "displayName": "ผู้ขอ ทดสอบ",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c0c0"
                      *           },
+                     *           "selfApproved": false,
                      *           "status": "pending",
                      *           "steps": [
                      *             {
@@ -93715,10 +94051,13 @@ export interface operations {
                      *           "at": "2026-09-23T15:00:00+07:00",
                      *           "comment": "Verified by phone with the factory",
                      *           "onBehalfOf": null,
+                     *           "selfApprovalReason": null,
+                     *           "selfApproved": false,
                      *           "stepNo": 1
                      *         }
                      *       ],
                      *       "amount": null,
+                     *       "autoApprovedReason": null,
                      *       "createdAt": "2026-09-23T14:05:00+07:00",
                      *       "currency": "THB",
                      *       "currentStepNo": 2,
@@ -93736,6 +94075,7 @@ export interface operations {
                      *         "displayName": "ผู้ขอ ทดสอบ",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c0c0"
                      *       },
+                     *       "selfApproved": false,
                      *       "status": "pending",
                      *       "steps": [
                      *         {
@@ -93865,10 +94205,13 @@ export interface operations {
                      *           "at": "2026-09-23T15:00:00+07:00",
                      *           "comment": "Verified by phone with the factory",
                      *           "onBehalfOf": null,
+                     *           "selfApprovalReason": null,
+                     *           "selfApproved": false,
                      *           "stepNo": 1
                      *         }
                      *       ],
                      *       "amount": null,
+                     *       "autoApprovedReason": null,
                      *       "createdAt": "2026-09-23T14:05:00+07:00",
                      *       "currency": "THB",
                      *       "currentStepNo": 2,
@@ -93886,6 +94229,7 @@ export interface operations {
                      *         "displayName": "ผู้ขอ ทดสอบ",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c0c0"
                      *       },
+                     *       "selfApproved": false,
                      *       "status": "pending",
                      *       "steps": [
                      *         {
@@ -93952,7 +94296,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `approval.already_acted`, `approval.expired`, `approval.not_pending`, `iam.sod_conflict` */
+            /** @description Problem: `approval.already_acted`, `approval.expired`, `approval.not_pending`, `approval.other_approver_exists`, `approval.solo_owner_mode_off`, `iam.sod_conflict` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -93962,7 +94306,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `validation.failed` */
+            /** @description Problem: `approval.not_self_approval`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -94035,10 +94379,13 @@ export interface operations {
                      *           "at": "2026-09-23T15:00:00+07:00",
                      *           "comment": "Verified by phone with the factory",
                      *           "onBehalfOf": null,
+                     *           "selfApprovalReason": null,
+                     *           "selfApproved": false,
                      *           "stepNo": 1
                      *         }
                      *       ],
                      *       "amount": null,
+                     *       "autoApprovedReason": null,
                      *       "createdAt": "2026-09-23T14:05:00+07:00",
                      *       "currency": "THB",
                      *       "currentStepNo": 2,
@@ -94056,6 +94403,7 @@ export interface operations {
                      *         "displayName": "ผู้ขอ ทดสอบ",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c0c0"
                      *       },
+                     *       "selfApproved": false,
                      *       "status": "rejected",
                      *       "steps": [
                      *         {
@@ -94205,10 +94553,13 @@ export interface operations {
                      *           "at": "2026-09-23T15:00:00+07:00",
                      *           "comment": "Verified by phone with the factory",
                      *           "onBehalfOf": null,
+                     *           "selfApprovalReason": null,
+                     *           "selfApproved": false,
                      *           "stepNo": 1
                      *         }
                      *       ],
                      *       "amount": null,
+                     *       "autoApprovedReason": null,
                      *       "createdAt": "2026-09-23T14:05:00+07:00",
                      *       "currency": "THB",
                      *       "currentStepNo": 2,
@@ -94226,6 +94577,7 @@ export interface operations {
                      *         "displayName": "ผู้ขอ ทดสอบ",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c0c0"
                      *       },
+                     *       "selfApproved": false,
                      *       "status": "withdrawn",
                      *       "steps": [
                      *         {
@@ -94370,10 +94722,13 @@ export interface operations {
                      *             "at": "2026-09-23T15:00:00+07:00",
                      *             "comment": "Verified by phone with the factory",
                      *             "onBehalfOf": null,
+                     *             "selfApprovalReason": null,
+                     *             "selfApproved": false,
                      *             "stepNo": 1
                      *           }
                      *         ],
                      *         "amount": null,
+                     *         "autoApprovedReason": null,
                      *         "createdAt": "2026-09-23T14:05:00+07:00",
                      *         "currency": "THB",
                      *         "currentStepNo": 2,
@@ -94391,6 +94746,7 @@ export interface operations {
                      *           "displayName": "ผู้ขอ ทดสอบ",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c0c0"
                      *         },
+                     *         "selfApproved": false,
                      *         "status": "pending",
                      *         "steps": [
                      *           {
@@ -138662,6 +139018,7 @@ export interface operations {
                      *             "orderCode": "DEVOR-2610-00001"
                      *           },
                      *           "purpose": "download",
+                     *           "reason": null,
                      *           "requestId": "req-3f2a9c1d"
                      *         }
                      *       ],
@@ -157046,6 +157403,126 @@ export interface operations {
                 };
             };
             /** @description Problem: `file.upload_incomplete`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.files.downloadWithReason": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                fileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DownloadWithReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Signed URL (the access is logged with the reason) */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-28T14:10:00+07:00",
+                     *       "url": "https://getpack-files.s3.example.com/…&X-Amz-Expires=300"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DownloadUrlDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file.infected`, `file.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

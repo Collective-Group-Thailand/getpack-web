@@ -30,9 +30,11 @@ import {
   QueryError,
   StatusChip,
   today,
+  useActor,
   useCan,
   useRoleLabel,
 } from "../console";
+import { conditionUsesAmount, moneyInput } from "./presentation";
 
 type Policy = Schemas["ApprovalPolicyDto"];
 type PolicyVersion = Schemas["PolicyVersionDto"];
@@ -135,10 +137,13 @@ export function ApprovalMatrix() {
   if (policies.data.length === 0) return <EmptyState icon="stamp" title={t("empty")} />;
 
   const versionLine = (version: PolicyVersion, label: string) => (
-    <p className="text-muted text-xs">
-      {label}: {t("versionLine", { no: version.versionNo, date: format.dateTime(version.effectiveFrom) })}
-      {version.createdBy ? ` · ${t("by", { name: version.createdBy.displayName })}` : ""} · {version.reason}
-    </p>
+    <>
+      <p className="text-muted text-xs">
+        {label}: {t("versionLine", { no: version.versionNo, date: format.dateTime(version.effectiveFrom) })}
+        {version.createdBy ? ` · ${t("by", { name: version.createdBy.displayName })}` : ""} · {version.reason}
+      </p>
+      <AutoApproveLine version={version} />
+    </>
   );
 
   return (
@@ -210,6 +215,21 @@ export function ApprovalMatrix() {
   );
 }
 
+/** D-449 B: "requests up to ฿x are approved without the second approval" for a version that carries an amount. */
+function AutoApproveLine({ version }: { version: PolicyVersion }) {
+  const t = useTranslations("approvals.matrix");
+  const format = useFormat();
+  if (!version.autoApproveMaxAmount) return null;
+  return (
+    <p className="mt-1 flex items-center gap-2 text-sm">
+      <Badge size="sm" tone="info" icon="zap">
+        {t("autoApproveBadge")}
+      </Badge>
+      <span className="tabular-nums">{t("autoApprove", { amount: format.thb(version.autoApproveMaxAmount) })}</span>
+    </p>
+  );
+}
+
 function PolicyHistory({ policyId }: { policyId: string }) {
   const t = useTranslations("approvals.matrix");
   const format = useFormat();
@@ -236,6 +256,7 @@ function PolicyHistory({ policyId }: { policyId: string }) {
               {version.createdBy ? ` · ${t("by", { name: version.createdBy.displayName })}` : ""} · {version.reason}
             </span>
           </p>
+          <AutoApproveLine version={version} />
           <StepsList steps={version.steps} />
         </li>
       ))}
@@ -259,6 +280,10 @@ function ProposeVersionDialog({
   const [steps, setSteps] = useState<EditableStep[]>(() => (policy.current?.steps ?? []).map(toEditable));
   const [effectiveFrom, setEffectiveFrom] = useState(today());
   const [reason, setReason] = useState("");
+  const currentMax = policy.current?.autoApproveMaxAmount ?? null;
+  const [autoApprove, setAutoApprove] = useState(currentMax ?? "");
+  // D-449 B: the decision names the role — only a Superadmin sets the auto-approve amount (the API enforces it).
+  const isSuperadmin = useActor().roles.includes("superadmin");
   // One key for this proposal, so a retry after a timeout cannot propose twice.
   const [idempotencyKey] = useState(newIdempotencyKey);
   const roles = useQuery({
@@ -321,9 +346,23 @@ function ProposeVersionDialog({
         });
         if (effectiveFrom < today()) throw new FormError(t("errors.backDated"));
         if (reason.trim().length < 3) throw new FormError(t("errors.reason"));
+        // Sent only when a Superadmin changed it; omitted, the API carries the value in force over.
+        let autoApproveMaxAmount: string | null | undefined;
+        if (isSuperadmin) {
+          const typed = autoApprove.trim() ? moneyInput(autoApprove) : null;
+          if (autoApprove.trim() && !typed) throw new FormError(t("errors.autoApprove"));
+          if (typed && !body.some((step) => conditionUsesAmount(step.condition)))
+            throw new FormError(t("errors.autoApproveNeedsAmount"));
+          if (typed !== currentMax) autoApproveMaxAmount = typed;
+        }
         await adminBrowserApis().contract.POST("/v1/admin/approval-policies/{policyId}/versions", {
           params: { path: { policyId: policy.id }, header: { "Idempotency-Key": idempotencyKey } },
-          body: { effectiveFrom: effectiveInstant(effectiveFrom), reason: reason.trim(), steps: body },
+          body: {
+            effectiveFrom: effectiveInstant(effectiveFrom),
+            reason: reason.trim(),
+            steps: body,
+            ...(autoApproveMaxAmount !== undefined ? { autoApproveMaxAmount } : {}),
+          },
         });
         toast.success(t("done"));
         onDone();
@@ -450,6 +489,19 @@ function ProposeVersionDialog({
           <Input value={reason} onChange={(event) => setReason(event.target.value)} />
         </Field>
       </div>
+      {isSuperadmin ? (
+        <Field label={t("autoApprove")} hint={t("autoApproveHint")}>
+          <Input
+            inputMode="decimal"
+            className="tabular-nums"
+            value={autoApprove}
+            placeholder={t("autoApprovePlaceholder")}
+            onChange={(event) => setAutoApprove(event.target.value)}
+          />
+        </Field>
+      ) : currentMax ? (
+        <p className="text-muted text-sm">{t("autoApproveReadOnly")}</p>
+      ) : null}
     </FormDialog>
   );
 }

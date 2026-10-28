@@ -40,7 +40,11 @@
     "no_matching_step": "No approval step matches",
     "not_authorised": "Not an approver for this step",
     "not_pending": "Request not pending",
-    "self_approval": "Cannot approve own request"
+    "not_self_approval": "A self-approval reason applies only to your own request",
+    "other_approver_exists": "Another approver can decide this step; they must approve it",
+    "self_approval": "Cannot approve own request",
+    "solo_owner_mode_off": "Solo-owner mode is off, so you cannot approve your own request",
+    "threshold_superadmin_only": "Only a Superadmin changes the auto-approve amount"
   },
   "artwork": {
     "order_unpaid": "The order is not paid yet — files are reviewed after payment",

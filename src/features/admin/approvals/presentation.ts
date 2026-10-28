@@ -8,6 +8,7 @@ import type { Schemas } from "@/lib/api/types";
 import type { IconName } from "@/ui/icons";
 
 export type Approval = Schemas["ApprovalRequestDto"];
+export type SoloOwnerMode = Schemas["SoloOwnerModeDto"];
 
 /** The policies getpack-api seeds (`prisma/seed/data/approval-policies.ts`), with an icon each. */
 export const POLICY_ICONS: Record<string, IconName> = {
@@ -102,4 +103,43 @@ export function decisionBlocker(
   if (approval.actions.some((action) => action.actor.id === actorId && action.action === "approve"))
     return "already_acted";
   return null;
+}
+
+/**
+ * D-449 A (owner decision 2026-10-28): whether this person may be offered "อนุมัติด้วยตนเอง" on their own pending
+ * request — a Superadmin while solo-owner mode is on. The decision names the Superadmin role itself, so this reads the
+ * role; the API still refuses when another active user could decide the step, and is the enforcement point.
+ */
+export function canOfferSelfApproval(
+  approval: Approval,
+  actor: { id: string; roles: readonly string[] },
+  solo: Pick<SoloOwnerMode, "active"> | null | undefined,
+): boolean {
+  return (
+    approval.status === "pending" &&
+    approval.requester.id === actor.id &&
+    actor.roles.includes("superadmin") &&
+    Boolean(solo?.active) &&
+    !approval.actions.some((action) => action.actor.id === actor.id && action.action === "approve")
+  );
+}
+
+/** The shortest typed reason the API accepts for a self-approval or a Superadmin file download (D-449). */
+export const TYPED_REASON_MIN_LENGTH = 10;
+
+/** "500000" / "500000.5" / "500000.50" → "500000.00"; anything else → null. String work only, no arithmetic. */
+export function moneyInput(text: string): string | null {
+  const value = text.trim().replace(/,/g, "");
+  const match = /^(\d{1,12})(?:\.(\d{1,2}))?$/.exec(value);
+  if (!match) return null;
+  return `${match[1]}.${(match[2] ?? "").padEnd(2, "0")}`;
+}
+
+/** Whether a step condition (ADR-0006 shape) uses the request amount — only then may a version auto-approve. */
+export function conditionUsesAmount(condition: unknown): boolean {
+  if (!condition || typeof condition !== "object") return false;
+  const c = condition as Record<string, unknown>;
+  for (const group of ["all", "any"])
+    if (Array.isArray(c[group])) return (c[group] as unknown[]).some(conditionUsesAmount);
+  return c.field === "amount";
 }

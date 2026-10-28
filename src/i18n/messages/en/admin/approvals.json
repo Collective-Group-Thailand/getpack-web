@@ -41,12 +41,14 @@
     "approveTitle": "Approve this request?",
     "rejectTitle": "Reject this request?",
     "withdrawTitle": "Withdraw this request?",
-    "description": "{summary} — your decision is recorded with your name and cannot be changed."
+    "description": "{summary} — your decision is recorded with your name and cannot be changed.",
+    "selfTitle": "Approve your own request?"
   },
   "decided": {
     "approve": "Approved",
     "reject": "Rejected",
-    "withdraw": "Withdrawn"
+    "withdraw": "Withdrawn",
+    "self": "Self-approved"
   },
   "decideFailed": "Could not record the decision",
   "blockers": {
@@ -213,7 +215,9 @@
     "proposal": "Proposal",
     "openApproval": "Open the approval",
     "history": "All versions",
-    "versionNo": "Version {no}"
+    "versionNo": "Version {no}",
+    "autoApproveBadge": "Auto-approve",
+    "autoApprove": "Requests up to {amount} are approved without the second approval"
   },
   "propose": {
     "title": "Propose a version of {policy}",
@@ -227,7 +231,9 @@
       "sla": "Step {n}'s time is in minutes.",
       "condition": "Step {n}'s condition must be a JSON object.",
       "backDated": "The effective date cannot be in the past.",
-      "reason": "Give a reason (3 characters or more)."
+      "reason": "Give a reason (3 characters or more).",
+      "autoApprove": "The auto-approve amount must be money, e.g. 1000.00",
+      "autoApproveNeedsAmount": "An auto-approve amount needs a step with an amount condition"
     },
     "done": "Proposal sent — a Superadmin approves it",
     "name": "Step {n} name",
@@ -248,6 +254,55 @@
     "add": "Add step",
     "effectiveFrom": "Effective from",
     "effectiveHint": "Approved after this date, it applies from the approval",
-    "reason": "Reason"
+    "reason": "Reason",
+    "autoApprove": "Auto-approve up to (THB)",
+    "autoApproveHint": "Only for policies with an amount condition; Superadmin only; empty = none",
+    "autoApprovePlaceholder": "Empty = no auto-approval",
+    "autoApproveReadOnly": "The auto-approve amount in force is carried over (only a Superadmin changes it)"
+  },
+  "solo": {
+    "title": "Solo-owner mode",
+    "on": "On",
+    "off": "Off",
+    "badge": "Solo-owner mode",
+    "badgeUntil": "Solo-owner mode until {date}",
+    "explain": "While on, a Superadmin may approve their own request with a typed reason; it is labelled \"Self-approved\" and listed in a daily digest to Superadmins. It never applies to a step someone else can approve.",
+    "activeUntil": "A Superadmin may approve their own requests (with a typed reason) until {date} — except steps another approver can decide",
+    "expired": "Expired; turned off automatically",
+    "changedBy": "Last changed by {name}",
+    "turnOn": "Turn on",
+    "renew": "Renew",
+    "turnOff": "Turn off",
+    "turnOnTitle": "Turn on solo-owner mode",
+    "turnOnBody": "While on, a Superadmin may approve their own requests one by one with a reason; each is recorded and listed in the daily digest. It turns itself off at expiry.",
+    "turnOffTitle": "Turn off solo-owner mode",
+    "turnOffBody": "Once off, nobody approves their own request; another approver must decide.",
+    "expiresAt": "Expires (Bangkok time)",
+    "expiresHint": "Leave empty for {days} days from now (at most {days} days)",
+    "expiresHintNoMax": "Leave empty to use the configured maximum",
+    "reason": "Reason",
+    "reasonHint": "Kept in the setting history",
+    "turnedOn": "Solo-owner mode is on",
+    "turnedOff": "Solo-owner mode is off",
+    "saveFailed": "Could not save solo-owner mode",
+    "errors": {
+      "reason": "Give a reason of at least 3 characters"
+    }
+  },
+  "selfApprove": {
+    "action": "Self-approve",
+    "calloutTitle": "Your request — you can self-approve it in solo-owner mode",
+    "calloutBody": "Type a reason; the approval is labelled \"Self-approved\" and listed in the daily digest to Superadmins. If someone else can approve this step, self-approval is refused.",
+    "confirmBody": "Approve your own request: {summary}",
+    "reason": "Why you approve it yourself",
+    "reasonHint": "At least {min} characters, stored with the approval"
+  },
+  "badges": {
+    "selfApproved": "Self-approved",
+    "autoApproved": "Auto-approved (below threshold)"
+  },
+  "autoApproved": {
+    "title": "Auto-approved",
+    "body": "This request's amount is within the policy's auto-approve amount, so no second approval was needed (recorded with the reason \"below threshold\")."
   }
 }
