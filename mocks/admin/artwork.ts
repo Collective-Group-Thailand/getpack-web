@@ -430,11 +430,34 @@ export const artworkContractHandlers = [
     return remember(request, { ...dto, closeReason: body.reason.trim() });
   }),
 
-  // admin.files.download: a file the mock drew or keeps; any other falls through to the example.
-  http.get("*/v1/admin/files/:fileId/download", ({ params, request }) => {
-    if (!staffPersonaOf(request)) return undefined;
+  // D-449 (1) admin.files.downloadWithReason: Superadmin only, a reason of at least 10 characters.
+  http.post("*/v1/admin/files/:fileId/actions/download-with-reason", async ({ params, request }) => {
+    const persona = staffPersonaOf(request);
+    if (!persona) return undefined;
+    if (!persona.permissions.includes("customer_files.read_with_reason"))
+      return problem(403, "auth.forbidden", "เปิดไฟล์ของลูกค้าด้วยเหตุผลได้เฉพาะซูเปอร์แอดมิน");
+    const body = (await request.json().catch(() => ({}))) as { reason?: string };
+    if ((body.reason ?? "").trim().length < 10)
+      return problem(422, "validation.failed", "กรุณาระบุเหตุผลอย่างน้อย 10 ตัวอักษร", [
+        { path: "reason", code: "minLength", message: "อย่างน้อย 10 ตัวอักษร" },
+      ]);
     const url = mockFileUrl(String(params.fileId));
     if (!url) return undefined;
+    return HttpResponse.json({ url, expiresAt: bangkokIso(5) } satisfies Schemas["DownloadUrlDto"]);
+  }),
+
+  // admin.files.download: a file the mock drew or keeps; any other falls through to the example.
+  http.get("*/v1/admin/files/:fileId/download", ({ params, request }) => {
+    const persona = staffPersonaOf(request);
+    if (!persona) return undefined;
+    const url = mockFileUrl(String(params.fileId));
+    if (!url) return undefined;
+    // D-444 / D-449: customer artwork is closed to Superadmin's ordinary download (the reason path opens it).
+    if (
+      persona.permissions.includes("customer_files.read_with_reason") &&
+      !persona.permissions.includes("customer_files.read")
+    )
+      return notFound();
     return HttpResponse.json({ url, expiresAt: bangkokIso(5) } satisfies Schemas["DownloadUrlDto"]);
   }),
 ];

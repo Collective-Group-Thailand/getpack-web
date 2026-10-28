@@ -40,8 +40,16 @@ import {
   type InitialPage,
 } from "../console";
 import { ApprovalMatrix } from "./ApprovalMatrix";
-import { CRITICAL_FLAGS, currentStep, decisionBlocker, POLICY_ICONS, type Approval } from "./presentation";
+import {
+  canOfferSelfApproval,
+  CRITICAL_FLAGS,
+  currentStep,
+  decisionBlocker,
+  POLICY_ICONS,
+  type Approval,
+} from "./presentation";
 import { approvalsList, POLICIES } from "./resources";
+import { SoloOwnerModePanel, useSoloOwnerMode } from "./SoloOwnerMode";
 
 export type ApprovalsTab = "inbox" | "all" | "delegations" | "matrix";
 
@@ -66,6 +74,7 @@ export function ApprovalsWorkspace({
 
   return (
     <div className="flex flex-col gap-4">
+      <SoloOwnerModePanel />
       <nav aria-label={t("tabs.label")} className="border-border flex gap-1 border-b">
         {tabs.map((item) => (
           <Link
@@ -99,6 +108,25 @@ function usePolicyLabel() {
   return (policy: string) => (t.has(policy) ? t(policy) : policy);
 }
 
+/** D-449: "อนุมัติด้วยตนเอง" / "อนุมัติอัตโนมัติ" badges of a request, wherever it is listed. */
+function DecisionModeBadges({ item }: { item: Approval }) {
+  const t = useTranslations("approvals.badges");
+  return (
+    <>
+      {item.selfApproved ? (
+        <Badge size="sm" tone="warning" icon="key">
+          {t("selfApproved")}
+        </Badge>
+      ) : null}
+      {item.autoApprovedReason === "below_threshold" ? (
+        <Badge size="sm" tone="info" icon="zap">
+          {t("autoApproved")}
+        </Badge>
+      ) : null}
+    </>
+  );
+}
+
 /** What is waiting on me: the only list that is a queue, so it leads with the SLA. */
 function Inbox({ initial }: { initial: Approval[] | null }) {
   const t = useTranslations("approvals");
@@ -107,6 +135,7 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
   const policyLabel = usePolicyLabel();
   const roleLabel = useRoleLabel();
   const actor = useActor();
+  const solo = useSoloOwnerMode();
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -210,6 +239,7 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
                         {t.has(`flags.${flag}`) ? t(`flags.${flag}`) : flag}
                       </Badge>
                     ))}
+                    <DecisionModeBadges item={item} />
                   </p>
                   <p className="text-muted text-sm">
                     {t("requestedBy", { name: item.requester.displayName })}
@@ -261,6 +291,11 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
                         {t("approve")}
                       </Button>
                     </>
+                  ) : canOfferSelfApproval(item, actor, solo.data) ? (
+                    // D-449 A: the reason is typed on the request's own page, never in one click from the queue.
+                    <Button asChild size="sm" iconStart="key">
+                      <Link href={`/approvals/${item.id}`}>{t("selfApprove.action")}</Link>
+                    </Button>
                   ) : (
                     <span className="text-muted text-xs">
                       {t(`blockers.${blocked === "own_request" ? "ownRequest" : "alreadyActed"}`)}
@@ -315,9 +350,12 @@ function AllRequests({ initial }: { initial: InitialPage<Approval> | null }) {
       id: "policy",
       header: t("columns.policy"),
       cell: (row) => (
-        <Link href={`/approvals/${row.id}`} className="text-primary font-medium hover:underline">
-          {policyLabel(row.policy)}
-        </Link>
+        <span className="flex flex-wrap items-center gap-2">
+          <Link href={`/approvals/${row.id}`} className="text-primary font-medium hover:underline">
+            {policyLabel(row.policy)}
+          </Link>
+          <DecisionModeBadges item={row} />
+        </span>
       ),
     },
     {

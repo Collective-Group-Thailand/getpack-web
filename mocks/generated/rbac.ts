@@ -6,7 +6,7 @@
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "7e81cff", tag: "v0.75.0" } as const;
+export const RBAC_SOURCE = { commit: "6ec8adba", tag: "v0.75.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
@@ -66,6 +66,10 @@ export const STAFF_PERMISSIONS = [
   "conversations.read",
   "conversations.reply",
   "credit_notes.request",
+  "customer_file_access_logs.read",
+  "customer_files.read",
+  "customer_files.read_handled",
+  "customer_files.read_with_reason",
   "customers.manage",
   "customers.read",
   "design_services.manage",
@@ -107,6 +111,7 @@ export const STAFF_PERMISSIONS = [
   "notification_routes.manage",
   "notification_templates.manage",
   "ops.read",
+  "orders.assign_support",
   "orders.cancel",
   "orders.manage",
   "orders.read",
@@ -262,6 +267,8 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "conversations.read",
     "conversations.reply",
     "credit_notes.request",
+    "customer_file_access_logs.read",
+    "customer_files.read_with_reason",
     "customers.manage",
     "customers.read",
     "design_services.manage",
@@ -303,6 +310,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "notification_routes.manage",
     "notification_templates.manage",
     "ops.read",
+    "orders.assign_support",
     "orders.cancel",
     "orders.manage",
     "orders.read",
@@ -532,6 +540,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "mockups.manage",
     "notification_templates.manage",
     "ops.read",
+    "orders.assign_support",
     "orders.cancel",
     "orders.manage",
     "orders.read",
@@ -586,6 +595,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "companies.read",
     "conversations.read",
     "conversations.reply",
+    "customer_files.read_handled",
     "customers.manage",
     "customers.read",
     "discount_memos.read",
@@ -638,6 +648,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "conversations.read",
     "conversations.reply",
     "credit_notes.request",
+    "customer_files.read_handled",
     "customers.manage",
     "customers.read",
     "discount_memos.read",
@@ -651,6 +662,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "loyalty.read",
     "margin.read_pct_when_discounting",
     "mockups.manage",
+    "orders.assign_support",
     "orders.cancel",
     "orders.manage",
     "orders.read",
@@ -692,6 +704,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "artwork.submit_on_behalf",
     "calendars.read",
     "catalog.read",
+    "customer_files.read",
     "design_services.manage",
     "drawings.generate",
     "files.read",
@@ -970,6 +983,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "close.audit_sign_off",
     "close.read",
     "companies.read",
+    "customer_file_access_logs.read",
     "customers.read",
     "discount_memos.read",
     "document_branding.read",
