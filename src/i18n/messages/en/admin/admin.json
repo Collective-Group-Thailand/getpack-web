@@ -50,6 +50,7 @@
     "users": "Users and roles",
     "approvals": "Approvals",
     "audit_logs": "Audit log",
+    "customer_file_access_logs": "Customer file access log",
     "analytics": "Analytics",
     "reports": "Reports",
     "settings": "Settings",

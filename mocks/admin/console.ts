@@ -14,6 +14,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import { can, PERSONAS, type StaffPersona } from "../personas";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
+import { filterFileAccessLog } from "./file-access-logs";
 import { finance as published } from "./finance/support";
 import { approvals, mayDecide, SOD_RULES, users } from "./platform";
 
@@ -127,12 +128,14 @@ export function dashboardFor(persona: StaffPersona): Queue[] {
 /* --------------------------------------------------------------------------- list exports */
 
 /** What each exportable list needs to be read, and which search records stand for its rows. */
-const LIST_EXPORTS: Record<Schemas["ListExportResource"], { permission: string; type: SearchResult["type"] }> = {
+const LIST_EXPORTS: Record<Schemas["ListExportResource"], { permission: string; type: SearchResult["type"] | null }> = {
   orders: { permission: "orders.read", type: "order" },
   customers: { permission: "customers.read", type: "customer" },
   companies: { permission: "companies.read", type: "company" },
   shipments: { permission: "shipments.read", type: "shipment" },
   claims: { permission: "claims.read", type: "claim" },
+  // C1f (D-451): the customer file access log page — rows from the log mock, with the typed reason.
+  customer_file_access_logs: { permission: "customer_file_access_logs.read", type: null },
 };
 
 /* ----------------------------------------------------------------------- saved views */
@@ -210,10 +213,30 @@ export const consoleHandlers = [
     const list = LIST_EXPORTS[body.resource];
     if (!list) return problem(422, "validation.failed", "resource ไม่ถูกต้อง");
     if (!can(persona, list.permission)) return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ดูรายการนี้");
+    const quote = (value: string | null | undefined) => `"${(value ?? "").replace(/"/g, '""')}"`;
+    if (list.type === null) {
+      const query = (body.query ?? {}) as Record<string, string>;
+      const days = (d: string | undefined, plus = 0) =>
+        d ? new Date(Date.parse(`${d}T00:00:00+07:00`) + plus * 86_400_000).toISOString() : null;
+      const logRows = filterFileAccessLog((name) =>
+        name === "from" ? days(query.from) : name === "to" ? days(query.to, 1) : (query[name] ?? null),
+      );
+      const logCsv = [
+        "occurredAt,actor,orderCode,fileKind,purpose,reason",
+        ...logRows.map((e) =>
+          [e.occurredAt, e.actor.name, e.order?.orderCode, e.fileKind, e.purpose, e.reason].map(quote).join(","),
+        ),
+      ].join("\n");
+      return {
+        fileId: mockId("export", logRows.length + 1),
+        url: `data:text/csv;charset=utf-8,${encodeURIComponent(logCsv)}`,
+        rows: logRows.length,
+        truncated: false,
+        expiresAt: bangkokIso(5),
+      };
+    }
     const rows = searchIndex.filter((entry) => entry.type === list.type);
-    const csv = ["code,title", ...rows.map((row) => `"${row.code ?? ""}","${row.title.replace(/"/g, '""')}"`)].join(
-      "\n",
-    );
+    const csv = ["code,title", ...rows.map((row) => `${quote(row.code)},${quote(row.title)}`)].join("\n");
     return {
       fileId: mockId("export", rows.length + 1),
       url: `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`,

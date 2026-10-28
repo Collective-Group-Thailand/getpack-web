@@ -290,3 +290,10 @@ Illustrator file (`.ai`, `application/illustrator`); `DielineDownloadDto.format`
 getpack-api on the same day (`DIELINE_DOWNLOAD_FORMATS`, `dieline-downloads.dto.ts`); the storefront
 widens the vendored type until that contract build is adopted (`DielineDownload.tsx`).
 **Done (v0.59.0, adopted 2026-10-15):** `DielineDownloadFormat` (`svg`, `dxf`, `pdf`, `ai`); the storefront and the mock use it, no widening left.
+
+## `store.catalog.getConfigurator` — the dieline variant per standard size (C1f, owner 2026-10-28 14:36)
+
+- **Owner decision (DECISIONS-STAGE-A §14.9 (5)):** the product page's "แบบกล่องเบอร์ X" uses the published dieline variant that matches the selected size, falling back to the first published variant.
+- **Today:** `StoreConfiguratorPatternDto.dielineVariantCodes` lists the pattern's published variants (code order). Nothing ties a variant to a size: variants differ by option axes (window, insert, tuck…), the solver's size range is the style base's, and `dieline_renders` are a cache, not a publication. So no variant can be said to "match" a standard size from the data.
+- **Ask:** on `StoreConfiguratorSizeDto`, `dielineVariantCode: string | null` — the published variant the API (engine) draws cleanly at that size (no rule violations), chosen by the API; null = none fits.
+- **Web meanwhile:** `dielineTargetOf` keeps the fallback the decision names — the first published variant, with the selected size's millimetres in the link (`l`/`w`/`h`) — and will prefer the size's own variant once the field exists.

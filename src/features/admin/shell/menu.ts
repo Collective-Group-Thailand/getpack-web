@@ -75,6 +75,7 @@ const MENU_ICONS: Record<string, IconName> = {
   notification_templates: "mail",
   notification_routes: "route",
   audit_logs: "history",
+  customer_file_access_logs: "file-check",
   outbox: "inbox",
   ops: "activity",
 };
@@ -107,6 +108,7 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
       "notification_templates",
       "notification_routes",
       "audit_logs",
+      "customer_file_access_logs",
       "privacy",
       "outbox",
       "ops",

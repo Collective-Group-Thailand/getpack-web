@@ -17,7 +17,8 @@ export type ListExportResource = Schemas["ListExportResource"];
 
 /**
  * Export the list as it is filtered now (F2 §2 "xlsx export button") through `admin.exports.create`
- * (U-B0.3): orders, customers, companies, shipments and claims. The API writes the file — it holds
+ * (U-B0.3): orders, customers, companies, shipments, claims and (C1f) the customer file access log.
+ * The API writes the file — it holds
  * the rows and the permissions, and leaves contact details out — and answers with a five-minute
  * signed URL. Offered to whoever holds `reports.export`; the list's own read permission is the
  * API's to check.
