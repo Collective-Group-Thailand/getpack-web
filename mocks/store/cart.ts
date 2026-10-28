@@ -39,6 +39,8 @@ interface Line {
   designNote?: string | null;
   /** C5 (D-452): a quantity the customer changed in the cart, priced by the mock's fake tier rule below. */
   override?: { quantity: number; unitPrice: string; grossAmount: string };
+  /** C9 (D-457): the own file checked before ordering (`store.fileChecks.addToCart`). */
+  checkedFile?: Schemas["CartCheckedFileDto"] | null;
 }
 
 /**
@@ -204,6 +206,14 @@ export function addToCart(customer: MockCustomer, quote: StoreQuote): string {
   return id;
 }
 
+/** C9 (D-457): the checked own file a cart line orders (the file-check mock's add-to-cart). */
+export function attachCheckedFile(customer: MockCustomer, lineId: string, file: Schemas["CartCheckedFileDto"]): void {
+  const line = linesOf(customer).find((candidate) => candidate.id === lineId);
+  if (!line) return;
+  line.checkedFile = file;
+  line.designOption = "own_file";
+}
+
 /** Pins a studio design version on a cart line (D-276). */
 export function pinDesign(
   customer: MockCustomer,
@@ -310,6 +320,7 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
         // A reorder's quotation names the order it repeats (D-153).
         reorderOf: reorderedOf(quote),
         reusesApprovedArtwork: reorderedOf(quote) !== null && quote.designOption === "own_file",
+        checkedFile: line.checkedFile ?? null,
         quantityEditable: quantityEditable(line, quote, pending),
         quantityLimits: quote.source === "rfq" ? null : { min: 100, max: null },
         tierHint: quantityEditable(line, quote, pending) && !expired ? mockTierHint(quote, item.quantity) : null,

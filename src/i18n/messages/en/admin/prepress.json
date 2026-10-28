@@ -184,7 +184,12 @@
         "safe_zone": "Outside the safe zone",
         "thin_lines": "Thin lines",
         "overprint": "Overprint",
-        "ink_coverage": "Ink coverage"
+        "ink_coverage": "Ink coverage",
+        "ink_count": "Inks do not match the print method",
+        "small_text": "Text too small",
+        "small_text_black": "Small text not black only",
+        "barcode": "Barcode / QR",
+        "die_layer": "Die lines not on a non-printing layer"
       },
       "page": "Page {page}",
       "files": "Files",
