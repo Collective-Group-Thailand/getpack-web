@@ -11,7 +11,9 @@ import { stateForDesign } from "./state";
 import type { Persistence } from "@/features/designer/data/persistence";
 import { canonicalJson, sameJson } from "@/features/designer/lib/json-patch";
 import { useEditor } from "@/features/designer/store/editor";
+import { rfqHref } from "@/features/customer/catalog/paths";
 import { formatDate, formatTHB } from "@/i18n/format";
+import { Link } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
@@ -168,7 +170,23 @@ export function PriceDock({
       <span className="block text-sm">{t("total", { amount: formatTHB(step.grossAmount, locale) })}</span>
     </p>
   ) : step && !step.instant ? (
-    <p className="text-sm font-semibold">{t("onRequest")}</p>
+    <div className="text-sm">
+      <p className="font-semibold">{t("onRequest")}</p>
+      {step.reason === "rfq_required" && configurator && calculation?.calculationId ? (
+        // C0b (DECISIONS-STAGE-A §9.5): more colours than priced at once — the quotation request carries the spec.
+        <>
+          <p className="text-muted text-xs">{t("beyondPrint")}</p>
+          <Button asChild size="sm" variant="secondary" className="mt-1.5">
+            <Link
+              href={`${rfqHref(configurator.productTypeCode)}?from=${encodeURIComponent(configurator.slug)}&calc=${calculation.calculationId}`}
+              data-studio-quote=""
+            >
+              {t("requestQuote")}
+            </Link>
+          </Button>
+        </>
+      ) : null}
+    </div>
   ) : failed ? (
     <p className="text-danger text-sm">{t("failed")}</p>
   ) : !configurator || !spec ? (

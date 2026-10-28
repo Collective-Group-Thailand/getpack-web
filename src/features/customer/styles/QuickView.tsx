@@ -286,6 +286,7 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
                 ? `${quoteHrefs[style.category]}${style.productTypeCode ? `?type=${encodeURIComponent(style.productTypeCode)}` : ""}`
                 : null,
               onAction: (cta) => trackCatalog("catalog_cta", { style_code: style.code, cta }),
+              quoteResponseDays: style.quoteResponseBusinessDays,
             }}
             dieline={{
               sizeRanges: style.sizeRanges,
