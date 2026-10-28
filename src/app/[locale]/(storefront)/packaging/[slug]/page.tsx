@@ -8,6 +8,7 @@ import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
 import {
+  isLandingPublished,
   landingOfSlug,
   PACKAGING_LANDINGS,
   packagingHref,
@@ -61,6 +62,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title: t("useCasePage.metaTitle", { title }),
     description: t("useCasePage.metaDescription", { title, intro: t(`useCasePages.${found.landing.useCase}.intro`) }),
     alternates: { canonical, languages },
+    // C0b: draft copy (not yet approved by the owner) is reviewable with the flag on, never indexed.
+    ...(isLandingPublished(slug) ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
@@ -111,7 +114,7 @@ export default async function PackagingLandingPage({ params }: { params: Params 
               };
             }),
           },
-          ...(copy.faq.length ? [faqPageSchema(copy.faq)] : []),
+          ...(copy.faq.length && isLandingPublished(slug) ? [faqPageSchema(copy.faq)] : []),
         ]}
       />
       <Breadcrumbs

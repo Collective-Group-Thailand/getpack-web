@@ -16769,6 +16769,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/styles/actions/backfill-fit-ranges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fill empty fit ranges from approved recipes
+         * @description C0b (owner decision 2026-10-28, DECISIONS-STAGE-A §9.1; curation D-246): each style whose inside fit range is empty gets the approved recipe’s size range (D-241, mm, inside basis; the style’s own material class, else what every complete class allows), through the same path as `admin.styles.update` — audited per style as `style_base.curated` with source `recipe`. A range the business entered is never overwritten; a range filled here earlier follows a newer approved recipe. Idempotent (a second run changes nothing); `dryRun` reports without writing.
+         *
+         *     Implements: D-241, D-242, D-243, D-246.
+         */
+        post: operations["admin.styles.backfillFitRanges"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/tax-calendar": {
         parameters: {
             query?: never;
@@ -37502,6 +37524,11 @@ export interface components {
             family: string;
             /** @example false */
             featured: boolean;
+            /**
+             * @description Where the fit range in `commercial` came from (C0b, DECISIONS-STAGE-A §9.1): `recipe` = filled from the approved recipe by the backfill (replaced by any value curation saves), `business` = entered by curation / the CSV (never overwritten by the backfill); null = no range. Read-only.
+             * @example null
+             */
+            fitRangeSource: components["schemas"]["StyleFitRangeSource"] | null;
             /** @example false */
             hidden: boolean;
             /**
@@ -60063,6 +60090,52 @@ export interface components {
             /** @example open */
             status: components["schemas"]["PeriodStatus"];
         };
+        FitRangeBackfillDto: {
+            /**
+             * @description Report what would change without writing
+             * @default false
+             * @example true
+             */
+            dryRun: boolean;
+        };
+        FitRangeBackfillResult: {
+            /**
+             * @description Styles with an approved recipe
+             * @example 122
+             */
+            considered: number;
+            /** @example false */
+            dryRun: boolean;
+            /**
+             * @description Codes whose empty range was filled from the recipe (source `recipe`)
+             * @example [
+             *       "PK-CB-01"
+             *     ]
+             */
+            filled: string[];
+            /**
+             * @description Codes left alone because the business entered their range
+             * @example []
+             */
+            keptBusiness: string[];
+            /**
+             * @description Codes whose recipe states no complete size range (stay out of the size search)
+             * @example [
+             *       "PK-CB-02"
+             *     ]
+             */
+            noRecipeRange: string[];
+            /**
+             * @description Codes whose earlier recipe range followed a newer approved recipe
+             * @example []
+             */
+            refreshed: string[];
+            /**
+             * @description Recipe ranges already in place
+             * @example 0
+             */
+            unchanged: number;
+        };
         FixedAssetDto: {
             /** @example 1000.00 */
             accumulatedDepreciation: string;
@@ -77691,6 +77764,18 @@ export interface components {
             inside: components["schemas"]["StorePrintSideDto"];
             outside: components["schemas"]["StorePrintSideDto"];
         };
+        StorePrintQuoteDto: {
+            /**
+             * @description Spot colours that may stand beside CMYK on this side (quote beyond `cmyk.addOn.maxColours`)
+             * @example 2
+             */
+            cmykAddOnMaxColours: number;
+            /**
+             * @description Spot colours that may be chosen on this side (quote beyond `spot.maxColours`)
+             * @example 2
+             */
+            spotMaxColours: number;
+        };
         StorePrintSelectionDto: {
             /**
              * @description `cmyk`: the "+ สีพิเศษ" colours chosen (empty without the add-on)
@@ -77723,6 +77808,8 @@ export interface components {
              *     ]
              */
             methods: components["schemas"]["PrintSideMethod"][];
+            /** @description C0b (owner decision 2026-10-28; D-443, B-API-6): colours a customer may still choose on this side beyond the instantly priced counts (`spot.maxColours`, `cmyk.addOn.maxColours`), up to the side’s offered spot inks. Never refused or trimmed: `store.quotes.calculate` answers `instant: false` with `reason: rfq_required` and the configurator offers the quotation request with the spec. Null when nothing lies beyond. */
+            quote: components["schemas"]["StorePrintQuoteDto"] | null;
             spot: components["schemas"]["StorePrintSpotDto"] | null;
         };
         StorePrintSpotDto: {
@@ -79059,6 +79146,11 @@ export interface components {
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
             /**
+             * @description C0b (D-100, D-220, DECISIONS-STAGE-A §9.3): the first-response time of a quotation request for this style, in working days — `rfq.sla_business_hours` of its product type (platform fallback) in whole working days, the way the RFQ due time is counted (every hour of a working day). Null when the setting is not set or the style has no product type: then no timing is shown. Never a price or an estimate.
+             * @example 2
+             */
+            quoteResponseBusinessDays: number | null;
+            /**
              * @description Only once Prepress verified it (D-211)
              * @example null
              */
@@ -79210,6 +79302,11 @@ export interface components {
              */
             productTypeCode: string | null;
             /**
+             * @description C0b (D-100, D-220, DECISIONS-STAGE-A §9.3): the first-response time of a quotation request for this style, in working days — `rfq.sla_business_hours` of its product type (platform fallback) in whole working days, the way the RFQ due time is counted (every hour of a working day). Null when the setting is not set or the style has no product type: then no timing is shown. Never a price or an estimate.
+             * @example 2
+             */
+            quoteResponseBusinessDays: number | null;
+            /**
              * @description As entered by the business; null = unknown
              * @example null
              */
@@ -79294,6 +79391,11 @@ export interface components {
             /** @example 40 */
             minWMm: number;
         };
+        /**
+         * @description Where the fit range in `commercial` came from (C0b, DECISIONS-STAGE-A §9.1): `recipe` = filled from the approved recipe by the backfill (replaced by any value curation saves), `business` = entered by curation / the CSV (never overwritten by the backfill); null = no range. Read-only.
+         * @enum {string}
+         */
+        StyleFitRangeSource: "recipe" | "business";
         StyleImportFileDto: {
             /**
              * Format: uuid
@@ -205574,6 +205676,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -205746,6 +205849,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -205945,6 +206049,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206124,6 +206229,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206316,6 +206422,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206514,6 +206621,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206700,6 +206808,7 @@ export interface operations {
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206925,6 +207034,113 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.styles.backfillFitRanges": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FitRangeBackfillDto"];
+            };
+        };
+        responses: {
+            /** @description What was (or, with `dryRun`, would be) filled */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "considered": 122,
+                     *       "dryRun": true,
+                     *       "filled": [
+                     *         "PK-CB-01"
+                     *       ],
+                     *       "keptBusiness": [],
+                     *       "noRecipeRange": [
+                     *         "PK-CB-02"
+                     *       ],
+                     *       "refreshed": [],
+                     *       "unchanged": 0
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FitRangeBackfillResult"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -292020,6 +292236,7 @@ export interface operations {
                      *             "none",
                      *             "spot"
                      *           ],
+                     *           "quote": null,
                      *           "spot": {
                      *             "inkColourIds": [
                      *               "0192f3a0-7c1e-7d2a-9b1f-00000000e101"
@@ -292048,6 +292265,10 @@ export interface operations {
                      *             "spot",
                      *             "cmyk"
                      *           ],
+                     *           "quote": {
+                     *             "cmykAddOnMaxColours": 2,
+                     *             "spotMaxColours": 2
+                     *           },
                      *           "spot": {
                      *             "inkColourIds": [
                      *               "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
@@ -328494,6 +328715,7 @@ export interface operations {
                      *           ],
                      *           "photo": null,
                      *           "pricePath": "instant",
+                     *           "quoteResponseBusinessDays": null,
                      *           "referenceCode": null,
                      *           "startingPrice": {
                      *             "catalogProductSlug": "dev-tuck-end-box",
@@ -328789,6 +329011,7 @@ export interface operations {
                      *           ],
                      *           "photo": null,
                      *           "pricePath": "instant",
+                     *           "quoteResponseBusinessDays": null,
                      *           "referenceCode": null,
                      *           "startingPrice": {
                      *             "catalogProductSlug": "dev-tuck-end-box",
@@ -328969,6 +329192,7 @@ export interface operations {
                      *       "plasticFree": null,
                      *       "pricePath": "instant",
                      *       "productTypeCode": "folding_carton",
+                     *       "quoteResponseBusinessDays": null,
                      *       "recyclable": null,
                      *       "referenceCode": null,
                      *       "sizeRanges": [
@@ -329135,6 +329359,7 @@ export interface operations {
                      *         "plasticFree": null,
                      *         "pricePath": "instant",
                      *         "productTypeCode": "folding_carton",
+                     *         "quoteResponseBusinessDays": null,
                      *         "recyclable": null,
                      *         "referenceCode": null,
                      *         "sizeRanges": [

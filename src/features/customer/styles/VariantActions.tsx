@@ -21,6 +21,11 @@ export interface VariantActionsProps {
   productSlug: string | null;
   /** The style's RFQ form (`/rfq/<category>?type=<productType>`), or `null` when it has none yet. */
   rfqHref: string | null;
+  /**
+   * C0b (DECISIONS-STAGE-A §9.3): the team's first response to a quotation request, in working days, from the API
+   * (`quoteResponseBusinessDays`); null → the message without a time. Never a price estimate (D-220).
+   */
+  quoteResponseDays?: number | null;
   /** Told which way the customer went — the library counts its calls to action (`catalog_cta`). */
   onAction?: (action: "design" | "cart" | "quote") => void;
   /** The studio button's words, when the page wants other than the default ("เริ่มออกแบบแบบนี้" in the quick view). */
@@ -33,7 +38,15 @@ export interface VariantActionsProps {
  * (configure) or quoted (a request for quotation carrying the variant code). The engine's library
  * is loaded only when the studio is asked for, not with the page.
  */
-export function VariantActions({ base, variant, productSlug, rfqHref, onAction, designLabel }: VariantActionsProps) {
+export function VariantActions({
+  base,
+  variant,
+  productSlug,
+  rfqHref,
+  onAction,
+  designLabel,
+  quoteResponseDays = null,
+}: VariantActionsProps) {
   const t = useTranslations("styles.detail");
   const router = useRouter();
   const [opening, setOpening] = useState(false);
@@ -82,7 +95,14 @@ export function VariantActions({ base, variant, productSlug, rfqHref, onAction, 
 
   return (
     <div className="flex flex-col gap-2">
-      {!instant ? <p className="text-muted text-sm">{t("rfqNote")}</p> : null}
+      {!instant ? (
+        <>
+          <p className="text-sm font-semibold" data-quote-response="">
+            {quoteResponseDays ? t("quoteResponse", { days: quoteResponseDays }) : t("quoteResponseNoTime")}
+          </p>
+          <p className="text-muted text-sm">{t("rfqNote")}</p>
+        </>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         {instant ? (
           <Button asChild>

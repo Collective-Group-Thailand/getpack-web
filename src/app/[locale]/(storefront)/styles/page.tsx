@@ -413,7 +413,8 @@ export default async function StylesPage({
               ? locale === "en"
                 ? (settings.trust.taxInvoiceNote.en ?? settings.trust.taxInvoiceNote.th)
                 : settings.trust.taxInvoiceNote.th
-              : null
+              : // C0b: the decision-backed default (D-010, D-125) until staff enter their own wording.
+                t("library.trustTaxInvoiceDefault")
           }
         />
         <LineFloat apiLineOaId={support?.lineOaId} />

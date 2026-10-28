@@ -13,7 +13,9 @@ import { spotShortfall } from "./state";
  * Never trim spot colours silently (C0): when the artwork has more flat colours than the spec's
  * price covers — the flexo limit, the product's inks or a corrugate side's print model — the
  * Studio says so and offers the ways out the product has: "เปลี่ยนเป็น CMYK" (a full-colour
- * method) and "เพิ่มจำนวนสี" (one spot ink per colour, flexo, within the limit).
+ * method) and "เพิ่มจำนวนสี" (one spot ink per colour, flexo, within the limit). On corrugate (C0b)
+ * "เพิ่มจำนวนสี" keeps every colour and leads to the quote path: the price dock then offers
+ * "ขอใบเสนอราคา" with the spec (the calculation answers `rfq_required`).
  */
 export function SpotColourWarning({
   configurator,
@@ -35,6 +37,7 @@ export function SpotColourWarning({
   return (
     <Callout tone="warning" live title={t("title")} className="max-w-xl" data-spot-shortfall="">
       <p>{t("body", { needed: gap.needed, priced: gap.priced })}</p>
+      {gap.more && gap.quote ? <p className="mt-1">{t("moreQuote")}</p> : null}
       {gap.cmyk || gap.more ? (
         <div className="mt-2 flex flex-wrap gap-2">
           {gap.cmyk ? (

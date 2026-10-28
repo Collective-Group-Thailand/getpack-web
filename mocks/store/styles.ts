@@ -199,6 +199,8 @@ function card(s: MockStyle, favourite: boolean | null): Card {
     moqUnits: s.row.wave === 1 ? 500 : null,
     dielineUrl: s.row.wave === 1 ? `/style-previews/${s.row.code}` : null,
     fit: null,
+    // Fake first-response time (mock only): quoted styles answer within 2 working days.
+    quoteResponseBusinessDays: s.pricePath === "rfq" ? 2 : null,
   };
 }
 
@@ -219,7 +221,19 @@ function detail(s: MockStyle, favourite: boolean | null): Detail {
         : { l: range(20, 400), w: range(15, 300), h: range(20, 450) };
   return {
     ...card(s, favourite),
-    assets: [],
+    // The style's own flat dieline (C0b): the engine's drawing served by this app, first wave only (mock).
+    assets:
+      s.row.wave === 1
+        ? [
+            {
+              kind: "dieline_svg",
+              variantCode: null,
+              sha256: "0".repeat(64),
+              contentType: "image/svg+xml",
+              url: `/style-previews/${s.row.code}`,
+            },
+          ]
+        : [],
     axes: axesOf(s.row)
       .filter((axis) => values.has(axis))
       .map((axis) => ({ axis, multiSelect: MULTI.has(axis), values: [...values.get(axis)!] })),
