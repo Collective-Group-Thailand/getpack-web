@@ -42455,10 +42455,20 @@ export interface components {
              */
             shippingGrossAmount: string | null;
             /**
+             * @description The cart’s goods (`CartDto.productGrossAmount`) plus this shipping, incl. VAT, before codes, points and promotions (those are the checkout preview’s); null when shipping is not available
+             * @example 13615.40
+             */
+            totalGrossAmount: string | null;
+            /**
              * @description Items that cannot be shipped to the postcode
              * @example []
              */
             unavailableItemIds: string[];
+            /**
+             * @description VAT included in `totalGrossAmount`: the goods’ VAT (`CartDto.vatAmount`) plus the shipping’s; null as above
+             * @example 890.73
+             */
+            vatAmount: string | null;
             /** @description The destination zone’s name (customer side only) */
             zone: components["schemas"]["LocalisedLabelDto"] | null;
         };
@@ -42956,6 +42966,8 @@ export interface components {
         CheckoutPreviewDto: {
             /** @description When ordering for a company (B2B) */
             company: components["schemas"]["CompanyPreviewDto"] | null;
+            /** @description D-452: the summary rows, incl. VAT, adding up to the total */
+            display: components["schemas"]["PreviewDisplayDto"];
             notices: components["schemas"]["CheckoutNoticeDto"][];
             orders: components["schemas"]["PreviewOrderDto"][];
             /** @description How the instalments can be paid (chosen when paying, `store.payments.initiate`); no surcharge */
@@ -67539,6 +67551,33 @@ export interface components {
             promotionId: string | null;
             /** @example coupon */
             source: components["schemas"]["DiscountSource"];
+        };
+        PreviewDisplayDto: {
+            /**
+             * @description Every discount (codes, automatic promotions, points, memos) with the VAT it takes off
+             * @example 0.00
+             */
+            discountGrossAmount: string;
+            /**
+             * @description Goods and design fees before discounts, incl. VAT
+             * @example 14054.40
+             */
+            goodsGrossAmount: string;
+            /**
+             * @description = `totals.grossAmount`
+             * @example 14182.80
+             */
+            grossAmount: string;
+            /**
+             * @description Shipping of every destination before discounts, incl. VAT
+             * @example 128.40
+             */
+            shippingGrossAmount: string;
+            /**
+             * @description VAT included in `grossAmount` (= `totals.vatAmount`)
+             * @example 927.85
+             */
+            vatAmount: string;
         };
         PreviewInstalmentDto: {
             /** @example 7091.40 */
@@ -140960,7 +140999,9 @@ export interface operations {
                      *       "postcode": "10110",
                      *       "readyDate": "2026-11-09",
                      *       "shippingGrossAmount": "235.40",
+                     *       "totalGrossAmount": "13615.40",
                      *       "unavailableItemIds": [],
+                     *       "vatAmount": "890.73",
                      *       "zone": {
                      *         "en": "Bangkok & vicinity",
                      *         "th": "กรุงเทพฯ และปริมณฑล"
@@ -143432,6 +143473,13 @@ export interface operations {
                     /**
                      * @example {
                      *       "company": null,
+                     *       "display": {
+                     *         "discountGrossAmount": "0.00",
+                     *         "goodsGrossAmount": "14054.40",
+                     *         "grossAmount": "14182.80",
+                     *         "shippingGrossAmount": "128.40",
+                     *         "vatAmount": "927.85"
+                     *       },
                      *       "notices": [],
                      *       "orders": [
                      *         {
@@ -291099,7 +291147,9 @@ export interface operations {
                      *       "postcode": "10110",
                      *       "readyDate": "2026-11-09",
                      *       "shippingGrossAmount": "235.40",
+                     *       "totalGrossAmount": "13615.40",
                      *       "unavailableItemIds": [],
+                     *       "vatAmount": "890.73",
                      *       "zone": {
                      *         "en": "Bangkok & vicinity",
                      *         "th": "กรุงเทพฯ และปริมณฑล"
@@ -296657,6 +296707,13 @@ export interface operations {
                     /**
                      * @example {
                      *       "company": null,
+                     *       "display": {
+                     *         "discountGrossAmount": "0.00",
+                     *         "goodsGrossAmount": "14054.40",
+                     *         "grossAmount": "14182.80",
+                     *         "shippingGrossAmount": "128.40",
+                     *         "vatAmount": "927.85"
+                     *       },
                      *       "notices": [],
                      *       "orders": [
                      *         {
