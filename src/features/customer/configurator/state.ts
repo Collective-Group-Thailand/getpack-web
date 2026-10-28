@@ -266,7 +266,8 @@ function normaliseInkChoices(configurator: Configurator, state: ConfiguratorStat
   const fix = (kind: "print_front" | "print_back", ids: string[] | undefined) =>
     ids
       ? isCorrugate(configurator)
-        ? normaliseCorrugateSide(configurator, byId, kind, ids)
+        ? // C0b: the customer's own picks keep colours beyond the instant price (a quotation), never trimmed.
+          normaliseCorrugateSide(configurator, byId, kind, ids, true)
         : normaliseInks(byId, ids)
       : ids;
   const choices = { ...state.choices };

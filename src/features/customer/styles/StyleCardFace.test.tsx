@@ -92,4 +92,39 @@ describe("a style card", () => {
     expect(within(row).getAllByRole("listitem")).toHaveLength(1);
     expect(row.textContent).toContain("ผลิต 5–10 วัน");
   });
+
+  it("C0: spec row from the API's fit range and MOQ, the 'ใส่ได้' pill only with a fit, no lead time", () => {
+    const style = {
+      ...base,
+      fitRange: { minLMm: 50, maxLMm: 300, minWMm: 40, maxWMm: 200, minHMm: 20, maxHMm: 150 },
+      moqUnits: 500,
+      fit: { insideLMm: 105, insideWMm: 85, insideHMm: 55 },
+    } as unknown as StyleCard;
+    const { container } = face(style);
+    const specs = container.querySelector("[data-card-specs]");
+    expect(specs?.textContent).toContain("2–30 ซม.");
+    expect(specs?.textContent).toContain("ขั้นต่ำ 500");
+    expect(container.querySelector("[data-fit]")?.textContent).toBe("ใส่ได้");
+  });
+
+  it("C0: no fit, no pill; a dieline crossfade only over a real picture", () => {
+    const withDieline = { ...base, dielineUrl: "/x.svg" } as unknown as StyleCard;
+    const { container, unmount } = face(withDieline);
+    expect(container.querySelector("[data-fit]")).toBeNull();
+    // Without a photo the card already shows the drawing: no second one.
+    expect(container.querySelector("[data-hover-image]")).toBeNull();
+    unmount();
+    const photographed = { ...withDieline, thumbnailUrl: "https://files.example/t.webp" } as unknown as StyleCard;
+    const again = face(photographed);
+    expect(again.container.querySelector("[data-hover-image]")?.textContent).toBe("แบบคลี่");
+  });
+
+  it("C0b: a quote style shows the team's response time from the API, never an estimate; without it, no time", () => {
+    const timed = cardWords({ ...base, quoteResponseBusinessDays: 2 } as unknown as StyleCard, "th", t, format);
+    expect(timed.quoteHint).toBe("ทีมงานตอบภายใน 2 วันทำการ");
+    expect(timed.price).toBeUndefined();
+    const untimed = cardWords({ ...base, quoteResponseBusinessDays: null } as unknown as StyleCard, "th", t, format);
+    expect(untimed.quoteHint).toBe(th.library.cardQuoteHint);
+    expect(JSON.stringify([timed, untimed])).not.toMatch(/ประมาณ/);
+  });
 });

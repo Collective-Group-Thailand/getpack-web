@@ -16644,7 +16644,7 @@ export interface paths {
         head?: never;
         /**
          * Curate a style-library base
-         * @description Marketing / Admin curation (D-246): featured, hidden (never published, D-243), order, Thai / English names and descriptions, the getpack product type, search synonyms and use cases. Changing a name clears both name approvals (D-212). Needs `If-Match` from `admin.styles.get`. Audited; publishability recomputed.
+         * @description Marketing / Admin curation (D-246): featured, hidden (never published, D-243), order, Thai / English names and descriptions, the getpack product type, search synonyms and use cases, and the commercial data /styles shows (`commercial`: inside size range for the size search, MOQ, sustainability facts — styles redesign C0, DECISIONS-STAGE-A §4). Changing a name clears both name approvals (D-212). Needs `If-Match` from `admin.styles.get`. Audited; publishability recomputed.
          *
          *     Implements: D-241, D-242, D-243, D-246, D-212.
          */
@@ -16763,6 +16763,28 @@ export interface paths {
         get: operations["admin.styles.listVariants"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/styles/actions/backfill-fit-ranges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fill empty fit ranges from approved recipes
+         * @description C0b (owner decision 2026-10-28, DECISIONS-STAGE-A §9.1; curation D-246): each style whose inside fit range is empty gets the approved recipe’s size range (D-241, mm, inside basis; the style’s own material class, else what every complete class allows), through the same path as `admin.styles.update` — audited per style as `style_base.curated` with source `recipe`. A range the business entered is never overwritten; a range filled here earlier follows a newer approved recipe. Idempotent (a second run changes nothing); `dryRun` reports without writing.
+         *
+         *     Implements: D-241, D-242, D-243, D-246.
+         */
+        post: operations["admin.styles.backfillFitRanges"];
         delete?: never;
         options?: never;
         head?: never;
@@ -33432,7 +33454,7 @@ export interface paths {
         };
         /**
          * Browse the style library
-         * @description Published styles only — every listed style has at least one variant that is priced (instant or RFQ) and makeable by a partner (D-243). Facets with counts over the matching styles (category, family, closure, feature, use case, material class, price path), Thai / English search over names, codes and synonyms with typo tolerance, sorts `relevance` (with `q`), `popular`, `new`, `instant_first`, `name`, cursor pages (D-245). `favourite` is filled for a signed-in customer. No factory identity (D-050).
+         * @description Published styles only — every listed style has at least one variant that is priced (instant or RFQ) and makeable by a partner (D-243). Facets with counts over the matching styles (category, family, closure, feature, use case, material class, price path), Thai / English search over names, codes and synonyms with typo tolerance, sorts `relevance` (with `q`), `popular`, `new`, `instant_first`, `name`, cursor pages (D-245). `favourite` is filled for a signed-in customer. No factory identity (D-050). Styles redesign C0 (DECISIONS-STAGE-A §4): `size` keeps the styles a product of that outside size fits (inside = product + 5 mm per dimension, length/width may swap, within the entered inside range; incomplete ranges never match) and fills each card's `fit`; `meta.sizeSearchStyles` says how many styles have a range at all. Cards carry the entered `fitRange` and `moqUnits` and the rendered flat dieline (`dielineUrl`) when they exist.
          *
          *     Implements: D-245, D-246, D-243, D-050.
          */
@@ -37488,6 +37510,8 @@ export interface components {
             category: string;
             /** @example PK-TE-01 */
             code: string;
+            /** @description Commercial data shown on /styles (styles redesign C0) */
+            commercial: components["schemas"]["StyleCommercialDto"];
             /** @example M */
             complexity: string | null;
             /** @example Four side panels + glue flap; … */
@@ -37500,6 +37524,11 @@ export interface components {
             family: string;
             /** @example false */
             featured: boolean;
+            /**
+             * @description Where the fit range in `commercial` came from (C0b, DECISIONS-STAGE-A §9.1): `recipe` = filled from the approved recipe by the backfill (replaced by any value curation saves), `business` = entered by curation / the CSV (never overwritten by the backfill); null = no range. Read-only.
+             * @example null
+             */
+            fitRangeSource: components["schemas"]["StyleFitRangeSource"] | null;
             /** @example false */
             hidden: boolean;
             /**
@@ -60061,6 +60090,52 @@ export interface components {
             /** @example open */
             status: components["schemas"]["PeriodStatus"];
         };
+        FitRangeBackfillDto: {
+            /**
+             * @description Report what would change without writing
+             * @default false
+             * @example true
+             */
+            dryRun: boolean;
+        };
+        FitRangeBackfillResult: {
+            /**
+             * @description Styles with an approved recipe
+             * @example 122
+             */
+            considered: number;
+            /** @example false */
+            dryRun: boolean;
+            /**
+             * @description Codes whose empty range was filled from the recipe (source `recipe`)
+             * @example [
+             *       "PK-CB-01"
+             *     ]
+             */
+            filled: string[];
+            /**
+             * @description Codes left alone because the business entered their range
+             * @example []
+             */
+            keptBusiness: string[];
+            /**
+             * @description Codes whose recipe states no complete size range (stay out of the size search)
+             * @example [
+             *       "PK-CB-02"
+             *     ]
+             */
+            noRecipeRange: string[];
+            /**
+             * @description Codes whose earlier recipe range followed a newer approved recipe
+             * @example []
+             */
+            refreshed: string[];
+            /**
+             * @description Recipe ranges already in place
+             * @example 0
+             */
+            unchanged: number;
+        };
         FixedAssetDto: {
             /** @example 1000.00 */
             accumulatedDepreciation: string;
@@ -77689,6 +77764,18 @@ export interface components {
             inside: components["schemas"]["StorePrintSideDto"];
             outside: components["schemas"]["StorePrintSideDto"];
         };
+        StorePrintQuoteDto: {
+            /**
+             * @description Spot colours that may stand beside CMYK on this side (quote beyond `cmyk.addOn.maxColours`)
+             * @example 2
+             */
+            cmykAddOnMaxColours: number;
+            /**
+             * @description Spot colours that may be chosen on this side (quote beyond `spot.maxColours`)
+             * @example 2
+             */
+            spotMaxColours: number;
+        };
         StorePrintSelectionDto: {
             /**
              * @description `cmyk`: the "+ สีพิเศษ" colours chosen (empty without the add-on)
@@ -77721,6 +77808,8 @@ export interface components {
              *     ]
              */
             methods: components["schemas"]["PrintSideMethod"][];
+            /** @description C0b (owner decision 2026-10-28; D-443, B-API-6): colours a customer may still choose on this side beyond the instantly priced counts (`spot.maxColours`, `cmyk.addOn.maxColours`), up to the side’s offered spot inks. Never refused or trimmed: `store.quotes.calculate` answers `instant: false` with `reason: rfq_required` and the configurator offers the quotation request with the spec. Null when nothing lies beyond. */
+            quote: components["schemas"]["StorePrintQuoteDto"] | null;
             spot: components["schemas"]["StorePrintSpotDto"] | null;
         };
         StorePrintSpotDto: {
@@ -79008,6 +79097,11 @@ export interface components {
             category: string;
             /** @example PK-TE-01 */
             code: string;
+            /**
+             * @description Short-lived signed URL of the style's own rendered flat dieline (`dieline_svg` asset, D-270) for the card's hover view; null when the style has none
+             * @example null
+             */
+            dielineUrl: string | null;
             /** @example tuck_end */
             family: string;
             /**
@@ -79017,8 +79111,23 @@ export interface components {
             favourite: boolean | null;
             /** @example false */
             featured: boolean;
+            /**
+             * @description Only with the `size` search: the inside size recommended for the product; null otherwise
+             * @example null
+             */
+            fit: components["schemas"]["StyleFitDto"] | null;
+            /**
+             * @description The inside size range for the card spec row and the size search; null until all six bounds are entered
+             * @example null
+             */
+            fitRange: components["schemas"]["StyleFitRangeDto"] | null;
             /** @example paperboard */
             materialClass: string;
+            /**
+             * @description Minimum order quantity in pieces as entered by the business; null = not shown
+             * @example null
+             */
+            moqUnits: number | null;
             /** @example Tuck-end carton (configurable ends) */
             nameEn: string;
             /** @example กล่องฝาเสียบ (ปรับฝาบน-ล่างได้) */
@@ -79036,6 +79145,11 @@ export interface components {
             photo: components["schemas"]["StylePhotoDto"] | null;
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
+            /**
+             * @description C0b (D-100, D-220, DECISIONS-STAGE-A §9.3): the first-response time of a quotation request for this style, in working days — `rfq.sla_business_hours` of its product type (platform fallback) in whole working days, the way the RFQ due time is counted (every hour of a working day). Null when the setting is not set or the style has no product type: then no timing is shown. Never a price or an estimate.
+             * @example 2
+             */
+            quoteResponseBusinessDays: number | null;
             /**
              * @description Only once Prepress verified it (D-211)
              * @example null
@@ -79054,6 +79168,52 @@ export interface components {
              */
             variantCount: number;
         };
+        StyleCommercialDto: {
+            /**
+             * @description Certification codes (snake_case), e.g. `fsc`
+             * @example []
+             */
+            certifications: string[];
+            /**
+             * @description Unit: mm.
+             * @example null
+             */
+            fitMaxHMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example null
+             */
+            fitMaxLMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example null
+             */
+            fitMaxWMm: number | null;
+            /**
+             * @description Inside height, minimum. Unit: mm.
+             * @example null
+             */
+            fitMinHMm: number | null;
+            /**
+             * @description Inside length, minimum. Unit: mm.
+             * @example null
+             */
+            fitMinLMm: number | null;
+            /**
+             * @description Inside width, minimum. Unit: mm.
+             * @example null
+             */
+            fitMinWMm: number | null;
+            /**
+             * @description Minimum order quantity (pieces)
+             * @example null
+             */
+            moqUnits: number | null;
+            /** @example null */
+            plasticFree: boolean | null;
+            /** @example null */
+            recyclable: boolean | null;
+        };
         StyleCoverageDto: {
             categories: components["schemas"]["CategoryCoverageDto"][];
             /**
@@ -79069,6 +79229,11 @@ export interface components {
             axes: components["schemas"]["StyleAxisDto"][];
             /** @example folding_carton */
             category: string;
+            /**
+             * @description Certification codes as entered by the business
+             * @example []
+             */
+            certifications: string[];
             /** @example PK-TE-01 */
             code: string;
             /** @example Four side panels + glue flap; … */
@@ -79077,6 +79242,11 @@ export interface components {
             descriptionEn: string | null;
             /** @example null */
             descriptionTh: string | null;
+            /**
+             * @description Short-lived signed URL of the style's own rendered flat dieline (`dieline_svg` asset, D-270) for the card's hover view; null when the style has none
+             * @example null
+             */
+            dielineUrl: string | null;
             /** @example tuck_end */
             family: string;
             /**
@@ -79086,9 +79256,24 @@ export interface components {
             favourite: boolean | null;
             /** @example false */
             featured: boolean;
+            /**
+             * @description Only with the `size` search: the inside size recommended for the product; null otherwise
+             * @example null
+             */
+            fit: components["schemas"]["StyleFitDto"] | null;
+            /**
+             * @description The inside size range for the card spec row and the size search; null until all six bounds are entered
+             * @example null
+             */
+            fitRange: components["schemas"]["StyleFitRangeDto"] | null;
             leadTime: components["schemas"]["LeadTimeRangeDto"] | null;
             /** @example paperboard */
             materialClass: string;
+            /**
+             * @description Minimum order quantity in pieces as entered by the business; null = not shown
+             * @example null
+             */
+            moqUnits: number | null;
             /** @example Tuck-end carton (configurable ends) */
             nameEn: string;
             /** @example กล่องฝาเสียบ (ปรับฝาบน-ล่างได้) */
@@ -79104,6 +79289,11 @@ export interface components {
             options: string[];
             /** @example null */
             photo: components["schemas"]["StylePhotoDto"] | null;
+            /**
+             * @description As entered by the business; null = unknown
+             * @example null
+             */
+            plasticFree: boolean | null;
             /** @example instant */
             pricePath: components["schemas"]["QuoteMode"];
             /**
@@ -79111,6 +79301,16 @@ export interface components {
              * @example folding_carton
              */
             productTypeCode: string | null;
+            /**
+             * @description C0b (D-100, D-220, DECISIONS-STAGE-A §9.3): the first-response time of a quotation request for this style, in working days — `rfq.sla_business_hours` of its product type (platform fallback) in whole working days, the way the RFQ due time is counted (every hour of a working day). Null when the setting is not set or the style has no product type: then no timing is shown. Never a price or an estimate.
+             * @example 2
+             */
+            quoteResponseBusinessDays: number | null;
+            /**
+             * @description As entered by the business; null = unknown
+             * @example null
+             */
+            recyclable: boolean | null;
             /**
              * @description Only once Prepress verified it (D-211)
              * @example null
@@ -79163,6 +79363,39 @@ export interface components {
             addedAt: string;
             style: components["schemas"]["StyleCardDto"];
         };
+        StyleFitDto: {
+            /** @example 85 */
+            insideHMm: number;
+            /**
+             * @description Recommended inside length. Unit: mm.
+             * @example 205
+             */
+            insideLMm: number;
+            /** @example 155 */
+            insideWMm: number;
+        };
+        StyleFitRangeDto: {
+            /** @example 150 */
+            maxHMm: number;
+            /** @example 300 */
+            maxLMm: number;
+            /** @example 200 */
+            maxWMm: number;
+            /** @example 20 */
+            minHMm: number;
+            /**
+             * @description Inside length, minimum. Unit: mm.
+             * @example 50
+             */
+            minLMm: number;
+            /** @example 40 */
+            minWMm: number;
+        };
+        /**
+         * @description Where the fit range in `commercial` came from (C0b, DECISIONS-STAGE-A §9.1): `recipe` = filled from the approved recipe by the backfill (replaced by any value curation saves), `business` = entered by curation / the CSV (never overwritten by the backfill); null = no range. Read-only.
+         * @enum {string}
+         */
+        StyleFitRangeSource: "recipe" | "business";
         StyleImportFileDto: {
             /**
              * Format: uuid
@@ -79347,7 +79580,16 @@ export interface components {
             data: components["schemas"]["StyleCardDto"][];
             /** @description Counts over the styles matching the query and filters */
             facets: components["schemas"]["StyleFacetsDto"];
-            meta: components["schemas"]["CursorMeta"];
+            meta: components["schemas"]["StyleListMeta"];
+        };
+        StyleListMeta: {
+            /** @example eyJpZCI6IjEyMyJ9 */
+            nextCursor: string | null;
+            /**
+             * @description Published styles with a complete inside size range — the size search is offered only when this is above 0
+             * @example 0
+             */
+            sizeSearchStyles: number;
         };
         /**
          * @description Which approval this is (D-212): Marketing for the wording, Prepress for technical terms
@@ -82842,6 +83084,8 @@ export interface components {
             widthMm?: number | null;
         };
         UpdateStyleDto: {
+            /** @description Replaces the commercial data shown on /styles (styles redesign C0): every field, null = unknown. Each min must not exceed its max. */
+            commercial?: components["schemas"]["StyleCommercialDto"];
             /** @example A folding carton for cosmetics */
             descriptionEn?: string | null;
             /** @example กล่องกระดาษพับสำหรับเครื่องสำอาง */
@@ -205414,12 +205658,25 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -205574,12 +205831,25 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -205761,12 +206031,25 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -205928,12 +206211,25 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206108,12 +206404,25 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206294,12 +206603,25 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206468,12 +206790,25 @@ export interface operations {
                      * @example {
                      *       "category": "folding_carton",
                      *       "code": "PK-TE-01",
+                     *       "commercial": {
+                     *         "certifications": [],
+                     *         "fitMaxHMm": null,
+                     *         "fitMaxLMm": null,
+                     *         "fitMaxWMm": null,
+                     *         "fitMinHMm": null,
+                     *         "fitMinLMm": null,
+                     *         "fitMinWMm": null,
+                     *         "moqUnits": null,
+                     *         "plasticFree": null,
+                     *         "recyclable": null
+                     *       },
                      *       "complexity": "M",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
                      *       "family": "tuck_end",
                      *       "featured": false,
+                     *       "fitRangeSource": null,
                      *       "hidden": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ae001",
                      *       "materialClass": "paperboard",
@@ -206699,6 +207034,113 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.styles.backfillFitRanges": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FitRangeBackfillDto"];
+            };
+        };
+        responses: {
+            /** @description What was (or, with `dryRun`, would be) filled */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "considered": 122,
+                     *       "dryRun": true,
+                     *       "filled": [
+                     *         "PK-CB-01"
+                     *       ],
+                     *       "keptBusiness": [],
+                     *       "noRecipeRange": [
+                     *         "PK-CB-02"
+                     *       ],
+                     *       "refreshed": [],
+                     *       "unchanged": 0
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FitRangeBackfillResult"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -291794,6 +292236,7 @@ export interface operations {
                      *             "none",
                      *             "spot"
                      *           ],
+                     *           "quote": null,
                      *           "spot": {
                      *             "inkColourIds": [
                      *               "0192f3a0-7c1e-7d2a-9b1f-00000000e101"
@@ -291822,6 +292265,10 @@ export interface operations {
                      *             "spot",
                      *             "cmyk"
                      *           ],
+                     *           "quote": {
+                     *             "cmykAddOnMaxColours": 2,
+                     *             "spotMaxColours": 2
+                     *           },
                      *           "spot": {
                      *             "inkColourIds": [
                      *               "0192f3a0-7c1e-7d2a-9b1f-00000000e101",
@@ -328252,10 +328699,14 @@ export interface operations {
                      *         "style": {
                      *           "category": "folding_carton",
                      *           "code": "PK-TE-01",
+                     *           "dielineUrl": null,
                      *           "family": "tuck_end",
                      *           "favourite": true,
                      *           "featured": false,
+                     *           "fit": null,
+                     *           "fitRange": null,
                      *           "materialClass": "paperboard",
+                     *           "moqUnits": null,
                      *           "nameEn": "Tuck-end carton (configurable ends)",
                      *           "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *           "options": [
@@ -328264,6 +328715,7 @@ export interface operations {
                      *           ],
                      *           "photo": null,
                      *           "pricePath": "instant",
+                     *           "quoteResponseBusinessDays": null,
                      *           "referenceCode": null,
                      *           "startingPrice": {
                      *             "catalogProductSlug": "dev-tuck-end-box",
@@ -328511,8 +328963,11 @@ export interface operations {
                 pricePath?: components["schemas"]["QuoteMode"];
                 /** @description Thai / English search over names, codes and synonyms (typos tolerated) */
                 q?: string;
+                /** @description Size search (styles redesign C0, DECISIONS-STAGE-A §4): the outside size of the customer's product, length × width × height in mm. Keeps the styles whose entered inside range takes it plus 5 mm per dimension (length and width may swap); styles without a complete range are left out. Each card then carries `fit`. */
+                size?: string;
                 /** @description Default: relevance with `q`, else popular */
                 sort?: components["schemas"]["StyleSort"];
+                /** @description One use case, or groups of them (styles redesign C0, the "ช่วยเลือกให้หน่อย" wizard): values joined by `,` are alternatives, groups joined by `;` must all hold — `food,snack;shipping,ecommerce` = (food or snack) and (shipping or e-commerce). A single value works as before. */
                 useCase?: string;
             };
             header?: {
@@ -328540,10 +328995,14 @@ export interface operations {
                      *         {
                      *           "category": "folding_carton",
                      *           "code": "PK-TE-01",
+                     *           "dielineUrl": null,
                      *           "family": "tuck_end",
                      *           "favourite": null,
                      *           "featured": false,
+                     *           "fit": null,
+                     *           "fitRange": null,
                      *           "materialClass": "paperboard",
+                     *           "moqUnits": null,
                      *           "nameEn": "Tuck-end carton (configurable ends)",
                      *           "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *           "options": [
@@ -328552,6 +329011,7 @@ export interface operations {
                      *           ],
                      *           "photo": null,
                      *           "pricePath": "instant",
+                     *           "quoteResponseBusinessDays": null,
                      *           "referenceCode": null,
                      *           "startingPrice": {
                      *             "catalogProductSlug": "dev-tuck-end-box",
@@ -328608,7 +329068,8 @@ export interface operations {
                      *         "useCase": []
                      *       },
                      *       "meta": {
-                     *         "nextCursor": null
+                     *         "nextCursor": null,
+                     *         "sizeSearchStyles": 0
                      *       }
                      *     }
                      */
@@ -328707,15 +329168,20 @@ export interface operations {
                      *         }
                      *       ],
                      *       "category": "folding_carton",
+                     *       "certifications": [],
                      *       "code": "PK-TE-01",
                      *       "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *       "descriptionEn": null,
                      *       "descriptionTh": null,
+                     *       "dielineUrl": null,
                      *       "family": "tuck_end",
                      *       "favourite": null,
                      *       "featured": false,
+                     *       "fit": null,
+                     *       "fitRange": null,
                      *       "leadTime": null,
                      *       "materialClass": "paperboard",
+                     *       "moqUnits": null,
                      *       "nameEn": "Tuck-end carton (configurable ends)",
                      *       "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *       "options": [
@@ -328723,8 +329189,11 @@ export interface operations {
                      *         "window:front_window"
                      *       ],
                      *       "photo": null,
+                     *       "plasticFree": null,
                      *       "pricePath": "instant",
                      *       "productTypeCode": "folding_carton",
+                     *       "quoteResponseBusinessDays": null,
+                     *       "recyclable": null,
                      *       "referenceCode": null,
                      *       "sizeRanges": [
                      *         {
@@ -328866,15 +329335,20 @@ export interface operations {
                      *           }
                      *         ],
                      *         "category": "folding_carton",
+                     *         "certifications": [],
                      *         "code": "PK-TE-01",
                      *         "construction": "Four side panels + glue flap; top and bottom closures chosen from the tuck/lock/seal set.",
                      *         "descriptionEn": null,
                      *         "descriptionTh": null,
+                     *         "dielineUrl": null,
                      *         "family": "tuck_end",
                      *         "favourite": null,
                      *         "featured": false,
+                     *         "fit": null,
+                     *         "fitRange": null,
                      *         "leadTime": null,
                      *         "materialClass": "paperboard",
+                     *         "moqUnits": null,
                      *         "nameEn": "Tuck-end carton (configurable ends)",
                      *         "nameTh": "กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)",
                      *         "options": [
@@ -328882,8 +329356,11 @@ export interface operations {
                      *           "window:front_window"
                      *         ],
                      *         "photo": null,
+                     *         "plasticFree": null,
                      *         "pricePath": "instant",
                      *         "productTypeCode": "folding_carton",
+                     *         "quoteResponseBusinessDays": null,
+                     *         "recyclable": null,
                      *         "referenceCode": null,
                      *         "sizeRanges": [
                      *           {

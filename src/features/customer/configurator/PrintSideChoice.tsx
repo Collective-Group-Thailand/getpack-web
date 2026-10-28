@@ -12,12 +12,15 @@ import type { ChoiceGroup, StoreOption } from "./model";
 import { PriceSlot, useOptionFigures } from "./OptionFigure";
 import { inkChoice, NO_MODEL_NONE, printKey, type OptionPrices } from "./option-prices";
 import {
+  addOnLimit,
+  beyondPriced,
   choiceOf,
   choiceValues,
   defaultIds,
   idsOfChoice,
   methodOf,
   sideModelOf,
+  spotLimit,
   withExtraInks,
   type PrintKind,
 } from "./print-model";
@@ -132,18 +135,35 @@ export function PrintSideChoice({ configurator, group, ids, onChange, byId, pric
   };
   const options = choiceValues(side, (id) => byId.has(id)).map(optionOf);
 
-  // Extra inks beside the method: spot colours past the first (N > 1), or the CMYK add-on.
+  // Extra inks beside the method: spot colours past the first (N > 1), or the CMYK add-on — and, C0b
+  // (DECISIONS-STAGE-A §9.5), more than the instant price covers, up to the API's `quote` counts: never
+  // refused or trimmed, the calculation answers `rfq_required` and the dock offers the quotation request.
+  const spotMax = spotLimit(side);
+  const addOnMax = addOnLimit(side);
+  const pricedAddOn = side.cmyk?.addOn.enabled ? side.cmyk.addOn.maxColours : 0;
   const extra =
-    method === "spot" && maxSpot > 1
-      ? { ids: spotIds, max: maxSpot, min: 1, caption: t("print.spotPick", { max: maxSpot }) }
-      : method === "cmyk" && side.cmyk?.addOn.enabled
+    method === "spot" && spotMax > 1
+      ? {
+          ids: spotIds,
+          max: spotMax,
+          min: 1,
+          caption:
+            spotMax > maxSpot
+              ? t("print.spotPickQuote", { max: spotMax, priced: maxSpot })
+              : t("print.spotPick", { max: maxSpot }),
+        }
+      : method === "cmyk" && addOnMax > 0
         ? {
             ids: spotIds,
-            max: side.cmyk.addOn.maxColours,
+            max: addOnMax,
             min: 0,
-            caption: t("print.addOn", { max: side.cmyk.addOn.maxColours }),
+            caption:
+              addOnMax > pricedAddOn
+                ? t("print.addOnQuote", { max: addOnMax })
+                : t("print.addOn", { max: pricedAddOn }),
           }
         : null;
+  const beyond = beyondPriced(side, ids);
   const own = side.cmyk && method === "cmyk" ? ids.filter((id) => id !== side.cmyk!.inkColourId) : ids;
 
   return (
@@ -173,6 +193,11 @@ export function PrintSideChoice({ configurator, group, ids, onChange, byId, pric
             );
           })}
         </fieldset>
+      ) : null}
+      {beyond ? (
+        <p className="text-warning-subtle-fg text-sm" role="status" data-print-beyond="">
+          {t("print.beyondNote")}
+        </p>
       ) : null}
     </div>
   );

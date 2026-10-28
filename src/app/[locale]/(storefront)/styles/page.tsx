@@ -42,7 +42,12 @@ import {
   toQuery,
   type ListParams,
 } from "@/features/customer/styles/query";
+import { landingOfUseCase, PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
 import { QuickViewHost } from "@/features/customer/styles/QuickViewHost";
+import { cmOfSize } from "@/features/customer/styles/size";
+import { TrustBlock } from "@/features/customer/styles/TrustBlock";
+import { WizardButton } from "@/features/customer/styles/WizardButton";
+import { wizardSummary } from "@/features/customer/styles/wizard-labels";
 import { StudioStyleLibrary } from "@/features/customer/styles/StudioStyleLibrary";
 import { CompareToggle, FavouriteToggle } from "@/features/customer/styles/StyleCardActions";
 import { cardWords, StyleCardFace } from "@/features/customer/styles/StyleCardFace";
@@ -54,6 +59,7 @@ import { getFormat } from "@/features/shared/format/server";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { readAccessToken } from "@/lib/auth/session";
+import { featureFlags } from "@/lib/env/server";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/structured-data";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -75,9 +81,11 @@ function landingOf(params: ListParams): string | null {
     params.pricePath ||
     params.q ||
     params.size;
-  return useCase && more.length === 0 && !others && !params.category && isUseCase(useCase)
-    ? forUseCaseHref(useCase)
-    : null;
+  if (!(useCase && more.length === 0 && !others && !params.wizard && !params.category && isUseCase(useCase)))
+    return null;
+  // C0: with the packaging landing pages on, a use case that has one canonicalises there.
+  const landing = featureFlags.packagingLandings ? landingOfUseCase(useCase) : undefined;
+  return landing ? packagingHref(landing.slug) : forUseCaseHref(useCase);
 }
 
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
@@ -142,7 +150,7 @@ export default async function StylesPage({
   }));
 
   const head = (
-    <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,35rem)] lg:gap-x-12 lg:items-end">
+    <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,35rem)] lg:items-end lg:gap-x-12">
       <div>
         <h1 className="text-3xl leading-tight font-bold md:text-[2.5rem]">{t("list.heading")}</h1>
         <p className="text-muted mt-2 max-w-2xl">
@@ -154,7 +162,16 @@ export default async function StylesPage({
           {t("library.lede")}
         </p>
       </div>
-      {variantsView ? null : <LibrarySearch params={query} action={action} quickTerms={quickTerms} />}
+      {variantsView ? null : (
+        <LibrarySearch
+          params={query}
+          action={action}
+          quickTerms={quickTerms}
+          // C0: the size tab only when the API has styles with a fit range.
+          sizeSearch={(list?.meta.sizeSearchStyles ?? 0) > 0}
+          wizard={featureFlags.stylesWizard ? <WizardButton params={query} /> : undefined}
+        />
+      )}
     </header>
   );
   const crumbs = (
@@ -374,6 +391,8 @@ export default async function StylesPage({
               />
             )}
 
+            <TrustBlock trust={settings?.trust} locale={locale} />
+
             {/* "ไม่เจอแบบที่ต้องการ" (U3.6, D-273): a structure the library lacks, asked of getpack's designers. */}
             <Callout className="mt-6" icon="ruler" title={t("library.notFoundTitle")}>
               <p>{t("library.notFoundBody")}</p>
@@ -383,6 +402,7 @@ export default async function StylesPage({
             </Callout>
           </section>
         </div>
+        {featureFlags.packagingLandings ? <PackagingLinks t={t} /> : null}
         <LibraryLinks />
         <CompareTray />
         <QuickViewHost
@@ -393,12 +413,37 @@ export default async function StylesPage({
               ? locale === "en"
                 ? (settings.trust.taxInvoiceNote.en ?? settings.trust.taxInvoiceNote.th)
                 : settings.trust.taxInvoiceNote.th
-              : null
+              : // C0b: the decision-backed default (D-010, D-125) until staff enter their own wording.
+                t("library.trustTaxInvoiceDefault")
           }
         />
         <LineFloat apiLineOaId={support?.lineOaId} />
       </div>
     </CompareLimitProvider>
+  );
+}
+
+/** "เลือกตามการใช้งาน" (C0): the packaging landing pages, under their flag. */
+function PackagingLinks({ t }: { t: Awaited<ReturnType<typeof getTranslations<"styles">>> }) {
+  return (
+    <section aria-labelledby="library-landings" className="mt-12">
+      <h2 id="library-landings" className="text-lg font-semibold">
+        {t("library.landingTitle")}
+      </h2>
+      <p className="text-muted mb-3 text-sm">{t("library.landingBody")}</p>
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {PACKAGING_LANDINGS.map((landing) => (
+          <li key={landing.slug}>
+            <Link
+              href={packagingHref(landing.slug)}
+              className="border-border hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-card block border px-3 py-2.5 text-sm font-medium outline-none focus-visible:ring-2"
+            >
+              {t(`useCasePages.${landing.useCase}.title` as never)}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -421,6 +466,21 @@ function ActiveFilters({
   t: Awaited<ReturnType<typeof getTranslations<"styles">>>;
 }) {
   const chips: { key: string; label: string; href: string }[] = [];
+  const size = cmOfSize(params.size);
+  if (size)
+    chips.push({
+      key: "size",
+      label: t("library.sizeChip", { ...size }),
+      href: listHref({ ...params, size: undefined, style: undefined }),
+    });
+  if (params.wizard)
+    chips.push({
+      key: "wiz",
+      label: t("library.wizardChip", {
+        answers: wizardSummary(params.wizard, (key) => t(key as never)) || t("library.wizardAll"),
+      }),
+      href: listHref({ ...params, wizard: undefined, style: undefined }),
+    });
   if (params.pricePath)
     chips.push({
       key: "price",

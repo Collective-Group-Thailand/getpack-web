@@ -223,7 +223,11 @@ export default async function StylePage({ params, searchParams }: { params: Para
           style={style}
           name={name}
           initialCode={chosen}
-          actions={{ productSlug: style.startingPrice?.catalogProductSlug ?? null, rfqHref: quoteHref }}
+          actions={{
+            productSlug: style.startingPrice?.catalogProductSlug ?? null,
+            rfqHref: quoteHref,
+            quoteResponseDays: style.quoteResponseBusinessDays,
+          }}
           dieline={{
             sizeRanges: style.sizeRanges,
             signedIn,

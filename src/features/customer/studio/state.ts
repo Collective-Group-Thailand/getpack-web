@@ -1,5 +1,16 @@
-import { groupsOf, isProcessInk, optionsById, type Configurator, type StoreOption } from "@/features/customer/configurator/model";
-import { isCorrugate, normaliseCorrugateSide } from "@/features/customer/configurator/print-model";
+import {
+  groupsOf,
+  isProcessInk,
+  optionsById,
+  type Configurator,
+  type StoreOption,
+} from "@/features/customer/configurator/model";
+import {
+  isCorrugate,
+  normaliseCorrugateSide,
+  sideModelOf,
+  spotLimit,
+} from "@/features/customer/configurator/print-model";
 import { initialState, NO_DIMS, type ConfiguratorState } from "@/features/customer/configurator/state";
 import { insideSize } from "@/features/designer/document";
 import type { DesignContent, DesignSpec, StudioChoices } from "@/features/designer/types";
@@ -126,5 +137,62 @@ export function stateForDesign(
         : configurator.design.options.includes("online_designer")
           ? "online_designer"
           : base.designOption,
+  };
+}
+
+/**
+ * Spot colours the price leaves out (C0, never trimmed silently): the artwork's flat colours
+ * against the spot inks the spec actually prices on its printed sides — after the flexo limit
+ * (D-278), the inks the product offers and a corrugate side's print model (D-443). `null` when
+ * nothing is left out: a side priced with the process (CMYK) ink covers every colour.
+ *
+ * `cmyk` / `more` say which way out exists: the product offers a CMYK ink, or enough spot inks
+ * within the limit to price one per colour (the flexo method). On corrugate (C0b, DECISIONS-STAGE-A
+ * §9.5) more colours than the print model prices at once are a quotation: `more` is offered when the
+ * side's model lets the customer choose that many (`quote.spotMaxColours`), and `quote` says the
+ * result goes to "ขอใบเสนอราคา" (the calculation answers `rfq_required`).
+ */
+export function spotShortfall(
+  configurator: Configurator,
+  spec: DesignSpec,
+  content: DesignContent,
+  maxSpot: number | null = null,
+): { needed: number; priced: number; cmyk: boolean; more: boolean; quote: boolean } | null {
+  const need = inferPrint(content);
+  // Four or more is full colour (a photo or > 3 colours): that is the CMYK question, not a spot shortfall.
+  if (!need.printed || need.colours >= 4 || spec.studio?.printMethod === "none") return null;
+  const state = stateForDesign(configurator, spec, content, 1, maxSpot);
+  const byId = optionsById(configurator);
+  const inks = groupsOf(configurator).find((g) => g.kind === "print_front")?.options ?? [];
+  let priced: number | null = null;
+  for (const kind of ["print_front", "print_back"] as const) {
+    const ids = state.choices[kind] ?? [];
+    if (ids.length === 0) continue;
+    if (
+      ids.some((id) => {
+        const o = byId.get(id);
+        return o ? isProcessInk(o) : false;
+      })
+    )
+      return null;
+    priced = priced === null ? ids.length : Math.min(priced, ids.length);
+  }
+  if (priced === null || priced >= need.colours) return null;
+  const spots = inks.filter((ink) => !isProcessInk(ink)).length;
+  const corrugate = isCorrugate(configurator);
+  const withinRule = spots >= need.colours && (maxSpot === null || maxSpot >= need.colours);
+  // Corrugate: every printed side's model must let the customer choose that many colours (priced or quoted).
+  const sidesAllow = (["print_front", "print_back"] as const)
+    .filter((kind) => (state.choices[kind] ?? []).length > 0)
+    .every((kind) => {
+      const side = sideModelOf(configurator, kind);
+      return side ? spotLimit(side) >= need.colours : false;
+    });
+  return {
+    needed: need.colours,
+    priced,
+    cmyk: inks.some((ink) => isProcessInk(ink)),
+    more: withinRule && (!corrugate || sidesAllow),
+    quote: corrugate,
   };
 }

@@ -16,16 +16,18 @@ import { STYLES_HREF } from "./paths";
  * | `feat`  | feature options `axis:value`    | `feature`                 |
  * | `fam`   | structure family                | `family`                  |
  * | `eco`   | eco claims, comma list          | — (no API facet yet)      |
- * | `size`  | `LxWxH` product size, mm        | — (no API fit filter yet) |
+ * | `size`  | `LxWxH` product size, mm        | `size` (C0 fit filter)    |
+ * | `wiz`   | wizard answers `i:a,b;p:ship`   | `useCase` groups (C0)     |
  * | `price` | `instant` (the switch) / `rfq`  | `pricePath`               |
  * | `sort`  | order; the default is omitted   | `sort`                    |
  * | `page`  | 2–4: how many 24s are shown     | `limit` (24 × page)       |
  * | `style` | the quick view that is open     | — (a client overlay)      |
  *
  * `view=variants` (alias `view=all`, ruling C6) is the other view and lives in `variant-query.ts`.
- * `eco` and `size` are read and written so a link survives, but nothing sends them to the API
- * until it has the matching facet and fit filter — they narrow nothing, so they do not count as
- * filters. Cursor pagination stays the API's: `page` only says how many cards a reload starts with.
+ * `eco` is read and written so a link survives, but nothing sends it to the API until it has the
+ * matching facet — it narrows nothing, so it does not count as a filter. `size` (C0) goes to the
+ * API's fit filter; `wiz` (C0, the "ช่วยเลือกให้หน่อย" answers) becomes `useCase` groups. Cursor
+ * pagination stays the API's: `page` only says how many cards a reload starts with.
  *
  * Defaults are never written. The earlier long names (`category`, `useCase`, `pricePath`, …) are
  * still read, so links shared before the redesign keep working; they are written short.
@@ -74,8 +76,10 @@ export interface ListParams {
   family: string[];
   /** Eco claims; no API facet yet, carried in the URL only. */
   eco: string[];
-  /** `LxWxH` in mm; no API fit filter yet, carried in the URL only. */
+  /** `LxWxH`, the outside of the customer's product in mm (C0 size search). */
   size?: string;
+  /** The wizard's answers (C0): what goes in (use cases, `*` = anything) and where the box goes. */
+  wizard?: WizardAnswers;
   /** 2…`MAX_PAGE`: the first page is the default and never written. */
   page?: number;
   q?: string;
@@ -84,11 +88,74 @@ export interface ListParams {
   style?: string;
 }
 
+/** Where the box goes (the wizard's second question) → the use cases that stand for it (prototype `PLACE`). */
+export const WIZARD_PLACES = {
+  ship: ["shipping", "ecommerce"],
+  shelf: ["retail", "branding"],
+  gift: ["gift", "luxury"],
+  serve: ["food", "snack"],
+} as const;
+export type WizardPlace = keyof typeof WIZARD_PLACES;
+
+/** What goes in (the wizard's first question) → its use cases; `*` = anything (prototype `WZ.items`). */
+export const WIZARD_ITEMS = {
+  food: ["food"],
+  snack: ["snack", "bakery"],
+  beverage: ["beverage"],
+  tea_coffee: ["tea_coffee"],
+  cosmetics: ["cosmetics"],
+  apparel: ["apparel"],
+  gift: ["gift"],
+  "*": [],
+} as const;
+export type WizardItem = keyof typeof WIZARD_ITEMS;
+
+export interface WizardAnswers {
+  items: WizardItem[];
+  place: WizardPlace[];
+}
+
+const isItem = (v: string): v is WizardItem => Object.hasOwn(WIZARD_ITEMS, v);
+const isPlace = (v: string): v is WizardPlace => Object.hasOwn(WIZARD_PLACES, v);
+
+/** `i:food,snack;p:ship` → answers; nothing usable → undefined. */
+export function readWizard(value: string | undefined): WizardAnswers | undefined {
+  if (!value) return undefined;
+  const out: WizardAnswers = { items: [], place: [] };
+  for (const part of value.split(";")) {
+    const [key, list = ""] = part.split(":");
+    const values = [...new Set(list.split(",").map((v) => v.trim()))];
+    if (key === "i") out.items = values.filter(isItem);
+    if (key === "p") out.place = values.filter(isPlace);
+  }
+  return out.items.length || out.place.length ? out : undefined;
+}
+
+export function writeWizard(answers: WizardAnswers | undefined): string | undefined {
+  if (!answers) return undefined;
+  const parts = [
+    answers.items.length ? `i:${[...answers.items].sort().join(",")}` : null,
+    answers.place.length ? `p:${[...answers.place].sort().join(",")}` : null,
+  ].filter(Boolean);
+  return parts.length ? parts.join(";") : undefined;
+}
+
+/**
+ * The API's `useCase` for a chosen use case and the wizard's answers: groups joined by `;` must all
+ * hold, values in a group are alternatives. Anything (`*`) adds no group.
+ */
+export function apiUseCase(useCase: string | undefined, wizard: WizardAnswers | undefined): string | undefined {
+  const items = [...new Set((wizard?.items ?? []).flatMap((i) => WIZARD_ITEMS[i]))];
+  const places = [...new Set((wizard?.place ?? []).flatMap((p) => WIZARD_PLACES[p]))];
+  const groups = [useCase ? [useCase] : [], items, places].filter((g) => g.length).map((g) => g.join(","));
+  return groups.length ? groups.join(";") : undefined;
+}
+
 type Raw = Record<string, string | string[] | undefined>;
 
 const MAX_VALUES = 20;
 const VALUE = /^[\p{L}\p{M}\p{N}_:+.-]{1,80}$/u;
-const SIZE = /^(\d{1,4}(?:\.\d{1,2})?)[x×](\d{1,4}(?:\.\d{1,2})?)[x×](\d{1,4}(?:\.\d{1,2})?)$/i;
+const SIZE = /^(\d{1,4}(?:\.\d)?)[x×](\d{1,4}(?:\.\d)?)[x×](\d{1,4}(?:\.\d)?)$/i;
 const STYLE_CODE = /^PK-[A-Z]+-\d+$/;
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)?.trim() || undefined;
@@ -121,6 +188,8 @@ export function readParams(raw: Raw): ListParams {
   out.eco = list(raw["eco"]);
   const size = first(raw["size"])?.match(SIZE);
   if (size && size.slice(1).every((n) => Number(n) > 0)) out.size = `${size[1]}x${size[2]}x${size[3]}`;
+  const wizard = readWizard(first(raw["wiz"]));
+  if (wizard) out.wizard = wizard;
   const page = Number(first(raw["page"]));
   if (Number.isInteger(page) && page >= 2) out.page = Math.min(page, MAX_PAGE);
 
@@ -139,6 +208,9 @@ export function toQuery(params: ListParams, limit: number): StyleListQuery {
   if (params.category) query.category = params.category;
   if (params.pricePath) query.pricePath = params.pricePath;
   for (const key of FACET_KEYS) if (params[key][0]) query[key] = params[key][0];
+  const useCase = apiUseCase(params.useCase[0], params.wizard);
+  if (useCase) query.useCase = useCase;
+  if (params.size) query.size = params.size;
   if (params.q) query.q = params.q;
   if (params.sort) query.sort = params.sort as StyleSort;
   return query;
@@ -152,12 +224,14 @@ export function toSearch(params: ListParams): string {
   if (params.size) search.set("size", params.size);
   for (const key of FACET_KEYS) if (params[key].length) search.set(URL_NAME[key], [...params[key]].sort().join(","));
   if (params.eco.length) search.set("eco", [...params.eco].sort().join(","));
+  const wiz = writeWizard(params.wizard);
+  if (wiz) search.set("wiz", wiz);
   if (params.pricePath) search.set(URL_NAME.pricePath, params.pricePath);
   if (params.sort && params.sort !== defaultSort(params)) search.set("sort", params.sort);
   if (params.page && params.page >= 2) search.set("page", String(Math.min(params.page, MAX_PAGE)));
   if (params.style) search.set("style", params.style);
   // Readable commas and colons: `close=tuck_bottom:crash_lock,window:front`.
-  return search.toString().replace(/%2C/g, ",").replace(/%3A/g, ":");
+  return search.toString().replace(/%2C/g, ",").replace(/%3A/g, ":").replace(/%3B/g, ";");
 }
 
 /** The order the API uses without `sort`: relevance for a search, otherwise popular. */
@@ -183,12 +257,11 @@ export function toggleValue(params: ListParams, key: FacetKey, value: string): L
   return { ...params, [key]: next };
 }
 
-/** Every filter cleared; the search words and the order stay. */
+/** Every filter cleared — the size search and the wizard's answers too; the search words and the order stay. */
 export const clearFilters = (params: ListParams): ListParams => ({
   ...emptyParams(),
   ...(params.q ? { q: params.q } : {}),
   ...(params.sort ? { sort: params.sort } : {}),
-  ...(params.size ? { size: params.size } : {}),
 });
 
 /** How many filters are on (each facet value and the instant switch; the category is the rail). */
@@ -199,7 +272,8 @@ export const activeFilterCount = (params: ListParams) =>
  * Whether the view is filtered or searched — such a view is not a page of its own to index. A
  * category alone is (its rail link is a plain page); the quick view is an overlay, not a filter.
  */
-export const isFiltered = (params: ListParams) => activeFilterCount(params) > 0 || !!params.q;
+export const isFiltered = (params: ListParams) =>
+  activeFilterCount(params) > 0 || !!params.q || !!params.size || !!params.wizard;
 
 /** The page a list of `shown` cards stands for: how many 24s a reload of the URL should start with. */
 export const pageFor = (shown: number) => Math.min(MAX_PAGE, Math.max(1, Math.ceil(shown / PAGE_SIZE)));

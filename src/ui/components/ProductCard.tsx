@@ -54,6 +54,11 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   imageActions?: React.ReactNode;
   /** A label at the picture's foot, start side ("18 ตัวเลือก"). */
   imageFoot?: React.ReactNode;
+  /**
+   * A second picture that cross-fades over the first on hover, on devices that hover only (a style's
+   * flat dieline, labelled "แบบคลี่"). Decorative: the card's name and first picture carry the meaning.
+   */
+  hoverImage?: { src: string; label: string };
   /** A compact list of facts under the title (size, minimum, lead time) — each item is the caller's. */
   facts?: React.ReactNode;
   /**
@@ -100,6 +105,7 @@ export function ProductCard({
   actions,
   imageActions,
   imageFoot,
+  hoverImage,
   facts,
   footer,
   reserveTitleLines = false,
@@ -164,6 +170,27 @@ export function ProductCard({
             )}
           </div>
         )}
+        {hoverImage && image ? (
+          <div
+            aria-hidden="true"
+            data-hover-image=""
+            className="bg-bg-subtle duration-base ease-standard pointer-events-none absolute inset-0 opacity-0 transition-opacity motion-reduce:transition-none [@media(hover:hover)]:group-hover:opacity-100"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- see the component comment */}
+            <img
+              src={hoverImage.src}
+              alt=""
+              width={800}
+              height={600}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-contain p-[12%]"
+            />
+            <span className="text-muted absolute end-3 bottom-3 tabular-nums text-[0.6875rem] font-medium tracking-wide">
+              {hoverImage.label}
+            </span>
+          </div>
+        ) : null}
         {badges ? (
           <div
             className={cn(
@@ -226,7 +253,9 @@ export function ProductCard({
           <div
             className={cn(
               "border-border relative z-10 mt-auto flex items-center justify-between gap-x-2 gap-y-1.5 border-t",
-              roomy ? "-mx-4 -mb-4 px-4 pt-3 pb-3.5 max-sm:flex-col max-sm:items-start" : "-mx-3 -mb-3 flex-wrap px-3 py-2.5",
+              roomy
+                ? "-mx-4 -mb-4 px-4 pt-3 pb-3.5 max-sm:flex-col max-sm:items-start"
+                : "-mx-3 -mb-3 flex-wrap px-3 py-2.5",
             )}
           >
             {footer}
