@@ -31,7 +31,8 @@ test("T7 find the job's stage and arrival date from LINE", async ({ page, journe
       page.getByRole("list", { name: "ความคืบหน้าของคำสั่งซื้อ" }).locator("[aria-current=step]"),
     ).toBeVisible();
     // The order promises a ship date and, from its quotation, an arrival.
-    await expect(page.getByText("กำหนดส่งจากโรงงาน").first()).toBeVisible();
+    // "กำหนดส่ง" since the factory wording sweep (Stage A, A1): customers are not shown the factory.
+    await expect(page.getByText(/^กำหนดส่ง/).first()).toBeVisible();
     await expect(page.getByText("คาดว่าจะได้รับ").first()).toBeVisible();
   });
 });

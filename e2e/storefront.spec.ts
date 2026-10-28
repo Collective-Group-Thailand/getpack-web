@@ -22,6 +22,8 @@ async function expectNoViolations(page: Page) {
         .map((animation) => animation.finished.catch(() => undefined)),
     ),
   );
+  // Live prices dim while they load (`aria-busy`); audit what the page settles on.
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
   expect(
     violations,

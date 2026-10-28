@@ -60,6 +60,8 @@ const zoneEnv = {
   NEXT_PUBLIC_GTM_ID: "GTM-TEST0000",
   // getpack Assistant built in (U5.5) so its panel is tested; production builds leave it out (D-218).
   NEXT_PUBLIC_ASSISTANT: "1",
+  // The signed-in quote tray is the account's draft basket (D-447 §10.9); the mock answers the product ref.
+  FEATURE_RFQ_PRODUCT_REF: "1",
 };
 
 /** The same build against a real getpack-api: no mock, the API the integration stack started. */

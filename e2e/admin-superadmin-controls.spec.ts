@@ -41,7 +41,8 @@ test.describe("approval threshold (D-449 B)", () => {
   test("the Superadmin's proposal dialog has the auto-approve amount field", async ({ page }) => {
     await signInAsStaff(page, "superadmin");
     await gotoHydrated(page, `${HOSTS.admin}/approvals?tab=matrix`);
-    await page.getByRole("button", { name: "เสนอฉบับใหม่" }).first().click();
+    // A row with a proposal already pending offers the button disabled ("มีข้อเสนอรออนุมัติอยู่แล้ว").
+    await page.getByRole("button", { name: "เสนอฉบับใหม่", disabled: false }).first().click();
     await expect(page.getByLabel(/อนุมัติอัตโนมัติเมื่อยอดไม่เกิน/)).toBeVisible();
   });
 });
