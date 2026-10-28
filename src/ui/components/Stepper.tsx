@@ -109,7 +109,7 @@ export function Stepper({ steps, current, onSelect, labels, headingLevel = 3, cl
                       <span className="sr-only"> — {labels.complete}</span>
                     ) : null}
                     {step.status === "complete" && step.defaulted && labels.defaulted ? (
-                      <span className="bg-bg-subtle text-muted ms-2 rounded-control px-2 py-0.5 align-middle text-xs font-normal">
+                      <span className="bg-bg-subtle text-muted rounded-control ms-2 px-2 py-0.5 align-middle text-xs font-normal">
                         {labels.defaulted}
                       </span>
                     ) : null}

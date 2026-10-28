@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { trackConfigurator } from "@/lib/analytics/configurator";
 
-
 import type { ConfiguratorEventName, ConfiguratorEvents } from "@/lib/analytics/configurator";
 
 import { groupsOf, optionsById, type Configurator } from "./model";
@@ -14,7 +13,8 @@ import { POSTCODE, TARGET, type ConfiguratorState } from "./state";
 
 export type Emit = <K extends ConfiguratorEventName>(event: K, properties: ConfiguratorEvents[K]) => void;
 
-const same = (a: readonly string[] = [], b: readonly string[] = []) => a.length === b.length && a.every((id, i) => id === b[i]);
+const same = (a: readonly string[] = [], b: readonly string[] = []) =>
+  a.length === b.length && a.every((id, i) => id === b[i]);
 
 /**
  * The analytics events one change of the configuration stands for, derived from the state before and after it
@@ -36,7 +36,11 @@ export function emitChangeEvents(
   const codes = (ids: string[]) => ids.map((id) => byId.get(id)?.code ?? id).join(",") || "none";
 
   if (before.sizeMode !== after.sizeMode) emit("cfg_size_mode", { mode: after.sizeMode });
-  else if (after.sizeMode === "standard" && after.standardSizeCode && before.standardSizeCode !== after.standardSizeCode)
+  else if (
+    after.sizeMode === "standard" &&
+    after.standardSizeCode &&
+    before.standardSizeCode !== after.standardSizeCode
+  )
     emit("cfg_option_change", {
       step: "size",
       option: "size",

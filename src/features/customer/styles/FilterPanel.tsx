@@ -140,7 +140,7 @@ function FacetSection({
               <>
                 <span
                   aria-hidden="true"
-                  className="bg-primary text-primary-fg ms-2 inline-block rounded-control px-[7px] align-middle text-[0.72rem] leading-[18px] font-semibold tabular-nums"
+                  className="bg-primary text-primary-fg rounded-control ms-2 inline-block px-[7px] align-middle text-[0.72rem] leading-[18px] font-semibold tabular-nums"
                 >
                   {selected}
                 </span>

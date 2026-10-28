@@ -192,7 +192,7 @@ export function ProductCard({
               decoding="async"
               className="h-full w-full object-contain p-[12%]"
             />
-            <span className="text-muted absolute end-3 bottom-3 tabular-nums text-[0.6875rem] font-medium tracking-wide">
+            <span className="text-muted absolute end-3 bottom-3 text-[0.6875rem] font-medium tracking-wide tabular-nums">
               {hoverImage.label}
             </span>
           </div>

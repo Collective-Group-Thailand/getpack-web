@@ -77,9 +77,7 @@ describe("the quick view", () => {
   });
 
   it("offers the 'แบบคลี่' view only when a dieline asset exists", async () => {
-    await open(
-      detail({ assets: [{ kind: "dieline_svg", url: "https://files.example/d.svg", variantCode: null }] }),
-    );
+    await open(detail({ assets: [{ kind: "dieline_svg", url: "https://files.example/d.svg", variantCode: null }] }));
     expect(await screen.findByRole("radio", { name: "แบบคลี่" })).toBeInTheDocument();
   });
 

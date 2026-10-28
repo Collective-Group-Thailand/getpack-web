@@ -10,7 +10,10 @@ export type SupportDays = SupportHours["days"];
 
 export function formatSupportHours(
   hours: SupportHours | null | undefined,
-  words: { days: (days: SupportDays) => string; text: (parts: { days: string; open: string; close: string }) => string },
+  words: {
+    days: (days: SupportDays) => string;
+    text: (parts: { days: string; open: string; close: string }) => string;
+  },
 ): string | null {
   if (!hours || !hours.open || !hours.close) return null;
   return words.text({ days: words.days(hours.days), open: hours.open, close: hours.close });

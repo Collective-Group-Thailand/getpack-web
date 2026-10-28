@@ -70,7 +70,9 @@ const whole = (v: string): number | null | "bad" => {
 };
 
 /** The form as the PATCH body's `commercial`, or the reasons it cannot be saved. */
-export function toCommercial(form: CommercialForm): { value: Commercial; errors: [] } | { value: null; errors: FormError[] } {
+export function toCommercial(
+  form: CommercialForm,
+): { value: Commercial; errors: [] } | { value: null; errors: FormError[] } {
   const errors: FormError[] = [];
   const fit = {} as Record<FitKey, number | null>;
   for (const { dim, min, max } of DIMENSIONS) {
@@ -102,7 +104,9 @@ export function toCommercial(form: CommercialForm): { value: Commercial; errors:
 
 /** True when the form's fit range differs from the saved one (a save then makes it business data). */
 export function fitChanged(form: CommercialForm, saved: Commercial): boolean {
-  return DIMENSIONS.some(({ min, max }) => form.fit[min].trim() !== str(saved[min]) || form.fit[max].trim() !== str(saved[max]));
+  return DIMENSIONS.some(
+    ({ min, max }) => form.fit[min].trim() !== str(saved[min]) || form.fit[max].trim() !== str(saved[max]),
+  );
 }
 
 export interface DimensionSource {

@@ -36,7 +36,13 @@ describe("the trust section (C0)", () => {
         trust: {
           ...empty,
           certifications: [
-            { title: { th: "ใบรับรอง A", en: null }, number: "N-1", issuer: "ผู้ออก B", expiresOn: null, documentUrl: null },
+            {
+              title: { th: "ใบรับรอง A", en: null },
+              number: "N-1",
+              issuer: "ผู้ออก B",
+              expiresOn: null,
+              documentUrl: null,
+            },
           ],
           productionPhotos: [{ url: "https://files.example/p.webp", alt: { th: "งานพิมพ์", en: null } }],
         },
@@ -59,7 +65,13 @@ describe("the trust section (C0)", () => {
         trust: {
           ...empty,
           certifications: [
-            { title: { th: "ใบรับรอง A", en: null }, number: null, issuer: null, expiresOn: null, documentUrl: `/v1/store/style-library/documents/${id}` },
+            {
+              title: { th: "ใบรับรอง A", en: null },
+              number: null,
+              issuer: null,
+              expiresOn: null,
+              documentUrl: `/v1/store/style-library/documents/${id}`,
+            },
           ],
           foodGrade: [{ title: { th: "เอกสาร B", en: null }, documentUrl: "https://issuer.example/b.pdf" }],
           customerLogos: [{ name: "ร้าน C", logoUrl: `/v1/store/catalog/images/${id}` }],

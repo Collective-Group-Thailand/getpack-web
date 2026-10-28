@@ -246,7 +246,11 @@ export async function SiteHeader() {
                 name={actor?.displayName ?? null}
               />
             </span>
-            <Button asChild size="md" className="ms-1 hidden px-3.5 min-[65rem]:inline-flex min-[74rem]:ms-2 min-[74rem]:px-5">
+            <Button
+              asChild
+              size="md"
+              className="ms-1 hidden px-3.5 min-[65rem]:inline-flex min-[74rem]:ms-2 min-[74rem]:px-5"
+            >
               <Link href="/studio">{t("nav.startFree")}</Link>
             </Button>
           </div>

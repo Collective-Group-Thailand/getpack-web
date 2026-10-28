@@ -371,7 +371,8 @@ export function Configurator({
     postcodeRead.current = true;
     const remembered = rememberedPostcode();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (remembered) setState((previous) => (previous.postcode === "" ? { ...previous, postcode: remembered } : previous));
+    if (remembered)
+      setState((previous) => (previous.postcode === "" ? { ...previous, postcode: remembered } : previous));
   }, []);
   useEffect(() => {
     if (POSTCODE.test(state.postcode)) rememberedPostcode(state.postcode);
@@ -425,7 +426,8 @@ export function Configurator({
     track("configurator_opened", { route: "/configure/[slug]", productType: configurator.productTypeCode });
   }, [configurator.productTypeCode]);
   // The API has no instant price for this size and quantity: counted once per combination (demand it cannot serve).
-  const noPriceQuantity = price.data?.steps.find((step) => step.quantity === state.quantity && !step.instant)?.quantity ?? null;
+  const noPriceQuantity =
+    price.data?.steps.find((step) => step.quantity === state.quantity && !step.instant)?.quantity ?? null;
   const quoteOnlyShown = useRef<string | null>(null);
   useEffect(() => {
     if (noPriceQuantity === null) return;

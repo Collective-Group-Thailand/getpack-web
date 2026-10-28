@@ -5,7 +5,14 @@ type Order = Schemas["OrderDto"];
 /** The fields of an order this module reads — so a list row, a detail and a test can all pass one. */
 export type OrderStateInput = Pick<
   Order,
-  "customerStatus" | "artworkStatus" | "artworkOwner" | "artworkNoteTh" | "deliveryDateBasis" | "payment" | "receipt" | "openClaims"
+  | "customerStatus"
+  | "artworkStatus"
+  | "artworkOwner"
+  | "artworkNoteTh"
+  | "deliveryDateBasis"
+  | "payment"
+  | "receipt"
+  | "openClaims"
 >;
 
 /** What the customer is told about the artwork step, when the step has a plain next step to explain (D-438). */
