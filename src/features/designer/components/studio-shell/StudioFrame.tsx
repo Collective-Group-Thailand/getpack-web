@@ -91,7 +91,7 @@ export function Rail({
           aria-controls={active === item.id ? "studio-asset-panel" : undefined}
           onClick={() => onPick(item.id)}
           className={cn(
-            "focus-visible:ring-focus-ring flex shrink-0 flex-col items-center gap-[3px] rounded-[9px] px-0.5 py-2 text-[10.5px] leading-tight outline-none focus-visible:ring-2 max-[899px]:min-w-[58px]",
+            "focus-visible:ring-focus-ring flex shrink-0 flex-col items-center gap-[3px] rounded-lg px-0.5 py-2 text-[10.5px] leading-tight outline-none focus-visible:ring-2 max-[899px]:min-w-[58px]",
             active === item.id
               ? "bg-primary-subtle text-primary-subtle-fg"
               : "text-muted hover:bg-surface-subtle hover:text-fg",

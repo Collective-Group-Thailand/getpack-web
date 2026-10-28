@@ -22,7 +22,7 @@ export function ModeSwitch({
     <div
       role="radiogroup"
       aria-label={t("label")}
-      className={cn("border-border bg-surface-subtle inline-flex gap-0.5 rounded-[10px] border p-[3px]", className)}
+      className={cn("border-border bg-surface-subtle inline-flex gap-0.5 rounded-lg border p-[3px]", className)}
     >
       {(
         [
@@ -40,7 +40,7 @@ export function ModeSwitch({
             title={t(`${value}Hint`)}
             onClick={() => onMode(value)}
             className={cn(
-              "focus-visible:ring-focus-ring inline-flex flex-1 items-center justify-center gap-1.5 rounded-[7px] px-2.5 py-1 text-[12.5px] font-semibold whitespace-nowrap outline-none focus-visible:ring-2",
+              "focus-visible:ring-focus-ring inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-1 text-[12.5px] font-semibold whitespace-nowrap outline-none focus-visible:ring-2",
               on ? "bg-surface text-fg shadow-card" : "text-muted hover:text-fg",
             )}
           >
@@ -74,7 +74,7 @@ export function StepNav({
   return (
     <nav
       aria-label={t("label")}
-      className={cn("border-border bg-surface-subtle flex gap-0.5 rounded-[10px] border p-[3px]", className)}
+      className={cn("border-border bg-surface-subtle flex gap-0.5 rounded-lg border p-[3px]", className)}
     >
       {(["design", "check", "order"] as const).map((value, i) => (
         <button
@@ -83,7 +83,7 @@ export function StepNav({
           aria-current={step === value ? "step" : undefined}
           onClick={() => onStep(value)}
           className={cn(
-            "focus-visible:ring-focus-ring inline-flex items-center gap-1.5 rounded-[7px] px-3 py-1 text-[13px] font-medium whitespace-nowrap outline-none focus-visible:ring-2",
+            "focus-visible:ring-focus-ring inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-[13px] font-medium whitespace-nowrap outline-none focus-visible:ring-2",
             step === value ? "bg-surface text-fg shadow-card" : "text-muted hover:text-fg",
           )}
         >

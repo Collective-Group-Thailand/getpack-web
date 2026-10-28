@@ -109,8 +109,9 @@ function ProMany() {
           ))}
           <label
             title={t("colourCustom")}
-            className="relative size-[30px] cursor-pointer rounded-lg border border-black/15 bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]"
+            className="border-border-strong bg-surface text-muted hover:text-fg relative grid size-[30px] cursor-pointer place-items-center rounded-lg border border-dashed"
           >
+            <Icon name="plus" size={14} aria-hidden="true" />
             <span className="sr-only">{t("colourCustom")}</span>
             <input type="color" onChange={(e) => colourAll(e.target.value)} className="absolute inset-0 opacity-0" />
           </label>

@@ -79,7 +79,7 @@ function EasyGuide({ issues, actions }: { issues: DesignIssue[]; actions: EasyAc
     <div className="flex flex-col gap-4">
       <section
         aria-labelledby="easy-guide"
-        className="border-border from-primary-subtle flex flex-col gap-2.5 rounded-2xl border bg-linear-to-b to-transparent to-80% p-3.5"
+        className="border-border bg-surface-subtle flex flex-col gap-2.5 rounded-2xl border p-3.5"
       >
         <h3 id="easy-guide" className="text-[15px] font-semibold">
           {t("guide.title")}
@@ -90,10 +90,10 @@ function EasyGuide({ issues, actions }: { issues: DesignIssue[]; actions: EasyAc
           aria-valuemax={4}
           aria-valuenow={done}
           aria-label={t("guide.progress")}
-          className="bg-border h-1.5 overflow-hidden rounded-full"
+          className="bg-border h-1.5 overflow-hidden rounded-xs"
         >
           <i
-            className="bg-primary block h-full rounded-full transition-[width] motion-reduce:transition-none"
+            className="bg-primary block h-full rounded-xs transition-[width] motion-reduce:transition-none"
             style={{ width: `${done * 25}%` }}
           />
         </div>
@@ -249,7 +249,7 @@ function EasySelected({ el }: { el: DesignElement }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2.5">
-        <i className="bg-primary-subtle text-primary grid size-9 shrink-0 place-items-center rounded-[10px]">
+        <i className="bg-primary-subtle text-primary grid size-9 shrink-0 place-items-center rounded-lg">
           <Icon name={TYPE_ICON[kind] ?? "star"} size={18} aria-hidden="true" />
         </i>
         <div className="min-w-0">
@@ -382,14 +382,15 @@ function EasySelected({ el }: { el: DesignElement }) {
                 aria-pressed={fill.toLowerCase() === s.hex.toLowerCase()}
                 disabled={locked}
                 onClick={() => set({ fill: s.hex } as Partial<DesignElement>)}
-                className="aria-pressed:ring-focus-ring aria-pressed:ring-offset-surface size-9 rounded-[10px] border border-black/15 aria-pressed:ring-2 aria-pressed:ring-offset-2"
+                className="aria-pressed:ring-focus-ring aria-pressed:ring-offset-surface size-9 rounded-lg border border-black/15 aria-pressed:ring-2 aria-pressed:ring-offset-2"
                 style={{ backgroundColor: s.hex }}
               />
             ))}
             <label
               title={t("swatch.custom")}
-              className="relative grid size-9 cursor-pointer place-items-center rounded-[10px] border border-black/15 bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]"
+              className="border-border-strong bg-surface text-muted hover:text-fg relative grid size-9 cursor-pointer place-items-center rounded-lg border border-dashed"
             >
+              <Icon name="plus" size={16} aria-hidden="true" />
               <span className="sr-only">{t("swatch.custom")}</span>
               <input
                 type="color"
@@ -437,7 +438,7 @@ function EasySelected({ el }: { el: DesignElement }) {
             <div
               role="group"
               aria-label={t("position.grid")}
-              className="border-border bg-surface-subtle grid w-max grid-cols-[repeat(3,38px)] grid-rows-[repeat(3,30px)] gap-1 rounded-[10px] border p-1.5"
+              className="border-border bg-surface-subtle grid w-max grid-cols-[repeat(3,38px)] grid-rows-[repeat(3,30px)] gap-1 rounded-lg border p-1.5"
             >
               {Array.from({ length: 9 }, (_, cell) => (
                 <button
@@ -452,7 +453,7 @@ function EasySelected({ el }: { el: DesignElement }) {
                   }}
                   className="group border-border bg-surface hover:border-primary focus-visible:ring-focus-ring grid place-items-center rounded-md border outline-none focus-visible:ring-2"
                 >
-                  <i aria-hidden="true" className="bg-muted group-hover:bg-primary size-2 rounded-[2px]" />
+                  <i aria-hidden="true" className="bg-muted group-hover:bg-primary size-2 rounded-xs" />
                 </button>
               ))}
             </div>

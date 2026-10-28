@@ -68,7 +68,7 @@ export function WelcomeDialog({
             )}
           >
             {card.tag ? (
-              <span className="bg-primary text-primary-fg absolute end-2.5 top-2.5 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+              <span className="bg-primary text-primary-fg absolute end-2.5 top-2.5 rounded-md px-2 py-0.5 text-[11px] font-semibold">
                 {card.tag}
               </span>
             ) : null}
