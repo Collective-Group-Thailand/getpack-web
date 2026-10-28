@@ -43,7 +43,7 @@ test.describe("axe, in a real browser", () => {
   });
 
   test("the designer shell is clean, including the box setup dialog", async ({ page }) => {
-    await page.goto("/studio/new");
+    await page.goto("/studio/new?step=box");
     await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
     await page.getByRole("button", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
 
@@ -62,7 +62,7 @@ test.describe("axe, in a real browser", () => {
   });
 
   test("every designer panel is clean: each rail tool, a selection, the checks and the 3D view", async ({ page }) => {
-    await page.goto("/studio/new");
+    await page.goto("/studio/new?step=box");
     await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
     await page.getByRole("button", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
     const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
@@ -178,7 +178,7 @@ test.describe("keyboard paths", () => {
   });
 
   test("closing the box setup dialog returns focus to the button that opened it", async ({ page }) => {
-    await page.goto("/studio/new");
+    await page.goto("/studio/new?step=box");
     await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
     await page.getByRole("button", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
 
@@ -202,7 +202,7 @@ test.describe("keyboard paths", () => {
   });
 
   test("the designer toolbar is reachable and operable by keyboard", async ({ page }) => {
-    await page.goto("/studio/new");
+    await page.goto("/studio/new?step=box");
     await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
     await page.getByRole("button", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
     const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });

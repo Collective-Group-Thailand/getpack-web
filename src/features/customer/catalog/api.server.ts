@@ -529,6 +529,21 @@ export async function listStyleVariants(query: StyleVariantListQuery = {}): Prom
   return data!;
 }
 
+export type StudioFeatured = Schemas["StudioFeaturedStylesDto"];
+
+/**
+ * The Studio's "แบบที่คนเริ่มบ่อย" (`store.styles.studioFeatured`, D-455): the admins' ordered list until usage
+ * reaches the threshold, then by usage — `source: none` (hide the section) when nothing is chosen or the API is down.
+ */
+export async function getStudioFeatured(): Promise<StudioFeatured> {
+  try {
+    const { data } = await (await publicApi("catalogue")).GET("/v1/store/styles/studio-featured");
+    return data ?? { source: "none", data: [] };
+  } catch {
+    return { source: "none", data: [] };
+  }
+}
+
 /** The library's headline counts — every shown variant and style — or `null` when the API is down. */
 export async function getLibraryTotals(): Promise<{ variants: number; styles: number } | null> {
   try {

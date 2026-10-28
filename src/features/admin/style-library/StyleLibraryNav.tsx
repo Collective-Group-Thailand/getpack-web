@@ -18,6 +18,7 @@ export function StyleLibraryNav() {
         { href: `${LIBRARY_HREF}/rules`, label: t("rules") },
         { href: `${LIBRARY_HREF}/fit-ranges`, label: t("fitRanges"), permission: "styles.curate" },
         { href: `${LIBRARY_HREF}/content`, label: t("content") },
+        { href: `${LIBRARY_HREF}/studio-featured`, label: t("studioFeatured"), permission: "settings.read" },
         { href: `${LIBRARY_HREF}/next-styles`, label: t("nextStyles"), permission: "analytics.read" },
       ]}
     />

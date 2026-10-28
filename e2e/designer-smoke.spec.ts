@@ -22,7 +22,7 @@ async function startNewDesign(page: Page, product?: string) {
     await page.goto(HOME);
     await page.getByRole("link", { name: "เริ่มออกแบบ" }).first().click();
     await expect(page).toHaveURL(/\/studio$/);
-    await page.goto("/studio/new");
+    await page.goto("/studio/new?step=box");
   }
   await expect(page).toHaveURL(/\/studio\/new(\?|$)/);
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });

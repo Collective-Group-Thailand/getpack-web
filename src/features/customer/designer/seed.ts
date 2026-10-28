@@ -37,12 +37,16 @@ function variantValues(recipes: readonly StyleRecipe[], styleId: string, key: un
 export function seedOf(query: Query, recipes: readonly StyleRecipe[] = []): EditorSeed | undefined {
   const style = typeof query.style === "string" ? resolveStyleId(query.style) : null;
   const [length, width, height] = [mm(query.l), mm(query.w), mm(query.h)];
-  if (!style || !length || !width || !height) return undefined;
+  if (!style) return undefined;
   const [baseCode, styleVariantCode] = [code(query.base), code(query.sv)];
   const values = baseCode && styleVariantCode ? variantValues(recipes, style, query.rv) : null;
+  const dims = length && width && height ? { length, width, height } : null;
+  // C7 (DECISIONS-STAGE-A §2, every style opens): a variant not sized by length × width × height (a bag, a cup, a
+  // label, a hexagonal box…) opens on its own engine values — its preset size — with no box dims.
+  if (!dims && !values) return undefined;
   return {
     style,
-    dims: { length, width, height },
+    ...(dims ? { dims } : {}),
     ...(values ? { values, variant: { baseCode: baseCode!, styleVariantCode: styleVariantCode! } } : {}),
     productSlug: text(query.product),
     patternId: uuid(query.pattern),

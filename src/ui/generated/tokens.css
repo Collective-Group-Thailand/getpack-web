@@ -455,3 +455,63 @@
   --sem-instant-subtle-fg: oklch(26.2% 0.08 66);
 }
 
+/* A themed part of a page (the Studio's dark stage band, C7): custom properties resolve where they are declared,
+   so the aliases are declared again inside a nested [data-theme] to follow its --sem-* values. */
+
+:root [data-theme] {
+  --color-bg: var(--sem-bg);
+  --color-bg-subtle: var(--sem-bg-subtle);
+  --color-surface: var(--sem-surface);
+  --color-surface-subtle: var(--sem-surface-subtle);
+  --color-surface-raised: var(--sem-surface-raised);
+  --color-overlay: var(--sem-overlay);
+  --color-border: var(--sem-border);
+  --color-border-strong: var(--sem-border-strong);
+  --color-fg: var(--sem-fg);
+  --color-muted: var(--sem-muted);
+  --color-subtle: var(--sem-subtle);
+  --color-fg-inverse: var(--sem-fg-inverse);
+  --color-primary-hover: var(--sem-primary-hover);
+  --color-danger-hover: var(--sem-danger-hover);
+  --color-focus-ring: var(--sem-focus-ring);
+  --color-canvas: var(--sem-canvas);
+  --color-canvas-grid: var(--sem-canvas-grid);
+  --color-kraft: var(--sem-kraft);
+  --color-kraft-strong: var(--sem-kraft-strong);
+  --color-sage: var(--sem-sage);
+  --color-sage-subtle: var(--sem-sage-subtle);
+  --color-sage-strong: var(--sem-sage-strong);
+  --color-primary: var(--sem-primary);
+  --color-primary-fg: var(--sem-primary-fg);
+  --color-primary-subtle: var(--sem-primary-subtle);
+  --color-primary-subtle-fg: var(--sem-primary-subtle-fg);
+  --color-accent: var(--sem-accent);
+  --color-accent-fg: var(--sem-accent-fg);
+  --color-accent-subtle: var(--sem-accent-subtle);
+  --color-accent-subtle-fg: var(--sem-accent-subtle-fg);
+  --color-success: var(--sem-success);
+  --color-success-fg: var(--sem-success-fg);
+  --color-success-subtle: var(--sem-success-subtle);
+  --color-success-subtle-fg: var(--sem-success-subtle-fg);
+  --color-warning: var(--sem-warning);
+  --color-warning-fg: var(--sem-warning-fg);
+  --color-warning-subtle: var(--sem-warning-subtle);
+  --color-warning-subtle-fg: var(--sem-warning-subtle-fg);
+  --color-danger: var(--sem-danger);
+  --color-danger-fg: var(--sem-danger-fg);
+  --color-danger-subtle: var(--sem-danger-subtle);
+  --color-danger-subtle-fg: var(--sem-danger-subtle-fg);
+  --color-info: var(--sem-info);
+  --color-info-fg: var(--sem-info-fg);
+  --color-info-subtle: var(--sem-info-subtle);
+  --color-info-subtle-fg: var(--sem-info-subtle-fg);
+  --color-neutral: var(--sem-neutral);
+  --color-neutral-fg: var(--sem-neutral-fg);
+  --color-neutral-subtle: var(--sem-neutral-subtle);
+  --color-neutral-subtle-fg: var(--sem-neutral-subtle-fg);
+  --color-instant: var(--sem-instant);
+  --color-instant-fg: var(--sem-instant-fg);
+  --color-instant-subtle: var(--sem-instant-subtle);
+  --color-instant-subtle-fg: var(--sem-instant-subtle-fg);
+}
+

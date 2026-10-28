@@ -49,7 +49,7 @@ export function actionHref(action: LearningPath["action"]): string {
         ? `/configure/${action.productSlug}${action.materialOptionId ? `?material=${encodeURIComponent(action.materialOptionId)}` : ""}`
         : "/products";
     case "studio":
-      return "/studio/new";
+      return "/studio";
     case "styles":
       return "/styles";
     case "samples":

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isStyleId, variantsOf } from "@getpack/dieline";
+import { defaultsOf, getStyle, isStyleId, presetsOf, variantsOf } from "@getpack/dieline";
 import { ALL_RECIPES, registerLibrary } from "@getpack/dieline/library";
 
 import { seedOf } from "@/features/customer/designer/seed";
@@ -53,6 +53,49 @@ describe("a style page's variant in the studio (D-407)", () => {
     expect(unknown.values).toBeUndefined();
     const malformed = seedOf({ ...base, sv: "<script>", rv: windowed.key }, ALL_RECIPES)!;
     expect(malformed.variant).toBeUndefined();
+  });
+});
+
+describe("every style opens in the studio (C7, DECISIONS-STAGE-A §2)", () => {
+  it("seeds every variant of every library recipe — boxes on their size, the rest (bags, cups, labels) on their values", () => {
+    registerLibrary();
+    const failures: string[] = [];
+    for (const r of ALL_RECIPES) {
+      for (const v of variantsOf(r)) {
+        const values = { ...defaultsOf(r), ...presetsOf(r)[0]?.values, ...v.values };
+        const [l, w, h] = [values.length, values.width, values.height];
+        const boxed = typeof l === "number" && typeof w === "number" && typeof h === "number";
+        const href = studioHref({
+          style: r.id,
+          dims: boxed ? { l, w, h } : null,
+          variant: { base: r.base ?? "PK-XX-01", code: "PK-XX-01-AB12", key: v.key },
+        });
+        const seed = seedOf(query(href), ALL_RECIPES);
+        if (!seed || !seed.values) failures.push(`${r.id} ${v.key}`);
+        else if (getStyle(seed.style).params.length === 0) failures.push(`${r.id} has no params`);
+      }
+    }
+    expect(failures).toEqual([]);
+  });
+
+  it("opens a paper bag (width × gusset × height) without box dims, on its own values", () => {
+    registerLibrary();
+    const bag = ALL_RECIPES.find((r) => r.id === "paper-bag")!;
+    const v = variantsOf(bag)[0]!;
+    const href = studioHref({ style: bag.id, variant: { base: "PK-PG-01", code: "PK-PG-01-AB12", key: v.key } });
+    expect(query(href)).toMatchObject({ style: "paper-bag", step: "design" });
+    expect(query(href).l).toBeUndefined();
+    const seed = seedOf(query(href), ALL_RECIPES)!;
+    expect(seed.dims).toBeUndefined();
+    expect(seed.values).toMatchObject({
+      width: expect.any(Number),
+      gusset: expect.any(Number),
+      height: expect.any(Number),
+    });
+  });
+
+  it("still needs a size or a variant: a bare style opens nothing", () => {
+    expect(seedOf({ style: "rsc" })).toBeUndefined();
   });
 });
 

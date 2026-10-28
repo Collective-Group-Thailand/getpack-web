@@ -155,3 +155,26 @@ export function isoBox(
     },
   };
 }
+
+/**
+ * C7 (the Studio front door's mini editor): an SVG `matrix(…)` that maps a face's own millimetres onto the drawn box
+ * at 0° — `top`: x along the length from the back-left corner, y toward the front; `front`: x along the length, y
+ * down from the top edge — so a brand name or a logo is set "on" the face. Same projection as {@link isoBox}.
+ */
+export function isoFaceMatrix(size: { w: number; d: number; h: number }, face: "top" | "front"): string {
+  const k = Math.min(
+    300 / ((size.w + size.d) * COS),
+    250 / (size.h + (size.w + size.d) * SIN),
+    340 / (Math.sqrt(2 * (size.w ** 2 + size.d ** 2)) * COS),
+  );
+  const [hw, hd, H] = [(size.w * k) / 2, (size.d * k) / 2, size.h * k];
+  const oy = H / 2;
+  const at = (x: number, y: number, z: number): [number, number] => [(x - y) * COS, (x + y) * SIN - z + oy];
+  const [o, u, v] =
+    face === "top"
+      ? [at(-hw, -hd, H), at(hw, -hd, H), at(-hw, hd, H)]
+      : [at(-hw, hd, H), at(hw, hd, H), at(-hw, hd, 0)];
+  const [spanU, spanV] = face === "top" ? [size.w, size.d] : [size.w, size.h];
+  const m = [(u[0] - o[0]) / spanU, (u[1] - o[1]) / spanU, (v[0] - o[0]) / spanV, (v[1] - o[1]) / spanV, o[0], o[1]];
+  return `matrix(${m.map((n) => n.toFixed(4)).join(" ")})`;
+}

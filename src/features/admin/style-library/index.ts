@@ -3,6 +3,7 @@ export { NextStyles } from "./NextStyles";
 export { StyleCoverage } from "./StyleCoverage";
 export { StyleImports } from "./StyleImports";
 export { StyleLibraryContentEditor } from "./StyleLibraryContentEditor";
+export { StudioFeaturedEditor } from "./StudioFeaturedEditor";
 export { StyleLibraryNav } from "./StyleLibraryNav";
 export { StyleRules } from "./StyleRules";
 export { StylesList } from "./StylesList";

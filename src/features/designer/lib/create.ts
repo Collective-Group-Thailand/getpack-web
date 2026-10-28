@@ -134,6 +134,51 @@ export function colourSpaceOf(bytes: Uint8Array, mimeType: string): "rgb" | "cmy
 }
 
 /** Reads an image file into an element 80 mm wide, keeping its pixel size for the resolution check. */
+/** A data URL's colour space (a CMYK JPEG is flagged like an upload), read from its first bytes. */
+function colourSpaceOfDataUrl(src: string): "rgb" | "cmyk" {
+  const match = /^data:(image\/[a-z+]+);base64,/.exec(src);
+  if (!match) return "rgb";
+  try {
+    const head = atob(
+      src
+        .slice(match[0].length, match[0].length + 87_384)
+        .replace(/=+$/, "")
+        .slice(0, 87_380),
+    );
+    return colourSpaceOf(
+      Uint8Array.from(head, (ch) => ch.charCodeAt(0)),
+      match[1]!,
+    );
+  } catch {
+    return "rgb";
+  }
+}
+
+/** An image from a data URL already in the browser (the Studio front door's logo, C7) — the same element as an upload. */
+export function newImageFromSrc(c: Center, src: string): Promise<NewElement> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onerror = () => reject(new Error("unreadable"));
+    img.onload = () => {
+      const width = 80;
+      const height = (img.height / img.width) * width;
+      resolve({
+        ...base,
+        type: "image",
+        src,
+        naturalWidth: img.naturalWidth,
+        naturalHeight: img.naturalHeight,
+        colourSpace: colourSpaceOfDataUrl(src),
+        x: c.x - width / 2,
+        y: c.y - height / 2,
+        width,
+        height,
+      });
+    };
+    img.src = src;
+  });
+}
+
 export function newImage(c: Center, file: File): Promise<NewElement> {
   return new Promise((resolve, reject) => {
     if (file.size > MAX_IMAGE_BYTES) return reject(new Error("too_large"));

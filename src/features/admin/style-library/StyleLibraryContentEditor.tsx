@@ -164,7 +164,11 @@ function Editor({ loaded }: { loaded: Loaded }) {
         {content.trust.certifications.length === 0 ? <p className="text-muted text-sm">{t("none")}</p> : null}
         <ol className="flex flex-col gap-4">
           {content.trust.certifications.map((c, i) => (
-            <li key={i} className="border-border rounded-card grid gap-3 border p-4 md:grid-cols-2" data-row="certification">
+            <li
+              key={i}
+              className="border-border rounded-card grid gap-3 border p-4 md:grid-cols-2"
+              data-row="certification"
+            >
               <div className="flex items-center justify-between gap-2 md:col-span-2">
                 <span className="text-sm font-medium tabular-nums">{t("certificationN", { n: i + 1 })}</span>
                 <span className="flex items-center gap-2">
@@ -172,17 +176,34 @@ function Editor({ loaded }: { loaded: Loaded }) {
                   {removeButton(() => remove("certifications", i))}
                 </span>
               </div>
-              {localisedFields(`trust.certifications.${i}.title`, c.title, (title) => update("certifications", i, { title }), {
-                th: t("nameTh"),
-                en: t("nameEn"),
-              })}
+              {localisedFields(
+                `trust.certifications.${i}.title`,
+                c.title,
+                (title) => update("certifications", i, { title }),
+                {
+                  th: t("nameTh"),
+                  en: t("nameEn"),
+                },
+              )}
               <Field label={t("number")}>
-                <Input value={c.number ?? ""} disabled={disabled} onChange={(e) => update("certifications", i, { number: e.target.value })} />
+                <Input
+                  value={c.number ?? ""}
+                  disabled={disabled}
+                  onChange={(e) => update("certifications", i, { number: e.target.value })}
+                />
               </Field>
               <Field label={t("issuer")}>
-                <Input value={c.issuer ?? ""} disabled={disabled} onChange={(e) => update("certifications", i, { issuer: e.target.value })} />
+                <Input
+                  value={c.issuer ?? ""}
+                  disabled={disabled}
+                  onChange={(e) => update("certifications", i, { issuer: e.target.value })}
+                />
               </Field>
-              <Field label={t("expiresOn")} hint={t("expiresOnHint")} error={errorAt(`trust.certifications.${i}.expiresOn`)}>
+              <Field
+                label={t("expiresOn")}
+                hint={t("expiresOnHint")}
+                error={errorAt(`trust.certifications.${i}.expiresOn`)}
+              >
                 <Input
                   type="date"
                   value={c.expiresOn ?? ""}
@@ -212,7 +233,11 @@ function Editor({ loaded }: { loaded: Loaded }) {
         {content.trust.foodGrade.length === 0 ? <p className="text-muted text-sm">{t("none")}</p> : null}
         <ol className="flex flex-col gap-4">
           {content.trust.foodGrade.map((f, i) => (
-            <li key={i} className="border-border rounded-card grid gap-3 border p-4 md:grid-cols-3" data-row="food-grade">
+            <li
+              key={i}
+              className="border-border rounded-card grid gap-3 border p-4 md:grid-cols-3"
+              data-row="food-grade"
+            >
               {localisedFields(`trust.foodGrade.${i}.title`, f.title, (title) => update("foodGrade", i, { title }), {
                 th: t("documentTh"),
                 en: t("documentEn"),
@@ -249,10 +274,15 @@ function Editor({ loaded }: { loaded: Loaded }) {
                 error={errorAt(`trust.productionPhotos.${i}.url`)}
                 onChange={(url) => update("productionPhotos", i, { url })}
               />
-              {localisedFields(`trust.productionPhotos.${i}.alt`, p.alt, (alt) => update("productionPhotos", i, { alt }), {
-                th: t("altTh"),
-                en: t("altEn"),
-              })}
+              {localisedFields(
+                `trust.productionPhotos.${i}.alt`,
+                p.alt,
+                (alt) => update("productionPhotos", i, { alt }),
+                {
+                  th: t("altTh"),
+                  en: t("altEn"),
+                },
+              )}
               <div className="md:col-span-3">{removeButton(() => remove("productionPhotos", i))}</div>
             </li>
           ))}
@@ -271,7 +301,11 @@ function Editor({ loaded }: { loaded: Loaded }) {
           {content.trust.customerLogos.map((l, i) => (
             <li key={i} className="border-border rounded-card grid gap-3 border p-4 md:grid-cols-3" data-row="logo">
               <Field label={t("logoName")} required error={errorAt(`trust.customerLogos.${i}.name`)}>
-                <Input value={l.name} disabled={disabled} onChange={(e) => update("customerLogos", i, { name: e.target.value })} />
+                <Input
+                  value={l.name}
+                  disabled={disabled}
+                  onChange={(e) => update("customerLogos", i, { name: e.target.value })}
+                />
               </Field>
               <ContentImageField
                 label={t("logoUrl")}
@@ -281,8 +315,17 @@ function Editor({ loaded }: { loaded: Loaded }) {
                 error={errorAt(`trust.customerLogos.${i}.logoUrl`)}
                 onChange={(logoUrl) => update("customerLogos", i, { logoUrl })}
               />
-              <Field label={t("permission")} hint={t("permissionHint")} required error={errorAt(`trust.customerLogos.${i}.permission`)}>
-                <Input value={l.permission} disabled={disabled} onChange={(e) => update("customerLogos", i, { permission: e.target.value })} />
+              <Field
+                label={t("permission")}
+                hint={t("permissionHint")}
+                required
+                error={errorAt(`trust.customerLogos.${i}.permission`)}
+              >
+                <Input
+                  value={l.permission}
+                  disabled={disabled}
+                  onChange={(e) => update("customerLogos", i, { permission: e.target.value })}
+                />
               </Field>
               <div className="md:col-span-3">{removeButton(() => remove("customerLogos", i))}</div>
             </li>

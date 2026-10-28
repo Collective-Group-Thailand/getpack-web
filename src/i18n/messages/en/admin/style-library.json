@@ -7,7 +7,8 @@
     "rules": "Price & process rules",
     "nextStyles": "Next styles",
     "fitRanges": "Fit ranges",
-    "content": "Page content"
+    "content": "Page content",
+    "studioFeatured": "Studio featured"
   },
   "list": {
     "title": "Style library",
@@ -687,5 +688,50 @@
       "none": "None yet",
       "linkPlaceholder": "https://…"
     }
+  },
+  "studioFeatured": {
+    "title": "Studio featured styles",
+    "description": "Pick the styles shown in the Studio's \"Templates people start from most\", in order and each on or off. Once there is enough real usage, the Studio ranks by it instead",
+    "rule": "The Studio shows the first 6 published styles that are on. Unset, the section is hidden (no popularity is claimed without data)",
+    "missing": "The setting studio.featured_styles does not exist yet — run the getpack-api seed first",
+    "pending": "A change is waiting for approval; edit again once it is decided",
+    "list": {
+      "title": "Chosen styles",
+      "description": "In the order they should show",
+      "empty": "No styles chosen yet",
+      "on": "Show",
+      "up": "Move {code} up",
+      "down": "Move {code} down",
+      "remove": "Remove {code}",
+      "add": "Add a style code",
+      "addHint": "e.g. PK-TE-01 · up to {max} styles",
+      "addButton": "Add",
+      "placeholder": "PK-TE-01"
+    },
+    "usage": {
+      "title": "Switch to real usage",
+      "description": "Once the designs started in the Studio within the window reach the threshold, the Studio ranks styles by how many designs were started from them",
+      "minDesigns": "Designs started in the Studio",
+      "minDesignsHint": "Empty = never switch; always use the chosen list",
+      "windowDays": "Window (days)",
+      "windowDaysHint": "7–365 days"
+    },
+    "save": {
+      "title": "Save",
+      "reason": "Reason for the change",
+      "reasonHint": "At least 3 characters, kept in the setting's history",
+      "button": "Save and apply now",
+      "reset": "Discard changes"
+    },
+    "errors": {
+      "code": "A style code is not valid",
+      "duplicate": "A code is listed twice",
+      "tooMany": "Up to 12 styles",
+      "minDesigns": "A whole number from 1, or empty",
+      "windowDays": "7–365 days"
+    },
+    "saved": "Saved",
+    "failed": "Could not save",
+    "readOnly": "Read only — the setting's owner (Admin) or Superadmin can change it"
   }
 }

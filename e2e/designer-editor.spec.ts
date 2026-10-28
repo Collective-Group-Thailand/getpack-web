@@ -9,7 +9,7 @@ import { addHeading, openRail } from "./helpers/designer";
  */
 
 async function newDesign(page: Page) {
-  await page.goto("/studio/new");
+  await page.goto("/studio/new?step=box");
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
   await page.getByRole("button", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });

@@ -22,7 +22,15 @@ const EMPTY: Commercial = {
   plasticFree: null,
   certifications: [],
 };
-const RANGE: Commercial = { ...EMPTY, fitMinLMm: 60, fitMaxLMm: 400, fitMinWMm: 51, fitMaxWMm: 300, fitMinHMm: 25, fitMaxHMm: 35 };
+const RANGE: Commercial = {
+  ...EMPTY,
+  fitMinLMm: 60,
+  fitMaxLMm: 400,
+  fitMinWMm: 51,
+  fitMaxWMm: 300,
+  fitMinHMm: 25,
+  fitMaxHMm: 35,
+};
 const recipe = { source: "recipe" as const, basis: ["recipe_size_range" as const] };
 const presets = { source: "standard_sizes" as const, basis: ["recipe_presets" as const] };
 
@@ -69,7 +77,14 @@ describe("style commercial form (C1c)", () => {
       dimensionSources({
         commercial: RANGE,
         fitRangeSource: "combined",
-        fitRangeBounds: { fitMinLMm: recipe, fitMaxLMm: recipe, fitMinWMm: recipe, fitMaxWMm: presets, fitMinHMm: presets, fitMaxHMm: presets },
+        fitRangeBounds: {
+          fitMinLMm: recipe,
+          fitMaxLMm: recipe,
+          fitMinWMm: recipe,
+          fitMaxWMm: presets,
+          fitMinHMm: presets,
+          fitMaxHMm: presets,
+        },
       }),
     ).toEqual({
       length: { source: "recipe", basis: ["recipe_size_range"] },
@@ -80,8 +95,12 @@ describe("style commercial form (C1c)", () => {
       source: "recipe",
       basis: [],
     });
-    expect(dimensionSources({ commercial: RANGE, fitRangeSource: "business", fitRangeBounds: null }).length.source).toBe("business");
-    expect(dimensionSources({ commercial: EMPTY, fitRangeSource: null, fitRangeBounds: null }).length.source).toBeNull();
+    expect(
+      dimensionSources({ commercial: RANGE, fitRangeSource: "business", fitRangeBounds: null }).length.source,
+    ).toBe("business");
+    expect(
+      dimensionSources({ commercial: EMPTY, fitRangeSource: null, fitRangeBounds: null }).length.source,
+    ).toBeNull();
   });
 });
 

@@ -27,8 +27,17 @@ const UNDERLINE = "border-b border-current pb-px font-medium";
  * (upload-redesign Phase 2, GLOBAL-RULES §3). Only products with an instant price are listed; the
  * rest go through RFQ.
  */
-export default async function StudioUpload({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+export default async function StudioUpload({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
+  // C7: the file dropped on `/studio`'s "มีไฟล์แบบแล้ว" — only its name travels; the file stays on the customer's
+  // computer and is uploaded on the order's artwork page after ordering (GLOBAL-RULES §6).
+  const fileName = typeof query.file === "string" && query.file.length <= 120 ? query.file : null;
   setRequestLocale(locale);
   const [t, format, products] = await Promise.all([
     getTranslations("studio.upload"),
@@ -42,6 +51,11 @@ export default async function StudioUpload({ params }: { params: Promise<{ local
       <div className="max-w-[46rem]">
         <h1 className="text-[2.125rem] leading-[1.1] md:text-5xl">{t("title")}</h1>
         <p className="text-muted mt-4 text-[1.0625rem]">{t("lead")}</p>
+        {fileName ? (
+          <p className="border-primary bg-primary-subtle rounded-card mt-5 border px-4 py-3 text-sm" role="status">
+            {t("fileChosen", { name: fileName })}
+          </p>
+        ) : null}
         <ol className="border-fg mt-8 grid gap-4 border-t pt-4 text-[0.90625rem] sm:grid-cols-3">
           {(["pick", "spec", "file"] as const).map((step, index) => (
             <li key={step}>
