@@ -264,6 +264,8 @@ export function customerOf(request: Request): MockCustomer | null {
 
 /** D-183: each customer's display unit, changed with `store.me.updatePreferences`. */
 export const displayUnits = new Map<string, Schemas["DisplayUnit"]>();
+/** D-456: each customer's Studio editor mode, changed with `store.me.updatePreferences`; null until chosen. */
+export const editorModes = new Map<string, Schemas["EditorMode"]>();
 
 export function customerMe(customer: MockCustomer): Schemas["StoreMeDto"] {
   return {
@@ -277,6 +279,7 @@ export function customerMe(customer: MockCustomer): Schemas["StoreMeDto"] {
     scopes: [],
     identities: customer.identities,
     displayUnit: displayUnits.get(customer.id) ?? "mm",
+    editorMode: editorModes.get(customer.id) ?? null,
   };
 }
 
