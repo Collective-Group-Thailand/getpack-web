@@ -7097,9 +7097,9 @@ export interface paths {
         };
         /**
          * Search the customer file access log
-         * @description D-444: every download URL issued for a customer's artwork / original, a production copy of one or an approved proof copy — who, when, which file and order, through which surface (store / admin / partner) and for what (download / thumbnail). Newest first; filter by order, file, user and period. Append-only; no URL or token is stored. Superadmin and Auditor (`customer_file_access_logs.read`, B-API-6); neither reads the files.
+         * @description D-444: every download URL issued for a customer's artwork / original, a production copy of one or an approved proof copy — who, when, which file and order, through which surface (store / admin / partner) and for what (download / thumbnail). Newest first; filter by order (id or code), file, user, file kind, period and — C1f (D-451) — whether a Superadmin opened it with a typed reason (D-449 (1); the reason is in `reason`). Append-only; no URL or token is stored. Whoever holds `customer_file_access_logs.read` (Superadmin, Auditor; B-API-6); read by the back-office page "บันทึกการเปิดไฟล์ลูกค้า", exported through `admin.exports.create` (resource `customer_file_access_logs`).
          *
-         *     Implements: D-444.
+         *     Implements: D-444, D-449, D-451.
          */
         get: operations["admin.customerFileAccessLogs.list"];
         put?: never;
@@ -8329,7 +8329,7 @@ export interface paths {
         put?: never;
         /**
          * Export a staff list
-         * @description Orders, customers, companies, shipments or claims with the list’s filters as XLSX or CSV (formula-safe), up to 10000 rows, served by a 5-minute signed URL. Needs the list’s read permission and `reports.export`; contact details are left out of the file (PDPA). Audited (`export.generated`). Reports export through `admin.reports.export`.
+         * @description Orders, customers, companies, shipments, claims or (C1f, D-451) the customer file access log with the list’s filters as XLSX or CSV (formula-safe), up to 10000 rows, served by a 5-minute signed URL. Needs the list’s read permission and `reports.export`; contact details are left out of the file (PDPA). Audited (`export.generated`). Reports export through `admin.reports.export`.
          *
          *     Implements: D-033, D-111.
          */
@@ -16567,9 +16567,9 @@ export interface paths {
         get: operations["admin.styleLibrary.getSettings"];
         /**
          * Change the style library page content
-         * @description C1c (DECISIONS-STAGE-A §11.5, D-448; D-246: curation by Admin or Marketing with `styles.curate`): adds a version of `storefront.style_library` from `effectiveFrom` (now by default, never in the past) through the settings platform — validated against the setting’s schema, audited (`setting.changed` with before / after and the reason), evented, caches invalidated. Only real content: certificates, documents, photos and logos the business holds (logos need the customer’s permission, recorded in `permission`). C1e (§13.3, D-450): photos, logos and swatches are uploaded pictures (`/v1/store/catalog/images/{fileId}`, purpose `image`); documents are uploaded files (`/v1/store/style-library/documents/{fileId}`, purpose `document` or `image`) or an external https link; a referenced file that is not uploaded, infected or of the wrong kind is refused (`validation.failed`, code `fileReady`).
+         * @description C1c (DECISIONS-STAGE-A §11.5, D-448; D-246: curation by Admin or Marketing with `styles.curate`): adds a version of `storefront.style_library` from `effectiveFrom` (now by default, never in the past) through the settings platform — validated against the setting’s schema, audited (`setting.changed` with before / after and the reason), evented, caches invalidated. Only real content: certificates, documents, photos and logos the business holds (logos need the customer’s permission, recorded in `permission`). C1e (§13.3, D-450): photos, logos and swatches are uploaded pictures (`/v1/store/catalog/images/{fileId}`, purpose `image`); documents are uploaded files (`/v1/store/style-library/documents/{fileId}`, C1f D-451: purpose `published_document` — metadata stripped like images — or `image`) or an external https link; a referenced file that is not uploaded, infected or of the wrong kind is refused (`validation.failed`, code `fileReady`).
          *
-         *     Implements: D-448, D-246, D-010, D-125, D-450.
+         *     Implements: D-448, D-246, D-010, D-125, D-450, D-451.
          */
         put: operations["admin.styleLibrary.updateSettings"];
         post?: never;
@@ -28306,9 +28306,9 @@ export interface paths {
         };
         /**
          * Get a catalogue product for the configurator
-         * @description Patterns with their size constraints, the options it offers grouped by kind, standard sizes, images, videos and SEO meta. The starting price and `startingPriceAssumes` (lines and one-string `label`) are the default spec priced through the configurator’s own path; with a default spec, `isDefault` marks the options it selects (D-441).
+         * @description Patterns with their size constraints, the options it offers grouped by kind, standard sizes, images, videos and SEO meta. The starting price and `startingPriceAssumes` (lines and one-string `label`) are the default spec priced through the configurator’s own path; with a default spec, `isDefault` marks the options it selects (D-441). C1f (D-451): a quote-only product carries `quoteResponseBusinessDays`, the same working-day answer time as the style cards (DECISIONS-STAGE-A §9.3 / §11.2).
          *
-         *     Implements: D-100, D-050, D-441.
+         *     Implements: D-100, D-050, D-441, D-451.
          */
         get: operations["store.catalog.getProduct"];
         put?: never;
@@ -33598,9 +33598,9 @@ export interface paths {
         };
         /**
          * Get a trust-section document
-         * @description C1e (DECISIONS-STAGE-A §13.3, D-450; D-448): a certificate or food-grade document uploaded through the file service and referenced by the published content of `storefront.style_library` — served only while that content shows it (an expired certificate is not shown), the upload is complete and its malware scan is clean; anything else is 404 (contract §3 "Files", the public-image rule of `store.catalog.getImage`). PDF or a picture, inline, cacheable for an hour. No factory data (D-050).
+         * @description C1e (DECISIONS-STAGE-A §13.3, D-450; D-448): a certificate or food-grade document uploaded through the file service and referenced by the published content of `storefront.style_library` — served only while that content shows it (an expired certificate is not shown), the upload is complete and its malware scan is clean; anything else is 404 (contract §3 "Files", the public-image rule of `store.catalog.getImage`). C1f (§14.3, D-451): only a published purpose (`published_document` or `image`) whose metadata (PDF Info / XMP, EXIF) the worker has stripped. PDF or a picture, inline, cacheable for an hour. No factory data (D-050).
          *
-         *     Implements: D-450, D-448, D-050.
+         *     Implements: D-451, D-450, D-448, D-050.
          */
         get: operations["store.styleLibrary.getDocument"];
         put?: never;
@@ -60082,7 +60082,7 @@ export interface components {
          * @description Decides retention, accepted types and size limit
          * @enum {string}
          */
-        FilePurpose: "artwork" | "proof" | "slip" | "evidence" | "document" | "import" | "avatar" | "image" | "design_asset" | "brand_mark" | "signature" | "dieline";
+        FilePurpose: "artwork" | "proof" | "slip" | "evidence" | "document" | "import" | "avatar" | "image" | "published_document" | "design_asset" | "brand_mark" | "signature" | "dieline";
         /** @enum {string} */
         FileRetentionClass: "transient" | "standard" | "customer_content" | "financial_record";
         /**
@@ -63501,7 +63501,7 @@ export interface components {
             rfqId: string;
         };
         /** @enum {string} */
-        ListExportResource: "orders" | "customers" | "companies" | "shipments" | "claims";
+        ListExportResource: "orders" | "customers" | "companies" | "shipments" | "claims" | "customer_file_access_logs";
         /** @enum {string} */
         LocaleCode: "th" | "en";
         LocalisedLabelDto: {
@@ -78585,6 +78585,11 @@ export interface components {
             patterns: components["schemas"]["StorePatternDto"][];
             /** @example folding_carton */
             productTypeCode: string;
+            /**
+             * @description C1f (C3 open item; D-100, D-175, D-220, D-451, DECISIONS-STAGE-A §9.3, §11.2): for a quote-only product (`availability = rfq`) the first-response time of a quotation request in working days — `ceil(rfq.sla_business_hours ÷ hours of one business day)`, the SLA at its product type (platform fallback), the day length from `calendar.business_hours` (09:00–18:00 = 9 h); the same figure as the style cards. Null for instantly priced products and when a setting is missing or unusable (then no timing is shown). Never a price or an estimate.
+             * @example 2
+             */
+            quoteResponseBusinessDays: number | null;
             /**
              * @description Struck-through price — present only while the badge’s promotion lowers this card’s starting price for everyone (D-307, D-181); absent otherwise
              * @example 5.00
@@ -139080,14 +139085,20 @@ export interface operations {
                 cursor?: string;
                 /** @description File id */
                 fileId?: string;
+                /** @description C1f (D-451): only this kind of file */
+                fileKind?: components["schemas"]["CustomerFileKind"];
                 from?: string;
                 limit?: number;
+                /** @description C1f (D-451): the order by its code (exact, case-insensitive) */
+                orderCode?: string;
                 /** @description Order id */
                 orderId?: string;
                 /** @description Exclusive */
                 to?: string;
                 /** @description Acting user (or API client) */
                 userId?: string;
+                /** @description C1f (D-451): true = only the accesses a Superadmin opened with a typed reason (D-449 (1)); false = only the others */
+                withReason?: boolean;
             };
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
@@ -293706,6 +293717,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "productTypeCode": "folding_carton",
+                     *       "quoteResponseBusinessDays": null,
                      *       "seo": {
                      *         "canonicalUrl": null,
                      *         "description": "สั่งผลิตกล่องฝาเสียบออนไลน์",
