@@ -8,6 +8,7 @@ import { createApiClient } from "@/lib/api/client";
 import { buildConfiguration, type CorrugateConfiguration } from "./build";
 import { isProcessInk, normaliseInks, optionsById } from "./model";
 import {
+  beyondPriced,
   choiceOf,
   defaultIds,
   idsOfChoice,
@@ -95,7 +96,13 @@ describe("print model: one method per side", () => {
   });
 
   it("normalises a draft or seed in the old shape to one valid choice, never CMYK + spot", async () => {
-    const { configurator, cmyk, spot } = await setup();
+    // A model with nothing beyond the instant price (`quote: null`): the pre-C0b behaviour.
+    const { configurator: withQuote, cmyk, spot } = await setup();
+    const strip = (side: PrintSide) => ({ ...side, quote: null });
+    const configurator = {
+      ...withQuote,
+      printModel: { outside: strip(withQuote.printModel!.outside), inside: strip(withQuote.printModel!.inside) },
+    } as Configurator;
     const state = initialState(configurator, {
       choices: { print_front: [spot, cmyk], print_back: [cmyk, spot] },
       partPrints: { p1: { print_front: [spot, cmyk], print_back: [spot, spot] } },
@@ -111,7 +118,7 @@ describe("print model: one method per side", () => {
 
   it("never produces cmyk_with_spot, whatever is picked", async () => {
     const { configurator, model, cmyk } = await setup();
-    const side = { ...model.outside, spot: { ...model.outside.spot!, maxColours: 3 } } as PrintSide;
+    const side = { ...model.outside, quote: null, spot: { ...model.outside.spot!, maxColours: 3 } } as PrintSide;
     for (const choice of ["none", "cmyk", "spot", `spot:${side.spot!.inkColourIds[0]}`]) {
       for (const current of [[], [cmyk], side.spot!.inkColourIds]) {
         const ids = idsOfChoice(side, choice, current);
@@ -152,5 +159,28 @@ describe("print model: one method per side", () => {
     const process = group.options.find(isProcessInk)!;
     const black = group.options.find((o) => !isProcessInk(o))!;
     expect(normaliseInks(byId, [black.id, process.id])).toEqual([process.id]);
+  });
+});
+
+describe("C0b: more colours than priced go to the quote path, never trimmed (DECISIONS-STAGE-A §9.5)", () => {
+  it("keeps the customer's extra colours up to the API's quote counts and marks them beyond the instant price", async () => {
+    const { configurator, model, cmyk } = await setup();
+    const side = model.outside;
+    const inks = side.spot!.inkColourIds;
+    expect(side.quote).not.toBeNull();
+    expect(inks.length).toBeGreaterThan(1);
+    // Two spot colours on a side priced for one: kept (a quotation), not trimmed to one.
+    const two = normaliseSide(side, inks.slice(0, 2), true);
+    expect(two).toEqual(inks.slice(0, 2));
+    expect(beyondPriced(side, two)).toBe(true);
+    expect(beyondPriced(side, inks.slice(0, 1))).toBe(false);
+    // The configurator's state keeps them too; the Studio's derived inks (no quote) keep only what is priced.
+    const state = initialState(configurator, { choices: { print_front: inks.slice(0, 2) } });
+    expect(state.choices.print_front).toEqual(inks.slice(0, 2));
+    expect(normaliseSide(side, inks.slice(0, 2))).toHaveLength(1);
+    // CMYK beside spot colours: the add-on beyond the instant price, also a quotation.
+    expect(beyondPriced(side, normaliseSide(side, [cmyk, inks[0]!], true))).toBe(true);
+    // The limits themselves are untouched: the instant price still covers one spot colour.
+    expect(side.spot!.maxColours).toBe(1);
   });
 });

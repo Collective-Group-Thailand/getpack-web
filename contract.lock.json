@@ -2,8 +2,8 @@
   "$comment": "The backend contract this app is generated against (ADR-0006). Bump this file in its own PR: pnpm gen:api --adopt --tag vX.Y.Z (tagged getpack-api releases only) rewrites it and contract/openapi.json together, and the resulting type errors are the change list. UNRELEASED PIN (Stage A): contract/openapi.json is getpack-api fix/uat-phase0 at the commit above, still labelled 0.75.0; tag/source were left as v0.75.0 only so verifyLock passes. Re-adopt with pnpm gen:api --adopt --tag vX.Y.Z once the API tags a release.",
   "version": "0.75.0",
   "tag": "v0.75.0",
-  "commit": "0ae3725cf5f492a6088215ceca0743896ed19f5f",
-  "sha256": "a5c8ef6905a5dc761677d30caf9068a73d69337ad63d08f861e350b173dcaffe",
+  "commit": "d03c902390f933641e95e06d28552ec03c1e19c7",
+  "sha256": "7450af242d184281a738744e6c1f4f687c53e5c2534778a72c538045e65cd743",
   "source": "https://github.com/collective-group-th/getpack-api/releases/download/v0.75.0/openapi.json",
   "localSource": "../getpack-api/contract/openapi.json",
   "vendored": "contract/openapi.json"

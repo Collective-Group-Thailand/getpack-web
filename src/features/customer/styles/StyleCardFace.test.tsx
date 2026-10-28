@@ -118,4 +118,13 @@ describe("a style card", () => {
     const again = face(photographed);
     expect(again.container.querySelector("[data-hover-image]")?.textContent).toBe("แบบคลี่");
   });
+
+  it("C0b: a quote style shows the team's response time from the API, never an estimate; without it, no time", () => {
+    const timed = cardWords({ ...base, quoteResponseBusinessDays: 2 } as unknown as StyleCard, "th", t, format);
+    expect(timed.quoteHint).toBe("ทีมงานตอบภายใน 2 วันทำการ");
+    expect(timed.price).toBeUndefined();
+    const untimed = cardWords({ ...base, quoteResponseBusinessDays: null } as unknown as StyleCard, "th", t, format);
+    expect(untimed.quoteHint).toBe(th.library.cardQuoteHint);
+    expect(JSON.stringify([timed, untimed])).not.toMatch(/ประมาณ/);
+  });
 });
