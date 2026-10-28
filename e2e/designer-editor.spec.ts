@@ -25,7 +25,8 @@ test("adds a QR code, finds it in layers, locks it, and undoes", async ({ page }
   await page.getByRole("textbox", { name: "ลิงก์หรือข้อความ" }).fill("https://getpack.example/p/123");
   await page.getByRole("button", { name: "เพิ่มโค้ด" }).click();
   await expect(
-    page.getByRole("tabpanel", { name: "คุณสมบัติ" }).getByRole("heading", { name: "คิวอาร์โค้ด" }),
+    // C8: the inspector's "ออกแบบ" tab shows the selection.
+    page.getByRole("tabpanel", { name: "ออกแบบ" }).getByRole("heading", { name: "คิวอาร์โค้ด" }),
   ).toBeVisible();
 
   await openRail(page, "ชั้น");
@@ -67,19 +68,22 @@ test("flags small text in the checks and selects it from there", async ({ page }
   await page.getByRole("spinbutton", { name: /^ขนาด/ }).fill("1.5");
   await expect(page.getByText("ตัวอักษรเล็กกว่า 6pt อาจพิมพ์ไม่ชัด")).toBeVisible();
 
-  await page.getByRole("button", { name: /ควรตรวจ \d+ รายการ/ }).click();
+  // C8: the status bar's print state opens the ตรวจงาน tab.
+  await page.getByRole("button", { name: "พร้อมพิมพ์ (มีข้อแนะนำ)" }).click();
+  await expect(page.getByRole("tab", { name: /ตรวจงาน/ })).toHaveAttribute("aria-selected", "true");
   const issue = page.getByRole("button", { name: /ตัวอักษร [\d.]+ pt เล็กกว่า 6 pt/ });
   await expect(issue).toBeVisible();
   await page.keyboard.press("Escape");
   await issue.click();
-  await expect(page.getByRole("tab", { name: "คุณสมบัติ" })).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "ออกแบบ" }).click();
+  await expect(page.getByRole("tabpanel", { name: "ออกแบบ" }).getByRole("heading", { name: "ข้อความ" })).toBeVisible();
 });
 
 test("shows the box in 3D with the fold slider, and lists the shortcuts", async ({ page }) => {
   await newDesign(page);
 
   // The studio's stage: 3D on its own, then beside the sheet (U4.3).
-  await page.getByRole("radio", { name: "3 มิติ" }).click();
+  await page.getByRole("group", { name: "แสดง" }).getByRole("button", { name: "3D", exact: true }).click();
   await expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible();
   await expect(page.getByRole("slider", { name: "การพับกล่อง" })).toBeVisible();
   await page.getByRole("button", { name: "หมุนไปทางซ้าย" }).click();

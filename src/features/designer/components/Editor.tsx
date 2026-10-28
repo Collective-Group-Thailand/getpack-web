@@ -1215,7 +1215,9 @@ export default function Editor({
           {canvasDieline ? <FocusChip dieline={canvasDieline} /> : null}
         </div>
         {view === "3d" && spec ? (
-          <div className="absolute inset-0 pb-16">{show3d ? preview : <Skeleton className="size-full" />}</div>
+          <section aria-label={t("stage.model")} className="absolute inset-0 flex flex-col p-3 pb-20">
+            {show3d ? preview : <Skeleton className="size-full" />}
+          </section>
         ) : null}
         {pip && spec ? (
           <section
@@ -1237,7 +1239,7 @@ export default function Editor({
             >
               <Icon name="play" size={17} aria-hidden="true" />
             </button>
-            <div className="size-full">{show3d ? preview : <Skeleton className="size-full" />}</div>
+            <div className="flex size-full flex-col">{show3d ? preview : <Skeleton className="size-full" />}</div>
           </section>
         ) : null}
         {pro && view !== "3d" && editable ? (

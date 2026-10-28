@@ -93,7 +93,13 @@ export default defineConfig({
       origins: [
         {
           origin: baseURL,
-          localStorage: FIRST_RUN_KEYS.map((name) => ({ name: `getpack.firstRun.${name}`, value: "1" })),
+          localStorage: [
+            ...FIRST_RUN_KEYS.map((name) => ({ name: `getpack.firstRun.${name}`, value: "1" })),
+            // C8: the editor's first-open chooser counts as answered, in the pro mode (its inspector has the numeric
+            // fields older specs type into); the editor spec clears both.
+            { name: "getpack.editorWelcomed", value: "1" },
+            { name: "getpack.editorMode", value: "pro" },
+          ],
         },
       ],
     },

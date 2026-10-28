@@ -870,7 +870,7 @@
       "proHint": "Pro mode: rulers, values in mm, drawing tools, document colours and export"
     },
     "steps": {
-      "label": "Steps",
+      "label": "Design steps",
       "inspector": "Properties",
       "design": "Design",
       "check": "Check",

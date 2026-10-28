@@ -47,12 +47,17 @@ test("style card → studio → price → quantity → new price, every step rev
   // The first autosave creates the design (with its box and spec) and the address becomes its own.
   // A style card opens ②: the style is chosen, its size and material are next.
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
+  // C8: ② is the "กล่อง" panel beside the rail; the three steps are the inspector's tabs.
   const steps = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" });
-  await expect(steps.getByRole("button", { name: /ขนาดและวัสดุ/ })).toHaveAttribute("aria-current", "step");
+  const railBox = page
+    .getByRole("navigation", { name: "เครื่องมือออกแบบ" })
+    .getByRole("button", { name: "กล่อง", exact: true });
+  await expect(railBox).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "ใช้กล่องนี้ แล้วเริ่มออกแบบ" }).click();
   await expect(steps.getByRole("button", { name: /ออกแบบ/ })).toHaveAttribute("aria-current", "step");
 
-  // The dock prices the saved version.
+  // The dock (the สั่งผลิต tab) prices the saved version.
+  await steps.getByRole("button", { name: /สั่งผลิต/ }).click();
   const dock = page.getByRole("region", { name: "ราคาและการสั่งผลิต" });
   const perPiece = dock.locator("span.font-semibold").filter({ hasText: "฿" });
   await expect(perPiece).toBeVisible({ timeout: 15_000 });
@@ -67,14 +72,14 @@ test("style card → studio → price → quantity → new price, every step rev
   await expect(perPiece).not.toHaveText(first!, { timeout: 15_000 });
   await expect(dock.getByText(/เพราะเปลี่ยนจำนวน/)).toBeVisible();
 
-  // ④ and ⑤ wait for content; ② and back keeps the canvas.
-  await expect(steps.getByRole("button", { name: /ตรวจงาน/ })).toBeDisabled();
-  await steps.getByRole("button", { name: /ขนาดและวัสดุ/ }).click();
-  await expect(page).toHaveURL(/step=box/);
+  // Ordering waits for content (the top bar's สั่งผลิต); the box panel and back keeps the canvas.
+  const order = page.getByRole("banner").getByRole("button", { name: /^สั่งผลิต/ });
+  await expect(order).toBeDisabled();
+  await railBox.click();
   await expect(page.getByRole("button", { name: "ใช้กล่องนี้ แล้วเริ่มออกแบบ" })).toBeVisible();
   await page.getByRole("button", { name: "ใช้กล่องนี้ แล้วเริ่มออกแบบ" }).click();
   await addHeading(page);
-  await expect(steps.getByRole("button", { name: /ตรวจงาน/ })).toBeEnabled();
+  await expect(order).toBeEnabled();
   // Printing the artwork changes what is priced.
   const second = await perPiece.textContent();
   await expect(perPiece).not.toHaveText(second!, { timeout: 15_000 });
@@ -130,15 +135,15 @@ test("② the print method configures the editor and the price; a size that cann
   await expect(page.getByText(/^เฟล็กโซ: ใช้ \d+ จาก 3 สี$/)).toBeVisible();
 
   // No print: structure only — the artwork tools leave the rail.
-  const steps = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" });
-  await steps.getByRole("button", { name: /ขนาดและวัสดุ/ }).click();
+  const railBox = rail.getByRole("button", { name: "กล่อง", exact: true });
+  await railBox.click();
   await method.getByRole("radio", { name: /ไม่พิมพ์/ }).click();
   await page.getByRole("button", { name: "ใช้กล่องนี้ แล้วเริ่มออกแบบ" }).click();
   await expect(rail.getByRole("button", { name: "ข้อความ", exact: true })).toHaveCount(0);
   await expect(page.getByText("ไม่พิมพ์: ออกแบบได้เฉพาะโครงสร้าง")).toBeVisible();
 
   // A size the engine cannot make is refused with its reason.
-  await steps.getByRole("button", { name: /ขนาดและวัสดุ/ }).click();
+  await railBox.click();
   await page.getByRole("textbox", { name: "สูง" }).fill("2");
   await expect(page.getByText("ขนาดนี้ผลิตไม่ได้")).toBeVisible();
   await expect(page.getByRole("button", { name: "ใช้ขนาดนี้" })).toBeDisabled();
@@ -166,7 +171,8 @@ test("① describe your product → three boxes with reasons → ②", async ({ 
   await expectNoViolations(page);
 
   await results.getByRole("button", { name: "ใช้กล่องนี้" }).first().click();
-  const steps = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" });
-  await expect(steps.getByRole("button", { name: /ขนาดและวัสดุ/ })).toHaveAttribute("aria-current", "step");
+  await expect(
+    page.getByRole("navigation", { name: "เครื่องมือออกแบบ" }).getByRole("button", { name: "กล่อง", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
 });

@@ -195,8 +195,6 @@ export interface CanvasStudio {
 
 const RATIO_TYPES = new Set(["image", "text", "code"]);
 
-
-
 /** How each finish shows on the flat sheet (a preview: the 3D model and the print file use masks). */
 const FINISH_LOOK: Record<NonNullable<DesignElement["finish"]>, string> = {
   foil: "#c9a227",
@@ -942,8 +940,7 @@ export default function DesignCanvas({
     if (readOnly) return;
     if (pen) {
       // The double-click's second click added a point: finish without it.
-      setPen((p) => (p ? { ...p, points: p.points.slice(0, -1) } : p));
-      requestAnimationFrame(() => finishPen(false));
+      finishPen(false, pen.points.slice(0, -1));
       return;
     }
     // Double-click a text to type in place (C8).
@@ -978,15 +975,13 @@ export default function DesignCanvas({
     studio?.onToolDone();
   };
 
-  function finishPen(closed: boolean) {
-    setPen((current) => {
-      const element = current ? newPath(current.points, closed) : null;
-      if (element) {
-        addElement(element);
-        studio?.onToolDone();
-      }
-      return null;
-    });
+  function finishPen(closed: boolean, points: Pt[] = pen?.points ?? []) {
+    setPen(null);
+    const element = newPath(points, closed);
+    if (element) {
+      addElement(element);
+      studio?.onToolDone();
+    }
   }
 
   /** Opens the in-place text editor over a text element. */
