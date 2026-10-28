@@ -156,7 +156,7 @@ export async function HubCatalogue({
           <PriceTable
             items={shown}
             categoryNames={categoryNames}
-            vatLabel={tCatalog("price.vatIncluded")}
+            vatLabel={{ incl: tCatalog("price.vatIncluded"), excl: tCatalog("price.vatExcluded") }}
             labels={{
               instant: modeName("instant"),
               quote: modeName("quote"),

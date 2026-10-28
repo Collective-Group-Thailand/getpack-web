@@ -548,3 +548,16 @@
     padding: 1.25rem;
   }
 }
+
+/*
+ * "ราคารวม VAT / ไม่รวม VAT" (owner decision D-447, DECISIONS-STAGE-A §10.6). A price the API sent with both figures
+ * draws both, marked `data-vat-figure`; the reader's choice sits on the root as `data-vat-basis` (set by the switch,
+ * VAT-inclusive by default) and hides the other figure. Unlayered, so it wins over the `contents` utility.
+ */
+[data-vat-figure="excl"],
+:root[data-vat-basis="excl"] [data-vat-figure="incl"] {
+  display: none;
+}
+:root[data-vat-basis="excl"] [data-vat-figure="excl"] {
+  display: contents;
+}

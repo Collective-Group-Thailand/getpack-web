@@ -29,6 +29,7 @@ export type {
   AuditOutcome,
   CampaignStatus,
   CatalogStatus,
+  StockAvailability,
   ClaimStatus,
   CompanyStatus,
   ConfigVersionStatus,
@@ -111,7 +112,7 @@ import { STRUCTURAL_REQUEST_STATUS, STYLE_INTAKE_STATUS } from "./structural";
 import { SAMPLE_KIND, SAMPLE_STATUS } from "./sample";
 import { CONVERSATION_SLA, CONVERSATION_STATUS, RFQ_BASKET_STATUS } from "./conversation";
 import { ASSISTANT_OUTCOME } from "./assistant";
-import { CATALOG_STATUS, CONTENT_STATUS } from "./catalogue";
+import { CATALOG_STATUS, CONTENT_STATUS, STOCK_AVAILABILITY, stockAvailabilityOf } from "./catalogue";
 import { CLAIM_STATUS } from "./claim";
 import {
   COMPANY_STATUS,
@@ -306,6 +307,8 @@ export {
   BANK_ACCOUNT_STATUS,
   CAMPAIGN_STATUS,
   CATALOG_STATUS,
+  STOCK_AVAILABILITY,
+  stockAvailabilityOf,
   CLAIM_STATUS,
   COMPANY_STATUS,
   CONSULTATION_STATUS,
@@ -386,6 +389,7 @@ export const STATUS_MAPS = {
   bankAccount: BANK_ACCOUNT_STATUS,
   campaign: CAMPAIGN_STATUS,
   catalog: CATALOG_STATUS,
+  stockAvailability: STOCK_AVAILABILITY,
   claim: CLAIM_STATUS,
   company: COMPANY_STATUS,
   consultation: CONSULTATION_STATUS,

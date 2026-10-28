@@ -1,5 +1,5 @@
 import { defineStatusMap } from "./types";
-import type { CatalogStatus, ContentStatus } from "./contract";
+import type { CatalogStatus, ContentStatus, StockAvailability } from "./contract";
 
 /** A catalogue record: product type, pattern, material, stock product (B2.1). */
 export const CATALOG_STATUS = defineStatusMap<CatalogStatus>({
@@ -15,3 +15,12 @@ export const CONTENT_STATUS = defineStatusMap<ContentStatus>({
   published: { tone: "success", icon: "check", labelKey: "content.published" },
   archived: { tone: "neutral", icon: "archive", labelKey: "content.archived" },
 });
+
+/** A stock product on the storefront: on hand ("พร้อมส่ง") or out of stock ("สินค้าหมด", no cart — D-447 §10.4). */
+export const STOCK_AVAILABILITY = defineStatusMap<StockAvailability>({
+  in_stock: { tone: "primary", icon: "check", labelKey: "stockAvailability.in_stock" },
+  out_of_stock: { tone: "neutral", icon: "ban", labelKey: "stockAvailability.out_of_stock" },
+});
+
+/** The availability of a stock product as the API states it (`inStock`). */
+export const stockAvailabilityOf = (inStock: boolean): StockAvailability => (inStock ? "in_stock" : "out_of_stock");

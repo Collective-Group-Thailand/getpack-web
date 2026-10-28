@@ -53,9 +53,9 @@ export async function loadHubItems(query: { q?: string | null; category?: string
     skus.slice(index * PER_PAGE, (index + 1) * PER_PAGE),
   );
   const hintMaps = await Promise.all(chunks.map((chunk) => getPriceHints({ skus: chunk })));
-  const stockType = new Map(
+  const stockHints = new Map(
     hintMaps.flatMap((map) =>
-      [...map.values()].filter((hint) => hint.kind === "stock_product").map((hint) => [hint.key, hint.productTypeCode]),
+      [...map.values()].filter((hint) => hint.kind === "stock_product").map((hint) => [hint.key, hint] as const),
     ),
   );
 
@@ -64,6 +64,7 @@ export async function loadHubItems(query: { q?: string | null; category?: string
     return {
       kind: "catalog",
       key: card.slug,
+      id: null,
       nameTh: card.nameTh,
       nameEn: card.nameEn,
       mode: catalogMode(card, categoryCode),
@@ -72,6 +73,7 @@ export async function loadHubItems(query: { q?: string | null; category?: string
       imageUrl: card.imageUrl,
       imageAlt: null,
       startingPrice: card.availability === "rfq" ? null : card.startingPricePerPiece,
+      startingPriceExVat: card.availability === "rfq" ? null : card.startingPricePerPieceExVat,
       priceQuantity: card.availability === "rfq" ? null : (card.startingPriceAssumes?.quantity ?? null),
       specLabel: card.availability === "rfq" ? null : (card.startingPriceAssumes?.label ?? null),
       moq: card.moq,
@@ -82,11 +84,15 @@ export async function loadHubItems(query: { q?: string | null; category?: string
     };
   });
   const shelf = stock.map((product, index): HubItem => {
-    const productTypeCode = stockType.get(product.sku) ?? null;
+    const hint = stockHints.get(product.sku);
+    const productTypeCode = hint?.productTypeCode ?? null;
     const variant = photoVariant(product.images[0]?.variant);
+    // D-447 / §10.5: the API's unit price at the minimum order (first tier), with that quantity; none → no price.
+    const priced = hint?.startingFromPerPiece != null && hint.basis !== null;
     return {
       kind: "stock",
       key: product.sku,
+      id: product.id,
       nameTh: product.nameTh,
       nameEn: product.nameEn,
       mode: "stock",
@@ -94,9 +100,9 @@ export async function loadHubItems(query: { q?: string | null; category?: string
       productTypeCode,
       imageUrl: product.imageUrls[0] ?? null,
       imageAlt: variant?.alt ?? null,
-      // R1: the API publishes no "starting from" for stock yet (`price-hints` sends null) — nothing is shown.
-      startingPrice: null,
-      priceQuantity: null,
+      startingPrice: priced ? hint.startingFromPerPiece : null,
+      startingPriceExVat: priced ? hint.startingFromPerPieceExVat : null,
+      priceQuantity: priced ? hint.basis!.quantity : null,
       specLabel: null,
       moq: product.minOrderQty,
       unit: product.unit,

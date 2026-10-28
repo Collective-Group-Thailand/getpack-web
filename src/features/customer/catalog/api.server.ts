@@ -110,6 +110,8 @@ export type Page<T> = { data: T[]; meta: Schemas["PageMeta"] };
 export type { Configurator };
 export type SharedQuote = Schemas["SavedQuoteDto"];
 export type SupportChannels = Schemas["StoreSupportChannelsDto"];
+export type FeaturedServices = Schemas["StoreFeaturedServicesDto"];
+export type PublicConfig = Schemas["PublicConfigDto"];
 export type RfqForm = Schemas["StoreRfqFormDto"];
 export type SitemapEntry = Schemas["StoreSitemapEntryDto"];
 
@@ -268,6 +270,24 @@ export async function getSupportChannels(): Promise<SupportChannels | null> {
   const api = await publicApi("content");
   return orFallback(
     api.GET("/v1/store/support-channels").then(({ data }) => data ?? null),
+    null,
+  );
+}
+
+/** The add-on services staff feature (`store.catalog.getFeaturedServices`, D-447); `null` when unavailable. */
+export async function getFeaturedServices(): Promise<FeaturedServices | null> {
+  const api = await publicApi("content");
+  return orFallback(
+    api.GET("/v1/store/catalog/featured-services").then(({ data }) => data ?? null),
+    null,
+  );
+}
+
+/** The figures and company facts the storefront states (`store.publicConfig.get`, D-309, D-447); `null` when unavailable. */
+export async function getPublicConfig(): Promise<PublicConfig | null> {
+  const api = await publicApi("content");
+  return orFallback(
+    api.GET("/v1/store/public-config").then(({ data }) => data ?? null),
     null,
   );
 }

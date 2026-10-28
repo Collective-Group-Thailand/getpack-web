@@ -3,11 +3,14 @@ import { describe, expect, it } from "vitest";
 import {
   catalogMode,
   categoriesIn,
+  featuredServices,
   filterItems,
   instantLeadBand,
   modeCounts,
   modeSummary,
+  outOfStock,
   sortItems,
+  stockCartable,
   visibleBatch,
   type HubItem,
 } from "./hub";
@@ -16,6 +19,7 @@ let order = 0;
 const item = (over: Partial<HubItem>): HubItem => ({
   kind: "catalog",
   key: `k${order}`,
+  id: null,
   nameTh: "สินค้า",
   nameEn: "Product",
   mode: "quote",
@@ -24,6 +28,7 @@ const item = (over: Partial<HubItem>): HubItem => ({
   imageUrl: null,
   imageAlt: null,
   startingPrice: null,
+  startingPriceExVat: null,
   priceQuantity: null,
   specLabel: null,
   moq: null,
@@ -122,5 +127,44 @@ describe("the /products hub list (products redesign item 5)", () => {
       ]),
     ).toEqual({ min: 5, max: 10 });
     expect(instantLeadBand([item({ mode: "quote" })])).toBeNull();
+  });
+});
+
+describe("C1b owner decisions (D-447, DECISIONS-STAGE-A §10)", () => {
+  const stock = (over: Partial<HubItem>) =>
+    item({
+      kind: "stock",
+      mode: "stock",
+      id: "0192f3a0-0000-7000-8000-000000000005",
+      inStock: true,
+      startingPrice: "2.36",
+      priceQuantity: 500,
+      ...over,
+    });
+
+  it("§10.2/§10.4: a stock item goes in the cart only when on hand and priced at its minimum order", () => {
+    expect(stockCartable(stock({}))).toBe(true);
+    expect(stockCartable(stock({ inStock: false }))).toBe(false);
+    expect(stockCartable(stock({ startingPrice: null, priceQuantity: null }))).toBe(false);
+    expect(stockCartable(item({ mode: "instant", startingPrice: "4.50", priceQuantity: 300 }))).toBe(false);
+    expect(outOfStock(stock({ inStock: false }))).toBe(true);
+    expect(outOfStock(stock({ inStock: null }))).toBe(false);
+  });
+
+  it("§10.3: staff's chosen services in their order, else the first three; 'more' when some are not shown", () => {
+    const list = ["a", "b", "c", "d", "e"].map((key) => ({ key }));
+    expect(featuredServices(list, { curated: true, slugs: ["e", "gone", "b"] })).toEqual({
+      shown: [{ key: "e" }, { key: "b" }],
+      more: true,
+    });
+    expect(featuredServices(list, { curated: false, slugs: [] })).toEqual({
+      shown: [{ key: "a" }, { key: "b" }, { key: "c" }],
+      more: true,
+    });
+    expect(featuredServices(list, null).shown).toHaveLength(3);
+    expect(featuredServices(list.slice(0, 2), { curated: true, slugs: ["zz"] })).toEqual({
+      shown: [{ key: "a" }, { key: "b" }],
+      more: false,
+    });
   });
 });
