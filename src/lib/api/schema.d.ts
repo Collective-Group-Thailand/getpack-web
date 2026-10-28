@@ -11062,10 +11062,10 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Set my display unit
-         * @description The unit the web shows sizes in: mm, cm or in (D-183). Every size in the API stays in millimetres — a request that sends a unit is refused with `specs.unit_not_accepted`. Audited.
+         * Set my preferences
+         * @description The unit the web shows sizes in: mm, cm or in (D-183), and the Studio editor mode the person last chose: `easy` or `pro` (D-456). Send at least one; what is omitted is unchanged. Every size in the API stays in millimetres — a request that sends a unit is refused with `specs.unit_not_accepted`. Audited.
          *
-         *     Implements: D-183.
+         *     Implements: D-183, D-456.
          */
         patch: operations["admin.me.updatePreferences"];
         trace?: never;
@@ -26237,10 +26237,10 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Set my display unit
-         * @description The unit the web shows sizes in: mm, cm or in (D-183). Every size in the API stays in millimetres — a request that sends a unit is refused with `specs.unit_not_accepted`. Audited.
+         * Set my preferences
+         * @description The unit the web shows sizes in: mm, cm or in (D-183), and the Studio editor mode the person last chose: `easy` or `pro` (D-456). Send at least one; what is omitted is unchanged. Every size in the API stays in millimetres — a request that sends a unit is refused with `specs.unit_not_accepted`. Audited.
          *
-         *     Implements: D-183.
+         *     Implements: D-183, D-456.
          */
         patch: operations["partner.me.updatePreferences"];
         trace?: never;
@@ -30811,10 +30811,10 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Set my display unit
-         * @description The unit the web shows sizes in: mm, cm or in (D-183). Every size in the API stays in millimetres — a request that sends a unit is refused with `specs.unit_not_accepted`. Audited.
+         * Set my preferences
+         * @description The unit the web shows sizes in: mm, cm or in (D-183), and the Studio editor mode the person last chose: `easy` or `pro` (D-456). Send at least one; what is omitted is unchanged. Every size in the API stays in millimetres — a request that sends a unit is refused with `specs.unit_not_accepted`. Audited.
          *
-         *     Implements: D-183.
+         *     Implements: D-183, D-456.
          */
         patch: operations["store.me.updatePreferences"];
         trace?: never;
@@ -36391,6 +36391,11 @@ export interface components {
              * @example mm
              */
             displayUnit: components["schemas"]["DisplayUnit"];
+            /**
+             * @description The Studio editor's mode the person last chose (D-456); null until they choose
+             * @example easy
+             */
+            editorMode: components["schemas"]["EditorMode"] | null;
             /** @example user.one@example.com */
             email: string | null;
             /**
@@ -50612,6 +50617,11 @@ export interface components {
             /** @example 180.0 */
             p90Minutes: string | null;
         };
+        /**
+         * @description The Studio editor's mode the person last chose (D-456); null until they choose
+         * @enum {string}
+         */
+        EditorMode: "easy" | "pro";
         EnvelopeQuantityDto: {
             /**
              * @description Highest quantity; null = open
@@ -65786,6 +65796,11 @@ export interface components {
              * @example mm
              */
             displayUnit: components["schemas"]["DisplayUnit"];
+            /**
+             * @description The Studio editor's mode the person last chose (D-456); null until they choose
+             * @example easy
+             */
+            editorMode: components["schemas"]["EditorMode"] | null;
             /** @example user.one@example.com */
             email: string | null;
             /** @description Factories this user acts for (token scopes) */
@@ -78492,6 +78507,11 @@ export interface components {
              * @example mm
              */
             displayUnit: components["schemas"]["DisplayUnit"];
+            /**
+             * @description The Studio editor's mode the person last chose (D-456); null until they choose
+             * @example easy
+             */
+            editorMode: components["schemas"]["EditorMode"] | null;
             /** @example user.one@example.com */
             email: string | null;
             /**
@@ -83809,10 +83829,15 @@ export interface components {
         };
         UpdatePreferencesDto: {
             /**
-             * @description The unit the web shows sizes in (D-183); sizes are still sent and stored in millimetres
+             * @description The unit the web shows sizes in (D-183); sizes are still sent and stored in millimetres. Omitted = unchanged
              * @example cm
              */
-            displayUnit: components["schemas"]["DisplayUnit"];
+            displayUnit?: components["schemas"]["DisplayUnit"];
+            /**
+             * @description The Studio editor's mode (D-456): `easy` or `pro`. Omitted = unchanged
+             * @example pro
+             */
+            editorMode?: components["schemas"]["EditorMode"];
         };
         UpdatePrintTypeDto: {
             /** @example false */
@@ -166890,6 +166915,7 @@ export interface operations {
                      * @example {
                      *       "displayName": "การเงิน ทดสอบ",
                      *       "displayUnit": "mm",
+                     *       "editorMode": null,
                      *       "email": "finance.one@example.com",
                      *       "featureFlags": [],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
@@ -166994,6 +167020,7 @@ export interface operations {
                      * @example {
                      *       "displayName": "การเงิน ทดสอบ",
                      *       "displayUnit": "mm",
+                     *       "editorMode": null,
                      *       "email": "finance.one@example.com",
                      *       "featureFlags": [],
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
@@ -280514,6 +280541,7 @@ export interface operations {
                      * @example {
                      *       "displayName": "โรงงาน ทดสอบ",
                      *       "displayUnit": "mm",
+                     *       "editorMode": null,
                      *       "email": "planner@factory.example",
                      *       "factories": [
                      *         {
@@ -281025,6 +281053,7 @@ export interface operations {
                      * @example {
                      *       "displayName": "โรงงาน ทดสอบ",
                      *       "displayUnit": "mm",
+                     *       "editorMode": null,
                      *       "email": "planner@factory.example",
                      *       "factories": [
                      *         {
@@ -310649,6 +310678,7 @@ export interface operations {
                      * @example {
                      *       "displayName": "ลูกค้า ทดสอบ",
                      *       "displayUnit": "mm",
+                     *       "editorMode": null,
                      *       "email": "customer.one@example.com",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
                      *       "identities": [
@@ -311072,6 +311102,7 @@ export interface operations {
                      * @example {
                      *       "displayName": "ลูกค้า ทดสอบ",
                      *       "displayUnit": "mm",
+                     *       "editorMode": null,
                      *       "email": "customer.one@example.com",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
                      *       "identities": [
@@ -311506,6 +311537,7 @@ export interface operations {
                      * @example {
                      *       "displayName": "ลูกค้า ทดสอบ",
                      *       "displayUnit": "mm",
+                     *       "editorMode": null,
                      *       "email": "customer.one@example.com",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
                      *       "identities": [
