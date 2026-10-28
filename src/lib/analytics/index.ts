@@ -21,3 +21,4 @@ export { trackCatalog, type CatalogEventName, type CatalogEvents } from "./catal
 export { trackConfigurator, type ConfiguratorEventName, type ConfiguratorEvents } from "./configurator";
 export { trackProducts, type ProductsEventName, type ProductsEvents } from "./products";
 export { trackPdp, type PdpEventName, type PdpEvents } from "./pdp";
+export { trackCategory, type CategoryEventName, type CategoryEvents } from "./category";
