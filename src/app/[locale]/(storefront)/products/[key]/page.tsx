@@ -15,8 +15,11 @@ type Params = Promise<{ locale: string; key: string }>;
 type SearchParams = Promise<{
   type?: string | string[];
   page?: string | string[];
-  f?: string | string[];
   sort?: string | string[];
+  view?: string | string[];
+  mode?: string | string[];
+  use?: string | string[];
+  size?: string | string[];
 }>;
 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) || undefined;
@@ -72,7 +75,7 @@ export default async function ProductKeyPage({ params, searchParams }: { params:
       <CategoryView
         category={resolved.category}
         tree={resolved.tree}
-        typeCode={one(query.type)}
+        params={{ type: one(query.type), use: one(query.use), size: one(query.size) }}
         query={readHubParams(query)}
       />
     );
