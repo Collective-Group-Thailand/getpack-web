@@ -95,9 +95,10 @@ test.describe("the products hub", () => {
       .click();
     await expect(page).toHaveURL(`${HOSTS.customer}/products/corrugated`);
     await expect(page.getByRole("heading", { level: 1, name: "กล่องกระดาษลูกฟูก" })).toBeVisible();
-    await page.getByRole("link", { name: "ตารางราคา" }).click();
+    // C2 (category Phase 1): up to eight items list as rows ⇄ the comparison table.
+    await page.getByRole("link", { name: "ตารางเปรียบเทียบ" }).click();
     await expect(page).toHaveURL(/\/products\/corrugated\?view=table/);
-    await expect(page.getByRole("table", { name: "ตารางราคาเริ่มต้น" })).toBeVisible();
+    await expect(page.getByRole("table", { name: "ตารางเปรียบเทียบสินค้าในหมวด" })).toBeVisible();
   });
 
   test("no horizontal scroll on a phone", async ({ page }) => {
