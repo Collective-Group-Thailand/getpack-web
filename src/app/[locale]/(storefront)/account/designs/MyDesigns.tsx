@@ -184,7 +184,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
             />
           </Field>
           <Button asChild size="sm">
-            <Link href="/studio/new">{t("new")}</Link>
+            <Link href="/studio">{t("new")}</Link>
           </Button>
         </div>
       </div>
@@ -208,7 +208,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
           action={
             rows.length ? null : (
               <Button asChild>
-                <Link href="/studio/new">{t("empty.action")}</Link>
+                <Link href="/studio">{t("empty.action")}</Link>
               </Button>
             )
           }

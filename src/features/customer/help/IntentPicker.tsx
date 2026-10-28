@@ -26,7 +26,9 @@ function pathFor(intent: Intent, here: Here, productSlug: string | null): string
     case "need_design":
       return here === "studio"
         ? null
-        : `/studio/new${productSlug ? `?product=${encodeURIComponent(productSlug)}` : ""}`;
+        : productSlug
+          ? `/studio/new?product=${encodeURIComponent(productSlug)}`
+          : "/studio";
     case "reorder":
       return "/account";
   }

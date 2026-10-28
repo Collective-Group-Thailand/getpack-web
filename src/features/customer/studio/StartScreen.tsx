@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { STYLES } from "@getpack/dieline";
 import { DesignThumb } from "@/features/customer/account/DesignThumb";
 import type { DesignerCatalog } from "@/features/designer/data/api";
 import type { DesignSpec } from "@/features/designer/types";
@@ -19,7 +18,7 @@ import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { DescribeProduct } from "./DescribeProduct";
-import { studioHref } from "./paths";
+import { sampleHref } from "./paths";
 
 type Intent = "box" | "product" | "file" | "reorder";
 
@@ -68,7 +67,9 @@ export function StartScreen({
   // `/studio/new?start=product` (the studio's front door, "มีสินค้าแล้ว") opens on describing it.
   const search = useSearchParams();
   const [describing, setDescribing] = useState(search.get("start") === "product");
-  const configure = productSlug ? `/configure/${productSlug}` : "/products";
+  // C7 (studio Phase 0 §4.1): the own-file path is the upload flow — on this product with its own file, else the
+  // own-file product list (GLOBAL-RULES §6: the file is uploaded after ordering and checked by the team).
+  const configure = productSlug ? `/configure/${productSlug}?design=own_file` : "/studio/upload";
   const recent = useQuery({
     queryKey: ["studio", "start", "recent"],
     enabled: signedIn,
@@ -87,20 +88,13 @@ export function StartScreen({
       "focus-visible:ring-focus-ring focus-visible:ring-2",
       popular ? "border-primary border-[1.5px]" : "border-border",
     );
-  const body = (intent: Intent, popular = false) => (
+  const body = (intent: Intent) => (
     <>
-      {popular ? (
-        <span className="bg-primary-subtle text-primary-subtle-fg rounded-control absolute end-4 top-4 px-2 py-0.5 text-[11px] font-semibold">
-          {t("popular")}
-        </span>
-      ) : null}
       <span className={cn("rounded-control grid size-13 place-items-center", TILE[intent].className)}>
         <Icon name={TILE[intent].icon} size={24} aria-hidden="true" />
       </span>
       <span className="mt-5 text-lg leading-snug font-semibold">{t(`${intent}.title`)}</span>
-      <span className="text-muted mt-2 text-sm leading-relaxed">
-        {intent === "box" ? t("box.body", { count: STYLES.length }) : t(`${intent}.body`)}
-      </span>
+      <span className="text-muted mt-2 text-sm leading-relaxed">{t(`${intent}.body`)}</span>
       <span className="text-primary mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold">
         {t(`${intent}.go`)}
         <Icon
@@ -138,7 +132,7 @@ export function StartScreen({
       <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <li>
           <button type="button" onClick={onChooseBox} className={card(true)}>
-            {body("box", true)}
+            {body("box")}
           </button>
         </li>
         <li>
@@ -200,12 +194,7 @@ export function StartScreen({
             : null}
           <li className={cn(designs.length === 0 && "md:col-start-2")}>
             <Link
-              href={studioHref({
-                ...(productSlug ? { product: productSlug } : {}),
-                style: "tuck-end",
-                dims: { l: 70, w: 40, h: 150 },
-                step: "design",
-              })}
+              href={sampleHref(productSlug)}
               className="bg-surface border-border text-muted hover:text-fg hover:border-primary focus-visible:ring-focus-ring rounded-card flex h-full min-h-[5.75rem] items-center justify-center gap-2 border border-dashed px-4 text-center text-sm font-medium outline-none focus-visible:ring-2"
             >
               <Icon name="sparkles" size={16} aria-hidden="true" />

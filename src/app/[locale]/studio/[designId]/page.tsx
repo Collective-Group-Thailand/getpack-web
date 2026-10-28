@@ -9,6 +9,8 @@ import { getMyDesign } from "@/features/customer/designer/api.server";
 import { seedOf, text, uuid, type Query } from "@/features/customer/designer/seed";
 import { Studio } from "@/features/customer/studio/Studio";
 import { boxFieldsOf, documentOf } from "@/features/designer/data/published";
+import { hubRedirectOf } from "@/features/customer/studio/hub-redirect";
+import { permanentRedirect } from "@/i18n/navigation";
 import { getActor } from "@/lib/auth/actor";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,10 +28,15 @@ export default async function StudioPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ designId: string }>;
+  params: Promise<{ designId: string; locale: string }>;
   searchParams: Promise<Query>;
 }) {
-  const [{ designId: id }, query, actor] = await Promise.all([params, searchParams, getActor("customer")]);
+  const [{ designId: id, locale }, query] = await Promise.all([params, searchParams]);
+  // C7 (studio Phase 0/1): `/studio/new` with nothing to draw is no longer a second hub — it lands on `/studio`,
+  // keeping its other parameters (`start=product` scrolls to the finder).
+  const hub = id === "new" ? hubRedirectOf(query) : null;
+  if (hub) permanentRedirect({ href: hub, locale });
+  const actor = await getActor("customer");
   const signedIn = actor !== null;
 
   const saved = signedIn && id !== "new" ? await getMyDesign(id) : null;
