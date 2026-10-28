@@ -8,6 +8,9 @@ import type { Schemas } from "@/lib/api/types";
 export type OrderGroup = Schemas["OrderGroupDto"];
 export type Order = Schemas["OrderDto"];
 export type OrderView = "active" | "completed" | "cancelled";
+/** D-453: the account list's tabs (`store.orders.listGroups?tab=`), the API's rules over the customer status. */
+export type OrderTab = Schemas["StoreOrderTab"];
+export type OrderTabCounts = Schemas["StoreOrderTabCountsDto"];
 
 /** An order and what its page shows beside it, each from its own published read. */
 export interface OrderDetail {
@@ -72,6 +75,27 @@ export async function listMyOrders(view?: OrderView): Promise<OrderRow[]> {
   );
 }
 
+/** How many of the customer's orders each tab holds (`store.orders.tabCounts`, D-453). */
+export async function getOrderTabCounts(): Promise<OrderTabCounts> {
+  const { data } = await (await serverApi("customer")).GET("/v1/store/order-tabs");
+  return data!;
+}
+
+/** One page of the account list (D-453): the groups with orders in `tab` matching `q`, as the API filters them. */
+export async function listOrderPage(
+  tab: OrderTab,
+  q: string,
+  page: number,
+  perPage = 20,
+): Promise<{ groups: OrderGroup[]; total: number }> {
+  const { data } = await (
+    await serverApi("customer")
+  ).GET("/v1/store/order-groups", {
+    params: { query: { tab, page, perPage, ...(q ? { q } : {}) } },
+  });
+  return { groups: data!.data, total: data!.meta.total };
+}
+
 /**
  * The group an order belongs to, found by the order's code (`store.orders.listGroups?q=`).
  * CONTRACT-GAP store.order-group-ref — `OrderDto` does not name its group.
@@ -99,7 +123,11 @@ export async function getMyOrder(orderId: string): Promise<OrderDetail | null> {
   if (!order) return null;
   const path = { params: { path: { orderId } } };
   const [group, instalments, timeline, progress, shipments, documents, claims] = await Promise.all([
-    findGroupOf(order.orderCode),
+    orNull(
+      api
+        .GET("/v1/store/order-groups/{groupId}", { params: { path: { groupId: order.payment.groupId } } })
+        .then(({ data }) => data!),
+    ),
     orNull(api.GET("/v1/store/instalments", { params: { query: { perPage: 100 } } }).then(({ data }) => data!.data)),
     orNull(api.GET("/v1/store/orders/{orderId}/timeline", path).then(({ data }) => data!.data)),
     orNull(api.GET("/v1/store/orders/{orderId}/progress", path).then(({ data }) => data!)),

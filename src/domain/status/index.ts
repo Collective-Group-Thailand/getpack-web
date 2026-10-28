@@ -501,3 +501,4 @@ export const STATUS_MAPS = {
   agentPlanVersion: AGENT_PLAN_VERSION_STATUS,
   agentFactoryLink: AGENT_FACTORY_LINK_STATUS,
 } as const;
+export { CUSTOMER_ORDER_STAGE, ORDER_STAGES, type OrderStage } from "./customer-order";

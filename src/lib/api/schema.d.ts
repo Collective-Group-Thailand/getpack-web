@@ -30922,9 +30922,9 @@ export interface paths {
         };
         /**
          * List my order groups
-         * @description Newest first; each group holds one order per configuration. The payment deadline is shown while unpaid (D-060) and an overdue group is re-quoted, never cancelled (`paymentOverdue`, D-436).
+         * @description Newest first; each group holds one order per configuration. The payment deadline is shown while unpaid (D-060) and an overdue group is re-quoted, never cancelled (`paymentOverdue`, D-436). `tab` keeps the orders of one tab of the account list and `q` searches the order or group code, the PO number and the product name (D-453); with either, each group lists only its matching orders and `meta.total` counts those groups.
          *
-         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439.
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439, D-453.
          */
         get: operations["store.orders.listGroups"];
         put?: never;
@@ -31067,6 +31067,28 @@ export interface paths {
          *     Implements: D-061, D-020, D-176, D-436.
          */
         post: operations["store.payments.initiate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/order-tabs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Count my orders per tab
+         * @description How many of my orders each tab of the account list holds (D-453): `active`, `todo` (I act next — the account menu badge), `in_production`, `shipping`, `completed`, `cancelled`, and `claimInReview` (delivered, claim being reviewed). Same rules as `store.orders.listGroups?tab=`.
+         *
+         *     Implements: D-060, D-073, D-142, D-050, D-436, D-437, D-438, D-439, D-453.
+         */
+        get: operations["store.orders.tabCounts"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -78520,6 +78542,33 @@ export interface components {
             /** @example material */
             kind: components["schemas"]["OfferableOptionKind"];
             options: components["schemas"]["StoreOptionDto"][];
+        };
+        /** @enum {string} */
+        StoreOrderTab: "active" | "todo" | "in_production" | "shipping" | "completed" | "cancelled";
+        StoreOrderTabCountsDto: {
+            /**
+             * @description Not completed or cancelled
+             * @example 3
+             */
+            active: number;
+            /** @example 1 */
+            cancelled: number;
+            /**
+             * @description Delivered orders whose claim is being reviewed ("ได้รับแล้ว · เคลมกำลังตรวจ")
+             * @example 1
+             */
+            claimInReview: number;
+            /** @example 4 */
+            completed: number;
+            /** @example 0 */
+            in_production: number;
+            /** @example 0 */
+            shipping: number;
+            /**
+             * @description The customer acts next (`actionOwner = customer`) — the account menu badge
+             * @example 2
+             */
+            todo: number;
         };
         StorePatternDto: {
             /** @example RTE-01 */
@@ -311983,6 +312032,8 @@ export interface operations {
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
                 sort?: string;
                 status?: components["schemas"]["OrderGroupStatus"];
+                /** @description Only orders in this tab of the account list (D-453): `active` not finished · `todo` the customer acts next (`actionOwner = customer`) · `in_production` / `shipping` / `completed` / `cancelled` by `customerStatus`. Each group then lists only its orders in the tab; its totals and deadline stay the whole group's. */
+                tab?: components["schemas"]["StoreOrderTab"];
             };
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
@@ -313659,6 +313710,85 @@ export interface operations {
             };
             /** @description Problem: `provider.unavailable` */
             503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.orders.tabCounts": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Orders per tab */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "active": 3,
+                     *       "cancelled": 1,
+                     *       "claimInReview": 1,
+                     *       "completed": 4,
+                     *       "in_production": 0,
+                     *       "shipping": 0,
+                     *       "todo": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StoreOrderTabCountsDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

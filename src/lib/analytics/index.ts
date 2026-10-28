@@ -23,3 +23,4 @@ export { trackProducts, type ProductsEventName, type ProductsEvents } from "./pr
 export { trackPdp, type PdpEventName, type PdpEvents } from "./pdp";
 export { trackCategory, type CategoryEventName, type CategoryEvents } from "./category";
 export { trackCheckout, type CheckoutEventName, type CheckoutEvents, type CheckoutStep } from "./checkout";
+export { trackAccount, type AccountEventName, type AccountEvents } from "./account";

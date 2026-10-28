@@ -59,7 +59,7 @@
     "overview": "Overview",
     "orders": "Orders",
     "instalments": "Instalments",
-    "documents": "Documents & tax invoices",
+    "documents": "Documents",
     "quotes": "Quotations",
     "rfqs": "Quote requests",
     "designs": "Designs",
@@ -82,11 +82,21 @@
       "work": "My work",
       "company": "My company",
       "companyNamed": "My company · {name}",
-      "account": "Account"
+      "account": "Account",
+      "buy": "Buying",
+      "records": "Records & account"
     },
     "agent": "Sales agent",
     "menuOpen": "Account menu",
-    "menuCurrent": "This page: {page}"
+    "menuCurrent": "This page: {page}",
+    "reorder": "Reorder",
+    "rewards": "Points & rewards",
+    "profile": "Account details",
+    "company": "My company",
+    "companyNamed": "Company · {name}",
+    "me": {
+      "points": "{points} points"
+    }
   },
   "home": {
     "title": "My account",
@@ -119,7 +129,25 @@
     "approvalsForYou": "{count, plural, one {# order} other {# orders}} waiting for your approval",
     "approvalsForYouBody": "{company} orders above the buyer's limit",
     "approvalsOpen": "Open approvals →",
-    "tierNotYetCounted": "{amount} more will count once your orders complete"
+    "tierNotYetCounted": "{amount} more will count once your orders complete",
+    "latest": "Latest orders",
+    "allOrders": "See all orders",
+    "noOrders": "No orders in progress",
+    "browse": "Browse products",
+    "openQuotes": "Quotations with a locked price",
+    "allQuotes": "See all quotations",
+    "lockedUntil": "price locked until {date}",
+    "openQuote": "View quotation",
+    "rewards": "Points & rewards",
+    "pointsTitle": "Points",
+    "creditTitle": "Store credit",
+    "creditBody": "Use it as a discount at checkout",
+    "seeCredit": "See store credit",
+    "company": "Company · {name}",
+    "companyCatalogue": "Order from the company catalogue",
+    "companyApprovals": "Approval requests ({count})",
+    "companyCredit": "Company credit",
+    "companyOrders": "Company orders"
   },
   "quotes": {
     "title": "Saved quotations",
@@ -576,5 +604,23 @@
       "withdrawn": "Correction request withdrawn"
     },
     "toOrders": "See my orders"
+  },
+  "tabs": {
+    "label": "Pages in this section",
+    "quotes": "Quotations",
+    "rfqs": "Quote requests",
+    "designs": "Designs",
+    "samples": "Samples",
+    "structuralRequests": "Structural design requests",
+    "replenishment": "Scheduled reorders",
+    "callOffs": "Call-off agreements",
+    "points": "Points",
+    "wallet": "Store credit",
+    "referral": "Invite friends",
+    "agent": "Sales agent",
+    "addresses": "Addresses & tax invoice",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "team": "Team & approvers"
   }
 }

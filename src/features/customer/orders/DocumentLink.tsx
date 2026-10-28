@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { trackAccount } from "@/lib/analytics/account";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { Button } from "@/ui/components/Button";
@@ -13,7 +14,16 @@ import { toast } from "@/ui/components/Toast";
  * click, then opened by a second, explicit click — a tab opened after an await is a pop-up to the
  * browser, and blocked.
  */
-export function DocumentLink({ documentId, number }: { documentId: string; number: string }) {
+export function DocumentLink({
+  documentId,
+  number,
+  docType,
+}: {
+  documentId: string;
+  number: string;
+  /** Set on the order page: the download reports `order_doc_download` (C6). */
+  docType?: string;
+}) {
   const t = useTranslations("myOrders.documents");
   const [url, setUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -36,6 +46,7 @@ export function DocumentLink({ documentId, number }: { documentId: string; numbe
       loading={busy}
       onClick={async () => {
         setBusy(true);
+        if (docType) trackAccount("order_doc_download", { type: docType });
         try {
           // `store.documents.pdf`: 409 until the PDF is rendered.
           const { data: signed } = await browserApi().GET("/v1/store/documents/{documentId}/pdf", {

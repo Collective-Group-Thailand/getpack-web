@@ -179,6 +179,106 @@
       "due": "Pay by {date}",
       "overdue": "Payment overdue ({date})",
       "dueTerm": "Pay by"
+    },
+    "head": {
+      "group": "Group {code}"
+    },
+    "history": {
+      "show": "Show full history ({count})",
+      "hide": "Hide history",
+      "label": "Order history"
+    },
+    "claim": {
+      "title": "Claim {claim}",
+      "submitted": "Reported",
+      "type": "Issue",
+      "received": "Quantity received",
+      "receivedValue": "{received} / {ordered} {unit}",
+      "credit": "Credit issued",
+      "creditWithNote": "{amount} · credit note {note}",
+      "howResults": "We post the result in this order's messages and notify you by e-mail and LINE. Add photos or details until the claim closes.",
+      "add": "Add photos or details",
+      "view": "View claim"
+    },
+    "claimWindow": "Report a problem until {date}",
+    "spec": {
+      "title": "Spec & design",
+      "design": "Open design “{title}” (v{versionNo})"
+    },
+    "messages": {
+      "title": "Messages about this order",
+      "body": "Ask the getpack team about this order here; every message stays in your inbox."
+    },
+    "asideLabel": "Payment and documents",
+    "allDocuments": "All documents",
+    "reorder": {
+      "title": "Reorder",
+      "body": "Same spec and artwork, at today's price",
+      "action": "Reorder {quantity} pcs"
+    },
+    "evidence": {
+      "production": "Production photo {n}",
+      "delivery": "Proof-of-delivery photo {n}",
+      "productionTitle": "Production photos",
+      "deliveryTitle": "Proof of delivery",
+      "close": "Close"
+    },
+    "journey": {
+      "stages": {
+        "payment": "Payment",
+        "artwork": "Artwork",
+        "approval": "Approval",
+        "production": "Production",
+        "delivery": "Delivery",
+        "receipt": "Receipt"
+      },
+      "state": {
+        "done": "done",
+        "now": "current step",
+        "todo": "not yet"
+      },
+      "overdue": "Payment deadline passed: re-check the price and delivery date, then pay",
+      "productionSteps": "Production steps",
+      "cartons": "{count, plural, one {# carton} other {# cartons}}",
+      "carrier": {
+        "getpack": "getpack delivery",
+        "flash_express": "Flash Express",
+        "deliveree": "Deliveree"
+      },
+      "received": "Received {received} of {ordered} pcs",
+      "receivedCredit": "Received {received} of {ordered} pcs · the shortfall credited {credit}",
+      "text": {
+        "payment": {
+          "done": "Paid",
+          "now": "Waiting for payment; production starts once paid",
+          "todo": "Pay before production"
+        },
+        "artwork": {
+          "done": "Artwork received",
+          "now": "Waiting for artwork; see the next step below",
+          "todo": "Send your artwork or wait for our dieline"
+        },
+        "approval": {
+          "done": "Artwork approved",
+          "now": "Checking the file and proof",
+          "todo": "We check the file and send a proof for approval"
+        },
+        "production": {
+          "done": "Production finished",
+          "now": "In production",
+          "todo": "Starts after payment and approval"
+        },
+        "delivery": {
+          "done": "Shipped",
+          "now": "On the way",
+          "todo": "Ships when production is finished"
+        },
+        "receipt": {
+          "done": "Delivered",
+          "now": "Waiting for delivery",
+          "todo": "Check the goods on arrival"
+        }
+      }
     }
   },
   "tolerance": {
@@ -384,5 +484,114 @@
     "notDue": "This order is not yet due for a new price check.",
     "failed": "We couldn’t check the price. Please try again.",
     "retry": "Try again"
+  },
+  "list": {
+    "title": "Orders",
+    "intro": "Track every order, pay, send files and reorder here",
+    "export": "Export",
+    "newOrder": "New order",
+    "placed": "Order {code} placed",
+    "tabsLabel": "Order status",
+    "tabs": {
+      "active": "In progress",
+      "todo": "To do",
+      "in_production": "In production",
+      "shipping": "On the way",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "searchLabel": "Search orders",
+    "searchPlaceholder": "Search order no., product or PO number",
+    "searchClear": "Clear search",
+    "searchResults": "Orders found: {count}",
+    "empty": {
+      "active": "No orders in progress",
+      "todo": "Nothing to do right now",
+      "in_production": "No orders in production",
+      "shipping": "No orders on the way",
+      "completed": "No completed orders yet",
+      "cancelled": "No cancelled orders"
+    },
+    "emptyBody": "New orders appear here with the next step to take",
+    "emptySearch": "No orders match “{q}”",
+    "browse": "Browse products",
+    "qty": "{quantity} {unit}",
+    "placedOn": "Ordered {date}",
+    "overdue": "Payment overdue",
+    "file": "File: {status}",
+    "due": {
+      "afterPayment": "Delivery date set after payment",
+      "eta": "Expected <b>{date}</b>",
+      "shipBy": "Ships by <b>{date}</b>",
+      "received": "Received <b>{received} / {ordered}</b> pcs",
+      "receivedCredit": "Received <b>{received} / {ordered}</b> pcs · credit <b>{credit}</b>",
+      "deliveredOn": "Delivered {date}"
+    },
+    "actions": {
+      "pay": "Pay",
+      "viewClaim": "View claim"
+    },
+    "stages": {
+      "payment": "Payment",
+      "artwork": "Artwork",
+      "approval": "Approval",
+      "production": "Production",
+      "delivery": "Delivery",
+      "receipt": "Receipt",
+      "currentOf": "Step {n} of {total}: {stage}",
+      "allDone": "All steps done"
+    },
+    "group": {
+      "label": "Paid together {code}",
+      "title": "Paid together {code}",
+      "count": "{count, plural, one {# order} other {# orders}}",
+      "dueBy": "by {date}",
+      "late": "Payment overdue",
+      "pay": "Pay {amount}"
+    },
+    "todo": {
+      "title": "To do now",
+      "pay": "Pay {amount}",
+      "payGroup": "Pay {amount} together",
+      "orderCount": "{count, plural, one {# order} other {# orders}}",
+      "dueBy": "by {date}",
+      "late": "Payment overdue",
+      "payAction": "Pay",
+      "uploadOne": "Send artwork for {code}",
+      "uploadMany": "Send artwork for {count} orders",
+      "uploadDetail": "Download the dieline, place your artwork, then upload",
+      "uploadAction": "Send artwork",
+      "dielineTitle": "Artwork for {code}",
+      "dielineDetail": "Our team is preparing the dieline; we will tell you when it is ready for your artwork",
+      "details": "View details",
+      "receiveOne": "Confirm receipt of {code}",
+      "receiveMany": "Confirm receipt of {count} orders",
+      "receiveDetail": "Received everything? Confirm to close the order; report a problem from the order page",
+      "receiveAction": "Confirm receipt",
+      "claims": "{count, plural, one {# claim} other {# claims}} under review",
+      "claimDetail": "{claim} · order {code}",
+      "claimAction": "View progress"
+    },
+    "pagination": {
+      "nav": "Order pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page}"
+    },
+    "exportColumns": {
+      "order": "Order no.",
+      "product": "Product",
+      "quantity": "Quantity",
+      "unit": "Unit",
+      "placed": "Ordered",
+      "status": "Status",
+      "artwork": "Artwork",
+      "shipBy": "Ships by",
+      "total": "Total (THB incl. VAT)",
+      "group": "Payment group",
+      "po": "PO number",
+      "afterPayment": "Set after payment"
+    },
+    "loading": "Loading orders…"
   }
 }

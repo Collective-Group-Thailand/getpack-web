@@ -59,7 +59,7 @@
     "overview": "ภาพรวม",
     "orders": "คำสั่งซื้อ",
     "instalments": "งวดชำระ",
-    "documents": "เอกสารและใบกำกับภาษี",
+    "documents": "เอกสาร",
     "quotes": "ใบเสนอราคา",
     "rfqs": "คำขอใบเสนอราคา",
     "designs": "งานออกแบบ",
@@ -82,11 +82,21 @@
       "work": "งานของฉัน",
       "company": "บริษัทของฉัน",
       "companyNamed": "บริษัทของฉัน · {name}",
-      "account": "บัญชี"
+      "account": "บัญชี",
+      "buy": "ซื้อ",
+      "records": "เอกสารและบัญชี"
     },
     "agent": "ตัวแทนขาย",
     "menuOpen": "เมนูบัญชี",
-    "menuCurrent": "หน้านี้: {page}"
+    "menuCurrent": "หน้านี้: {page}",
+    "reorder": "สั่งซ้ำ",
+    "rewards": "คะแนนและสิทธิพิเศษ",
+    "profile": "ข้อมูลบัญชี",
+    "company": "บริษัทของฉัน",
+    "companyNamed": "บริษัท · {name}",
+    "me": {
+      "points": "{points} คะแนน"
+    }
   },
   "home": {
     "title": "บัญชีของฉัน",
@@ -119,7 +129,25 @@
     "approvalsForYou": "รออนุมัติจากคุณ {count} รายการ",
     "approvalsForYouBody": "คำสั่งซื้อของ {company} ที่เกินวงเงินผู้สั่งซื้อ",
     "approvalsOpen": "เปิดคำขออนุมัติ →",
-    "tierNotYetCounted": "อีก {amount} จะนับเมื่อคำสั่งซื้อเสร็จสิ้น"
+    "tierNotYetCounted": "อีก {amount} จะนับเมื่อคำสั่งซื้อเสร็จสิ้น",
+    "latest": "คำสั่งซื้อล่าสุด",
+    "allOrders": "ดูคำสั่งซื้อทั้งหมด",
+    "noOrders": "ยังไม่มีคำสั่งซื้อที่กำลังดำเนินการ",
+    "browse": "เลือกสินค้า",
+    "openQuotes": "ใบเสนอราคาที่ราคายังคงที่",
+    "allQuotes": "ดูใบเสนอราคาทั้งหมด",
+    "lockedUntil": "ราคาคงที่ถึง {date}",
+    "openQuote": "ดูใบเสนอราคา",
+    "rewards": "คะแนนและสิทธิพิเศษ",
+    "pointsTitle": "คะแนนสะสม",
+    "creditTitle": "เครดิตร้านค้า",
+    "creditBody": "ใช้เป็นส่วนลดได้ตอนชำระเงิน",
+    "seeCredit": "ดูเครดิตร้านค้า",
+    "company": "บริษัท · {name}",
+    "companyCatalogue": "สั่งจากแคตตาล็อกบริษัท",
+    "companyApprovals": "คำขออนุมัติ ({count})",
+    "companyCredit": "วงเงินบริษัท",
+    "companyOrders": "คำสั่งซื้อของบริษัท"
   },
   "quotes": {
     "title": "ใบเสนอราคาที่บันทึกไว้",
@@ -576,5 +604,23 @@
       "withdrawn": "ถอนคำขอแก้ไขแล้ว"
     },
     "toOrders": "ดูคำสั่งซื้อ"
+  },
+  "tabs": {
+    "label": "หน้าในหมวดนี้",
+    "quotes": "ใบเสนอราคา",
+    "rfqs": "คำขอใบเสนอราคา",
+    "designs": "งานออกแบบ",
+    "samples": "ตัวอย่างสินค้า",
+    "structuralRequests": "คำขอออกแบบโครงสร้าง",
+    "replenishment": "สั่งซ้ำตามรอบ",
+    "callOffs": "สัญญาเรียกของ",
+    "points": "คะแนนสะสม",
+    "wallet": "เครดิตร้านค้า",
+    "referral": "ชวนเพื่อน",
+    "agent": "ตัวแทนขาย",
+    "addresses": "ที่อยู่และใบกำกับภาษี",
+    "notifications": "การแจ้งเตือน",
+    "privacy": "ความเป็นส่วนตัว",
+    "team": "ทีมและผู้อนุมัติ"
   }
 }

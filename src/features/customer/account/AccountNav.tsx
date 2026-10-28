@@ -5,8 +5,11 @@ import { useTranslations } from "next-intl";
 
 import { SignOutButton } from "@/features/shared/auth/SignOutButton";
 import { Link } from "@/i18n/navigation";
-import { Icon, type IconName } from "@/ui/icons";
+import { Avatar } from "@/ui/components/Avatar";
+import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
+
+import { ACCOUNT_SECTIONS, type AccountSection, COMPANY_SECTION, plainPath, sectionOf } from "./sections";
 
 /** What the member's company roles open (`CompanyDto.can`) — only the parts this nav reads. */
 export interface AccountCompany {
@@ -22,117 +25,70 @@ export interface AccountCompany {
   pendingApprovals: number;
 }
 
-interface Item {
-  key: string;
-  href: string;
-  icon: IconName;
-  /** Matches only this path, not what is under it (`/business` is not every business page). */
-  exact?: boolean;
-  badge?: number;
-  /** The label's namespace: the account's own, or the business pages'. */
-  ns?: "business";
-}
-
-interface Group {
-  key: "orders" | "work" | "company" | "account";
-  items: Item[];
-}
-
-function groupsFor(company: AccountCompany | null): Group[] {
-  const groups: Group[] = [
-    {
-      key: "orders",
-      items: [
-        { key: "orders", href: "/account/orders", icon: "package" },
-        { key: "instalments", href: "/account/instalments", icon: "wallet" },
-        { key: "documents", href: "/account/documents", icon: "document" },
-        { key: "quotes", href: "/account/quotes", icon: "receipt" },
-        { key: "rfqs", href: "/account/rfqs", icon: "inbox" },
-        { key: "messages", href: "/account/messages", icon: "chat" },
-      ],
-    },
-    {
-      key: "work",
-      items: [
-        { key: "designs", href: "/account/designs", icon: "palette" },
-        { key: "samples", href: "/account/samples", icon: "package-check" },
-        { key: "structuralRequests", href: "/account/structural-requests", icon: "ruler" },
-        { key: "replenishment", href: "/account/replenishment", icon: "refresh" },
-        { key: "callOffs", href: "/account/call-offs", icon: "calendar" },
-      ],
-    },
-  ];
-  if (company) {
-    const { can } = company;
-    groups.push({
-      key: "company",
-      items: [
-        ...(can.approveOrders
-          ? [{ key: "approvals", href: "/business/approvals", icon: "check" as const, badge: company.pendingApprovals }]
-          : []),
-        { key: "companyOrders", href: "/business", icon: "building", exact: true },
-        ...(can.order
-          ? [{ key: "reorder", href: "/business/reorder", icon: "refresh" as const, ns: "business" as const }]
-          : []),
-        ...(can.viewFinance
-          ? [{ key: "credit", href: "/business/credit", icon: "wallet" as const, ns: "business" as const }]
-          : []),
-        { key: "members", href: "/business/members", icon: "users", ns: "business" },
-        ...(can.manageSettings
-          ? [{ key: "settings", href: "/business/settings", icon: "settings" as const, ns: "business" as const }]
-          : []),
-      ],
-    });
-  }
-  groups.push({
-    key: "account",
-    items: [
-      { key: "addresses", href: "/account/addresses", icon: "map-pin" },
-      { key: "points", href: "/account/points", icon: "star" },
-      { key: "wallet", href: "/account/wallet", icon: "ticket" },
-      { key: "referral", href: "/account/referral", icon: "gift" },
-      { key: "agent", href: "/account/agent", icon: "handshake" },
-      { key: "notifications", href: "/account/notifications", icon: "bell" },
-      { key: "privacy", href: "/account/privacy", icon: "shield" },
-    ],
-  });
-  return groups;
+/** The header block's figures, each from its own read (null when that read failed). */
+export interface AccountMe {
+  name: string | null;
+  /** Display strings, formatted by the server (`format.number`, `format.thb`). */
+  points: string | null;
+  credit: string | null;
 }
 
 /**
- * The account's sections in four groups — คำสั่งซื้อ · งานของฉัน · บริษัทของฉัน (only for a company
- * member, round 2 B2) · บัญชี — under the overview, with sign-out last (B9). A column on wide
- * screens; on a phone one closed fold naming this page, with every section inside it. Same
- * links, same order, on both (WCAG 3.2.3).
+ * The account's menu (account pack Phase 1): who is signed in and their points and store credit, then nine
+ * sections in two groups — ภาพรวม · ซื้อ · เอกสารและบัญชี — with sign-out last. "คำสั่งซื้อ" carries how many orders
+ * wait for the customer (`store.orders.tabCounts().todo`). A company member also gets "บริษัทของฉัน" with the orders
+ * waiting for their approval. Wide screens: a sticky column. Phones and tablets: one horizontally scrolling bar
+ * under the site header — the same links in the same order (WCAG 3.2.3), the current one scrolled into view.
  */
-export function AccountNav({ company = null }: { company?: AccountCompany | null }) {
+export function AccountNav({
+  me,
+  todo = 0,
+  company = null,
+}: {
+  me: AccountMe;
+  todo?: number;
+  company?: AccountCompany | null;
+}) {
   const t = useTranslations("account.nav");
-  const tBusiness = useTranslations("business.nav");
-  const pathname = usePathname().replace(/^\/en(?=\/|$)/, "") || "/";
-  const isCurrent = (item: Item) => (item.exact ? pathname === item.href : pathname.startsWith(item.href));
-  const groups = groupsFor(company);
+  const path = plainPath(usePathname());
+  const sections = company ? [...ACCOUNT_SECTIONS, COMPANY_SECTION] : ACCOUNT_SECTIONS;
+  const current = sectionOf(path, sections);
+  const badgeOf = (section: AccountSection) =>
+    section.key === "orders" ? todo : section.key === "company" ? (company?.pendingApprovals ?? 0) : 0;
+  const labelOf = (section: AccountSection) =>
+    section.key === "company" && company ? t("companyNamed", { name: company.name }) : t(section.key);
 
-  const link = (item: Item) => {
-    const current = isCurrent(item);
+  const item = (section: AccountSection, bar: boolean) => {
+    const active = current?.key === section.key;
+    const badge = badgeOf(section);
     return (
-      <li key={item.key}>
+      <li key={section.key} className={bar ? "shrink-0" : undefined}>
         <Link
-          href={item.href}
-          aria-current={current ? "page" : undefined}
+          href={section.href}
+          aria-current={active ? "page" : undefined}
+          ref={
+            bar && active
+              ? (node: HTMLAnchorElement | null) => node?.scrollIntoView({ block: "nearest", inline: "center" })
+              : undefined
+          }
           className={cn(
-            "flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm",
-            // The open section is a filled row with a bar at its start, not a tint alone — on
-            // the page's own surface a tint was all that told it apart (owner feedback 2026-10-14).
-            current
-              ? "bg-primary-subtle text-primary-subtle-fg border-primary border-s-[3px] ps-2.5 font-semibold"
-              : "text-muted hover:bg-bg-subtle hover:text-fg",
+            "rounded-control flex items-center gap-2.5 text-sm whitespace-nowrap transition-colors",
+            bar ? "min-h-10 px-3" : "min-h-10 px-2.5 text-[0.90625rem]",
+            active
+              ? "bg-surface text-fg shadow-card font-semibold"
+              : "text-muted hover:bg-bg-subtle hover:text-fg font-medium",
           )}
         >
-          <Icon name={item.icon} size={16} aria-hidden="true" />
-          <span className="min-w-0 flex-1 truncate">{item.ns === "business" ? tBusiness(item.key) : t(item.key)}</span>
-          {item.badge ? (
-            <span className="bg-warning-subtle text-warning-subtle-fg rounded-control px-2 text-xs font-semibold tabular-nums">
-              {item.badge}
+          <Icon name={section.icon} size={18} aria-hidden="true" />
+          <span className={cn(!bar && "min-w-0 flex-1 truncate")}>{labelOf(section)}</span>
+          {badge > 0 ? (
+            <span
+              className={cn(
+                "grid h-[1.375rem] min-w-[1.375rem] place-items-center rounded-full px-1.5 text-[0.71875rem] font-semibold tabular-nums",
+                section.key === "orders" ? "bg-primary text-primary-fg" : "bg-warning-subtle text-warning-subtle-fg",
+              )}
+            >
+              {badge}
               <span className="sr-only"> {t("waiting")}</span>
             </span>
           ) : null}
@@ -141,67 +97,40 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
     );
   };
 
-  const overview: Item = { key: "overview", href: "/account", icon: "dashboard", exact: true };
-  const currentItem = [overview, ...groups.flatMap((group) => group.items)].find(isCurrent) ?? null;
-  const labelOf = (item: Item) => (item.ns === "business" ? tBusiness(item.key) : t(item.key));
-  const groupTitle = (group: Group) =>
-    group.key === "company" && company ? t("groups.companyNamed", { name: company.name }) : t(`groups.${group.key}`);
-  const badges = groups.flatMap((group) => group.items).reduce((sum, item) => sum + (item.badge ?? 0), 0);
+  const group = (key: AccountSection["group"]) => sections.filter((section) => section.group === key);
 
   return (
-    <nav
-      aria-label={t("label")}
-      // Its own panel on a wide screen, so it reads as the account's menu rather than as text
-      // floating at the page's edge.
-      className="lg:border-border lg:bg-surface lg:rounded-card lg:sticky lg:top-20 lg:self-start lg:border lg:p-3"
-    >
-      {/*
-        A phone: one fold, closed, naming this page — the page's own content starts right under
-        it. Opened, every section with its links, in the same order as the wide screen's column
-        (WCAG 3.2.3). Before, four folded groups and the open one stood above every page, and
-        "คำสั่งซื้อของฉัน" began below the fold (customer walkthrough 2026-10-16).
-      */}
-      <details className="bg-surface border-border rounded-xl border lg:hidden">
-        <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-3 text-sm [&::-webkit-details-marker]:hidden">
-          <Icon name="menu" size={18} aria-hidden="true" className="text-muted" />
-          <span className="min-w-0 flex-1 truncate">
-            <span className="font-semibold">{t("menuOpen")}</span>
-            {currentItem ? (
-              <span className="text-muted"> · {t("menuCurrent", { page: labelOf(currentItem) })}</span>
-            ) : null}
-          </span>
-          {badges ? (
-            <span className="bg-warning-subtle text-warning-subtle-fg rounded-control px-2 text-xs font-semibold">
-              {badges}
-              <span className="sr-only"> {t("waiting")}</span>
-            </span>
-          ) : null}
-          <Icon name="chevron-down" size={16} aria-hidden="true" className="text-muted" />
-        </summary>
-        <div className="border-border border-t px-2 pt-2 pb-3">
-          <ul className="flex flex-col gap-0.5">{link(overview)}</ul>
-          {groups.map((group) => (
-            <div key={group.key} className="mt-3">
-              <p className="text-muted px-3 pb-1 text-xs font-semibold">{groupTitle(group)}</p>
-              <ul className="flex flex-col gap-0.5">{group.items.map(link)}</ul>
-            </div>
-          ))}
-          <div className="border-border mt-3 border-t pt-2">
-            <SignOutButton zone="customer" variant="ghost" />
-          </div>
-        </div>
-      </details>
+    <nav aria-label={t("label")} className="lg:sticky lg:top-24 lg:self-start">
+      {/* Phones and tablets: one scrolling bar, under the site header. */}
+      <ul className="border-border -mx-5 flex [scrollbar-width:none] gap-1 overflow-x-auto border-b px-5 pb-2 md:-mx-8 md:px-8 lg:hidden [&::-webkit-scrollbar]:hidden">
+        {sections.map((section) => item(section, true))}
+      </ul>
 
       {/* Wide screens: the column. */}
-      <div className="hidden lg:block">
-        <ul className="flex flex-col gap-1">{link(overview)}</ul>
-        {groups.map((group) => (
-          <div key={group.key} className="mt-4">
-            <p className="text-muted px-3 pb-1 text-xs font-semibold">{groupTitle(group)}</p>
-            <ul className="flex flex-col gap-0.5">{group.items.map(link)}</ul>
+      <div className="hidden lg:flex lg:flex-col">
+        <div className="border-border mb-2 flex items-center gap-3 border-b px-2 pt-1.5 pb-3.5">
+          {me.name ? <Avatar name={me.name} size="lg" /> : null}
+          <div className="min-w-0">
+            {me.name ? <p className="truncate font-semibold">{me.name}</p> : null}
+            {me.points !== null || me.credit !== null ? (
+              <p className="text-muted text-[0.78125rem] tabular-nums">
+                {[me.points !== null ? t("me.points", { points: me.points }) : null, me.credit]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            ) : null}
           </div>
-        ))}
-        <div className="border-border mt-4 border-t pt-3">
+        </div>
+        <ul className="flex flex-col gap-0.5">{group("top").map((section) => item(section, false))}</ul>
+        <p className="text-muted px-2.5 pt-3.5 pb-1 text-[0.6875rem] font-semibold tracking-[0.06em]">
+          {t("groups.buy")}
+        </p>
+        <ul className="flex flex-col gap-0.5">{group("buy").map((section) => item(section, false))}</ul>
+        <p className="text-muted px-2.5 pt-3.5 pb-1 text-[0.6875rem] font-semibold tracking-[0.06em]">
+          {t("groups.records")}
+        </p>
+        <ul className="flex flex-col gap-0.5">{group("records").map((section) => item(section, false))}</ul>
+        <div className="mt-2.5">
           <SignOutButton zone="customer" variant="ghost" />
         </div>
       </div>

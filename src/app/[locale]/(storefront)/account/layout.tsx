@@ -1,32 +1,57 @@
 import { cookies } from "next/headers";
 
-import { AccountNav, type AccountCompany } from "@/features/customer/account/AccountNav";
+import { getPoints, getStoreCredit } from "@/features/customer/account/api.server";
+import { AccountNav, type AccountCompany, type AccountMe } from "@/features/customer/account/AccountNav";
+import { AccountTabs } from "@/features/customer/account/AccountTabs";
 import { getApprovals, getMyCompany } from "@/features/customer/business/api.server";
+import { getOrderTabCounts } from "@/features/customer/orders/api.server";
+import { getFormat } from "@/features/shared/format/server";
+import { getActor } from "@/lib/auth/actor";
 import { readAccessToken } from "@/lib/auth/session";
 
 /**
- * The account's frame (F3 3.4): its sections beside every account page once signed in. Each page
- * still guards itself — `/account/designs` is also a guest's (designs are kept in the browser) —
- * so the layout only decides whether to show the sections, from the session cookie's presence.
- * A company member also gets "บริษัทของฉัน", with what waits for their approval (round 2, B2).
+ * The account's frame (account pack Phase 1): the account menu beside every account page once signed in — who is
+ * signed in with their points and store credit, nine sections, the orders that wait for the customer — and the
+ * tabs of the section the page belongs to. Each page still guards itself — `/account/designs` is also a guest's
+ * (designs are kept in the browser) — so the layout only decides whether to show the menu, from the session
+ * cookie's presence. Every figure here is a convenience: a failed read hides it, never the page.
  */
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const signedIn = Boolean(readAccessToken(await cookies()));
+  if (!signedIn) return <div className="max-w-content mx-auto px-5 py-8 md:px-8">{children}</div>;
+  const [me, counts, company] = await Promise.all([
+    accountMe(),
+    getOrderTabCounts().catch(() => null),
+    accountCompany(),
+  ]);
   return (
-    <div className="max-w-content mx-auto px-5 py-8 md:px-8">
-      {signedIn ? (
-        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
-          <AccountNav company={await accountCompany()} />
-          <div className="min-w-0">{children}</div>
+    <div className="max-w-content mx-auto px-5 pt-3 pb-24 md:px-8 lg:pt-7">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-7">
+        <AccountNav me={me} todo={counts?.todo ?? 0} company={company} />
+        <div className="min-w-0">
+          <AccountTabs team={company !== null} />
+          {children}
         </div>
-      ) : (
-        children
-      )}
+      </div>
     </div>
   );
 }
 
-/** The member's company for the nav, or `null` — a failed read hides the group, never the page. */
+async function accountMe(): Promise<AccountMe> {
+  const [actor, points, credit, format] = await Promise.all([
+    getActor("customer").catch(() => null),
+    getPoints().catch(() => null),
+    getStoreCredit().catch(() => null),
+    getFormat(),
+  ]);
+  return {
+    name: actor?.displayName ?? null,
+    points: points ? format.number(points.availablePoints) : null,
+    credit: credit ? format.thb(credit.balance) : null,
+  };
+}
+
+/** The member's company for the nav, or `null` — a failed read hides it, never the page. */
 async function accountCompany(): Promise<AccountCompany | null> {
   try {
     const company = await getMyCompany();
