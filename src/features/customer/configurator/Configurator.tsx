@@ -370,9 +370,9 @@ export function Configurator({
     if (postcodeRead.current) return;
     postcodeRead.current = true;
     const remembered = rememberedPostcode();
+    if (!remembered) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (remembered)
-      setState((previous) => (previous.postcode === "" ? { ...previous, postcode: remembered } : previous));
+    setState((previous) => (previous.postcode === "" ? { ...previous, postcode: remembered } : previous));
   }, []);
   useEffect(() => {
     if (POSTCODE.test(state.postcode)) rememberedPostcode(state.postcode);
