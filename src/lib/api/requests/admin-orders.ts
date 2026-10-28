@@ -172,6 +172,11 @@ export const preflightFinding = z
         "thin_lines",
         "overprint",
         "ink_coverage",
+        "ink_count",
+        "small_text",
+        "small_text_black",
+        "barcode",
+        "die_layer",
       ])
       .meta({ id: "PreflightCheck" }),
     severity: z.enum(["block", "warn", "info"]).meta({ id: "PreflightSeverity" }),

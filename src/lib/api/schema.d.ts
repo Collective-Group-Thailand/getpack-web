@@ -30433,6 +30433,192 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/file-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check my files before ordering
+         * @description D-457 (C9, GLOBAL-RULES §6): starts the check of my uploaded artwork files (purpose `artwork`, mine, not infected): each file is one variant of the same order. A worker reads each file (PDF, or Illustrator saved PDF-compatible — the bytes decide), finds its die lines (spot colours `CutContour` / `Crease` …, else its TrimBox), matches them to a product and standard size within `sizeToleranceMm`, and runs the 12 checks of the shared preflight engine (ADR-0009) against the chosen product and size (or the detected ones). Poll `store.fileChecks.get` (stage 0–5). The original file is never modified.
+         *
+         *     Implements: D-457, D-070, D-444.
+         *
+         *     **Files:** upload first — `store.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["store.fileChecks.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/file-checks/{checkId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get my file check
+         * @description D-457 (C9): my check with its spec and every variant’s current version (status, stage 0–5, detection, the 12-check report with levels `must_fix` / `review` / `pass` / `not_checked` and marker positions in page points) and earlier versions. `blocking` stays true while a version is checking or has something to fix. ETag for `store.fileChecks.updateSpec`.
+         *
+         *     Implements: D-457, D-070, D-444.
+         */
+        get: operations["store.fileChecks.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change what I order with my files
+         * @description D-457 (C9): the product, standard size and print method I order. Finished versions are re-checked at once from their stored facts: a size or product that no longer matches the file’s die lines fails `size_mismatch` (`must_fix` per D-070 — "ไม่ตรงกับไฟล์"); the print method drives `ink_count`. A product change clears the size. Refused while a version is in the cart.
+         *
+         *     Implements: D-457, D-070, D-444.
+         */
+        patch: operations["store.fileChecks.updateSpec"];
+        trace?: never;
+    };
+    "/v1/store/file-checks/{checkId}/actions/add-to-cart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Put a checked file in my cart
+         * @description D-457 (C9, GLOBAL-RULES §6 "file is checked before it goes into the cart"): one variant into the cart as an `own_file` line priced by my saved quotation of the check’s product (`store.quotes.save` — the pricing service of /configure). Its current version must be checked with nothing `must_fix` (409 `file_checks.blocking`, `file_checks.not_ready`). The cart line carries the checked file (`checkedFile`: original file, print file, report); when the order is placed the file becomes its artwork submission — Prepress still reviews it after payment and the customer approves the proof before production.
+         *
+         *     Implements: D-457, D-070, D-444, D-051.
+         */
+        post: operations["store.fileChecks.addToCart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/file-checks/{checkId}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a file to my check
+         * @description D-457 (C9): another variant ("เพิ่มไฟล์ (รุ่นใหม่)"), or with `variantNo` a corrected file for that variant ("อัปโหลดไฟล์ที่แก้แล้ว") — a new version, checked again; earlier versions stay in the history. At most 20 variants.
+         *
+         *     Implements: D-457, D-070, D-444.
+         *
+         *     **Files:** upload first — `store.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["store.fileChecks.addFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/file-checks/{checkId}/variants/{variantNo}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Take a file out of my check
+         * @description D-457 (C9): the variant leaves the check (its versions stay in the history; the files follow the retention decided in DECISIONS-STAGE-A §1). Refused while it is in the cart.
+         *
+         *     Implements: D-457, D-070, D-444.
+         */
+        delete: operations["store.fileChecks.removeVariant"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/file-checks/{checkId}/versions/{versionId}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open a checked file
+         * @description D-457 (C9): a signed URL (5 minutes) of the original file of one of my versions — to show it beside its report (file history, "ดู"). My own file only (D-444).
+         *
+         *     Implements: D-457, D-444.
+         */
+        get: operations["store.fileChecks.versionFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/file-checks/reorderable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my produced own-file orders
+         * @description D-457 (C9) "สั่งซ้ำจากไฟล์เดิม": my orders made from my own file whose production started (not cancelled), newest first (up to 6), with the produced file’s name and thumbnail (signed, 5 minutes). Reordering goes through `store.orders.reorder` (D-153: the approved artwork, no re-check, today’s price).
+         *
+         *     Implements: D-457, D-153.
+         */
+        get: operations["store.fileChecks.reorderable"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/file-checks/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the file-check rules
+         * @description D-457 (C9): what /studio/upload tells the customer before uploading — the bleed and safe distance of the templates and the checks (`artwork.preflight_rules`, Prepress-owned, effective-dated), the size tolerance, the largest file checked automatically and the accepted extensions, and which of the 12 checks run automatically (`evaluated: false` = Prepress has not set its rule yet, or it is not read automatically — the team checks it).
+         *
+         *     Implements: D-457, D-070, D-302.
+         */
+        get: operations["store.fileChecks.rules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/files/{fileId}": {
         parameters: {
             query?: never;
@@ -34624,6 +34810,18 @@ export interface components {
             fileId: string;
             /** @example logo */
             kind: components["schemas"]["DesignAssetKind"];
+        };
+        AddFileCheckFileDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000fc002
+             */
+            fileId: string;
+            /**
+             * @description A corrected file for this variant (a new version, re-checked); absent → a new variant
+             * @example 1
+             */
+            variantNo?: number;
         };
         AddImageDto: {
             /**
@@ -42259,6 +42457,37 @@ export interface components {
             /** @example success */
             state: string;
         };
+        CartCheckedFileDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000fcc01
+             */
+            fileCheckId: string;
+            /** @example baan_box_v2.pdf */
+            fileName: string;
+            /**
+             * Format: uuid
+             * @description The original file
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000fc001
+             */
+            originalFileId: string;
+            /**
+             * Format: uuid
+             * @description The file production prints — the original until auto-fixes make a derived print file
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000fc001
+             */
+            printFileId: string;
+            /**
+             * Format: uuid
+             * @description The check report (version id)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000fcf02
+             */
+            reportId: string;
+            /** @example 1 */
+            variantNo: number;
+            /** @example 2 */
+            versionNo: number;
+        };
         CartCodeDto: {
             /** @example WELCOME10 */
             code: string;
@@ -42329,6 +42558,8 @@ export interface components {
             vatAmount: string | null;
         };
         CartItemDto: {
+            /** @description C9 (D-457): the own file checked before ordering that this line orders; it becomes the order’s artwork */
+            checkedFile: components["schemas"]["CartCheckedFileDto"] | null;
             /**
              * Format: uuid
              * @description The online design used (B4.1)
@@ -46428,6 +46659,25 @@ export interface components {
             sort?: number;
             /** @example published */
             status?: components["schemas"]["ContentStatus"];
+        };
+        CreateFileCheckDto: {
+            /**
+             * @description My uploaded files (`store.files.presign` purpose `artwork` → PUT → `complete`), in order: each is one variant of the same order
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-0000000fc001"
+             *     ]
+             */
+            fileIds: string[];
+            /**
+             * @description The product I order, when I chose it first; absent → taken from the file’s die lines
+             * @example uat-postal-box-b
+             */
+            productSlug?: string;
+            /**
+             * @description The product’s standard size code
+             * @example C
+             */
+            sizeCode?: string;
         };
         CreateFinishDto: {
             /** @example matt-lamination */
@@ -60291,6 +60541,316 @@ export interface components {
         };
         /** @enum {string} */
         FileAccessPurpose: "download" | "thumbnail";
+        FileCheckCartDto: {
+            /** @description As `store.cart.addItem` */
+            destinations?: components["schemas"]["DestinationInputDto"][];
+            /**
+             * Format: uuid
+             * @description My saved quotation of the check’s product (`store.quotes.save`, design `own_file`)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a201
+             */
+            quoteId: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a202
+             */
+            quoteOptionId: string;
+            /**
+             * @description The variant (file) to order
+             * @example 1
+             */
+            variantNo: number;
+        };
+        FileCheckCartResultDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ca001
+             */
+            cartItemId: string;
+            check: components["schemas"]["FileCheckDto"];
+        };
+        FileCheckCountsDto: {
+            /** @example 1 */
+            mustFix: number;
+            /** @example 3 */
+            notChecked: number;
+            /** @example 7 */
+            pass: number;
+            /** @example 1 */
+            review: number;
+        };
+        FileCheckDetectionDto: {
+            /** @description null: no product and size within tolerance */
+            match: components["schemas"]["FileCheckMatchDto"] | null;
+            sheet: components["schemas"]["FileCheckSheetDto"] | null;
+        };
+        FileCheckDto: {
+            /**
+             * @description A current version is still checking or has something to fix
+             * @example true
+             */
+            blocking: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-10-29T10:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Every current version is checked
+             * @example false
+             */
+            done: boolean;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000fcc01
+             */
+            id: string;
+            /**
+             * @description Changes with every update (the ETag’s source)
+             * @example 3
+             */
+            revision: number;
+            spec: components["schemas"]["FileCheckSpecDto"];
+            /** @example /v1/store/file-checks/0192f3a0-7c1e-7d2a-9b1f-0000000fcc01 */
+            statusUrl: string;
+            /** @description Each file is one variant of the same order */
+            variants: components["schemas"]["FileCheckVariantDto"][];
+        };
+        FileCheckItemDto: {
+            /** @description Marker position; null for the whole sheet */
+            at: components["schemas"]["FileCheckPointDto"] | null;
+            /** @example missing_bleed */
+            check: components["schemas"]["UploadCheck"];
+            /**
+             * @description `must_fix` (a failing block check — the cart stays closed) · `review` · `pass` · `not_checked` (Prepress checks it)
+             * @example must_fix
+             */
+            level: components["schemas"]["UploadCheckLevel"];
+            /**
+             * @example {
+             *       "leastBleedMm": 0,
+             *       "requiredMm": 3
+             *     }
+             */
+            measurements: {
+                [key: string]: unknown;
+            };
+            /** @example Bleed 0 mm is less than 3 mm on some side */
+            messageEn: string;
+            /** @example ระยะตัดตก (bleed) 0 มม. ไม่ถึง 3 มม. ทุกด้าน */
+            messageTh: string;
+            /** @example 1 */
+            page: number | null;
+        };
+        FileCheckMatchDto: {
+            /**
+             * @description Largest side difference of the die to the blank, mm
+             * @example 0.4
+             */
+            deltaMm: number;
+            /**
+             * @description Inside length × width × height, mm
+             * @example [
+             *       300,
+             *       200,
+             *       110
+             *     ]
+             */
+            insideMm: number[];
+            /** @example Postal box RSC 3-ply (B-flute) */
+            productNameEn: string;
+            /** @example กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B) */
+            productNameTh: string;
+            /** @example uat-postal-box-b */
+            productSlug: string;
+            /** @example C */
+            sizeCode: string;
+            /** @example เบอร์ C */
+            sizeName: string;
+        };
+        FileCheckPageDto: {
+            /**
+             * @example [
+             *       8.5,
+             *       8.5,
+             *       2891.5,
+             *       1501.5
+             *     ]
+             */
+            dieBox: number[] | null;
+            /**
+             * @description Points
+             * @example [
+             *       0,
+             *       0,
+             *       2900,
+             *       1510
+             *     ]
+             */
+            mediaBox: number[];
+            /**
+             * @example [
+             *       8.5,
+             *       8.5,
+             *       2891.5,
+             *       1501.5
+             *     ]
+             */
+            trimBox: number[] | null;
+        };
+        FileCheckPointDto: {
+            /**
+             * @description Points, PDF page space (y up)
+             * @example 312.4
+             */
+            x: number;
+            /** @example 140.2 */
+            y: number;
+        };
+        FileCheckReportDto: {
+            /**
+             * @description Something must be fixed before the file can go in the cart
+             * @example true
+             */
+            blocking: boolean;
+            counts: components["schemas"]["FileCheckCountsDto"];
+            /** @description The blank of the chosen product and size the checks compared with; null when none is chosen */
+            expected: components["schemas"]["PreflightSizeDto"] | null;
+            /** @description The 12 checks, in the page’s order */
+            items: components["schemas"]["FileCheckItemDto"][];
+            page: components["schemas"]["FileCheckPageDto"] | null;
+        };
+        FileCheckRuleItemDto: {
+            /** @example missing_bleed */
+            check: components["schemas"]["UploadCheck"];
+            /**
+             * @description false: the check is not run automatically (Prepress has not set its rule) — the team checks it
+             * @example true
+             */
+            evaluated: boolean;
+        };
+        FileCheckRulesDto: {
+            /**
+             * @description Bleed beyond the cut, mm (`artwork.preflight_rules`)
+             * @example 3
+             */
+            bleedMm: string;
+            /** @description The 12 checks, in the page’s order */
+            checks: components["schemas"]["FileCheckRuleItemDto"][];
+            /**
+             * @description Accepted file extensions
+             * @example [
+             *       ".pdf",
+             *       ".ai"
+             *     ]
+             */
+            extensions: string[];
+            /**
+             * @description Largest file checked automatically, bytes
+             * @example 209715200
+             */
+            maxBytes: number;
+            /**
+             * @description Safe distance inside the cut and folds, mm
+             * @example 3
+             */
+            safeZoneMm: string;
+            /**
+             * @description Size tolerance of detection and the size check, mm
+             * @example 1
+             */
+            sizeToleranceMm: string;
+        };
+        FileCheckSheetDto: {
+            /** @example 527.5 */
+            heightMm: number;
+            /**
+             * @description Die lines found, or the TrimBox
+             * @example die
+             */
+            source: components["schemas"]["FileCheckSheetSource"];
+            /** @example 1017.2 */
+            widthMm: number;
+        };
+        /**
+         * @description Die lines found, or the TrimBox
+         * @enum {string}
+         */
+        FileCheckSheetSource: "die" | "trim";
+        FileCheckSpecDto: {
+            /** @example cmyk */
+            printMethod: components["schemas"]["PrintSideMethod"] | null;
+            /** @example null */
+            printSpotColours: number | null;
+            /** @example Postal box RSC 3-ply (B-flute) */
+            productNameEn: string | null;
+            /** @example กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B) */
+            productNameTh: string | null;
+            /** @example uat-postal-box-b */
+            productSlug: string | null;
+            /** @example C */
+            sizeCode: string | null;
+        };
+        /** @enum {string} */
+        FileCheckStatus: "queued" | "running" | "done" | "failed";
+        FileCheckVariantDto: {
+            /** @description The latest version */
+            current: components["schemas"]["FileCheckVersionDto"];
+            /** @description Earlier versions, newest first */
+            history: components["schemas"]["FileCheckVersionDto"][];
+            /** @example 1 */
+            variantNo: number;
+        };
+        FileCheckVersionDto: {
+            /**
+             * Format: uuid
+             * @description The cart line this version is in
+             * @example null
+             */
+            cartItemId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-29T10:00:12+07:00
+             */
+            completedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-29T10:00:00+07:00
+             */
+            createdAt: string;
+            detection: components["schemas"]["FileCheckDetectionDto"] | null;
+            /**
+             * @description Why a file could not be read
+             * @example null
+             */
+            error: string | null;
+            /**
+             * Format: uuid
+             * @description The original file
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000fc001
+             */
+            fileId: string;
+            /** @example baan_box_v1.pdf */
+            fileName: string;
+            /**
+             * Format: uuid
+             * @description Also the report id
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000fcf01
+             */
+            id: string;
+            report: components["schemas"]["FileCheckReportDto"] | null;
+            /** @example 18400000 */
+            sizeBytes: number;
+            /**
+             * @description 0–5: read · die lines · match · checks · ready
+             * @example 5
+             */
+            stage: number;
+            /** @example done */
+            status: components["schemas"]["FileCheckStatus"];
+            /** @example 1 */
+            versionNo: number;
+        };
         FileDto: {
             /**
              * Format: date-time
@@ -60362,6 +60922,13 @@ export interface components {
         };
         /** @enum {string} */
         FileUploadStatus: "pending" | "uploaded" | "failed";
+        FileVersionUrlDto: {
+            /**
+             * @description Signed, 5 minutes
+             * @example https://files.getpack.co/…
+             */
+            url: string;
+        };
         FinancePeriodDto: {
             /**
              * @description Other postings (manual entries, reversals)
@@ -67368,7 +67935,7 @@ export interface components {
          */
         PouchSizePart: "b" | "s" | "cs";
         /** @enum {string} */
-        PreflightCheck: "size_mismatch" | "missing_bleed" | "low_resolution" | "rgb_colour" | "fonts_not_embedded" | "safe_zone" | "thin_lines" | "overprint" | "ink_coverage";
+        PreflightCheck: "size_mismatch" | "missing_bleed" | "low_resolution" | "rgb_colour" | "fonts_not_embedded" | "safe_zone" | "thin_lines" | "overprint" | "ink_coverage" | "ink_count" | "small_text" | "small_text_black" | "barcode" | "die_layer";
         PreflightCheckResultDto: {
             /** @example missing_bleed */
             check: components["schemas"]["PreflightCheck"];
@@ -71754,6 +72321,43 @@ export interface components {
         };
         /** @enum {string} */
         RenderSide: "outside" | "inside";
+        ReorderableFileDto: {
+            /**
+             * @description The produced file
+             * @example baan_original_v2.pdf
+             */
+            fileName: string | null;
+            /** @example GP-2609-00012 */
+            orderCode: string;
+            /**
+             * Format: date-time
+             * @example 2026-09-12T10:00:00+07:00
+             */
+            orderedAt: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a0001
+             */
+            orderId: string;
+            /** @example Postal box RSC 3-ply (B-flute) */
+            productNameEn: string | null;
+            /** @example กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B) */
+            productNameTh: string | null;
+            /** @example uat-postal-box-b */
+            productSlug: string | null;
+            /** @example 500 */
+            quantity: number;
+            /**
+             * @description Signed thumbnail URL, 5 minutes
+             * @example null
+             */
+            thumbnailUrl: string | null;
+            /** @example piece */
+            unit: string;
+        };
+        ReorderableFileListDto: {
+            data: components["schemas"]["ReorderableFileDto"][];
+        };
         ReorderCandidateDto: {
             /**
              * @description A suggestion whose date has come
@@ -83297,6 +83901,22 @@ export interface components {
             enabled: boolean;
             rules?: components["schemas"]["FeatureFlagRulesDto"];
         };
+        UpdateFileCheckSpecDto: {
+            /**
+             * @description The print method of the outside (D-443 vocabulary): none, spot colour(s) or CMYK
+             * @example cmyk
+             */
+            printMethod?: components["schemas"]["PrintSideMethod"] | null;
+            /**
+             * @description Spot colours the method prints
+             * @example 1
+             */
+            printSpotColours?: number | null;
+            /** @example uat-postal-box-b */
+            productSlug?: string | null;
+            /** @example C */
+            sizeCode?: string | null;
+        };
         UpdateFinishDto: {
             /** @example matt-lamination */
             code?: string;
@@ -84373,6 +84993,13 @@ export interface components {
         };
         /** @enum {string} */
         UploadChannel: "web" | "line_liff" | "cs";
+        /** @enum {string} */
+        UploadCheck: "size_mismatch" | "missing_bleed" | "safe_zone" | "low_resolution" | "fonts_not_embedded" | "rgb_colour" | "ink_count" | "small_text" | "thin_lines" | "barcode" | "die_layer" | "small_text_black";
+        /**
+         * @description `must_fix` (a failing block check — the cart stays closed) · `review` · `pass` · `not_checked` (Prepress checks it)
+         * @enum {string}
+         */
+        UploadCheckLevel: "must_fix" | "review" | "pass" | "not_checked";
         UploadPartDto: {
             /** @example 1 */
             partNumber: number;
@@ -140907,6 +141534,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -141242,6 +141870,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -141479,6 +142108,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -141709,6 +142339,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -142085,6 +142716,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -142326,6 +142958,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -142573,6 +143206,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -142807,6 +143441,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -143028,6 +143663,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -290839,6 +291475,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -291061,6 +291698,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -291392,6 +292030,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -291628,6 +292267,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -291856,6 +292496,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -292230,6 +292871,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -292470,6 +293112,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -292716,6 +293359,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -292949,6 +293593,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -293169,6 +293814,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -309518,6 +310164,1522 @@ export interface operations {
             };
         };
     };
+    "store.fileChecks.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFileCheckDto"];
+            };
+        };
+        responses: {
+            /** @description The check, queued */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "blocking": true,
+                     *       "createdAt": "2026-10-29T10:00:00+07:00",
+                     *       "done": true,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "revision": 3,
+                     *       "spec": {
+                     *         "printMethod": "cmyk",
+                     *         "printSpotColours": null,
+                     *         "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *         "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *         "productSlug": "uat-postal-box-b",
+                     *         "sizeCode": "C"
+                     *       },
+                     *       "statusUrl": "/v1/store/file-checks/0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "variants": [
+                     *         {
+                     *           "current": {
+                     *             "cartItemId": null,
+                     *             "completedAt": "2026-10-29T10:00:12+07:00",
+                     *             "createdAt": "2026-10-29T10:00:00+07:00",
+                     *             "detection": {
+                     *               "match": {
+                     *                 "deltaMm": 0.4,
+                     *                 "insideMm": [
+                     *                   300,
+                     *                   200,
+                     *                   110
+                     *                 ],
+                     *                 "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *                 "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *                 "productSlug": "uat-postal-box-b",
+                     *                 "sizeCode": "C",
+                     *                 "sizeName": "เบอร์ C"
+                     *               },
+                     *               "sheet": {
+                     *                 "heightMm": 310,
+                     *                 "source": "die",
+                     *                 "widthMm": 1035
+                     *               }
+                     *             },
+                     *             "error": null,
+                     *             "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000fc001",
+                     *             "fileName": "baan_box_v1.pdf",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcf01",
+                     *             "report": {
+                     *               "blocking": true,
+                     *               "counts": {
+                     *                 "mustFix": 1,
+                     *                 "notChecked": 3,
+                     *                 "pass": 8,
+                     *                 "review": 0
+                     *               },
+                     *               "expected": {
+                     *                 "heightMm": 310,
+                     *                 "widthMm": 1035
+                     *               },
+                     *               "items": [
+                     *                 {
+                     *                   "at": null,
+                     *                   "check": "missing_bleed",
+                     *                   "level": "must_fix",
+                     *                   "measurements": {
+                     *                     "leastBleedMm": 0,
+                     *                     "requiredMm": 3
+                     *                   },
+                     *                   "messageEn": "Bleed 0 mm is less than 3 mm on some side",
+                     *                   "messageTh": "ระยะตัดตก (bleed) 0 มม. ไม่ถึง 3 มม. ทุกด้าน",
+                     *                   "page": 1
+                     *                 }
+                     *               ],
+                     *               "page": {
+                     *                 "dieBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "mediaBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "trimBox": null
+                     *               }
+                     *             },
+                     *             "sizeBytes": 18400000,
+                     *             "stage": 5,
+                     *             "status": "done",
+                     *             "versionNo": 1
+                     *           },
+                     *           "history": [],
+                     *           "variantNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FileCheckDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `artwork.file_not_usable`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.fileChecks.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description My file check */
+                checkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The check */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "blocking": true,
+                     *       "createdAt": "2026-10-29T10:00:00+07:00",
+                     *       "done": true,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "revision": 3,
+                     *       "spec": {
+                     *         "printMethod": "cmyk",
+                     *         "printSpotColours": null,
+                     *         "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *         "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *         "productSlug": "uat-postal-box-b",
+                     *         "sizeCode": "C"
+                     *       },
+                     *       "statusUrl": "/v1/store/file-checks/0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "variants": [
+                     *         {
+                     *           "current": {
+                     *             "cartItemId": null,
+                     *             "completedAt": "2026-10-29T10:00:12+07:00",
+                     *             "createdAt": "2026-10-29T10:00:00+07:00",
+                     *             "detection": {
+                     *               "match": {
+                     *                 "deltaMm": 0.4,
+                     *                 "insideMm": [
+                     *                   300,
+                     *                   200,
+                     *                   110
+                     *                 ],
+                     *                 "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *                 "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *                 "productSlug": "uat-postal-box-b",
+                     *                 "sizeCode": "C",
+                     *                 "sizeName": "เบอร์ C"
+                     *               },
+                     *               "sheet": {
+                     *                 "heightMm": 310,
+                     *                 "source": "die",
+                     *                 "widthMm": 1035
+                     *               }
+                     *             },
+                     *             "error": null,
+                     *             "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000fc001",
+                     *             "fileName": "baan_box_v1.pdf",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcf01",
+                     *             "report": {
+                     *               "blocking": true,
+                     *               "counts": {
+                     *                 "mustFix": 1,
+                     *                 "notChecked": 3,
+                     *                 "pass": 8,
+                     *                 "review": 0
+                     *               },
+                     *               "expected": {
+                     *                 "heightMm": 310,
+                     *                 "widthMm": 1035
+                     *               },
+                     *               "items": [
+                     *                 {
+                     *                   "at": null,
+                     *                   "check": "missing_bleed",
+                     *                   "level": "must_fix",
+                     *                   "measurements": {
+                     *                     "leastBleedMm": 0,
+                     *                     "requiredMm": 3
+                     *                   },
+                     *                   "messageEn": "Bleed 0 mm is less than 3 mm on some side",
+                     *                   "messageTh": "ระยะตัดตก (bleed) 0 มม. ไม่ถึง 3 มม. ทุกด้าน",
+                     *                   "page": 1
+                     *                 }
+                     *               ],
+                     *               "page": {
+                     *                 "dieBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "mediaBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "trimBox": null
+                     *               }
+                     *             },
+                     *             "sizeBytes": 18400000,
+                     *             "stage": 5,
+                     *             "status": "done",
+                     *             "versionNo": 1
+                     *           },
+                     *           "history": [],
+                     *           "variantNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FileCheckDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.fileChecks.updateSpec": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. When sent and it does not match → 412 `concurrency.stale`. */
+                "If-Match"?: components["parameters"]["IfMatchOptional"];
+            };
+            path: {
+                /** @description My file check */
+                checkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFileCheckSpecDto"];
+            };
+        };
+        responses: {
+            /** @description The check */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "blocking": true,
+                     *       "createdAt": "2026-10-29T10:00:00+07:00",
+                     *       "done": true,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "revision": 3,
+                     *       "spec": {
+                     *         "printMethod": "cmyk",
+                     *         "printSpotColours": null,
+                     *         "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *         "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *         "productSlug": "uat-postal-box-b",
+                     *         "sizeCode": "C"
+                     *       },
+                     *       "statusUrl": "/v1/store/file-checks/0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "variants": [
+                     *         {
+                     *           "current": {
+                     *             "cartItemId": null,
+                     *             "completedAt": "2026-10-29T10:00:12+07:00",
+                     *             "createdAt": "2026-10-29T10:00:00+07:00",
+                     *             "detection": {
+                     *               "match": {
+                     *                 "deltaMm": 0.4,
+                     *                 "insideMm": [
+                     *                   300,
+                     *                   200,
+                     *                   110
+                     *                 ],
+                     *                 "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *                 "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *                 "productSlug": "uat-postal-box-b",
+                     *                 "sizeCode": "C",
+                     *                 "sizeName": "เบอร์ C"
+                     *               },
+                     *               "sheet": {
+                     *                 "heightMm": 310,
+                     *                 "source": "die",
+                     *                 "widthMm": 1035
+                     *               }
+                     *             },
+                     *             "error": null,
+                     *             "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000fc001",
+                     *             "fileName": "baan_box_v1.pdf",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcf01",
+                     *             "report": {
+                     *               "blocking": true,
+                     *               "counts": {
+                     *                 "mustFix": 1,
+                     *                 "notChecked": 3,
+                     *                 "pass": 8,
+                     *                 "review": 0
+                     *               },
+                     *               "expected": {
+                     *                 "heightMm": 310,
+                     *                 "widthMm": 1035
+                     *               },
+                     *               "items": [
+                     *                 {
+                     *                   "at": null,
+                     *                   "check": "missing_bleed",
+                     *                   "level": "must_fix",
+                     *                   "measurements": {
+                     *                     "leastBleedMm": 0,
+                     *                     "requiredMm": 3
+                     *                   },
+                     *                   "messageEn": "Bleed 0 mm is less than 3 mm on some side",
+                     *                   "messageTh": "ระยะตัดตก (bleed) 0 มม. ไม่ถึง 3 มม. ทุกด้าน",
+                     *                   "page": 1
+                     *                 }
+                     *               ],
+                     *               "page": {
+                     *                 "dieBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "mediaBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "trimBox": null
+                     *               }
+                     *             },
+                     *             "sizeBytes": 18400000,
+                     *             "stage": 5,
+                     *             "status": "done",
+                     *             "versionNo": 1
+                     *           },
+                     *           "history": [],
+                     *           "variantNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FileCheckDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file_checks.in_cart` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.fileChecks.addToCart": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                /** @description My file check */
+                checkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FileCheckCartDto"];
+            };
+        };
+        responses: {
+            /** @description In the cart */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cartItemId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
+                     *       "check": {
+                     *         "blocking": true,
+                     *         "createdAt": "2026-10-29T10:00:00+07:00",
+                     *         "done": true,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *         "revision": 3,
+                     *         "spec": {
+                     *           "printMethod": "cmyk",
+                     *           "printSpotColours": null,
+                     *           "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *           "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *           "productSlug": "uat-postal-box-b",
+                     *           "sizeCode": "C"
+                     *         },
+                     *         "statusUrl": "/v1/store/file-checks/0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *         "variants": [
+                     *           {
+                     *             "current": {
+                     *               "cartItemId": null,
+                     *               "completedAt": "2026-10-29T10:00:12+07:00",
+                     *               "createdAt": "2026-10-29T10:00:00+07:00",
+                     *               "detection": {
+                     *                 "match": {
+                     *                   "deltaMm": 0.4,
+                     *                   "insideMm": [
+                     *                     300,
+                     *                     200,
+                     *                     110
+                     *                   ],
+                     *                   "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *                   "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *                   "productSlug": "uat-postal-box-b",
+                     *                   "sizeCode": "C",
+                     *                   "sizeName": "เบอร์ C"
+                     *                 },
+                     *                 "sheet": {
+                     *                   "heightMm": 310,
+                     *                   "source": "die",
+                     *                   "widthMm": 1035
+                     *                 }
+                     *               },
+                     *               "error": null,
+                     *               "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000fc001",
+                     *               "fileName": "baan_box_v1.pdf",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcf01",
+                     *               "report": {
+                     *                 "blocking": true,
+                     *                 "counts": {
+                     *                   "mustFix": 1,
+                     *                   "notChecked": 3,
+                     *                   "pass": 8,
+                     *                   "review": 0
+                     *                 },
+                     *                 "expected": {
+                     *                   "heightMm": 310,
+                     *                   "widthMm": 1035
+                     *                 },
+                     *                 "items": [
+                     *                   {
+                     *                     "at": null,
+                     *                     "check": "missing_bleed",
+                     *                     "level": "must_fix",
+                     *                     "measurements": {
+                     *                       "leastBleedMm": 0,
+                     *                       "requiredMm": 3
+                     *                     },
+                     *                     "messageEn": "Bleed 0 mm is less than 3 mm on some side",
+                     *                     "messageTh": "ระยะตัดตก (bleed) 0 มม. ไม่ถึง 3 มม. ทุกด้าน",
+                     *                     "page": 1
+                     *                   }
+                     *                 ],
+                     *                 "page": {
+                     *                   "dieBox": [
+                     *                     0,
+                     *                     0,
+                     *                     2934,
+                     *                     879
+                     *                   ],
+                     *                   "mediaBox": [
+                     *                     0,
+                     *                     0,
+                     *                     2934,
+                     *                     879
+                     *                   ],
+                     *                   "trimBox": null
+                     *                 }
+                     *               },
+                     *               "sizeBytes": 18400000,
+                     *               "stage": 5,
+                     *               "status": "done",
+                     *               "versionNo": 1
+                     *             },
+                     *             "history": [],
+                     *             "variantNo": 1
+                     *           }
+                     *         ]
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FileCheckCartResultDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cart.item_exists`, `file_checks.blocking`, `file_checks.in_cart`, `file_checks.not_ready`, `idempotency.in_progress`, `quotes.not_live` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file_checks.quote_mismatch`, `file_checks.spec_missing`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.fileChecks.addFile": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                /** @description My file check */
+                checkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddFileCheckFileDto"];
+            };
+        };
+        responses: {
+            /** @description The check */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "blocking": true,
+                     *       "createdAt": "2026-10-29T10:00:00+07:00",
+                     *       "done": true,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "revision": 3,
+                     *       "spec": {
+                     *         "printMethod": "cmyk",
+                     *         "printSpotColours": null,
+                     *         "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *         "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *         "productSlug": "uat-postal-box-b",
+                     *         "sizeCode": "C"
+                     *       },
+                     *       "statusUrl": "/v1/store/file-checks/0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "variants": [
+                     *         {
+                     *           "current": {
+                     *             "cartItemId": null,
+                     *             "completedAt": "2026-10-29T10:00:12+07:00",
+                     *             "createdAt": "2026-10-29T10:00:00+07:00",
+                     *             "detection": {
+                     *               "match": {
+                     *                 "deltaMm": 0.4,
+                     *                 "insideMm": [
+                     *                   300,
+                     *                   200,
+                     *                   110
+                     *                 ],
+                     *                 "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *                 "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *                 "productSlug": "uat-postal-box-b",
+                     *                 "sizeCode": "C",
+                     *                 "sizeName": "เบอร์ C"
+                     *               },
+                     *               "sheet": {
+                     *                 "heightMm": 310,
+                     *                 "source": "die",
+                     *                 "widthMm": 1035
+                     *               }
+                     *             },
+                     *             "error": null,
+                     *             "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000fc001",
+                     *             "fileName": "baan_box_v1.pdf",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcf01",
+                     *             "report": {
+                     *               "blocking": true,
+                     *               "counts": {
+                     *                 "mustFix": 1,
+                     *                 "notChecked": 3,
+                     *                 "pass": 8,
+                     *                 "review": 0
+                     *               },
+                     *               "expected": {
+                     *                 "heightMm": 310,
+                     *                 "widthMm": 1035
+                     *               },
+                     *               "items": [
+                     *                 {
+                     *                   "at": null,
+                     *                   "check": "missing_bleed",
+                     *                   "level": "must_fix",
+                     *                   "measurements": {
+                     *                     "leastBleedMm": 0,
+                     *                     "requiredMm": 3
+                     *                   },
+                     *                   "messageEn": "Bleed 0 mm is less than 3 mm on some side",
+                     *                   "messageTh": "ระยะตัดตก (bleed) 0 มม. ไม่ถึง 3 มม. ทุกด้าน",
+                     *                   "page": 1
+                     *                 }
+                     *               ],
+                     *               "page": {
+                     *                 "dieBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "mediaBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "trimBox": null
+                     *               }
+                     *             },
+                     *             "sizeBytes": 18400000,
+                     *             "stage": 5,
+                     *             "status": "done",
+                     *             "versionNo": 1
+                     *           },
+                     *           "history": [],
+                     *           "variantNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FileCheckDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file_checks.in_cart`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `artwork.file_not_usable`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.fileChecks.removeVariant": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description My file check */
+                checkId: string;
+                /** @description A variant */
+                variantNo: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The check */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "blocking": true,
+                     *       "createdAt": "2026-10-29T10:00:00+07:00",
+                     *       "done": true,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "revision": 3,
+                     *       "spec": {
+                     *         "printMethod": "cmyk",
+                     *         "printSpotColours": null,
+                     *         "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *         "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *         "productSlug": "uat-postal-box-b",
+                     *         "sizeCode": "C"
+                     *       },
+                     *       "statusUrl": "/v1/store/file-checks/0192f3a0-7c1e-7d2a-9b1f-0000000fcc01",
+                     *       "variants": [
+                     *         {
+                     *           "current": {
+                     *             "cartItemId": null,
+                     *             "completedAt": "2026-10-29T10:00:12+07:00",
+                     *             "createdAt": "2026-10-29T10:00:00+07:00",
+                     *             "detection": {
+                     *               "match": {
+                     *                 "deltaMm": 0.4,
+                     *                 "insideMm": [
+                     *                   300,
+                     *                   200,
+                     *                   110
+                     *                 ],
+                     *                 "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *                 "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *                 "productSlug": "uat-postal-box-b",
+                     *                 "sizeCode": "C",
+                     *                 "sizeName": "เบอร์ C"
+                     *               },
+                     *               "sheet": {
+                     *                 "heightMm": 310,
+                     *                 "source": "die",
+                     *                 "widthMm": 1035
+                     *               }
+                     *             },
+                     *             "error": null,
+                     *             "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000fc001",
+                     *             "fileName": "baan_box_v1.pdf",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000fcf01",
+                     *             "report": {
+                     *               "blocking": true,
+                     *               "counts": {
+                     *                 "mustFix": 1,
+                     *                 "notChecked": 3,
+                     *                 "pass": 8,
+                     *                 "review": 0
+                     *               },
+                     *               "expected": {
+                     *                 "heightMm": 310,
+                     *                 "widthMm": 1035
+                     *               },
+                     *               "items": [
+                     *                 {
+                     *                   "at": null,
+                     *                   "check": "missing_bleed",
+                     *                   "level": "must_fix",
+                     *                   "measurements": {
+                     *                     "leastBleedMm": 0,
+                     *                     "requiredMm": 3
+                     *                   },
+                     *                   "messageEn": "Bleed 0 mm is less than 3 mm on some side",
+                     *                   "messageTh": "ระยะตัดตก (bleed) 0 มม. ไม่ถึง 3 มม. ทุกด้าน",
+                     *                   "page": 1
+                     *                 }
+                     *               ],
+                     *               "page": {
+                     *                 "dieBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "mediaBox": [
+                     *                   0,
+                     *                   0,
+                     *                   2934,
+                     *                   879
+                     *                 ],
+                     *                 "trimBox": null
+                     *               }
+                     *             },
+                     *             "sizeBytes": 18400000,
+                     *             "stage": 5,
+                     *             "status": "done",
+                     *             "versionNo": 1
+                     *           },
+                     *           "history": [],
+                     *           "variantNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FileCheckDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file_checks.in_cart` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.fileChecks.versionFile": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description My file check */
+                checkId: string;
+                /** @description A version of the check */
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed URL */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "url": "https://files.getpack.co/…"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FileVersionUrlDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.fileChecks.reorderable": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Produced own-file orders */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "fileName": "baan_original_v2.pdf",
+                     *           "orderCode": "GP-2609-00012",
+                     *           "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0001",
+                     *           "orderedAt": "2026-09-12T10:00:00+07:00",
+                     *           "productNameEn": "Postal box RSC 3-ply (B-flute)",
+                     *           "productNameTh": "กล่องไปรษณีย์ ฝาชน 3 ชั้น (ลอน B)",
+                     *           "productSlug": "uat-postal-box-b",
+                     *           "quantity": 500,
+                     *           "thumbnailUrl": null,
+                     *           "unit": "piece"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ReorderableFileListDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.fileChecks.rules": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rules */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bleedMm": "3",
+                     *       "checks": [
+                     *         {
+                     *           "check": "size_mismatch",
+                     *           "evaluated": true
+                     *         },
+                     *         {
+                     *           "check": "small_text",
+                     *           "evaluated": false
+                     *         }
+                     *       ],
+                     *       "extensions": [
+                     *         ".pdf",
+                     *         ".ai"
+                     *       ],
+                     *       "maxBytes": 209715200,
+                     *       "safeZoneMm": "3",
+                     *       "sizeToleranceMm": "1"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FileCheckRulesDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.files.get": {
         parameters: {
             query?: never;
@@ -314401,6 +316563,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [
                      *         {
+                     *           "checkedFile": null,
                      *           "designDocumentId": null,
                      *           "designFeeAmount": "0.00",
                      *           "designNote": null,
@@ -324055,6 +326218,7 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *         "items": [
                      *           {
+                     *             "checkedFile": null,
                      *             "designDocumentId": null,
                      *             "designFeeAmount": "0.00",
                      *             "designNote": null,
