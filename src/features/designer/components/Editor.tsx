@@ -963,6 +963,7 @@ export default function Editor({
               // The small floating card below 1280 shows the box alone; "3 มิติ" has the controls.
               controlsClassName:
                 chrome?.shell && view === "split" ? "hidden" : view === "split" ? "max-xl:hidden" : undefined,
+              compact: !!chrome?.shell && view === "split",
               insideArtwork: artworks.inside,
               finishMasks,
               faceLabels: Object.fromEntries(faceNames),
