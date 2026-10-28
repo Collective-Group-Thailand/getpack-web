@@ -1018,6 +1018,7 @@ export function stepOf(inputs: Inputs, quantity: number, postcode: string | unde
     vatRate: null,
     zoneName: null,
     arrival: null,
+    netAmount: null,
   });
   // D-101: the one mock factory's weekly capacity. D-043: its machines stop at 450 mm.
   if (quantity > 200_000) return noPrice("not_instant");
@@ -1051,6 +1052,8 @@ export function stepOf(inputs: Inputs, quantity: number, postcode: string | unde
     shippingAmount: baht(shippingGross),
     vatAmount: baht(vat(productNet) + vat(designNet) + vat(structureNet) + vat(shippingNet)),
     grossAmount: baht(productGross + designNet + vat(designNet) + structureNet + vat(structureNet) + shippingGross),
+    // C1-API-1 (mock): the total before VAT, as the API derives it (gross − VAT).
+    netAmount: baht(productNet + designNet + structureNet + shippingNet),
     leadTimeDays: lead,
     earliestShipDate: bangkokIso(Math.round(lead * 1.4) * DAY).slice(0, 10),
     earliestDeliveryDate: postcode ? bangkokIso((Math.round(lead * 1.4) + 2) * DAY).slice(0, 10) : null,
@@ -1612,6 +1615,44 @@ function calculationOf(body: Schemas["CalculateQuoteDto"] | null): Schemas["Quot
 
 export const storeQuoteHandlers: HttpHandler[] = [
   // Published (B2.3), mocked for every instant type in its own published configuration.
+  // C1-API-2 (products R2): the default spec priced at the configurator's quantity presets by the SAME
+  // mock calculation as `calculate` (no calculate log in the API); empty for RFQ products (D-181).
+  http.get("*/v1/store/catalog/price-hints/:slug/tiers", ({ params }) => {
+    const product = productOfSlug(String(params.slug));
+    if (!product) return problem(404, "http.not_found", "ไม่พบรายการนี้");
+    const empty: Schemas["PriceTiersDto"] = {
+      key: String(product.slug),
+      productTypeCode: typeCodeOf(product),
+      currency: "THB",
+      basis: null,
+      tiers: [],
+      computedAt: null,
+    };
+    const configurator = configuratorOf(product);
+    const reference = configurator ? referenceOf(configurator) : null;
+    if (!configurator || !reference) return HttpResponse.json(empty);
+    const presets = [...new Set(configuratorBase(configurator).quantity.presets)].sort((a, b) => a - b).slice(0, 10);
+    const quantities = presets.length ? presets : [reference.spec.quantity];
+    const result = calculationOf({
+      productTypeCode: empty.productTypeCode,
+      configuration: { ...reference.spec.configuration, quantities },
+    });
+    if (result instanceof Response) return HttpResponse.json(empty);
+    return HttpResponse.json({
+      ...empty,
+      basis: {
+        quantity: reference.spec.quantity,
+        sizeCode: reference.spec.standardSizeCode,
+        includesVat: true,
+        includesDelivery: false,
+        specs: result.specs,
+        label: result.specLabel,
+      },
+      tiers: result.steps,
+      computedAt: bangkokIso(),
+    } satisfies Schemas["PriceTiersDto"]);
+  }),
+
   http.post("*/v1/store/quotes/actions/calculate", async ({ request }) => {
     const body = (await request.json().catch(() => null)) as Schemas["CalculateQuoteDto"] | null;
     const result = calculationOf(body);

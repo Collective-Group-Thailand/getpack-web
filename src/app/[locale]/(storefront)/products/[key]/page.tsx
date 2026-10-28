@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
-import { readFilters, readSort } from "@/features/customer/catalog/ordering";
 import { CategoryView } from "@/features/customer/catalog/CategoryView";
+import { readHubParams } from "@/features/customer/products/query";
 import { absoluteImageUrl } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { ProductView } from "@/features/customer/catalog/ProductView";
@@ -73,9 +73,7 @@ export default async function ProductKeyPage({ params, searchParams }: { params:
         category={resolved.category}
         tree={resolved.tree}
         typeCode={one(query.type)}
-        page={Math.max(1, Number(one(query.page)) || 1)}
-        filters={readFilters(one(query.f))}
-        sort={readSort(one(query.sort))}
+        query={readHubParams(query)}
       />
     );
   }

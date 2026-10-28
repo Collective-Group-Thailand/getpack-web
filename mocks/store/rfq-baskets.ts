@@ -14,10 +14,22 @@ import { bangkokIso, mockId, problem } from "../support";
 import { addToCart, toCartDto } from "./cart";
 import { threads } from "./conversations";
 import { customerOf, type MockCustomer } from "./customers";
+import { basketProductOf, productRefOf } from "./catalog";
 import { ownerIdOf } from "./owner";
 import { acceptStoreRfq, createStoreRfq, myRfq, rfqRefusal, rfqTypeNames, storeRfqDto } from "./rfq";
 
-type Basket = Schemas["RfqBasketDto"] & { customerId: string; inputs: Schemas["RfqBasketItemInputDto"][] };
+/** A pending line (C1b, D-447) keeps `null` in place of its not-yet-filled form. */
+type Basket = Schemas["RfqBasketDto"] & {
+  customerId: string;
+  inputs: (Schemas["RfqBasketItemInputDto"] | null)[];
+};
+
+const sameProduct = (
+  a: { catalogProductSlug?: unknown; stockProductSku?: unknown },
+  b: { catalogProductSlug?: string; stockProductSku?: string },
+) =>
+  (!!b.catalogProductSlug && a.catalogProductSlug === b.catalogProductSlug) ||
+  (!!b.stockProductSku && a.stockProductSku === b.stockProductSku);
 
 const MAX_ITEMS = 20;
 const baskets: Basket[] = [];
@@ -78,9 +90,17 @@ function itemOf(input: Schemas["RfqBasketItemInputDto"], sort: number): Schemas[
     specification: {
       spec: input.spec,
       quantities: input.quantities,
+      ...(input.catalogProductSlug ? { catalogProductSlug: input.catalogProductSlug } : {}),
+      ...(input.stockProductSku ? { stockProductSku: input.stockProductSku } : {}),
       ...(input.lengthMm ? { lengthMm: input.lengthMm, widthMm: input.widthMm, heightMm: input.heightMm ?? null } : {}),
     },
     design: input.design ?? null,
+    formPending: false,
+    categoryCode: basketProductOf(input)?.categoryCode ?? null,
+    product: (() => {
+      const product = productRefOf(input);
+      return product && !("refused" in product) ? product : null;
+    })(),
     rfq: null,
   };
 }
@@ -122,8 +142,69 @@ export const rfqBasketHandlers = [
       return problem(422, "validation.failed", "ระบุจำนวนอย่างน้อยหนึ่งจำนวน", [
         { path: "quantities", code: "required", message: "required" },
       ]);
+    // C1-API-3: a named product must be an active product of the line's type.
+    const product = productRefOf(input);
+    if (product && "refused" in product)
+      return problem(422, "validation.failed", "ไม่พบสินค้านี้ในประเภทที่เลือก", [
+        { path: product.refused, code: "exists", message: "exists" },
+      ]);
+    // C1b (D-447): the filled form of a product waiting in the basket fills that line.
+    const waiting = draft.items.findIndex((item) => item.formPending && sameProduct(item.specification, input));
+    if (waiting >= 0) {
+      draft.items[waiting] = { ...itemOf(input, waiting), id: draft.items[waiting]!.id };
+      draft.inputs[waiting] = input;
+      return HttpResponse.json(toDto(customer, draft), { status: 201 });
+    }
     draft.items.push(itemOf(input, draft.items.length));
     draft.inputs.push(input);
+    return HttpResponse.json(toDto(customer, draft), { status: 201 });
+  }),
+
+  // store.rfqBaskets.addProduct (C1b, D-447): the signed-in quote tray — a product waits for its form.
+  http.post("*/v1/store/rfq-baskets/draft/products", async ({ request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const body = (await request.json()) as Schemas["AddBasketProductDto"];
+    if (!body.catalogProductSlug === !body.stockProductSku)
+      return problem(422, "validation.failed", "ระบุสินค้าหนึ่งรายการ", [
+        { path: "catalogProductSlug", code: "oneOf", message: "oneOf" },
+      ]);
+    const found = basketProductOf(body);
+    if (!found)
+      return problem(422, "validation.failed", "ไม่พบสินค้านี้", [
+        { path: body.catalogProductSlug ? "catalogProductSlug" : "stockProductSku", code: "exists", message: "exists" },
+      ]);
+    const draft = draftOf(customer);
+    if (draft.items.some((item) => item.formPending && sameProduct(item.specification, body)))
+      return HttpResponse.json(toDto(customer, draft), { status: 201 });
+    if (draft.items.length >= MAX_ITEMS)
+      return problem(422, "validation.failed", `ตะกร้ารับได้สูงสุด ${MAX_ITEMS} รายการ`, [
+        { path: "items", code: "max_items", message: "max" },
+      ]);
+    const [nameTh, nameEn] = rfqTypeNames(found.productTypeCode) ?? [found.productTypeCode, found.productTypeCode];
+    draft.items.push({
+      id: mockId("b1tm", ++seq),
+      sort: draft.items.length,
+      productType: {
+        id: mockId("ptyp", found.productTypeCode.length),
+        code: found.productTypeCode,
+        nameTh,
+        nameEn,
+      },
+      specification: {
+        productTypeCode: found.productTypeCode,
+        ...(body.catalogProductSlug ? { catalogProductSlug: body.catalogProductSlug } : {}),
+        ...(body.stockProductSku ? { stockProductSku: body.stockProductSku } : {}),
+      },
+      design: null,
+      formPending: true,
+      categoryCode: found.categoryCode,
+      product: found.product,
+      rfq: null,
+    });
+    draft.inputs.push(null);
     return HttpResponse.json(toDto(customer, draft), { status: 201 });
   }),
 
@@ -161,13 +242,19 @@ export const rfqBasketHandlers = [
       return problem(422, "validation.failed", "ระบุรหัสไปรษณีย์ปลายทางก่อนส่ง", [
         { path: "deliveryPostcode", code: "required", message: "required" },
       ]);
+    const pending = draft.items.findIndex((item) => item.formPending);
+    if (pending >= 0)
+      return problem(422, "validation.failed", "กรอกรายละเอียดของทุกรายการก่อนส่ง", [
+        { path: `items[${pending}]`, code: "required", message: "required" },
+      ]);
     const en = english(request);
     // Every item is checked first (errors under `items[i]`); nothing is filed unless all of them pass.
-    for (const [index, input] of draft.inputs.entries()) {
+    const inputs = draft.inputs.filter((input): input is Schemas["RfqBasketItemInputDto"] => input !== null);
+    for (const [index, input] of inputs.entries()) {
       const refused = rfqRefusal(input, `items[${index}].`);
       if (refused) return refused;
     }
-    const created = draft.inputs.map((input) =>
+    const created = inputs.map((input) =>
       createStoreRfq(
         customer,
         {
@@ -182,6 +269,8 @@ export const rfqBasketHandlers = [
           ...(draft.targetDate ? { targetDate: draft.targetDate } : {}),
           ...(draft.notes ? { notes: draft.notes } : {}),
           fileIds: input.fileIds ?? [],
+          ...(input.catalogProductSlug ? { catalogProductSlug: input.catalogProductSlug } : {}),
+          ...(input.stockProductSku ? { stockProductSku: input.stockProductSku } : {}),
         } as Schemas["SubmitRfqDto"],
         en,
       ),

@@ -12,6 +12,8 @@ import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
+import { nextTrayHref, useQuoteTray } from "@/features/customer/products/quote-tray";
+import { TRAY_DONE_HREF, trayItemHref } from "@/features/customer/products/tray-flow";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
@@ -20,6 +22,7 @@ import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { IconButton } from "@/ui/components/IconButton";
+import { cn } from "@/ui/lib/cn";
 
 import { quantityBand } from "../analytics/bands";
 
@@ -41,6 +44,16 @@ export interface RfqFormProps {
   calculationId?: string | null;
   /** The published style variant chosen on a style page (D-407), sent as `styleVariantCode`. */
   style?: { code: string; name: string; href: string } | null;
+  /**
+   * The product the request is for (DECISIONS-STAGE-A §4), sent with the request and the basket line —
+   * only while `FEATURE_RFQ_PRODUCT_REF` is on (the page passes null otherwise).
+   */
+  productRef?: { catalogProductSlug: string } | { stockProductSku: string } | null;
+  /**
+   * The products hub's RFQ tray walks its items through this form (C1, prompt item 8): adding to the
+   * basket is the main action, and afterwards the next tray item opens (or the basket, when none is left).
+   */
+  tray?: { kind: "catalog" | "stock"; key: string } | null;
 }
 
 interface Attached {
@@ -69,8 +82,11 @@ export function RfqForm({
   initialNotes = "",
   calculationId = null,
   style = null,
+  productRef = null,
+  tray = null,
 }: RfqFormProps) {
   const t = useTranslations("quoteRequests.form");
+  const quoteTray = useQuoteTray();
   const locale = useLocale();
   const format = useFormat();
   const router = useRouter();
@@ -142,6 +158,7 @@ export function RfqForm({
           productTypeCode: form.productTypeCode,
           specSchemaVersion: form.specSchemaVersion,
           ...(style ? { styleVariantCode: style.code } : {}),
+          ...(productRef ?? {}),
           ...(calculationId ? { routedFrom: { calculationId } } : {}),
           spec,
           ...(form.dimensions.asked && dims.l && dims.w
@@ -164,6 +181,8 @@ export function RfqForm({
         quantityBand: quantityBand(rfq!.quantities[0] ?? 0),
         quoteMode: "rfq",
       });
+      // Asked on its own: the item leaves the tray (signed in, its waiting basket line, D-447 §10.9).
+      if (tray) await quoteTray.remove(tray).catch(() => undefined);
       router.push(`/account/rfqs/${rfq!.id}?submitted=1`);
     } catch (error) {
       // A new attempt after a refusal is a new intent; a network failure may be retried as is.
@@ -192,6 +211,7 @@ export function RfqForm({
           productTypeCode: form.productTypeCode,
           specSchemaVersion: form.specSchemaVersion,
           ...(style ? { styleVariantCode: style.code } : {}),
+          ...(productRef ?? {}),
           spec,
           ...(form.dimensions.asked && dims.l && dims.w
             ? {
@@ -212,6 +232,12 @@ export function RfqForm({
             ...(notes.trim() ? { notes: notes.trim() } : {}),
           },
         });
+      if (tray) {
+        // The tray item is now a basket line (a waiting line of the same product is filled, D-447 §10.9): it leaves
+        // the tray, a guest tray joins the basket now that the customer is signed in, and the next item opens.
+        router.push(await nextTrayHref(tray, Boolean(productRef), trayItemHref, TRAY_DONE_HREF));
+        return;
+      }
       router.push("/rfq/basket?added=1");
     } catch (error) {
       idempotencyKey.current = newKey();
@@ -493,14 +519,20 @@ export function RfqForm({
         {form.slaTargetHours !== null ? (
           <p className="text-muted text-sm">{t("sla", { hours: form.slaTargetHours })}</p>
         ) : null}
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" size="lg" loading={submitting} disabled={adding}>
+        <div className={cn("flex flex-wrap gap-3", tray && "flex-row-reverse justify-end")}>
+          <Button
+            type="submit"
+            size="lg"
+            variant={tray ? "secondary" : "primary"}
+            loading={submitting}
+            disabled={adding}
+          >
             {t("submit")}
           </Button>
           <Button
             type="button"
             size="lg"
-            variant="secondary"
+            variant={tray ? "primary" : "secondary"}
             iconStart="plus"
             loading={adding}
             disabled={submitting}

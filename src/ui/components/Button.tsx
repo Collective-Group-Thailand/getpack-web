@@ -45,6 +45,11 @@ export const buttonVariants = cva(
         /** Only the confirm button inside an AlertDialog, where the destructive step is the point. */
         "destructive-solid": "bg-danger text-danger-fg hover:bg-danger-hover",
         link: "text-primary underline underline-offset-4 hover:text-primary-hover",
+        /**
+         * A quiet filled control for a secondary action inside a card (the products hub's
+         * "เพิ่มในใบขอราคา"); pressed (`aria-pressed`) it takes the brand tint.
+         */
+        soft: "bg-bg-subtle text-fg hover:bg-border aria-pressed:bg-primary-subtle aria-pressed:text-primary-subtle-fg",
       },
       size: {
         sm: "h-8 px-3 text-sm",

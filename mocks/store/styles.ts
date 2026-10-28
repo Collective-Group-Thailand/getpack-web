@@ -17,8 +17,11 @@ import { ALL_RECIPES } from "@getpack/dieline/library";
 import type { Schemas } from "@/lib/api/types";
 
 import master from "../../docs/design-tool/style-library-master.json" with { type: "json" };
+import { catalogueRows } from "../admin/catalogue";
 import { bangkokIso, problem } from "../support";
+import { catalogProducts } from "./catalog";
 import { customerOf } from "./customers";
+import { startingOf } from "./quotes";
 
 type Card = Schemas["StyleCardDto"];
 type Detail = Schemas["StyleDetailDto"];
@@ -130,6 +133,56 @@ const STYLES: MockStyle[] = master.styles.map((row, index) => {
 
 const byCode = new Map(STYLES.map((s) => [s.row.code, s]));
 
+/** C1: a published style's names, for a product page's "แบบกล่องที่ใช้ได้" (`./catalog.ts`). */
+export function publishedStyle(code: string | null | undefined): Schemas["StoreProductStyleDto"] | null {
+  const style = code ? byCode.get(code) : undefined;
+  return style
+    ? { code: style.row.code, nameTh: style.row.name_th, nameEn: style.row.name_en, category: style.row.category }
+    : null;
+}
+
+/**
+ * C1 (products Phase 2): the active catalogue products whose pattern is this style — the admin mock's
+ * `patterns.styleCode` — each with its own (mock) starting price, priced ones cheapest first.
+ */
+function productsOfStyle(code: string): Schemas["StyleProductDto"][] {
+  const patternIds = new Set(
+    catalogueRows("patterns")
+      .filter((p) => p.styleCode === code)
+      .map((p) => p.id),
+  );
+  if (!patternIds.size) return [];
+  return catalogProducts()
+    .filter((p) => ((p.patterns as { patternId: string }[] | undefined) ?? []).some((e) => patternIds.has(e.patternId)))
+    .map((p) => {
+      const starting = startingOf(p);
+      return {
+        slug: String(p.slug),
+        nameTh: String(p.nameTh),
+        nameEn: String(p.nameEn),
+        startingPrice: starting
+          ? {
+              unitPrice: starting.unitPrice,
+              currency: "THB" as const,
+              quantity: starting.spec.quantity,
+              catalogProductSlug: String(p.slug),
+              computedAt: bangkokIso(-60),
+              label: starting.spec.specLabel,
+            }
+          : null,
+      };
+    })
+    .sort((a, b) =>
+      a.startingPrice && b.startingPrice
+        ? Number(a.startingPrice.unitPrice) - Number(b.startingPrice.unitPrice)
+        : a.startingPrice
+          ? -1
+          : b.startingPrice
+            ? 1
+            : 0,
+    );
+}
+
 /** The mock's "starting from": a fake unit price for instant styles only (D-220). */
 function startingPrice(s: MockStyle): Schemas["StylePriceDto"] | null {
   if (s.pricePath !== "instant") return null;
@@ -234,6 +287,7 @@ function detail(s: MockStyle, favourite: boolean | null): Detail {
             },
           ]
         : [],
+    products: productsOfStyle(s.row.code),
     axes: axesOf(s.row)
       .filter((axis) => values.has(axis))
       .map((axis) => ({ axis, multiSelect: MULTI.has(axis), values: [...values.get(axis)!] })),
