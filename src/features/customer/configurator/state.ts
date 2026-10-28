@@ -439,6 +439,24 @@ export function readyToPrice(configurator: Configurator, state: ConfiguratorStat
   );
 }
 
+/**
+ * The state on one of the catalogue's standard sizes — an inside size (D-182), so the basis is the
+ * inside. The one way a standard size is chosen: the size cards' prices (`option-prices.ts`) and the
+ * product page's size picker (pdp redesign) go through it, so they price the same configuration.
+ */
+export function withStandardSize(
+  state: ConfiguratorState,
+  size: Pick<Configurator["standardSizes"][number], "code" | "lengthMm" | "widthMm" | "heightMm">,
+): ConfiguratorState {
+  return {
+    ...state,
+    sizeMode: "standard",
+    standardSizeCode: size.code,
+    basis: "internal",
+    dims: { ...state.dims, l: size.lengthMm, w: size.widthMm, d: size.heightMm, b: null, s: null, cs: null },
+  };
+}
+
 /** Adds a quantity tier, keeping them sorted and within the API's bounds (where it gives any). */
 export function withTier(configurator: Configurator, tiers: number[], quantity: number): number[] | null {
   const { min, max, maxTiers } = configurator.quantity;

@@ -21,7 +21,7 @@ export function HubSection({
 }: {
   id: string;
   title: string;
-  lede?: string;
+  lede?: React.ReactNode;
   aside?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
@@ -167,11 +167,18 @@ export function fluteOf(option: {
   return fromName ? fromName.toUpperCase() : null;
 }
 
-/** The materials of the instant corrugated products (configurator option groups), one row each, in offer order. */
-export function materialRows(configurators: readonly Configurator[], locale: string): MaterialRow[] {
+/**
+ * The materials of the instant corrugated products (configurator option groups), one row each, in offer order.
+ * `anyCalculator`: every product's boards, not only corrugated ones (a product page lists its own, whatever it is).
+ */
+export function materialRows(
+  configurators: readonly Configurator[],
+  locale: string,
+  { anyCalculator = false }: { anyCalculator?: boolean } = {},
+): MaterialRow[] {
   const rows = new Map<string, MaterialRow>();
   for (const configurator of configurators) {
-    if (configurator.calculator !== "corrugate") continue;
+    if (!anyCalculator && configurator.calculator !== "corrugate") continue;
     for (const group of configurator.optionGroups) {
       if (group.kind !== "material") continue;
       for (const option of group.options) {
@@ -230,17 +237,32 @@ function FluteFigure({ flute, label }: { flute: string; label: string }) {
  * note — and the column goes when none has one. Hidden when no instant product is corrugated.
  * "เปรียบเทียบวัสดุทั้งหมด" opens the existing comparison.
  */
-export async function MaterialsTable({ configurators }: { configurators: readonly Configurator[] }) {
+export async function MaterialsTable({
+  configurators,
+  section,
+  after,
+}: {
+  configurators: readonly Configurator[];
+  /**
+   * The product page's own section (pdp redesign item 7): its id, heading and lede, and every board the
+   * product offers whatever its calculator; the hub's "วัสดุกล่องลูกฟูก" otherwise.
+   */
+  section?: { id: string; title: string; lede?: string };
+  /** What follows the table inside the section (the product page's print notes). */
+  after?: React.ReactNode;
+}) {
   const [t, locale] = await Promise.all([getTranslations("products.materials"), getLocale()]);
-  const rows = materialRows(configurators, locale);
-  if (rows.length === 0) return null;
+  const rows = materialRows(configurators, locale, { anyCalculator: section !== undefined });
+  if (rows.length === 0) return after && section ? <HubSection {...section}>{after}</HubSection> : null;
   const notes = rows.some((row) => row.use);
+  // A product page's non-corrugated boards have no flute: the column goes when no row has one.
+  const flutes = rows.some((row) => row.flute);
   const head = "text-muted bg-bg-subtle px-4 py-3 text-start text-[0.8125rem] font-medium";
   return (
     <HubSection
-      id="materials"
-      title={t("title")}
-      lede={t("lede")}
+      id={section?.id ?? "materials"}
+      title={section?.title ?? t("title")}
+      lede={section ? section.lede : t("lede")}
       aside={
         <Button asChild variant="secondary">
           <Link href="/materials">{t("compare")}</Link>
@@ -260,9 +282,11 @@ export async function MaterialsTable({ configurators }: { configurators: readonl
               <th scope="col" className={head}>
                 {t("material")}
               </th>
-              <th scope="col" className={head}>
-                {t("flute")}
-              </th>
+              {flutes ? (
+                <th scope="col" className={head}>
+                  {t("flute")}
+                </th>
+              ) : null}
               {notes ? (
                 <th scope="col" className={head}>
                   {t("note")}
@@ -276,19 +300,22 @@ export async function MaterialsTable({ configurators }: { configurators: readonl
                 <th scope="row" className="px-4 py-3.5 text-start align-top font-medium">
                   {row.name}
                 </th>
-                <td className="px-4 py-3.5 align-top">
-                  {row.flute ? (
-                    <FluteFigure flute={row.flute} label={t("fluteFigure", { flute: row.flute })} />
-                  ) : (
-                    t("none")
-                  )}
-                </td>
+                {flutes ? (
+                  <td className="px-4 py-3.5 align-top">
+                    {row.flute ? (
+                      <FluteFigure flute={row.flute} label={t("fluteFigure", { flute: row.flute })} />
+                    ) : (
+                      t("none")
+                    )}
+                  </td>
+                ) : null}
                 {notes ? <td className="text-muted px-4 py-3.5 align-top">{row.use ?? ""}</td> : null}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {after}
     </HubSection>
   );
 }

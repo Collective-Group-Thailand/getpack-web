@@ -19,14 +19,7 @@ import {
   type GroupKind,
   type MeasurementBasis,
 } from "./model";
-import {
-  axesOf,
-  initialState,
-  NO_DIMS,
-  withTier,
-  type Axis,
-  type ConfiguratorState,
-} from "./state";
+import { axesOf, initialState, NO_DIMS, withTier, type Axis, type ConfiguratorState } from "./state";
 
 /** The parameters the configurator reads and writes. */
 export const PARAMS = {
@@ -48,8 +41,12 @@ export const PARAMS = {
   design: "design",
 } as const;
 
-/** Older links still in the wild (the home page's quick start, the designer): read, never written. */
-export const LEGACY_PARAMS = { l: "l", w: "w", d: "d", ink: "ink" } as const;
+/**
+ * Older or other links in the wild, read and never written: the home page's quick start and the designer
+ * (`l`, `w`, `d`, `ink`), and `print` — the outside print by its plain name, as the product page's brief
+ * spells it (`?size=&material=&print=&qty=`, pdp redesign item 3); `pf` wins when both are there.
+ */
+export const LEGACY_PARAMS = { l: "l", w: "w", d: "d", ink: "ink", print: "print" } as const;
 
 /** Other features' parameters on this address (`?from`, `?quote`, `?calc`, …): left exactly as they are. */
 const OWNED: readonly string[] = [...Object.values(PARAMS), ...Object.values(LEGACY_PARAMS)];
@@ -75,7 +72,10 @@ const mm = (value: string | undefined | null) => (value && MM.test(value) ? Numb
  * Anything it does not offer — and everything the link does not say — is left at the API's defaults;
  * in particular the artwork option is only ever set by an explicit `design`.
  */
-export function seedFromDesign(configurator: Configurator, raw: ConfiguratorQuery): Partial<ConfiguratorState> | undefined {
+export function seedFromDesign(
+  configurator: Configurator,
+  raw: ConfiguratorQuery,
+): Partial<ConfiguratorState> | undefined {
   const groups = groupsOf(configurator);
 
   // size: a standard size's code, or LxWxH (the older l / w / d still work).
@@ -106,7 +106,7 @@ export function seedFromDesign(configurator: Configurator, raw: ConfiguratorQuer
     const ids = [...new Set(value.split(","))].filter((id) => group?.options.some((option) => option.id === id));
     return ids.length > 0 ? ids : null;
   };
-  const printFrontParam = text(raw, PARAMS.printFront);
+  const printFrontParam = text(raw, PARAMS.printFront) ?? text(raw, LEGACY_PARAMS.print);
   // The home hero (`ink`) prices its board and outside inks and nothing else, so what it does not send starts
   // unanswered; `pf` / `pb` are one side each of a complete configuration and leave the rest at the defaults.
   const hero = printFrontParam === undefined && text(raw, LEGACY_PARAMS.ink) !== undefined;
@@ -162,7 +162,10 @@ export function seedFromDesign(configurator: Configurator, raw: ConfiguratorQuer
 /* ----------------------------------------------------------------------------- state → link */
 
 /** The size as the link carries it: a standard size's code, or `LxWxH` — `null` where it cannot be said. */
-function sizeOf(configurator: Configurator, state: ConfiguratorState): { size: string; basis?: MeasurementBasis } | null {
+function sizeOf(
+  configurator: Configurator,
+  state: ConfiguratorState,
+): { size: string; basis?: MeasurementBasis } | null {
   if (state.sizeMode === "standard") return state.standardSizeCode ? { size: state.standardSizeCode } : null;
   const axes: Axis[] = axesOf(configurator, state);
   // A pouch's gussets are not in the link: it would be a size the link cannot say.
@@ -209,7 +212,9 @@ function paramsOf(configurator: Configurator, state: ConfiguratorState): Record<
  */
 export function queryOf(configurator: Configurator, state: ConfiguratorState): Record<string, string> {
   const start = paramsOf(configurator, initialState(configurator));
-  return Object.fromEntries(Object.entries(paramsOf(configurator, state)).filter(([key, value]) => start[key] !== value));
+  return Object.fromEntries(
+    Object.entries(paramsOf(configurator, state)).filter(([key, value]) => start[key] !== value),
+  );
 }
 
 /** The address's search with the configurator's parameters replaced and every other one kept. */

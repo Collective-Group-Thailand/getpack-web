@@ -21,7 +21,7 @@ test("T5 ask for a sample before the production run", async ({ page, journey }) 
 
   await j.screen(
     "configurator",
-    () => page.getByRole("link", { name: "ปรับแต่งและดูราคา" }).click(),
+    () => page.getByRole("link", { name: "ปรับแต่งต่อและสั่งซื้อ" }).click(),
     () => expect(dock(page)).toBeVisible(),
   );
   await page.locator("html[data-hydrated]").waitFor();
