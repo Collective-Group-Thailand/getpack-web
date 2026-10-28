@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { DOCUMENT_CORRECTION_STATUS, ETAX_STATUS } from "@/domain/status";
+import { TabBar } from "@/features/customer/account/AccountTabs";
 import { PortalTable } from "@/features/customer/account/PortalTable";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import {
@@ -20,7 +21,6 @@ import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
-import { NativeSelect } from "@/ui/components/NativeSelect";
 
 type DocType = Schemas["CustomerDocumentType"];
 const DOC_TYPES = ["iv", "tr", "rc", "cn", "dn"] as const satisfies readonly DocType[];
@@ -84,17 +84,22 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
       <h1 className="text-title leading-tight">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
 
-      <form method="get" action="" className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1.5fr_auto]">
-        <Field label={t("filters.type")}>
-          <NativeSelect
-            name="docType"
-            defaultValue={docType ?? ""}
-            options={[
-              { value: "", label: t("filters.allTypes") },
-              ...DOC_TYPES.map((type) => ({ value: type, label: tTypes(type) })),
-            ]}
-          />
-        </Field>
+      {/* The kinds of document as tabs (account pack Phase 1: เอกสาร — ใบกำกับภาษี ใบเสร็จ ใบลดหนี้ …). */}
+      <TabBar
+        className="mt-5"
+        label={t("filters.type")}
+        items={[
+          { key: "all", href: "/account/documents", label: t("filters.allTypes"), current: !docType },
+          ...DOC_TYPES.map((type) => ({
+            key: type,
+            href: `/account/documents?docType=${type}`,
+            label: tTypes(type),
+            current: docType === type,
+          })),
+        ]}
+      />
+      <form method="get" action="" className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_auto]">
+        {docType ? <input type="hidden" name="docType" value={docType} /> : null}
         <Field label={t("filters.from")}>
           <Input type="date" name="from" defaultValue={from ?? ""} />
         </Field>

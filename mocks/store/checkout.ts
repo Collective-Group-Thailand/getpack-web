@@ -1089,6 +1089,71 @@ async function bodyOf<T>(request: Request): Promise<T> {
   return ((await request.json().catch(() => ({}))) ?? {}) as T;
 }
 
+/** The customer's order groups as `store.orders.listGroups` shows them (every order of each group). */
+function storeGroupsOf(customer: NonNullable<ReturnType<typeof customerOf>>): Schemas["OrderGroupDto"][] {
+  const owner = ownerIdOf(customer);
+  for (const order of orders.filter((candidate) => candidate.customer.id === owner)) groupForOrder(order);
+  return [...groups.values()]
+    .filter((group) => owns(customer, group))
+    .map((group) => {
+      const list = group.orderIds
+        .map((id) => orders.find((order) => order.id === id))
+        .filter((order): order is MockOrder => Boolean(order));
+      const gross = list.reduce((sum, order) => sum + satang(order.grossAmount), 0);
+      const dto: Schemas["OrderGroupDto"] = {
+        id: group.id,
+        groupCode: group.code,
+        status: list[0]?.group.status ?? "waiting_payment",
+        ...statusLabels("status", ORDER_GROUP_STATUS, list[0]?.group.status ?? "waiting_payment"),
+        channel: list[0]?.channel ?? "web",
+        customerId: customer.id,
+        poNumber: null,
+        ccEmails: [],
+        placedAt: list[0]?.createdAt ?? bangkokIso(),
+        expiresAt: list[0]?.expiresAt ?? null,
+        // D-436: past the price lock while still waiting for payment.
+        paymentOverdue:
+          (list[0]?.group.status ?? "waiting_payment") === "waiting_payment" &&
+          Boolean(list[0]?.expiresAt) &&
+          Date.parse(list[0]!.expiresAt!) < Date.now(),
+        cancelledAt: list[0]?.cancelledAt ?? null,
+        totals: {
+          netAmount: baht(gross - vatIn(gross)),
+          discountAmount: "0.00",
+          shippingNetAmount: "0.00",
+          vatAmount: baht(vatIn(gross)),
+          grossAmount: baht(gross),
+          whtAmount: "0.00",
+          cashAmount: baht(gross),
+          currency: "THB",
+        },
+        orders: list.map(toStoreOrderDto),
+      };
+      return dto;
+    });
+}
+
+/** D-453: the account list's tabs — the API's rules over `customerStatus` and `actionOwner` (order-tabs.ts). */
+const ORDER_TABS = ["active", "todo", "in_production", "shipping", "completed", "cancelled"] as const;
+type OrderTab = (typeof ORDER_TABS)[number];
+function inTab(order: Schemas["OrderDto"], tab: OrderTab): boolean {
+  const status = order.customerStatus;
+  if (tab === "active") return status !== "completed" && status !== "cancelled";
+  if (tab === "todo") return order.actionOwner === "customer" && status !== "completed" && status !== "cancelled";
+  return status === tab;
+}
+function matchesSearch(group: Schemas["OrderGroupDto"], order: Schemas["OrderDto"], q: string): boolean {
+  const product = order.summary.product;
+  return [
+    order.orderCode,
+    group.groupCode,
+    group.poNumber,
+    product?.nameTh,
+    product?.nameEn,
+    order.summary.productTypeNameTh,
+  ].some((text) => typeof text === "string" && text.toLowerCase().includes(q));
+}
+
 export const storeCheckoutHandlers = [
   http.post("*/v1/store/checkout/actions/preview", async ({ request }) => {
     const customer = customerOf(request);
@@ -1135,59 +1200,47 @@ export const storeCheckoutHandlers = [
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const url = new URL(request.url);
-    const q = url.searchParams.get("q")?.toLowerCase();
-    const owner = ownerIdOf(customer);
-    for (const order of orders.filter((candidate) => candidate.customer.id === owner)) groupForOrder(order);
-    const rows = [...groups.values()]
-      .filter((group) => owns(customer, group))
-      .map((group) => {
-        const list = group.orderIds
-          .map((id) => orders.find((order) => order.id === id))
-          .filter((order): order is MockOrder => Boolean(order));
-        const gross = list.reduce((sum, order) => sum + satang(order.grossAmount), 0);
-        const dto: Schemas["OrderGroupDto"] = {
-          id: group.id,
-          groupCode: group.code,
-          status: list[0]?.group.status ?? "waiting_payment",
-          ...statusLabels("status", ORDER_GROUP_STATUS, list[0]?.group.status ?? "waiting_payment"),
-          channel: list[0]?.channel ?? "web",
-          customerId: customer.id,
-          poNumber: null,
-          ccEmails: [],
-          placedAt: list[0]?.createdAt ?? bangkokIso(),
-          expiresAt: list[0]?.expiresAt ?? null,
-          // D-436: past the price lock while still waiting for payment.
-          paymentOverdue:
-            (list[0]?.group.status ?? "waiting_payment") === "waiting_payment" &&
-            Boolean(list[0]?.expiresAt) &&
-            Date.parse(list[0]!.expiresAt!) < Date.now(),
-          cancelledAt: list[0]?.cancelledAt ?? null,
-          totals: {
-            netAmount: baht(gross - vatIn(gross)),
-            discountAmount: "0.00",
-            shippingNetAmount: "0.00",
-            vatAmount: baht(vatIn(gross)),
-            grossAmount: baht(gross),
-            whtAmount: "0.00",
-            cashAmount: baht(gross),
-            currency: "THB",
-          },
-          orders: list.map(toStoreOrderDto),
-        };
-        return dto;
-      })
-      .filter(
-        (group) =>
-          !q ||
-          group.groupCode.toLowerCase().includes(q) ||
-          group.orders.some((order) => order.orderCode.toLowerCase().includes(q)),
+    const q = url.searchParams.get("q")?.trim().toLowerCase() ?? "";
+    const tab = ORDER_TABS.find((candidate) => candidate === url.searchParams.get("tab"));
+    const rows = storeGroupsOf(customer).flatMap((group) => {
+      if (!tab && !q) return [group];
+      const list = group.orders.filter(
+        (order) => (!tab || inTab(order, tab)) && (!q || matchesSearch(group, order, q)),
       );
+      return list.length > 0 ? [{ ...group, orders: list }] : [];
+    });
     return HttpResponse.json(
       paginate(rows, {
         page: Number(url.searchParams.get("page") ?? 1),
         perPage: Number(url.searchParams.get("perPage") ?? 25),
       }),
     );
+  }),
+
+  // store.orders.getGroup: one of the customer's groups (the order page reads it by `payment.groupId`).
+  http.get("*/v1/store/order-groups/:groupId", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const group = storeGroupsOf(customer).find((candidate) => candidate.id === params.groupId);
+    return group ? HttpResponse.json(group) : problem(404, "http.not_found", "ไม่พบคำสั่งซื้อ");
+  }),
+
+  // store.orders.tabCounts (D-453).
+  http.get("*/v1/store/order-tabs", ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const list = storeGroupsOf(customer).flatMap((group) => group.orders);
+    const count = (tab: OrderTab) => list.filter((order) => inTab(order, tab)).length;
+    const body: Schemas["StoreOrderTabCountsDto"] = {
+      active: count("active"),
+      todo: count("todo"),
+      in_production: count("in_production"),
+      shipping: count("shipping"),
+      completed: count("completed"),
+      cancelled: count("cancelled"),
+      claimInReview: list.filter((order) => order.customerStatus === "claim_in_review").length,
+    };
+    return HttpResponse.json(body);
   }),
 
   // store.paymentSchedules.get (published, U-F0.2): the group's instalments, as paid so far.

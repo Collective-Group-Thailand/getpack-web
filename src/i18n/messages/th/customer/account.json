@@ -59,7 +59,7 @@
     "overview": "ภาพรวม",
     "orders": "คำสั่งซื้อ",
     "instalments": "งวดชำระ",
-    "documents": "เอกสารและใบกำกับภาษี",
+    "documents": "เอกสาร",
     "quotes": "ใบเสนอราคา",
     "rfqs": "คำขอใบเสนอราคา",
     "designs": "งานออกแบบ",
@@ -82,11 +82,21 @@
       "work": "งานของฉัน",
       "company": "บริษัทของฉัน",
       "companyNamed": "บริษัทของฉัน · {name}",
-      "account": "บัญชี"
+      "account": "บัญชี",
+      "buy": "ซื้อ",
+      "records": "เอกสารและบัญชี"
     },
     "agent": "ตัวแทนขาย",
     "menuOpen": "เมนูบัญชี",
-    "menuCurrent": "หน้านี้: {page}"
+    "menuCurrent": "หน้านี้: {page}",
+    "reorder": "สั่งซ้ำ",
+    "rewards": "คะแนนและสิทธิพิเศษ",
+    "profile": "ข้อมูลบัญชี",
+    "company": "บริษัทของฉัน",
+    "companyNamed": "บริษัท · {name}",
+    "me": {
+      "points": "{points} คะแนน"
+    }
   },
   "home": {
     "title": "บัญชีของฉัน",
@@ -576,5 +586,23 @@
       "withdrawn": "ถอนคำขอแก้ไขแล้ว"
     },
     "toOrders": "ดูคำสั่งซื้อ"
+  },
+  "tabs": {
+    "label": "หน้าในหมวดนี้",
+    "quotes": "ใบเสนอราคา",
+    "rfqs": "คำขอใบเสนอราคา",
+    "designs": "งานออกแบบ",
+    "samples": "ตัวอย่างสินค้า",
+    "structuralRequests": "คำขอออกแบบโครงสร้าง",
+    "replenishment": "สั่งซ้ำตามรอบ",
+    "callOffs": "สัญญาเรียกของ",
+    "points": "คะแนนสะสม",
+    "wallet": "เครดิตร้านค้า",
+    "referral": "ชวนเพื่อน",
+    "agent": "ตัวแทนขาย",
+    "addresses": "ที่อยู่และใบกำกับภาษี",
+    "notifications": "การแจ้งเตือน",
+    "privacy": "ความเป็นส่วนตัว",
+    "team": "ทีมและผู้อนุมัติ"
   }
 }

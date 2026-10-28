@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { ACCOUNT_SECTIONS } from "@/features/customer/account/sections";
 import { signOut } from "@/features/shared/auth/sign-out";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Avatar } from "@/ui/components/Avatar";
@@ -14,8 +15,8 @@ import { Icon } from "@/ui/icons";
 const SignInSheet = dynamic(() => import("./SignInSheet").then((module) => module.SignInSheet), { ssr: false });
 
 /**
- * The header's account control. Signed in, it opens a menu — บัญชีของฉัน · คำสั่งซื้อ ·
- * ออกจากระบบ (round 2, B9: a customer had no way to sign out). Signed out, it links to
+ * The header's account control. Signed in, it opens a menu — the account's nine sections with the account
+ * menu's labels (account pack Phase 1) · ออกจากระบบ (round 2, B9: a customer had no way to sign out). Signed out, it links to
  * `/sign-in?returnTo=<this page>` directly — no detour through `/account`'s redirect (UX audit
  * Flow 1, bug #4), and it works without JavaScript — but once the page is interactive it opens
  * the sign-in sheet over the page instead, so signing in does not lose the customer's place. The
@@ -46,6 +47,7 @@ export function AccountButton({
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const t = useTranslations("auth");
+  const tNav = useTranslations("account.nav");
   const [leaving, startLeaving] = useTransition();
 
   function openSheet(event: React.MouseEvent) {
@@ -92,14 +94,14 @@ export function AccountButton({
       }
       heading={name ?? undefined}
       items={[
-        { id: "account", label: t("menu.account"), icon: "dashboard", onSelect: () => router.push("/account") },
-        { id: "orders", label: t("menu.orders"), icon: "package", onSelect: () => router.push("/account/orders") },
-        {
-          id: "notifications",
-          label: t("menu.notifications"),
-          icon: "bell",
-          onSelect: () => router.push("/account/notifications"),
-        },
+        // The account's own sections, in its menu's order and words (account pack Phase 1, GLOBAL-RULES §5).
+        ...ACCOUNT_SECTIONS.map((section, index) => ({
+          id: section.key,
+          label: tNav(section.key),
+          icon: section.icon,
+          separatorBefore: index === 1 || index === 5,
+          onSelect: () => router.push(section.href),
+        })),
         {
           id: "sign-out",
           label: t("signOut"),
