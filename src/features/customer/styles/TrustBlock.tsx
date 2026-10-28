@@ -7,7 +7,7 @@ import { Icon, type IconName } from "@/ui/icons";
 
 type Trust = StyleLibrarySettings["trust"];
 
-/** True when staff entered anything for the trust section; otherwise the whole section is left out. */
+/** True when staff entered anything for the trust section (the tax-invoice tile shows regardless, C0b). */
 export const hasTrust = (trust: Trust | null | undefined): trust is Trust =>
   !!trust &&
   (trust.certifications.length > 0 ||
@@ -22,9 +22,18 @@ export const hasTrust = (trust: Trust | null | undefined): trust is Trust =>
  * `store.style-library.settings`; each part is hidden when empty, and the section when all are.
  * Production photos are labelled "รูปงานจริงระหว่างผลิต" (GLOBAL-RULES §1: product and process only).
  */
-export async function TrustBlock({ trust, locale }: { trust: Trust | null | undefined; locale: string }) {
-  if (!hasTrust(trust)) return null;
+export async function TrustBlock({ trust: entered, locale }: { trust: Trust | null | undefined; locale: string }) {
   const t = await getTranslations("styles.library");
+  // C0b (DECISIONS-STAGE-A §9.4c): the tax-invoice note is backed by D-010 (getpack issues every customer tax
+  // invoice for the full amount) and D-125 (a tax invoice per order, per branch) — shown even before staff enter
+  // their own wording; every other part stays empty until the business provides it (TRUST-CONTENT-CHECKLIST.md).
+  const trust: Trust = entered ?? {
+    certifications: [],
+    foodGrade: [],
+    productionPhotos: [],
+    customerLogos: [],
+    taxInvoiceNote: null,
+  };
   const tiles: { icon: IconName; title: string; body: React.ReactNode; key: string }[] = [];
   if (trust.certifications.length)
     tiles.push({
@@ -75,13 +84,14 @@ export async function TrustBlock({ trust, locale }: { trust: Trust | null | unde
         </ul>
       ),
     });
-  if (trust.taxInvoiceNote)
-    tiles.push({
-      key: "tax",
-      icon: "receipt",
-      title: t("trustTaxInvoice"),
-      body: pick(locale, trust.taxInvoiceNote.th, trust.taxInvoiceNote.en),
-    });
+  tiles.push({
+    key: "tax",
+    icon: "receipt",
+    title: t("trustTaxInvoice"),
+    body: trust.taxInvoiceNote
+      ? pick(locale, trust.taxInvoiceNote.th, trust.taxInvoiceNote.en)
+      : t("trustTaxInvoiceDefault"),
+  });
 
   return (
     <section aria-labelledby="library-trust" className="border-border rounded-card mt-10 border p-5" data-trust="">
