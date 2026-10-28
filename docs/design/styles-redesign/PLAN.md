@@ -157,7 +157,7 @@ All 20 rows of `catalog-commercial-data-template.csv` exist in the catalogue, an
 | `name_th` | available | `nameTh` |
 | `name_en` | available | `nameEn` (122/122; all English already set) |
 | `family_th` | **derivable, but ambiguous** | The CSV values (กล่องกระดาษแข็ง / กล่องแข็ง / กล่องลูกฟูก) match API **`category`** labels (`folding_carton` / `rigid` / `corrugated`), not API `family` (`specialty`, `tray`, …). See Q4 |
-| `length_min_cm` … `height_max_cm` | **derivable on the detail, missing on the card** | detail `sizeRanges[]` in mm, inside size, per `materialClass`. cm = mm / 10 is a unit change, not money. 13 styles have no range and 41 lack at least one bound. Not on `StyleCardDto` → card size range = missing (request `store.styles.card-commercial`). Basis of the CSV (inside or outside?) = Q5 |
+| `length_min_mm` … `height_max_mm` (was `_cm`; C1c §11.3) | **derivable on the detail, missing on the card** | detail `sizeRanges[]` in mm, inside size, per `materialClass`. cm = mm / 10 is a unit change, not money. 13 styles have no range and 41 lack at least one bound. Not on `StyleCardDto` → card size range = missing (request `store.styles.card-commercial`). Basis of the CSV (inside or outside?) = Q5 |
 | `moq_units` | **missing** | in no style DTO; card, quick view and the "below minimum" tier rows stay hidden |
 | `lead_time_days_min/max` | **derivable on the detail, missing on the card** | detail `leadTime`, but 5–10 everywhere (Q3); unit days vs working days unknown. Not on the card |
 | `price_mode` | available | `pricePath` (`instant` \| `rfq`); CSV says `quote` for `rfq` |

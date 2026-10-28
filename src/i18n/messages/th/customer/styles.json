@@ -906,6 +906,7 @@
     "trustTitle": "ความน่าเชื่อถือ",
     "trustCertifications": "ใบรับรองวัสดุ",
     "trustCertificateNumber": "เลขที่ {number}",
+    "trustCertificateIssuer": "ออกโดย {issuer}",
     "trustFoodGrade": "วัสดุสัมผัสอาหาร",
     "trustPhotos": "รูปงานจริงระหว่างผลิต",
     "trustTaxInvoice": "ใบกำกับภาษีเต็มรูปแบบ",

@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Client } from "openapi-fetch";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
@@ -14,6 +14,7 @@ import type { Configurator } from "@/features/customer/configurator/model";
 import { toCatalogView, type DesignerCatalog } from "@/features/designer/data/catalog-view";
 
 import { publishableFaqs } from "./faq-hygiene";
+import { formatSupportHours } from "./support-hours";
 import { pick } from "./localize";
 
 /**
@@ -265,13 +266,29 @@ export async function getSharedQuote(token: string): Promise<SharedQuote | null>
   );
 }
 
-/** getpack's CS channels (`store.support.getChannels`, D-221); `null` when unavailable. */
+/**
+ * getpack's CS channels (`store.support.getChannels`, D-221); `null` when unavailable. `hours` is
+ * worded per locale from the structured `storefront.support_hours` (`PublicConfigDto.supportHours`,
+ * DECISIONS-STAGE-A §11.7); without it, Thai keeps the channels' own (Thai-only) text and English
+ * shows no hours rather than Thai words.
+ */
 export async function getSupportChannels(): Promise<SupportChannels | null> {
   const api = await publicApi("content");
-  return orFallback(
-    api.GET("/v1/store/support-channels").then(({ data }) => data ?? null),
-    null,
-  );
+  const [channels, config, locale] = await Promise.all([
+    orFallback(
+      api.GET("/v1/store/support-channels").then(({ data }) => data ?? null),
+      null,
+    ),
+    getPublicConfig(),
+    getLocale(),
+  ]);
+  if (!channels) return null;
+  const t = await getTranslations({ locale, namespace: "catalog.supportHours" });
+  const worded = formatSupportHours(config?.supportHours, {
+    days: (days) => t(`days.${days}`),
+    text: (parts) => t("text", parts),
+  });
+  return { ...channels, hours: worded ?? (locale === "th" ? channels.hours : null) };
 }
 
 /** The add-on services staff feature (`store.catalog.getFeaturedServices`, D-447); `null` when unavailable. */
@@ -380,17 +397,17 @@ export async function getSampleKits(): Promise<SampleKit[]> {
   );
 }
 
-export type StyleLibrarySettings = ResponseOf<Requests, "GET /v1/store/style-library/settings">;
+export type StyleLibrarySettings = Schemas["StoreStyleLibrarySettingsDto"];
 
 /**
- * The library page's staff-managed content (CONTRACT-REQUEST store.style-library.settings) — quick
+ * The library page's staff-managed content (`store.styleLibrary.getSettings`, D-448) — quick
  * search terms, the compare limit, the trust block. `null` when unavailable: the page then hides
  * those parts and compares up to D-246's three.
  */
 export async function getStyleLibrarySettings(): Promise<StyleLibrarySettings | null> {
-  const requests = await publicRequests("content");
+  const api = await publicApi("content");
   return orFallback(
-    requests.call("GET /v1/store/style-library/settings").then((result) => result),
+    api.GET("/v1/store/style-library/settings").then(({ data }) => data ?? null),
     null,
   );
 }
