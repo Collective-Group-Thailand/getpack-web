@@ -60,10 +60,45 @@ export function useEditorShortcuts({ editable, save }: { editable: boolean; save
   }, [editable, save]);
 }
 
-/** The `?` overlay's list, in the words of `t` (`designer.shortcuts`). */
-export function shortcutList(t: (key: string) => string, mod: string): Shortcut[] {
+/**
+ * The `?` overlay's list, in the words of `t` (`designer.shortcuts`). With the Studio shell's `mode` (C8) it adds
+ * the view keys and, in pro, the toolbox's single keys and the drawing modifiers (Phase 3 item 8).
+ */
+export function shortcutList(t: (key: string) => string, mod: string, mode?: "easy" | "pro"): Shortcut[] {
   const k = (...keys: string[]) => keys;
+  const shell: Shortcut[] = !mode
+    ? []
+    : [
+        { group: t("groups.view"), keys: k(KEYCAP.shift, "1"), description: t("fit") },
+        { group: t("groups.view"), keys: k("+", "−"), description: t("zoom") },
+        { group: t("groups.view"), keys: k(mod, t("wheel")), description: t("zoomWheel") },
+        { group: t("groups.view"), keys: k(t("space"), t("drag")), description: t("pan") },
+        { group: t("groups.selection"), keys: k(KEYCAP.shift, "←"), description: t("nudge10") },
+        { group: t("groups.selection"), keys: k(mod, "]"), description: t("forward") },
+        { group: t("groups.selection"), keys: k(mod, "["), description: t("backward") },
+        { group: t("groups.selection"), keys: k("Alt", t("drag")), description: t("noSnap") },
+        { group: t("groups.edit"), keys: k(t("doubleClick")), description: t("editText") },
+        ...(mode === "pro"
+          ? [
+              { group: t("groups.tools"), keys: k("V"), description: t("tools.select") },
+              { group: t("groups.tools"), keys: k("H"), description: t("tools.hand") },
+              { group: t("groups.tools"), keys: k("Z"), description: t("tools.zoom") },
+              { group: t("groups.tools"), keys: k("T"), description: t("tools.text") },
+              { group: t("groups.tools"), keys: k("R"), description: t("tools.rect") },
+              { group: t("groups.tools"), keys: k("E"), description: t("tools.ellipse") },
+              { group: t("groups.tools"), keys: k("L"), description: t("tools.line") },
+              { group: t("groups.tools"), keys: k("P"), description: t("tools.pen") },
+              { group: t("groups.tools"), keys: k("I"), description: t("tools.eyedropper") },
+              { group: t("groups.tools"), keys: k("C"), description: t("tools.comment") },
+              { group: t("groups.tools"), keys: k(KEYCAP.shift, t("drag")), description: t("tools.constrain") },
+              { group: t("groups.tools"), keys: k("Enter"), description: t("tools.penFinish") },
+              { group: t("groups.tools"), keys: k("⌫"), description: t("tools.penBack") },
+              { group: t("groups.tools"), keys: k(t("rulerDrag")), description: t("tools.guide") },
+            ]
+          : []),
+      ];
   return [
+    ...shell,
     { group: t("groups.edit"), keys: k(mod, KEYCAP.z), description: t("undo") },
     { group: t("groups.edit"), keys: k(mod, KEYCAP.shift, KEYCAP.z), description: t("redo") },
     { group: t("groups.edit"), keys: k(mod, "S"), description: t("save") },

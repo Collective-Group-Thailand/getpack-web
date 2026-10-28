@@ -61,10 +61,12 @@ test.describe.configure({ mode: "serial" });
 test("text placed on ฝาบน picked in 3D lands on the matching flat panel within 0.5 mm", async ({ page }) => {
   const id = await openStudio(page);
 
-  // Split view by default on a wide screen: the model beside the sheet.
+  // C8: the sheet with a live 3D card by default; the face picker is in the full 3D view.
+  await expect(page.getByRole("region", { name: "ภาพ 3D ของกล่อง" })).toBeVisible();
+  await expect(page.locator("canvas").first()).toBeVisible();
+  await page.getByRole("group", { name: "แสดง" }).getByRole("button", { name: "3D", exact: true }).click();
   const model = page.getByRole("region", { name: "กล่อง 3 มิติ" });
   await expect(model.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible();
-  await expect(page.locator("canvas").first()).toBeVisible();
 
   await model.getByRole("group", { name: "เลือกด้านที่จะออกแบบ" }).getByRole("button", { name: "ฝา (บน)" }).click();
   await expect(page.getByRole("status").filter({ hasText: "กำลังแก้: ฝา (บน)" }).first()).toBeVisible();
@@ -89,6 +91,7 @@ test("text placed on ฝาบน picked in 3D lands on the matching flat panel 
 
 test("clicking the model picks the face under the pointer", async ({ page }) => {
   await openStudio(page);
+  await page.getByRole("group", { name: "แสดง" }).getByRole("button", { name: "3D", exact: true }).click();
   const model = page.getByRole("region", { name: "กล่อง 3 มิติ" });
   const picture = model.getByRole("img", { name: /^ภาพสามมิติ/ });
   await expect(picture).toBeVisible();

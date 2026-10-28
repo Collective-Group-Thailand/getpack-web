@@ -69,6 +69,8 @@ export interface Preview3DProps {
   controlsClassName?: string;
   /** Face-pick buttons for keyboard and screen readers (every canvas action has a panel equivalent). */
   pickLabel?: string;
+  /** With `fill`: no minimum height and no frame — the C8 editor's small picture-in-picture card. */
+  compact?: boolean;
 }
 
 /**
@@ -447,15 +449,15 @@ const CAMERA_Z = 4.2;
  * Keeps the whole box in a tall, narrow view (the studio's split column): the field of view is
  * vertical, so a portrait canvas moves the camera back by its aspect.
  */
-function FitCamera() {
+function FitCamera({ margin = 1 }: { margin?: number }) {
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
   const get = useThree((s) => s.get);
   useEffect(() => {
     const { camera, invalidate } = get();
-    camera.position.z = CAMERA_Z / Math.min(1, aspect);
+    camera.position.z = (CAMERA_Z * margin) / Math.min(1, aspect);
     camera.updateProjectionMatrix();
     invalidate();
-  }, [aspect, get]);
+  }, [aspect, get, margin]);
   return null;
 }
 
@@ -495,6 +497,7 @@ export default function Preview3D({
   controlsClassName,
   pickLabel,
   finishMasks,
+  compact = false,
 }: Preview3DProps) {
   const [progress, setProgress] = useState(1);
   const [rotation, setRotation] = useState(INITIAL);
@@ -642,14 +645,16 @@ export default function Preview3D({
   );
 
   return (
-    <div className={fill ? "flex min-h-0 flex-1 flex-col gap-2" : "space-y-3"}>
+    <div className={fill ? cn("flex min-h-0 flex-1 flex-col gap-2", compact && "h-full gap-0") : "space-y-3"}>
       <div
         role="img"
         aria-label={labels.canvas}
         className={
-          fill
-            ? "bg-surface-subtle min-h-48 w-full flex-1 touch-none overflow-hidden rounded-lg"
-            : "bg-surface-subtle aspect-square w-full touch-none overflow-hidden rounded-lg"
+          fill && compact
+            ? "min-h-0 w-full flex-1 touch-none overflow-hidden"
+            : fill
+              ? "bg-surface-subtle min-h-48 w-full flex-1 touch-none overflow-hidden rounded-lg"
+              : "bg-surface-subtle aspect-square w-full touch-none overflow-hidden rounded-lg"
         }
         onPointerDown={(event) => {
           (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
@@ -673,7 +678,8 @@ export default function Preview3D({
           frameloop="demand"
         >
           <Grab rendererRef={renderer} />
-          <FitCamera />
+          {/* The C8 picture-in-picture card has no controls around it: a little more room around the box. */}
+          <FitCamera margin={compact ? 1.45 : 1} />
           <ambientLight color={light.ambient[0]} intensity={light.ambient[1]} />
           <directionalLight color={light.key[0]} intensity={light.key[1]} position={[3, 4, 5]} />
           <directionalLight color={light.fill[0]} intensity={light.fill[1]} position={[-4, -1, -3]} />

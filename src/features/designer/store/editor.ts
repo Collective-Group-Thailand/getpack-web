@@ -24,6 +24,8 @@ interface EditorState {
   /** The face being edited up close: the canvas zooms to it and turns it upright. */
   focusedFaceId: string | null;
   zoom: number; // 1 = 100%
+  /** The zoom that fits the sheet (or the focused face) in the view — the floor when that is below `ZOOM_MIN`. */
+  fitZoom: number;
   showLabels: boolean;
   showSafeZone: boolean;
   showGrid: boolean;
@@ -71,6 +73,12 @@ interface EditorState {
   paste: () => void;
   focusFace: (faceId: string | null) => void;
   setZoom: (z: number) => void;
+  /** The fit zoom (C8): a sheet too large for the view at 20 % still fits. */
+  setFitZoom: (z: number) => void;
+  /** C8 pro: a ruler guide added, moved or removed — one undo step each, saved with the design. */
+  addGuide: (axis: "x" | "y", at: number) => string;
+  moveGuide: (id: string, at: number) => void;
+  removeGuide: (id: string) => void;
   toggle: (k: Toggle) => void;
   markSaved: () => void;
   setPrintMode: (on: boolean) => void;
@@ -78,8 +86,9 @@ interface EditorState {
 
 const emptyContent = (): DesignContent => ({ elements: [], pattern: { ...DEFAULT_PATTERN } });
 
-export const ZOOM_MIN = 0.1;
-export const ZOOM_MAX = 4;
+/** 20–600 % (editor redesign Phase 1 item 2); a sheet that does not fit at 20 % may go lower to fit (`fitZoom`). */
+export const ZOOM_MIN = 0.2;
+export const ZOOM_MAX = 6;
 
 /** The ids to select for one element: its whole group when it has one. */
 function withGroup(elements: DesignElement[], id: string): string[] {
@@ -99,6 +108,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   selectedIds: [],
   focusedFaceId: null,
   zoom: 1,
+  fitZoom: 1,
   showLabels: true,
   showSafeZone: true,
   showGrid: false,
@@ -318,8 +328,9 @@ export const useEditor = create<EditorState>((set, get) => ({
         ...rest,
         ...(inside ? { side: "inside" } : {}),
         id: nanoid(8),
-        x: e.x + 10,
-        y: e.y + 10,
+        // C8: a paste lands 5 mm down and right of what was copied (each paste of a paste steps on).
+        x: e.x + 5,
+        y: e.y + 5,
         locked: false,
       } as DesignElement;
     });
@@ -328,7 +339,17 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
 
   focusFace: (focusedFaceId) => set({ focusedFaceId }),
-  setZoom: (z) => set({ zoom: Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)) }),
+  setZoom: (z) => set((s) => ({ zoom: Math.min(ZOOM_MAX, Math.max(Math.min(ZOOM_MIN, s.fitZoom), z)) })),
+  setFitZoom: (fitZoom) => set({ fitZoom }),
+  addGuide: (axis, at) => {
+    const id = nanoid(6);
+    const side = get().side === "inside" ? { side: "inside" as const } : {};
+    get().commit((c) => ({ ...c, guides: [...(c.guides ?? []), { id, axis, at, ...side }] }));
+    return id;
+  },
+  moveGuide: (id, at) =>
+    get().commit((c) => ({ ...c, guides: (c.guides ?? []).map((g) => (g.id === id ? { ...g, at } : g)) })),
+  removeGuide: (id) => get().commit((c) => ({ ...c, guides: (c.guides ?? []).filter((g) => g.id !== id) })),
   toggle: (k) => set((s) => ({ [k]: !s[k] }) as Partial<EditorState>),
   markSaved: () => set({ dirty: false }),
   setPrintMode: (printMode) => set({ printMode }),

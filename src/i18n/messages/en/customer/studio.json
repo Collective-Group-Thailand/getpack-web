@@ -568,5 +568,18 @@
     "toCmyk": "Switch to CMYK",
     "moreColours": "Add colours",
     "moreQuote": "Corrugated boxes can print more colours; colours beyond the instant price are quoted by the team (request a quotation)."
+  },
+  "editor": {
+    "order": "Order",
+    "orderBlocked": "Fix {count, plural, one {# thing} other {# things}} before ordering",
+    "fixAll": "Fix all",
+    "fixAllBody": "{count, number} fixes in one step (undoable)",
+    "print": {
+      "digital": "Digital, 4 colours (CMYK)",
+      "offset": "Offset, 4 colours (CMYK)",
+      "flexo": "Flexo (spot colours)",
+      "none": "No print",
+      "auto": "Chosen from the artwork"
+    }
   }
 }

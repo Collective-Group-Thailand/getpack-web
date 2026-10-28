@@ -481,7 +481,10 @@
     "side": {
       "outside": "Outside ({count, number})",
       "inside": "Inside ({count, number})"
-    }
+    },
+    "hidden": "Hidden",
+    "hide": "Hide {name} (not printed or checked)",
+    "show": "Show {name}"
   },
   "templates": {
     "applied": "Template {name} applied",
@@ -640,7 +643,36 @@
     "groups": {
       "edit": "Edit",
       "selection": "Selection",
-      "view": "View"
+      "view": "View",
+      "tools": "Tools (pro mode)"
+    },
+    "fit": "Fit to view",
+    "zoom": "Zoom in / out",
+    "wheel": "Wheel",
+    "zoomWheel": "Zoom at the pointer",
+    "space": "Space",
+    "pan": "Pan the view",
+    "nudge10": "Nudge 10 mm",
+    "forward": "Bring forward (⇧ = to front)",
+    "backward": "Send backward (⇧ = to back)",
+    "noSnap": "No snapping while held",
+    "editText": "Type into a text on the dieline",
+    "rulerDrag": "Drag from a ruler",
+    "tools": {
+      "select": "Select and move",
+      "hand": "Pan",
+      "zoom": "Zoom (Alt = out)",
+      "text": "Text (click to place)",
+      "rect": "Rectangle",
+      "ellipse": "Ellipse",
+      "line": "Line",
+      "pen": "Pen",
+      "eyedropper": "Eyedropper",
+      "comment": "Pin a comment",
+      "constrain": "Square / circle / 45° line",
+      "penFinish": "Pen: finish (or double-click · click the first point to close)",
+      "penBack": "Pen: remove the last point",
+      "guide": "Make a guide · drag it back onto the ruler to delete"
     }
   },
   "focus": {
@@ -812,5 +844,316 @@
     "glb": "3D file (GLB)",
     "usdz": "3D file for iPhone (USDZ)",
     "failed": "Could not build the 3D model"
+  },
+  "shell": {
+    "topBar": "Editor toolbar",
+    "home": "getpack — back to the Studio",
+    "stage": "Dieline design area",
+    "share": "Share",
+    "mockup": "Mockup",
+    "phoneNote": "The editor is made for a computer; on a phone you can view the design, edit text and order.",
+    "editText": "Edit text",
+    "pip": {
+      "label": "The box in 3D",
+      "caption": "3D · live with the dieline",
+      "open": "Open the mockup"
+    },
+    "nudge": {
+      "body": "That shortcut belongs to the pro mode",
+      "action": "Switch to pro"
+    },
+    "mode": {
+      "label": "Editor mode",
+      "easy": "Easy",
+      "pro": "Pro",
+      "easyHint": "Easy mode: the tools you need; checks fix things for you",
+      "proHint": "Pro mode: rulers, values in mm, drawing tools, document colours and export"
+    },
+    "steps": {
+      "label": "Design steps",
+      "inspector": "Properties",
+      "design": "Design",
+      "check": "Check",
+      "order": "Order",
+      "mustFix": "{count, plural, one {# thing} other {# things}} to fix",
+      "advice": "{count, plural, one {# tip} other {# tips}}"
+    },
+    "view": {
+      "label": "View",
+      "mode": "Show",
+      "flat": "Dieline",
+      "split": "Dieline + 3D",
+      "3d": "3D",
+      "side": "Side",
+      "outside": "Outside",
+      "inside": "Inside",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "zoom": "Zoom level",
+      "fit": "Fit (⇧1)"
+    },
+    "tools": {
+      "label": "Drawing tools",
+      "select": "Select and move",
+      "hand": "Pan",
+      "zoom": "Zoom (Alt = out)",
+      "text": "Text",
+      "rect": "Rectangle",
+      "ellipse": "Ellipse",
+      "line": "Line",
+      "pen": "Pen · free shape",
+      "eyedropper": "Eyedropper (colour and style)",
+      "comment": "Pin a comment",
+      "newText": "Text"
+    },
+    "printView": {
+      "label": "Guides and margins",
+      "guides": {
+        "cut": "Cut lines",
+        "fold": "Fold lines",
+        "bleed": "Bleed {bleed, number} mm",
+        "safe": "Safe zone {safe, number} mm",
+        "labels": "Panel names",
+        "grid": "10 mm grid"
+      },
+      "inkOnBoard": "Simulate ink on the board",
+      "separation": "Separations",
+      "sep": {
+        "all": "All",
+        "black": "Black only",
+        "colours": "Colours only"
+      }
+    },
+    "welcome": {
+      "title": "Start designing your box",
+      "body": "Pick the way that suits you — switch modes any time, nothing is lost",
+      "recommended": "Best to start",
+      "easy": {
+        "title": "Easy mode",
+        "body": "Pick a template, add your logo, edit the text — done in a few steps",
+        "p1": "Size and place things with sliders",
+        "p2": "Checks find and fix print issues in one click",
+        "p3": "No print know-how needed"
+      },
+      "pro": {
+        "title": "Pro mode",
+        "body": "For designers — finish the whole job in the Studio",
+        "p1": "Rulers, positions in mm, rotate, align",
+        "p2": "Drawing tools, pen, gradients, guides",
+        "p3": "Export PDF, PNG, SVG and the dieline"
+      },
+      "design_service": {
+        "title": "Let the getpack team design it",
+        "body": "Send your logo and ideas; our designers work in this design and you review it here",
+        "revisions": "{count, plural, one {# free revision} other {# free revisions}}",
+        "p2": "Comment right on the design",
+        "p3": "Approve and go straight to production"
+      },
+      "file": {
+        "question": "Already designed it elsewhere?",
+        "link": "Upload a PDF or .ai file"
+      },
+      "switchLater": "Switch modes at the top left"
+    },
+    "easy": {
+      "guide": {
+        "title": "Finish in 4 steps",
+        "progress": "Progress",
+        "done": "done",
+        "template": {
+          "title": "Pick a template",
+          "body": "Colours and a layout, ready to use"
+        },
+        "logo": {
+          "title": "Add your logo",
+          "body": "Upload it, or use your brand kit"
+        },
+        "text": {
+          "title": "Edit the text",
+          "body": "Product name, tagline, ingredients"
+        },
+        "check": {
+          "title": "Check and order",
+          "left": "{count, plural, one {# thing} other {# things}} left to fix",
+          "ready": "Checked — you can order"
+        }
+      },
+      "quick": {
+        "title": "Next",
+        "text": "Edit text",
+        "logo": "Add logo",
+        "colour": "Box colour",
+        "mockup": "See it in 3D"
+      },
+      "hint": "Tap something on the dieline to edit it; double-click text to type · print checks run all the time",
+      "many": "{count, number} selected",
+      "actions": {
+        "duplicate": "Duplicate",
+        "remove": "Delete",
+        "front": "Bring to front",
+        "back": "Send to back"
+      },
+      "onFace": "on {face}",
+      "locked": "This is locked; unlock it in pro mode (Layers)",
+      "text": {
+        "label": "Text",
+        "content": "Text",
+        "font": "Font",
+        "studioFont": "Studio",
+        "size": "Text size",
+        "bold": "Bold",
+        "align": {
+          "left": "Align left",
+          "center": "Centre",
+          "right": "Align right"
+        }
+      },
+      "pt": "pt",
+      "size": "Size",
+      "mm": "mm",
+      "width": "width",
+      "colour": "Colour",
+      "swatch": {
+        "brand": "Brand colour {hex}",
+        "black": "Black",
+        "white": "White",
+        "custom": "Another colour"
+      },
+      "quality": {
+        "sharp": "Sharp — ready to print",
+        "soft": "Prints, but may look soft; try it a little smaller",
+        "low": "Too small — it will look pixelated; make it smaller or use a bigger file",
+        "ppi": "{ppi} ppi at this size"
+      },
+      "position": {
+        "label": "Position on {face}",
+        "grid": "Place on the panel",
+        "hint": "Or drag it on the dieline — it snaps to the panel's centre",
+        "cells": {
+          "0": "Top left",
+          "1": "Top centre",
+          "2": "Top right",
+          "3": "Middle left",
+          "4": "Centre",
+          "5": "Middle right",
+          "6": "Bottom left",
+          "7": "Bottom centre",
+          "8": "Bottom right"
+        }
+      }
+    },
+    "type": {
+      "text": "Text",
+      "image": "Image",
+      "qr": "QR code",
+      "barcode": "Barcode",
+      "shape": "Shape",
+      "line": "Line"
+    },
+    "pro": {
+      "document": "Document",
+      "side": "Side",
+      "sides": {
+        "outside": "Outside",
+        "inside": "Inside"
+      },
+      "print": "Print",
+      "elements": "Elements",
+      "hint": "Click an element to edit; double-click text to type · drag from the left panel",
+      "guides": "Guides",
+      "many": "{count, number} selected",
+      "colourAll": "Colour of all selected",
+      "colourCustom": "Another colour",
+      "duplicate": "Duplicate (⌘D)",
+      "front": "Bring to front",
+      "back": "Send to back",
+      "remove": "Delete",
+      "fill": "Fill",
+      "solid": "Solid",
+      "gradient": "Gradient",
+      "gradientFrom": "From",
+      "gradientTo": "To",
+      "gradientAngle": "Angle",
+      "pt": "pt",
+      "tracking": "Tracking (1/1000 em)",
+      "lineHeight": "Line height",
+      "strokeStyle": "Stroke",
+      "stroke": {
+        "none": "None",
+        "solid": "Solid",
+        "dashed": "Dashed",
+        "dotted": "Dotted"
+      },
+      "strokeWidthMm": "Stroke width (mm)",
+      "filePx": "File {width, number} × {height, number} px",
+      "mono": "One-ink image",
+      "monoHint": "Shown and printed in one ink, for black or spot-colour print",
+      "transform": "Flip and rotate",
+      "flipH": "Flip horizontally",
+      "flipV": "Flip vertically",
+      "rotate90": "Rotate 90°",
+      "alignToFace": "Align on {face}",
+      "align": {
+        "left": "Left",
+        "center": "Centre horizontally",
+        "right": "Right",
+        "top": "Top",
+        "middle": "Centre vertically",
+        "bottom": "Bottom"
+      }
+    },
+    "colours": {
+      "body": "Every colour in this design — change one and it changes everywhere, on both sides",
+      "empty": "No colours yet",
+      "change": "Change {hex} everywhere",
+      "uses": "used {n}×",
+      "blackInk": "black ink",
+      "inKit": "in brand kit",
+      "keep": "+ Brand",
+      "kept": "{hex} saved to your brand kit",
+      "inks": "Inks used",
+      "black": "Black ink",
+      "yes": "Yes",
+      "no": "No",
+      "others": "Other colours",
+      "otherCount": "{count, number}",
+      "print": "Print chosen"
+    },
+    "status": {
+      "sheet": "Dieline",
+      "mm": "{w} × {h} mm",
+      "material": "Material",
+      "side": {
+        "outside": "Outside",
+        "inside": "Inside"
+      },
+      "mustFix": "{count, plural, one {# thing} other {# things}} to fix",
+      "readyWithAdvice": "Print-ready (with tips)",
+      "ready": "Print-ready",
+      "easyNote": "Easy mode · switch to pro any time, nothing is lost",
+      "shortcuts": "Keyboard shortcuts (?)"
+    },
+    "rail": {
+      "box": "Box",
+      "templates": "Templates",
+      "elements": "Elements",
+      "text": "Text",
+      "uploads": "Uploads",
+      "brand": "Brand",
+      "colours": "Colours",
+      "background": "Background",
+      "layers": "Layers",
+      "comments": "Comments"
+    },
+    "railEasy": {
+      "templates": "Templates",
+      "brand": "Brand",
+      "text": "Text",
+      "uploads": "Pictures",
+      "elements": "Decorate",
+      "background": "Background",
+      "box": "Box",
+      "comments": "Comments"
+    }
   }
 }

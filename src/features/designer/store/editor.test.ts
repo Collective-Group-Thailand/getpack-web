@@ -55,7 +55,7 @@ describe("editor store (F4 Part D)", () => {
     expect(ids()).toEqual([a]);
   });
 
-  it("copies and pastes with new ids, offset, unlocked", () => {
+  it("copies and pastes with new ids, 5 mm down and right (C8), unlocked", () => {
     const [a] = ids();
     s().setLocked([a!], true);
     s().select(a!);
@@ -64,7 +64,8 @@ describe("editor store (F4 Part D)", () => {
     const pasted = s().content.elements.at(-1)!;
     expect(pasted.id).not.toBe(a);
     expect(pasted.locked).toBe(false);
-    expect(pasted.x).toBe(s().content.elements[0]!.x + 10);
+    expect(pasted.x).toBe(s().content.elements[0]!.x + 5);
+    expect(pasted.y).toBe(s().content.elements[0]!.y + 5);
     expect(s().selectedIds).toEqual([pasted.id]);
   });
 
@@ -122,5 +123,29 @@ describe("editor store (U4.3 design core)", () => {
     s().focusFace(null);
     s().addElement(newText({ x: 20, y: 20 }, "ทั้งแผ่น"));
     expect(s().content.elements.at(-1)!.clipFaceId).toBeUndefined();
+  });
+
+  it("keeps ruler guides with the document, each change one undo step (C8)", () => {
+    const before = s().past.length;
+    const id = s().addGuide("x", 120);
+    expect(s().content.guides).toEqual([{ id, axis: "x", at: 120 }]);
+    s().moveGuide(id, 98);
+    expect(s().content.guides![0]!.at).toBe(98);
+    s().removeGuide(id);
+    expect(s().content.guides).toEqual([]);
+    expect(s().past.length).toBe(before + 3);
+    s().undo();
+    expect(s().content.guides![0]!.at).toBe(98);
+  });
+
+  it("zooms within 20–600 %, lower only to fit a large sheet (C8)", () => {
+    s().setFitZoom(1);
+    s().setZoom(0.01);
+    expect(s().zoom).toBe(0.2);
+    s().setZoom(99);
+    expect(s().zoom).toBe(6);
+    s().setFitZoom(0.08);
+    s().setZoom(0.08);
+    expect(s().zoom).toBe(0.08);
   });
 });

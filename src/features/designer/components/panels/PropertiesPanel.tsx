@@ -14,6 +14,7 @@ import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Select } from "@/ui/components/Select";
 import { Slider } from "@/ui/components/Slider";
+import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
 import { FONT_FAMILIES } from "../../catalog";
@@ -22,9 +23,12 @@ import { outOfPrintGamut } from "../../lib/colour";
 import { newImage } from "../../lib/create";
 import { threshold, useStudioRules } from "../../data/rules";
 import { useFaceNames } from "../../lib/useFaceNames";
+import { alignMoves, type AlignMode } from "../../lib/align";
 import { useEditor } from "../../store/editor";
-import type { DesignElement, ImageElement } from "../../types";
+import type { DesignElement, FillGradient, ImageElement } from "../../types";
 import { useDesigner } from "../DesignerContext";
+import { faceOfBox, mmOfPt, ptOf } from "../studio-shell/element-info";
+import { boxOfElement } from "./ArrangePanel";
 import { useSwatches } from "./swatches";
 
 const WHOLE_SHEET = "__sheet";
@@ -39,8 +43,13 @@ function coloursOf(el: DesignElement): string[] {
   return el.strokeWidth > 0 ? [el.fill, el.stroke] : [el.fill];
 }
 
-/** One selected element: every property as a field, the canvas's gestures as numbers. */
-export function PropertiesPanel({ el }: { el: DesignElement }) {
+/**
+ * One selected element: every property as a field, the canvas's gestures as numbers. `studio` (C8 pro inspector)
+ * adds sizes in points, tracking and line height, flips and a quarter turn, alignment to the element's own panel, a
+ * two-colour gradient, the stroke's style and "ภาพสีเดียว" — and leaves out the finishes (not offered until
+ * production confirms them, editor pack hard rule 4).
+ */
+export function PropertiesPanel({ el, studio = false }: { el: DesignElement; studio?: boolean }) {
   const t = useTranslations("designer.properties");
   const locale = useLocale() as "th" | "en";
   const { dieline, catalog } = useDesigner();
@@ -54,6 +63,61 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
   const faces = dieline ? allFaces(dieline) : [];
   const names = useFaceNames(dieline);
   const dull = coloursOf(el).some(outOfPrintGamut);
+  const tShell = useTranslations("designer.shell.pro");
+  const box = studio ? boxOfElement(el) : null;
+  const face = box ? faceOfBox(dieline, box) : null;
+  const alignToFace = (mode: AlignMode) =>
+    face && box && useEditor.getState().moveElements(alignMoves([{ id: el.id, box }], mode, face.bounds));
+  const gradient = "fillGradient" in el ? el.fillGradient : undefined;
+  const fillField = (value: string, onValueChange: (hex: string) => void) =>
+    !studio ? (
+      colour(t("fill"), value, onValueChange)
+    ) : (
+      <div className="space-y-2">
+        <Field label={tShell("fill")}>
+          <SegmentedControl
+            label={tShell("fill")}
+            size="sm"
+            value={gradient ? "gradient" : "solid"}
+            onValueChange={(kind) =>
+              set({
+                fillGradient:
+                  kind === "gradient"
+                    ? ({ kind: "linear", from: value, to: "#ffffff", angle: 90 } satisfies FillGradient)
+                    : undefined,
+              } as Partial<DesignElement>)
+            }
+            options={[
+              { value: "solid", label: tShell("solid") },
+              { value: "gradient", label: tShell("gradient") },
+            ]}
+          />
+        </Field>
+        {gradient ? (
+          <>
+            {colour(tShell("gradientFrom"), gradient.from, (from) =>
+              set({ fill: from, fillGradient: { ...gradient, from } } as Partial<DesignElement>),
+            )}
+            {colour(tShell("gradientTo"), gradient.to, (to) =>
+              set({ fillGradient: { ...gradient, to } } as Partial<DesignElement>),
+            )}
+            <Field label={tShell("gradientAngle")}>
+              <NumberInput
+                inputSize="sm"
+                unit="°"
+                value={gradient.angle}
+                disabled={locked}
+                onChange={(event) =>
+                  set({ fillGradient: { ...gradient, angle: num(event.target.value) % 360 } } as Partial<DesignElement>)
+                }
+              />
+            </Field>
+          </>
+        ) : (
+          colour(t("fill"), value, onValueChange)
+        )}
+      </div>
+    );
 
   const colour = (label: string, value: string, onValueChange: (hex: string) => void) => (
     <Field label={label}>
@@ -159,15 +223,27 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
           </Field>
           <div className="grid grid-cols-2 gap-2">
             <Field label={t("fontSize")}>
-              <NumberInput
-                min={1}
-                step={0.5}
-                inputSize="sm"
-                unit={t("mm")}
-                value={el.fontSize}
-                disabled={locked}
-                onChange={(event) => set({ fontSize: num(event.target.value, 1) })}
-              />
+              {studio ? (
+                <NumberInput
+                  min={2}
+                  step={0.5}
+                  inputSize="sm"
+                  unit={tShell("pt")}
+                  value={round1(ptOf(el.fontSize))}
+                  disabled={locked}
+                  onChange={(event) => set({ fontSize: mmOfPt(num(event.target.value, 2)) })}
+                />
+              ) : (
+                <NumberInput
+                  min={1}
+                  step={0.5}
+                  inputSize="sm"
+                  unit={t("mm")}
+                  value={el.fontSize}
+                  disabled={locked}
+                  onChange={(event) => set({ fontSize: num(event.target.value, 1) })}
+                />
+              )}
             </Field>
             <Field label={t("fontStyle")}>
               <Select
@@ -183,6 +259,30 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
               />
             </Field>
           </div>
+          {studio ? (
+            <div className="grid grid-cols-2 gap-2">
+              <Field label={tShell("tracking")}>
+                <NumberInput
+                  inputSize="sm"
+                  step={10}
+                  value={el.letterSpacing ?? 0}
+                  disabled={locked}
+                  onChange={(event) => set({ letterSpacing: num(event.target.value) || undefined })}
+                />
+              </Field>
+              <Field label={tShell("lineHeight")}>
+                <NumberInput
+                  inputSize="sm"
+                  min={0.8}
+                  max={3}
+                  step={0.05}
+                  value={el.lineHeight ?? 1.25}
+                  disabled={locked}
+                  onChange={(event) => set({ lineHeight: Math.min(3, num(event.target.value, 0.8)) })}
+                />
+              </Field>
+            </div>
+          ) : null}
           <SmallTextNote fontSizeMm={el.fontSize * el.scaleY} />
           <Field label={t("align")}>
             <SegmentedControl
@@ -197,15 +297,37 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
               ]}
             />
           </Field>
-          {colour(t("color"), el.fill, (fill) => set({ fill }))}
+          {studio ? fillField(el.fill, (fill) => set({ fill })) : colour(t("color"), el.fill, (fill) => set({ fill }))}
         </>
       )}
 
       {(el.type === "rect" || el.type === "circle" || el.type === "shape") && (
         <>
-          {colour(t("fill"), el.fill, (fill) => set({ fill }))}
+          {el.type === "shape" && el.open ? null : fillField(el.fill, (fill) => set({ fill }))}
+          {studio ? (
+            <Field label={tShell("strokeStyle")}>
+              <Select
+                value={el.strokeWidth > 0 ? (el.strokeDash ?? "solid") : "none"}
+                disabled={locked}
+                onValueChange={(value) =>
+                  set(
+                    value === "none"
+                      ? { strokeWidth: 0 }
+                      : ({
+                          strokeDash: value === "solid" ? undefined : value,
+                          strokeWidth: el.strokeWidth > 0 ? el.strokeWidth : 0.3,
+                        } as Partial<DesignElement>),
+                  )
+                }
+                options={(["none", "solid", "dashed", "dotted"] as const).map((value) => ({
+                  value,
+                  label: tShell(`stroke.${value}`),
+                }))}
+              />
+            </Field>
+          ) : null}
           <div className="grid grid-cols-2 gap-2">
-            <Field label={t("strokeWidth")}>
+            <Field label={studio ? tShell("strokeWidthMm") : t("strokeWidth")}>
               <NumberInput
                 min={0}
                 step={0.25}
@@ -257,6 +379,21 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
       {el.type === "image" && (
         <>
           <ImageQuality el={el} />
+          {studio && el.naturalWidth && el.naturalHeight ? (
+            <p className="text-muted text-xs tabular-nums">
+              {tShell("filePx", { width: el.naturalWidth, height: el.naturalHeight })}
+            </p>
+          ) : null}
+          {studio ? (
+            <Switch
+              label={tShell("mono")}
+              description={tShell("monoHint")}
+              labelPosition="start"
+              checked={el.mono === true}
+              disabled={locked}
+              onCheckedChange={(mono) => set({ mono: mono || undefined } as Partial<ImageElement>)}
+            />
+          ) : null}
           <input
             ref={fileRef}
             type="file"
@@ -380,7 +517,68 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
         </Field>
       </div>
 
-      {el.type !== "image" && el.type !== "code" ? (
+      {studio ? (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-1" role="group" aria-label={tShell("transform")}>
+            <IconButton
+              name="flip-h"
+              size="sm"
+              variant={el.flipX ? "secondary" : "ghost"}
+              aria-pressed={el.flipX === true}
+              label={tShell("flipH")}
+              disabled={locked}
+              onClick={() => set({ flipX: !el.flipX || undefined })}
+            />
+            <IconButton
+              name="flip-v"
+              size="sm"
+              variant={el.flipY ? "secondary" : "ghost"}
+              aria-pressed={el.flipY === true}
+              label={tShell("flipV")}
+              disabled={locked}
+              onClick={() => set({ flipY: !el.flipY || undefined })}
+            />
+            <IconButton
+              name="rotate-cw"
+              size="sm"
+              variant="ghost"
+              label={tShell("rotate90")}
+              disabled={locked}
+              onClick={() => set({ rotation: (Math.round(el.rotation) + 90) % 360 })}
+            />
+          </div>
+          {face ? (
+            <div
+              className="flex flex-wrap gap-1"
+              role="group"
+              aria-label={tShell("alignToFace", { face: names.get(face.id) ?? "" })}
+            >
+              {(
+                [
+                  ["left", "align-start-v"],
+                  ["center", "align-center-v"],
+                  ["right", "align-end-v"],
+                  ["top", "align-start-h"],
+                  ["middle", "align-center-h"],
+                  ["bottom", "align-end-h"],
+                ] as const
+              ).map(([mode, icon]) => (
+                <IconButton
+                  key={mode}
+                  name={icon}
+                  size="sm"
+                  variant="ghost"
+                  label={tShell(`align.${mode}`)}
+                  disabled={locked}
+                  onClick={() => alignToFace(mode)}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {!studio && el.type !== "image" && el.type !== "code" ? (
         <Field label={t("finish")} hint={t("finishHint")}>
           <Select
             value={el.finish ?? "none"}

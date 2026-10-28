@@ -33,6 +33,11 @@ export const CANVAS_COLORS = {
   selection: oklchToHex(PALETTES.brand[700]),
   /** The board's drop shadow, to lift the sheet off the work surface. */
   paperShadow: "#000000",
+  /** Ruler guides (C8 pro): a cool cyan apart from the cut, fold and safe marks. */
+  guide: oklchToHex({ l: 0.66, c: 0.12, h: 220 }),
+  /** Preflight markers (C8): must fix / advice — the status hues of the UI. */
+  issueBlock: oklchToHex(PALETTES.red[600]),
+  issueWarn: oklchToHex(PALETTES.orange[500]),
 } as const;
 
 /**

@@ -128,6 +128,7 @@ export function LayersPanel() {
               <Icon name={ICON[row.el.type]} size={16} aria-hidden="true" className="shrink-0" />
               <span className="min-w-0 flex-1 truncate">{nameOf(row.el)}</span>
               {row.el.groupId ? <span className="text-xs">{t("grouped")}</span> : null}
+              {row.el.hidden ? <Icon name="eye-off" size={14} aria-label={t("hidden")} /> : null}
               {row.el.locked ? <Icon name="lock" size={14} aria-label={t("locked")} /> : null}
             </li>
           ),
@@ -143,6 +144,14 @@ export function LayersPanel() {
             label={selected.locked ? t("unlock", { name: nameOf(selected) }) : t("lock", { name: nameOf(selected) })}
             aria-pressed={selected.locked === true}
             onClick={() => setLocked([selected.id], !selected.locked)}
+          />
+          <IconButton
+            name={selected.hidden ? "eye-off" : "eye"}
+            size="sm"
+            variant="ghost"
+            label={selected.hidden ? t("show", { name: nameOf(selected) }) : t("hide", { name: nameOf(selected) })}
+            aria-pressed={selected.hidden === true}
+            onClick={() => useEditor.getState().updateElement(selected.id, { hidden: !selected.hidden || undefined })}
           />
           <IconButton
             name="chevron-up"

@@ -18,7 +18,7 @@ import type { Schemas } from "@/lib/api/types";
 import { catalogueRows } from "../admin/catalogue";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { live } from "./catalog";
-import { customerMe, customerOf, displayUnits, type MockCustomer } from "./customers";
+import { customerMe, customerOf, displayUnits, editorModes, type MockCustomer } from "./customers";
 import {
   buildQuote,
   findQuote,
@@ -691,11 +691,20 @@ export const quoteToolHandlers: HttpHandler[] = [
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const body = await json<Schemas["UpdatePreferencesDto"]>(request);
-    if (!["mm", "cm", "in"].includes(body.displayUnit))
+    if (body.displayUnit === undefined && body.editorMode === undefined)
+      return problem(422, "validation.failed", "ส่งค่าอย่างน้อยหนึ่งค่า", [
+        { path: "displayUnit", code: "required", message: "required" },
+      ]);
+    if (body.displayUnit !== undefined && !["mm", "cm", "in"].includes(body.displayUnit))
       return problem(422, "validation.failed", "หน่วยไม่ถูกต้อง", [
         { path: "displayUnit", code: "enum", message: "enum" },
       ]);
-    displayUnits.set(customer.id, body.displayUnit);
+    if (body.editorMode !== undefined && !["easy", "pro"].includes(body.editorMode))
+      return problem(422, "validation.failed", "โหมดไม่ถูกต้อง", [
+        { path: "editorMode", code: "enum", message: "enum" },
+      ]);
+    if (body.displayUnit) displayUnits.set(customer.id, body.displayUnit);
+    if (body.editorMode) editorModes.set(customer.id, body.editorMode);
     return HttpResponse.json(customerMe(customer));
   }),
 ];

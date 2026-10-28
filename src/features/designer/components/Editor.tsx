@@ -40,6 +40,7 @@ import { softProofStyle, useCheckContext, useStudioRules } from "@/features/desi
 import { fixContextFor, useDesignIssues } from "@/features/designer/lib/useIssues";
 import { designRepo } from "@/features/designer/storage";
 import { useEditor } from "@/features/designer/store/editor";
+import { useCommentPins } from "@/features/designer/comments/pins";
 import type { BoxDims, BoxStyleId, DesignContent, DesignSpec, ImageElement } from "@/features/designer/types";
 import { formatDateTime } from "@/i18n/format";
 import { AlertDialog } from "@/ui/components/AlertDialog";
@@ -50,6 +51,8 @@ import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { IconButton } from "@/ui/components/IconButton";
 import { useModKey } from "@/ui/components/CommandPalette";
 import { ShortcutsOverlay, useShortcutsOverlayShortcut } from "@/ui/components/ShortcutsOverlay";
+import { ThemeToggle } from "@/ui/theme/ThemeToggle";
+import { trackEditor } from "@/lib/analytics/editor";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Switch } from "@/ui/components/Switch";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -69,6 +72,23 @@ import { RAIL, RailPanel, SelectionPanel, type RailId } from "./shell/panels";
 import { shortcutList, useEditorShortcuts } from "./shell/shortcuts";
 import { StatusBar } from "./shell/StatusBar";
 import { proofTerms } from "@/i18n/terms";
+import {
+  overlaysFor,
+  TOOL_KEYS,
+  useEditorMode,
+  type EditorMode,
+  type EditorTool,
+} from "@/features/designer/store/mode";
+import { ColoursPanel } from "./panels/ColoursPanel";
+import { EasyInspector } from "./studio-shell/EasyInspector";
+import { PrintViewMenu } from "./studio-shell/PrintViewMenu";
+import { ProInspector } from "./studio-shell/ProInspector";
+import { AssetPanel, Inspector, Rail, StudioFrame, TopBar, type RailItem } from "./studio-shell/StudioFrame";
+import { StudioStatusBar } from "./studio-shell/StudioStatusBar";
+import { Toolbox } from "./studio-shell/Toolbox";
+import { ModeSwitch, StepNav, type ShellStep } from "./studio-shell/TopBarParts";
+import { ViewBar } from "./studio-shell/ViewBar";
+import { WelcomeDialog, type WelcomeChoice } from "./studio-shell/WelcomeDialog";
 
 const DesignCanvas = dynamic(() => import("./DesignCanvas"), { ssr: false });
 const Presentation = dynamic(() => import("./Presentation"), { ssr: false });
@@ -244,6 +264,8 @@ export interface EditorChromeContext {
   issues: DesignIssue[];
   /** Applies a finding's safe fix, as one undo step (U4.5). */
   fix: (issue: DesignIssue) => void;
+  /** "แก้ทั้งหมด" (C8): every fixable finding's fix, together as one undo step. */
+  fixAll: (issues: DesignIssue[]) => void;
   /** The outside's die, for the studio's order renders (U4.6; the canvas: `activeStage()`). */
   dieline: DesignerHandle["dieline"];
   openSetup: () => void;
@@ -292,6 +314,38 @@ export interface EditorChrome {
   presentation?: boolean;
   /** The studio's own share dialog (U4.7: links with a scope) in place of the view-only link. */
   share?: (designId: string, close: () => void) => React.ReactNode;
+  /** The Studio editor shell (C8, `editor-prototype.html`): two modes, steps as inspector tabs, the live preflight. */
+  shell?: StudioShellChrome;
+}
+
+/** What the Studio gives the C8 editor shell. */
+export interface StudioShellChrome {
+  /** The step shown — each is an inspector tab. */
+  step: ShellStep;
+  onStep: (step: ShellStep) => void;
+  /** A rail panel to open from outside (`?step=box` opens "กล่อง"); `n` changes to ask again. */
+  railRequest: { id: RailId; n: number } | null;
+  /** The "กล่อง" rail panel: the box, its size, material and print. */
+  box: (ctx: EditorChromeContext) => React.ReactNode;
+  /** The ตรวจงาน tab. */
+  checks: (ctx: EditorChromeContext) => React.ReactNode;
+  /** The สั่งผลิต tab: the price and the way to order. */
+  order: (ctx: EditorChromeContext) => React.ReactNode;
+  /** The top bar's price chip. */
+  priceChip: (ctx: EditorChromeContext) => React.ReactNode;
+  /** The top bar's "สั่งผลิต" — off while something must be fixed. */
+  orderButton: (ctx: EditorChromeContext) => React.ReactNode;
+  /** The print priced, in words ("4 สี (CMYK)"), for the inspector and the colours panel; null = not chosen. */
+  printLabel: string | null;
+  /** Where the logo goes (the Studio's front door). */
+  home: string;
+  /** The account's mode has been read (or there is no account): only then may the first-open chooser ask. */
+  modeReady: boolean;
+  /** The first-open chooser: the design service when the product offers it (`null` = not offered). */
+  welcome: {
+    designService: { freeRevisions: number | null } | null;
+    onPick: (choice: WelcomeChoice, ctx: EditorChromeContext) => void;
+  };
 }
 
 type StageView = "split" | "flat" | "3d";
@@ -383,7 +437,7 @@ export default function Editor({
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [fitSignal, setFitSignal] = useState(0);
   // The studio opens on the stage; its box has its own step (②).
-  const [rail, setRail] = useState<RailId | null>(chrome?.views ? null : "box");
+  const [rail, setRail] = useState<RailId | null>(chrome?.shell ? "brand" : chrome?.views ? null : "box");
   const [sideTab, setSideTab] = useState<SideTab>("properties");
   const [mobilePanel, setMobilePanel] = useState<MobilePanel | null>(null);
 
@@ -402,12 +456,23 @@ export default function Editor({
   const faceNames = useFaceNames(dieline);
   const focusedFaceId = useEditor((s) => s.focusedFaceId);
   const [view, setView] = useState<StageView>(() =>
-    !chrome?.views
-      ? "flat"
-      : typeof window !== "undefined" && window.matchMedia("(min-width: 64rem)").matches
-        ? "split"
-        : "3d",
+    chrome?.shell
+      ? "split"
+      : !chrome?.views
+        ? "flat"
+        : typeof window !== "undefined" && window.matchMedia("(min-width: 64rem)").matches
+          ? "split"
+          : "3d",
   );
+  // C8 shell: the mode (D-456), the pro tool and the print view.
+  const shell = chrome?.shell ?? null;
+  const editorMode = useEditorMode((s) => s.mode);
+  const modeChosen = useEditorMode((s) => s.chosen);
+  const tool = useEditorMode((s) => s.tool);
+  const overlays = useEditorMode((s) => s.overlays);
+  const inkOnBoard = useEditorMode((s) => s.inkOnBoard);
+  const separation = useEditorMode((s) => s.separation);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
   const checkContext = useCheckContext(spec, session.mode);
   // Soft proof (U4.5, D-279): the substrate's simplified transform, when Prepress has set one.
   const rulesQuery = useStudioRules(session.mode !== "admin");
@@ -589,6 +654,113 @@ export default function Editor({
   }, [editable, persistence, session.mode, t, tCommon]);
 
   useEditorShortcuts({ editable, save: () => void save() });
+
+  // C8 shell: this browser's mode first (the Studio adopts the account's), then the chooser if nobody chose yet.
+  const [modeHydrated, setModeHydrated] = useState(false);
+  useEffect(() => {
+    if (!shell) return;
+    useEditorMode.getState().hydrate();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- browser storage is read after mount
+    setModeHydrated(true);
+    // Read once, when the editor mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const hasSpec = spec !== null;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the chooser opens once the box is there
+    if (shell && shell.modeReady && modeHydrated && hasSpec && editable && !modeChosen) setWelcomeOpen(true);
+    // A mode adopted from the account meanwhile closes it.
+    else if (modeChosen) setWelcomeOpen(false);
+  }, [shell, shell?.modeReady, modeHydrated, hasSpec, editable, modeChosen]);
+  const opened = useRef(false);
+  useEffect(() => {
+    if (!shell || !modeHydrated || !hasSpec || opened.current) return;
+    opened.current = true;
+    trackEditor("editor_open", { mode: useEditorMode.getState().mode });
+  }, [shell, modeHydrated, hasSpec]);
+  // The sheet refits when the mode changes (pro adds the toolbox and rulers).
+  const lastMode = useRef(editorMode);
+  useEffect(() => {
+    if (lastMode.current === editorMode) return;
+    lastMode.current = editorMode;
+
+    setFitSignal((n) => n + 1);
+  }, [editorMode]);
+  const railRequest = shell?.railRequest;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- a panel asked for from the address or a step
+    if (railRequest) setRail(railRequest.id);
+  }, [railRequest]);
+
+  const switchMode = useCallback((next: EditorMode) => {
+    const from = useEditorMode.getState().mode;
+    if (from === next) return;
+    useEditorMode.getState().setMode(next);
+    trackEditor("editor_mode_switch", { from, to: next });
+  }, []);
+  const pickTool = useCallback((next: EditorTool) => {
+    useEditorMode.getState().setTool(next);
+    trackEditor("editor_tool", { tool: next });
+    if (next === "comment") {
+      setRail("comments");
+      useCommentPins.getState().setPlacing(true);
+    }
+  }, []);
+  // The comment pin is one-shot too: once placed (or cancelled), the tool is "select" again.
+  useEffect(
+    () =>
+      useCommentPins.subscribe((next, prev) => {
+        if (prev.placing && !next.placing && useEditorMode.getState().tool === "comment")
+          useEditorMode.getState().setTool("select");
+      }),
+    [],
+  );
+
+  // C8 shell keys: the pro tools (V H Z T R E L P I C), ⇧1 fit, + / − zoom, ⌘] / ⌘[ order. In easy mode a pro key
+  // offers the pro mode instead (the smart nudge, Phase 2 item 5).
+  useEffect(() => {
+    if (!shell || !editable) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("input, textarea, select, [contenteditable], [role='dialog']")) return;
+      const s = useEditor.getState();
+      const mod = event.ctrlKey || event.metaKey;
+      const key = event.key.toLowerCase();
+      if (mod && (event.key === "]" || event.key === "[")) {
+        event.preventDefault();
+        const dir = event.key === "]" ? (event.shiftKey ? "top" : "up") : event.shiftKey ? "bottom" : "down";
+        const ids = event.key === "]" ? [...s.selectedIds].reverse() : s.selectedIds;
+        ids.forEach((id) => s.reorder(id, dir));
+        return;
+      }
+      if (mod || event.altKey) return;
+      if (event.shiftKey && (event.code === "Digit1" || event.key === "!")) {
+        event.preventDefault();
+        setFitSignal((n) => n + 1);
+        return;
+      }
+      if (event.key === "+" || event.key === "=") {
+        event.preventDefault();
+        s.setZoom(s.zoom * 1.25);
+        return;
+      }
+      if (event.key === "-" || event.key === "_") {
+        event.preventDefault();
+        s.setZoom(s.zoom / 1.25);
+        return;
+      }
+      const picked = TOOL_KEYS[key];
+      if (!picked || event.shiftKey) return;
+      event.preventDefault();
+      if (useEditorMode.getState().mode === "pro") pickTool(picked);
+      else
+        toast(t("shell.nudge.body"), {
+          action: { label: t("shell.nudge.action"), onClick: () => switchMode("pro") },
+        });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [shell, editable, pickTool, switchMode, t]);
   useShortcutsOverlayShortcut(() => setShortcutsOpen(true));
 
   // A new selection brings its properties forward (on phones, the panel opens).
@@ -719,11 +891,31 @@ export default function Editor({
     void import("@/features/designer/lib/fixes").then(({ applyFix }) =>
       useEditor.getState().commit((content) => applyFix(content, issue, ctx)),
     );
+    if (shell) trackEditor("editor_autofix", { rule: issue.ruleId, count: 1 });
+  };
+  const fixAll = (list: DesignIssue[]) => {
+    if (!dieline) return;
+    const fixable = list.filter((i) => i.fix);
+    if (!fixable.length) return;
+    void import("@/features/designer/lib/fixes").then(({ applyFix }) =>
+      // One undo step for all of them.
+      useEditor.getState().commit((content) =>
+        fixable.reduce((c, issue) => {
+          const target = c.elements.find((e) => e.id === issue.elementId);
+          const ctx = fixContextFor(dieline, catalog, checkContext, target?.side === "inside" ? "inside" : "outside");
+          return applyFix(c, issue, ctx);
+        }, content),
+      ),
+    );
+    const byRule = new Map<string, number>();
+    for (const i of fixable) byRule.set(i.ruleId, (byRule.get(i.ruleId) ?? 0) + 1);
+    for (const [rule, count] of byRule) trackEditor("editor_autofix", { rule, count });
   };
   const chromeContext: EditorChromeContext = {
     persistence,
     issues,
     fix,
+    fixAll,
     openSetup,
     openRules,
     dieline,
@@ -735,7 +927,7 @@ export default function Editor({
   // opened it (WCAG 2.4.3).
   const starting = !spec && editable && Boolean(chrome?.empty);
   const railTools = RAIL.filter((item) =>
-    item.id === "comments" ? !!chrome?.comments : (chrome?.rail?.(item.id) ?? true),
+    item.id === "colours" ? false : item.id === "comments" ? !!chrome?.comments : (chrome?.rail?.(item.id) ?? true),
   );
 
   const preview =
@@ -769,7 +961,9 @@ export default function Editor({
           ? {
               fill: true,
               // The small floating card below 1280 shows the box alone; "3 มิติ" has the controls.
-              controlsClassName: view === "split" ? "max-xl:hidden" : undefined,
+              controlsClassName:
+                chrome?.shell && view === "split" ? "hidden" : view === "split" ? "max-xl:hidden" : undefined,
+              compact: !!chrome?.shell && view === "split",
               insideArtwork: artworks.inside,
               finishMasks,
               faceLabels: Object.fromEntries(faceNames),
@@ -791,6 +985,572 @@ export default function Editor({
     ) : (
       preview
     );
+
+  const exportItems = [
+    { id: "pdf", label: t("exportMenu.pdf"), description: t("exportMenu.pdfHint"), onSelect: () => doExport("pdf") },
+    { id: "png", label: t("exportMenu.png"), description: t("exportMenu.pngHint"), onSelect: () => doExport("png") },
+    {
+      id: "png-guides",
+      label: t("exportMenu.pngGuides"),
+      description: t("exportMenu.pngGuidesHint"),
+      onSelect: () => doExport("png-guides"),
+    },
+    { id: "svg", label: t("exportMenu.svg"), description: t("exportMenu.svgHint"), onSelect: () => doExport("svg") },
+    { id: "dxf", label: t("exportMenu.dxf"), description: t("exportMenu.dxfHint"), onSelect: () => doExport("dxf") },
+    {
+      id: "dieline-pdf",
+      label: t("exportMenu.dielinePdf"),
+      description: t("exportMenu.dielinePdfHint"),
+      onSelect: () => doExport("dieline-pdf"),
+    },
+  ];
+
+  /** The dialogs every layout shares. */
+  const dialogs = (
+    <>
+      {editable ? (
+        <SetupModal
+          open={setupOpen}
+          initial={spec ?? seedSpec()}
+          catalog={catalog}
+          hasContent={elementCount > 0}
+          isNew={!spec}
+          onClose={spec ? () => setSetupOpen(false) : leave}
+          onConfirm={(nextSpec) => {
+            useEditor.getState().setSpec(nextSpec);
+            setSetupOpen(false);
+            setFitSignal((signal) => signal + 1);
+          }}
+        />
+      ) : null}
+      <PrintRulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
+      <ShortcutsOverlay
+        open={shortcutsOpen}
+        onOpenChange={setShortcutsOpen}
+        title={tShortcuts("title")}
+        closeLabel={tCommon("actions.close")}
+        shortcuts={shortcutList((key) => tShortcuts(key), mod, shell ? editorMode : undefined)}
+      />
+      {historyOpen && persistence.serverId() ? (
+        <VersionHistory
+          designId={persistence.serverId()!}
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          onName={async (label) => {
+            const ok = await persistence.save("manual", label);
+            if (ok) toast.success(t("history.named", { label }));
+            return ok;
+          }}
+          onRestore={async (versionNo) => {
+            const ok = await persistence.restoreVersion(versionNo);
+            if (ok) {
+              setHistoryOpen(false);
+              toast.success(t("history.restored", { version: versionNo }));
+            }
+          }}
+        />
+      ) : null}
+      {presenting && dieline && spec && paperColour ? (
+        <Presentation
+          dieline={dieline}
+          hinges={hinges}
+          material={spec.material}
+          artwork={artwork}
+          insideArtwork={artworks.inside}
+          finishMasks={finishMasks}
+          boardColour={paperColour}
+          name={name}
+          onClose={() => setPresenting(false)}
+          onDownloadDieline={() => doExport("dieline-pdf")}
+        />
+      ) : null}
+      {shareOpen && persistence.serverId() ? (
+        chrome?.share ? (
+          chrome.share(persistence.serverId()!, () => setShareOpen(false))
+        ) : (
+          <ShareDialog designId={persistence.serverId()!} open={shareOpen} onClose={() => setShareOpen(false)} />
+        )
+      ) : null}
+      <Dialog
+        open={persistence.state === "conflict"}
+        onOpenChange={() => undefined}
+        title={t("conflict.title")}
+        description={t("conflict.body")}
+        size="md"
+      >
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <Button onClick={() => void persistence.resolveConflict("mine")}>{t("conflict.keepMine")}</Button>
+          <Button variant="secondary" onClick={() => void persistence.resolveConflict("theirs")}>
+            {t("conflict.takeTheirs")}
+          </Button>
+          {session.mode === "store" ? (
+            <Button variant="ghost" onClick={() => void persistence.resolveConflict("copy")}>
+              {t("conflict.saveCopy")}
+            </Button>
+          ) : null}
+        </div>
+      </Dialog>
+      <AlertDialog
+        open={resetOpen}
+        onOpenChange={setResetOpen}
+        tone="destructive"
+        title={t("resetAllConfirm.title")}
+        description={t("resetAllConfirm.body")}
+        confirmLabel={t("resetAllConfirm.confirm")}
+        cancelLabel={tCommon("actions.cancel")}
+        onConfirm={() => {
+          useEditor.getState().resetAll();
+          setResetOpen(false);
+        }}
+      />
+      <AlertDialog
+        open={leaveOpen}
+        onOpenChange={setLeaveOpen}
+        tone="destructive"
+        title={t("leaveConfirm.title")}
+        description={t("leaveConfirm.body")}
+        confirmLabel={t("leaveConfirm.confirm")}
+        cancelLabel={tCommon("actions.cancel")}
+        onConfirm={leave}
+      />
+    </>
+  );
+
+  if (shell) {
+    const pro = editorMode === "pro";
+    const blocking = issues.filter((i) => i.severity === "block").length;
+    const advice = issues.filter((i) => i.severity === "warn").length;
+    const narrow = size.width > 0 && typeof window !== "undefined" && window.innerWidth < 900;
+    const pipWidth = narrow ? 150 : Math.min(Math.round(size.width * 0.3), 236);
+    const pip =
+      view === "split" && spec
+        ? {
+            width: pipWidth,
+            height: Math.round(pipWidth * 0.75),
+            top: narrow ? 10 : pro ? 58 : 12,
+            right: narrow ? 10 : 14,
+          }
+        : null;
+    const easyRail: RailId[] = ["templates", "brand", "text", "uploads", "elements", "background", "box", "comments"];
+    const proRail: RailId[] = [
+      "box",
+      "templates",
+      "elements",
+      "text",
+      "uploads",
+      "brand",
+      "colours",
+      "background",
+      "layers",
+      "comments",
+    ];
+    const railIcons: Record<RailId, RailItem["icon"]> = Object.fromEntries(RAIL.map((r) => [r.id, r.icon])) as Record<
+      RailId,
+      RailItem["icon"]
+    >;
+    const railItems: RailItem[] = (pro ? proRail : easyRail)
+      .filter((id) => (id === "comments" ? !!chrome?.comments : (chrome?.rail?.(id) ?? true)))
+      .map((id) => ({
+        id,
+        icon: railIcons[id],
+        label: t(pro ? `shell.rail.${id}` : `shell.railEasy.${id}`),
+      }));
+    const openRail = rail && railItems.some((r) => r.id === rail) ? rail : (railItems[0]?.id ?? null);
+    const onIssue = (issue: DesignIssue) => {
+      const editor = useEditor.getState();
+      const el = editor.content.elements.find((e) => e.id === issue.elementId);
+      if (el && (el.side ?? "outside") !== editor.side) editor.setSide(el.side ?? "outside");
+      if (issue.elementId) editor.select(issue.elementId);
+      shell.onStep("check");
+      trackEditor("editor_issue_view", { rule: issue.ruleId });
+    };
+    const insetBottom = narrow && pro ? 112 : 64;
+    const stageNode = (
+      <div
+        className="bg-canvas absolute inset-0 overflow-hidden"
+        style={proofStyle.filter ? { filter: proofStyle.filter } : undefined}
+      >
+        {proofStyle.overlay ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-10 mix-blend-multiply"
+            style={{ background: proofStyle.overlay.background, opacity: proofStyle.overlay.opacity }}
+          />
+        ) : null}
+        <div
+          ref={wrapRef}
+          aria-label={t("shell.stage")}
+          className={cn(
+            "pk-dot-grid absolute inset-0",
+            // Pro: the toolbox has its own column, so the rulers start beside it (the prototype's canvas padding).
+            pro && editable && "min-[900px]:left-[58px]",
+            view === "3d" && "pointer-events-none invisible",
+          )}
+          aria-hidden={view === "3d" || undefined}
+        >
+          {dieline && paperColour && size.width > 0 ? (
+            <DesignCanvas
+              dieline={canvasDieline!}
+              paperColor={paperColour}
+              stageRef={stageRef}
+              width={size.width}
+              height={size.height}
+              fitSignal={fitSignal}
+              readOnly={!editable}
+              upright={upright}
+              safeMm={catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM}
+              studio={{
+                mode: editorMode,
+                tool: pro ? tool : "select",
+                overlays: overlaysFor(editorMode, overlays),
+                inkOnBoard: pro && inkOnBoard,
+                separation: pro ? separation : "all",
+                issues,
+                onIssue,
+                insets: { top: pro ? 18 : 0, right: 0, bottom: insetBottom, left: pro ? 18 : 0 },
+                pip,
+                onToolDone: () => useEditorMode.getState().setTool("select"),
+              }}
+            />
+          ) : null}
+          {canvasDieline ? <FocusChip dieline={canvasDieline} /> : null}
+        </div>
+        {view === "3d" && spec ? (
+          <section aria-label={t("stage.model")} className="absolute inset-0 flex flex-col p-3 pb-20">
+            {show3d ? preview : <Skeleton className="size-full" />}
+          </section>
+        ) : null}
+        {pip && spec ? (
+          <section
+            aria-label={t("shell.pip.label")}
+            className="border-border bg-surface shadow-overlay absolute z-[4] overflow-hidden rounded-2xl border"
+            style={{ top: pip.top, right: pip.right, width: pip.width, height: pip.height }}
+          >
+            {pip.width >= 200 ? (
+              <span className="text-muted pointer-events-none absolute start-3 top-2.5 z-[1] text-[11px] font-medium tracking-wide">
+                {t("shell.pip.caption")}
+              </span>
+            ) : null}
+            <button
+              type="button"
+              aria-label={t("shell.pip.open")}
+              title={t("shell.pip.open")}
+              onClick={() => setPresenting(true)}
+              className="text-muted hover:text-fg hover:bg-surface-subtle focus-visible:ring-focus-ring absolute end-2 top-2 z-[1] grid size-8 place-items-center rounded-lg outline-none focus-visible:ring-2"
+            >
+              <Icon name="play" size={17} aria-hidden="true" />
+            </button>
+            <div className="flex size-full flex-col">{show3d ? preview : <Skeleton className="size-full" />}</div>
+          </section>
+        ) : null}
+        {pro && view !== "3d" && editable ? (
+          <Toolbox
+            tool={tool}
+            onTool={pickTool}
+            comments={!!chrome?.comments}
+            className="absolute start-3 top-3 z-[5] max-[899px]:start-1/2 max-[899px]:top-auto max-[899px]:bottom-[58px] max-[899px]:max-w-[calc(100%-24px)] max-[899px]:-translate-x-1/2"
+          />
+        ) : null}
+        {pro && view !== "3d" ? (
+          <div className="absolute end-3 top-3 z-[5] max-[899px]:hidden">
+            <PrintViewMenu
+              bleedMm={useEditor.getState().bleedMm}
+              safeMm={catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM}
+            />
+          </div>
+        ) : null}
+        {chrome?.notice ? (
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-[6] flex justify-center px-3 max-[899px]:top-auto max-[899px]:bottom-[112px]">
+            <div className="pointer-events-auto flex max-w-[min(36rem,100%)] flex-wrap justify-center gap-2 [&>*]:max-w-full [&>*]:text-center [&>*]:whitespace-normal">
+              {chrome.notice}
+            </div>
+          </div>
+        ) : null}
+        <ViewBar
+          view={view}
+          onView={(next) => {
+            setView(next);
+            setFitSignal((n) => n + 1);
+          }}
+          side={side}
+          onSide={(next) => void switchSide(next)}
+          onFit={() => setFitSignal((n) => n + 1)}
+          className="absolute bottom-3.5 left-1/2 z-[5] -translate-x-1/2 max-[600px]:bottom-2.5"
+        />
+      </div>
+    );
+
+    const panelNode =
+      openRail === "box" ? (
+        shell.box(chromeContext)
+      ) : openRail === "colours" ? (
+        <ColoursPanel printLabel={shell.printLabel} />
+      ) : openRail ? (
+        <RailPanel
+          id={openRail}
+          onOpenSetup={openSetup}
+          onOpenRules={openRules}
+          comments={chrome?.comments?.(chromeContext)}
+        />
+      ) : null;
+
+    const designTab = !editable ? (
+      <p className="text-muted text-sm">{t("readOnly.body")}</p>
+    ) : pro ? (
+      <ProInspector
+        printLabel={shell.printLabel}
+        bleedMm={useEditor.getState().bleedMm}
+        safeMm={catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM}
+      />
+    ) : (
+      <EasyInspector
+        issues={issues}
+        actions={{
+          rail: (id) => setRail(id),
+          checks: () => shell.onStep("check"),
+          mockup: () => setPresenting(true),
+        }}
+      />
+    );
+
+    const boxLabel = spec
+      ? `${getStyle(spec.styleId).name[locale]} · ${
+          sizeOf(spec).box ? t("summary", { ...insideSize(spec) }) : t("summaryOther", { size: sizeOf(spec).text })
+        }`
+      : null;
+
+    return (
+      <DesignerContext.Provider value={handle}>
+        <TooltipProvider>
+          {starting ? (
+            <div className="bg-canvas text-fg flex h-dvh flex-col">
+              <div className="min-h-0 flex-1 overflow-y-auto">{chrome!.empty!(chromeContext)}</div>
+            </div>
+          ) : (
+            <StudioFrame
+              top={
+                <TopBar label={t("shell.topBar")}>
+                  <NextLink
+                    href={shell.home}
+                    aria-label={t("shell.home")}
+                    className="focus-visible:ring-focus-ring flex shrink-0 items-center rounded-md px-1 outline-none focus-visible:ring-2"
+                  >
+                    <BrandLogo height={20} />
+                  </NextLink>
+                  <input
+                    value={name}
+                    readOnly={!editable}
+                    onChange={(event) => useEditor.getState().setName(event.target.value)}
+                    aria-label={t("nameLabel")}
+                    className="hover:border-border focus:border-focus-ring focus:bg-surface-subtle w-[170px] min-w-0 rounded-md border border-transparent bg-transparent px-2 py-1 text-[13.5px] font-semibold outline-none max-[1380px]:w-[150px] max-[1180px]:w-[130px] max-[899px]:w-auto max-[899px]:flex-[1_1_120px]"
+                  />
+                  {saveLabel ? (
+                    <span
+                      role="status"
+                      className="text-muted inline-flex items-center gap-1.5 text-xs whitespace-nowrap max-[1180px]:hidden"
+                    >
+                      <i
+                        aria-hidden="true"
+                        className={cn(
+                          "size-1.5 rounded-full",
+                          persistence.state === "saved" ? "bg-success" : "bg-warning",
+                        )}
+                      />
+                      {saveLabel}
+                    </span>
+                  ) : null}
+                  {editable ? (
+                    <ModeSwitch
+                      mode={editorMode}
+                      onMode={switchMode}
+                      className="ms-1.5 max-[899px]:order-4 max-[899px]:ms-0 max-[600px]:flex-1"
+                    />
+                  ) : null}
+                  <span aria-hidden="true" className="bg-border mx-1 h-5 w-px shrink-0 max-[899px]:hidden" />
+                  {editable ? (
+                    <div
+                      className="flex items-center gap-0.5 max-[899px]:order-2"
+                      role="group"
+                      aria-label={t("toolbar.label")}
+                    >
+                      <IconButton
+                        name="undo"
+                        label={t("toolbar.undo")}
+                        size="sm"
+                        variant="ghost"
+                        disabled={!canUndo}
+                        onClick={() => useEditor.getState().undo()}
+                      />
+                      <IconButton
+                        name="redo"
+                        label={t("toolbar.redo")}
+                        size="sm"
+                        variant="ghost"
+                        disabled={!canRedo}
+                        onClick={() => useEditor.getState().redo()}
+                      />
+                      {pro && session.mode === "store" && persistence.serverId() ? (
+                        <IconButton
+                          name="history"
+                          label={t("history.open")}
+                          size="sm"
+                          variant="ghost"
+                          className="max-[899px]:hidden"
+                          onClick={() => setHistoryOpen(true)}
+                        />
+                      ) : null}
+                    </div>
+                  ) : null}
+                  <StepNav
+                    step={shell.step}
+                    onStep={shell.onStep}
+                    blocking={blocking}
+                    advice={advice}
+                    className="mx-auto max-[899px]:hidden"
+                  />
+                  <div className="flex items-center gap-1 max-[1180px]:gap-0.5 max-[899px]:order-5 max-[899px]:ms-auto">
+                    <span className="max-[600px]:hidden">
+                      <ThemeToggle
+                        label={tCommon("theme.label")}
+                        choiceLabels={{
+                          system: tCommon("theme.system"),
+                          light: tCommon("theme.light"),
+                          dark: tCommon("theme.dark"),
+                          hc: tCommon("theme.hc"),
+                        }}
+                      />
+                    </span>
+                    {session.mode === "store" && persistence.serverId() ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        iconStart="link"
+                        aria-label={t("shell.share")}
+                        onClick={() => setShareOpen(true)}
+                      >
+                        <span className="max-[600px]:sr-only">{t("shell.share")}</span>
+                      </Button>
+                    ) : null}
+                    {chrome?.presentation && spec ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        iconStart="play"
+                        aria-label={t("shell.mockup")}
+                        onClick={() => setPresenting(true)}
+                      >
+                        <span className="max-[600px]:sr-only">{t("shell.mockup")}</span>
+                      </Button>
+                    ) : null}
+                    {pro && spec ? (
+                      <DropdownMenu
+                        label={t("exportMenu.label")}
+                        trigger={
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            iconStart="download"
+                            aria-label={tCommon("actions.export")}
+                            className="max-[899px]:hidden"
+                          >
+                            <span className="max-[600px]:sr-only">{tCommon("actions.export")}</span>
+                          </Button>
+                        }
+                        items={exportItems}
+                      />
+                    ) : null}
+                    <span className="max-[1180px]:hidden">{shell.priceChip(chromeContext)}</span>
+                    {shell.orderButton(chromeContext)}
+                  </div>
+                </TopBar>
+              }
+              notes={
+                <>
+                  {!editable ? (
+                    <Callout tone="info" title={t("readOnly.title")} className="rounded-none border-x-0 border-t-0">
+                      {t("readOnly.body")}
+                    </Callout>
+                  ) : null}
+                  {persistence.draftOffer ? (
+                    <Callout tone="warning" title={t("draft.title")} className="rounded-none border-x-0 border-t-0">
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button size="sm" onClick={persistence.restoreDraft}>
+                          {t("draft.restore")}
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={persistence.discardDraft}>
+                          {t("draft.discard")}
+                        </Button>
+                      </div>
+                    </Callout>
+                  ) : null}
+                  <p className="bg-warning-subtle text-warning-subtle-fg px-3 py-2 text-xs min-[900px]:hidden">
+                    {t("shell.phoneNote")}
+                  </p>
+                </>
+              }
+              rail={
+                editable ? (
+                  <Rail
+                    items={railItems}
+                    active={openRail}
+                    label={t("rail.label")}
+                    onPick={(id) => {
+                      setRail(id);
+                      if (id !== "comments") useCommentPins.getState().setPlacing(false);
+                    }}
+                  />
+                ) : null
+              }
+              panel={
+                editable && openRail ? (
+                  <AssetPanel title={t(pro ? `shell.rail.${openRail}` : `shell.railEasy.${openRail}`)}>
+                    {panelNode}
+                  </AssetPanel>
+                ) : null
+              }
+              stage={stageNode}
+              inspector={
+                <Inspector tab={shell.step} onTab={shell.onStep} blocking={blocking} advice={advice}>
+                  {shell.step === "design"
+                    ? designTab
+                    : shell.step === "check"
+                      ? shell.checks(chromeContext)
+                      : shell.order(chromeContext)}
+                </Inspector>
+              }
+              status={
+                <StudioStatusBar
+                  mode={editorMode}
+                  boxLabel={boxLabel}
+                  dieline={canvasDieline}
+                  issues={issues}
+                  onChecks={() => shell.onStep("check")}
+                  onShortcuts={() => setShortcutsOpen(true)}
+                />
+              }
+            />
+          )}
+          {dialogs}
+          <WelcomeDialog
+            open={welcomeOpen}
+            designService={shell.welcome.designService}
+            onClose={() => {
+              setWelcomeOpen(false);
+              // Closing keeps the mode shown (easy for a new person) as the choice: asked once.
+              useEditorMode.getState().setMode(useEditorMode.getState().mode);
+            }}
+            onPick={(choice) => {
+              setWelcomeOpen(false);
+              trackEditor("editor_welcome_pick", { choice });
+              const next: EditorMode = choice === "pro" || choice === "file" ? "pro" : "easy";
+              useEditorMode.getState().setMode(next);
+              shell.welcome.onPick(choice, chromeContext);
+            }}
+          />
+        </TooltipProvider>
+      </DesignerContext.Provider>
+    );
+  }
 
   return (
     <DesignerContext.Provider value={handle}>
@@ -1266,125 +2026,12 @@ export default function Editor({
             />
           )}
 
-          {editable ? (
-            <SetupModal
-              /*
-               * No `key` to force a remount. BoxStudio used one to reset the form, but remounting
-               * unmounts Radix's focus scope instead of letting it close, so focus never returns to
-               * the button that opened the dialog (WCAG 2.4.3 — e2e/a11y.spec.ts asserts it).
-               * SetupModal resets itself from `initial` instead.
-               */
-              open={setupOpen}
-              initial={spec ?? seedSpec()}
-              catalog={catalog}
-              hasContent={elementCount > 0}
-              isNew={!spec}
-              onClose={spec ? () => setSetupOpen(false) : leave}
-              onConfirm={(nextSpec) => {
-                useEditor.getState().setSpec(nextSpec);
-                setSetupOpen(false);
-                setFitSignal((signal) => signal + 1);
-              }}
-            />
-          ) : null}
-
-          <PrintRulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
-
-          <ShortcutsOverlay
-            open={shortcutsOpen}
-            onOpenChange={setShortcutsOpen}
-            title={tShortcuts("title")}
-            closeLabel={tCommon("actions.close")}
-            shortcuts={shortcutList((key) => tShortcuts(key), mod)}
-          />
-
-          {historyOpen && persistence.serverId() ? (
-            <VersionHistory
-              designId={persistence.serverId()!}
-              open={historyOpen}
-              onClose={() => setHistoryOpen(false)}
-              onName={async (label) => {
-                const ok = await persistence.save("manual", label);
-                if (ok) toast.success(t("history.named", { label }));
-                return ok;
-              }}
-              onRestore={async (versionNo) => {
-                const ok = await persistence.restoreVersion(versionNo);
-                if (ok) {
-                  setHistoryOpen(false);
-                  toast.success(t("history.restored", { version: versionNo }));
-                }
-              }}
-            />
-          ) : null}
-
-          {presenting && dieline && spec && paperColour ? (
-            <Presentation
-              dieline={dieline}
-              hinges={hinges}
-              material={spec.material}
-              artwork={artwork}
-              insideArtwork={artworks.inside}
-              finishMasks={finishMasks}
-              boardColour={paperColour}
-              name={name}
-              onClose={() => setPresenting(false)}
-              onDownloadDieline={() => doExport("dieline-pdf")}
-            />
-          ) : null}
-
-          {shareOpen && persistence.serverId() ? (
-            chrome?.share ? (
-              chrome.share(persistence.serverId()!, () => setShareOpen(false))
-            ) : (
-              <ShareDialog designId={persistence.serverId()!} open={shareOpen} onClose={() => setShareOpen(false)} />
-            )
-          ) : null}
-
-          <Dialog
-            open={persistence.state === "conflict"}
-            onOpenChange={() => undefined}
-            title={t("conflict.title")}
-            description={t("conflict.body")}
-            size="md"
-          >
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <Button onClick={() => void persistence.resolveConflict("mine")}>{t("conflict.keepMine")}</Button>
-              <Button variant="secondary" onClick={() => void persistence.resolveConflict("theirs")}>
-                {t("conflict.takeTheirs")}
-              </Button>
-              {session.mode === "store" ? (
-                <Button variant="ghost" onClick={() => void persistence.resolveConflict("copy")}>
-                  {t("conflict.saveCopy")}
-                </Button>
-              ) : null}
-            </div>
-          </Dialog>
-
-          <AlertDialog
-            open={resetOpen}
-            onOpenChange={setResetOpen}
-            tone="destructive"
-            title={t("resetAllConfirm.title")}
-            description={t("resetAllConfirm.body")}
-            confirmLabel={t("resetAllConfirm.confirm")}
-            cancelLabel={tCommon("actions.cancel")}
-            onConfirm={() => {
-              useEditor.getState().resetAll();
-              setResetOpen(false);
-            }}
-          />
-
-          <AlertDialog
-            open={leaveOpen}
-            onOpenChange={setLeaveOpen}
-            tone="destructive"
-            title={t("leaveConfirm.title")}
-            description={t("leaveConfirm.body")}
-            confirmLabel={t("leaveConfirm.confirm")}
-            cancelLabel={tCommon("actions.cancel")}
-            onConfirm={leave}
-          />
+          {/*
+           * The setup dialog takes no `key` to force a remount: BoxStudio used one to reset the form, but remounting
+           * unmounts Radix's focus scope instead of letting it close, so focus never returned to the button that
+           * opened it (WCAG 2.4.3 — e2e/a11y.spec.ts asserts it). SetupModal resets itself from `initial` instead.
+           */}
+          {dialogs}
         </div>
       </TooltipProvider>
     </DesignerContext.Provider>

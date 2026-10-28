@@ -16,6 +16,11 @@ import Editor, {
 import type { BoxFields, DesignerCatalog } from "@/features/designer/data/api";
 import { designRepo } from "@/features/designer/storage";
 import { useEditor } from "@/features/designer/store/editor";
+import { useEditorMode } from "@/features/designer/store/mode";
+import type { RailId } from "@/features/designer/components/shell/panels";
+import type { ShellStep } from "@/features/designer/components/studio-shell/TopBarParts";
+import { trackEditor } from "@/lib/analytics/editor";
+import { cn } from "@/ui/lib/cn";
 import { getPathname, Link, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -216,11 +221,17 @@ export function Studio({
   // A link that names the box and asks for a later step (the sample, a style page) starts there.
   const [applySeed] = useState(() => Boolean(seed) && !design && step !== "start" && step !== "box");
 
+  // `?step=box` (and "เปลี่ยนขนาดหรือวัสดุ") opens the "กล่อง" panel beside the rail.
+  const [railRequest, setRailRequest] = useState<{ id: RailId; n: number } | null>(() =>
+    step === "box" ? { id: "box", n: 1 } : null,
+  );
+
   /** Moves to a step and keeps it in the address, without a navigation (the editor stays as it is). */
   const goTo = useCallback(
     (next: StudioStep) => {
       if (lockedReason(next, { hasBox: useEditor.getState().spec !== null, hasContent: true }) === "needsBox") return;
       if (next !== "start" && next !== "box" && useEditor.getState().spec) funnel.boxConfirmed();
+      if (next === "box") setRailRequest((r) => ({ id: "box", n: (r?.n ?? 0) + 1 }));
       setStepState(next);
       const url = new URL(window.location.href);
       url.searchParams.set("step", next);
@@ -258,8 +269,44 @@ export function Studio({
     [productSlug, design, router],
   );
 
-  // A step that closed (the content was removed) falls back to the last open one.
-  const shown = lockedReason(step, facts) ? initialStep(step, facts) : step;
+  // A step that closed (the content was removed) falls back to the last open one. In the C8 editor the steps are the
+  // inspector's tabs, each with its own empty state: only a box is needed.
+  const shellFacts: StepFacts = { hasBox, hasContent: true };
+  const shown = lockedReason(step, shellFacts) ? initialStep(step, shellFacts) : step;
+  const shellStep: ShellStep = shown === "check" || shown === "order" ? shown : "design";
+
+  // D-456: the editor mode follows the account — read it once, then save each change (this browser keeps it too).
+  const [modeReady, setModeReady] = useState(mode !== "store");
+  useEffect(() => {
+    if (mode !== "store") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- a guest's mode is this browser's alone
+      setModeReady(true);
+      return;
+    }
+    let cancelled = false;
+    let synced = false;
+    void browserApi()
+      .GET("/v1/store/me")
+      .then(({ data }) => {
+        if (cancelled) return;
+        if (data?.editorMode) useEditorMode.getState().adopt(data.editorMode);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        synced = true;
+        if (!cancelled) setModeReady(true);
+      });
+    const unsubscribe = useEditorMode.subscribe((next, prev) => {
+      if (!synced || !next.chosen || (next.mode === prev.mode && next.chosen === prev.chosen)) return;
+      void browserApi()
+        .PATCH("/v1/store/me/preferences", { body: { editorMode: next.mode } })
+        .catch(() => undefined);
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [mode]);
 
   const carried = new URLSearchParams({
     ...(productSlug ? { product: productSlug } : {}),
@@ -462,7 +509,7 @@ export function Studio({
           notice: (
             <>
               {/* The tour points at the step bar and the stage, which come with a box. */}
-              {hasBox ? <StudioGuide signedIn={signedIn} /> : null}
+              {hasBox ? <StudioGuide signedIn={signedIn} coach={false} /> : null}
               {lock ? (
                 <Badge tone="neutral">{t("locked", { versionNo: lock.versionNo, orderCode: lock.orderCode })}</Badge>
               ) : null}
@@ -480,6 +527,104 @@ export function Studio({
               ) : null}
             </>
           ),
+          shell: {
+            step: shellStep,
+            onStep: (next) => goTo(next),
+            railRequest,
+            home: "/studio",
+            modeReady,
+            printLabel: printMethod
+              ? t(`editor.print.${printMethod}`)
+              : useEditor.getState().spec?.studio
+                ? t("editor.print.auto")
+                : null,
+            box: () => (
+              <BoxStep
+                catalog={catalog}
+                configurator={configurator.data ?? null}
+                maxSpot={maxSpot}
+                openSetup={() => undefined}
+                onDone={() => goTo("design")}
+              />
+            ),
+            checks: (ctx) => (
+              <CheckStep
+                ctx={ctx}
+                rules={(rules.data?.rules ?? []) as PrintRule[]}
+                serverChecks={mode === "store"}
+                onNext={() => goTo("order")}
+              />
+            ),
+            order: (ctx) => (
+              <div className="flex flex-col gap-5">
+                <PriceDock
+                  configurator={configurator.data ?? null}
+                  source={mode === "store" ? "studio" : "guest"}
+                  persistence={ctx.persistence}
+                  maxSpot={maxSpot}
+                  layout="rail"
+                  quantity={quantity}
+                  onQuantity={setQuantity}
+                  onOrder={() => goTo("order")}
+                  orderDisabled
+                  hideOrder
+                />
+                <div className="border-border border-t pt-4">{panel(ctx)}</div>
+              </div>
+            ),
+            priceChip: (ctx) => (
+              <PriceDock
+                configurator={configurator.data ?? null}
+                source={mode === "store" ? "studio" : "guest"}
+                persistence={ctx.persistence}
+                maxSpot={maxSpot}
+                layout="chip"
+                quantity={quantity}
+                onQuantity={setQuantity}
+                onOrder={() => goTo("order")}
+                orderDisabled
+                hideOrder
+              />
+            ),
+            orderButton: (ctx) => {
+              const errors = ctx.issues.filter((i) => i.severity === "block").length;
+              const reason = !hasContent
+                ? t("dock.needsContent")
+                : errors
+                  ? t("editor.orderBlocked", { count: errors })
+                  : null;
+              return (
+                <Button
+                  size="sm"
+                  disabled={reason !== null}
+                  title={reason ?? undefined}
+                  aria-describedby={reason ? "studio-order-reason" : undefined}
+                  onClick={() => {
+                    trackEditor("editor_order_click", { errors });
+                    goTo("order");
+                  }}
+                  className={cn("shrink-0")}
+                >
+                  {t("editor.order")}
+                  {reason ? (
+                    <span id="studio-order-reason" className="sr-only">
+                      {reason}
+                    </span>
+                  ) : null}
+                </Button>
+              );
+            },
+            welcome: {
+              designService:
+                mode === "store" && configurator.data?.design.options.includes("hired_design")
+                  ? { freeRevisions: configurator.data.design.freeRevisions }
+                  : null,
+              onPick: (choice) => {
+                if (choice === "design_service") goTo("order");
+                else if (choice === "file") router.push("/studio/upload");
+              },
+            },
+          },
           dock: (ctx, layout) =>
             shown === "start" ? null : (
               <PriceDock
@@ -564,9 +709,19 @@ function CheckStep({
     serverChecks && saveState === "saved",
     ctx.persistence.versionNo,
   );
+  const fixable = ctx.issues.filter((issue) => issue.fix);
   return (
     <div className="space-y-5">
       <h2 className="font-semibold">{t("check.title")}</h2>
+      {fixable.length > 1 ? (
+        // C8 Phase 2 item 4: every fixable finding at once — one undo step.
+        <div className="bg-primary-subtle text-primary-subtle-fg flex items-center justify-between gap-3 rounded-xl px-3 py-2.5">
+          <span className="text-[12.5px]">{t("editor.fixAllBody", { count: fixable.length })}</span>
+          <Button size="sm" onClick={() => ctx.fixAll(fixable)}>
+            {t("editor.fixAll")}
+          </Button>
+        </div>
+      ) : null}
       <ChecksPanel
         issues={ctx.issues}
         onFix={ctx.fix}

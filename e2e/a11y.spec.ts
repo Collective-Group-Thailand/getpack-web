@@ -81,7 +81,7 @@ test.describe("axe, in a real browser", () => {
     await rail.getByRole("button", { name: "ข้อความ", exact: true }).click();
     await page.getByRole("button", { name: "เพิ่มหัวข้อ", exact: true }).click();
     await expect(
-      page.getByRole("tabpanel", { name: "คุณสมบัติ" }).getByRole("heading", { name: "ข้อความ", exact: true }),
+      page.getByRole("tabpanel", { name: "ออกแบบ" }).getByRole("heading", { name: "ข้อความ", exact: true }),
     ).toBeVisible();
     const selected = await scan(page);
     expect(selected.violations, report(selected.violations)).toEqual([]);
@@ -220,7 +220,7 @@ test.describe("keyboard paths", () => {
 
     // The new element selects itself, so its properties panel appears.
     await expect(
-      page.getByRole("tabpanel", { name: "คุณสมบัติ" }).getByRole("heading", { name: "ข้อความ", exact: true }),
+      page.getByRole("tabpanel", { name: "ออกแบบ" }).getByRole("heading", { name: "ข้อความ", exact: true }),
     ).toBeVisible();
   });
 

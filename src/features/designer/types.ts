@@ -59,6 +59,22 @@ interface BaseElement {
   studioElementId?: string;
   /** A finish painted as its own layer (U4.4): produced as a separation, not as ink. */
   finish?: "foil" | "spot_uv" | "emboss" | "window";
+  /**
+   * Editor redesign (C8, additive — a document without these reads unchanged): mirrored horizontally / vertically
+   * about the element's own centre (width and height stay positive), and hidden from the canvas, the 3D, the
+   * print files and the checks (layers "ซ่อน").
+   */
+  flipX?: boolean;
+  flipY?: boolean;
+  hidden?: boolean;
+}
+
+/** A two-colour linear gradient fill (C8 pro inspector): `from` → `to` at `angle` degrees (0 = left to right). */
+export interface FillGradient {
+  kind: "linear";
+  from: string;
+  to: string;
+  angle: number;
 }
 
 export interface TextElement extends BaseElement {
@@ -69,6 +85,12 @@ export interface TextElement extends BaseElement {
   fontStyle: "normal" | "bold" | "italic" | "italic bold";
   fill: string;
   align: "left" | "center" | "right";
+  /** Tracking in 1/1000 em (C8); absent = 0. */
+  letterSpacing?: number;
+  /** Line height as a ratio of the font size (C8); absent = 1.25, as before. */
+  lineHeight?: number;
+  /** C8: drawn with this gradient instead of `fill` (which stays the first colour, for older readers and ink counts). */
+  fillGradient?: FillGradient;
 }
 
 export interface ImageElement extends BaseElement {
@@ -86,6 +108,8 @@ export interface ImageElement extends BaseElement {
   height: number;
   /** The part of the image shown, as fractions of its natural size (0–1). */
   crop?: { x: number; y: number; width: number; height: number };
+  /** "ภาพสีเดียว" (C8): shown and printed as one ink (greyscale), for black or spot print. */
+  mono?: boolean;
 }
 
 export interface ShapeElement extends BaseElement {
@@ -99,6 +123,12 @@ export interface ShapeElement extends BaseElement {
   cornerRadius: number;
   /** SVG path data in a 100 × 100 box, for `shape`. */
   path?: string;
+  /** C8: an open path (the line and pen tools) is stroked only, never filled. */
+  open?: boolean;
+  /** C8: drawn with this gradient instead of `fill` (which stays the first colour, for older readers and ink counts). */
+  fillGradient?: FillGradient;
+  /** C8: the stroke's pattern; absent = solid. */
+  strokeDash?: "solid" | "dashed" | "dotted";
 }
 
 /** A QR code or a barcode (EAN-13, EAN-8, UPC-A, Code 128), generated from its value; the quiet zone is part of its size. */
@@ -158,6 +188,8 @@ export interface DesignContent {
    * the design version; the ones getpack-api also finds are acknowledged with it (`acknowledgeCheck`).
    */
   acknowledged?: string[];
+  /** Ruler guides (C8 pro), in sheet millimetres, saved with the design; `side` as for elements. */
+  guides?: { id: string; axis: "x" | "y"; at: number; side?: "inside" }[];
 }
 
 export interface SavedDesign {
