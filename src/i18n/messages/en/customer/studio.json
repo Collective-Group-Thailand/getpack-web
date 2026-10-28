@@ -23,7 +23,7 @@
     "library": "Browse the style library",
     "next": "Go to size & material",
     "sample": "Try a sample design",
-    "sampleNote": "A ready box to try the tools on; it is not kept unless you save it."
+    "sampleNote": "A sample box to try the tools — saved automatically like any design; delete it from My designs"
   },
   "box": {
     "confirm": "Use this box and start designing",
@@ -374,10 +374,9 @@
     "lead": "Pick one and we take you the shortest way — every design is saved to your account to come back to",
     "leadGuest": "Pick one and we take you the shortest way — sign in to keep designs in your account",
     "forProduct": "For {name}",
-    "popular": "Popular",
     "box": {
       "title": "Choose a box and design it",
-      "body": "Pick from {count} styles, enter a size, then design on the real flat sheet with a 3D view",
+      "body": "Pick a style we really produce, enter a size, then design on the real flat sheet with a 3D view",
       "go": "Start"
     },
     "product": {
@@ -387,8 +386,8 @@
     },
     "file": {
       "title": "I have a finished file",
-      "body": "Skip designing: set the spec and price, then upload your file for prepress to check",
-      "go": "Set the spec"
+      "body": "Pick the product, see the price at once, then upload your file after ordering — our team checks it before production",
+      "go": "Upload a file"
     },
     "reorder": {
       "title": "Reorder an earlier job",
@@ -399,7 +398,7 @@
     "recentAll": "See all ({count})",
     "recentEdited": "Edited {when}",
     "recentOrdered": "Ordered · {code}",
-    "sample": "Play with a sample design (not saved)",
+    "sample": "Play with a sample design",
     "describeTitle": "I have a product, I need a box",
     "close": "Close",
     "signInForDesign": {
@@ -410,41 +409,128 @@
   },
   "home": {
     "metaTitle": "Box design studio",
-    "metaDescription": "Pick a box template, size it to your product, upload a file or reorder past work — every path ends at a 3D box and one price",
-    "title": "Where would you like to start today?",
-    "lead": "Pick the path that fits what you have. Every path ends at a 3D box and the same price — everything is saved to your account to come back to any time",
-    "leadGuest": "Pick the path that fits what you have. Every path ends at a 3D box and the same price — sign in to keep your designs in your account",
-    "unsure": "Not sure which box suits your product? <suggest>Enter its size and we'll suggest one</suggest>, or <chat>chat with the team on LINE</chat> while you design",
+    "metaDescription": "Place your logo on the real flat sheet of a box we produce, see it in 3D with a price per piece — or enter your product's size and we suggest boxes that fit",
+    "hero": {
+      "eyebrow": "getpack studio",
+      "titleStart": "Your brand's box,",
+      "titleEm": "designed",
+      "titleEnd": "in minutes",
+      "lede": "Place your logo on the flat sheet of a box we really produce, see it in 3D at once and know the price per piece with every change. Try typing your brand name in the screen on the right.",
+      "ledeNarrow": "Place your logo on the flat sheet of a box we really produce, see it in 3D at once and know the price per piece with every change. Try typing your brand name below.",
+      "start": "Start designing",
+      "sample": "Try a sample design",
+      "proofs": {
+        "free": "Free to use, pay when you order",
+        "fonts": "Thai and English fonts ready",
+        "ai": "Free .ai box file"
+      }
+    },
+    "mini": {
+      "label": "A mini studio you can try",
+      "live": "Live preview",
+      "flat": "Flat sheet",
+      "logo": "Logo",
+      "useLogo": "Use your logo",
+      "removeLogo": "Remove the logo",
+      "logoNote": "The file stays in your browser until you save a design",
+      "brand": "Or type your brand name",
+      "brandPlaceholder": "Your brand name",
+      "size": "Size (cm)",
+      "print": "Print",
+      "prints": {
+        "none": "Unprinted",
+        "one": "1 colour",
+        "full": "4 colours (CMYK)"
+      },
+      "dropHere": "Drop your logo here",
+      "wrongType": "Use a PNG, JPG, SVG or WEBP file",
+      "tooLarge": "The file is over 5 MB — try a smaller one",
+      "placed": "Logo placed on the box · open the studio to move and size it",
+      "open": "Open in the studio",
+      "preview": "{shape} box, {size} cm, with {mark}",
+      "markLogo": "your logo",
+      "markBrand": "the brand name {brand}",
+      "markNone": "room for your logo",
+      "unpricedColour": "This colour is priced in the studio",
+      "noPresets": "Choose a box and size in the studio and see the price per piece at once"
+    },
     "paths": {
+      "title": "Start from what you have",
+      "lead": "Pick the path that fits what you have — your work in progress is saved automatically",
       "box": {
-        "title": "Choose a template and design",
-        "body": "{count} shapes we really produce — enter your size, the box unfolds, place your logo, see it in 3D",
-        "bodyNoCount": "Shapes we really produce — enter your size, the box unfolds, place your logo, see it in 3D",
-        "go": "Start"
+        "num": "01",
+        "title": "Choose a box and design it",
+        "body": "Pick from {count} styles we really produce, enter your size, the box unfolds, then place your logo and see it in 3D",
+        "bodyNoCount": "Pick from styles we really produce, enter your size, the box unfolds, then place your logo and see it in 3D",
+        "go": "Choose a box"
       },
       "product": {
+        "num": "02",
         "title": "I have the product, I need a box",
-        "body": "Measure the product and enter its size — we suggest the shape and inside size that fit, with a price per piece",
+        "body": "Enter the product's size — we suggest 3 boxes that fit, with the reasons and inside size",
         "go": "Enter the product size"
       },
       "file": {
+        "num": "03",
         "title": "I have a design file",
         "body": "Pick the product, see the price at once, then upload your file after ordering — our team checks it before production",
+        "drop": "Drop a file here or click to choose",
         "go": "Upload a file"
       },
       "reorder": {
+        "num": "04",
         "title": "Reorder past work",
-        "body": "Pick something you ordered before, change the quantity and order — no new file needed",
+        "body": "Pick something you ordered, change the quantity and order — no new file needed",
         "go": "See past orders"
       }
     },
+    "finder": {
+      "title": "I have the product, I need a box",
+      "lead": "Measure the real product and we suggest 3 boxes it fits, with the reasons",
+      "results": "{count, plural, one {# suggestion} other {# suggestions}}",
+      "empty": "Enter the length, width and height",
+      "best": "Best fit",
+      "inside": "Suggested inside size {size}",
+      "design": "Design this one",
+      "use": "What is the box for"
+    },
+    "features": {
+      "title": "What you can do in the studio",
+      "dieline": {
+        "title": "Real flat sheet + 3D",
+        "body": "Design on the flat sheet of a box we produce and turn it in 3D"
+      },
+      "images": {
+        "title": "Logos and pictures",
+        "body": "Upload a file — resolution and the safe zone are checked for you"
+      },
+      "fonts": {
+        "title": "Thai and English fonts",
+        "body": "Choose Thai and English fonts that are cleared for printing on the box"
+      },
+      "price": {
+        "title": "Prices update at once",
+        "body": "Change the size, material or print and see the price per piece at once"
+      },
+      "ai": {
+        "title": "Free .ai box file",
+        "body": "Download it and lay out your artwork in your own software"
+      },
+      "team": {
+        "title": "The team checks your draft",
+        "body": "Stuck? Ask the team from the design page — they open your draft and help fix it"
+      }
+    },
     "popular": "Templates people start from most",
-    "allTemplates": "See all {count}",
-    "allTemplatesShort": "See every template",
+    "popularLead": "Open in the studio at once",
+    "allTemplates": "See every template",
+    "openInStudio": "Open in the studio",
     "recent": "Your latest designs",
     "recentAll": "See all ({count})",
-    "recentNone": "No saved designs yet — start from any path above and they will show up here",
+    "recentNoneTitle": "No saved designs yet",
+    "recentNone": "Start from any path above and your designs will show up here — or try the sample first",
     "recentGuest": "<signIn>Sign in</signIn> to see the designs you saved",
+    "trySample": "Try the sample",
     "edited": "edited {when}",
     "version": "version {n}",
     "status": {
@@ -454,7 +540,10 @@
       "issues": "has items to check"
     },
     "open": "Open",
-    "help": "Stuck? Ask the team from the design page — we open your draft and help fix it right away"
+    "duplicate": "Duplicate",
+    "duplicated": "Duplicated",
+    "duplicateFailed": "Could not duplicate — try again",
+    "copyName": "{name} (copy)"
   },
   "upload": {
     "metaTitle": "Have a file? Upload it",
@@ -470,7 +559,8 @@
     "moq": "min. {count}",
     "none": "No product has an instant price right now — send your file and spec and the team will quote it",
     "contact": "Contact the team",
-    "noFile": "No file yet? <studio>Design it in the studio</studio> or <templates>download a dieline from the templates</templates>"
+    "noFile": "No file yet? <studio>Design it in the studio</studio> or <templates>download a dieline from the templates</templates>",
+    "fileChosen": "{name} is ready — pick the product it is for below. The file stays on your computer: upload it after ordering and our team checks it before production"
   },
   "spotShortfall": {
     "title": "Your design has more colours than this price covers",

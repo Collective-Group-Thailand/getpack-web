@@ -54,3 +54,16 @@ export function studioHref(entry: StudioEntry = {}): string {
   query.set("step", step);
   return `/studio/${entry.designId ?? "new"}?${query.toString()}`;
 }
+
+/**
+ * "ลองกับแบบตัวอย่าง" (U5.2 §2, C7): a ready tuck-end box straight in the design step. An ordinary new design —
+ * autosaved like any other (DECISIONS-STAGE-A §2) and deleted from "แบบของฉัน" like any other.
+ */
+export function sampleHref(productSlug: string | null = null): string {
+  return studioHref({
+    ...(productSlug ? { product: productSlug } : {}),
+    style: "tuck-end",
+    dims: { l: 70, w: 40, h: 150 },
+    step: "design",
+  });
+}
