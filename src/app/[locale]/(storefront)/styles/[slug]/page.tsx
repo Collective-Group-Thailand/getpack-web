@@ -320,7 +320,7 @@ export default async function StylePage({ params, searchParams }: { params: Para
                   href={`${href}?v=${encodeURIComponent(variant.code)}#${PICKER}`}
                   rel="nofollow"
                   scroll={false}
-                  className="text-primary tabular-nums underline-offset-2 hover:underline"
+                  className="text-primary tabular-nums underline underline-offset-2"
                 >
                   {variant.code}
                 </Link>{" "}

@@ -111,6 +111,14 @@ test.describe("the products hub", () => {
     }
   });
 
+  /** C1c (DECISIONS-STAGE-A §11.7): the LINE hours are worded per locale from storefront.support_hours. */
+  test("the LINE hours are written in the page's language", async ({ page }) => {
+    await gotoHydrated(page, `${HOSTS.customer}/en/products`);
+    await expect(page.getByText("chat with the team on LINE Daily, 09:00–18:00")).toBeVisible();
+    await gotoHydrated(page, `${HOSTS.customer}/products`);
+    await expect(page.getByText("คุยกับทีมทาง LINE ทุกวัน 09:00–18:00")).toBeVisible();
+  });
+
   /** C1b (D-447 / DECISIONS-STAGE-A §10.2, §10.4, §10.5): stock items — mock data. */
   test("stock: the price at the minimum order, cart and quote tray side by side, out of stock without a cart", async ({
     page,

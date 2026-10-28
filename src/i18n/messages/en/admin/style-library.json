@@ -5,7 +5,9 @@
     "imports": "Imports",
     "coverage": "Coverage",
     "rules": "Price & process rules",
-    "nextStyles": "Next styles"
+    "nextStyles": "Next styles",
+    "fitRanges": "Fit ranges",
+    "content": "Page content"
   },
   "list": {
     "title": "Style library",
@@ -53,7 +55,8 @@
       "readiness": "Readiness",
       "storefront": "Storefront",
       "variants": "Variants ({count})",
-      "recipes": "Recipes ({count})"
+      "recipes": "Recipes ({count})",
+      "commercial": "Commercial"
     },
     "readinessTitle": "What it takes to show on the storefront",
     "readinessIntro": "Each check has its sign-off for those who may give it; showing is recomputed at once.",
@@ -442,5 +445,184 @@
     "remove": "Remove the photo, use the rendered thumbnail",
     "saved": "Photo saved",
     "failed": "The photo could not be saved"
+  },
+  "commercial": {
+    "readOnly": "Read only — editing needs styles.curate (Admin, Marketing)",
+    "fitTitle": "Inside fit range (mm)",
+    "fitIntro": "Used by the /styles size search: the product + 5 mm per side must fall in this range; a style needs all six bounds to be found.",
+    "dimensions": {
+      "length": "Length",
+      "width": "Width",
+      "height": "Height"
+    },
+    "min": "Minimum",
+    "max": "Maximum",
+    "source": "Source",
+    "sources": {
+      "recipe": "Approved recipe",
+      "standard_sizes": "Standard sizes",
+      "production_envelope": "Production envelope",
+      "combined": "Several sources",
+      "business": "Entered by the business",
+      "none": "None"
+    },
+    "basis": {
+      "recipe_size_range": "recipe size range",
+      "catalogue_standard_sizes": "catalogue standard sizes",
+      "recipe_presets": "recipe presets",
+      "calculator_size_rules": "calculator size rules",
+      "engine_limits": "dieline engine limits"
+    },
+    "becomesBusiness": "Once saved, this range is business data — the backfill never overwrites it.",
+    "fitRule": "Rule: length and width may swap, height never does (DECISIONS-STAGE-A §4).",
+    "orderTitle": "Ordering and sustainability",
+    "orderIntro": "Shown on the card and the style page; leave empty when unknown.",
+    "moq": "Minimum order",
+    "moqHint": "Pieces per order",
+    "pieces": "pcs",
+    "recyclable": "Recyclable",
+    "plasticFree": "Plastic-free",
+    "tri": {
+      "unknown": "Unknown",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "factsHint": "Enter only what can be backed; never inferred from the material.",
+    "certificationsTitle": "Certification codes",
+    "certificationsIntro": "Short codes of certificates this style's material holds, e.g. fsc, food_grade",
+    "noCertifications": "None yet",
+    "removeCertification": "Remove {code}",
+    "remove": "Remove",
+    "certificationCode": "Code",
+    "certificationCodeHint": "Lower-case letters, digits and _",
+    "addCertification": "Add code",
+    "errors": {
+      "whole": "Enter a whole number",
+      "range": "Out of the allowed range",
+      "order": "Minimum is above maximum",
+      "code": "Only a-z, 0-9 and _, starting with a letter"
+    },
+    "save": "Save commercial data",
+    "saved": "Saved",
+    "failed": "Could not save"
+  },
+  "fitRanges": {
+    "title": "Fill fit ranges",
+    "description": "Fill empty inside fit ranges from the system’s own data — check first, then confirm.",
+    "orderTitle": "Source order",
+    "orderIntro": "Each bound comes from the first source that gives it.",
+    "order": {
+      "recipe": "The approved recipe’s size range",
+      "standardSizes": "The style’s standard sizes (catalogue products’ standard sizes, the recipe’s presets)",
+      "envelope": "The production envelope in the system (calculator size rules ∩ dieline engine limits)"
+    },
+    "never": "No number is guessed; a range the business entered is never overwritten; a style without all six bounds stays empty and is listed below with why.",
+    "dryRun": "Check first (no changes)",
+    "confirm": "Fill the ranges",
+    "readOnly": "Confirming needs styles.curate",
+    "previewTitle": "Check result (nothing saved)",
+    "doneTitle": "Ranges filled",
+    "summary": "{considered} styles · {filled} filled · {refreshed} refreshed · {unchanged} unchanged · {business} business · {empty} still empty",
+    "sources": {
+      "recipe": "Approved recipe",
+      "standard_sizes": "Standard sizes",
+      "production_envelope": "Production envelope",
+      "combined": "Several sources"
+    },
+    "changesTitle": "{count} styles change",
+    "noChanges": "Nothing to change",
+    "incompleteTitle": "{count} styles stay empty",
+    "incompleteIntro": "No source gives every bound — enter them on the style’s Commercial tab.",
+    "allComplete": "Every style has a complete range",
+    "columns": {
+      "style": "Style",
+      "action": "Change",
+      "range": "New range L × W × H (mm)",
+      "before": "Before",
+      "source": "Source",
+      "why": "Why"
+    },
+    "actions": {
+      "filled": "Filled",
+      "refreshed": "Refreshed"
+    },
+    "missing": "Missing: {bounds}",
+    "conflicting": "No size left in: {dims}",
+    "bounds": {
+      "fitMinLMm": "min length",
+      "fitMaxLMm": "max length",
+      "fitMinWMm": "min width",
+      "fitMaxWMm": "max width",
+      "fitMinHMm": "min height",
+      "fitMaxHMm": "max height"
+    },
+    "dimensions": {
+      "length": "Length",
+      "width": "Width",
+      "height": "Height"
+    },
+    "confirmTitle": "Fill the ranges?",
+    "confirmBody": "Saves the range of {count} styles as checked; every change is audited.",
+    "done": "{count} styles saved",
+    "failed": "Could not run"
+  },
+  "content": {
+    "title": "Style library page content",
+    "description": "The trust section on /styles: certificates, food-grade documents, production photos, customer logos and the tax-invoice note.",
+    "readOnly": "Read only — editing needs styles.curate (Admin, Marketing)",
+    "version": "Version {version}",
+    "unset": "Never saved — the storefront hides every empty part",
+    "realOnlyTitle": "Real content only",
+    "realOnly": "Certificates, documents, photos and logos must be ones the company really holds; customer logos need the customer’s permission; no factory names or locations in photos or text.",
+    "none": "None yet",
+    "remove": "Remove",
+    "certificationsTitle": "Certificates",
+    "certificationsIntro": "Expired certificates are not shown to customers.",
+    "addCertification": "Add certificate",
+    "certificationN": "Certificate {n}",
+    "expired": "Expired",
+    "nameTh": "Name (Thai)",
+    "nameEn": "Name (English)",
+    "number": "Number",
+    "issuer": "Issuer",
+    "expiresOn": "Expires on",
+    "expiresOnHint": "Last valid day; empty when it does not expire",
+    "documentUrl": "Document link",
+    "urlHint": "https://… or a path on getpack’s site",
+    "foodGradeTitle": "Food-grade documents",
+    "foodGradeIntro": "Documents backing food-contact materials",
+    "addFoodGrade": "Add document",
+    "documentTh": "Document name (Thai)",
+    "documentEn": "Document name (English)",
+    "photosTitle": "Production-process photos",
+    "photosIntro": "Product and process only",
+    "addPhoto": "Add photo",
+    "photoUrl": "Photo link",
+    "altTh": "Alt text (Thai)",
+    "altEn": "Alt text (English)",
+    "logosTitle": "Permitted customer logos",
+    "logosIntro": "Only customers who gave written permission",
+    "addLogo": "Add logo",
+    "logoName": "Customer name",
+    "logoUrl": "Logo link",
+    "permission": "Permission record",
+    "permissionHint": "e.g. an email of … or a CS ticket — staff only",
+    "taxTitle": "Tax-invoice note",
+    "taxIntro": "Leave empty for the default note (D-010: getpack issues a full tax invoice for every order)",
+    "taxTh": "Note (Thai)",
+    "taxEn": "Note (English)",
+    "saveTitle": "Save a new version",
+    "reason": "Reason for the change",
+    "reasonHint": "Kept with the change history",
+    "save": "Save",
+    "saved": "Saved",
+    "failed": "Could not save",
+    "fixErrors": "Some fields need fixing",
+    "errors": {
+      "required": "Required",
+      "url": "Must be https://… or a path starting with /",
+      "date": "Use YYYY-MM-DD",
+      "tooMany": "Too many"
+    }
   }
 }

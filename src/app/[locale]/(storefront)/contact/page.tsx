@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { getSupportChannels } from "@/features/customer/catalog/api.server";
+import { getPublicConfig, getSupportChannels } from "@/features/customer/catalog/api.server";
+import { schemaOpeningHours } from "@/features/customer/catalog/support-hours";
 import { pageContext } from "@/features/customer/content/page-meta.server";
 import { ContactForm } from "@/features/customer/help/ContactForm";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
@@ -18,7 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Contact (F3 3.7): the channels the API lists, and a message that becomes a ticket. */
 export default async function Page() {
-  const [t, channels] = await Promise.all([getTranslations("help.contact"), getSupportChannels()]);
+  const [t, channels, config] = await Promise.all([
+    getTranslations("help.contact"),
+    getSupportChannels(),
+    getPublicConfig(),
+  ]);
+  const openingHours = schemaOpeningHours(config?.supportHours);
   const page = await pageContext("/contact", t("title"));
   // The contact page as an entity, with the channels the API lists as the organisation's contact
   // points — a phone or an email appears here only when the API has one (SEO pass).
@@ -47,7 +53,7 @@ export default async function Page() {
           mainEntity: {
             ...organizationSchema(page.origin),
             ...(contactPoints.length > 0 ? { contactPoint: contactPoints } : {}),
-            ...(channels?.hours ? { openingHours: channels.hours } : {}),
+            ...(openingHours ? { openingHours } : {}),
           },
         }}
       />
