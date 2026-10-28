@@ -35,7 +35,8 @@ export interface PriceDockProps {
   persistence: Persistence;
   /** The flexo spot-colour limit (D-278), so the spec counts no more inks than flexo may print. */
   maxSpot: number | null;
-  layout: "rail" | "bar";
+  /** `chip` (C8): the editor top bar's price — per piece over the quantity, nothing else. */
+  layout: "rail" | "bar" | "chip";
   quantity: number | null;
   onQuantity: (quantity: number) => void;
   /** ⑤ — the dock's primary action. */
@@ -221,6 +222,24 @@ export function PriceDock({
           : null}
       </p>
     ) : null;
+
+  if (layout === "chip") {
+    // The top bar's chip (C8): the same figures as the dock, from the same query; nothing when there is no price.
+    if (rfq || !step?.unitPrice || !qty) return pending ? <Spinner size={14} label={t("updating")} /> : null;
+    return (
+      <span
+        aria-live="polite"
+        className="flex flex-col items-end px-2 leading-tight whitespace-nowrap tabular-nums"
+        data-studio-price-chip=""
+      >
+        <b className="text-sm font-semibold">
+          {formatTHB(step.unitPrice, locale)}
+          <span className="font-normal">{t("perPiece")}</span>
+        </b>
+        <small className="text-muted text-[11px]">{t("pieces", { count: qty })}</small>
+      </span>
+    );
+  }
 
   if (layout === "bar")
     return (

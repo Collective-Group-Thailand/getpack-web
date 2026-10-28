@@ -26,9 +26,11 @@ const CoachMarks = dynamic(() => import("@/ui/components/CoachMarks").then((modu
  * The studio's three coach marks (U5.2 §2): the steps, the live price, and this "?" — shown once on
  * a first visit, dismissible, never blocking, and re-opened from the "?" at any time.
  */
-export function StudioGuide({ signedIn = false }: { signedIn?: boolean }) {
+export function StudioGuide({ signedIn = false, coach = true }: { signedIn?: boolean; coach?: boolean }) {
   const t = useTranslations("studio.guide");
   const { show, dismiss, reopen } = useFirstRun("studio-coach-v1");
+  // C8: the redesigned editor starts with its own chooser and the easy mode's 4-step guide — no coach marks.
+  if (!coach) return AssistantLauncher ? <AssistantLauncher signedIn={signedIn} signInHref="/sign-in" /> : null;
   return (
     <>
       {AssistantLauncher ? <AssistantLauncher signedIn={signedIn} signInHref="/sign-in" /> : null}

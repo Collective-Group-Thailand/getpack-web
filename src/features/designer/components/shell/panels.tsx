@@ -33,6 +33,8 @@ export const RAIL = [
   { id: "brand", icon: "palette" },
   { id: "background", icon: "pattern" },
   { id: "layers", icon: "layers" },
+  // The pro shell's "สีในงาน" (C8); its panel is the shell's own.
+  { id: "colours", icon: "pipette" },
   // Offered only where the frame supplies the panel (the studio's comments, U4.7).
   { id: "comments", icon: "chat" },
 ] as const satisfies readonly { id: string; icon: IconName }[];
@@ -69,6 +71,8 @@ export function RailPanel({
       return <BackgroundPanel />;
     case "layers":
       return <LayersPanel />;
+    case "colours":
+      return null;
   }
 }
 
