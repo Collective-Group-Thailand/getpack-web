@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type Konva from "konva";
-import { useLocale } from "next-intl";
+import Konva from "konva";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Circle,
   Ellipse,
@@ -41,7 +41,21 @@ import { buildPatternTile } from "@/features/designer/patterns";
 import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
 import { useCommentPins } from "@/features/designer/comments/pins";
 import { useCanvasStatus } from "@/features/designer/store/status";
-import type { CodeElement, DesignContent, DesignElement, Dieline, ImageElement } from "@/features/designer/types";
+import type {
+  CodeElement,
+  DesignContent,
+  DesignElement,
+  Dieline,
+  FillGradient,
+  ImageElement,
+  NewElement,
+} from "@/features/designer/types";
+import type { DesignIssue } from "@/features/designer/lib/checks";
+import { newText } from "@/features/designer/lib/create";
+import { constrain45, dragBox, newPath, newRectangle, polylineOf } from "@/features/designer/lib/draw";
+import { inkOf } from "@/features/designer/lib/ink";
+import { measureText } from "@/features/designer/lib/measure";
+import type { EditorMode, EditorTool } from "@/features/designer/store/mode";
 
 export const SAFE_ZONE_MM = 3;
 const TILE_PX_PER_MM = 8;
@@ -78,6 +92,15 @@ type NodeProps = Record<string, unknown>;
 
 function ImageNode({ el, ...rest }: { el: ImageElement } & NodeProps) {
   const img = useHtmlImage(el.src);
+  const ref = useRef<Konva.Image>(null);
+  // "ภาพสีเดียว" (C8): one ink, shown in grey — a filter needs the node cached.
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || !img) return;
+    if (el.mono) node.cache({ pixelRatio: 1 });
+    else node.clearCache();
+    node.getLayer()?.batchDraw();
+  }, [el.mono, img, el.width, el.height, el.crop]);
   const crop =
     img && el.crop
       ? {
@@ -87,7 +110,17 @@ function ImageNode({ el, ...rest }: { el: ImageElement } & NodeProps) {
           height: el.crop.height * img.naturalHeight,
         }
       : undefined;
-  return <KImage image={img ?? undefined} width={el.width} height={el.height} crop={crop} {...rest} />;
+  return (
+    <KImage
+      ref={ref}
+      image={img ?? undefined}
+      width={el.width}
+      height={el.height}
+      crop={crop}
+      filters={el.mono ? [Konva.Filters.Grayscale] : undefined}
+      {...rest}
+    />
+  );
 }
 
 /** A QR code or barcode: its background (the quiet zone included) and its modules as one path. */
@@ -135,6 +168,53 @@ interface Props {
   /** Each face's rotation to read upright on the box (from the fold), for face focus. */
   upright?: Record<string, number>;
   safeMm?: number;
+  /** The Studio editor shell (C8): its mode, tool, print view and live preflight. Absent = the classic canvas. */
+  studio?: CanvasStudio;
+}
+
+/** What the Studio editor shell (C8) adds to the canvas. */
+export interface CanvasStudio {
+  mode: EditorMode;
+  tool: EditorTool;
+  overlays: { cut: boolean; fold: boolean; bleed: boolean; safe: boolean; labels: boolean; grid: boolean };
+  /** "จำลองหมึกบนผิวกล่อง": the artwork multiplied onto the board. */
+  inkOnBoard: boolean;
+  /** "แยกหมึก": everything, the black ink only, or the other colours only. */
+  separation: "all" | "black" | "colours";
+  /** The live preflight findings, drawn as markers (red = must fix, amber = advice). */
+  issues: DesignIssue[];
+  onIssue: (issue: DesignIssue) => void;
+  /** Screen pixels the fit keeps clear on each edge (the toolbox, the view bar). */
+  insets: { top: number; right: number; bottom: number; left: number };
+  /** The 3D card in the top-right corner: the fit never puts the sheet under it. */
+  pip: { width: number; height: number; top: number; right: number } | null;
+  /** A one-shot tool finished (tools revert to "select" after one shape). */
+  onToolDone: () => void;
+}
+
+const RATIO_TYPES = new Set(["image", "text", "code"]);
+
+/** The fit's candidate areas: the view less its insets, and — with the 3D card — below it or beside it. */
+export function fitAreas(
+  width: number,
+  height: number,
+  insets: CanvasStudio["insets"],
+  pip: CanvasStudio["pip"],
+  pad: number,
+): { x: number; y: number; width: number; height: number }[] {
+  const base = {
+    x: insets.left + pad,
+    y: insets.top + pad,
+    width: width - insets.left - insets.right - 2 * pad,
+    height: height - insets.top - insets.bottom - 2 * pad,
+  };
+  if (!pip) return [base];
+  const below = Math.max(base.y, pip.top + pip.height + pad);
+  const besideRight = Math.min(base.x + base.width, width - pip.right - pip.width - pad);
+  return [
+    { ...base, y: below, height: base.y + base.height - below },
+    { ...base, width: besideRight - base.x },
+  ].filter((a) => a.width > 40 && a.height > 40);
 }
 
 /** How each finish shows on the flat sheet (a preview: the 3D model and the print file use masks). */
@@ -158,7 +238,9 @@ export default function DesignCanvas({
   readOnly = false,
   upright = {},
   safeMm = SAFE_ZONE_MM,
+  studio,
 }: Props) {
+  const t = useTranslations("designer.shell");
   const {
     content,
     selectedIds,
@@ -177,11 +259,19 @@ export default function DesignCanvas({
     focusedFaceId,
     focusFace,
     side,
+    setFitZoom,
+    addElement,
   } = useEditor();
+  const ov = studio?.overlays;
+  const pro = studio?.mode === "pro";
   // The side being edited (U4.3): its elements only; the background pattern is the outside's.
   const elements = useMemo(
-    () => content.elements.filter((e) => (e.side ?? "outside") === side),
+    () => content.elements.filter((e) => (e.side ?? "outside") === side && !e.hidden),
     [content.elements, side],
+  );
+  const guideLines = useMemo(
+    () => (content.guides ?? []).filter((g) => (g.side ?? "outside") === side),
+    [content.guides, side],
   );
   const pattern = side === "inside" ? NO_PATTERN : content.pattern;
   const pins = useCommentPins((s) => s.pins);
@@ -197,6 +287,26 @@ export default function DesignCanvas({
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const dragStart = useRef<Map<string, { x: number; y: number }> | null>(null);
   const scale = zoom * PX_PER_MM;
+  /** Space held: the view pans (C8). */
+  const [spaceDown, setSpaceDown] = useState(false);
+  /** A rectangle, ellipse or line being dragged out (C8 pro tools), in sheet mm. */
+  const [draft, setDraft] = useState<{ tool: "rect" | "ellipse" | "line"; a: Pt; b: Pt; shift: boolean } | null>(null);
+  /** The pen's points so far, and where the next would go. */
+  const [pen, setPen] = useState<{ points: Pt[]; hover: Pt | null } | null>(null);
+  /** The text being typed in place (double-click), with its box on screen. */
+  const [editing, setEditing] = useState<{
+    id: string;
+    text: string;
+    box: { x: number; y: number; width: number; height: number };
+  } | null>(null);
+  /** While resizing: the box and its size in mm. */
+  const [sizeLabel, setSizeLabel] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  /** A guide being pulled out of a ruler. */
+  const [guideDraft, setGuideDraft] = useState<{ axis: "x" | "y"; at: number } | null>(null);
+  const [markers, setMarkers] = useState<{ id: string; x: number; y: number; issue: DesignIssue }[]>([]);
+  const panning = spaceDown || studio?.tool === "hand";
+  /** The zoom the view's position was last computed for (the fit and the wheel place it themselves). */
+  const lastZoom = useRef(zoom);
 
   const faces = useMemo(() => allFaces(dieline), [dieline]);
   const faceById = useMemo(() => new Map(faces.map((f) => [f.id, f])), [faces]);
@@ -235,9 +345,11 @@ export default function DesignCanvas({
           .filter((r): r is NonNullable<typeof r> => !!r)
       : [];
     const elementLines = linesOf(others);
+    const gx = guideLines.filter((g) => g.axis === "x").map((g) => g.at);
+    const gy = guideLines.filter((g) => g.axis === "y").map((g) => g.at);
     return {
-      xs: [...faceLines.xs, ...safeLines.xs, ...elementLines.xs, dieline.width / 2],
-      ys: [...faceLines.ys, ...safeLines.ys, ...elementLines.ys, dieline.height / 2],
+      xs: [...faceLines.xs, ...safeLines.xs, ...elementLines.xs, ...gx, dieline.width / 2],
+      ys: [...faceLines.ys, ...safeLines.ys, ...elementLines.ys, ...gy, dieline.height / 2],
     };
   };
 
@@ -255,16 +367,88 @@ export default function DesignCanvas({
     const turned = angle % 180 !== 0;
     const w = turned ? box.height : box.width;
     const h = turned ? box.width : box.height;
-    const z = Math.min((width - pad * 2) / (w * PX_PER_MM), (height - pad * 2) / (h * PX_PER_MM));
-    const nz = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
+    // C8: the sheet fills the stage, clear of the toolbox, the view bar and the 3D card.
+    const areas = studio
+      ? fitAreas(width, height, studio.insets, focusBox ? null : studio.pip, Math.min(24, pad))
+      : [{ x: pad, y: pad, width: width - pad * 2, height: height - pad * 2 }];
+    if (!areas.length) areas.push({ x: 0, y: 0, width, height });
+    const best = areas
+      .map((a) => ({ a, z: Math.min(a.width / (w * PX_PER_MM), a.height / (h * PX_PER_MM)) }))
+      .sort((p, q) => q.z - p.z)[0]!;
+    const nz = studio ? Math.min(ZOOM_MAX, best.z) : Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, best.z));
+    setFitZoom(nz);
     setZoom(nz);
+    lastZoom.current = useEditor.getState().zoom;
     const s = nz * PX_PER_MM;
     const cx = box.x + box.width / 2;
     const cy = box.y + box.height / 2;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPos({ x: width / 2 - cx * s, y: height / 2 - cy * s });
+
+    setPos({ x: best.a.x + best.a.width / 2 - cx * s, y: best.a.y + best.a.height / 2 - cy * s });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitSignal, dieline, width, height, setZoom, focusedFaceId]);
+  }, [fitSignal, dieline, width, height, setZoom, focusedFaceId, fitKey(studio)]);
+
+  // Space pans while held (C8), wherever the pointer is; typing in a field is left alone.
+  useEffect(() => {
+    if (!studio) return;
+    const typing = (e: KeyboardEvent) =>
+      (e.target as HTMLElement).closest?.("input, textarea, select, [contenteditable]");
+    const down = (e: KeyboardEvent) => {
+      if (e.code === "Space" && !typing(e)) {
+        e.preventDefault();
+        setSpaceDown(true);
+      }
+    };
+    const up = (e: KeyboardEvent) => e.code === "Space" && setSpaceDown(false);
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, [studio]);
+
+  // The pen (C8): Enter finishes, Backspace takes the last point back, Escape cancels — before the editor's keys.
+  useEffect(() => {
+    if (!pen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") finishPen(false);
+      else if (e.key === "Backspace")
+        setPen((p) => (p && p.points.length > 1 ? { ...p, points: p.points.slice(0, -1) } : null));
+      else if (e.key === "Escape") setPen(null);
+      else return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  });
+  useEffect(() => {
+    // Another tool drops an unfinished path.
+
+    if (studio?.tool !== "pen") setPen(null);
+  }, [studio?.tool]);
+
+  // Live preflight markers (C8): one per element, its worst finding, at the element's top-right corner.
+  useEffect(() => {
+    if (!studio) return;
+    const frame = requestAnimationFrame(() => {
+      const world = worldRef.current;
+      if (!world) return;
+      const worst = new Map<string, DesignIssue>();
+      for (const issue of studio.issues) {
+        if (!issue.elementId || issue.severity === "info") continue;
+        const prev = worst.get(issue.elementId);
+        if (!prev || (prev.severity !== "block" && issue.severity === "block")) worst.set(issue.elementId, issue);
+      }
+      const next: { id: string; x: number; y: number; issue: DesignIssue }[] = [];
+      for (const [id, issue] of worst) {
+        const r = world.findOne(`#${id}`)?.getClientRect({ relativeTo: world });
+        if (r) next.push({ id, x: r.x + r.width, y: r.y, issue });
+      }
+      setMarkers(next);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [studio, studio?.issues, elements]);
 
   useEffect(() => {
     useCanvasStatus.getState().set({ origin: pos, scale });
@@ -314,11 +498,66 @@ export default function DesignCanvas({
     const stage = stageRef.current;
     const pointer = stage?.getPointerPosition();
     if (!stage || !pointer) return;
+    // C8: a plain wheel scrolls the view; ⌘/Ctrl (or a pinch) zooms at the pointer.
+    if (studio && !e.evt.ctrlKey && !e.evt.metaKey) {
+      setPos({ x: pos.x - e.evt.deltaX, y: pos.y - e.evt.deltaY });
+      return;
+    }
+    zoomAt(pointer, e.evt.deltaY > 0 ? 1 / 1.1 : 1.1);
+  };
+
+  /** Zooms by `factor` keeping the sheet point under `pointer` where it is. */
+  const zoomAt = (pointer: { x: number; y: number }, factor: number) => {
     const old = zoom;
-    const next = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, old * (e.evt.deltaY > 0 ? 1 / 1.1 : 1.1)));
+    const floor = Math.min(ZOOM_MIN, useEditor.getState().fitZoom);
+    const next = Math.max(floor, Math.min(ZOOM_MAX, old * factor));
     const mm = { x: (pointer.x - pos.x) / (old * PX_PER_MM), y: (pointer.y - pos.y) / (old * PX_PER_MM) };
     setZoom(next);
+    lastZoom.current = useEditor.getState().zoom;
     setPos({ x: pointer.x - mm.x * next * PX_PER_MM, y: pointer.y - mm.y * next * PX_PER_MM });
+  };
+
+  /** The zoom changed from outside (the view bar, + / −): keep the view's centre where it is. */
+  useEffect(() => {
+    if (!studio) return;
+    const old = lastZoom.current;
+    lastZoom.current = zoom;
+    if (Math.abs(old - zoom) < 1e-9) return;
+
+    setPos((p) => {
+      const c = { x: width / 2, y: height / 2 };
+      const mm = { x: (c.x - p.x) / (old * PX_PER_MM), y: (c.y - p.y) / (old * PX_PER_MM) };
+      const nx = c.x - mm.x * zoom * PX_PER_MM;
+      const ny = c.y - mm.y * zoom * PX_PER_MM;
+      // A zoom the wheel or the fit already placed lands on the same position: nothing moves twice.
+      return Math.abs(nx - p.x) < 0.5 && Math.abs(ny - p.y) < 0.5 ? p : { x: nx, y: ny };
+    });
+  }, [zoom, studio, width, height]);
+
+  /** Eyedropper (C8): the picked element's fill, gradient and stroke — and font and weight between texts — onto the selection. */
+  const eyedrop = (source: DesignElement) => {
+    const { selectedIds: ids, content: c } = useEditor.getState();
+    const patches = c.elements
+      .filter((e) => ids.includes(e.id) && e.id !== source.id && !e.locked && e.type !== "image")
+      .map((target) => {
+        const patch: Record<string, unknown> = {};
+        if ("fill" in source && "fill" in target) {
+          patch.fill = source.fill;
+          patch.fillGradient = "fillGradient" in source ? source.fillGradient : undefined;
+        }
+        if ("stroke" in source && "stroke" in target) {
+          patch.stroke = source.stroke;
+          patch.strokeWidth = source.strokeWidth;
+          patch.strokeDash = source.strokeDash;
+        }
+        if (source.type === "text" && target.type === "text") {
+          patch.fontFamily = source.fontFamily;
+          patch.fontStyle = source.fontStyle;
+        }
+        return { id: target.id, patch: patch as Partial<DesignElement> };
+      });
+    updateElements(patches);
+    studio?.onToolDone();
   };
 
   const common = (el: DesignElement) => ({
@@ -331,11 +570,17 @@ export default function DesignCanvas({
     scaleX: el.scaleX,
     scaleY: el.scaleY,
     opacity: el.opacity,
-    draggable: !readOnly && !el.locked,
-    listening: !readOnly && !printMode,
+    draggable: !readOnly && !el.locked && (!studio || (studio.tool === "select" && !panning)),
+    listening:
+      !readOnly && !printMode && (!studio || ((studio.tool === "select" || studio.tool === "eyedropper") && !panning)),
     perfectDrawEnabled: false,
+    ...(studio?.inkOnBoard && !printMode ? { globalCompositeOperation: "multiply" as const } : {}),
     onMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) => {
       e.cancelBubble = true;
+      if (studio?.tool === "eyedropper") {
+        eyedrop(el);
+        return;
+      }
       // Picking an already-selected element keeps the selection, so the group can be dragged.
       if (e.evt.shiftKey) select(el.id, true);
       else if (!selectedIds.includes(el.id)) select(el.id);
@@ -357,7 +602,8 @@ export default function DesignCanvas({
       const world = worldRef.current;
       const start = dragStart.current;
       if (!world || !start) return;
-      if (snapping && start.size === 1) {
+      // Alt held: no snapping for this move (C8).
+      if (snapping && start.size === 1 && !e.evt.altKey) {
         const box = node.getClientRect({ relativeTo: world });
         const snapped = snapBox(box, targets(new Set([el.id])), SNAP_PX / scale);
         node.x(node.x() + snapped.dx);
@@ -397,80 +643,197 @@ export default function DesignCanvas({
         }),
       );
     },
+    onTransform: studio
+      ? (e: Konva.KonvaEventObject<Event>) => {
+          const n = e.target;
+          const world = worldRef.current;
+          if (!world) return;
+          const r = n.getClientRect({ relativeTo: world });
+          const size = el.type === "text" ? measureText(el) : { width: el.width, height: el.height };
+          setSizeLabel({
+            x: r.x + r.width / 2,
+            y: r.y + r.height,
+            w: Math.abs(size.width * n.scaleX()),
+            h: Math.abs(size.height * n.scaleY()),
+          });
+        }
+      : undefined,
     onTransformEnd: (e: Konva.KonvaEventObject<Event>) => {
       const n = e.target;
+      setSizeLabel(null);
+      // C8: resizing a text changes its size in points, not a stretch.
+      if (studio && el.type === "text") {
+        const k = Math.abs(n.scaleY());
+        updateElements([
+          {
+            id: el.id,
+            patch: {
+              x: n.x(),
+              y: n.y(),
+              rotation: n.rotation(),
+              scaleX: 1,
+              scaleY: 1,
+              fontSize: el.fontSize * k,
+            } as Partial<DesignElement>,
+          },
+        ]);
+        n.scaleX(1);
+        n.scaleY(1);
+        return;
+      }
       updateElements([
         { id: el.id, patch: { x: n.x(), y: n.y(), rotation: n.rotation(), scaleX: n.scaleX(), scaleY: n.scaleY() } },
       ]);
     },
   });
 
-  const renderElement = (source: DesignElement) => {
-    // Finishes are their own layers (U4.4): not in the print artwork, previewed in their look here.
-    if (source.finish && printMode) return null;
-    const el =
-      source.finish && "fill" in source ? ({ ...source, fill: FINISH_LOOK[source.finish] } as DesignElement) : source;
+  const gradientProps = (g: FillGradient | undefined, w: number, h: number) => {
+    if (!g) return {};
+    const [start, end] = gradientEnds(g.angle, w, h);
+    return {
+      fillLinearGradientStartPoint: start,
+      fillLinearGradientEndPoint: end,
+      fillLinearGradientColorStops: [0, g.from, 1, g.to],
+    };
+  };
+  const dashOf = (dash: "solid" | "dashed" | "dotted" | undefined, width: number) =>
+    dash === "dashed" ? [width * 4, width * 2] : dash === "dotted" ? [width, width * 1.5] : undefined;
+
+  /** The element's own drawing, at its own origin, with `props` (its place, or a flip inside a group). */
+  const drawInner = (el: DesignElement, props: NodeProps, key?: string) => {
     switch (el.type) {
-      case "text":
+      case "text": {
+        const size = el.fillGradient ? measureText(el) : null;
         return (
           <Text
-            key={el.id}
-            {...common(el)}
+            key={key}
+            {...props}
             text={el.text}
             fontSize={el.fontSize}
             fontFamily={el.fontFamily}
             fontStyle={el.fontStyle}
             fill={el.fill}
+            {...(size ? gradientProps(el.fillGradient, size.width, size.height) : {})}
             align={el.align}
-            lineHeight={1.25}
+            lineHeight={el.lineHeight ?? 1.25}
+            letterSpacing={el.letterSpacing ? (el.letterSpacing / 1000) * el.fontSize : 0}
+            opacity={editing?.id === el.id ? 0 : (props.opacity as number | undefined)}
           />
         );
+      }
       case "image":
-        return <ImageNode key={el.id} el={el} {...common(el)} />;
+        return <ImageNode key={key} el={el} {...props} />;
       case "code":
-        return <CodeNode key={el.id} el={el} {...common(el)} />;
+        return <CodeNode key={key} el={el} {...props} />;
       case "rect":
         return (
           <Rect
-            key={el.id}
-            {...common(el)}
+            key={key}
+            {...props}
             width={el.width}
             height={el.height}
             fill={el.fill}
+            {...gradientProps(el.fillGradient, el.width, el.height)}
             stroke={el.strokeWidth ? el.stroke : undefined}
             strokeWidth={el.strokeWidth}
+            dash={dashOf(el.strokeDash, el.strokeWidth)}
             cornerRadius={el.cornerRadius}
           />
         );
       case "circle":
         return (
           <Ellipse
-            key={el.id}
-            {...common(el)}
+            key={key}
+            {...props}
             radiusX={el.width / 2}
             radiusY={el.height / 2}
             offsetX={-el.width / 2}
             offsetY={-el.height / 2}
             fill={el.fill}
+            {...(el.fillGradient
+              ? (() => {
+                  // An ellipse's gradient points are about its centre.
+                  const [a, b] = gradientEnds(el.fillGradient.angle, el.width, el.height);
+                  return {
+                    fillLinearGradientStartPoint: { x: a.x - el.width / 2, y: a.y - el.height / 2 },
+                    fillLinearGradientEndPoint: { x: b.x - el.width / 2, y: b.y - el.height / 2 },
+                    fillLinearGradientColorStops: [0, el.fillGradient.from, 1, el.fillGradient.to],
+                  };
+                })()
+              : {})}
             stroke={el.strokeWidth ? el.stroke : undefined}
             strokeWidth={el.strokeWidth}
+            dash={dashOf(el.strokeDash, el.strokeWidth)}
           />
         );
-      case "shape":
+      case "shape": {
+        // A line or a pen path (C8) is drawn as points in mm, so its stroke keeps its width when stretched.
+        const poly = polylineOf(el.path);
+        if (poly) {
+          const points = poly.points.map((v, i) => (v / 100) * (i % 2 ? el.height : el.width));
+          return (
+            <Group key={key} {...props}>
+              <Rect width={el.width} height={el.height} fill="transparent" />
+              <Line
+                points={points}
+                closed={poly.closed}
+                fill={poly.closed && !el.open ? el.fill : undefined}
+                {...(poly.closed && !el.open ? gradientProps(el.fillGradient, el.width, el.height) : {})}
+                stroke={el.strokeWidth ? el.stroke : undefined}
+                strokeWidth={el.strokeWidth}
+                dash={dashOf(el.strokeDash, el.strokeWidth)}
+                lineCap="round"
+                lineJoin="round"
+                hitStrokeWidth={Math.max(el.strokeWidth, 8 / scale)}
+              />
+            </Group>
+          );
+        }
         return (
-          <Group key={el.id} {...common(el)}>
+          <Group key={key} {...props}>
             <Rect width={el.width} height={el.height} fill="transparent" />
             <Path
               data={el.path ?? ""}
               scaleX={el.width / 100}
               scaleY={el.height / 100}
               fill={el.fill}
+              {...gradientProps(el.fillGradient, 100, 100)}
               stroke={el.strokeWidth ? el.stroke : undefined}
               strokeWidth={el.strokeWidth ? el.strokeWidth / Math.max(el.width / 100, 0.001) : 0}
+              dash={dashOf(el.strokeDash, el.strokeWidth ? el.strokeWidth / Math.max(el.width / 100, 0.001) : 0)}
             />
           </Group>
         );
+      }
     }
+  };
+
+  const renderElement = (source: DesignElement) => {
+    // Finishes are their own layers (U4.4): not in the print artwork, previewed in their look here.
+    if (source.finish && printMode) return null;
+    // "แยกหมึก" (C8): only the black ink, or only the other colours — a view, never the print files.
+    if (studio && !printMode && studio.separation !== "all") {
+      const ink = inkOf(source);
+      if (studio.separation === "black" && ink === "colour") return null;
+      if (studio.separation === "colours" && ink === "black") return null;
+    }
+    const el =
+      source.finish && "fill" in source ? ({ ...source, fill: FINISH_LOOK[source.finish] } as DesignElement) : source;
+    if (el.flipX || el.flipY) {
+      // Mirrored about its own centre (C8): the outer group keeps the element's place, the drawing flips inside it.
+      const size = el.type === "text" ? measureText(el) : { width: el.width, height: el.height };
+      return (
+        <Group key={el.id} {...common(el)}>
+          {drawInner(el, {
+            x: el.flipX ? size.width : 0,
+            y: el.flipY ? size.height : 0,
+            scaleX: el.flipX ? -1 : 1,
+            scaleY: el.flipY ? -1 : 1,
+          })}
+        </Group>
+      );
+    }
+    return drawInner(el, common(el), el.id);
   };
 
   // Consecutive elements with the same clip share one clip group — order is kept, and 200
@@ -493,11 +856,52 @@ export default function DesignCanvas({
       }
       return;
     }
+    if (studio && !readOnly && !panning) {
+      const p = stageRef.current?.getPointerPosition();
+      const at = p ? toSheet(p) : null;
+      if (at && p) {
+        switch (studio.tool) {
+          case "zoom":
+            zoomAt(p, e.evt.altKey ? 1 / 1.25 : 1.25);
+            return;
+          case "text": {
+            const text = newText({ x: at[0], y: at[1] }, t("tools.newText"), "subheading");
+            addElement({ ...text, x: at[0], y: at[1] } as NewElement);
+            studio.onToolDone();
+            const id = useEditor.getState().selectedId;
+            if (id) requestAnimationFrame(() => startEditing(id));
+            return;
+          }
+          case "rect":
+          case "ellipse":
+          case "line":
+            setDraft({ tool: studio.tool, a: at, b: at, shift: e.evt.shiftKey });
+            return;
+          case "pen": {
+            const points = pen?.points ?? [];
+            const first = points[0];
+            // A click on the first point closes the shape.
+            if (first && points.length >= 3 && Math.hypot(at[0] - first[0], at[1] - first[1]) * scale < 8) {
+              finishPen(true);
+              return;
+            }
+            const last = points.at(-1);
+            const next = last && e.evt.shiftKey ? constrain45(last, at) : at;
+            setPen({ points: [...points, next], hover: null });
+            return;
+          }
+          default:
+            break;
+        }
+      }
+    }
     const target = e.target;
     const onElement = target.name() === "design-element" || !!target.findAncestor(".design-element");
     const onTransformer = target.getParent()?.className?.includes("Transformer");
     if (onElement || onTransformer) return;
-    if (e.evt.shiftKey && !readOnly) {
+    // Pro "select" (C8): a drag on the empty sheet draws a selection rectangle, no ⇧ needed.
+    const marqueeByDefault = pro && studio?.tool === "select" && !panning;
+    if ((e.evt.shiftKey || marqueeByDefault) && !readOnly) {
       // Shift-drag on empty board draws a selection rectangle instead of panning.
       const stage = stageRef.current;
       const p = stage?.getPointerPosition();
@@ -517,11 +921,25 @@ export default function DesignCanvas({
     if (!stage || !p) return;
     const mm = toSheet(p);
     if (marquee) setMarquee({ ...marquee, x1: mm[0], y1: mm[1] });
+    if (draft) {
+      const shift = (window.event as MouseEvent | undefined)?.shiftKey ?? false;
+      setDraft({ ...draft, b: draft.tool === "line" && shift ? constrain45(draft.a, mm) : mm, shift });
+    }
+    if (pen) {
+      const last = pen.points.at(-1);
+      const shift = (window.event as MouseEvent | undefined)?.shiftKey ?? false;
+      setPen({ ...pen, hover: last && shift ? constrain45(last, mm) : mm });
+    }
     const hit = focusedFaceId ?? facePolys.find((f) => pointInPolygon(mm, f.poly))?.id ?? null;
     if (useCanvasStatus.getState().faceId !== hit) useCanvasStatus.getState().set({ faceId: hit });
   };
 
   const onStageMouseUp = () => {
+    if (draft) {
+      commitDraft(draft);
+      setDraft(null);
+      return;
+    }
     const stage = stageRef.current;
     if (!marquee || !stage) return;
     stage.draggable(true);
@@ -540,8 +958,24 @@ export default function DesignCanvas({
     selectMany(hits.map((el) => el.id));
   };
 
-  const onStageDblClick = () => {
+  const onStageDblClick = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (readOnly) return;
+    if (pen) {
+      // The double-click's second click added a point: finish without it.
+      setPen((p) => (p ? { ...p, points: p.points.slice(0, -1) } : p));
+      requestAnimationFrame(() => finishPen(false));
+      return;
+    }
+    // Double-click a text to type in place (C8).
+    if (studio) {
+      const node =
+        e.target.findAncestor(".design-element", true) ?? (e.target.name() === "design-element" ? e.target : null);
+      const el = node ? elements.find((x) => x.id === node.id()) : undefined;
+      if (el?.type === "text" && !el.locked) {
+        startEditing(el.id);
+        return;
+      }
+    }
     const stage = stageRef.current;
     const p = stage?.getPointerPosition();
     if (!p) return;
@@ -549,13 +983,78 @@ export default function DesignCanvas({
     if (hit) focusFace(focusedFaceId === hit.id ? null : hit.id);
   };
 
+  /** A dragged-out rectangle, ellipse or line becomes an element; tools then revert to "select". */
+  const commitDraft = (d: NonNullable<typeof draft>) => {
+    let element: NewElement | null;
+    if (d.tool === "line") {
+      element = Math.hypot(d.b[0] - d.a[0], d.b[1] - d.a[1]) < 1 ? null : newPath([d.a, d.b], false);
+    } else {
+      let box = dragBox(d.a, d.b, d.shift);
+      // A click without a drag: a 30 mm shape where it was clicked.
+      if (box.width < 1 && box.height < 1) box = { x: d.a[0] - 15, y: d.a[1] - 15, width: 30, height: 30 };
+      element = newRectangle(box, d.tool === "rect" ? "rect" : "circle");
+    }
+    if (element) addElement(element);
+    studio?.onToolDone();
+  };
+
+  function finishPen(closed: boolean) {
+    setPen((current) => {
+      const element = current ? newPath(current.points, closed) : null;
+      if (element) {
+        addElement(element);
+        studio?.onToolDone();
+      }
+      return null;
+    });
+  }
+
+  /** Opens the in-place text editor over a text element. */
+  const startEditing = (id: string) => {
+    const el = useEditor.getState().content.elements.find((x) => x.id === id);
+    const node = stageRef.current?.findOne(`#${id}`);
+    if (!el || el.type !== "text" || !node) return;
+    const r = node.getClientRect();
+    setEditing({ id, text: el.text, box: { x: r.x, y: r.y, width: r.width, height: r.height } });
+  };
+  const commitEditing = () => {
+    if (!editing) return;
+    const el = useEditor.getState().content.elements.find((x) => x.id === editing.id);
+    if (el?.type === "text" && editing.text !== el.text) updateElements([{ id: el.id, patch: { text: editing.text } }]);
+    setEditing(null);
+  };
+
   const gridLines = useMemo(() => {
-    if (!showGrid) return [];
+    const on = ov ? ov.grid : showGrid;
+    if (!on) return [];
+    // The pro print view's grid is every 10 mm (C8); the classic one 5 mm, a major line every 10.
+    const step = ov ? 10 : 5;
     const out: { points: number[]; major: boolean }[] = [];
-    for (let x = 0; x <= dieline.width; x += 5) out.push({ points: [x, 0, x, dieline.height], major: x % 10 === 0 });
-    for (let y = 0; y <= dieline.height; y += 5) out.push({ points: [0, y, dieline.width, y], major: y % 10 === 0 });
+    for (let x = 0; x <= dieline.width; x += step) out.push({ points: [x, 0, x, dieline.height], major: x % 10 === 0 });
+    for (let y = 0; y <= dieline.height; y += step) out.push({ points: [0, y, dieline.width, y], major: y % 10 === 0 });
     return out;
-  }, [showGrid, dieline]);
+  }, [showGrid, ov, dieline]);
+
+  const shownLines = ov ? lines.filter((l) => (l.role === "cut" || l.role === "half_cut" ? ov.cut : ov.fold)) : lines;
+  const transformKeepsRatio =
+    selectedIds.length > 0 &&
+    selectedIds.every((id) => {
+      const el = elements.find((e) => e.id === id);
+      return !!el && (RATIO_TYPES.has(el.type) || (el.type === "shape" && !el.open && !polylineOf(el.path)));
+    });
+  const cursor = placing
+    ? "crosshair"
+    : panning
+      ? "grab"
+      : studio?.tool === "text"
+        ? "text"
+        : studio?.tool === "zoom"
+          ? "zoom-in"
+          : studio?.tool === "eyedropper"
+            ? "copy"
+            : studio && ["rect", "ellipse", "line", "pen"].includes(studio.tool)
+              ? "crosshair"
+              : undefined;
 
   return (
     <>
@@ -567,8 +1066,8 @@ export default function DesignCanvas({
         y={pos.y}
         scaleX={scale}
         scaleY={scale}
-        draggable={!placing}
-        style={placing ? { cursor: "crosshair" } : undefined}
+        draggable={!placing && (!studio || panning || (studio.mode === "easy" && studio.tool === "select"))}
+        style={cursor ? { cursor } : undefined}
         onDragEnd={(e) => {
           if (e.target === e.target.getStage()) setPos({ x: e.target.x(), y: e.target.y() });
         }}
@@ -690,7 +1189,20 @@ export default function DesignCanvas({
                   perfectDrawEnabled={false}
                 />
               ))}
-              {showSafeZone &&
+              {(ov ? ov.bleed : false) &&
+                bleedContours.map((pts, i) => (
+                  <Line
+                    key={`b${i}`}
+                    points={flat(pts)}
+                    closed
+                    stroke={CANVAS_COLORS.cut}
+                    strokeWidth={0.8}
+                    dash={[2, 2]}
+                    opacity={0.45}
+                    strokeScaleEnabled={false}
+                  />
+                ))}
+              {(ov ? ov.safe && showSafeZone : showSafeZone) &&
                 safe.map((pts, i) => (
                   <Line
                     key={`s${i}`}
@@ -703,7 +1215,7 @@ export default function DesignCanvas({
                     opacity={0.7}
                   />
                 ))}
-              {lines.map((l, i) => (
+              {shownLines.map((l, i) => (
                 <Path
                   key={i}
                   data={svgPathData([l.edge], false)}
@@ -722,7 +1234,7 @@ export default function DesignCanvas({
                       <Path key={`dim-${f.id}`} data={svgPathData(f.outline)} fill="#ffffff" opacity={0.65} />
                     ))
                 : null}
-              {showLabels &&
+              {(ov ? ov.labels : showLabels) &&
                 faces.map((f) => {
                   const b = faceBounds(f);
                   const size = Math.max(2, Math.min(14, 12 / (zoom * PX_PER_MM)));
@@ -752,6 +1264,174 @@ export default function DesignCanvas({
                 />
               ))}
               {gaps ? <DistanceLabels box={gaps.box} face={gaps.face} scale={scale} locale={locale} /> : null}
+              {/* Ruler guides (C8 pro): drag along their axis; dropped back on a ruler, they go. */}
+              {pro
+                ? guideLines.map((g) => (
+                    <Line
+                      key={g.id}
+                      points={
+                        g.axis === "x"
+                          ? [g.at, -2000, g.at, dieline.height + 2000]
+                          : [-2000, g.at, dieline.width + 2000, g.at]
+                      }
+                      stroke={CANVAS_COLORS.guide}
+                      strokeWidth={1}
+                      hitStrokeWidth={8 / scale}
+                      strokeScaleEnabled={false}
+                      draggable={!readOnly}
+                      listening={!readOnly && studio?.tool === "select"}
+                      onMouseEnter={(e) => {
+                        const c = e.target.getStage()?.container();
+                        if (c) c.style.cursor = g.axis === "x" ? "ew-resize" : "ns-resize";
+                      }}
+                      onMouseLeave={(e) => {
+                        const c = e.target.getStage()?.container();
+                        if (c) c.style.cursor = cursor ?? "";
+                      }}
+                      dragBoundFunc={function (this: Konva.Node, pos) {
+                        return g.axis === "x"
+                          ? { x: pos.x, y: this.absolutePosition().y }
+                          : { x: this.absolutePosition().x, y: pos.y };
+                      }}
+                      onDragEnd={(e) => {
+                        const pointer = stageRef.current?.getPointerPosition();
+                        const node = e.target;
+                        const moved = g.axis === "x" ? node.x() : node.y();
+                        node.position({ x: 0, y: 0 });
+                        if (pointer && (g.axis === "x" ? pointer.x < RULER_PX : pointer.y < RULER_PX))
+                          useEditor.getState().removeGuide(g.id);
+                        else useEditor.getState().moveGuide(g.id, g.at + moved);
+                      }}
+                    />
+                  ))
+                : null}
+              {guideDraft ? (
+                <Line
+                  points={
+                    guideDraft.axis === "x"
+                      ? [guideDraft.at, -2000, guideDraft.at, dieline.height + 2000]
+                      : [-2000, guideDraft.at, dieline.width + 2000, guideDraft.at]
+                  }
+                  stroke={CANVAS_COLORS.guide}
+                  strokeWidth={1}
+                  strokeScaleEnabled={false}
+                  listening={false}
+                />
+              ) : null}
+              {draft ? (
+                draft.tool === "line" ? (
+                  <Line
+                    points={[...draft.a, ...draft.b]}
+                    stroke={CANVAS_COLORS.selection}
+                    strokeWidth={1.5}
+                    strokeScaleEnabled={false}
+                    listening={false}
+                  />
+                ) : (
+                  (() => {
+                    const b = dragBox(draft.a, draft.b, draft.shift);
+                    return draft.tool === "rect" ? (
+                      <Rect
+                        {...b}
+                        stroke={CANVAS_COLORS.selection}
+                        strokeWidth={1.5}
+                        strokeScaleEnabled={false}
+                        dash={[4, 3]}
+                        listening={false}
+                      />
+                    ) : (
+                      <Ellipse
+                        x={b.x + b.width / 2}
+                        y={b.y + b.height / 2}
+                        radiusX={b.width / 2}
+                        radiusY={b.height / 2}
+                        stroke={CANVAS_COLORS.selection}
+                        strokeWidth={1.5}
+                        strokeScaleEnabled={false}
+                        dash={[4, 3]}
+                        listening={false}
+                      />
+                    );
+                  })()
+                )
+              ) : null}
+              {pen ? (
+                <Group listening={false}>
+                  <Line
+                    points={[...pen.points.flat(), ...(pen.hover ? pen.hover : [])]}
+                    stroke={CANVAS_COLORS.selection}
+                    strokeWidth={1.5}
+                    strokeScaleEnabled={false}
+                  />
+                  {pen.points.map((p, i) => (
+                    <Rect
+                      key={i}
+                      x={p[0] - 3 / scale}
+                      y={p[1] - 3 / scale}
+                      width={6 / scale}
+                      height={6 / scale}
+                      fill={i === 0 ? CANVAS_COLORS.selection : "#ffffff"}
+                      stroke={CANVAS_COLORS.selection}
+                      strokeWidth={1}
+                      strokeScaleEnabled={false}
+                    />
+                  ))}
+                </Group>
+              ) : null}
+              {sizeLabel ? (
+                <Text
+                  x={sizeLabel.x - 60 / scale}
+                  y={sizeLabel.y + 6 / scale}
+                  width={120 / scale}
+                  align="center"
+                  text={`${formatMm(sizeLabel.w, locale, 1)} × ${formatMm(sizeLabel.h, locale, 1)}`}
+                  fontSize={11 / scale}
+                  fontFamily={uiFontFamily()}
+                  fill={CANVAS_COLORS.selection}
+                  listening={false}
+                />
+              ) : null}
+              {/* Live preflight markers (C8): red = must fix, amber = advice — a click opens the finding. */}
+              {studio && !printMode
+                ? markers.map((m) => (
+                    <Group
+                      key={`m-${m.id}`}
+                      x={m.x}
+                      y={m.y}
+                      onClick={() => studio.onIssue(m.issue)}
+                      onTap={() => studio.onIssue(m.issue)}
+                      onMouseEnter={(e) => {
+                        const c = e.target.getStage()?.container();
+                        if (c) c.style.cursor = "pointer";
+                      }}
+                      onMouseLeave={(e) => {
+                        const c = e.target.getStage()?.container();
+                        if (c) c.style.cursor = cursor ?? "";
+                      }}
+                    >
+                      <Circle
+                        radius={9 / scale}
+                        fill={m.issue.severity === "block" ? CANVAS_COLORS.issueBlock : CANVAS_COLORS.issueWarn}
+                        stroke="#ffffff"
+                        strokeWidth={2}
+                        strokeScaleEnabled={false}
+                      />
+                      <Text
+                        text="!"
+                        width={18 / scale}
+                        height={18 / scale}
+                        offsetX={9 / scale}
+                        offsetY={9 / scale}
+                        align="center"
+                        verticalAlign="middle"
+                        fontSize={12 / scale}
+                        fontStyle="bold"
+                        fill="#ffffff"
+                        listening={false}
+                      />
+                    </Group>
+                  ))
+                : null}
               {/* Comment pins (U4.7): on the outside, never in a capture (`.guide`). */}
               {side === "outside" && !printMode
                 ? pins.map((pin) => (
@@ -814,16 +1494,65 @@ export default function DesignCanvas({
               anchorStroke={CANVAS_COLORS.selection}
               anchorCornerRadius={2}
               boundBoxFunc={(o, n) => (Math.abs(n.width) < 4 || Math.abs(n.height) < 4 ? o : n)}
+              {...(studio
+                ? {
+                    // C8: four corner handles; images, texts, codes and symbols keep their proportions (⇧ frees
+                    // them), other shapes are free (⇧ keeps them).
+                    enabledAnchors: ["top-left", "top-right", "bottom-left", "bottom-right"],
+                    keepRatio: transformKeepsRatio,
+                  }
+                : {})}
             />
           </Group>
         </Layer>
       </Stage>
-      {showRulers && !focused && !printMode ? (
-        <Rulers width={width} height={height} origin={pos} scale={scale} />
+      {(studio ? pro : showRulers) && !focused && !printMode ? (
+        <Rulers
+          width={width}
+          height={height}
+          origin={pos}
+          scale={scale}
+          onPull={pro && !readOnly ? (axis, at) => setGuideDraft(at === null ? null : { axis, at }) : undefined}
+          onDrop={(axis, at) => {
+            setGuideDraft(null);
+            useEditor.getState().addGuide(axis, at);
+          }}
+        />
+      ) : null}
+      {editing ? (
+        <textarea
+          aria-label={t("editText")}
+          autoFocus
+          value={editing.text}
+          onChange={(event) => setEditing({ ...editing, text: event.target.value })}
+          onBlur={commitEditing}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setEditing(null);
+            else if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) commitEditing();
+          }}
+          className="border-primary bg-surface/90 text-fg absolute z-20 resize-none rounded-sm border p-0.5 leading-tight outline-none"
+          style={{
+            left: editing.box.x - 3,
+            top: editing.box.y - 3,
+            minWidth: Math.max(80, editing.box.width + 6),
+            minHeight: editing.box.height + 6,
+            fontSize: Math.max(12, Math.min(48, editing.box.height * 0.7)),
+          }}
+        />
       ) : null}
     </>
   );
 }
+
+/** A stable key of the studio's fit areas: the fit runs again when the 3D card or the insets change. */
+function fitKey(studio: CanvasStudio | undefined): string {
+  if (!studio) return "";
+  const { insets, pip } = studio;
+  return `${insets.top},${insets.right},${insets.bottom},${insets.left}|${pip ? `${pip.width},${pip.height},${pip.top},${pip.right}` : ""}`;
+}
+
+/** The rulers' thickness on screen. */
+const RULER_PX = 18;
 
 /**
  * Rulers in millimetres along the top and left edges: a label every 10 mm (every 50 or 100 when
@@ -834,12 +1563,46 @@ function Rulers({
   height,
   origin,
   scale,
+  onPull,
+  onDrop,
 }: {
   width: number;
   height: number;
   origin: { x: number; y: number };
   scale: number;
+  /** C8 pro: a guide pulled from a ruler (`null` = back on the ruler, dropped nowhere). */
+  onPull?: (axis: "x" | "y", at: number | null) => void;
+  onDrop?: (axis: "x" | "y", at: number) => void;
 }) {
+  /*
+   * Pressing a ruler pulls a guide out of it (C8): the top ruler makes a vertical guide (`x`), the left one a
+   * horizontal guide (`y`); released over the sheet it stays, released on the ruler it is dropped.
+   */
+  const pull = (axis: "x" | "y") => (event: React.PointerEvent<SVGSVGElement>) => {
+    if (!onPull || !onDrop) return;
+    event.preventDefault();
+    const host = (event.currentTarget.parentElement ?? event.currentTarget).getBoundingClientRect();
+    const toMm = (e: PointerEvent | React.PointerEvent) =>
+      axis === "x" ? (e.clientX - host.left - origin.x) / scale : (e.clientY - host.top - origin.y) / scale;
+    const onRuler = (e: PointerEvent | React.PointerEvent) =>
+      axis === "x" ? e.clientY - host.top < size : e.clientX - host.left < size;
+    onPull(axis, toMm(event));
+    const move = (e: PointerEvent) =>
+      onPull(
+        axis,
+        onRuler(e) && Math.abs(e.clientY - event.clientY) + Math.abs(e.clientX - event.clientX) > 4 ? null : toMm(e),
+      );
+    const up = (e: PointerEvent) => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      const moved = Math.abs(e.clientY - event.clientY) + Math.abs(e.clientX - event.clientX) > 4;
+      if (moved && onRuler(e)) onPull(axis, null);
+      else onDrop(axis, Math.round(toMm(e) * 10) / 10);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+  const interactive = !!onPull;
   const step = scale > 3 ? 10 : scale > 1 ? 50 : 100;
   const minor = step / (step === 10 ? 10 : 5);
   const ticks = (length: number, start: number) => {
@@ -856,9 +1619,10 @@ function Rulers({
     <>
       <svg
         aria-hidden="true"
-        className="bg-surface/90 text-muted border-border pointer-events-none absolute start-0 top-0 border-b"
+        className={`bg-surface/90 text-muted border-border absolute start-0 top-0 border-b ${interactive ? "cursor-ew-resize" : "pointer-events-none"}`}
         width={width}
         height={size}
+        onPointerDown={interactive ? pull("x") : undefined}
       >
         {ticks(width, origin.x).map((tick) => (
           <g key={`x${tick.at}`}>
@@ -880,9 +1644,10 @@ function Rulers({
       </svg>
       <svg
         aria-hidden="true"
-        className="bg-surface/90 text-muted border-border pointer-events-none absolute start-0 top-0 border-e"
+        className={`bg-surface/90 text-muted border-border absolute start-0 top-0 border-e ${interactive ? "cursor-ns-resize" : "pointer-events-none"}`}
         width={size}
         height={height}
+        onPointerDown={interactive ? pull("y") : undefined}
       >
         {ticks(height, origin.y).map((tick) => (
           <g key={`y${tick.at}`}>
