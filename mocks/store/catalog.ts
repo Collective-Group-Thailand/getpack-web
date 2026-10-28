@@ -164,8 +164,11 @@ function optionGroups(): Schemas["StoreOptionGroupDto"][] {
 function detail(product: Row, request: Request): Schemas["StoreProductDetailDto"] {
   const images = (product.images as { fileId: string; variant: Record<string, unknown> | null }[] | undefined) ?? [];
   const patterns = (product.patterns as { patternId: string }[] | undefined) ?? [];
+  const facts = card(product);
   return {
-    ...card(product),
+    ...facts,
+    // C1f (D-451): quote-only products carry the working-day answer time (the style mock's figure).
+    quoteResponseBusinessDays: facts.availability === "rfq" ? 2 : null,
     descriptionTh: str(product.descriptionTh),
     descriptionEn: str(product.descriptionEn),
     isCombination: Boolean(product.isCombination),

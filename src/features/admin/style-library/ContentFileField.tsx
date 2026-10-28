@@ -155,9 +155,10 @@ export function ContentImageField({
 }
 
 /**
- * C1e (§13.3): a certificate or food-grade document — an uploaded file (PDF, or a picture of it;
- * purpose `document` / `image`) served by `store.styleLibrary.getDocument` while published, or,
- * for documents only, an external https link. Optional.
+ * C1e (§13.3): a certificate or food-grade document — an uploaded file (PDF, or a picture of it)
+ * served by `store.styleLibrary.getDocument` while published, or, for documents only, an external
+ * https link. Optional. C1f (§14.3, D-451): a PDF goes up as purpose `published_document`, whose
+ * metadata the API strips like a published picture's; a picture as `image`.
  */
 export function ContentDocumentField({
   value,
@@ -224,7 +225,7 @@ export function ContentDocumentField({
             if (!file) return;
             setBusy(true);
             try {
-              const purpose = file.type === "application/pdf" ? "document" : "image";
+              const purpose = file.type === "application/pdf" ? "published_document" : "image";
               const uploaded = await uploadFile("admin", file, purpose);
               setNames((n) => ({ ...n, [uploaded.id]: file.name }));
               onChange(documentPath(uploaded.id));

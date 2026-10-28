@@ -109,6 +109,8 @@ export function decisionBlocker(
  * D-449 A (owner decision 2026-10-28): whether this person may be offered "อนุมัติด้วยตนเอง" on their own pending
  * request — a Superadmin while solo-owner mode is on. The decision names the Superadmin role itself, so this reads the
  * role; the API still refuses when another active user could decide the step, and is the enforcement point.
+ * C1f (D-451): every step of a multi-step policy may be self-approved, once each — so only an approval of the
+ * current step stops the offer.
  */
 export function canOfferSelfApproval(
   approval: Approval,
@@ -120,7 +122,10 @@ export function canOfferSelfApproval(
     approval.requester.id === actor.id &&
     actor.roles.includes("superadmin") &&
     Boolean(solo?.active) &&
-    !approval.actions.some((action) => action.actor.id === actor.id && action.action === "approve")
+    !approval.actions.some(
+      (action) =>
+        action.actor.id === actor.id && action.action === "approve" && action.stepNo === approval.currentStepNo,
+    )
   );
 }
 

@@ -18,6 +18,7 @@ import { PdpMobileBar } from "./PdpMobileBar";
 import { PdpProvider } from "./PdpProvider";
 import { PdpSizesTable } from "./PdpSizes";
 import { PdpTiers } from "./PdpTiers";
+import { PdpToleranceAnswer } from "./PdpToleranceAnswer";
 
 vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -68,6 +69,9 @@ async function open(slug = "mailer-box") {
           <PdpSizesTable buyBoxId="buy" />
           <PdpTiers guaranteeHref="/guarantee" />
           <PdpMobileBar />
+          <p data-testid="faq-tolerance">
+            <PdpToleranceAnswer />
+          </p>
         </PdpProvider>
       </NextIntlClientProvider>
     </QueryClientProvider>,
@@ -130,6 +134,16 @@ describe("the product page's buy box (pdp redesign Phase 1)", () => {
     await user.click(screen.getByRole("button", { name: `เลือกเบอร์ ${target.code}` }));
     expect(configuratorStateFor(configurator, configureLink()).standardSizeCode).toBe(target.code);
     expect(pdpEvents.some(([name]) => name === "pdp_size_table_pick")).toBe(true);
+  });
+
+  it("answers the FAQ's tolerance question with the API's figures, never a fixed ±5 % (C1f, §14.9)", async () => {
+    await open();
+    const answer = screen.getByTestId("faq-tolerance");
+    // Before the calculation arrives there is no figure to quote.
+    expect(answer.textContent).toMatch(/เล็กน้อย/);
+    await waitFor(() => expect(screen.getByText(/รวม VAT แล้ว · ไม่รวมค่าจัดส่ง/)).toBeTruthy());
+    await waitFor(() => expect(answer.textContent).toMatch(/\d+(\.\d+)?\s?%/));
+    expect(answer.textContent).not.toMatch(/เล็กน้อย/);
   });
 
   it("keeps the price area's height while the first price loads (no layout shift)", async () => {
