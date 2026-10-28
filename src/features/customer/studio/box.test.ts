@@ -109,6 +109,24 @@ describe("the print method configures the inks (U4.2)", () => {
     if (spots >= 2) expect(spotShortfall(c, spec("flexo"), twoColours, null)).toBeNull();
   });
 
+  it("on corrugate, 'เพิ่มจำนวนสี' leads to the quote path, never a silent trim (C0b, DECISIONS-STAGE-A §9.5)", async () => {
+    const c = (
+      await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", {
+        params: { path: { slug: "shipping-box" } },
+      })
+    ).data! as Configurator;
+    const spec: DesignSpec = {
+      specVersion: SPEC_VERSION,
+      styleId: "rsc",
+      values: { length: 200, width: 150, height: 100 },
+      material: { caliperMm: 3, kind: "corrugated" },
+      materialId: null,
+      studio: { printMethod: "flexo", printSides: "outside" },
+    };
+    const gap = spotShortfall(c, spec, twoColours, null);
+    expect(gap).toMatchObject({ needed: 2, priced: 1, more: true, quote: true });
+  });
+
   it("reads the flexo limit from the rules only when Prepress set it", () => {
     const rule = {
       id: "spot_colour_count",

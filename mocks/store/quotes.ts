@@ -722,6 +722,11 @@ function printModelOf(inks: Schemas["StoreOptionDto"][]): Schemas["StorePrintMod
     methods: ["none", ...(spot.length > 0 ? (["spot"] as const) : []), ...(cmyk ? (["cmyk"] as const) : [])],
     spot: spot.length > 0 ? { minColours: 1, maxColours: 1, inkColourIds: spot } : null,
     cmyk: cmyk ? { inkColourId: cmyk.id, addOn: { enabled: false, minColours: 0, maxColours: 0 } } : null,
+    // C0b: more colours than priced (up to the offered spot inks) are a quotation, as getpack-api says.
+    quote:
+      spot.length > 1 || (cmyk && spot.length > 0)
+        ? { spotMaxColours: Math.max(1, spot.length), cmykAddOnMaxColours: cmyk ? spot.length : 0 }
+        : null,
     default: {
       method: printed && cmyk ? "cmyk" : "none",
       spotInkColourIds: [],
@@ -800,6 +805,8 @@ interface Inputs {
   dimensions: Schemas["QuoteDimensionsDto"] | null;
   /** Every option id the configuration names. */
   ids: Set<string>;
+  /** C0b: a corrugate side with more inks than the mock's model prices (one spot, or CMYK alone) — a quotation. */
+  printBeyond: boolean;
 }
 
 const invalid = (path: string, message: string) =>
@@ -912,6 +919,9 @@ export function inputsOf(productTypeCode: string, raw: Record<string, unknown>):
         return sum((part) => list(part.printFront).length + list(part.printBack).length);
     }
   })();
+  const printBeyond =
+    configurator.calculator === "corrugate" &&
+    parts.some((part) => list(part.printFront).length > 1 || list(part.printBack).length > 1);
   const extras =
     configurator.calculator === "pouch"
       ? list(raw.optionIds).length
@@ -937,6 +947,7 @@ export function inputsOf(productTypeCode: string, raw: Record<string, unknown>):
     structure: design.structure ?? false,
     dimensions: sized.dimensions,
     ids: idsIn(raw),
+    printBeyond,
   };
 }
 
@@ -1010,6 +1021,8 @@ export function stepOf(inputs: Inputs, quantity: number, postcode: string | unde
   });
   // D-101: the one mock factory's weekly capacity. D-043: its machines stop at 450 mm.
   if (quantity > 200_000) return noPrice("not_instant");
+  // B-API-6 / C0b: a print the engine cannot price is the quote path, never an error.
+  if (inputs.printBeyond) return noPrice("rfq_required");
   if (inputs.l > 450) return noPrice("no_price_path");
 
   const productNet = unitNetOf(inputs, quantity) * quantity;
@@ -1096,6 +1109,7 @@ export function boxStepsOf(
     quantities,
     dimensions: null,
     ids: new Set<string>(),
+    printBeyond: false,
     ...box,
     ...design,
   } satisfies Inputs;
