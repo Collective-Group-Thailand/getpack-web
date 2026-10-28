@@ -1,5 +1,24 @@
 # Stage C — report (web)
 
+## C1 — products Phase 1 → 2 (web + API branch `design/products-redesign`)
+
+Run unattended in the cloud: mock backend only (no UAT: the egress proxy refuses uat-api), no Docker/DB. Plan = PLAN.md §6 + the block's items in order; assumptions below.
+API (`getpack-api`): C1-API-1 `QuoteStepDto.netAmount` · C1-API-2 `GET /v1/store/catalog/price-hints/{slug}/tiers` (R2, no calculate log, 60 s) · C1-API-3 RFQ/basket `catalogProductSlug`/`stockProductSku` + `rfqs.catalog_product_id/stock_product_id` (migration `20261222000001_rfq_product_reference`, hand-written) · C1-API-4 `StoreProductDetailDto.styles`, `StyleDetailDto.products`. Commits `594bf7e5` `0fe53a9f` `eded7c55` `9911591e`. `API-CHANGES.md` in both repos.
+| Items | Status | Commits (web) |
+|---|---|---|
+| types + mocks (tiers, netAmount, product ref, styles↔products) | PASS | `7d5b9ce1` `ab24b75f` |
+| 1 head + live search (250 ms) · 2 mode cards · 3 sticky section nav · 15 analytics | PASS | `c20da690` `27b82f2d` `60b64bf2` `95d593e2` |
+| 4 quick calculator (= configurator by construction; test `calc.test.ts`) | PASS | `9811cc16` |
+| 5 catalogue (all items, URL state, Back) · 6 cards · 7 price table · 8 RFQ tray | PASS | `60b64bf2` `cde50381` `05bb5973` |
+| 9 pricing factors · 10 materials · 11 process · 12 services · 13 FAQ/JSON-LD/llms.txt · 14 CTA band | PASS | `95d593e2` `6ebdbb8f` |
+| Phase 2: 1 product → styles · 2 style quick view → products · 3 category pages reuse the hub · 4 mapping CSV | PASS (CSV = script + header; run against UAT) | `a82626aa` |
+Gates: API typecheck ✓, eslint changed ✓, unit (hints/tiers, store-step-fields, rfq, styles, catalog) ✓, contract:build + contract:lint ✓. Web typecheck ✓, eslint changed ✓, `gen:api --check` ✓, `test:app` 1562/1562 ✓, e2e (mock) `storefront-products` 5/5 (new), `storefront` + `seo` 31/32 (the one failure = `admin.localhost` DNS in this container, not C1), no horizontal scroll at 390 (grid + table + category) ✓, dark readable ✓, grep of changed customer files: no "โรงงาน"/factory counts/sample data/AI wording ✓. `pnpm build` not run (OOM). Mock workaround: in-process MSW did not intercept the BFF in 4 restarts — a standalone MSW server (same `mocks/handlers`) on :4999 served the run.
+Screenshots `docs/design/screenshots/C1/`: `prototype-*`, `before-*`, `after-{1440-light,1054-light,390-dark}[-section]`, `after-1440-light-{table,rfq-tray,category,product-styles,style-quickview-products}`, `after-390-dark-{rfq-tray,table}` (mock data).
+**Remaining differences vs prototype (reason):** no VAT switch (API sends only VAT-incl. figures; R3) — "ราคาที่แสดงรวม VAT แล้ว" instead · stock cards "ดูราคาตามจำนวน", no unit price (R1) · mode lines from data, not the prototype's "300–500"/"100" · a mode without items has no card/tab (mock has no services) · "ชุดพร้อมใช้", zip/ETA/shipping, quote PDF, sample kit, reorder = Phase 3 (not built) · materials: 3 columns (name, flute, approved description) — no separate "หมายเหตุ" data · payments without "ผ่อนชำระ" (DECISIONS §3) · FAQ answers rewritten where the draft claimed figures the data does not back (MOQ, 5–10 days, ผ่อนชำระ, company name per GLOBAL-RULES §5) · square chips/no pills (design-language tests) · real images, not drawn illustrations · LINE hours from `support-channels.hours` (none → no hours) · services: every one the API lists, not 3.
+**Content for business review:** `products.json` keys in `src/features/customer/products/content.ts` (FAQ ×8, factor texts, included/excluded, process copy, payment list, mode descriptions).
+**Open questions:** (1) `partial` availability → instant (assumed) (2) stock items in the RFQ tray (kept, as the prototype) or cart only? (3) services: all from data or staff pick 3? (4) out-of-stock stock items: no badge today — show "สินค้าหมด"? (5) R1 stock "starting from" basis quantity (6) R3 ex-VAT figures for the switch (7) LINE hours into `support-channels.hours` (09:00–18:00 decided, not in config on UAT) (8) tax-invoice company name in the FAQ should come from settings — keep as content? (9) tray "account persistence" = the draft basket line once each item's form is filled (no tray API) — enough? (10) materials "หมายเหตุ" column source.
+**Local checks for the owner:** getpack-api `pnpm db:migrate` + `pnpm test:int` (RFQ + basket submit with a product ref, tiers vs calculate) · deploy API branch, then set `FEATURE_RFQ_PRODUCT_REF=1` · `pnpm build` · e2e against the real API: `storefront-products`, `storefront`, `storefront-quote` (RfqForm) · run `pnpm tsx scripts/product-style-gaps.ts --api <UAT>` and send the CSV to the business team · check the calculator on UAT (tiers + a non-default print; price = configurator) · Lighthouse mobile on `/products` · 1024/1180 header widths (shared header, unchanged).
+
 ## C4 — configurator Phase 1 (branch `design/configurator-redesign`; API repo branch of the same name)
 
 Gate: lint, typecheck, 1512 tests, build pass; no horizontal scroll at 390 px (mock + UAT); dark readable. **e2e not run** (no Docker in this
@@ -80,3 +99,24 @@ every hour of a working day) — use `calendar.business_hours` (9 h/day) instead
 **Local checks for the owner:** getpack-api `pnpm db:migrate` + `pnpm test:int` + `pnpm test:e2e` (`dieline-downloads` adds a style-dieline case) · `pnpm styles:fit-ranges` (dry run, then
 `--confirm`) on UAT, or `pnpm uat:styles --confirm` · let `styles.render_assets` run, check card hover / "แบบคลี่" · set `rfq.sla_business_hours` and check the quote message ·
 web `pnpm build` · e2e against the real API (styles, studio, configurator) · configurator corrugate: pick 2 spot colours → "ขอใบเสนอราคา" with `calc`.
+
+## C1b — owner decisions after C1 (web + API `design/products-redesign`, 2026-10-28)
+
+Run unattended in the cloud (mock backend; no UAT/DB/Docker). Decisions recorded as DECISIONS-STAGE-A §10 (both repos) and D-447 (`getpack-api/docs/decisions.md`). API changes: `docs/design/products-redesign/API-CHANGES.md` (C1b-API-1…6).
+| Item | Status | Where |
+|---|---|---|
+| 1 `partial` = instant | PASS (kept; comment now cites §10.1) | `hub.ts` |
+| 2 stock: cart + quote tray side by side (card and table) | PASS | `StockCartButton`, `HubCard`, `PriceTable` |
+| 3 services: staff-curated ≤ 3 (`storefront.featured_services`, Marketing) else first 3 + "ดูบริการทั้งหมด" | PASS (mock has no service products: section hidden there) | API endpoint · `featuredServices()` |
+| 4 "สินค้าหมด" from `STOCK_AVAILABILITY` (src/domain/status), no cart | PASS | status map + mock JAR-100 out of stock |
+| 5 stock "เริ่มต้น ฿x/ชิ้น (สั่งขั้นต่ำ N)" from API (`stock_price_hints` at MOQ) | PASS | API `price-hints`, `catalogue.server.ts` |
+| 6 ex-VAT figures from API + "ราคารวม VAT / ไม่รวม VAT" switch (default incl., drawn only when every price has both) | PASS | `HubVatSwitch`, `VatFigure`, `base.css` |
+| 7 LINE hours 09:00–18:00: seeds (`fillIfUnset`) + UAT admin-API script `docs/design/products-redesign/set-support-hours.mjs` | PASS (script not run: UAT unreachable) | API seed |
+| 8 tax-invoice FAQ company from settings (`PublicConfigDto.issuer`), FAQ JSON-LD too | PASS | `faqAnswer()` |
+| 9 tray: guest = browser; signed in = draft basket pending lines; guest tray merges at sign-in; basket shows pending lines, send disabled until filled | PASS (behind `FEATURE_RFQ_PRODUCT_REF`; off → browser tray as before) | `quote-tray.tsx`, `BasketDraft`, RfqForm |
+| 10 materials "หมายเหตุ" = approved description, empty cell otherwise | PASS | `MaterialsTable` |
+Gates: API typecheck ✓, eslint changed ✓, unit 1433/1433 (full) ✓, contract:build + contract:lint ✓, SETTINGS-REVIEW regenerated. Web typecheck ✓, eslint changed ✓, `gen:api --check` ✓, `test:app` 1572/1572 ✓, e2e (mock, `FEATURE_RFQ_PRODUCT_REF=1`) `storefront-products` 9/9 (4 new: stock, VAT switch, signed-in tray, guest merge), `storefront-ux` 11/11 (after a dev-server OOM restart; basket test passes warm), `storefront-quote` + `storefront-home` ✓. `pnpm build` not run (OOM).
+Screenshots `docs/design/screenshots/C1b/` (mock data): `after-{1440,1054}-light-stock`, `after-390-dark-stock`, `after-1440-light-{head-vat,stock-exvat,table-exvat,materials,faq}`.
+Assumptions: featured-services owner role = Marketing · ex-VAT per piece = shared `exVat` of the rounded-up incl. figure (half-up) · addProduct/removeItem write no activity row (same as existing basket draft edits) · support-channels hours text is Thai only (one string setting) · out-of-stock still shows its MOQ price.
+**Open questions:** (1) Marketing as owner of `storefront.featured_services` — or Admin? No back-office editor beyond the generic settings screen. (2) English hours text: `support_channels.hours` is one string; localise from `storefront.support_hours` instead? (3) Should a stock item that is out of stock hide its price? (4) `decisions.md` in web is synced from an API release — D-447 arrives with the next `docs:sync`.
+**Local checks for the owner:** getpack-api `pnpm db:migrate` (`20261224000001_c1b_stock_hints_basket_pending`) + `pnpm db:seed` + `pnpm test:int` (basket addProduct/submit, stock hints) · on UAT: `API_URL=… UAT_SEED_PASSWORD=… node docs/design/products-redesign/set-support-hours.mjs` then `--confirm` · let `pricing.price_hints_refresh` run, check stock prices = cart price at MOQ · set `storefront.featured_services` in the back office · web `pnpm build` · e2e against the real API (`storefront-products`, `storefront-ux`) with `FEATURE_RFQ_PRODUCT_REF=1` · Lighthouse mobile `/products`.

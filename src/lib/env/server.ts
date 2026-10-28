@@ -35,4 +35,5 @@ export const enabledZones: readonly Zone[] = serverEnv.ZONES ?? ZONES;
 export const featureFlags = {
   stylesWizard: serverEnv.FEATURE_STYLES_WIZARD === "1",
   packagingLandings: serverEnv.FEATURE_PACKAGING_LANDINGS === "1",
+  rfqProductRef: serverEnv.FEATURE_RFQ_PRODUCT_REF === "1",
 } as const;

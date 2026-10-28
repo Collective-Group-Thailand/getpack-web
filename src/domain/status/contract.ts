@@ -192,6 +192,12 @@ export type ProposalLineDecision = Schemas["ProposalLineDecision"];
 /** A catalogue record: product type, pattern, material, stock product (B2.1). **Source: schema** (`catalog_status`). */
 export type CatalogStatus = "draft" | "active" | "inactive" | "archived";
 
+/**
+ * A stock product's availability on the storefront (C1b, D-447 / DECISIONS-STAGE-A §10.4). **Source: contract**
+ * (`StoreStockProductDto.inStock`, a boolean — `true` = `in_stock`).
+ */
+export type StockAvailability = "in_stock" | "out_of_stock";
+
 /** CMS content: banners, articles, FAQs (B2.1). **Source: schema** (`content_status`). */
 export type ContentStatus = "draft" | "published" | "archived";
 

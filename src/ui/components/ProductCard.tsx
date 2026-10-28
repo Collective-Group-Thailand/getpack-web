@@ -76,6 +76,11 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   reserveTitleLines?: boolean;
   /** Revealed on hover and focus at the foot of the picture ("ดูราคา"); the whole card is the link. */
   hoverCta?: React.ReactNode;
+  /**
+   * One full-width call to action under the price and facts ("ดูราคาและสั่งซื้อ", "เพิ่มในใบขอราคา" —
+   * the products hub), raised above the stretched title link so it clicks on its own.
+   */
+  action?: React.ReactNode;
   /** The heading level in the page outline. */
   headingLevel?: "h2" | "h3";
   /** Above the fold: load the image eagerly and at high priority (LCP). */
@@ -103,6 +108,7 @@ export function ProductCard({
   promoBadge,
   hoverCta,
   actions,
+  action,
   imageActions,
   imageFoot,
   hoverImage,
@@ -260,13 +266,14 @@ export function ProductCard({
           >
             {footer}
           </div>
-        ) : price || meta || actions ? (
+        ) : price || meta || actions || action ? (
           <div className="mt-auto flex flex-col gap-0.5 pt-2">
-            {price ? <p className="text-sm tabular-nums">{price}</p> : null}
-            {meta ? <p className="text-muted line-clamp-2 text-xs">{meta}</p> : null}
+            {price ? <div className="text-sm tabular-nums">{price}</div> : null}
+            {meta ? <div className="text-muted line-clamp-2 text-xs">{meta}</div> : null}
             {actions ? (
               <div className="relative z-10 -ms-1.5 mt-1 flex flex-wrap items-center gap-1">{actions}</div>
             ) : null}
+            {action ? <div className="relative z-10 mt-3 flex flex-col *:w-full">{action}</div> : null}
           </div>
         ) : null}
       </div>

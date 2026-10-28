@@ -1073,5 +1073,9 @@
     "claimInReview": "ได้รับแล้ว · เคลมกำลังตรวจ",
     "completed": "เสร็จสิ้น",
     "cancelled": "ยกเลิก"
+  },
+  "stockAvailability": {
+    "in_stock": "พร้อมส่ง",
+    "out_of_stock": "สินค้าหมด"
   }
 }
