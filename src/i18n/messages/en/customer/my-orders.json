@@ -179,6 +179,106 @@
       "due": "Pay by {date}",
       "overdue": "Payment overdue ({date})",
       "dueTerm": "Pay by"
+    },
+    "head": {
+      "group": "Group {code}"
+    },
+    "history": {
+      "show": "Show full history ({count})",
+      "hide": "Hide history",
+      "label": "Order history"
+    },
+    "claim": {
+      "title": "Claim {claim}",
+      "submitted": "Reported",
+      "type": "Issue",
+      "received": "Quantity received",
+      "receivedValue": "{received} / {ordered} {unit}",
+      "credit": "Credit issued",
+      "creditWithNote": "{amount} · credit note {note}",
+      "howResults": "We post the result in this order's messages and notify you by e-mail and LINE. Add photos or details until the claim closes.",
+      "add": "Add photos or details",
+      "view": "View claim"
+    },
+    "claimWindow": "Report a problem until {date}",
+    "spec": {
+      "title": "Spec & design",
+      "design": "Open design “{title}” (v{versionNo})"
+    },
+    "messages": {
+      "title": "Messages about this order",
+      "body": "Ask the getpack team about this order here; every message stays in your inbox."
+    },
+    "asideLabel": "Payment and documents",
+    "allDocuments": "All documents",
+    "reorder": {
+      "title": "Reorder",
+      "body": "Same spec and artwork, at today's price",
+      "action": "Reorder {quantity} pcs"
+    },
+    "evidence": {
+      "production": "Production photo {n}",
+      "delivery": "Proof-of-delivery photo {n}",
+      "productionTitle": "Production photos",
+      "deliveryTitle": "Proof of delivery",
+      "close": "Close"
+    },
+    "journey": {
+      "stages": {
+        "payment": "Payment",
+        "artwork": "Artwork",
+        "approval": "Approval",
+        "production": "Production",
+        "delivery": "Delivery",
+        "receipt": "Receipt"
+      },
+      "state": {
+        "done": "done",
+        "now": "current step",
+        "todo": "not yet"
+      },
+      "overdue": "Payment deadline passed: re-check the price and delivery date, then pay",
+      "productionSteps": "Production steps",
+      "cartons": "{count, plural, one {# carton} other {# cartons}}",
+      "carrier": {
+        "getpack": "getpack delivery",
+        "flash_express": "Flash Express",
+        "deliveree": "Deliveree"
+      },
+      "received": "Received {received} of {ordered} pcs",
+      "receivedCredit": "Received {received} of {ordered} pcs · the shortfall credited {credit}",
+      "text": {
+        "payment": {
+          "done": "Paid",
+          "now": "Waiting for payment; production starts once paid",
+          "todo": "Pay before production"
+        },
+        "artwork": {
+          "done": "Artwork received",
+          "now": "Waiting for artwork; see the next step below",
+          "todo": "Send your artwork or wait for our dieline"
+        },
+        "approval": {
+          "done": "Artwork approved",
+          "now": "Checking the file and proof",
+          "todo": "We check the file and send a proof for approval"
+        },
+        "production": {
+          "done": "Production finished",
+          "now": "In production",
+          "todo": "Starts after payment and approval"
+        },
+        "delivery": {
+          "done": "Shipped",
+          "now": "On the way",
+          "todo": "Ships when production is finished"
+        },
+        "receipt": {
+          "done": "Delivered",
+          "now": "Waiting for delivery",
+          "todo": "Check the goods on arrival"
+        }
+      }
     }
   },
   "tolerance": {
@@ -403,7 +503,7 @@
     "searchLabel": "Search orders",
     "searchPlaceholder": "Search order no., product or PO number",
     "searchClear": "Clear search",
-    "searchResults": "{count, plural, =0 {No orders found} one {# order found} other {# orders found}}",
+    "searchResults": "Orders found: {count}",
     "empty": {
       "active": "No orders in progress",
       "todo": "Nothing to do right now",
