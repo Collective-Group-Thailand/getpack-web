@@ -7,10 +7,18 @@ import type { CategoryContent } from "./schema";
 const ok = { status: "approved" as const, reviewedBy: "Marketing", reviewedOn: "2026-11-01" };
 
 describe("category content (only approved renders)", () => {
-  it("has an entry for each of the 14 categories, none approved yet", () => {
+  it("has an entry for each of the 14 categories; only the owner's three style mappings are approved (C2b)", () => {
     expect(CATEGORY_CONTENT).toHaveLength(14);
+    const mapped: Record<string, string> = { flexible_pouch: "flexible", rigid_box: "rigid", label_sticker: "label" };
     for (const entry of CATEGORY_CONTENT) {
-      expect(contentFor(entry.categoryCode)).toEqual({ categoryCode: entry.categoryCode });
+      const content = contentFor(entry.categoryCode);
+      const style = mapped[entry.categoryCode];
+      if (style) {
+        expect(content.styles?.styleCategory).toBe(style);
+        expect(Object.keys(content).sort()).toEqual(["categoryCode", "styles"]);
+      } else {
+        expect(content).toEqual({ categoryCode: entry.categoryCode });
+      }
     }
   });
 
