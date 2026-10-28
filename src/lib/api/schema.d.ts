@@ -7295,11 +7295,33 @@ export interface paths {
          * Get a customer’s CS cart
          * @description The active cart (the customer’s CS cart), created on first use. Each item is a saved quotation option with its price lock (D-051); `priceLocked: false` means re-price and confirm before checkout. Shipping is priced per destination at checkout.
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         get: operations["admin.cart.get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/cart/actions/estimate-shipping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Estimate shipping of the cart to a postcode
+         * @description D-452: what shipping every item to one postcode would cost incl. VAT at the customer rate card (D-013) — the same destination shipping checkout prices — with the destination zone’s name, the latest ready date and the arrival window (`shipping.transit_days`). An estimate: nothing is saved and the cart does not change; checkout prices each destination again. An RFQ quotation ships only to its own postcode. Limited per client (30 a minute).
+         *
+         *     Implements: D-452, D-013, D-436.
+         */
+        post: operations["admin.cart.estimateShipping"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7317,9 +7339,9 @@ export interface paths {
         put?: never;
         /**
          * Enter a coupon code
-         * @description Checks the code now (status, window, assignment to this customer, uses left) and keeps it on the cart; the checkout preview evaluates its conditions against the cart and shows the discount or why it does not apply (D-053). Attempts are limited per customer, IP and device each hour (`promotions.code_attempt_limits`). Entering a code already on the cart changes nothing.
+         * @description Checks the code now (status, window, assignment to this customer, uses left) and keeps it on the cart; the checkout preview evaluates its conditions against the cart and shows the discount or why it does not apply (D-053). Attempts are limited per customer, IP and device each hour (`promotions.code_attempt_limits`). Entering a code already on the cart changes nothing. A cart holds at most `promotions.max_codes_per_cart` codes (D-452, `CartDto.maxCodes`); one more is refused as `promotions.code_invalid` with reason `too_many_codes`.
          *
-         *     Implements: D-053.
+         *     Implements: D-053, D-452.
          */
         post: operations["admin.cart.applyCode"];
         delete?: never;
@@ -7342,7 +7364,7 @@ export interface paths {
          * Remove a coupon code
          * @description Takes the code off the cart; nothing was reserved yet (usage is reserved at checkout, D-053).
          *
-         *     Implements: D-053.
+         *     Implements: D-053, D-452.
          */
         delete: operations["admin.cart.removeCode"];
         options?: never;
@@ -7363,7 +7385,7 @@ export interface paths {
          * Add a quotation option to the cart
          * @description A live saved quotation of this customer (instant or accepted RFQ), one item per option. `hired_design` needs a quotation priced with the design fee; a mockup add-on (D-072) is refused until it can be priced. Destinations default to the default delivery address and must add up to the quantity.
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         post: operations["admin.cart.addItem"];
         delete?: never;
@@ -7386,7 +7408,7 @@ export interface paths {
          * Remove an item
          * @description The quotation stays saved and can be added again while it is live (D-051).
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         delete: operations["admin.cart.removeItem"];
         options?: never;
@@ -7395,9 +7417,31 @@ export interface paths {
          * Change an item’s design or mockup option
          * @description Guarded by the cart’s `If-Match` (D-072).
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         patch: operations["admin.cart.updateItem"];
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/cart/items/{itemId}/actions/change-quantity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change an item’s quantity
+         * @description D-452: an instant item takes another quantity. When its locked quotation already has that quantity the item switches to it (same price lock); otherwise the configuration is priced again by the quote engine into a new saved quotation at today’s prices with a new lock (D-051) — the response shows the new unit price and lock. Within the product’s `quantityLimits`. One destination follows the new quantity; a split over several addresses is cleared and set again at checkout. RFQ quotations, Studio design pins (D-277), reorders (D-153) and items with a re-price waiting are refused (`cart.quantity_unavailable`). Guarded by `If-Match`.
+         *
+         *     Implements: D-051, D-072, D-142, D-452.
+         */
+        post: operations["admin.cart.changeQuantity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/admin/customers/{customerId}/cart/items/{itemId}/actions/confirm-reprice": {
@@ -7413,7 +7457,7 @@ export interface paths {
          * Accept the re-priced item
          * @description The item takes the new quotation, its price and a new lock (D-051). Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         post: operations["admin.cart.confirmReprice"];
         delete?: never;
@@ -7435,7 +7479,7 @@ export interface paths {
          * Re-price an item whose price lock passed
          * @description After the 15-day lock (D-051) the configuration is re-priced into a new quotation; the item shows `pendingReprice` with the difference until the client confirms it. A live lock is kept (`cart.price_locked`); RFQ quotations are not re-priced (ask for a new quotation).
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         post: operations["admin.cart.repriceItem"];
         delete?: never;
@@ -7456,7 +7500,7 @@ export interface paths {
          * Split an item over delivery addresses
          * @description Replaces the destinations; each is one of the customer’s delivery addresses (copied as a snapshot, D-142) and the quantities add up to the item quantity. Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         put: operations["admin.cart.setDestinations"];
         post?: never;
@@ -27708,11 +27752,33 @@ export interface paths {
          * Get my cart
          * @description The active cart (my cart), created on first use. Each item is a saved quotation option with its price lock (D-051); `priceLocked: false` means re-price and confirm before checkout. Shipping is priced per destination at checkout.
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         get: operations["store.cart.get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/cart/actions/estimate-shipping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Estimate shipping of the cart to a postcode
+         * @description D-452: what shipping every item to one postcode would cost incl. VAT at the customer rate card (D-013) — the same destination shipping checkout prices — with the destination zone’s name, the latest ready date and the arrival window (`shipping.transit_days`). An estimate: nothing is saved and the cart does not change; checkout prices each destination again. An RFQ quotation ships only to its own postcode. Limited per client (30 a minute).
+         *
+         *     Implements: D-452, D-013, D-436.
+         */
+        post: operations["store.cart.estimateShipping"];
         delete?: never;
         options?: never;
         head?: never;
@@ -27730,9 +27796,9 @@ export interface paths {
         put?: never;
         /**
          * Enter a coupon code
-         * @description Checks the code now (status, window, assignment to this customer, uses left) and keeps it on the cart; the checkout preview evaluates its conditions against the cart and shows the discount or why it does not apply (D-053). Attempts are limited per customer, IP and device each hour (`promotions.code_attempt_limits`). Entering a code already on the cart changes nothing.
+         * @description Checks the code now (status, window, assignment to this customer, uses left) and keeps it on the cart; the checkout preview evaluates its conditions against the cart and shows the discount or why it does not apply (D-053). Attempts are limited per customer, IP and device each hour (`promotions.code_attempt_limits`). Entering a code already on the cart changes nothing. A cart holds at most `promotions.max_codes_per_cart` codes (D-452, `CartDto.maxCodes`); one more is refused as `promotions.code_invalid` with reason `too_many_codes`.
          *
-         *     Implements: D-053.
+         *     Implements: D-053, D-452.
          */
         post: operations["store.cart.applyCode"];
         delete?: never;
@@ -27755,7 +27821,7 @@ export interface paths {
          * Remove a coupon code
          * @description Takes the code off the cart; nothing was reserved yet (usage is reserved at checkout, D-053).
          *
-         *     Implements: D-053.
+         *     Implements: D-053, D-452.
          */
         delete: operations["store.cart.removeCode"];
         options?: never;
@@ -27776,7 +27842,7 @@ export interface paths {
          * Add a quotation option to the cart
          * @description A live saved quotation of this customer (instant or accepted RFQ), one item per option. `hired_design` needs a quotation priced with the design fee; a mockup add-on (D-072) is refused until it can be priced. Destinations default to the default delivery address and must add up to the quantity.
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         post: operations["store.cart.addItem"];
         delete?: never;
@@ -27799,7 +27865,7 @@ export interface paths {
          * Remove an item
          * @description The quotation stays saved and can be added again while it is live (D-051).
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         delete: operations["store.cart.removeItem"];
         options?: never;
@@ -27808,9 +27874,31 @@ export interface paths {
          * Change an item’s design or mockup option
          * @description Guarded by the cart’s `If-Match` (D-072).
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         patch: operations["store.cart.updateItem"];
+        trace?: never;
+    };
+    "/v1/store/cart/items/{itemId}/actions/change-quantity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change an item’s quantity
+         * @description D-452: an instant item takes another quantity. When its locked quotation already has that quantity the item switches to it (same price lock); otherwise the configuration is priced again by the quote engine into a new saved quotation at today’s prices with a new lock (D-051) — the response shows the new unit price and lock. Within the product’s `quantityLimits`. One destination follows the new quantity; a split over several addresses is cleared and set again at checkout. RFQ quotations, Studio design pins (D-277), reorders (D-153) and items with a re-price waiting are refused (`cart.quantity_unavailable`). Guarded by `If-Match`.
+         *
+         *     Implements: D-051, D-072, D-142, D-452.
+         */
+        post: operations["store.cart.changeQuantity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/store/cart/items/{itemId}/actions/confirm-reprice": {
@@ -27826,7 +27914,7 @@ export interface paths {
          * Accept the re-priced item
          * @description The item takes the new quotation, its price and a new lock (D-051). Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         post: operations["store.cart.confirmReprice"];
         delete?: never;
@@ -27848,7 +27936,7 @@ export interface paths {
          * Re-price an item whose price lock passed
          * @description After the 15-day lock (D-051) the configuration is re-priced into a new quotation; the item shows `pendingReprice` with the difference until the client confirms it. A live lock is kept (`cart.price_locked`); RFQ quotations are not re-priced (ask for a new quotation).
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         post: operations["store.cart.repriceItem"];
         delete?: never;
@@ -27869,7 +27957,7 @@ export interface paths {
          * Split an item over delivery addresses
          * @description Replaces the destinations; each is one of the customer’s delivery addresses (copied as a snapshot, D-142) and the quantities add up to the item quantity. Guarded by `If-Match`.
          *
-         *     Implements: D-051, D-072, D-142.
+         *     Implements: D-051, D-072, D-142, D-452.
          */
         put: operations["store.cart.setDestinations"];
         post?: never;
@@ -42166,15 +42254,30 @@ export interface components {
             id: string;
             items: components["schemas"]["CartItemDto"][];
             /**
+             * @description D-452: coupon codes the cart may hold (`promotions.max_codes_per_cart`); null as `vatAmount`
+             * @example 3
+             */
+            maxCodes: number | null;
+            /**
              * @description Sum of the items, incl. VAT, excluding shipping
              * @example 13380.00
              */
             productGrossAmount: string;
             /**
+             * @description D-452: pieces the quantity stepper moves by (`storefront.cart_quantity_step`); null as `vatAmount`
+             * @example 50
+             */
+            quantityStep: number | null;
+            /**
              * Format: date-time
              * @example 2026-09-25T10:00:00+07:00
              */
             updatedAt: string;
+            /**
+             * @description D-452: VAT included in `productGrossAmount` — the order lines checkout builds before shipping (shared VAT helper, DECISIONS-STAGE-A §7, each quotation’s VAT rate). Always set by `store.cart.*` and the code endpoints; null in carts returned by other modules (read the cart again)
+             * @example 875.33
+             */
+            vatAmount: string | null;
         };
         CartItemDto: {
             /**
@@ -42204,10 +42307,21 @@ export interface components {
              */
             destinationsComplete: boolean;
             /**
+             * Format: date
+             * @description D-452: the quotation’s earliest ship date (Bangkok day) while it is still ahead; null when passed or unknown
+             * @example 2026-11-09
+             */
+            earliestShipDate: string | null;
+            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ca002
              */
             id: string;
+            /**
+             * @description D-452: production working days of the quotation option (after artwork approval); null when unknown
+             * @example 5
+             */
+            leadTimeDays: number | null;
             /** @example none */
             mockupOption: components["schemas"]["MockupOption"];
             pendingReprice: components["schemas"]["CartRepriceDto"] | null;
@@ -42230,6 +42344,19 @@ export interface components {
             productTypeCode: string;
             /** @example 1000 */
             quantity: number;
+            /**
+             * @description D-452: the quantity can be changed in the cart (`changeQuantity`) — an instant quotation without a Studio design pin, not a reorder and with no re-priced option waiting for confirmation
+             * @example true
+             */
+            quantityEditable: boolean;
+            /**
+             * @description D-452: the catalogue product’s quantity limits; null when the quotation has no catalogue product
+             * @example {
+             *       "max": null,
+             *       "min": 100
+             *     }
+             */
+            quantityLimits: components["schemas"]["ReorderQuantityLimitsDto"] | null;
             /** @example QT-2026-000042 */
             quoteCode: string | null;
             /**
@@ -42261,6 +42388,11 @@ export interface components {
             source: components["schemas"]["QuoteSource"];
             /** @description Product, product type, sales unit and spec lines to display (from its quote) */
             summary: components["schemas"]["LineSummaryDto"];
+            /**
+             * @description D-452: the smallest larger quantity of the same locked quotation with a lower unit price ("สั่ง n ชิ้น ราคาต่อชิ้นเหลือ ฿x"); null when there is none, the lock passed or a re-price waits
+             * @example null
+             */
+            tierHint: components["schemas"]["CartTierHintDto"] | null;
             /**
              * @description Per piece incl. VAT, excluding shipping
              * @example 13.38
@@ -42300,6 +42432,54 @@ export interface components {
              * @example 2026-10-16T10:00:00+07:00
              */
             validUntil: string;
+        };
+        CartShippingEstimateDto: {
+            /** @description Ready date + the zone’s transit working days (`shipping.transit_days`, national calendar); null when unknown */
+            arrival: components["schemas"]["QuoteArrivalDto"] | null;
+            /**
+             * @description Every item can be shipped to the postcode
+             * @example true
+             */
+            available: boolean;
+            /** @example 10110 */
+            postcode: string;
+            /**
+             * Format: date
+             * @description The latest ready (ship) date of the items as promised at checkout; null when one is unknown
+             * @example 2026-11-09
+             */
+            readyDate: string | null;
+            /**
+             * @description Shipping of every item to the postcode incl. VAT (customer rate card, D-013); null when not available
+             * @example 235.40
+             */
+            shippingGrossAmount: string | null;
+            /**
+             * @description Items that cannot be shipped to the postcode
+             * @example []
+             */
+            unavailableItemIds: string[];
+            /** @description The destination zone’s name (customer side only) */
+            zone: components["schemas"]["LocalisedLabelDto"] | null;
+        };
+        CartTierHintDto: {
+            /**
+             * @description That quantity incl. VAT and design fees, excluding shipping
+             * @example 24200.00
+             */
+            productGrossAmount: string;
+            /** @example 2000 */
+            quantity: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000ca006
+             */
+            quoteOptionId: string;
+            /**
+             * @description Per piece incl. VAT, excluding shipping
+             * @example 12.10
+             */
+            unitPrice: string;
         };
         CashBankRowDto: {
             /** @example 1234 */
@@ -42626,6 +42806,13 @@ export interface components {
              *     ]
              */
             roles: components["schemas"]["CompanyRole"][];
+        };
+        ChangeQuantityDto: {
+            /**
+             * @description Pieces
+             * @example 2000
+             */
+            quantity: number;
         };
         ChangeQuoteModeDto: {
             /** @example instant */
@@ -58844,6 +59031,10 @@ export interface components {
             /** @example 120.000 */
             scrap: string;
             user: components["schemas"]["PersonRefDto"];
+        };
+        EstimateShippingDto: {
+            /** @example 10110 */
+            postcode: string;
         };
         ETaxDeliveryDto: {
             /** @example 1 */
@@ -140592,7 +140783,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -140600,6 +140793,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -140642,14 +140840,144 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cart.estimateShipping": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                customerId: unknown;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EstimateShippingDto"];
+            };
+        };
+        responses: {
+            /** @description Estimate */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "arrival": {
+                     *         "from": "2026-11-10",
+                     *         "to": "2026-11-11"
+                     *       },
+                     *       "available": true,
+                     *       "postcode": "10110",
+                     *       "readyDate": "2026-11-09",
+                     *       "shippingGrossAmount": "235.40",
+                     *       "unavailableItemIds": [],
+                     *       "zone": {
+                     *         "en": "Bangkok & vicinity",
+                     *         "th": "กรุงเทพฯ และปริมณฑล"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CartShippingEstimateDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -140788,7 +141116,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -140796,6 +141126,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -140838,11 +141173,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -141009,7 +141353,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -141017,6 +141363,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -141059,11 +141410,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -141223,7 +141583,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -141231,6 +141593,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -141273,11 +141640,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -141428,8 +141804,11 @@ export interface operations {
                      *       "customerId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -141580,7 +141959,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -141588,6 +141969,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -141630,11 +142016,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -141691,6 +142086,257 @@ export interface operations {
                 };
             };
             /** @description Problem: `cart.design_option_unavailable`, `cart.mockup_price_unavailable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cart.changeQuantity": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                customerId: unknown;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeQuantityDto"];
+            };
+        };
+        responses: {
+            /** @description Cart */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "channel": "web",
+                     *       "codes": [
+                     *         {
+                     *           "code": "WELCOME10",
+                     *           "rejectReason": null,
+                     *           "status": "validated"
+                     *         }
+                     *       ],
+                     *       "currency": "THB",
+                     *       "customerId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
+                     *       "items": [
+                     *         {
+                     *           "designDocumentId": null,
+                     *           "designFeeAmount": "0.00",
+                     *           "designNote": null,
+                     *           "designOption": "own_file",
+                     *           "designVersionNo": null,
+                     *           "destinations": [
+                     *             {
+                     *               "address": {
+                     *                 "districtNameTh": null,
+                     *                 "line1": "99/9 ถนนตัวอย่าง",
+                     *                 "line2": null,
+                     *                 "phone": "+66810001234",
+                     *                 "postcode": "10110",
+                     *                 "provinceId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0004",
+                     *                 "provinceNameTh": "กรุงเทพมหานคร",
+                     *                 "recipientName": "สมชาย ทดสอบ",
+                     *                 "subdistrictId": null,
+                     *                 "subdistrictNameTh": null
+                     *               },
+                     *               "addressId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0002",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca003",
+                     *               "quantity": 1000
+                     *             }
+                     *           ],
+                     *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
+                     *           "mockupOption": "none",
+                     *           "pendingReprice": null,
+                     *           "priceLocked": true,
+                     *           "priceLockedUntil": "2026-10-16T10:00:00+07:00",
+                     *           "productGrossAmount": "13380.00",
+                     *           "productTypeCode": "folding_carton",
+                     *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
+                     *           "quoteCode": null,
+                     *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
+                     *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
+                     *           "quoteShippingAmount": "128.40",
+                     *           "reorderOf": null,
+                     *           "reusesApprovedArtwork": false,
+                     *           "source": "instant",
+                     *           "summary": {
+                     *             "product": {
+                     *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *               "nameEn": "Tuck-end box",
+                     *               "nameTh": "กล่องฝาเสียบ",
+                     *               "slug": "tuck-end-box"
+                     *             },
+                     *             "productTypeCode": "folding_carton",
+                     *             "productTypeNameEn": "Folding carton",
+                     *             "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *             "specs": [
+                     *               {
+                     *                 "key": "style",
+                     *                 "labelEn": "Style",
+                     *                 "labelTh": "แบบกล่อง",
+                     *                 "valueEn": "ฝาเสียบ",
+                     *                 "valueTh": "ฝาเสียบ"
+                     *               },
+                     *               {
+                     *                 "key": "size",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *                 "valueEn": "60 × 60 × 150 mm",
+                     *                 "valueTh": "60 × 60 × 150 มม."
+                     *               },
+                     *               {
+                     *                 "key": "material",
+                     *                 "labelEn": "Material",
+                     *                 "labelTh": "วัสดุ",
+                     *                 "valueEn": "Art card 350 gsm",
+                     *                 "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *               }
+                     *             ],
+                     *             "unit": "piece"
+                     *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
+                     *           "unitPrice": "13.38"
+                     *         }
+                     *       ],
+                     *       "maxCodes": 3,
+                     *       "productGrossAmount": "13380.00",
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cart.item_exists`, `cart.quantity_unavailable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cart.design_option_unavailable`, `pricing.not_instant`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -141801,7 +142447,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -141809,6 +142457,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -141851,11 +142504,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -142019,7 +142681,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -142027,6 +142691,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -142069,11 +142738,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -142224,7 +142902,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -142232,6 +142912,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -142274,11 +142959,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -290008,7 +290702,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -290016,6 +290712,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -290058,11 +290759,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -290214,7 +290924,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -290222,6 +290934,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -290264,14 +290981,142 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.cart.estimateShipping": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EstimateShippingDto"];
+            };
+        };
+        responses: {
+            /** @description Estimate */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "arrival": {
+                     *         "from": "2026-11-10",
+                     *         "to": "2026-11-11"
+                     *       },
+                     *       "available": true,
+                     *       "postcode": "10110",
+                     *       "readyDate": "2026-11-09",
+                     *       "shippingGrossAmount": "235.40",
+                     *       "unavailableItemIds": [],
+                     *       "zone": {
+                     *         "en": "Bangkok & vicinity",
+                     *         "th": "กรุงเทพฯ และปริมณฑล"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CartShippingEstimateDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -290408,7 +291253,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -290416,6 +291263,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -290458,11 +291310,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -290628,7 +291489,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -290636,6 +291499,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -290678,11 +291546,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -290840,7 +291717,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -290848,6 +291727,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -290890,11 +291774,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -291044,8 +291937,11 @@ export interface operations {
                      *       "customerId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
                      *       "items": [],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -291195,7 +292091,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -291203,6 +292101,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -291245,11 +292148,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -291306,6 +292218,256 @@ export interface operations {
                 };
             };
             /** @description Problem: `cart.design_option_unavailable`, `cart.mockup_price_unavailable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.cart.changeQuantity": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeQuantityDto"];
+            };
+        };
+        responses: {
+            /** @description Cart */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "channel": "web",
+                     *       "codes": [
+                     *         {
+                     *           "code": "WELCOME10",
+                     *           "rejectReason": null,
+                     *           "status": "validated"
+                     *         }
+                     *       ],
+                     *       "currency": "THB",
+                     *       "customerId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca001",
+                     *       "items": [
+                     *         {
+                     *           "designDocumentId": null,
+                     *           "designFeeAmount": "0.00",
+                     *           "designNote": null,
+                     *           "designOption": "own_file",
+                     *           "designVersionNo": null,
+                     *           "destinations": [
+                     *             {
+                     *               "address": {
+                     *                 "districtNameTh": null,
+                     *                 "line1": "99/9 ถนนตัวอย่าง",
+                     *                 "line2": null,
+                     *                 "phone": "+66810001234",
+                     *                 "postcode": "10110",
+                     *                 "provinceId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0004",
+                     *                 "provinceNameTh": "กรุงเทพมหานคร",
+                     *                 "recipientName": "สมชาย ทดสอบ",
+                     *                 "subdistrictId": null,
+                     *                 "subdistrictNameTh": null
+                     *               },
+                     *               "addressId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0002",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca003",
+                     *               "quantity": 1000
+                     *             }
+                     *           ],
+                     *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
+                     *           "mockupOption": "none",
+                     *           "pendingReprice": null,
+                     *           "priceLocked": true,
+                     *           "priceLockedUntil": "2026-10-16T10:00:00+07:00",
+                     *           "productGrossAmount": "13380.00",
+                     *           "productTypeCode": "folding_carton",
+                     *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
+                     *           "quoteCode": null,
+                     *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
+                     *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
+                     *           "quoteShippingAmount": "128.40",
+                     *           "reorderOf": null,
+                     *           "reusesApprovedArtwork": false,
+                     *           "source": "instant",
+                     *           "summary": {
+                     *             "product": {
+                     *               "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *               "nameEn": "Tuck-end box",
+                     *               "nameTh": "กล่องฝาเสียบ",
+                     *               "slug": "tuck-end-box"
+                     *             },
+                     *             "productTypeCode": "folding_carton",
+                     *             "productTypeNameEn": "Folding carton",
+                     *             "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *             "specs": [
+                     *               {
+                     *                 "key": "style",
+                     *                 "labelEn": "Style",
+                     *                 "labelTh": "แบบกล่อง",
+                     *                 "valueEn": "ฝาเสียบ",
+                     *                 "valueTh": "ฝาเสียบ"
+                     *               },
+                     *               {
+                     *                 "key": "size",
+                     *                 "labelEn": "Size (L × W × H)",
+                     *                 "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *                 "valueEn": "60 × 60 × 150 mm",
+                     *                 "valueTh": "60 × 60 × 150 มม."
+                     *               },
+                     *               {
+                     *                 "key": "material",
+                     *                 "labelEn": "Material",
+                     *                 "labelTh": "วัสดุ",
+                     *                 "valueEn": "Art card 350 gsm",
+                     *                 "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *               }
+                     *             ],
+                     *             "unit": "piece"
+                     *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
+                     *           "unitPrice": "13.38"
+                     *         }
+                     *       ],
+                     *       "maxCodes": 3,
+                     *       "productGrossAmount": "13380.00",
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cart.item_exists`, `cart.quantity_unavailable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cart.design_option_unavailable`, `pricing.not_instant`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -291415,7 +292577,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -291423,6 +292587,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -291465,11 +292634,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -291632,7 +292810,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -291640,6 +292820,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -291682,11 +292867,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -291836,7 +293030,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -291844,6 +293040,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -291886,11 +293087,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -312961,7 +314171,9 @@ export interface operations {
                      *             }
                      *           ],
                      *           "destinationsComplete": true,
+                     *           "earliestShipDate": "2026-11-09",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *           "leadTimeDays": 5,
                      *           "mockupOption": "none",
                      *           "pendingReprice": null,
                      *           "priceLocked": true,
@@ -312969,6 +314181,11 @@ export interface operations {
                      *           "productGrossAmount": "13380.00",
                      *           "productTypeCode": "folding_carton",
                      *           "quantity": 1000,
+                     *           "quantityEditable": true,
+                     *           "quantityLimits": {
+                     *             "max": null,
+                     *             "min": 100
+                     *           },
                      *           "quoteCode": null,
                      *           "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *           "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -313011,11 +314228,20 @@ export interface operations {
                      *             ],
                      *             "unit": "piece"
                      *           },
+                     *           "tierHint": {
+                     *             "productGrossAmount": "24200.00",
+                     *             "quantity": 2000,
+                     *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *             "unitPrice": "12.10"
+                     *           },
                      *           "unitPrice": "13.38"
                      *         }
                      *       ],
+                     *       "maxCodes": 3,
                      *       "productGrossAmount": "13380.00",
-                     *       "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *       "quantityStep": 50,
+                     *       "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *       "vatAmount": "875.33"
                      *     }
                      */
                     "application/json": components["schemas"]["CartDto"];
@@ -322599,7 +323825,9 @@ export interface operations {
                      *               }
                      *             ],
                      *             "destinationsComplete": true,
+                     *             "earliestShipDate": "2026-11-09",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000ca002",
+                     *             "leadTimeDays": 5,
                      *             "mockupOption": "none",
                      *             "pendingReprice": null,
                      *             "priceLocked": true,
@@ -322607,6 +323835,11 @@ export interface operations {
                      *             "productGrossAmount": "13380.00",
                      *             "productTypeCode": "folding_carton",
                      *             "quantity": 1000,
+                     *             "quantityEditable": true,
+                     *             "quantityLimits": {
+                     *               "max": null,
+                     *               "min": 100
+                     *             },
                      *             "quoteCode": null,
                      *             "quoteId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca004",
                      *             "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca005",
@@ -322649,11 +323882,20 @@ export interface operations {
                      *               ],
                      *               "unit": "piece"
                      *             },
+                     *             "tierHint": {
+                     *               "productGrossAmount": "24200.00",
+                     *               "quantity": 2000,
+                     *               "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000ca006",
+                     *               "unitPrice": "12.10"
+                     *             },
                      *             "unitPrice": "13.38"
                      *           }
                      *         ],
+                     *         "maxCodes": 3,
                      *         "productGrossAmount": "13380.00",
-                     *         "updatedAt": "2026-10-01T10:00:00+07:00"
+                     *         "quantityStep": 50,
+                     *         "updatedAt": "2026-10-01T10:00:00+07:00",
+                     *         "vatAmount": "875.33"
                      *       }
                      *     }
                      */
