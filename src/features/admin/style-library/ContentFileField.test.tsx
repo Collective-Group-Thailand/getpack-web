@@ -64,7 +64,7 @@ describe("trust-section files (C1e, DECISIONS-STAGE-A §13.3)", () => {
     expect(screen.getByText(files.legacyLink.replace("{url}", "https://example.invalid/old.png"))).toBeInTheDocument();
   });
 
-  it("uploads a PDF document as purpose document, or takes an external https link", async () => {
+  it("uploads a PDF document as purpose published_document (C1f), or takes an external https link", async () => {
     uploadFile.mockResolvedValue({ id: ID });
     const { container } = renderField("document", null);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
@@ -72,7 +72,7 @@ describe("trust-section files (C1e, DECISIONS-STAGE-A §13.3)", () => {
     await waitFor(() =>
       expect(screen.getByTestId("value").textContent).toBe(`/v1/store/style-library/documents/${ID}`),
     );
-    expect(uploadFile).toHaveBeenCalledWith("admin", expect.any(File), "document");
+    expect(uploadFile).toHaveBeenCalledWith("admin", expect.any(File), "published_document");
     fireEvent.click(screen.getByRole("radio", { name: files.sourceLink }));
     expect(screen.getByTestId("value").textContent).toBe("(none)");
     fireEvent.change(screen.getByRole("textbox", { name: files.linkLabel }), {

@@ -9,6 +9,7 @@ import { catalogueHandlers } from "./catalogue";
 import { companyHandlers } from "./companies";
 import { consoleHandlers } from "./console";
 import { customerHandlers } from "./customers";
+import { fileAccessLogHandlers } from "./file-access-logs";
 import { financeHandlers } from "./finance";
 import { governanceHandlers } from "./governance";
 import { logisticsHandlers } from "./logistics";
@@ -29,6 +30,7 @@ export const adminHandlers = [
   ...styleLibraryContentHandlers,
   ...adminConversationHandlers,
   ...consoleHandlers,
+  ...fileAccessLogHandlers,
   ...productionHandlers,
   ...orderHandlers,
   ...customerHandlers,

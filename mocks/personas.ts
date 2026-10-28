@@ -97,6 +97,12 @@ export const MENU_CATALOGUE: readonly {
     permission: ["privacy_requests.manage", "consent_purposes.manage", "agreements.manage"],
   },
   { key: "audit_logs", path: "/admin/audit-logs", permission: "audit_logs.read" },
+  // C1f (D-451): the customer file access log page.
+  {
+    key: "customer_file_access_logs",
+    path: "/admin/customer-file-access-logs",
+    permission: "customer_file_access_logs.read",
+  },
   { key: "outbox", path: "/admin/outbox", permission: "outbox.manage" },
   { key: "analytics", path: "/admin/analytics", permission: "analytics.read" },
   { key: "assistant", path: "/admin/assistant", permission: "assistant.manage" },

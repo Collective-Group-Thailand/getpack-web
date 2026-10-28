@@ -14,6 +14,7 @@ import { cn } from "@/ui/lib/cn";
 import { trackCatalog } from "@/lib/analytics/catalog";
 
 import { listHref, type ListParams } from "./query";
+import { SIZE_SEARCH_FRAGMENT } from "./paths";
 import { cmOfSize, sizeOfCm } from "./size";
 
 /** How long typing rests before the results follow (styles redesign §7: 160 ms). */
@@ -75,6 +76,12 @@ export function LibrarySearch({
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const [method, setMethod] = useState<"word" | "size">(params.size && sizeSearch ? "size" : "word");
+  // §14.9: a link to `/styles#size-search` (the product page's "หาเบอร์จากขนาดสินค้า") opens the size tab.
+  useEffect(() => {
+    if (!sizeSearch || window.location.hash !== `#${SIZE_SEARCH_FRAGMENT}`) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the fragment is only readable after mount
+    setMethod("size");
+  }, [sizeSearch]);
   const sizeCm = cmOfSize(params.size);
   const [dims, setDims] = useState({ w: sizeCm?.w ?? "", l: sizeCm?.l ?? "", h: sizeCm?.h ?? "" });
   const findBySize = () => {

@@ -93,7 +93,7 @@
     },
     "priceBasisSpecs": "Priced at: {specs}",
     "guarantee": "getpack guarantees the work — see what we do if something goes wrong",
-    "rfqSla": "The team answers a quote request in about {hours} business hours",
+    "quoteResponse": "The team replies within {days, plural, one {# working day} other {# working days}}",
     "toleranceNote": "The quantity delivered may be slightly under or over, within the print industry's standard tolerance.",
     "toleranceLink": "See the tolerances in the guarantee",
     "more": "See also",
@@ -340,6 +340,7 @@
     "sizes": {
       "title": "All {count} sizes",
       "lede": "The inside size is the space for your goods. The outside size is worked out from the chosen material's thickness and is for reference.",
+      "findBySize": "Find a size from your product",
       "caption": "Every standard size, inside and outside (mm), with the price per piece",
       "code": "Size",
       "inside": "Inside L × W × H (mm)",
@@ -430,7 +431,9 @@
         },
         "tolerance": {
           "q": "What if I receive fewer pieces?",
-          "a": "The quantity delivered may be up to 5% lower or higher by production standards; any shortfall is refunded as credit."
+          "a": "The quantity delivered may be up to {pct} lower or higher by production standards; any shortfall is refunded as credit.",
+          "aSplit": "The quantity delivered may be up to {short} lower or {over} higher by production standards; any shortfall is refunded as credit.",
+          "aNoFigure": "The quantity delivered may be slightly lower or higher than ordered by production standards; any shortfall is refunded as credit."
         },
         "priceLock": {
           "q": "Will the price change if I order later?",
