@@ -12,9 +12,9 @@ export default function Loading() {
       {[0, 1, 2].map((n) => (
         <div
           key={n}
-          className="border-border bg-surface grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 rounded-[18px] border p-[1.125rem]"
+          className="border-border bg-surface rounded-panel grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 border p-[1.125rem]"
         >
-          <Skeleton className="size-[4.5rem] rounded-[14px]" />
+          <Skeleton className="size-[4.5rem] rounded-xl" />
           <div className="flex flex-col gap-2">
             <Skeleton className="h-5 w-2/3" />
             <Skeleton className="h-4 w-1/2" />

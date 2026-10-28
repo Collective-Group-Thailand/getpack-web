@@ -30,7 +30,7 @@ export function EvidencePhotos({ fileIds, kind }: { fileIds: string[]; kind: "pr
                 setOpen(id);
                 trackAccount("order_photo_open", { kind });
               }}
-              className="border-border bg-bg-subtle focus-visible:ring-focus-ring grid h-[4.5rem] w-24 place-items-center overflow-hidden rounded-[10px] border outline-none focus-visible:ring-2"
+              className="border-border bg-bg-subtle focus-visible:ring-focus-ring rounded-control grid h-[4.5rem] w-24 place-items-center overflow-hidden border outline-none focus-visible:ring-2"
             >
               <Thumb fileId={id} alt={t(kind, { n: index + 1 })} />
             </button>

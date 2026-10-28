@@ -39,18 +39,24 @@ test.describe("the account", () => {
   test("the overview lists what needs doing, and the orders list filters by where they stand", async ({ page }) => {
     await signInAsCustomer(page, "/account");
     await expect(page.getByRole("heading", { level: 1, name: /สวัสดี/ })).toBeVisible();
-    const todo = page
-      .getByRole("region", { name: "สิ่งที่ต้องทำ" })
-      .or(page.locator("section[aria-labelledby=account-todo]"));
-    // What needs doing: the orders' own actions, and a group waiting for its payment.
+    // "ต้องทำตอนนี้" (C6): the unpaid group's card leads with paying.
+    const todo = page.getByRole("region", { name: "ต้องทำตอนนี้" });
     await expect(todo.getByRole("link", { name: "ชำระเงิน" }).first()).toBeVisible();
     await expectNoViolations(page);
 
-    await page.getByRole("navigation", { name: "บัญชีของฉัน" }).getByRole("link", { name: "คำสั่งซื้อ" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "คำสั่งซื้อของฉัน" })).toBeVisible();
-    await page.getByRole("link", { name: "เสร็จสิ้น" }).click();
-    await expect(page).toHaveURL(/view=completed/);
-    await expect(page.getByText("PK-2569-00136").first()).toBeVisible();
+    await page
+      .getByRole("navigation", { name: "บัญชีของฉัน" })
+      .getByRole("link", { name: /^คำสั่งซื้อ/ })
+      .first()
+      .click();
+    await expect(page.getByRole("heading", { level: 1, name: "คำสั่งซื้อ" })).toBeVisible();
+    await page
+      .getByRole("navigation", { name: "สถานะคำสั่งซื้อ" })
+      .getByRole("link", { name: /กำลังผลิต/ })
+      .click();
+    await expect(page).toHaveURL(/tab=in_production/);
+    await expect(page.getByText("PK-2569-00124").first()).toBeVisible();
+    await expect(page.getByText("PK-2569-00100")).toHaveCount(0);
     await expectNoViolations(page);
   });
 
@@ -59,7 +65,7 @@ test.describe("the account", () => {
   }) => {
     await signInAsCustomer(page, `/account/orders/${COMPLETED_ORDER}`);
     await expect(page.getByText("PK-2569-00136").first()).toBeVisible();
-    await expect(page.getByRole("list", { name: "ความคืบหน้า" }).getByText("ส่งถึงแล้ว")).toBeVisible();
+    await expect(page.getByRole("region", { name: "ความคืบหน้า" }).getByText("ได้รับสินค้าแล้ว")).toBeVisible();
     await expect(page.getByText(/รับสินค้า จำนวน 500 เมื่อ/)).toBeVisible();
     await expect(page.getByRole("link", { name: "สั่งซ้ำ PK-2569-00136" })).toBeVisible();
 

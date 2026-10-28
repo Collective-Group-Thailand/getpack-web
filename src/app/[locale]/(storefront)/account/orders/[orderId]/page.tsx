@@ -95,7 +95,7 @@ function Box({
       id={id}
       aria-labelledby={`${id}-title`}
       className={cn(
-        "border-border bg-surface flex scroll-mt-28 flex-col gap-3.5 rounded-[20px] border p-4 sm:p-5",
+        "border-border bg-surface rounded-panel flex scroll-mt-28 flex-col gap-3.5 border p-4 sm:p-5",
         className,
       )}
     >
@@ -234,7 +234,9 @@ export default async function Page({
                 autoOpen={query.requote === "1"}
               />
             ) : null}
-            <OrderActions orderId={order.id} orderCode={order.orderCode} actions={headerActions} payable={payable} />
+            {headerActions.length > 0 || payable ? (
+              <OrderActions orderId={order.id} orderCode={order.orderCode} actions={headerActions} payable={payable} />
+            ) : null}
             {reorder ? (
               <TrackClicks event="order_reorder" properties={{ status: order.customerStatus }}>
                 <OrderActions
@@ -403,7 +405,7 @@ export default async function Page({
             <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-start gap-4 sm:grid-cols-[7.5rem_minmax(0,1fr)]">
               <ProductThumb
                 family={productFamilyOf(order.summary.productTypeCode)}
-                className="h-[5.5rem] w-full rounded-[14px] sm:h-[6.875rem]"
+                className="h-[5.5rem] w-full rounded-xl sm:h-[6.875rem]"
               />
               <DescriptionList
                 items={[
@@ -602,7 +604,7 @@ export default async function Page({
                     key={document.id}
                     className="grid grid-cols-[2.125rem_minmax(0,1fr)] gap-x-2.5 gap-y-2 py-2.5 first:pt-0 last:pb-0"
                   >
-                    <span className="bg-bg-subtle text-muted grid size-[2.125rem] place-items-center rounded-[9px]">
+                    <span className="bg-bg-subtle text-muted rounded-control grid size-[2.125rem] place-items-center">
                       <Icon name="document" size={17} aria-hidden="true" />
                     </span>
                     <div className="min-w-0 text-[0.84375rem]">

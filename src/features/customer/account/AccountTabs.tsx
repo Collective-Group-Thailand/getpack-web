@@ -52,7 +52,7 @@ export function TabBar({
               aria-current={item.current ? "page" : undefined}
               onClick={onSelect ? () => onSelect(item.key) : undefined}
               className={cn(
-                "inline-flex min-h-9 items-center gap-1.5 rounded-[9px] px-3 text-[0.84375rem] whitespace-nowrap",
+                "rounded-control inline-flex min-h-9 items-center gap-1.5 px-3 text-[0.84375rem] whitespace-nowrap",
                 item.current ? "bg-surface text-fg shadow-card font-semibold" : "text-muted hover:text-fg font-medium",
               )}
             >

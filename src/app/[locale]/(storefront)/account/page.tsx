@@ -114,7 +114,7 @@ export default async function Page() {
 
       <Section id="account-latest" title={t("latest")} more={{ href: "/account/orders", label: t("allOrders") }}>
         {latestOrders.length === 0 ? (
-          <div className="border-border-strong text-muted rounded-[18px] border border-dashed p-8 text-center">
+          <div className="border-border-strong text-muted rounded-panel border border-dashed p-8 text-center">
             <p>{t("noOrders")}</p>
             <Button asChild className="mt-4">
               <Link href="/products">{t("browse")}</Link>

@@ -72,7 +72,7 @@ export function AccountNav({
               : undefined
           }
           className={cn(
-            "flex items-center gap-2.5 rounded-[10px] text-sm whitespace-nowrap transition-colors",
+            "rounded-control flex items-center gap-2.5 text-sm whitespace-nowrap transition-colors",
             bar ? "min-h-10 px-3" : "min-h-10 px-2.5 text-[0.90625rem]",
             active
               ? "bg-surface text-fg shadow-card font-semibold"

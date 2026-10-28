@@ -32,7 +32,7 @@ export function PayGroupFrame({
   return (
     <section
       aria-label={t("label", { code: payment.groupCode })}
-      className="border-border-strong flex flex-col gap-2.5 rounded-[20px] border border-dashed p-2.5 sm:p-3"
+      className="border-border-strong rounded-panel flex flex-col gap-2.5 border border-dashed p-2.5 sm:p-3"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 px-1.5 py-0.5">
         <p className="min-w-0 text-sm">

@@ -95,18 +95,18 @@ export function OrderCard({
   return (
     <article
       aria-labelledby={`order-${order.id}`}
-      className="border-border bg-surface hover:border-border-strong focus-within:border-border-strong relative grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 rounded-[18px] border p-3.5 transition-colors sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-4 sm:p-[1.125rem]"
+      className="border-border bg-surface hover:border-border-strong focus-within:border-border-strong rounded-panel relative grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 border p-3.5 transition-colors sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-4 sm:p-[1.125rem]"
     >
       <ProductThumb
         family={productFamilyOf(order.summary.productTypeCode)}
-        className="size-14 rounded-[14px] sm:size-[4.5rem]"
+        className="size-14 rounded-xl sm:size-[4.5rem]"
       />
       <div className="min-w-0">
         <h3 className="text-base leading-snug font-semibold">
           <Link
             id={`order-${order.id}`}
             href={`/account/orders/${order.id}`}
-            className="focus-visible:ring-focus-ring rounded-sm outline-none after:absolute after:inset-0 after:rounded-[18px] after:content-[''] focus-visible:ring-2"
+            className="focus-visible:ring-focus-ring after:rounded-panel rounded-sm outline-none after:absolute after:inset-0 after:content-[''] focus-visible:ring-2"
           >
             {name}
           </Link>
@@ -124,7 +124,7 @@ export function OrderCard({
             </Badge>
           ) : null}
           {order.artworkOwner !== null && order.customerStatus !== "cancelled" ? (
-            <span className="bg-bg-subtle text-muted rounded-full px-2.5 py-0.5 text-xs font-semibold">
+            <span className="bg-bg-subtle text-muted rounded-sm px-2 py-0.5 text-xs font-semibold">
               {t("file", { status: artworkLabel })}
             </span>
           ) : null}

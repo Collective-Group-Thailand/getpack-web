@@ -40,16 +40,12 @@ export function StageTracker({ status, overdue, className }: { status: string; o
             <span
               aria-hidden="true"
               className={cn(
-                "h-1.5 rounded-full",
-                done
-                  ? "bg-primary"
-                  : late
-                    ? "bg-danger"
-                    : now
-                      ? "bg-[linear-gradient(90deg,var(--color-primary)_50%,var(--color-bg-subtle)_50%)]"
-                      : "bg-bg-subtle",
+                "relative h-1.5 overflow-hidden rounded-sm",
+                done ? "bg-primary" : late ? "bg-danger" : "bg-bg-subtle",
               )}
-            />
+            >
+              {now && !late ? <span className="bg-primary absolute inset-y-0 start-0 w-1/2" /> : null}
+            </span>
             <span className="truncate">{t(stage)}</span>
           </li>
         );

@@ -186,7 +186,7 @@ export function TodoStrip({ orders, className }: { orders: Order[]; className?: 
             key={todo.key}
             className="border-border bg-surface grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-3 rounded-2xl border p-4"
           >
-            <span className={cn("grid size-10 place-items-center rounded-[11px]", TONES[todo.tone])}>
+            <span className={cn("rounded-control grid size-10 place-items-center", TONES[todo.tone])}>
               <Icon name={todo.icon} size={20} aria-hidden="true" />
             </span>
             <div className="min-w-0">
