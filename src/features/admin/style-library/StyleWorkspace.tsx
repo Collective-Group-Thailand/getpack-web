@@ -154,7 +154,9 @@ export function StyleWorkspace({ styleId, storefront }: { styleId: string; store
           {
             value: "commercial",
             label: t("tabs.commercial"),
-            content: <StyleCommercial key={`commercial-${style.version}`} style={style} etag={etag} onChanged={changed} />,
+            content: (
+              <StyleCommercial key={`commercial-${style.version}`} style={style} etag={etag} onChanged={changed} />
+            ),
           },
           {
             value: "variants",
