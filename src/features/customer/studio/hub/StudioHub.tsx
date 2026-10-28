@@ -227,7 +227,7 @@ export async function StudioHub(props: StudioHubProps) {
                 <Link href={STYLES_HREF}>{t("allTemplates")}</Link>
               </Button>
             </div>
-            <ul className="grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-6">
+            <ul className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
               {featured.map((style) => {
                 const name = pick(locale, style.nameTh, style.nameEn);
                 return (
