@@ -94,16 +94,17 @@ test.describe("getpack for business", () => {
       await expect(page.getByText("เพิ่มกล่องฝาเสียบลงตะกร้าแล้ว").first()).toBeVisible();
     }
 
-    await gotoHydrated(page, `${HOSTS.customer}/checkout`);
+    await gotoHydrated(page, `${HOSTS.customer}/checkout?step=payment`);
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
     // Without the PO the company requires, the preview is refused (companies.po_required).
     await expect(summary).toContainText("กรุณาใส่เลขที่ใบสั่งซื้อ (PO) ของบริษัท");
     await page.getByLabel(/^เลขที่ใบสั่งซื้อ \(PO\)/).fill("PO-E2E-01");
     await expect(summary).toContainText(/คำสั่งซื้อจะรอผู้อนุมัติของบริษัท/);
-    const send = summary.getByRole("button", { name: "ส่งให้ผู้อนุมัติ" });
+    await summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" }).click();
+    await page.getByRole("checkbox", { name: /ยอมรับข้อกำหนดการใช้งาน/ }).check();
+    const send = summary.getByRole("button", { name: "ส่งให้ผู้อนุมัติของบริษัท" });
     await expect(send).toBeEnabled();
     await send.click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "ส่งให้ผู้อนุมัติ" }).click();
     await expect(page).toHaveURL(/\/business\/approvals\?sent=AP-/);
     const requestNo = new URL(page.url()).searchParams.get("sent")!;
     await expect(page.getByRole("status").filter({ hasText: requestNo })).toBeVisible();

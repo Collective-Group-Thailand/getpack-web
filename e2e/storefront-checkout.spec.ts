@@ -50,6 +50,16 @@ async function emptyCart(page: Page) {
   }
 }
 
+/** Step 3 → step 4: review, accept the terms, confirm (checkout redesign Phase 1: no confirm dialog). */
+async function confirmOrder(page: Page) {
+  const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
+  const next = summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" });
+  if (await next.isVisible()) await next.click();
+  const terms = page.getByRole("checkbox", { name: /ยอมรับข้อกำหนดการใช้งาน/ });
+  if (!(await terms.isChecked())) await terms.check();
+  await summary.getByRole("button", { name: "ยืนยันคำสั่งซื้อและชำระเงิน" }).click();
+}
+
 /** Stands in for the QR gateway's webhook (a mock-only endpoint, reached through the BFF). */
 async function settle(page: Page, paymentId: string) {
   const response = await page.request.post(`${HOSTS.customer}/bff/v1/store/mock-gateway/payments/${paymentId}/settle`, {
@@ -74,10 +84,20 @@ test.describe("cart and checkout", () => {
     const lines = page.getByRole("list", { name: "รายการในตะกร้า" }).locator(":scope > li");
     await expect(lines).toHaveCount(2);
 
-    // Split the first line across the two saved addresses, 400 + 600.
-    const first = lines.first();
-    await first.getByRole("button", { name: "แบ่งส่งหลายที่อยู่" }).click();
+    // Step 1 asks for no address: "ดำเนินการต่อ" goes to step 2.
+    await expect(page.getByText("ที่อยู่จัดส่งเลือกในขั้นถัดไป")).toBeVisible();
+    await expectNoViolations(page);
+    await page
+      .getByRole("complementary", { name: "สรุปคำสั่งซื้อ" })
+      .getByRole("link", { name: "ดำเนินการต่อ" })
+      .click();
+    await expect(page).toHaveURL(/\/checkout\?step=address/);
+    await page.locator("html[data-hydrated]").waitFor();
 
+    // Split the first line across the two saved addresses, 400 + 600 ("แบ่งส่งหลายที่อยู่").
+    await page.getByRole("switch", { name: "แบ่งส่งหลายที่อยู่" }).click();
+    const first = page.getByRole("region", { name: "ที่อยู่จัดส่ง" }).locator("li").first();
+    await first.getByRole("button", { name: /แบ่งส่งหลายที่อยู่|แก้ไขการแบ่งส่ง/ }).click();
     await first.getByRole("spinbutton", { name: "จำนวน" }).fill("400");
     await first.getByRole("button", { name: "เพิ่มที่อยู่ปลายทาง" }).click();
     await choiceList(first, "ที่อยู่ที่ 2").click();
@@ -85,16 +105,13 @@ test.describe("cart and checkout", () => {
     await first.getByRole("spinbutton", { name: "จำนวน" }).nth(1).fill("600");
     await expect(first.getByText("รวม 1,000 จาก 1,000")).toBeVisible();
     await first.getByRole("button", { name: "บันทึกการแบ่งส่ง" }).click();
-    await expect(first.getByText(/400 → ผู้รับ/)).toBeVisible();
     await expect(first.getByText(/600 → ผู้รับทดสอบ \(เชียงใหม่\)/)).toBeVisible();
     await expectNoViolations(page);
-
-    await page.getByRole("link", { name: "ดำเนินการชำระเงิน" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "ชำระเงิน" })).toBeVisible();
-    await page.locator("html[data-hydrated]").waitFor();
-    // The split in the cart is the default: each line goes where it was set.
-    await expect(page.getByRole("radio", { name: /ตามที่แบ่งไว้ในตะกร้า/ })).toBeChecked();
-    await expect(page.getByText(/600 → ผู้รับทดสอบ · เชียงใหม่/)).toBeVisible();
+    await page
+      .getByRole("complementary", { name: "สรุปคำสั่งซื้อ" })
+      .getByRole("button", { name: /^ต่อไป: ใบกำกับภาษี/ })
+      .click();
+    await expect(page).toHaveURL(/step=payment/);
 
     // A code is applied to the cart (store.cart.applyCode); the preview says what it took off.
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
@@ -113,10 +130,9 @@ test.describe("cart and checkout", () => {
     await page.evaluate(() => window.scrollTo(0, 0));
     await expectNoViolations(page);
 
-    await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
-    const confirm = page.getByRole("alertdialog", { name: "ยืนยันคำสั่งซื้อ" });
-    await expect(confirm).toContainText("พร้อมเพย์ QR");
-    await confirm.getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+    await summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" }).click();
+    await expect(page.getByRole("region", { name: "ทบทวนคำสั่งซื้อ" })).toContainText("พร้อมเพย์ QR");
+    await confirmOrder(page);
 
     await expect(page).toHaveURL(/\/checkout\/pay\//);
     await expect(page.getByRole("img", { name: /คิวอาร์โค้ดพร้อมเพย์ ยอด ฿/ })).toBeVisible();
@@ -143,12 +159,11 @@ test.describe("cart and checkout", () => {
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
-    await gotoHydrated(page, `${HOSTS.customer}/checkout`);
+    await gotoHydrated(page, `${HOSTS.customer}/checkout?step=payment`);
     await page.getByRole("radio", { name: /โอนเงินและแนบสลิป/ }).click();
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-    await expect(summary.getByRole("button", { name: /ยืนยันและชำระ/ })).toBeEnabled();
-    await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+    await expect(summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" })).toBeVisible();
+    await confirmOrder(page);
     await expect(page).toHaveURL(/\/checkout\/pay\//);
 
     await expect(page.getByRole("heading", { name: "โอนเงินเข้าบัญชี" })).toBeVisible();
@@ -199,12 +214,11 @@ test.describe("cart and checkout", () => {
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
-    await gotoHydrated(page, `${HOSTS.customer}/checkout`);
+    await gotoHydrated(page, `${HOSTS.customer}/checkout?step=payment`);
     await page.getByRole("radio", { name: /บัตรเครดิต\/เดบิต/ }).click();
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-    await expect(summary.getByRole("button", { name: /ยืนยันและชำระ/ })).toBeEnabled();
-    await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+    await expect(summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" })).toBeVisible();
+    await confirmOrder(page);
     await page.getByRole("link", { name: "ไปหน้าชำระเงิน" }).click();
     await expect(page).toHaveURL(/\/checkout\/return\?payment=/);
     await expect(page.getByRole("heading", { level: 1, name: "ผลการชำระเงิน" })).toBeVisible();
@@ -217,7 +231,7 @@ test.describe("cart and checkout", () => {
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
-    await gotoHydrated(page, `${HOSTS.customer}/checkout`);
+    await gotoHydrated(page, `${HOSTS.customer}/checkout?step=payment`);
     // The payment gateway refuses once; every key the page sends must be a UUID (the API's rule).
     const keys: string[] = [];
     await page.route("**/bff/v1/store/order-groups/*/payments", async (route) => {
@@ -233,9 +247,7 @@ test.describe("cart and checkout", () => {
         }),
       });
     });
-    const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-    await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+    await confirmOrder(page);
     await expect(page).toHaveURL(/\/account\/orders.*payment=not_started/);
     await expect(page.getByText("สร้างคำสั่งซื้อแล้ว แต่ยังเริ่มชำระเงินไม่สำเร็จ")).toBeVisible();
     expect(keys.length).toBeGreaterThan(0);
@@ -249,9 +261,9 @@ test.describe("cart and checkout", () => {
     await emptyCart(page);
     await addBox(page, "500");
     await addBox(page, "1,000");
-    await gotoHydrated(page, `${HOSTS.customer}/checkout`);
+    await gotoHydrated(page, `${HOSTS.customer}/checkout?step=payment`);
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-    await expect(summary.getByRole("button", { name: /ยืนยันและชำระ/ })).toBeEnabled();
+    await expect(summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" })).toBeVisible();
 
     // Another tab removes a line after this page was priced.
     const cart = await (await page.request.get(`${HOSTS.customer}/bff/v1/store/cart`)).json();
@@ -260,14 +272,12 @@ test.describe("cart and checkout", () => {
     });
     expect(removed.ok()).toBe(true);
 
-    await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+    await confirmOrder(page);
     await expect(summary.getByText("ราคาเปลี่ยนไป")).toBeVisible();
     await expect(summary).toContainText(/ยอดรวมเปลี่ยนจาก ฿[\d,.]+ เป็น ฿[\d,.]+/);
-    await expect(page).toHaveURL(`${HOSTS.customer}/checkout`);
+    await expect(page).toHaveURL(`${HOSTS.customer}/checkout?step=review`);
 
-    await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+    await confirmOrder(page);
     await expect(page).toHaveURL(/\/checkout\/pay\//);
   });
 
@@ -280,52 +290,66 @@ test.describe("cart and checkout", () => {
     await expect(page.getByRole("radio", { name: /มัดจำ 50%/ })).toBeChecked();
   });
 
-  test("a new address is added from the cart", async ({ page }) => {
+  test("a new address is added at the address step", async ({ page }) => {
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
-    await gotoHydrated(page, `${HOSTS.customer}/cart`);
-    const line = page.getByRole("list", { name: "รายการในตะกร้า" }).locator(":scope > li").first();
-    await line.getByRole("button", { name: "แบ่งส่งหลายที่อยู่" }).click();
-    await line.getByRole("button", { name: "เพิ่มที่อยู่ใหม่" }).click();
-    const sheet = page.getByRole("dialog", { name: "เพิ่มที่อยู่ใหม่" });
-    await sheet.getByLabel(/^ชื่อที่อยู่/).fill("หน้าร้าน e2e");
-    await sheet.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับหน้าร้าน");
-    await sheet.getByLabel(/^เบอร์ผู้รับ/).fill("0812345678");
-    await sheet.getByLabel(/^รหัสไปรษณีย์/).fill("20000");
-    await expect(choiceList(sheet, /^แขวง\/ตำบล/)).toContainText("ชลบุรี");
-    await sheet.getByLabel(/^บ้านเลขที่ อาคาร ถนน/).fill("5 ถนนทดสอบ");
+    await gotoHydrated(page, `${HOSTS.customer}/checkout?step=address`);
+    const box = page.getByRole("region", { name: "ที่อยู่จัดส่ง" });
+    await box.getByRole("button", { name: "เพิ่มที่อยู่ใหม่" }).click();
+    await box.getByLabel(/^ชื่อที่อยู่/).fill("หน้าร้าน e2e");
+    await box.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับหน้าร้าน");
+    await box.getByLabel(/^เบอร์ผู้รับ/).fill("0812345678");
+    await box.getByLabel(/^รหัสไปรษณีย์/).fill("20000");
+    await expect(choiceList(box, /^แขวง\/ตำบล/)).toContainText("ชลบุรี");
+    await box.getByLabel(/^บ้านเลขที่ อาคาร ถนน/).fill("5 ถนนทดสอบ");
     await expectNoViolations(page);
-    await sheet.getByRole("button", { name: "บันทึกที่อยู่" }).click();
-    await expect(sheet).toBeHidden();
-    // The new address is one the split can send to at once.
-    await choiceList(line, "ที่อยู่ที่ 1").click();
-    await expect(page.getByRole("option", { name: /หน้าร้าน e2e/ })).toBeVisible();
+    await box.getByRole("button", { name: "บันทึกที่อยู่" }).click();
+    // Saved, chosen, and every line ships there (one address, no allocation table).
+    await expect(box.getByRole("radio", { name: /หน้าร้าน e2e/ })).toBeChecked();
+  });
+
+  test("form errors move focus to the first invalid field", async ({ page }) => {
+    await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
+    await emptyCart(page);
+    await addBox(page, "500");
+    await gotoHydrated(page, `${HOSTS.customer}/checkout?step=address`);
+    const box = page.getByRole("region", { name: "ที่อยู่จัดส่ง" });
+    await box.getByRole("button", { name: "เพิ่มที่อยู่ใหม่" }).click();
+    await box.getByRole("button", { name: "บันทึกที่อยู่" }).click();
+    await expect(box.getByLabel(/^ชื่อที่อยู่/)).toBeFocused();
   });
 
   test("a tax invoice profile needs a valid tax id", async ({ page }) => {
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
-    await gotoHydrated(page, `${HOSTS.customer}/checkout`);
-    await page.getByRole("button", { name: "เพิ่มข้อมูลใบกำกับภาษี" }).click();
-    const sheet = page.getByRole("dialog", { name: "เพิ่มข้อมูลใบกำกับภาษี" });
-    await sheet.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท ทดสอบ จำกัด");
-    await sheet.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("1234567890123");
-    await sheet.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
-    // The postcode's one sub-district is picked once the lookup answers; saving before that is
-    // refused for the area too, which a parallel run reached.
-    await expect(sheet.getByRole("button", { name: /^แขวง\/ตำบล/ })).toContainText("คลองเตย");
-    await sheet.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
-    await sheet.getByRole("button", { name: "บันทึก", exact: true }).click();
-    await expect(sheet.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();
-    // A valid one (its checksum digit is 7): saved and chosen for the invoice.
-    await sheet.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
-    await sheet.getByRole("button", { name: "บันทึก", exact: true }).click();
-    await expect(sheet).toBeHidden();
+    await gotoHydrated(page, `${HOSTS.customer}/checkout?step=payment`);
+    await page.getByRole("switch", { name: "ขอใบกำกับภาษีเต็มรูปแบบ" }).click();
+    const form = page.getByRole("region", { name: "ข้อมูลใบกำกับภาษี" });
+    const add = form.getByRole("button", { name: "เพิ่มข้อมูลใบกำกับภาษี" });
+    if (await add.isVisible()) await add.click();
+    await form.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท ทดสอบ จำกัด");
+    await form.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("1234567890123");
+    const same = form.getByRole("checkbox", { name: "ใช้ที่อยู่เดียวกับที่อยู่จัดส่ง" });
+    if ((await same.count()) > 0 && (await same.isChecked())) await same.uncheck();
+    await form.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
+    await expect(form.getByRole("button", { name: /^แขวง\/ตำบล/ })).toContainText("คลองเตย");
+    await form.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
+    await form.getByRole("button", { name: "บันทึก", exact: true }).click();
+    await expect(form.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();
+    // Focus moved to the field with the error.
+    await expect(form.getByLabel(/^เลขประจำตัวผู้เสียภาษี/)).toBeFocused();
+    // A valid one (its checksum digit is 7): saved and chosen for the invoice — the full tax id shown (DECISIONS §3).
+    await form.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
+    await form.getByRole("button", { name: "บันทึก", exact: true }).click();
     await expect(page.getByRole("radio", { name: /บริษัท ทดสอบ จำกัด/ })).toBeChecked();
-    await expect(page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" })).toContainText(
-      "ใบกำกับภาษีในนาม บริษัท ทดสอบ จำกัด",
+    await page
+      .getByRole("complementary", { name: "สรุปคำสั่งซื้อ" })
+      .getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" })
+      .click();
+    await expect(page.getByRole("region", { name: "ทบทวนคำสั่งซื้อ" })).toContainText(
+      "บริษัท ทดสอบ จำกัด · 0-1055-56000-01-7",
     );
   });
 });
