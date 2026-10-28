@@ -103,12 +103,12 @@ test("studio → order sheet → cart: the version pinned at the studio's price"
   expect(studioTotal.replace(/[^\d.]/g, "")).toBe(line!.productGrossAmount);
 
   // Placing the order locks the version (D-276): the studio says editing makes a new version.
-  await page.goto(`${HOSTS.customer}/checkout`);
+  await page.goto(`${HOSTS.customer}/checkout?step=payment`);
   await page.getByRole("radio", { name: /โอนเงินและแนบสลิป/ }).click();
   const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-  await expect(summary.getByRole("button", { name: /ยืนยันและชำระ/ })).toBeEnabled({ timeout: 15_000 });
-  await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+  await summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" }).click({ timeout: 15_000 });
+  await page.getByRole("checkbox", { name: /ยอมรับข้อกำหนดการใช้งาน/ }).check();
+  await summary.getByRole("button", { name: "ยืนยันคำสั่งซื้อและชำระเงิน" }).click();
   await expect(page).toHaveURL(/\/checkout\/pay\//, { timeout: 15_000 });
 
   const design = (await (
@@ -162,11 +162,12 @@ test("an ordered design is a product: reorder, another quantity, a new size fitt
   await toOrderStep(page);
   await page.getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
   await expect(page).toHaveURL(/\/cart$/, { timeout: 30_000 });
-  await page.goto(`${HOSTS.customer}/checkout`);
+  await page.goto(`${HOSTS.customer}/checkout?step=payment`);
   await page.getByRole("radio", { name: /โอนเงินและแนบสลิป/ }).click();
   const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-  await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+  await summary.getByRole("button", { name: "ต่อไป: ทบทวนและยืนยัน" }).click();
+  await page.getByRole("checkbox", { name: /ยอมรับข้อกำหนดการใช้งาน/ }).check();
+  await summary.getByRole("button", { name: "ยืนยันคำสั่งซื้อและชำระเงิน" }).click();
   await expect(page).toHaveURL(/\/checkout\/pay\//, { timeout: 15_000 });
 
   await page.goto(`${HOSTS.customer}/account/designs`);

@@ -37,6 +37,30 @@ interface Line {
   design?: { documentId: string; versionNo: number };
   /** The brief for the design service (`designNote`, U4.8). */
   designNote?: string | null;
+  /** C5 (D-452): a quantity the customer changed in the cart, priced by the mock's fake tier rule below. */
+  override?: { quantity: number; unitPrice: string; grossAmount: string };
+}
+
+/**
+ * C5 (D-452) — obviously fake tiers for the mock only: from twice the quotation's quantity a piece costs 12 % less,
+ * below the quotation's quantity 10 % more. The real cart takes these from the quotation's own options.
+ */
+function mockTierUnit(quote: StoreQuote, quantity: number): string {
+  const base = Number(quote.unitPrice);
+  const factor = quantity >= quote.quantity * 2 ? 0.88 : quantity < quote.quantity ? 1.1 : 1;
+  return (base * factor).toFixed(2);
+}
+
+function mockTierHint(quote: StoreQuote, quantity: number): Schemas["CartTierHintDto"] | null {
+  const next = quote.quantity * 2;
+  if (quantity >= next) return null;
+  const unitPrice = mockTierUnit(quote, next);
+  return {
+    quoteOptionId: optionIdOf(quote).replace(/.$/, "7"),
+    quantity: next,
+    unitPrice,
+    productGrossAmount: baht(Math.round(Number(unitPrice) * 100 * next)),
+  };
 }
 
 const carts = new Map<string, Line[]>();
@@ -55,15 +79,19 @@ function toItem(customer: MockCustomer, line: Line, quote: StoreQuote): Item {
   const addresses = addressesOf(customer);
   const expired = Date.parse(quote.validUntil) < Date.now();
   if (expired && !line.repricedFrom) line.repricedFrom = { unitPrice: quote.unitPrice, grossAmount: quote.grossAmount };
-  const gross = line.repricedFrom ? baht(Math.round(satang(line.repricedFrom.grossAmount) * 1.04)) : quote.grossAmount;
-  const unitPrice = line.repricedFrom ? (Number(line.repricedFrom.unitPrice) * 1.04).toFixed(6) : quote.unitPrice;
+  const gross = line.repricedFrom
+    ? baht(Math.round(satang(line.repricedFrom.grossAmount) * 1.04))
+    : (line.override?.grossAmount ?? quote.grossAmount);
+  const unitPrice = line.repricedFrom
+    ? (Number(line.repricedFrom.unitPrice) * 1.04).toFixed(6)
+    : (line.override?.unitPrice ?? quote.unitPrice);
   return {
     id: line.id,
     quote: { id: quote.id, quoteCode: quote.quoteCode, validUntil: quote.validUntil, source: quote.source },
     product: quote.product,
     productType: quote.productType,
     specs: quote.specs,
-    quantity: quote.quantity,
+    quantity: line.override?.quantity ?? quote.quantity,
     unit: quote.unit,
     unitPrice,
     grossAmount: gross,
@@ -210,6 +238,9 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
     currency: "THB",
     codes: (codes.get(customer.persona) ?? []).map((code) => ({ ...code })),
     productGrossAmount: cart.subtotalAmount,
+    vatAmount: cart.vatAmount,
+    maxCodes: 3,
+    quantityStep: 50,
     updatedAt: cart.updatedAt,
     items: cart.items.map((item) => {
       const line = lines.find((candidate) => candidate.id === item.id)!;
@@ -229,8 +260,10 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
         productTypeCode: quote.productType.code,
         summary: quoteSummaryOf(quote),
         quantity: item.quantity,
-        unitPrice: pending || line.confirmedReprice ? item.unitPrice : quote.unitPrice,
-        productGrossAmount: line.confirmedReprice ? item.grossAmount : quote.grossAmount,
+        unitPrice: pending || line.confirmedReprice ? item.unitPrice : (line.override?.unitPrice ?? quote.unitPrice),
+        productGrossAmount: line.confirmedReprice
+          ? item.grossAmount
+          : (line.override?.grossAmount ?? quote.grossAmount),
         designOption: item.designOption,
         mockupOption: line.mockupOption,
         designFeeAmount: designFee,
@@ -277,9 +310,18 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
         // A reorder's quotation names the order it repeats (D-153).
         reorderOf: reorderedOf(quote),
         reusesApprovedArtwork: reorderedOf(quote) !== null && quote.designOption === "own_file",
+        quantityEditable: quantityEditable(line, quote, pending),
+        quantityLimits: quote.source === "rfq" ? null : { min: 100, max: null },
+        tierHint: quantityEditable(line, quote, pending) && !expired ? mockTierHint(quote, item.quantity) : null,
+        earliestShipDate: quote.earliestShipDate >= bangkokIso().slice(0, 10) ? quote.earliestShipDate : null,
+        leadTimeDays: quote.leadTimeDays,
       };
     }),
   };
+}
+
+function quantityEditable(line: Line, quote: StoreQuote, pending: boolean): boolean {
+  return quote.source === "instant" && !line.design && reorderedOf(quote) === null && !pending;
 }
 
 /** Codes applied to a customer's cart (`store.cart.applyCode`), which the checkout prices. */
@@ -357,9 +399,10 @@ export const storeCartHandlers = [
     const body = await bodyOf<Schemas["SetDestinationsDto"]>(request);
     const destinations = body?.destinations ?? [];
     const total = destinations.reduce((sum, destination) => sum + destination.quantity, 0);
-    if (total !== quote.quantity)
+    const ordered = line.override?.quantity ?? quote.quantity;
+    if (total !== ordered)
       return problem(422, "validation.failed", "จำนวนที่แบ่งส่งต้องรวมกันเท่ากับจำนวนที่สั่ง", [
-        { path: "destinations", code: "sum", message: `รวม ${total} จาก ${quote.quantity}` },
+        { path: "destinations", code: "sum", message: `รวม ${total} จาก ${ordered}` },
       ]);
     const known = new Set(addressesOf(customer).map((address) => address.id));
     const unknown = destinations.findIndex((destination) => !known.has(destination.addressId));
@@ -427,6 +470,64 @@ export const storeCartHandlers = [
       (codes.get(customer.persona) ?? []).filter((entry) => entry.code !== String(params.code).toUpperCase()),
     );
     return edited(customer);
+  }),
+
+  // C5 (D-452): a new quantity, priced by the mock's fake tier rule; one destination follows, a split is cleared.
+  http.post("*/v1/store/cart/items/:itemId/actions/change-quantity", async ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const refused = precondition(request, cartTag(customer));
+    if (refused) return refused;
+    const line = linesOf(customer).find((candidate) => candidate.id === params.itemId);
+    const quote = line && quotesOf(customer.persona).find((candidate) => candidate.id === line.quoteId);
+    if (!line || !quote) return notFound();
+    if (!quantityEditable(line, quote, line.repriceRequested && !line.confirmedReprice))
+      return problem(409, "cart.quantity_unavailable", "รายการนี้เปลี่ยนจำนวนในตะกร้าไม่ได้");
+    const body = await bodyOf<Schemas["ChangeQuantityDto"]>(request);
+    const quantity = body?.quantity ?? 0;
+    if (!Number.isInteger(quantity) || quantity < 100)
+      return problem(422, "validation.failed", "จำนวนต้องไม่น้อยกว่า 100", [
+        { path: "quantity", code: "min", message: "at least 100" },
+      ]);
+    const unitPrice = mockTierUnit(quote, quantity);
+    line.override =
+      quantity === quote.quantity
+        ? undefined
+        : { quantity, unitPrice, grossAmount: baht(Math.round(Number(unitPrice) * 100 * quantity)) };
+    if (line.destinations.length === 1) line.destinations[0]!.quantity = quantity;
+    else line.destinations = [];
+    return edited(customer);
+  }),
+
+  // C5 (D-452): obviously fake estimate — ฿120 + 3 % of the goods to 10xxx–13xxx, ฿220 + 6 % elsewhere (incl. VAT).
+  http.post("*/v1/store/cart/actions/estimate-shipping", async ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const body = await bodyOf<Schemas["EstimateShippingDto"]>(request);
+    const postcode = body?.postcode ?? "";
+    if (!/^\d{5}$/.test(postcode))
+      return problem(422, "validation.failed", "รหัสไปรษณีย์ 5 หลัก", [
+        { path: "postcode", code: "pattern", message: "5 digits" },
+      ]);
+    const cart = cartOf(customer);
+    const goods = cart.items.reduce((sum, item) => sum + satang(item.grossAmount), 0);
+    const near = /^1[0-3]/.test(postcode);
+    const shipping = Math.round((near ? 12000 : 22000) + goods * (near ? 0.03 : 0.06));
+    const estimate: Schemas["CartShippingEstimateDto"] = {
+      postcode,
+      available: cart.items.length > 0,
+      shippingGrossAmount: cart.items.length > 0 ? baht(shipping) : null,
+      totalGrossAmount: cart.items.length > 0 ? baht(goods + shipping) : null,
+      vatAmount: cart.items.length > 0 ? baht(Math.round(((goods + shipping) * 7) / 107)) : null,
+      zone: near ? { th: "กรุงเทพฯ และปริมณฑล", en: "Bangkok & vicinity" } : { th: "ต่างจังหวัด", en: "Upcountry" },
+      readyDate: bangkokIso(6 * 24 * 60).slice(0, 10),
+      arrival: {
+        from: bangkokIso((near ? 7 : 8) * 24 * 60).slice(0, 10),
+        to: bangkokIso((near ? 8 : 10) * 24 * 60).slice(0, 10),
+      },
+      unavailableItemIds: [],
+    };
+    return HttpResponse.json(estimate);
   }),
 
   http.post("*/v1/store/cart/items/:itemId/actions/confirm-reprice", ({ params, request }) => {

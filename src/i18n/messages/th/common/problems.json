@@ -89,6 +89,7 @@
     "mockup_price_unavailable": "ยังสั่งทำตัวอย่างจริงไม่ได้",
     "no_pending_reprice": "ไม่มีราคาใหม่รอยืนยัน",
     "price_locked": "ราคายังล็อกอยู่",
+    "quantity_unavailable": "เปลี่ยนจำนวนนี้ไม่ได้",
     "reprice_unavailable": "คำนวณราคาใหม่ไม่ได้"
   },
   "catalog": {

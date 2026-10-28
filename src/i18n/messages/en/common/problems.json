@@ -89,6 +89,7 @@
     "mockup_price_unavailable": "Mockup cannot be priced yet",
     "no_pending_reprice": "Nothing to confirm",
     "price_locked": "Price still locked",
+    "quantity_unavailable": "Quantity cannot be changed",
     "reprice_unavailable": "Cannot re-price"
   },
   "catalog": {

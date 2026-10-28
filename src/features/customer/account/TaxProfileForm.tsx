@@ -12,8 +12,9 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
+import { useFocusFirstInvalid } from "@/features/shared/forms/focus-first-invalid";
 
-import type { TaxProfile } from "./address";
+import type { Address, TaxProfile } from "./address";
 import { PostcodeAreaField, type ChosenArea } from "./PostcodeArea";
 import { formatTaxId, isValidThaiTaxId } from "./tax-id";
 
@@ -32,18 +33,33 @@ export function TaxProfileForm({
   profile,
   onSaved,
   onCancel,
+  shippingAddress,
 }: {
   profile?: TaxProfile;
   onSaved: (profile: TaxProfile) => void;
   onCancel?: () => void;
+  /**
+   * Checkout step 3 (checkout redesign item 4): offers "ใช้ที่อยู่เดียวกับที่อยู่จัดส่ง" (on by default) — the
+   * delivery address's lines and area fill the registered address; it is saved only when the customer saves.
+   */
+  shippingAddress?: Address | null;
 }) {
-  if (!profile) return <CreateTaxProfile onSaved={onSaved} onCancel={onCancel} />;
+  if (!profile)
+    return <CreateTaxProfile onSaved={onSaved} onCancel={onCancel} shippingAddress={shippingAddress ?? null} />;
   return <EditTaxProfile profile={profile} onSaved={onSaved} onCancel={onCancel} />;
 }
 
 type TaxType = Schemas["CustomerType"];
 
-function CreateTaxProfile({ onSaved, onCancel }: { onSaved: (profile: TaxProfile) => void; onCancel?: () => void }) {
+function CreateTaxProfile({
+  onSaved,
+  onCancel,
+  shippingAddress,
+}: {
+  onSaved: (profile: TaxProfile) => void;
+  onCancel?: () => void;
+  shippingAddress: Address | null;
+}) {
   const t = useTranslations("account.taxForm");
   const [taxType, setTaxType] = useState<TaxType>("juristic");
   const [taxId, setTaxId] = useState("");
@@ -58,12 +74,32 @@ function CreateTaxProfile({ onSaved, onCancel }: { onSaved: (profile: TaxProfile
   const [withholdsTax, setWithholdsTax] = useState(false);
   const [isDefault, setIsDefault] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const formRef = useFocusFirstInvalid(errors);
   const [failure, setFailure] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  // "Same as the delivery address" (checkout): only an address with a sub-district can be filed as a registered one.
+  const shippingArea: ChosenArea | null = shippingAddress?.subdistrict
+    ? {
+        postcode: shippingAddress.postcode,
+        provinceId: shippingAddress.province.id,
+        subdistrictId: shippingAddress.subdistrict.id,
+      }
+    : null;
+  const [sameAsShipping, setSameAsShipping] = useState(shippingArea !== null);
+  const useShipping = sameAsShipping && shippingAddress !== null && shippingArea !== null;
+  const address = useShipping
+    ? {
+        line1: shippingAddress.line1,
+        line2: shippingAddress.line2 ?? "",
+        postcode: shippingAddress.postcode,
+        area: shippingArea,
+      }
+    : { line1, line2, postcode, area };
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
     event.stopPropagation();
+    const { line1, line2, postcode, area } = address;
     const found: Record<string, string> = {};
     if (!isValidThaiTaxId(taxId)) found.taxId = t("taxIdInvalid");
     if (branchType === "branch" && !/^\d{5}$/.test(branchCode)) found.branchCode = t("branchCodeInvalid");
@@ -104,7 +140,7 @@ function CreateTaxProfile({ onSaved, onCancel }: { onSaved: (profile: TaxProfile
   }
 
   return (
-    <form noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
+    <form ref={formRef} noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
       {failure ? (
         <Callout tone="danger" live>
           {failure}
@@ -155,21 +191,32 @@ function CreateTaxProfile({ onSaved, onCancel }: { onSaved: (profile: TaxProfile
       <Field label={t("name")} error={errors.name} required requiredLabel={t("requiredMark")}>
         <Input value={name} onChange={(event) => setName(event.target.value)} />
       </Field>
-      <PostcodeAreaField
-        postcode={postcode}
-        subdistrictId={area?.subdistrictId ?? ""}
-        errors={{ postcode: errors.postcode, subdistrict: errors.subdistrict }}
-        onChange={(next) => {
-          setPostcode(next.postcode);
-          setArea(next.area);
-        }}
-      />
-      <Field label={t("line1")} error={errors.line1} required requiredLabel={t("requiredMark")}>
-        <Input value={line1} onChange={(event) => setLine1(event.target.value)} />
-      </Field>
-      <Field label={t("line2")}>
-        <Input value={line2} onChange={(event) => setLine2(event.target.value)} />
-      </Field>
+      {shippingArea ? (
+        <Checkbox
+          checked={sameAsShipping}
+          onCheckedChange={(checked) => setSameAsShipping(checked === true)}
+          label={t("sameAsShipping")}
+        />
+      ) : null}
+      {useShipping ? null : (
+        <>
+          <PostcodeAreaField
+            postcode={postcode}
+            subdistrictId={area?.subdistrictId ?? ""}
+            errors={{ postcode: errors.postcode, subdistrict: errors.subdistrict }}
+            onChange={(next) => {
+              setPostcode(next.postcode);
+              setArea(next.area);
+            }}
+          />
+          <Field label={t("line1")} error={errors.line1} required requiredLabel={t("requiredMark")}>
+            <Input value={line1} onChange={(event) => setLine1(event.target.value)} />
+          </Field>
+          <Field label={t("line2")}>
+            <Input value={line2} onChange={(event) => setLine2(event.target.value)} />
+          </Field>
+        </>
+      )}
       <Field label={t("documentEmail")} hint={t("documentEmailHint")} error={errors.documentEmail}>
         <Input
           type="email"
@@ -222,6 +269,7 @@ function EditTaxProfile({
   const [withholdsTax, setWithholdsTax] = useState(profile.withholdsTax);
   const [isDefault, setIsDefault] = useState(profile.isDefault);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const formRef = useFocusFirstInvalid(errors);
   const [failure, setFailure] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   // The registered address may move; the identity (type, tax id, branch) may not — a changed tax
@@ -280,7 +328,7 @@ function EditTaxProfile({
   }
 
   return (
-    <form noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
+    <form ref={formRef} noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
       {failure ? (
         <Callout tone="danger" live>
           {failure}
