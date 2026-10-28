@@ -63,6 +63,7 @@ function cardFacts(
 ): Pick<
   Schemas["StoreProductCardDto"],
   | "startingPricePerPiece"
+  | "startingPricePerPieceExVat"
   | "startingPriceAssumes"
   | "moq"
   | "leadTimeDays"
@@ -75,6 +76,9 @@ function cardFacts(
     // A product's starting price is its reference configuration priced by the configurator's own engine
     // (D-441); only the type-level cards, which have no single product, keep a made-up figure.
     startingPricePerPiece: starting !== undefined ? (starting?.unitPrice ?? null) : instant ? fakePrice(key) : null,
+    startingPricePerPieceExVat: mockExVat(
+      starting !== undefined ? (starting?.unitPrice ?? null) : instant ? fakePrice(key) : null,
+    ),
     startingPriceAssumes:
       starting !== undefined
         ? starting
@@ -231,7 +235,8 @@ function stock(product: Row): Schemas["StoreStockProductDto"] {
       url: imageUrl(image.fileId)!,
       variant: null,
     })),
-    inStock: true,
+    // One obviously-mock item is out of stock, so "สินค้าหมด" (no cart, D-447 §10.4) can be seen and tested.
+    inStock: product.sku !== "JAR-100",
     isFoodGrade: Boolean(product.isFoodGrade),
     minOrderQty: Number(product.minOrderQty ?? 1),
     unit: product.unit as Schemas["ProductUnit"],
@@ -299,6 +304,15 @@ function inWindow(row: Row): boolean {
 }
 
 /** A fake price per piece from the slug — stable across reloads, meaningless otherwise. */
+/**
+ * The ex-VAT figure the API sends next to a VAT-inclusive price (C1b, D-447) — the mock backend's own stand-in for
+ * the API's shared VAT helper (7 % here; the real rate is the API's). The web never computes it.
+ */
+function mockExVat(inclusive: string | null): string | null {
+  if (inclusive === null) return null;
+  return (Math.round((Number(inclusive) * 100 * 100) / 107) / 100).toFixed(2);
+}
+
 function fakePrice(key: string): string {
   const seed = [...key].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) % 100_000, 7);
   return (1.5 + (seed % 900) / 100).toFixed(2);
@@ -362,6 +376,31 @@ export function productRefOf(input: {
       : { refused: "stockProductSku" };
   }
   return null;
+}
+
+/**
+ * C1b (D-447): the active catalogue or stock product a quote-tray line names, with its type, category and the
+ * reference the API returns — null when there is no such product.
+ */
+export function basketProductOf(input: { catalogProductSlug?: string; stockProductSku?: string }): {
+  productTypeCode: string;
+  categoryCode: string | null;
+  product: Schemas["RfqProductRefDto"];
+} | null {
+  const row = input.catalogProductSlug
+    ? catalogProducts().find((p) => p.slug === input.catalogProductSlug)
+    : input.stockProductSku
+      ? stockProducts().find((p) => p.sku === input.stockProductSku)
+      : undefined;
+  if (!row) return null;
+  const type = byId(catalogueRows("productTypes"), row.productTypeId);
+  return {
+    productTypeCode: typeCodeOf(row),
+    categoryCode: type ? categoryCodeOf(type) : null,
+    product: input.catalogProductSlug
+      ? { kind: "catalog_product", key: String(row.slug), nameTh: String(row.nameTh), nameEn: String(row.nameEn) }
+      : { kind: "stock_product", key: String(row.sku), nameTh: String(row.nameTh), nameEn: String(row.nameEn) },
+  };
 }
 
 /* ---------------------------------------------------------------------------- handlers */
@@ -434,6 +473,11 @@ export function provinceRefOf(postcode: string, nameTh: string): Schemas["GeoRef
 }
 
 export const storeCatalogHandlers: HttpHandler[] = [
+  // store.catalog.getFeaturedServices (C1b, D-447): staff have chosen nothing in the mock — the page uses its own list.
+  http.get("*/v1/store/catalog/featured-services", () =>
+    HttpResponse.json({ curated: false, slugs: [] } satisfies Schemas["StoreFeaturedServicesDto"]),
+  ),
+
   http.get("*/v1/store/catalog/geo/postcodes/:postcode", ({ params }) => {
     const known = POSTCODE_AREAS[String(params.postcode)];
     // Ids in the admin geography mock's namespaces (`gpv` / `gdt` / `gsd` + code).
@@ -743,6 +787,7 @@ export const storeCatalogHandlers: HttpHandler[] = [
         kind,
         productTypeCode: typeCodeOf(row),
         startingFromPerPiece: reference ? reference.unitPrice : fake && instant ? fakePrice(key) : null,
+        startingFromPerPieceExVat: mockExVat(reference ? reference.unitPrice : fake && instant ? fakePrice(key) : null),
         currency: "THB",
         basis: reference
           ? {

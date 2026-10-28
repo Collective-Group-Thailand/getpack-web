@@ -199,6 +199,7 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
   supportReplyMinutes: null,
   templateCount: 105,
   contact: { phone: "020000000", lineOaId: "@getpack-mock", email: "support@example.invalid" },
+  issuer: { legalNameTh: "บริษัท ทดสอบระบบ จำกัด (ข้อมูลจำลอง)", legalNameEn: "Mock Test Co., Ltd. (mock data)" },
 });
 
 export const heroHandlers = [
