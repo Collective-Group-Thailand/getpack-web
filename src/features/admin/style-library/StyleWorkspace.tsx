@@ -36,6 +36,7 @@ import {
   PUBLISH_REASONS,
   type PublishReason,
 } from "./resources";
+import { StyleCommercial } from "./StyleCommercial";
 import { StyleLibraryNav } from "./StyleLibraryNav";
 
 interface Loaded {
@@ -149,6 +150,11 @@ export function StyleWorkspace({ styleId, storefront }: { styleId: string; store
                 <Curation key={style.version} style={style} etag={etag} onChanged={changed} />
               </>
             ),
+          },
+          {
+            value: "commercial",
+            label: t("tabs.commercial"),
+            content: <StyleCommercial key={`commercial-${style.version}`} style={style} etag={etag} onChanged={changed} />,
           },
           {
             value: "variants",

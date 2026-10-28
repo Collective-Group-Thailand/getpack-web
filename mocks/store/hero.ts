@@ -195,7 +195,8 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
   priceLockDays: 15,
   claimWindowDays: 7,
   proofSlaBusinessDays: null,
-  supportHours: null,
+  // D-447 decided daily 09:00–18:00 (the reference seed's first version of storefront.support_hours).
+  supportHours: { days: "daily", open: "09:00", close: "18:00", tz: "Asia/Bangkok" },
   supportReplyMinutes: null,
   templateCount: 105,
   contact: { phone: "020000000", lineOaId: "@getpack-mock", email: "support@example.invalid" },

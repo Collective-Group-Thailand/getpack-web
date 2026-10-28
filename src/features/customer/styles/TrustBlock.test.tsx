@@ -35,7 +35,9 @@ describe("the trust section (C0)", () => {
       (await TrustBlock({
         trust: {
           ...empty,
-          certifications: [{ title: { th: "ใบรับรอง A", en: null }, number: "N-1", issuer: null, documentUrl: null }],
+          certifications: [
+            { title: { th: "ใบรับรอง A", en: null }, number: "N-1", issuer: "ผู้ออก B", expiresOn: null, documentUrl: null },
+          ],
           productionPhotos: [{ url: "https://files.example/p.webp", alt: { th: "งานพิมพ์", en: null } }],
         },
         locale: "th",
@@ -44,6 +46,7 @@ describe("the trust section (C0)", () => {
     expect(screen.getByRole("heading", { name: "ความน่าเชื่อถือ" })).toBeInTheDocument();
     expect(screen.getByText("ใบรับรองวัสดุ")).toBeInTheDocument();
     expect(screen.getByText("รูปงานจริงระหว่างผลิต")).toBeInTheDocument();
+    expect(document.body.textContent).toContain("ออกโดย ผู้ออก B");
     expect(screen.queryByText("วัสดุสัมผัสอาหาร")).toBeNull();
     expect(screen.queryByText("แบรนด์ที่ไว้วางใจ")).toBeNull();
     expect(document.body.textContent).not.toMatch(/โรงงาน/);
