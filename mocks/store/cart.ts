@@ -261,7 +261,9 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
         summary: quoteSummaryOf(quote),
         quantity: item.quantity,
         unitPrice: pending || line.confirmedReprice ? item.unitPrice : (line.override?.unitPrice ?? quote.unitPrice),
-        productGrossAmount: line.confirmedReprice ? item.grossAmount : (line.override?.grossAmount ?? quote.grossAmount),
+        productGrossAmount: line.confirmedReprice
+          ? item.grossAmount
+          : (line.override?.grossAmount ?? quote.grossAmount),
         designOption: item.designOption,
         mockupOption: line.mockupOption,
         designFeeAmount: designFee,
@@ -510,10 +512,13 @@ export const storeCartHandlers = [
     const cart = cartOf(customer);
     const goods = cart.items.reduce((sum, item) => sum + satang(item.grossAmount), 0);
     const near = /^1[0-3]/.test(postcode);
+    const shipping = Math.round((near ? 12000 : 22000) + goods * (near ? 0.03 : 0.06));
     const estimate: Schemas["CartShippingEstimateDto"] = {
       postcode,
       available: cart.items.length > 0,
-      shippingGrossAmount: cart.items.length > 0 ? baht(Math.round((near ? 12000 : 22000) + goods * (near ? 0.03 : 0.06))) : null,
+      shippingGrossAmount: cart.items.length > 0 ? baht(shipping) : null,
+      totalGrossAmount: cart.items.length > 0 ? baht(goods + shipping) : null,
+      vatAmount: cart.items.length > 0 ? baht(Math.round(((goods + shipping) * 7) / 107)) : null,
       zone: near ? { th: "กรุงเทพฯ และปริมณฑล", en: "Bangkok & vicinity" } : { th: "ต่างจังหวัด", en: "Upcountry" },
       readyDate: bangkokIso(6 * 24 * 60).slice(0, 10),
       arrival: {

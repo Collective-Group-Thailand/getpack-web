@@ -889,6 +889,14 @@ function toPreviewDto(customer: MockCustomer, priced: Priced): Schemas["Checkout
     schedule.parts.map((part) => part.share),
   );
   return {
+    // C5 (D-452): the summary rows incl. VAT, adding up to the total like the API's `display`.
+    display: {
+      goodsGrossAmount: preview.totals.itemsAmount,
+      discountGrossAmount: baht(satang(preview.totals.discountAmount) + satang(preview.totals.pointsAmount)),
+      shippingGrossAmount: preview.totals.shippingAmount,
+      vatAmount: preview.totals.vatAmount,
+      grossAmount: preview.totals.grossAmount,
+    },
     orders: cart.items.map((item, index) => ({
       cartItemId: item.id,
       productTypeCode: item.productType.code,
