@@ -130,8 +130,9 @@ export function PdpBuyBox({
 
   return (
     <div className="border-border bg-surface rounded-card flex flex-col gap-4 border p-5">
-      {/* The price: one line, its height kept while a new price loads (no layout shift). */}
-      <div aria-live="polite" aria-busy={loading || price.pending} className="min-h-[4.75rem]">
+      {/* The price, its quantity line and the spec line (D-441): their height is kept while the first price
+          loads, so the pickers below do not move (CLS). */}
+      <div aria-live="polite" aria-busy={loading || price.pending} className="min-h-[7rem]">
         {current?.unitPrice ? (
           <>
             <p className={cn("m-0 flex flex-wrap items-baseline gap-x-2.5", price.pending && "opacity-60")}>
