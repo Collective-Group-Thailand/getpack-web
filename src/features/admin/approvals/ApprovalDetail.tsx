@@ -32,13 +32,16 @@ import {
   useSlaFormat,
 } from "../console";
 import {
+  canOfferSelfApproval,
   CRITICAL_FLAGS,
   currentStep,
   decisionBlocker,
   PAYLOAD_KINDS,
   POLICY_ICONS,
+  TYPED_REASON_MIN_LENGTH,
   type Approval,
 } from "./presentation";
+import { SoloOwnerBadge, useSoloOwnerMode } from "./SoloOwnerMode";
 
 async function fetchApproval(requestId: string): Promise<Approval> {
   const { data } = await adminBrowserApis().contract.GET("/v1/admin/approvals/{requestId}", {
@@ -47,7 +50,7 @@ async function fetchApproval(requestId: string): Promise<Approval> {
   return data!;
 }
 
-type Decision = "approve" | "reject" | "withdraw";
+type Decision = "approve" | "reject" | "withdraw" | "self";
 
 export function ApprovalDetail({ requestId, initial }: { requestId: string; initial: Approval | null }) {
   const t = useTranslations("approvals");
@@ -59,6 +62,7 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
   const canAct = useCan("approvals.act");
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<Decision | null>(null);
+  const solo = useSoloOwnerMode();
 
   const query = useQuery({
     queryKey: queryKeys.detail("admin", "approval", requestId),
@@ -75,6 +79,14 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
           await api.POST("/v1/admin/approvals/{requestId}/actions/approve", {
             ...path,
             body: comment ? { comment } : {},
+          })
+        ).data;
+      // D-449 A: a Superadmin's own request under solo-owner mode, with the typed reason.
+      if (kind === "self")
+        return (
+          await api.POST("/v1/admin/approvals/{requestId}/actions/approve", {
+            ...path,
+            body: { selfApprovalReason: comment },
           })
         ).data;
       if (kind === "reject")
@@ -101,6 +113,7 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
   // Who can decide now: the API still enforces it; this only says so instead of hiding the buttons
   // without a word (UX audit, approvals: "role ไม่มีสิทธิ์ให้แสดง รอผู้อนุมัติ").
   const mine = approval.requester.id === actor.id;
+  const selfOffer = canOfferSelfApproval(approval, actor, solo.data);
   const waitingOnOthers = approval.status === "pending" && !blocker && !mine && !canAct;
   const policyLabel = t.has(`policies.${approval.policy}`) ? t(`policies.${approval.policy}`) : approval.policy;
   const summary = `${policyLabel}${approval.amount ? ` · ${format.thb(approval.amount)}` : ""}`;
@@ -163,6 +176,17 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
                 {t.has(`flags.${flag}`) ? t(`flags.${flag}`) : flag}
               </Badge>
             ))}
+            {approval.selfApproved ? (
+              <Badge tone="warning" icon="key">
+                {t("badges.selfApproved")}
+              </Badge>
+            ) : null}
+            {approval.autoApprovedReason === "below_threshold" ? (
+              <Badge tone="info" icon="zap">
+                {t("badges.autoApproved")}
+              </Badge>
+            ) : null}
+            {approval.status === "pending" ? <SoloOwnerBadge mode={solo.data} /> : null}
           </>
         }
         description={t("requestedBy", { name: approval.requester.displayName })}
@@ -172,6 +196,11 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
               {mine ? (
                 <Button variant="secondary" iconStart="undo" onClick={() => setDecision("withdraw")}>
                   {t("withdraw")}
+                </Button>
+              ) : null}
+              {selfOffer ? (
+                <Button iconStart="check" onClick={() => setDecision("self")}>
+                  {t("selfApprove.action")}
                 </Button>
               ) : null}
               {canAct && !blocker ? (
@@ -197,7 +226,20 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
           </span>
         </Callout>
       ) : null}
-      {blocker === "own_request" ? <Callout tone="info" title={t("blockers.ownRequest")} /> : null}
+      {blocker === "own_request" ? (
+        selfOffer ? (
+          <Callout tone="warning" title={t("selfApprove.calloutTitle")}>
+            {t("selfApprove.calloutBody")}
+          </Callout>
+        ) : (
+          <Callout tone="info" title={t("blockers.ownRequest")} />
+        )
+      ) : null}
+      {approval.autoApprovedReason === "below_threshold" ? (
+        <Callout tone="info" title={t("autoApproved.title")}>
+          {t("autoApproved.body")}
+        </Callout>
+      ) : null}
       {blocker === "already_acted" ? <Callout tone="info" title={t("blockers.alreadyActed")} /> : null}
       {approval.flags.includes("below_margin_floor") ? (
         <Callout tone="danger" title={t("belowFloorTitle")}>
@@ -284,12 +326,18 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
                 label={t("history")}
                 items={approval.actions.map((action, index) => ({
                   id: String(index),
-                  title: t.has(`actionKinds.${action.action}`) ? t(`actionKinds.${action.action}`) : action.action,
+                  title: action.selfApproved
+                    ? t("badges.selfApproved")
+                    : t.has(`actionKinds.${action.action}`)
+                      ? t(`actionKinds.${action.action}`)
+                      : action.action,
                   actor: action.onBehalfOf
                     ? t("onBehalfOf", { name: action.actor.displayName, for: action.onBehalfOf.displayName })
                     : action.actor.displayName,
                   time: <When at={action.at} />,
-                  description: action.comment ?? undefined,
+                  description: action.selfApproved
+                    ? [action.selfApprovalReason, action.comment].filter(Boolean).join(" · ") || undefined
+                    : (action.comment ?? undefined),
                   icon: action.action === "approve" ? "check" : action.action === "reject" ? "ban" : "undo",
                   tone: action.action === "approve" ? "success" : action.action === "reject" ? "danger" : "neutral",
                 }))}
@@ -305,17 +353,26 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
         open={decision !== null}
         onOpenChange={(open) => (open ? undefined : setDecision(null))}
         title={decision ? t(`confirm.${decision}Title`) : ""}
-        description={t("confirm.description", { summary })}
-        confirmLabel={decision ? t(decision) : ""}
-        tone={decision === "approve" ? "primary" : "destructive"}
+        description={
+          decision === "self" ? t("selfApprove.confirmBody", { summary }) : t("confirm.description", { summary })
+        }
+        confirmLabel={decision === "self" ? t("selfApprove.action") : decision ? t(decision) : ""}
+        tone={decision === "approve" || decision === "self" ? "primary" : "destructive"}
         reason={
           decision === "approve"
             ? { label: t("comment"), hint: t("commentHint") }
-            : {
-                label: decision === "withdraw" ? t("withdrawReason") : t("rejectReason"),
-                required: true,
-                hint: t("commentHint"),
-              }
+            : decision === "self"
+              ? {
+                  label: t("selfApprove.reason"),
+                  required: true,
+                  minLength: TYPED_REASON_MIN_LENGTH,
+                  hint: t("selfApprove.reasonHint", { min: TYPED_REASON_MIN_LENGTH }),
+                }
+              : {
+                  label: decision === "withdraw" ? t("withdrawReason") : t("rejectReason"),
+                  required: true,
+                  hint: t("commentHint"),
+                }
         }
         onConfirm={async ({ reason }) => {
           await decide.mutateAsync({ kind: decision!, comment: reason });
