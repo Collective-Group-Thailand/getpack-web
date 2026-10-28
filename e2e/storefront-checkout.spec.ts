@@ -178,14 +178,14 @@ test.describe("cart and checkout", () => {
     await expect(page.getByText("กำลังตรวจสอบสลิป")).toBeVisible();
     await expect(page.getByText(/ทีมการเงินจะตรวจสอบภายใน/)).toBeVisible();
     const payUrl = page.url();
-
-    await gotoHydrated(page, `${HOSTS.customer}/account/instalments`);
-    const code = (await page
-      .getByRole("row", { name: /ชำระต่อ/ })
+    // This order's code, from what the pay page says it is paying for ("500 ชิ้น · <code>"); the account's
+    // instalments list also holds the mock's older orders.
+    const line = (await page
+      .locator('aside[aria-labelledby="pay-for"]')
+      .getByText(/ชิ้น · /)
       .first()
-      .getByRole("link")
-      .first()
-      .textContent())!.trim();
+      .textContent())!;
+    const code = line.split("·").pop()!.trim();
 
     const staff = await (await browser.newContext()).newPage();
     await signInAsStaff(staff, "finance");
@@ -327,7 +327,8 @@ test.describe("cart and checkout", () => {
     await emptyCart(page);
     await addBox(page, "500");
     await gotoHydrated(page, `${HOSTS.customer}/checkout?step=payment`);
-    await page.getByRole("switch", { name: "ขอใบกำกับภาษีเต็มรูปแบบ" }).click();
+    // On already when an earlier walk in this serial run asked for a tax invoice: turn it on, not over.
+    await page.getByRole("switch", { name: "ขอใบกำกับภาษีเต็มรูปแบบ" }).check();
     const form = page.getByRole("region", { name: "ข้อมูลใบกำกับภาษี" });
     const add = form.getByRole("button", { name: "เพิ่มข้อมูลใบกำกับภาษี" });
     if (await add.isVisible()) await add.click();

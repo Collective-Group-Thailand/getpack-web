@@ -54,7 +54,7 @@ test.describe("the product page", () => {
       page.getByRole("radiogroup", { name: "ขนาดมาตรฐาน" }).getByRole("radio", { name: /^B / }),
     ).toBeChecked();
     await expect(page.getByRole("radio", { name: /ลอน E/ }).first()).toBeChecked();
-    const dock = page.getByRole("region", { name: "ราคาและการสั่งผลิต" });
+    const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
     await expect(dock.getByText(pagePrice!).first()).toBeVisible({ timeout: 15_000 });
   });
 
