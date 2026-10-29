@@ -6339,9 +6339,9 @@ export interface paths {
         };
         /**
          * The CS inbox
-         * @description Latest activity first. Filters: status, assignee, subject (support / order / design / RFQ / RFQ basket, D-300), channel, the subject’s company, first-response state (waiting in time, overdue, answered — D-221) and `q` (customer or LINE name, contains). Each thread carries its SLA timers, reply channel and participants.
+         * @description Latest activity first. Filters: status, assignee, subject (support / order / design / RFQ / RFQ basket, D-300), channel, the subject’s company, first-response state (waiting in time, overdue, answered — D-221), the queue of its contact ticket (D-458) and `q` (customer or LINE name, contains). Each thread carries its SLA timers, reply channel and participants.
          *
-         *     Implements: D-151, D-143, D-300, D-221.
+         *     Implements: D-151, D-143, D-300, D-221, D-458.
          */
         get: operations["admin.conversations.list"];
         put?: never;
@@ -31994,9 +31994,9 @@ export interface paths {
         };
         /**
          * Get the figures the storefront states
-         * @description Every figure has one source and is null without one — the storefront then leaves the sentence out, never a number of its own (D-309): minimum quantities from the catalogue (D-307), the price lock (`quotes.validity_days`, D-051), the claim window (`claims.window_days`, D-082), the first-proof turnaround, support hours and reply time (settings kept by Prepress and the CS Lead), the template library size, the contacts (D-221) and the legal name of the invoicing entity (D-447). Nothing about production partners — no count, coverage or threshold (D-435). Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
+         * @description Every figure has one source and is null without one — the storefront then leaves the sentence out, never a number of its own (D-309): minimum quantities from the catalogue (D-307), the price lock (`quotes.validity_days`, D-051), the claim window (`claims.window_days`, D-082), the first-proof turnaround, support hours and reply time (settings kept by Prepress and the CS Lead), the template library size, the contacts (D-221), the invoicing entity’s legal name, tax id, branch and registered address (D-447, D-458), what the business and getpack Factory pages say is live (`storefront.roadmap`, D-458) and the payment methods offered now (D-458). Nothing about production partners — no count, coverage or threshold (D-435). Anonymous, cacheable 5 minutes; a matching `If-None-Match` gets 304.
          *
-         *     Implements: D-309, D-051, D-082, D-221, D-307, D-435, D-447.
+         *     Implements: D-309, D-051, D-082, D-221, D-307, D-435, D-447, D-458.
          */
         get: operations["store.publicConfig.get"];
         put?: never;
@@ -34048,13 +34048,35 @@ export interface paths {
         };
         /**
          * Get the ways to reach getpack CS
-         * @description getpack’s own LINE Official Account, phone, e-mail and opening hours (D-005), from the setting `storefront.support_channels` kept by the CS Lead (D-221). A field is null until it is set.
+         * @description getpack’s own LINE Official Account, phone, e-mail, opening hours and the office visited by appointment (D-005, D-458), from the setting `storefront.support_channels` kept by the CS Lead (D-221). A field is null until it is set.
          *
-         *     Implements: D-221, D-005.
+         *     Implements: D-221, D-005, D-458.
          */
         get: operations["store.support.getChannels"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/support/actions/add-info": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add information to my request
+         * @description D-458 "เพิ่มข้อมูลในเรื่องนี้": a message added to my contact ticket’s conversation (the same ownership check as `store.support.lookupTicket`); it reopens the conversation for CS. Audited (`support.ticket_info_added`) with the event of the same name; no contact details in either (PDPA). Rate-limited per client.
+         *
+         *     Implements: D-458, D-221.
+         */
+        post: operations["store.support.addInfo"];
         delete?: never;
         options?: never;
         head?: never;
@@ -34072,9 +34094,9 @@ export interface paths {
         put?: never;
         /**
          * Contact getpack CS
-         * @description The contact form, for guests and customers: opens a CS ticket on a CS conversation (D-221) — a signed-in customer’s own chat, a new one for a guest, who leaves a name and a phone or e-mail. Answers the ticket number, the first-response target (`support.first_response_business_days` business days, D-175) and a LINE link carrying only the ticket number. Rate-limited per client (429 with `Retry-After`).
+         * @description The contact form, for guests and customers: opens a CS ticket on a CS conversation (D-221) — a signed-in customer’s own chat, a new one for a guest, who leaves a name and a phone or e-mail. Answers the ticket number, the first-response target (`support.first_response_business_days` business days, D-175) and a LINE link carrying only the ticket number. Rate-limited per client (429 with `Retry-After`). D-458: the intent’s own fields (`details`: company, volume, interests, capabilities, province, current system, product, quantity, inside size, postcode), the reply channel and a call-back slot are stored with the ticket; the ticket is routed to the topic’s queue (`support.topic_queues`) and its target follows the topic (`support.reply_business_days_by_topic`). A call back needs a phone and one of the offered days and windows (`support.callback_unavailable`). References stay `CS-YYMM-NNNNN` for every topic (D-440).
          *
-         *     Implements: D-221, D-175.
+         *     Implements: D-221, D-175, D-440, D-458.
          */
         post: operations["store.support.contact"];
         delete?: never;
@@ -34099,6 +34121,50 @@ export interface paths {
          *     Implements: D-221, D-175.
          */
         post: operations["store.support.handoff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/support/actions/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Where my request stands
+         * @description D-458: the stage of a contact ticket (ได้รับเรื่อง → กำลังดำเนินการ → ตอบกลับแล้ว) for the person who sent it: a signed-in customer reads their own tickets; a guest gives the phone or e-mail they left. Any other ticket — or none — is `support.ticket_not_found` (never confirms a ticket exists). A POST so the phone or e-mail never travels in a URL. Rate-limited per client.
+         *
+         *     Implements: D-458, D-221.
+         */
+        post: operations["store.support.lookupTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/support/contact-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What the contact form offers now
+         * @description D-458: the first-response target (`support.first_response_business_days`, per topic from `support.reply_business_days_by_topic`), whether CS answers right now and when it answers next (`storefront.support_hours`, Asia/Bangkok, national calendar for `business_days`), and the call-back days (next 5 business days) and windows (`support.callback_slots`; null while unset — no call back offered). Anonymous, cacheable 60 s.
+         *
+         *     Implements: D-458, D-221, D-309, D-161.
+         */
+        get: operations["store.support.contactOptions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -45045,6 +45111,11 @@ export interface components {
              * @example false
              */
             overdue: boolean;
+            /**
+             * @description D-458 the team queue the topic was routed to (`support.topic_queues`)
+             * @example cs
+             */
+            queue: string;
             /**
              * Format: date-time
              * @example 2026-10-21T10:00:00+07:00
@@ -63460,6 +63531,16 @@ export interface components {
         };
         IssuerDto: {
             /**
+             * @description D-458 `entity.address_th`, the registered address printed on documents; null until set
+             * @example ที่อยู่ตัวอย่าง
+             */
+            addressTh: string | null;
+            /**
+             * @description D-458 `entity.branch_code` (00000 = head office); null until set
+             * @example 00000
+             */
+            branchCode: string | null;
+            /**
              * @description `entity.legal_name_en` of the default entity; null until set
              * @example Example Co., Ltd.
              */
@@ -63469,6 +63550,11 @@ export interface components {
              * @example บริษัท ตัวอย่าง จำกัด
              */
             legalNameTh: string | null;
+            /**
+             * @description D-458 `entity.tax_id` of the default entity (13 digits, shown in full — DECISIONS §3); null until set
+             * @example 0000000000000
+             */
+            taxId: string | null;
         };
         /** @enum {string} */
         IssueStatus: "open" | "resolved";
@@ -67056,7 +67142,10 @@ export interface components {
          * @enum {string}
          */
         PaymentFailureCode: "provider_error" | "declined";
-        /** @enum {string} */
+        /**
+         * @description D-458 the payment methods anyone can start a payment with now (feature flags, D-176) — instalments excluded (hidden until live, DECISIONS §3); the business page lists these and nothing else
+         * @enum {string}
+         */
         PaymentMethod: "scb_qr" | "scb_qr_cross_bank" | "card_2c2p" | "online_banking_2c2p" | "bank_transfer_slip" | "store_credit" | "credit_term_transfer" | "card_instalment_2c2p" | "scb_direct_debit";
         PaymentMethodOptionDto: {
             /**
@@ -70339,6 +70428,13 @@ export interface components {
             issuer: components["schemas"]["IssuerDto"];
             minOrderQty: components["schemas"]["MinOrderQtyDto"];
             /**
+             * @description D-458 the payment methods anyone can start a payment with now (feature flags, D-176) — instalments excluded (hidden until live, DECISIONS §3); the business page lists these and nothing else
+             * @example [
+             *       "bank_transfer_slip"
+             *     ]
+             */
+            paymentMethods: components["schemas"]["PaymentMethod"][];
+            /**
              * @description Days a quotation’s price stays locked — `quotes.validity_days` (D-051)
              * @example 15
              */
@@ -70348,6 +70444,8 @@ export interface components {
              * @example null
              */
             proofSlaBusinessDays: number | null;
+            /** @description D-458 `storefront.roadmap` (Admin): empty lists while unset — the pages then show no status chips */
+            roadmap: components["schemas"]["RoadmapDto"];
             /** @description CS answering hours — `storefront.support_hours` (CS Lead); null until set */
             supportHours: components["schemas"]["SupportHoursDto"] | null;
             /**
@@ -74069,6 +74167,29 @@ export interface components {
             /** @example บริษัทได้รับอนุญาตใช้เครื่องหมายนี้ (fake) */
             statement: string;
         };
+        RoadmapDto: {
+            /** @description Company-account features, in display order */
+            business: components["schemas"]["RoadmapItemDto"][];
+            /** @description getpack Factory modules, in display order */
+            erpModules: components["schemas"]["RoadmapItemDto"][];
+        };
+        RoadmapItemDto: {
+            /**
+             * @description The feature / module key the storefront has copy for
+             * @example brand_lock
+             */
+            key: string;
+            /**
+             * @description `live`; `soon` = "เร็ว ๆ นี้" (business features); `in_development` = "กำลังพัฒนา" (factory modules)
+             * @example soon
+             */
+            status: components["schemas"]["RoadmapStatus"];
+        };
+        /**
+         * @description `live`; `soon` = "เร็ว ๆ นี้" (business features); `in_development` = "กำลังพัฒนา" (factory modules)
+         * @enum {string}
+         */
+        RoadmapStatus: "live" | "soon" | "in_development";
         RoleDto: {
             /**
              * @description Audience of users who may hold it
@@ -80119,6 +80240,11 @@ export interface components {
              * @example @getpack-test
              */
             lineOaId: string | null;
+            /**
+             * @description D-458 the office customers may visit by appointment (one line); null until the CS Lead sets it
+             * @example null
+             */
+            office: string | null;
             /** @example 0800000000 */
             phone: string | null;
         };
@@ -82021,9 +82147,108 @@ export interface components {
         };
         /** @enum {string} */
         SuggestionMethod: "material_index" | "own_history_driver" | "peer_benchmark" | "waste_actuals" | "shipping_margin" | "none";
+        SupportAddInfoDto: {
+            /** @description A guest proves the ticket is theirs with the phone or e-mail they left (`name` is ignored); a signed-in customer reads their own tickets without it */
+            contact?: components["schemas"]["SupportContactPersonDto"];
+            /** @example แนบเลขพัสดุเพิ่มค่ะ */
+            message: string;
+            /** @example CS-2610-00001 */
+            ticketNo: string;
+        };
+        SupportCallbackDto: {
+            /**
+             * Format: date
+             * @description One of `store.support.contactOptions` `callback.days`
+             * @example 2026-10-21
+             */
+            date: string;
+            /**
+             * @description One of `store.support.contactOptions` `callback.slots[].key`
+             * @example morning
+             */
+            slot: string;
+        };
+        SupportCallbackOptionsDto: {
+            /**
+             * @description The next 5 business days of the national calendar (D-161), Asia/Bangkok dates
+             * @example [
+             *       "2026-10-21",
+             *       "2026-10-22",
+             *       "2026-10-23",
+             *       "2026-10-26",
+             *       "2026-10-27"
+             *     ]
+             */
+            days: string[];
+            /** @description `support.callback_slots` (CS Lead) */
+            slots: components["schemas"]["SupportCallbackSlotDto"][];
+        };
+        SupportCallbackSlotDto: {
+            /** @example 09:00 */
+            from: string;
+            /** @example morning */
+            key: string;
+            /** @example 12:00 */
+            to: string;
+        };
+        SupportContactDetailsDto: {
+            /**
+             * @description Factory application: what the factory produces (product type codes or storefront keys)
+             * @example [
+             *       "corrugated_box"
+             *     ]
+             */
+            capabilities?: string[];
+            /**
+             * @description Company / factory name
+             * @example บริษัท ตัวอย่าง จำกัด
+             */
+            company?: string;
+            /**
+             * @description Factory application: the system the factory runs today (storefront key)
+             * @example spreadsheet
+             */
+            currentSystem?: string;
+            /**
+             * @description Quotation: inside size as typed
+             * @example 200 × 150 × 80 มม.
+             */
+            insideSize?: string;
+            /**
+             * @description Sales form: what the company is interested in (storefront keys)
+             * @example [
+             *       "credit",
+             *       "branches"
+             *     ]
+             */
+            interests?: string[];
+            /**
+             * @description Monthly volume bucket the storefront offers (e.g. `under_1000`, `1000_5000`)
+             * @example 1000_5000
+             */
+            monthlyVolume?: string;
+            /**
+             * @description Shipping: destination postcode
+             * @example 10110
+             */
+            postcode?: string;
+            /**
+             * @description Quotation: the product asked about
+             * @example กล่องไปรษณีย์
+             */
+            product?: string;
+            /** @example กรุงเทพมหานคร */
+            province?: string;
+            /** @example 1000 */
+            quantity?: number;
+        };
         SupportContactDto: {
+            /** @description D-458 required with `replyChannel: callback` */
+            callback?: components["schemas"]["SupportCallbackDto"];
             /** @description Required for a guest; a signed-in customer is reached through the account */
             contact?: components["schemas"]["SupportContactPersonDto"];
+            /** @description D-458 the intent’s own fields */
+            details?: components["schemas"]["SupportContactDetailsDto"];
             /** @example สอบถามกำหนดส่งค่ะ */
             message: string;
             /**
@@ -82032,10 +82257,33 @@ export interface components {
              */
             orderCode?: string;
             /**
+             * @description D-458 how to answer; `callback` needs a phone and `callback`, and only while call-back slots are set
+             * @example line
+             */
+            replyChannel?: components["schemas"]["SupportReplyChannel"];
+            /**
              * @description The storefront’s topic key (e.g. order_status, quotation, artwork, other)
              * @example order_status
              */
             topic: string;
+        };
+        SupportContactOptionsDto: {
+            /** @description Null while `support.callback_slots` is not set: the form offers no call back */
+            callback: components["schemas"]["SupportCallbackOptionsDto"] | null;
+            /**
+             * @description First-response target in business days — `support.first_response_business_days` (D-221)
+             * @example 1
+             */
+            replyBusinessDays: number;
+            /**
+             * @description Per-topic first-response targets (`support.reply_business_days_by_topic`); a topic not listed uses `replyBusinessDays`
+             * @example {}
+             */
+            replyBusinessDaysByTopic: {
+                [key: string]: number;
+            };
+            /** @description Null while `storefront.support_hours` is not set */
+            teamStatus: components["schemas"]["SupportTeamStatusDto"] | null;
         };
         SupportContactPersonDto: {
             /**
@@ -82106,6 +82354,24 @@ export interface components {
              */
             tz: string;
         };
+        /**
+         * @description D-458 how to answer; `callback` needs a phone and `callback`, and only while call-back slots are set
+         * @enum {string}
+         */
+        SupportReplyChannel: "line" | "email" | "callback";
+        SupportTeamStatusDto: {
+            /**
+             * Format: date-time
+             * @description When CS answers next; null while open (or no open day within two weeks)
+             * @example null
+             */
+            nextOpenAt: string | null;
+            /**
+             * @description CS answers right now (`storefront.support_hours`, Asia/Bangkok)
+             * @example true
+             */
+            openNow: boolean;
+        };
         SupportTicketDto: {
             /**
              * Format: uuid
@@ -82139,8 +82405,50 @@ export interface components {
              */
             topic: string;
         };
+        SupportTicketLookupDto: {
+            /** @description A guest proves the ticket is theirs with the phone or e-mail they left (`name` is ignored); a signed-in customer reads their own tickets without it */
+            contact?: components["schemas"]["SupportContactPersonDto"];
+            /** @example CS-2610-00001 */
+            ticketNo: string;
+        };
         /** @enum {string} */
         SupportTicketSource: "contact_form" | "handoff";
+        /**
+         * @description `answered` once getpack replied (or closed the conversation), `in_progress` once someone took it, else `received`
+         * @enum {string}
+         */
+        SupportTicketStage: "received" | "in_progress" | "answered";
+        SupportTicketStatusDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            answeredAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-20T10:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Continue on LINE with the ticket number; null until the OA is set
+             * @example https://line.me/R/oaMessage/%40getpack-fake/?CS-2610-00001
+             */
+            lineUrl: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-21T10:00:00+07:00
+             */
+            respondBy: string;
+            /**
+             * @description `answered` once getpack replied (or closed the conversation), `in_progress` once someone took it, else `received`
+             * @example received
+             */
+            stage: components["schemas"]["SupportTicketStage"];
+            /** @example CS-2610-00001 */
+            ticketNo: string;
+            /** @example order */
+            topic: string;
+        };
         TagSleeveConfigurationDto: {
             /** @description Hole, corner cut, string, eyelet… */
             assemblies?: components["schemas"]["QuoteAssemblyInputDto"][];
@@ -134702,6 +135010,8 @@ export interface operations {
                 perPage?: number;
                 /** @description Free-text search */
                 q?: string;
+                /** @description D-458 threads with a contact ticket routed to this queue (`support.topic_queues`) */
+                queue?: string;
                 /** @description First response: waiting (in time), overdue, answered */
                 sla?: components["schemas"]["ConversationSlaState"];
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
@@ -321074,15 +321384,43 @@ export interface operations {
                      *         "phone": "0800000000"
                      *       },
                      *       "issuer": {
+                     *         "addressTh": "ที่อยู่ตัวอย่าง",
+                     *         "branchCode": "00000",
                      *         "legalNameEn": "Example Co., Ltd.",
-                     *         "legalNameTh": "บริษัท ตัวอย่าง จำกัด"
+                     *         "legalNameTh": "บริษัท ตัวอย่าง จำกัด",
+                     *         "taxId": "0000000000000"
                      *       },
                      *       "minOrderQty": {
                      *         "custom": 500,
                      *         "readyStock": 1
                      *       },
+                     *       "paymentMethods": [
+                     *         "bank_transfer_slip"
+                     *       ],
                      *       "priceLockDays": 15,
                      *       "proofSlaBusinessDays": null,
+                     *       "roadmap": {
+                     *         "business": [
+                     *           {
+                     *             "key": "team",
+                     *             "status": "live"
+                     *           },
+                     *           {
+                     *             "key": "brand_lock",
+                     *             "status": "soon"
+                     *           }
+                     *         ],
+                     *         "erpModules": [
+                     *           {
+                     *             "key": "getpack_jobs",
+                     *             "status": "live"
+                     *           },
+                     *           {
+                     *             "key": "stock",
+                     *             "status": "in_development"
+                     *           }
+                     *         ]
+                     *       },
                      *       "supportHours": {
                      *         "close": "18:00",
                      *         "days": "mon_fri",
@@ -335599,6 +335937,7 @@ export interface operations {
                      *       "email": "support@example.com",
                      *       "hours": "จันทร์–ศุกร์ 09:00–18:00",
                      *       "lineOaId": "@getpack-test",
+                     *       "office": null,
                      *       "phone": "0800000000"
                      *     }
                      */
@@ -335606,6 +335945,132 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.support.addInfo": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupportAddInfoDto"];
+            };
+        };
+        responses: {
+            /** @description Ticket status */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answeredAt": null,
+                     *       "createdAt": "2026-10-20T10:00:00+07:00",
+                     *       "lineUrl": "https://line.me/R/oaMessage/%40getpack-fake/?CS-2610-00001",
+                     *       "respondBy": "2026-10-21T10:00:00+07:00",
+                     *       "stage": "received",
+                     *       "ticketNo": "CS-2610-00001",
+                     *       "topic": "order"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SupportTicketStatusDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `support.ticket_not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -335721,7 +336186,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `idempotency.key_reused`, `support.contact_required`, `validation.failed` */
+            /** @description Problem: `idempotency.key_reused`, `support.callback_unavailable`, `support.contact_required`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -335837,7 +336302,209 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `idempotency.key_reused`, `support.contact_required`, `validation.failed` */
+            /** @description Problem: `idempotency.key_reused`, `support.callback_unavailable`, `support.contact_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.support.lookupTicket": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupportTicketLookupDto"];
+            };
+        };
+        responses: {
+            /** @description Ticket status */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answeredAt": null,
+                     *       "createdAt": "2026-10-20T10:00:00+07:00",
+                     *       "lineUrl": "https://line.me/R/oaMessage/%40getpack-fake/?CS-2610-00001",
+                     *       "respondBy": "2026-10-21T10:00:00+07:00",
+                     *       "stage": "received",
+                     *       "ticketNo": "CS-2610-00001",
+                     *       "topic": "order"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SupportTicketStatusDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `support.ticket_not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.support.contactOptions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contact options */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callback": null,
+                     *       "replyBusinessDays": 1,
+                     *       "replyBusinessDaysByTopic": {},
+                     *       "teamStatus": {
+                     *         "nextOpenAt": "2026-10-21T09:00:00+07:00",
+                     *         "openNow": false
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SupportContactOptionsDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
