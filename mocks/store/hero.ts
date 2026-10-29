@@ -200,7 +200,43 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
   supportReplyMinutes: null,
   templateCount: 105,
   contact: { phone: "020000000", lineOaId: "@getpack-mock", email: "support@example.invalid" },
-  issuer: { legalNameTh: "บริษัท ทดสอบระบบ จำกัด (ข้อมูลจำลอง)", legalNameEn: "Mock Test Co., Ltd. (mock data)" },
+  // D-458 (C10): what the business and getpack Factory pages label — the reference seed's statuses.
+  roadmap: {
+    business: [
+      { key: "team", status: "live" },
+      { key: "reorder", status: "live" },
+      { key: "approval", status: "live" },
+      { key: "credit", status: "live" },
+      { key: "invoices", status: "live" },
+      { key: "branches", status: "live" },
+      { key: "brand_lock", status: "soon" },
+      { key: "stock_alert", status: "soon" },
+      { key: "production_evidence", status: "soon" },
+      { key: "etax_export", status: "soon" },
+      { key: "api", status: "soon" },
+    ],
+    erpModules: [
+      { key: "getpack_jobs", status: "live" },
+      { key: "roles", status: "live" },
+      { key: "stock", status: "in_development" },
+      { key: "purchasing", status: "in_development" },
+      { key: "planning", status: "in_development" },
+      { key: "shop_floor", status: "in_development" },
+      { key: "sales", status: "in_development" },
+      { key: "accounting", status: "in_development" },
+      { key: "documents", status: "in_development" },
+      { key: "maintenance", status: "in_development" },
+      { key: "suppliers", status: "in_development" },
+    ],
+  },
+  paymentMethods: ["bank_transfer_slip", "scb_qr", "card_2c2p"],
+  issuer: {
+    legalNameTh: "บริษัท ทดสอบระบบ จำกัด (ข้อมูลจำลอง)",
+    legalNameEn: "Mock Test Co., Ltd. (mock data)",
+    taxId: "0000000000000",
+    branchCode: "00000",
+    addressTh: "ที่อยู่จำลอง ถนนทดสอบ แขวงทดสอบ เขตทดสอบ กรุงเทพมหานคร 10000 (ข้อมูลจำลอง)",
+  },
 });
 
 export const heroHandlers = [
