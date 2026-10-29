@@ -19,20 +19,9 @@ import { cn } from "@/ui/lib/cn";
 
 import { RadioChips, ToggleChips } from "./Chips";
 import { Honeypot } from "./Honeypot";
+import { INTENTS, type Intent } from "./intents";
 import { EMAIL, focusFirstInvalid, newKey, PHONE, sendContact, trapped, type Ticket } from "./send";
 
-/** The storefront's topic keys — the same values as the old subject list; the API routes them (D-458). */
-export const INTENTS = [
-  "order",
-  "quote",
-  "artwork",
-  "payment",
-  "delivery",
-  "business",
-  "partnership",
-  "other",
-] as const;
-export type Intent = (typeof INTENTS)[number];
 const ICONS: Record<Intent, IconName> = {
   order: "package",
   quote: "document",
@@ -278,7 +267,7 @@ export function ContactCentre(props: ContactCentreProps) {
         <h2 id="contact-intents" className="sr-only">
           {t("intentsLabel")}
         </h2>
-        <div role="radiogroup" aria-labelledby="contact-intents" className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <div role="radiogroup" aria-labelledby="contact-intents" className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
           {INTENTS.map((value) => {
             const on = value === intent;
             return (
@@ -304,7 +293,7 @@ export function ContactCentre(props: ContactCentreProps) {
         </div>
       </section>
 
-      <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_23.75rem]">
+      <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_23.75rem]">
         <div className="flex min-w-0 flex-col gap-5">
           <section
             aria-labelledby="contact-answers"

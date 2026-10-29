@@ -327,7 +327,8 @@
         "cta": "Open the help centre"
       }
     },
-    "orderCodePlaceholder": "PK-2569-00100"
+    "orderCodePlaceholder": "PK-2569-00100",
+    "crumb": "Contact"
   },
   "samples": {
     "title": "Sample kits",

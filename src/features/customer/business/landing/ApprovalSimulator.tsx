@@ -99,7 +99,7 @@ export function ApprovalSimulator({ orders }: { orders: SampleOrder[] }) {
     : [];
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <div className="border-border bg-surface rounded-panel flex flex-col gap-5 border p-5.5">
         <h3 className="text-lg font-semibold">{t("policy")}</h3>
         <div className="flex flex-col gap-2">

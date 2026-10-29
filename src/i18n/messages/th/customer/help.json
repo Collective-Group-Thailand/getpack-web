@@ -327,7 +327,8 @@
         "cta": "เปิดศูนย์ช่วยเหลือ"
       }
     },
-    "orderCodePlaceholder": "PK-2569-00100"
+    "orderCodePlaceholder": "PK-2569-00100",
+    "crumb": "ติดต่อเรา"
   },
   "samples": {
     "title": "ชุดตัวอย่าง",

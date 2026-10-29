@@ -137,7 +137,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
         <div
           className={cn(
             HOME_WRAP,
-            "grid items-center gap-10 py-12 md:py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12",
+            "grid items-center gap-10 py-12 md:py-16 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12",
           )}
         >
           <div>
@@ -196,7 +196,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
 
         <section aria-labelledby="business-before" className={SECTION}>
           <SectionHead id="business-before" title={t("before.title")} lead={t("before.lead")} />
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {BEFORE.map((key) => (
               <li key={key} className={cn(CARD, "flex flex-col overflow-hidden")}>
                 <div className="bg-bg-subtle text-subtle p-4 text-[13.5px]">
@@ -226,14 +226,14 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
         {features.length > 0 ? (
           <section aria-labelledby="business-features" className={SECTION}>
             <SectionHead id="business-features" title={t("features.title")} />
-            <ul className="grid gap-3 md:grid-cols-6">
+            <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
               {features.map((feature) => (
                 <li
                   key={feature.key}
                   className={cn(
                     CARD,
                     "relative flex flex-col gap-2 p-5",
-                    WIDE.has(feature.key) ? "md:col-span-3" : "md:col-span-2",
+                    WIDE.has(feature.key) ? "xl:col-span-3" : "xl:col-span-2",
                   )}
                 >
                   {feature.soon ? (
@@ -292,15 +292,18 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
 
         <section aria-labelledby="business-credit" className={SECTION}>
           <SectionHead id="business-credit" title={t("credit.title")} />
-          <ol className={cn(CARD, "grid overflow-hidden md:grid-cols-2 lg:grid-cols-4")}>
+          <ol className={cn(CARD, "grid overflow-hidden md:grid-cols-2 xl:grid-cols-4")}>
             {CREDIT_STEPS.map((step, index) => (
               <li
                 key={step}
                 className={cn(
                   "border-border flex flex-col gap-1.5 p-5.5",
-                  index < CREDIT_STEPS.length - 1 && "border-b lg:border-r lg:border-b-0",
-                  index === 1 && "md:border-r",
-                  index === CREDIT_STEPS.length - 1 && "bg-primary-subtle",
+                  [
+                    "border-b md:border-r xl:border-b-0",
+                    "border-b xl:border-r xl:border-b-0",
+                    "border-b md:border-r md:border-b-0",
+                    "bg-primary-subtle",
+                  ][index],
                 )}
               >
                 <span className="text-subtle text-xs">{t(`credit.steps.${step}.when`)}</span>
@@ -340,7 +343,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
 
         <section id="apply" aria-labelledby="business-apply" className={SECTION}>
           <SectionHead id="business-apply" title={t("applySection.title")} />
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-5 xl:grid-cols-2">
             <div>
               <ol>
                 {APPLY_STEPS.map((step, index) => (
@@ -429,7 +432,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
         <section
           data-theme="dark"
           aria-labelledby="sales-title"
-          className="bg-bg text-fg rounded-panel grid gap-6 overflow-hidden p-5 sm:p-9 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
+          className="bg-bg text-fg rounded-panel grid gap-6 overflow-hidden p-5 sm:p-9 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
         >
           <div>
             <h2

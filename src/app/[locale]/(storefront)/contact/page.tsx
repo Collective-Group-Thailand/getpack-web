@@ -12,8 +12,9 @@ import {
 import { pick } from "@/features/customer/catalog/localize";
 import { schemaOpeningHours } from "@/features/customer/catalog/support-hours";
 import { pageContext } from "@/features/customer/content/page-meta.server";
-import { ContactCentre, INTENTS, type Intent } from "@/features/customer/help/contact/ContactCentre";
+import { ContactCentre } from "@/features/customer/help/contact/ContactCentre";
 import { ContactSide } from "@/features/customer/help/contact/ContactSide";
+import { INTENTS, type Intent } from "@/features/customer/help/contact/intents";
 import { TeamStatus } from "@/features/customer/help/contact/TeamStatus";
 import { TrackBox } from "@/features/customer/help/contact/TrackBox";
 import { HOME_WRAP } from "@/features/customer/home/parts";
@@ -61,7 +62,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
   const wanted = topic ? (TOPIC_ALIASES[topic] ?? topic) : "order";
   const initialIntent: Intent = (INTENTS as readonly string[]).includes(wanted) ? (wanted as Intent) : "order";
   const openingHours = schemaOpeningHours(config?.supportHours);
-  const page = await pageContext("/contact", t("title"));
+  const page = await pageContext("/contact", t("crumb"));
   const issuer =
     locale === "en"
       ? (config?.issuer.legalNameEn ?? config?.issuer.legalNameTh ?? null)
@@ -104,7 +105,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
           label={page.crumbLabel}
           items={page.crumbs.map((crumb) => ({ label: crumb.name, href: crumb.url }))}
         />
-        <div className="mt-3 grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_26.25rem]">
+        <div className="mt-3 grid items-end gap-6 xl:grid-cols-[minmax(0,1fr)_26.25rem]">
           <div>
             <h1 className="text-[clamp(2.125rem,4.2vw,3.375rem)] leading-[1.08] font-bold tracking-[-0.03em]">
               {t("title")}

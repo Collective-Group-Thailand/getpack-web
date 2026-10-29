@@ -65,7 +65,7 @@ export function RoiCalculator() {
   ];
 
   return (
-    <div className="border-border bg-surface rounded-panel grid gap-5 border p-4 sm:p-6 lg:grid-cols-2">
+    <div className="border-border bg-surface rounded-panel grid gap-5 border p-4 sm:p-6 xl:grid-cols-2">
       <div className="flex flex-col gap-4">
         {rows.map((row) => (
           <div key={row.key} className="flex flex-col gap-2 text-[13.5px]">

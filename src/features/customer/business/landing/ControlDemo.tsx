@@ -53,7 +53,7 @@ export function ControlDemo({
     ) : null;
 
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
       {products.length > 0 ? (
         <section
           aria-labelledby="ctl-catalogue"

@@ -67,7 +67,7 @@ export function TrackBox({ signedIn, topicLabel }: { signedIn: boolean; topicLab
       setProblem(t("invalid"));
       return;
     }
-    trackBusiness("contact_track", { type: kind.type });
+    if (!asking) trackBusiness("contact_track", { type: kind.type });
     if (kind.type === "order") {
       const target = `/account/orders?q=${encodeURIComponent(kind.code)}`;
       router.push(signedIn ? target : `/sign-in?returnTo=${encodeURIComponent(target)}`);

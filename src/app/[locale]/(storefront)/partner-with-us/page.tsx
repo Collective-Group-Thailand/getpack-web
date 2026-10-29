@@ -110,7 +110,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
         <div
           className={cn(
             HOME_WRAP,
-            "grid items-center gap-10 py-12 md:py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12",
+            "grid items-center gap-10 py-12 md:py-16 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12",
           )}
         >
           <div>
@@ -150,14 +150,14 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
       <div className={cn(HOME_WRAP, "pb-6")}>
         <section aria-labelledby="factory-sources" className={SECTION}>
           <SectionHead id="factory-sources" title={t("sources.title")} lead={t("sources.lead")} />
-          <div className="grid items-center gap-3.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1.1fr)]">
+          <div className="grid items-center gap-3.5 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1.1fr)]">
             {(["getpack", "own"] as const).map((source, index) => (
               <div key={source} className="contents">
                 <div className={cn(CARD, "flex h-full flex-col gap-1.5 p-4.5")}>
                   <b className="text-base font-semibold">{t(`sources.${source}.title`)}</b>
                   <p className="text-muted text-[13.5px]">{t(`sources.${source}.body`)}</p>
                 </div>
-                <span aria-hidden="true" className="text-subtle hidden text-center text-2xl font-bold lg:block">
+                <span aria-hidden="true" className="text-subtle hidden text-center text-2xl font-bold xl:block">
                   {index === 0 ? "+" : "="}
                 </span>
               </div>
@@ -175,7 +175,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
         {modules.length > 0 ? (
           <section id="modules" aria-labelledby="factory-modules" className={SECTION}>
             <SectionHead id="factory-modules" title={t("modules.title")} lead={t("modules.lead")} />
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {modules.map((module) => {
                 const live = module.status === "live";
                 return (
@@ -217,7 +217,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
         ) : null}
 
         <section aria-labelledby="factory-floor" className={SECTION}>
-          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_18.75rem]">
+          <div className="grid items-center gap-8 xl:grid-cols-[minmax(0,1fr)_18.75rem]">
             <div>
               <SectionHead id="factory-floor" title={t("floor.title")} lead={t("floor.lead")} />
               <ul className="flex flex-col gap-3">
@@ -291,7 +291,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
 
         <section aria-labelledby="factory-tiers" className={SECTION}>
           <SectionHead id="factory-tiers" title={t("tiers.title")} lead={t("tiers.lead")} />
-          <ol className="grid gap-3 md:grid-cols-3">
+          <ol className="grid gap-3 xl:grid-cols-3">
             {TIERS.map((tier, index) => (
               <li key={tier} className={cn(CARD, "flex flex-col gap-1.5 p-4.5")}>
                 <span className="text-subtle text-xs tabular-nums">{t("tiers.level", { n: index + 1 })}</span>
@@ -324,7 +324,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
         <section
           data-theme="dark"
           aria-labelledby="factory-apply-title"
-          className="bg-bg text-fg rounded-panel grid gap-6 overflow-hidden p-5 sm:p-9 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
+          className="bg-bg text-fg rounded-panel grid gap-6 overflow-hidden p-5 sm:p-9 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
         >
           <div>
             <h2
