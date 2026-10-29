@@ -88,7 +88,7 @@ export function ApprovalSimulator({ orders }: { orders: SampleOrder[] }) {
         },
         {
           key: "production",
-          icon: "factory",
+          icon: "printer",
           title: t("production.title"),
           body:
             order.leadTimeDays !== null ? t("production.bodyLead", { days: order.leadTimeDays }) : t("production.body"),
