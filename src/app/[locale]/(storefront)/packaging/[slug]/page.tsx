@@ -10,7 +10,6 @@ import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
 import {
   isLandingPublished,
   landingOfSlug,
-  PACKAGING_LANDINGS,
   packagingHref,
   type PackagingLanding,
 } from "@/features/customer/styles/packaging-landings";
@@ -25,12 +24,8 @@ import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
-/** Static at build time and refreshed every 15 minutes (the catalogue's own data lifetime). */
-export const revalidate = 900;
-
-export function generateStaticParams() {
-  return featureFlags.packagingLandings ? PACKAGING_LANDINGS.map(({ slug }) => ({ slug })) : [];
-}
+// Rendered per request like the rest of the storefront: canonical and JSON-LD URLs come from the
+// request host (`publicOrigin` reads headers), which an ISR render cannot read (DYNAMIC_SERVER_USAGE → 500).
 
 async function load(
   slug: string,
