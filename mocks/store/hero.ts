@@ -214,6 +214,8 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
       { key: "production_evidence", status: "soon" },
       { key: "etax_export", status: "soon" },
       { key: "api", status: "soon" },
+      { key: "company_catalogue", status: "soon" },
+      { key: "budgets", status: "soon" },
     ],
     erpModules: [
       { key: "getpack_jobs", status: "live" },

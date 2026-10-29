@@ -336302,7 +336302,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `idempotency.key_reused`, `support.callback_unavailable`, `support.contact_required`, `validation.failed` */
+            /** @description Problem: `idempotency.key_reused`, `support.contact_required`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
