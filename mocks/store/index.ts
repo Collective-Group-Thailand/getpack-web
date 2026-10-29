@@ -10,6 +10,7 @@ import { storeBusinessHandlers } from "./business";
 import { storeCartHandlers } from "./cart";
 import { storeCheckoutHandlers } from "./checkout";
 import { storeDesignHandlers } from "./designs";
+import { fileCheckHandlers } from "./file-checks";
 import { storeFulfilmentHandlers } from "./fulfilment";
 import { storeOrderHandlers } from "./orders";
 import { storeCatalogHandlers } from "./catalog";
@@ -34,6 +35,7 @@ import { homeHandlers } from "./home";
 import { styleLibraryHandlers } from "./style-library";
 
 export const storeHandlers = [
+  ...fileCheckHandlers,
   // Samples first: they also serve the evidence photos (`files/:fileId/download`) of every zone.
   ...sampleHandlers,
   ...launchpadHandlers,
