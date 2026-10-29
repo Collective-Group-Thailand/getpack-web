@@ -34,7 +34,8 @@ test("mini editor: keyboard, price, and the brand name carried into the editor",
   await gotoHydrated(page, `${HOSTS.customer}/studio`);
   const editor = page.getByRole("group", { name: "สตูดิโอจำลอง ลองใช้ได้" });
   await editor.getByLabel("หรือพิมพ์ชื่อแบรนด์").fill("Somchai Coffee");
-  await expect(editor.getByRole("img")).toHaveAccessibleName(/Somchai Coffee/);
+  // The box preview carries the brand name (the dieline beside it is its own image).
+  await expect(editor.getByRole("img", { name: /Somchai Coffee/ })).toBeVisible();
   const sizes = editor.getByRole("group", { name: "ขนาด (ซม.)" }).getByRole("button");
   await sizes.nth(1).focus();
   await page.keyboard.press("Enter");

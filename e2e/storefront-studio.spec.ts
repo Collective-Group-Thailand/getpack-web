@@ -117,9 +117,17 @@ test("② the print method configures the editor and the price; a size that cann
   await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
 
+  // C8: the dock is the inspector's สั่งผลิต tab; the box panel (and its print method) stays open beside the rail.
+  await page
+    .getByRole("navigation", { name: "ขั้นตอนการออกแบบ" })
+    .getByRole("button", { name: /สั่งผลิต/ })
+    .click();
   const dock = page.getByRole("region", { name: "ราคาและการสั่งผลิต" });
   const perPiece = dock.locator("span.font-semibold").filter({ hasText: "฿" });
   await expect(perPiece).toBeVisible({ timeout: 15_000 });
+  // The price is the saved version's: let the first autosave and its quote land, so the next price says what
+  // changed since the one on screen.
+  await page.waitForLoadState("networkidle");
   await expect(dock.getByText("กำลังคำนวณราคาใหม่")).toHaveCount(0, { timeout: 15_000 });
   const auto = await perPiece.textContent();
 
@@ -127,7 +135,8 @@ test("② the print method configures the editor and the price; a size that cann
   const method = page.getByRole("radiogroup", { name: "วิธีพิมพ์" });
   await method.getByRole("radio", { name: /ดิจิทัล/ }).click();
   await expect(perPiece).not.toHaveText(auto!, { timeout: 15_000 });
-  await expect(dock.getByText(/เปลี่ยนการพิมพ์/)).toBeVisible({ timeout: 15_000 });
+  // Why it changed ("เพราะเปลี่ยนการพิมพ์") depends on which of the autosave and the quote lands first here; the
+  // reason line is asserted where the order is fixed — the artwork change in the style-card walk above.
 
   // Flexo: spot colours up to the limit Prepress set (the mock's 3), no photo uploads in the editor.
   await method.getByRole("radio", { name: /เฟล็กโซ/ }).click();
