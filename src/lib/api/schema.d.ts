@@ -49115,6 +49115,33 @@ export interface components {
             /** @example 0000000000019 */
             taxId: string;
         };
+        DefaultTolerancesDto: {
+            /**
+             * @description Colour ΔE2000 against the approved proof — `fulfilment.colour_tolerance_delta_e.standard` (D-186)
+             * @example 3
+             */
+            colourDeltaE: string | null;
+            /**
+             * @description Colour ΔE2000 on flexo-printed corrugated board — `fulfilment.colour_tolerance_delta_e.flexo`
+             * @example 5
+             */
+            colourDeltaEFlexo: string | null;
+            /**
+             * @description Quantity ± % (shortage and overage) — `fulfilment.tolerance_default_pct` (D-163); null until set
+             * @example 5.00
+             */
+            quantityPct: string | null;
+            /**
+             * @description Largest of the same; null when none
+             * @example 3.00
+             */
+            sizeMmMax: string | null;
+            /**
+             * @description Smallest size tolerance ± mm over the product kinds that publish one — `fulfilment.dimensional_tolerance_mm` (D-186); null when none
+             * @example 1.00
+             */
+            sizeMmMin: string | null;
+        };
         DefectCountsDto: {
             /** @example 0 */
             critical: number;
@@ -60830,6 +60857,11 @@ export interface components {
             /** @description The 12 checks, in the page’s order */
             checks: components["schemas"]["FileCheckRuleItemDto"][];
             /**
+             * @description C12 (D-460): the safe distance on corrugated board (print profile `corrugated` of `artwork.preflight_rules`), mm; null when the profile sets none (the safe distance above applies)
+             * @example 5
+             */
+            corrugatedSafeZoneMm: string | null;
+            /**
              * @description Accepted file extensions
              * @example [
              *       ".pdf",
@@ -70458,6 +70490,8 @@ export interface components {
              * @example 42
              */
             templateCount: number;
+            /** @description D-460 the default tolerances (settings, D-163 / D-186) the "how we work" block states; each part null until set. A job’s own tolerance is frozen on its quotation (D-021) and may differ */
+            tolerances: components["schemas"]["DefaultTolerancesDto"];
         };
         PublicGuaranteeDto: {
             /**
@@ -312008,6 +312042,7 @@ export interface operations {
                      *           "evaluated": false
                      *         }
                      *       ],
+                     *       "corrugatedSafeZoneMm": "5",
                      *       "extensions": [
                      *         ".pdf",
                      *         ".ai"
@@ -321450,7 +321485,14 @@ export interface operations {
                      *         "tz": "Asia/Bangkok"
                      *       },
                      *       "supportReplyMinutes": null,
-                     *       "templateCount": 42
+                     *       "templateCount": 42,
+                     *       "tolerances": {
+                     *         "colourDeltaE": "3",
+                     *         "colourDeltaEFlexo": "5",
+                     *         "quantityPct": "5.00",
+                     *         "sizeMmMax": "3.00",
+                     *         "sizeMmMin": "1.00"
+                     *       }
                      *     }
                      */
                     "application/json": components["schemas"]["PublicConfigDto"];
