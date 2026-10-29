@@ -59,8 +59,13 @@ export function Workspace({
   const tChecks = useTranslations("studio.upload.checks");
   const rules = useFileCheckRules();
   const ruleVars = { bleed: rules.data?.bleedMm ?? "", safe: rules.data?.safeZoneMm ?? "" };
-  const tCheck = (key: string) =>
-    (tChecks as unknown as (k: string, values: Record<string, string>) => string)(key, ruleVars);
+  // C12 (D-460): an item states the distance the API checked it with (corrugated board has its own safe zone).
+  const varsOf = (item?: { measurements?: Record<string, unknown> }) => {
+    const safe = item?.measurements?.["safeZoneMm"];
+    return typeof safe === "number" ? { ...ruleVars, safe: String(safe) } : ruleVars;
+  };
+  const tCheck = (key: string, item?: { measurements?: Record<string, unknown> }) =>
+    (tChecks as unknown as (k: string, values: Record<string, string>) => string)(key, varsOf(item));
   const locale = useLocale();
   const format = useFormat();
   const variant = check.variants.find((v) => v.variantNo === active) ?? check.variants[0]!;
@@ -402,7 +407,7 @@ export function Workspace({
                           {n ?? <Icon name="warning" size={13} />}
                         </span>
                         <span className="min-w-0">
-                          <b className="block text-sm font-semibold">{tCheck(`${item.check}.title`)}</b>
+                          <b className="block text-sm font-semibold">{tCheck(`${item.check}.title`, item)}</b>
                           <small className="text-muted mt-0.5 block text-[0.8125rem]">
                             {locale === "en" ? item.messageEn : item.messageTh}
                           </small>
@@ -420,7 +425,7 @@ export function Workspace({
                         <div className="text-muted flex flex-col gap-2.5 px-3 pb-3 text-[0.8125rem] sm:ps-12">
                           <div>
                             <b className="text-fg font-semibold">{t("howTo")}</b>
-                            <p className="m-0">{tCheck(`${item.check}.howTo`)}</p>
+                            <p className="m-0">{tCheck(`${item.check}.howTo`, item)}</p>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {item.check === "size_mismatch" && match ? (
@@ -457,7 +462,7 @@ export function Workspace({
                         <li key={item.check} className="flex gap-2">
                           <Icon name="users" size={15} className="mt-0.5 shrink-0" aria-hidden="true" />
                           <span>
-                            <b className="text-fg font-semibold">{tCheck(`${item.check}.title`)}</b> ·{" "}
+                            <b className="text-fg font-semibold">{tCheck(`${item.check}.title`, item)}</b> ·{" "}
                             {locale === "en" ? item.messageEn : item.messageTh}
                           </span>
                         </li>
@@ -477,8 +482,8 @@ export function Workspace({
                       <li key={item.check} className="flex gap-2">
                         <Icon name="check" size={15} className="text-success mt-0.5 shrink-0" aria-hidden="true" />
                         <span>
-                          <b className="text-fg font-semibold">{tCheck(`${item.check}.title`)}</b> ·{" "}
-                          {tCheck(`${item.check}.body`)}
+                          <b className="text-fg font-semibold">{tCheck(`${item.check}.title`, item)}</b> ·{" "}
+                          {tCheck(`${item.check}.body`, item)}
                         </span>
                       </li>
                     ))}

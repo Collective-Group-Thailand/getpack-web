@@ -40,6 +40,9 @@ export async function UploadSections({
   const checks = rules?.checks.map((c) => c.check) ?? [];
   const bleed = rules?.bleedMm ?? null;
   const safe = rules?.safeZoneMm ?? null;
+  // C12 (D-460): corrugated board's own safe distance, when the rules give one that differs.
+  const corrugatedSafe =
+    rules?.corrugatedSafeZoneMm && rules.corrugatedSafeZoneMm !== safe ? rules.corrugatedSafeZoneMm : null;
 
   return (
     <>
@@ -57,6 +60,9 @@ export async function UploadSections({
                 </b>
                 <p className="text-muted m-0 text-[0.84375rem]">
                   {t(`checks.${check}.body`, { bleed: bleed ?? "", safe: safe ?? "" })}
+                  {check === "safe_zone" && corrugatedSafe
+                    ? ` · ${t("checks.safe_zone.corrugated", { mm: corrugatedSafe })}`
+                    : null}
                 </p>
                 {evaluated.get(check) === false ? (
                   <span className="text-muted mt-auto text-xs font-semibold">{t("sections.byTeam")}</span>

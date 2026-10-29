@@ -679,7 +679,8 @@
       "safe_zone": {
         "title": "{safe} mm safe zone",
         "body": "Text and logos stay clear of cuts and folds",
-        "howTo": "Move text and logos inwards, away from the cut and fold lines"
+        "howTo": "Move text and logos inwards, away from the cut and fold lines",
+        "corrugated": "corrugated boxes {mm} mm"
       },
       "low_resolution": {
         "title": "Images sharp enough",
