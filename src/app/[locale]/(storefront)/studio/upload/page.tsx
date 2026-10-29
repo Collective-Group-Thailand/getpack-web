@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { listProducts } from "@/features/customer/catalog/api.server";
-import { storeImageSrc } from "@/features/customer/catalog/images";
+import { listProducts, publicApi } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { HOME_WRAP } from "@/features/customer/home/parts";
-import { STYLES_HREF } from "@/features/customer/styles/paths";
+import { UploadApp } from "@/features/customer/upload/UploadApp";
+import { UploadSections } from "@/features/customer/upload/UploadSections";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/ui/components/Button";
-import { ProductThumb, productFamilyOf } from "@/ui/components/ProductIllustration";
+import { readAccessToken } from "@/lib/auth/session";
+import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,15 +18,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("metaTitle") };
 }
 
-const UNDERLINE = "border-b border-current pb-px font-medium";
-
 /**
- * `/studio/upload` — "มีไฟล์แล้ว อัปโหลดเลย" (Phase 4): the customer with a finished file picks what
- * they print and lands in its configurator with "own file" chosen (`?design=own_file`), where the
- * price is. The file itself is uploaded after ordering, on the order's artwork page, and the team
- * checks it before production — the copy says only that until the upload pre-check ships
- * (upload-redesign Phase 2, GLOBAL-RULES §3). Only products with an instant price are listed; the
- * rest go through RFQ.
+ * `/studio/upload` — "มีไฟล์แล้ว อัปโหลดเลย" (upload redesign Phase 1 → 2, C9, D-457): upload PDF / AI files, the API
+ * reads the die lines and checks them with the 12 checks before ordering, the spec and price come from the same
+ * pricing service as /configure, and a file with nothing to fix goes in the cart with it (GLOBAL-RULES §6). Lists only
+ * the products with an instant price (own-file products, DECISIONS-STAGE-A §1) plus "สินค้าอื่น ขอใบเสนอราคา".
  */
 export default async function StudioUpload({
   params,
@@ -34,98 +31,72 @@ export default async function StudioUpload({
   params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [{ locale }, query] = await Promise.all([params, searchParams]);
-  // C7: the file dropped on `/studio`'s "มีไฟล์แบบแล้ว" — only its name travels; the file stays on the customer's
-  // computer and is uploaded on the order's artwork page after ordering (GLOBAL-RULES §6).
+  const [{ locale }, query, jar] = await Promise.all([params, searchParams, cookies()]);
+  // A full-page arrival from /studio's drop zone keeps only the name (a client-side one hands the file over).
   const fileName = typeof query.file === "string" && query.file.length <= 120 ? query.file : null;
   setRequestLocale(locale);
-  const [t, format, products] = await Promise.all([
+  const signedIn = Boolean(readAccessToken(jar));
+  const [t, format, products, rules] = await Promise.all([
     getTranslations("studio.upload"),
     getFormat(),
     listProducts({ perPage: 48 }).catch(() => null),
+    publicApi("content")
+      .then(async (api) => (await api.GET("/v1/store/file-checks/rules")).data ?? null)
+      .catch(() => null),
   ]);
-  const priced = (products?.data ?? []).filter((product) => product.availability !== "rfq");
+  const ownFile = (products?.data ?? [])
+    .filter((product) => product.availability !== "rfq")
+    .map((product) => ({
+      slug: product.slug,
+      name: pick(locale, product.nameTh, product.nameEn),
+      startingPrice: product.startingPricePerPiece ?? null,
+      moq: product.moq ?? null,
+    }));
 
   return (
-    <div className={cn(HOME_WRAP, "pt-10 pb-20 md:pt-14")}>
-      <div className="max-w-[46rem]">
-        <h1 className="text-[2.125rem] leading-[1.1] md:text-5xl">{t("title")}</h1>
-        <p className="text-muted mt-4 text-[1.0625rem]">{t("lead")}</p>
-        {fileName ? (
-          <p className="border-primary bg-primary-subtle rounded-card mt-5 border px-4 py-3 text-sm" role="status">
-            {t("fileChosen", { name: fileName })}
-          </p>
-        ) : null}
-        <ol className="border-fg mt-8 grid gap-4 border-t pt-4 text-[0.90625rem] sm:grid-cols-3">
-          {(["pick", "spec", "file"] as const).map((step, index) => (
-            <li key={step}>
-              <b className="block font-semibold tabular-nums">{index + 1}</b>
-              <span className="text-muted">{t(`steps.${step}`)}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
+    <div className={cn(HOME_WRAP, "pt-8")}>
+      <nav aria-label={t("crumbsLabel")} className="text-subtle mb-3 flex gap-2 text-[0.8125rem]">
+        <Link href="/studio" className="hover:text-fg">
+          {t("crumbStudio")}
+        </Link>
+        <Icon name="chevron-right" size={14} aria-hidden="true" className="self-center" />
+        <span aria-current="page">{t("crumbUpload")}</span>
+      </nav>
+      <h1 className="text-[2rem] leading-[1.08] font-bold tracking-tight text-balance md:text-[3.25rem]">
+        {t("title")}
+      </h1>
+      <p className="text-muted mt-2.5 max-w-[60ch] text-[1.03125rem] text-pretty">{t("lead")}</p>
+      <p className="text-muted mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[0.84375rem]">
+        {(
+          [
+            ["scan", "proofAuto"],
+            ["users", "proofTeam"],
+            ["lock", "proofPrivate"],
+          ] as const
+        ).map(([icon, key]) => (
+          <span key={key} className="inline-flex items-center gap-1.5">
+            <Icon name={icon} size={17} className="text-primary" aria-hidden="true" />
+            {t(key)}
+          </span>
+        ))}
+      </p>
 
-      <section aria-labelledby="upload-pick" className="mt-14">
-        <h2 id="upload-pick" className="text-[1.75rem] leading-tight">
-          {t("pick")}
-        </h2>
-        {priced.length > 0 ? (
-          <ul className="mt-5 grid gap-x-5 sm:grid-cols-2 lg:grid-cols-4">
-            {priced.map((product) => {
-              const name = pick(locale, product.nameTh, product.nameEn);
-              const src = storeImageSrc(product.imageUrl, "thumb");
-              const facts = [
-                product.startingPricePerPiece ? t("from", { price: format.thb(product.startingPricePerPiece) }) : null,
-                product.moq !== null ? t("moq", { count: format.number(product.moq) }) : null,
-              ].filter(Boolean);
-              return (
-                <li key={product.slug}>
-                  <Link
-                    href={`/configure/${encodeURIComponent(product.slug)}?design=own_file`}
-                    className="border-border hover:text-primary grid grid-cols-[4.5rem_1fr] items-center gap-3.5 border-t py-4"
-                  >
-                    {src ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- API-origin image (see ProductCard)
-                      <img src={src} alt="" width={72} height={72} loading="lazy" className="size-18 object-cover" />
-                    ) : (
-                      <ProductThumb
-                        family={productFamilyOf(product.productTypeCode)}
-                        className="size-18 rounded-none [&_svg]:max-w-14"
-                      />
-                    )}
-                    <span>
-                      <b className="block text-[0.9375rem] font-semibold">{name}</b>
-                      {facts.length ? <span className="text-muted text-[13px]">{facts.join(" · ")}</span> : null}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <div className="border-border mt-5 flex flex-wrap items-center gap-4 border-y py-5">
-            <p className="text-muted">{t("none")}</p>
-            <Button asChild variant="secondary">
-              <Link href="/contact">{t("contact")}</Link>
-            </Button>
-          </div>
-        )}
-        <p className="text-muted mt-6 text-[13px]">
-          {t.rich("noFile", {
-            studio: (chunks) => (
-              <Link href="/studio" className={cn("text-fg", UNDERLINE)}>
-                {chunks}
-              </Link>
-            ),
-            templates: (chunks) => (
-              <Link href={STYLES_HREF} className={cn("text-fg", UNDERLINE)}>
-                {chunks}
-              </Link>
-            ),
-          })}
-        </p>
-      </section>
+      {ownFile.length ? (
+        <UploadApp products={ownFile} signedIn={signedIn} handedFileName={fileName} />
+      ) : (
+        <p className="text-muted border-border mt-6 border-y py-5">{t("none")}</p>
+      )}
+      <p className="text-muted mt-4 text-[0.8125rem]">
+        {t.rich("others", {
+          link: (chunks) => (
+            <Link href="/products" className="text-fg border-b border-current pb-px font-medium">
+              {chunks}
+            </Link>
+          ),
+        })}
+      </p>
+
+      <UploadSections rules={rules} maxLabel={rules ? format.bytes(rules.maxBytes) : null} />
     </div>
   );
 }

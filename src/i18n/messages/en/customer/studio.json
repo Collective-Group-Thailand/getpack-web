@@ -546,21 +546,324 @@
     "copyName": "{name} (copy)"
   },
   "upload": {
-    "metaTitle": "Have a file? Upload it",
-    "title": "Have a file? Upload it",
-    "lead": "Pick what you're printing, set the size, material and quantity, then order — you upload your file on the order page after ordering, our team checks it before production and sends you a proof to approve before every job goes to print",
-    "steps": {
-      "pick": "Pick a product below",
-      "spec": "Enter the size, board and quantity — see the price at once",
-      "file": "Order, then upload your file on the order page — our team checks it and sends a proof to approve before production"
+    "metaTitle": "Got a file? Upload it",
+    "title": "Got a file? Upload it",
+    "lead": "Drop a PDF or AI file: we read the die lines in it, tell you which box and size it is, check the print and show the real price before you order. What the system cannot check yet, our prepress team checks.",
+    "proofAuto": "12 file checks before you order",
+    "proofTeam": "Prepress re-checks every job",
+    "proofPrivate": "Your files stay private",
+    "crumbsLabel": "Breadcrumb",
+    "crumbStudio": "Studio",
+    "crumbUpload": "Upload a file",
+    "none": "No product has an instant price right now — send your file and spec from the contact page for a quotation",
+    "others": "Other products: <link>request a quotation</link>",
+    "fileChosen": "File {name} — drop or choose it again below to check it and see the price",
+    "refused": {
+      "type": "{name}: only PDF or AI files",
+      "size": "{name}: too large to check automatically",
+      "empty": "{name}: the file is empty"
     },
-    "pick": "What are you printing?",
-    "from": "from {price}",
-    "moq": "min. {count}",
-    "none": "No product has an instant price right now — send your file and spec and the team will quote it",
-    "contact": "Contact the team",
-    "noFile": "No file yet? <studio>Design it in the studio</studio> or <templates>download a dieline from the templates</templates>",
-    "fileChosen": "{name} is ready — pick the product it is for below. The file stays on your computer: upload it after ordering and our team checks it before production"
+    "drop": {
+      "aria": "Upload a PDF or AI file",
+      "title": "Drop your files here",
+      "body": "or click to choose · several files at once; each file is one version in the same order",
+      "max": "up to {size}",
+      "choose": "Choose files",
+      "progress": "{pct}%",
+      "privacy": "Only you can see your files; our team opens them only once they are part of an order",
+      "failed": "Upload failed, please try again",
+      "uploadingMore": "Uploading {count} file(s)"
+    },
+    "template": {
+      "title": "No file that fits yet?",
+      "body": "Download the template for the product and size you order, place your artwork and upload it back. Free.",
+      "product": "Product",
+      "productOption": "{name} · from {price}",
+      "size": "Size (inside length × width × height)",
+      "sizeOption": "Size {code} · {l} × {w} × {h} mm",
+      "sizeFromProduct": "Sizes on the product page",
+      "previewLabel": "Template of {name}, size {code}",
+      "notDrawable": "For this product our team sends the template after ordering",
+      "downloadPdf": "Download the PDF template",
+      "hint": "Cut and fold lines sit on their own spot-colour layers (CutContour / Crease), and the {bleed} mm bleed box is set. Opens in Illustrator as is."
+    },
+    "reorder": {
+      "title": "Reorder from a past file",
+      "body": "Files already produced: reorder with the approved file at today's price",
+      "meta": "{product} · last ordered {date} · {qty} pcs",
+      "view": "View",
+      "reorder": "Reorder"
+    },
+    "preview": {
+      "rendering": "Opening the file",
+      "failed": "This file cannot be shown in the browser; the check results below still apply",
+      "marker": "Point {n}"
+    },
+    "workspace": {
+      "heading": "File check",
+      "files": "Files in this job",
+      "remove": "Remove {name}",
+      "addVariant": "Add a file (new version)",
+      "detected": "This file is a {product}, size {size}",
+      "inside": "{l} × {w} × {h} mm (inside)",
+      "fromDie": "read from the die lines in the file",
+      "fromTrim": "read from the page size in the file",
+      "mismatch": "Does not match the file",
+      "mismatchBody": "The die lines in the file are a {product}, size {size} — not what is chosen",
+      "noMatch": "No box style matches the file",
+      "noMatchBody": "Choose the product and size; our team compares them with the file before production",
+      "useFileSize": "Use the file's size",
+      "orderSize": "Size ordered",
+      "chooseSize": "Choose the size",
+      "sizeOption": "Order size {code} · {l}×{w}×{h}",
+      "checking": "Checking {name}",
+      "progress": "Check progress",
+      "stages": {
+        "read": "Reading the file and its layers",
+        "die": "Finding the cut and fold lines",
+        "match": "Matching box style and size",
+        "checks": "Running the 12 print checks",
+        "price": "Preparing the price"
+      },
+      "checkingNote": "Large files can take a moment. You can close this page and come back to the same link; the results stay.",
+      "failed": "This file could not be read. Save it as PDF again and upload it.",
+      "view": "View",
+      "flat": "Flat",
+      "threeD": "3D",
+      "legendDie": "Die outline read",
+      "threeDLabel": "Box shape {l} × {w} × {h} mm",
+      "rotateLeft": "Rotate left",
+      "rotateRight": "Rotate right",
+      "tiltUp": "Tilt up",
+      "tiltDown": "Tilt down",
+      "reset": "Reset view",
+      "previewLabel": "File {name} with the points to look at",
+      "threeDNote": "Shape and proportion of the ordered size; the artwork shows on the flat view",
+      "viewingOld": "Viewing version v{v}",
+      "previewNote": "Your own file, shown in this browser only",
+      "counts": {
+        "mustFix": "Must fix",
+        "review": "Review",
+        "pass": "Passed of {total}"
+      },
+      "allPassed": "Nothing to fix",
+      "levels": {
+        "must_fix": "Must fix",
+        "review": "Review",
+        "pass": "Passed",
+        "not_checked": "Team checks"
+      },
+      "howTo": "How to fix it in Illustrator",
+      "uploadFixed": "Upload the corrected file",
+      "notChecked": "{count} checked by our prepress team",
+      "passedCount": "{count} passed",
+      "history": "File history, {count} versions",
+      "historyFix": "{count} to fix",
+      "historyPass": "Nothing to fix",
+      "historyChecking": "Checking",
+      "viewing": "Viewing",
+      "inCart": "This file is in your cart. To change it, remove the cart line first.",
+      "version": "v{n}"
+    },
+    "checks": {
+      "size_mismatch": {
+        "title": "Size and die lines match the box",
+        "body": "Cut and fold lines in the file against the style and size ordered",
+        "howTo": "Use the template of the size you order (download above), place the artwork on its layer and never scale the die lines — or change the size ordered to match the file"
+      },
+      "missing_bleed": {
+        "title": "{bleed} mm bleed",
+        "body": "Backgrounds run past the cut so no white edge shows",
+        "howTo": "Extend backgrounds and edge images past the cut on every side. View › Show Bleed shows the bleed box; save the PDF with Use Document Bleed Settings"
+      },
+      "safe_zone": {
+        "title": "{safe} mm safe zone",
+        "body": "Text and logos stay clear of cuts and folds",
+        "howTo": "Move text and logos inwards, away from the cut and fold lines"
+      },
+      "low_resolution": {
+        "title": "Images sharp enough",
+        "body": "Measured at the size printed on the box",
+        "howTo": "Use original images (not ones sent through chat), place them with File › Place and check Window › Links › Effective PPI"
+      },
+      "fonts_not_embedded": {
+        "title": "Fonts complete",
+        "body": "Embedded in the file or outlined",
+        "howTo": "Select all text and use Type › Create Outlines, or save the PDF with fonts embedded"
+      },
+      "rgb_colour": {
+        "title": "CMYK colour mode",
+        "body": "Screen RGB colours can shift in print",
+        "howTo": "Set File › Document Color Mode › CMYK Color, then check the key colours again before saving"
+      },
+      "ink_count": {
+        "title": "Inks match the print method",
+        "body": "Colours in the file against the method chosen",
+        "howTo": "Choose a print method that prints every colour in the file, or reduce the artwork to the method's colours"
+      },
+      "small_text": {
+        "title": "Text not too small",
+        "body": "Legible when printed on the real material",
+        "howTo": "Make the text larger, or move some of it to a panel with room"
+      },
+      "thin_lines": {
+        "title": "Lines not too thin",
+        "body": "Very thin lines may not print",
+        "howTo": "Increase the line weight in the Stroke panel"
+      },
+      "barcode": {
+        "title": "Barcodes and QR codes",
+        "body": "Size, quiet zone, clear of folds",
+        "howTo": "Place barcodes on a flat panel, clear of folds, with a margin around them"
+      },
+      "die_layer": {
+        "title": "Die lines on their own layer",
+        "body": "Cut lines on a non-printing spot colour",
+        "howTo": "Use the getpack template: cut lines sit on the CutContour spot colour and folds on Crease, apart from the artwork"
+      },
+      "small_text_black": {
+        "title": "Small text in black only",
+        "body": "Small text in 100% K only, so it prints sharp",
+        "howTo": "Set small text to C0 M0 Y0 K100 instead of a rich black"
+      }
+    },
+    "summary": {
+      "title": "Spec and price",
+      "product": "Product",
+      "choose": "Choose a product",
+      "size": "Inside size",
+      "sizeValue": "Size {code} · {l} × {w} × {h} mm",
+      "material": "Material",
+      "files": "Files / versions",
+      "inksTitle": "Inks found in the file",
+      "inks": {
+        "process": "Colour images or mixed colours: needs 4-colour (CMYK) print",
+        "spot": "Spot colours: {names}",
+        "black": "One colour (no colour images)"
+      },
+      "printMethod": "Print method",
+      "print": {
+        "none": "No print",
+        "cmyk": "4-colour (CMYK)",
+        "spot": "Spot colour"
+      },
+      "matchesFile": "matches the file",
+      "qty": "Quantity",
+      "qtyPerFile": "Quantity per version",
+      "qtyFor": "Quantity of {name}",
+      "pieces": "{qty} pcs",
+      "teamQuote": "Team quotes",
+      "chooseSize": "Choose the size to see the price",
+      "perLineNote": "Each file is one cart line, priced at its own quantity",
+      "perPiece": "/pc",
+      "goods": "Boxes, {qty} pcs",
+      "vat": "VAT",
+      "total": "Total (incl. VAT)",
+      "quoteNeeded": "Request a quotation",
+      "quoteNeededBody": "This quantity or spec cannot be priced automatically; our team quotes it",
+      "pricing": "Pricing",
+      "leadAndShip": "Made in {days} business days after the proof is approved · ready to ship from {date}",
+      "lead": "Made in {days} business days after the proof is approved",
+      "blocked": "Fix the must-fix items first, then the file can go in the cart",
+      "goToCart": "Go to cart",
+      "addToCart": "Add to cart with the file",
+      "requestQuote": "Request a quotation",
+      "saveQuote": "Save as quotation",
+      "afterNote": "After ordering, prepress checks the file again once paid and sends you a proof to approve before production",
+      "added": "Added to the cart with your file",
+      "viewCart": "View cart",
+      "failed": "That did not work, please try again",
+      "quoteSaved": "Quotation saved",
+      "viewQuotes": "View quotations"
+    },
+    "sections": {
+      "checksTitle": "What we check",
+      "checksBody": "Every check follows getpack's production standard. What is not checked automatically yet, our prepress team checks before production.",
+      "byTeam": "Checked by prepress",
+      "prepTitle": "Prepare a file that passes first time",
+      "prepBody": "Follow these 6 steps and your file passes without changes",
+      "afterTitle": "After you order",
+      "afterBody": "Even a file that passed is checked again by our prepress team before production",
+      "faqTitle": "Questions"
+    },
+    "prep": {
+      "template": {
+        "title": "Download the template for your style and size",
+        "body": "Cut and fold lines already sit on their own spot-colour layers. Free."
+      },
+      "layer": {
+        "title": "Place artwork on the artwork layer only",
+        "body": "Leave the die lines where they are; they confirm the size"
+      },
+      "bleed": {
+        "title": "Run backgrounds {bleed} mm past the cut",
+        "body": "and keep text and logos at least {safe} mm from cuts and folds"
+      },
+      "images": {
+        "title": "High-resolution images at real size · CMYK",
+        "body": "For one-colour print, use one-colour images"
+      },
+      "fonts": {
+        "title": "Outline the text or embed the fonts",
+        "body": "and avoid text or lines that are too small or thin"
+      },
+      "export": {
+        "title": "Save as PDF (PDF/X-4 recommended)",
+        "body": "Use the document's bleed and do not password-protect the file"
+      }
+    },
+    "apps": {
+      "title": "Work in any program",
+      "illustrator": {
+        "name": "Adobe Illustrator",
+        "body": "Open the PDF template above; its layers and die spot colours come with it"
+      },
+      "canva": {
+        "name": "Canva",
+        "body": "Download as \"PDF Print\" with crop marks and bleed"
+      },
+      "studio": {
+        "name": "No design program?",
+        "body": "Design in the getpack Studio for free, or let our team design it",
+        "cta": "Studio"
+      }
+    },
+    "after": {
+      "prepress": {
+        "title": "Prepress checks the file",
+        "body": "Colour, size and placement on the template, once paid"
+      },
+      "proof": {
+        "title": "Approve the proof",
+        "body": "See it with its die lines, approve or ask for changes; you start production"
+      },
+      "production": {
+        "title": "Production",
+        "body": "Follow each step on the order page; production days come with the price"
+      },
+      "delivery": {
+        "title": "Delivery",
+        "body": "To the addresses you choose, quantity within the standard tolerance; any shortfall comes back as credit"
+      }
+    },
+    "faq": {
+      "confidential": {
+        "q": "Are my files safe?",
+        "a": "Files are stored privately and only you can open them; our team opens them only once they are part of an order, and they are never used for anything else"
+      },
+      "files": {
+        "q": "Which files do you take?",
+        "a": "PDF (PDF/X-4 recommended) and AI files saved PDF-compatible, checked automatically up to {max} each. Upload several at once; each file is one version in the same order"
+      },
+      "failing": {
+        "q": "What if my file does not pass?",
+        "a": "Fix it in your program following each item's advice, then press \"Upload the corrected file\": the new version is checked straight away and the old one stays in the file history"
+      },
+      "otherDielines": {
+        "q": "Can I use a template that is not getpack's?",
+        "a": "Yes. If the file has die lines, we match them to the closest box style and size; if none matches, choose the product and size and our prepress team checks it before production"
+      }
+    }
   },
   "spotShortfall": {
     "title": "Your design has more colours than this price covers",

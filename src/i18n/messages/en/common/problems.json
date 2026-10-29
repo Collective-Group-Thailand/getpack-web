@@ -610,5 +610,12 @@
   },
   "etax": {
     "nothing_to_send": "No e-Tax e-mail to send"
+  },
+  "file_checks": {
+    "not_ready": "The file is still being checked",
+    "blocking": "The file has something to fix",
+    "spec_missing": "No product and size chosen",
+    "quote_mismatch": "The price is not for the chosen product",
+    "in_cart": "This file is already in the cart"
   }
 }
