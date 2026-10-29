@@ -27,3 +27,4 @@ export { trackAccount, type AccountEventName, type AccountEvents } from "./accou
 export { trackStudioHub, type StudioHubEventName, type StudioHubEvents } from "./studio-hub";
 export { trackUpload, type UploadEventName, type UploadEvents } from "./upload";
 export { trackEditor, type EditorEventName, type EditorEvents, type EditorModeName } from "./editor";
+export { trackBusiness, type BusinessEventName, type BusinessEvents } from "./business";
