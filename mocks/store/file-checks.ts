@@ -84,7 +84,12 @@ function report(check: MockCheck, version: MockVersion): Schemas["FileCheckRepor
   const items = CHECKS.map((name): Schemas["FileCheckItemDto"] => {
     const base = { check: name, page: 1, measurements: {}, at: null };
     if (NOT_EVALUATED.has(name))
-      return { ...base, level: "not_checked", messageTh: "ทีมเตรียมพิมพ์ตรวจให้ก่อนผลิต", messageEn: "Prepress checks it" };
+      return {
+        ...base,
+        level: "not_checked",
+        messageTh: "ทีมเตรียมพิมพ์ตรวจให้ก่อนผลิต",
+        messageEn: "Prepress checks it",
+      };
     if (name === "size_mismatch" && mismatch)
       return {
         ...base,
@@ -110,7 +115,12 @@ function report(check: MockCheck, version: MockVersion): Schemas["FileCheckRepor
         at: { x: 620, y: 300 },
       };
     if (name === "ink_count" && !check.printMethod)
-      return { ...base, level: "not_checked", messageTh: "ยังไม่ได้เลือกระบบพิมพ์", messageEn: "No print method chosen" };
+      return {
+        ...base,
+        level: "not_checked",
+        messageTh: "ยังไม่ได้เลือกระบบพิมพ์",
+        messageEn: "No print method chosen",
+      };
     return { ...base, level: "pass", messageTh: "ผ่าน", messageEn: "Passed" };
   });
   const counts = { mustFix: 0, review: 0, pass: 0, notChecked: 0 };
@@ -329,9 +339,8 @@ export const fileCheckHandlers = [
     version.cartItemId = lineId;
     check.revision += 1;
     edited(customer, 201);
-    return HttpResponse.json(
-      { check: toDto(check), cartItemId: lineId } satisfies Schemas["FileCheckCartResultDto"],
-      { status: 201 },
-    );
+    return HttpResponse.json({ check: toDto(check), cartItemId: lineId } satisfies Schemas["FileCheckCartResultDto"], {
+      status: 201,
+    });
   }),
 ];
