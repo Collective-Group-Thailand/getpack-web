@@ -918,7 +918,39 @@
     "trustDocument": "View document",
     "landingFaq": "Frequently asked questions",
     "landingTitle": "Choose by use",
-    "landingBody": "Styles that suit each kind of product"
+    "landingBody": "Styles that suit each kind of product",
+    "work": {
+      "title": "How we work",
+      "steps": {
+        "fileCheck": {
+          "title": "File check",
+          "body": "Uploaded files are checked before you order, and Prepress checks them again before production"
+        },
+        "approval": {
+          "title": "Artwork approval",
+          "body": "You check the artwork and approve it yourself before production starts"
+        },
+        "production": {
+          "title": "Production",
+          "body": "Production days count from artwork approval and payment"
+        },
+        "quality": {
+          "title": "Quality check",
+          "body": "The work is checked against the approved artwork, within the stated tolerances"
+        },
+        "delivery": {
+          "title": "Delivery",
+          "body": "Follow production and delivery in your account"
+        }
+      },
+      "toleranceLabel": "Standard tolerances",
+      "toleranceQuantity": "quantity ± {pct}%",
+      "toleranceSize": "size ± {mm} mm",
+      "toleranceSizeRange": "size ± {min}–{max} mm by product type",
+      "toleranceColour": "colour ΔE2000 up to {de}",
+      "toleranceColourFlexo": "colour ΔE2000 up to {de} ({flexo} on flexo-printed corrugated boxes)",
+      "toleranceNote": "— each job’s own figures are in its quotation"
+    }
   },
   "packagingPages": {
     "cake-boxes": {
