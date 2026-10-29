@@ -32,7 +32,9 @@ done they stay out of the size search and are listed as "without a complete rang
    (width × gusset × height for bags), or parameters named `width`, `gusset`, `height` so the documented bag rule
    (`getpack-api/src/integrations/dieline/inside-rules.ts`) reads them. A `closedSize` always wins over the rule.
 3. Then: release the bundle, run `pnpm styles:recipes-from-engine` → approve the recipes (Prepress) →
-   `pnpm styles:fit-ranges` (dry run, then `--confirm`) and check the eight codes leave "without a complete range".
+   the worker's `styles.fit_ranges_sync` fills the ranges by itself (new bundle, recipe approval — D-461; or
+   `pnpm styles:fit-ranges` dry run, then `--confirm`, with the real engine) and check the eight codes leave "without a
+   complete range".
 
 ## 1a. Proposed standard sizes for the plastic mailer bags (C12 — proposal, not product data)
 

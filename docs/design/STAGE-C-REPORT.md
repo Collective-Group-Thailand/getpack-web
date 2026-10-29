@@ -412,3 +412,8 @@ Screenshots `docs/design/screenshots/C12/` (mock data; no prototype for this blo
 **e2e to run later:** `e2e/storefront-category.spec.ts` (intro + mode line, FAQ link), `e2e/storefront-business-pages.spec.ts` (partner clauses, non-solicitation FAQ), `storefront-upload.spec.ts` (corrugated safe zone), `storefront-styles.spec.ts` (trust block); API `pnpm test:e2e` (file checks: die lines now must-fix on uploads without them — fixtures may need CutContour).
 **Local checks for the owner:** api `pnpm db:seed` on a DB from `main` (expect `settings_amended` preflight rules, `settings_confirmed` preflight + transit days; re-run → nothing) + `pnpm test:int` + `pnpm test:e2e`; on UAT: `set-prepress-rules.mjs`, `set-transit-days.mjs`, `set-notice-wording.mjs` (dry run, then `--confirm`); upload a template PDF without CutContour → "ต้องแก้"; a corrugated job's safe-zone item says 5 มม.; web `pnpm build`; turn `FEATURE_PACKAGING_LANDINGS` on when ready; lawyer review of the drafts before production.
 **BLOCKED:** none.
+
+## C13 — automatic fit-range backfill (API only; web docs `feat/fit-ranges-auto` from `main` 9d649fc5, 2026-10-29)
+
+API branch `feat/fit-ranges-auto` (`89b0cafa`): worker job `styles.fit_ranges_sync` backfills fit ranges after a dieline bundle change (worker start + hourly check) and, debounced, for the styles a style import / curation / recipe approval / pattern or standard-size change touches; skipped with the fake or an unavailable engine; `pnpm styles:fit-ranges --confirm` refused with the fake engine unless `--allow-fake`. Full report: `getpack-api/docs/design/STAGE-C-REPORT.md` "C13". Web: DECISIONS-STAGE-A §18 only (D-461); no code, no contract change.
+**BLOCKED:** none.
