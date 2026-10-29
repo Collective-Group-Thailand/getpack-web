@@ -71,7 +71,7 @@ export async function StudioHub(props: StudioHubProps) {
   const card =
     "group bg-surface border-border rounded-panel duration-base ease-standard relative flex flex-col gap-2.5 overflow-hidden border p-6 transition-[border-color,translate] hover:border-primary motion-safe:hover:-translate-y-0.5";
   const go = "text-primary mt-auto inline-flex items-center gap-1.5 text-[14.5px] font-semibold";
-  const num = "text-subtle text-xs font-medium tracking-[0.06em] tabular-nums";
+  const num = "text-muted text-xs font-medium tracking-[0.06em] tabular-nums";
   const statusOf = (design: MyDesign) =>
     design.orders[0]
       ? t("status.ordered", { code: design.orders[0].orderCode })
@@ -238,7 +238,7 @@ export async function StudioHub(props: StudioHubProps) {
                     <StylePicture style={style} className="aspect-[4/3] rounded-none border-0" />
                     <div className="flex flex-col gap-0.5 px-3.5 pt-3 pb-3.5">
                       <b className="text-[14.5px] leading-snug font-semibold">{name}</b>
-                      <small className="text-subtle text-xs">
+                      <small className="text-muted text-xs">
                         {[
                           facetLabel(words, "category", style.category),
                           facetLabel(words, "materialClass", style.materialClass),

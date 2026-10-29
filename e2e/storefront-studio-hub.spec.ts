@@ -52,7 +52,7 @@ test("inline finder suggests boxes with reasons and opens the editor on the size
   await finder.getByLabel("กว้าง").fill("180");
   await finder.getByLabel("สูง").fill("80");
   await expect(finder.getByRole("listitem")).toHaveCount(3);
-  await finder.getByRole("button", { name: "ซม." }).click();
+  await finder.getByRole("radio", { name: "ซม." }).click();
   await expect(finder.getByLabel("ยาว")).toHaveValue("25");
   await finder.getByRole("link", { name: "ออกแบบแบบนี้" }).first().click();
   await expect(page).toHaveURL(/\/studio\/new\?.*style=.*l=\d+.*step=design/);

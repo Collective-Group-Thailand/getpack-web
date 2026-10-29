@@ -79,7 +79,7 @@ export async function DashboardIllustration() {
           </span>
         </div>
       </div>
-      <figcaption className="text-subtle px-4 pb-3 text-[11.5px]">{t("caption")}</figcaption>
+      <figcaption className="text-muted px-4 pb-3 text-[11.5px]">{t("caption")}</figcaption>
     </figure>
   );
 }

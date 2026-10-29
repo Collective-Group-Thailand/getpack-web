@@ -78,7 +78,8 @@ test("orbiting a 150-object design in 3D under a 4× CPU throttle", async ({ pag
 
   await page.goto(`${HOSTS.customer}/studio/${id}?step=design`);
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
-  await page.getByRole("radio", { name: "3 มิติ" }).click();
+  // C8: the view bar's "3D" (was the "3 มิติ" radio).
+  await page.getByRole("toolbar", { name: "มุมมอง" }).getByRole("button", { name: "3D", exact: true }).click();
   const model = page.getByRole("img", { name: /^ภาพสามมิติ/ });
   await expect(model).toBeVisible();
   await expect(page.locator('section[aria-label="กล่อง 3 มิติ"] canvas')).toBeVisible();

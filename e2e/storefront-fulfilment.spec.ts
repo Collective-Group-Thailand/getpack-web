@@ -46,8 +46,8 @@ test.describe("after production", () => {
     await signInAsCustomer(page, `/account/orders/${ORDER}`, MOCK_RECEIVER_PHONE);
     // The factory's own steps, under the order's seven-stage journey (account/orders/[orderId]).
     const stages = page.getByRole("list", { name: "ขั้นตอนการผลิต" });
-    await expect(stages).toContainText("รับสินค้า · ขั้นตอนปัจจุบัน");
-    await expect(stages).toContainText("จัดส่ง · เสร็จแล้ว");
+    await expect(stages.locator("[aria-current=step]")).toContainText("รับสินค้า");
+    await expect(stages).toContainText("จัดส่ง เสร็จแล้ว");
     await page.getByRole("button", { name: "ลิงก์ติดตามสถานะสำหรับแชร์" }).click();
     await expect(page).toHaveURL(/\/track\/trk/);
     const href = new URL(page.url()).pathname;

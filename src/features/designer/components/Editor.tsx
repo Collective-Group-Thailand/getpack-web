@@ -1179,6 +1179,8 @@ export default function Editor({
         ) : null}
         <div
           ref={wrapRef}
+          // A name needs a role (axe aria-prohibited-attr): the stage is a group of the canvas and its overlays.
+          role="group"
           aria-label={t("shell.stage")}
           className={cn(
             "pk-dot-grid absolute inset-0",
@@ -1213,13 +1215,14 @@ export default function Editor({
               }}
             />
           ) : null}
-          {canvasDieline ? <FocusChip dieline={canvasDieline} /> : null}
         </div>
         {view === "3d" && spec ? (
           <section aria-label={t("stage.model")} className="absolute inset-0 flex flex-col p-3 pb-20">
             {show3d ? preview : <Skeleton className="size-full" />}
           </section>
         ) : null}
+        {/* Above the sheet and the 3D view alike: a face picked on the model says so in the 3D view too. */}
+        {canvasDieline ? <FocusChip dieline={canvasDieline} /> : null}
         {pip && spec ? (
           <section
             aria-label={t("shell.pip.label")}

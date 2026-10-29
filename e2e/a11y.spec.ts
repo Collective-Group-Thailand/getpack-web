@@ -177,22 +177,20 @@ test.describe("keyboard paths", () => {
     await expect(page.locator("main#main")).toBeVisible();
   });
 
-  test("closing the box setup dialog returns focus to the button that opened it", async ({ page }) => {
+  test("closing a studio dialog returns focus to the button that opened it", async ({ page }) => {
     await page.goto("/studio/new?step=box");
     await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
     await page.getByRole("button", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
 
-    const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
-    await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
+    const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
+    await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
     await expect(page.locator("canvas").first()).toBeVisible();
 
-    // Reopen it from the Box tool, so there is a trigger for focus to return to.
-    await page
-      .getByRole("navigation", { name: "เครื่องมือออกแบบ" })
-      .getByRole("button", { name: "กล่อง", exact: true })
-      .click();
-    const trigger = page.getByRole("button", { name: "ตั้งค่ากล่อง" }).first();
+    // C8: the box is edited in its panel, so the setup does not reopen; the keyboard shortcuts dialog is the
+    // studio's other dialog with a trigger on screen for focus to return to.
+    const trigger = page.getByRole("button", { name: /^ทางลัดแป้นพิมพ์/ });
     await trigger.click();
+    const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
 
     await page.keyboard.press("Escape");

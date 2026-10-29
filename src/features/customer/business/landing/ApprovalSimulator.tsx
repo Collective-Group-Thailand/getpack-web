@@ -153,7 +153,7 @@ export function ApprovalSimulator({ orders }: { orders: SampleOrder[] }) {
           ) : (
             <p className="text-muted text-sm">{t("noOrders")}</p>
           )}
-          {orders.length > 0 ? <p className="text-subtle text-xs">{t("ordersHint")}</p> : null}
+          {orders.length > 0 ? <p className="text-muted text-xs">{t("ordersHint")}</p> : null}
         </div>
         <Switch
           label={t("po")}
@@ -192,7 +192,7 @@ export function ApprovalSimulator({ orders }: { orders: SampleOrder[] }) {
             </span>
             <span className="min-w-0">
               <b className="block font-semibold">{step.title}</b>
-              <small className="text-subtle block text-[12.5px] tabular-nums">{step.body}</small>
+              <small className="text-muted block text-[12.5px] tabular-nums">{step.body}</small>
             </span>
             {step.tag ? (
               <span

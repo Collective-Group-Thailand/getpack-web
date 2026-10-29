@@ -35,8 +35,8 @@ test.describe("U5.1 — the signed-in home and deep links", () => {
     const next = page.locator("section[aria-labelledby=launchpad-next]");
     await expect(next.getByText("ขั้นต่อไปที่แนะนำ")).toBeVisible();
     await expect(next.getByRole("link")).toHaveAttribute("href", /\/(account|studio|products)/);
-    // What already stood on the home is still there.
-    await expect(page.getByRole("heading", { name: "ตอนนี้งานของคุณอยู่ไหน" })).toBeVisible();
+    // The overview since the account redesign (C6): what needs doing, then the latest orders.
+    await expect(page.getByRole("region", { name: "คำสั่งซื้อล่าสุด" })).toBeVisible();
     await expectNoViolations(page);
   });
 
@@ -212,27 +212,6 @@ test.describe("U5.2 — first visit", () => {
     await expectNoViolations(page);
   });
 
-  test("the studio shows three tips once, dismissible and back from the question mark", async ({ page }) => {
-    await gotoHydrated(
-      page,
-      `${HOSTS.customer}/studio/new?product=tuck-end-box&style=tuck-end&l=70&w=40&h=150&step=design`,
-    );
-    const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
-    if (await setup.isVisible()) await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
-    const tip = page.getByRole("dialog", { name: /คำแนะนำ 1 จาก 3/ });
-    await expect(tip).toBeVisible();
-    await tip.getByRole("button", { name: "ถัดไป" }).click();
-    await page
-      .getByRole("dialog", { name: /คำแนะนำ 2 จาก 3/ })
-      .getByRole("button", { name: "ข้าม" })
-      .click();
-    await expect(page.getByRole("dialog", { name: /คำแนะนำ/ })).toHaveCount(0);
-    await page.reload();
-    await page.locator("html[data-hydrated]").waitFor();
-    // A guest's unsaved box starts again at the setup; the tips do not come back.
-    if (await setup.isVisible()) await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
-    await expect(page.getByRole("dialog", { name: /คำแนะนำ/ })).toHaveCount(0);
-    await page.getByRole("button", { name: "เปิดคำแนะนำสตูดิโอ" }).click();
-    await expect(page.getByRole("dialog", { name: /คำแนะนำ 1 จาก 3/ })).toBeVisible();
-  });
+  // The studio's three coach tips were retired in the editor redesign (C8): the first-open chooser took their place,
+  // asked once per browser — covered by storefront-studio-editor.spec.ts ("asks how to start once").
 });

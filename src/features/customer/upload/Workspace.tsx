@@ -113,7 +113,8 @@ export function Workspace({
         {t("heading")}
       </h2>
       <div className="border-border flex flex-wrap items-center gap-2 border-b px-4 py-3.5 sm:px-5">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5" role="tablist" aria-label={t("files")}>
+        {/* A group of switch buttons, not a tablist: each file also has its remove button, and there is no tab panel. */}
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5" role="group" aria-label={t("files")}>
           {check.variants.map((v) => {
             const on = v.variantNo === variant.variantNo;
             const tone =
@@ -135,8 +136,7 @@ export function Workspace({
                 <span className={cn("size-2 shrink-0 rounded-full", tone)} aria-hidden="true" />
                 <button
                   type="button"
-                  role="tab"
-                  aria-selected={on}
+                  aria-pressed={on}
                   onClick={() => onActive(v.variantNo)}
                   className="flex min-w-0 items-center gap-1.5 outline-none focus-visible:underline"
                 >
@@ -259,7 +259,7 @@ export function Workspace({
                   key={stage}
                   className={cn(
                     "flex items-center gap-2.5 text-sm",
-                    done ? "text-muted" : running ? "text-fg" : "text-subtle",
+                    done ? "text-muted" : running ? "text-fg" : "text-muted",
                   )}
                 >
                   <span

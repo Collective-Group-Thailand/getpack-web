@@ -80,7 +80,8 @@ test("style card → studio → price → quantity → new price, every step rev
   await page.getByRole("button", { name: "ใช้กล่องนี้ แล้วเริ่มออกแบบ" }).click();
   await addHeading(page);
   await expect(order).toBeEnabled();
-  // Printing the artwork changes what is priced.
+  // Printing the artwork changes what is priced — read on the สั่งผลิต tab again (adding text opened ออกแบบ).
+  await steps.getByRole("button", { name: /สั่งผลิต/ }).click();
   const second = await perPiece.textContent();
   await expect(perPiece).not.toHaveText(second!, { timeout: 15_000 });
   await expect(dock.getByText(/เปลี่ยนการพิมพ์/)).toBeVisible();

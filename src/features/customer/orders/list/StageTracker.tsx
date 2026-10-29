@@ -28,13 +28,7 @@ export function StageTracker({ status, overdue, className }: { status: string; o
             aria-current={now ? "step" : undefined}
             className={cn(
               "flex min-w-0 flex-col gap-1.5 text-[0.65625rem] sm:text-xs",
-              done
-                ? "text-muted"
-                : now
-                  ? late
-                    ? "text-danger font-semibold"
-                    : "text-fg font-semibold"
-                  : "text-muted/70",
+              done ? "text-muted" : now ? (late ? "text-danger font-semibold" : "text-fg font-semibold") : "text-muted",
             )}
           >
             <span

@@ -21,7 +21,13 @@ test("T3 make the file print-ready by fixing every flagged issue", async ({ page
   if (await setup.isVisible()) await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   // The box settles once the API has converted its size and priced it; elements added before that
   // were laid out on the earlier flat and could land off it, which is not the seeded state.
-  await expect(page.getByText(/^฿[\d,]+\.\d{2}$/).first()).toBeVisible({ timeout: 15_000 });
+  // The top bar's price since C8: "฿34.18 /ชิ้น".
+  await expect(
+    page
+      .getByRole("banner")
+      .getByText(/^฿[\d,]+\.\d{2}/)
+      .first(),
+  ).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText("กำลังคำนวณราคาใหม่")).toHaveCount(0, { timeout: 15_000 });
   // The seeded issues (task-cards.md Part B): text too small to print, a low-resolution image.
   await addHeading(page);

@@ -55,7 +55,7 @@ export default async function StudioUpload({
 
   return (
     <div className={cn(HOME_WRAP, "pt-8")}>
-      <nav aria-label={t("crumbsLabel")} className="text-subtle mb-3 flex gap-2 text-[0.8125rem]">
+      <nav aria-label={t("crumbsLabel")} className="text-muted mb-3 flex gap-2 text-[0.8125rem]">
         <Link href="/studio" className="hover:text-fg">
           {t("crumbStudio")}
         </Link>

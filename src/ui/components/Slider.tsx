@@ -8,6 +8,8 @@ import { useFieldGroupProps } from "./Field";
 export interface SliderProps extends Omit<React.ComponentProps<typeof SliderPrimitive.Root>, "children"> {
   /** Accessible name for the thumb when there is no `<Field>` around it. */
   "aria-label"?: string;
+  /** Or the id of the visible label that names it (the thumb is the control, so it goes there). */
+  "aria-labelledby"?: string;
   /** Human-readable current value, e.g. "120 %" — read instead of the bare number. */
   valueText?: string;
 }
@@ -17,7 +19,13 @@ export interface SliderProps extends Omit<React.ComponentProps<typeof SliderPrim
  * dragging interaction needs a non-drag alternative, and the arrow keys Radix wires up are
  * it — the paired number input in the designer is the visible one.
  */
-export function Slider({ className, valueText, "aria-label": ariaLabel, ...props }: SliderProps) {
+export function Slider({
+  className,
+  valueText,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
+  ...props
+}: SliderProps) {
   const groupProps = useFieldGroupProps();
 
   return (
@@ -32,7 +40,7 @@ export function Slider({ className, valueText, "aria-label": ariaLabel, ...props
       <SliderPrimitive.Thumb
         // The thumb is the control, so the name and description belong on it, not on the root.
         aria-label={ariaLabel}
-        aria-labelledby={ariaLabel ? undefined : groupProps["aria-labelledby"]}
+        aria-labelledby={ariaLabel ? undefined : (ariaLabelledBy ?? groupProps["aria-labelledby"])}
         aria-describedby={groupProps["aria-describedby"]}
         aria-valuetext={valueText}
         className={cn(

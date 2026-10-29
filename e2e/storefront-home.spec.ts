@@ -104,7 +104,7 @@ test("the header's five links, in the board's order, lead to the studio, templat
   ]);
   await page.getByRole("banner").getByRole("link", { name: "เริ่มออกแบบฟรี" }).click();
   await expect(page).toHaveURL(/\/studio$/);
-  await expect(page.getByRole("heading", { level: 1, name: "วันนี้อยากเริ่มจากอะไร" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^กล่องของแบรนด์คุณ/ })).toBeVisible();
   await page.getByRole("banner").getByRole("link", { name: "แบบกล่อง" }).click();
   await expect(page).toHaveURL(/\/styles$/);
 });
@@ -153,7 +153,7 @@ for (const path of ["/", "/studio"]) {
 
 test("leaving the studio keeps the customer signed in (B4)", async ({ page }) => {
   await signInAsCustomer(page, "/studio");
-  await expect(page.getByRole("heading", { level: 1, name: "วันนี้อยากเริ่มจากอะไร" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^กล่องของแบรนด์คุณ/ })).toBeVisible();
   await page.getByRole("link", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
   await expect(page).toHaveURL(/\/styles/);
   await gotoHydrated(page, `${HOSTS.customer}/studio/new?style=tuck-end&l=70&w=40&h=150&step=design`);

@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { acceptCookies, MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
-import { addHeading } from "./helpers/designer";
+import { addHeading, saveDesign } from "./helpers/designer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
 import { choiceList } from "./helpers/select";
 
@@ -95,11 +95,10 @@ test("two tabs saving the same design meet the conflict choice instead of overwr
   await gotoHydrated(other, page.url());
 
   await other.getByRole("textbox", { name: "ชื่อแบบ" }).fill("จากแท็บที่สอง");
-  await other.getByRole("button", { name: "บันทึก", exact: true }).click();
-  await expect(other.getByText("บันทึกแล้ว").first()).toBeVisible();
+  await saveDesign(other);
 
   await page.getByRole("textbox", { name: "ชื่อแบบ" }).fill("จากแท็บแรก");
-  await page.getByRole("button", { name: "บันทึก", exact: true }).click();
+  await page.locator("body").press("ControlOrMeta+s");
   const conflict = page.getByRole("dialog", { name: "แบบนี้ถูกบันทึกจากที่อื่น" });
   await expect(conflict).toBeVisible();
   await conflict.getByRole("button", { name: "ใช้ฉบับของฉัน" }).click();
@@ -113,8 +112,7 @@ test("a guest's browser design is imported into the account after sign-in", asyn
   await gotoHydrated(page, `${HOSTS.customer}/studio/new?product=tuck-end-box&step=start`);
   await startFromSetup(page);
   await page.getByRole("textbox", { name: "ชื่อแบบ" }).fill("กล่องจากเบราว์เซอร์");
-  await page.getByRole("button", { name: "บันทึก", exact: true }).click();
-  await expect(page.getByText("บันทึกแล้ว").first()).toBeVisible();
+  await saveDesign(page);
 
   await signInAsCustomer(page, "/account/designs", MOCK_DESIGNER_PHONE);
   const offer = page.getByText("มี 1 แบบ ที่บันทึกไว้ในเบราว์เซอร์นี้");
@@ -178,7 +176,9 @@ test("from a product page: the studio with its live price, which follows quantit
   await expect(page).toHaveURL(/\/studio\/new\?product=shipping-box&step=start$/);
   await startFromSetup(page);
 
-  // The dock prices this box at the product's default quantity, from the API.
+  // The dock (the inspector's สั่งผลิต tab, C8) prices this box at the product's default quantity, from the API.
+  const orderTab = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" }).getByRole("button", { name: /สั่งผลิต/ });
+  await orderTab.click();
   const dock = page.getByRole("region", { name: "ราคาและการสั่งผลิต" });
   const price = dock.locator("span.font-semibold").filter({ hasText: "฿" });
   await expect(price).toBeVisible({ timeout: 15_000 });
@@ -191,6 +191,7 @@ test("from a product page: the studio with its live price, which follows quantit
 
   // Printing something changes what is priced: the blank box becomes a printed one.
   await addHeading(page);
+  await orderTab.click();
   await expect(price).not.toHaveText(larger!, { timeout: 15_000 });
 });
 

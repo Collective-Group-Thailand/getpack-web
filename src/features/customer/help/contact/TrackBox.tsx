@@ -160,7 +160,7 @@ export function TrackBox({ signedIn, topicLabel }: { signedIn: boolean; topicLab
             className="flex flex-wrap items-center justify-between gap-2.5 text-[15px] font-semibold"
           >
             <span className="tabular-nums">{t("ticketTitle", { ticket: status.ticketNo })}</span>
-            <span className="text-subtle text-[13px] font-normal">
+            <span className="text-muted text-[13px] font-normal">
               {t("topic", { topic: topicLabel[status.topic] ?? status.topic })}
             </span>
           </h3>
@@ -173,7 +173,7 @@ export function TrackBox({ signedIn, topicLabel }: { signedIn: boolean; topicLab
                   "grid grid-cols-[1.125rem_minmax(0,1fr)] items-center gap-2.5",
                   index < stageAt && "text-muted",
                   index === stageAt && "text-fg font-semibold",
-                  index > stageAt && "text-subtle",
+                  index > stageAt && "text-muted",
                 )}
               >
                 <i

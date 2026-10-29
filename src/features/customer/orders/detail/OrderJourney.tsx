@@ -111,7 +111,11 @@ export async function OrderJourney({ detail }: { detail: OrderDetail }) {
                   className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[0.8125rem]"
                 >
                   {progress.steps.map((step, n) => (
-                    <li key={step.key} className="flex items-center gap-1.5">
+                    <li
+                      key={step.key}
+                      aria-current={step.status === "in_progress" ? "step" : undefined}
+                      className="flex items-center gap-1.5"
+                    >
                       {n > 0 ? <Icon name="arrow-right" size={12} aria-hidden="true" className="text-muted" /> : null}
                       <span className={cn(step.status === "completed" ? "text-fg" : "text-muted")}>
                         {step.status === "completed" ? (
@@ -119,6 +123,7 @@ export async function OrderJourney({ detail }: { detail: OrderDetail }) {
                         ) : null}
                         {pick(locale, step.labelTh, step.labelEn)}
                         {step.status === "completed" ? <span className="sr-only"> {t("state.done")}</span> : null}
+                        {step.status === "in_progress" ? <span className="sr-only"> {t("state.now")}</span> : null}
                       </span>
                     </li>
                   ))}

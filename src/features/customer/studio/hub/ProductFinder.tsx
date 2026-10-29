@@ -161,7 +161,7 @@ export function ProductFinder({ productSlug }: { productSlug: string | null }) {
                           )
                           .join(" · ")}
                       </small>
-                      <small className="text-subtle block text-[11.5px] tabular-nums">
+                      <small className="text-muted block text-[11.5px] tabular-nums">
                         {t("inside", { size: formatDimensions(inside, locale, { withUnit: true }) })}
                       </small>
                     </div>

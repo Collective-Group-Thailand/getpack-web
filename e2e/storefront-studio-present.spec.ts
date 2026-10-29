@@ -69,7 +69,7 @@ test("two named versions, compared side by side and overlaid", async ({ page }) 
 test("presentation on our scenes: lid, PNG, a recorded turn, and the box at real size in AR", async ({ page }) => {
   test.setTimeout(120_000);
   await open(page);
-  await page.getByRole("button", { name: "นำเสนอและ AR" }).click();
+  await page.getByRole("banner").getByRole("button", { name: "Mockup" }).click();
   const present = page.getByRole("dialog", { name: "นำเสนอแบบกล่อง" });
   await expect(present).toBeVisible();
   await present.getByRole("radio", { name: "โต๊ะคราฟต์" }).click();

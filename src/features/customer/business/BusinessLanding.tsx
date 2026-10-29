@@ -179,7 +179,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
           aria-label={t("audienceLabel")}
           className="border-border flex flex-wrap items-center gap-2 border-b py-5.5"
         >
-          <span className="text-subtle mr-1.5 text-[13.5px]" aria-hidden="true">
+          <span className="text-muted mr-1.5 text-[13.5px]" aria-hidden="true">
             {t("audienceLabel")}
           </span>
           {AUDIENCE.map((item) => (
@@ -199,7 +199,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
           <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {BEFORE.map((key) => (
               <li key={key} className={cn(CARD, "flex flex-col overflow-hidden")}>
-                <div className="bg-bg-subtle text-subtle p-4 text-[13.5px]">
+                <div className="bg-bg-subtle text-muted p-4 text-[13.5px]">
                   <span className="mb-1 block text-[11px] font-medium tracking-[0.06em] uppercase">
                     {t("before.was")}
                   </span>
@@ -306,7 +306,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
                   ][index],
                 )}
               >
-                <span className="text-subtle text-xs">{t(`credit.steps.${step}.when`)}</span>
+                <span className="text-muted text-xs">{t(`credit.steps.${step}.when`)}</span>
                 <b className="text-[17px] font-semibold">{t(`credit.steps.${step}.title`)}</b>
                 <p className="text-muted text-[13.5px]">{t(`credit.steps.${step}.body`)}</p>
                 {step === "monthly" ? (
@@ -389,7 +389,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
                     name="chevron-down"
                     size={18}
                     aria-hidden="true"
-                    className="text-subtle mt-0.5 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                    className="text-muted mt-0.5 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none"
                   />
                 </summary>
                 <p className="text-muted mb-4 max-w-[60ch] text-[14.5px]">{item.answer}</p>

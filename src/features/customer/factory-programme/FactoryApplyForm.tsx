@@ -155,7 +155,7 @@ export function FactoryApplyForm({
       {capabilities.length > 0 ? (
         <div className="flex flex-col gap-2 sm:col-span-2">
           <span id="factory-caps" className="text-sm font-medium">
-            {t("capabilities")} <span className="text-subtle font-normal">· {t("capabilitiesHint")}</span>
+            {t("capabilities")} <span className="text-muted font-normal">· {t("capabilitiesHint")}</span>
           </span>
           <ToggleChips
             label={t("capabilities")}
@@ -191,7 +191,7 @@ export function FactoryApplyForm({
       >
         {t("submit")}
       </Button>
-      <p className="text-subtle text-xs sm:col-span-2">
+      <p className="text-muted text-xs sm:col-span-2">
         {t("pdpa")}{" "}
         <Link href="/legal/privacy" className="text-primary underline underline-offset-4">
           {t("privacy")}

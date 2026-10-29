@@ -35,7 +35,7 @@ test.describe("account redesign (C6)", () => {
     );
     const tabs = page.getByRole("navigation", { name: "หน้าในหมวดนี้" });
     await expect(tabs.getByRole("link", { name: "คำขอใบเสนอราคา" })).toHaveAttribute("aria-current", "page");
-    await tabs.getByRole("link", { name: "ใบเสนอราคา" }).click();
+    await tabs.getByRole("link", { name: "ใบเสนอราคา", exact: true }).click();
     await expect(page).toHaveURL(/\/account\/quotes$/);
 
     await gotoHydrated(page, `${HOSTS.customer}/account/call-offs`);

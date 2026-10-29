@@ -159,7 +159,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                   <b className="text-base font-semibold">{t(`sources.${source}.title`)}</b>
                   <p className="text-muted text-[13.5px]">{t(`sources.${source}.body`)}</p>
                 </div>
-                <span aria-hidden="true" className="text-subtle hidden text-center text-2xl font-bold xl:block">
+                <span aria-hidden="true" className="text-muted hidden text-center text-2xl font-bold xl:block">
                   {index === 0 ? "+" : "="}
                 </span>
               </div>
@@ -288,7 +288,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               </tbody>
             </table>
           </div>
-          <p className="text-subtle mt-2.5 text-xs">{t("compare.note")}</p>
+          <p className="text-muted mt-2.5 text-xs">{t("compare.note")}</p>
         </section>
 
         <section aria-labelledby="factory-tiers" className={SECTION}>
@@ -296,7 +296,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
           <ol className="grid gap-3 xl:grid-cols-3">
             {TIERS.map((tier, index) => (
               <li key={tier} className={cn(CARD, "flex flex-col gap-1.5 p-4.5")}>
-                <span className="text-subtle text-xs tabular-nums">{t("tiers.level", { n: index + 1 })}</span>
+                <span className="text-muted text-xs tabular-nums">{t("tiers.level", { n: index + 1 })}</span>
                 <b className="text-[17px] font-semibold">{t(`tiers.items.${tier}.title`)}</b>
                 <p className="text-muted text-[13.5px]">{t(`tiers.items.${tier}.body`)}</p>
               </li>
@@ -388,7 +388,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                     name="chevron-down"
                     size={18}
                     aria-hidden="true"
-                    className="text-subtle mt-0.5 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                    className="text-muted mt-0.5 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none"
                   />
                 </summary>
                 <p className="text-muted mb-4 max-w-[60ch] text-[14.5px]">{item.answer}</p>

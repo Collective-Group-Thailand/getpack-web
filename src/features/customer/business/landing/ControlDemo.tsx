@@ -63,7 +63,7 @@ export function ControlDemo({
             {t("catalogue.title")}
             <span className="flex gap-1.5">
               {soon(catalogueSoon)}
-              <span className="border-border text-subtle rounded-control border border-dashed px-2 py-0.5 text-[11px] font-medium">
+              <span className="border-border text-muted rounded-control border border-dashed px-2 py-0.5 text-[11px] font-medium">
                 {t("demo")}
               </span>
             </span>
@@ -83,12 +83,12 @@ export function ControlDemo({
                   key={product.slug}
                   className="border-border grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-3 border-t py-2.5 sm:grid-cols-[3.25rem_minmax(0,1fr)_auto]"
                 >
-                  <span className="bg-surface-subtle text-subtle rounded-thumb grid h-10 place-items-center">
+                  <span className="bg-surface-subtle text-muted rounded-thumb grid h-10 place-items-center">
                     <Icon name="box" size={18} aria-hidden="true" />
                   </span>
                   <span className="min-w-0">
                     <b className="block truncate text-sm font-semibold">{product.name}</b>
-                    <small className="text-subtle block text-[12.5px] tabular-nums">
+                    <small className="text-muted block text-[12.5px] tabular-nums">
                       {step
                         ? t("catalogue.line", { qty: format.number(step.quantity), amount: format.thb(step.amount) })
                         : t("catalogue.linePlain")}
@@ -128,9 +128,9 @@ export function ControlDemo({
             <b className="font-semibold tabular-nums">
               {t("catalogue.total", { count: lines.length, qty: format.number(pieces) })}
             </b>
-            <span className="text-subtle text-[13px]">{t("catalogue.hint")}</span>
+            <span className="text-muted text-[13px]">{t("catalogue.hint")}</span>
           </div>
-          <p className="text-subtle text-xs">{t("catalogue.priceNote")}</p>
+          <p className="text-muted text-xs">{t("catalogue.priceNote")}</p>
         </section>
       ) : null}
       <section
@@ -141,7 +141,7 @@ export function ControlDemo({
           {t("budget.title")}
           <span className="flex gap-1.5">
             {soon(budgetsSoon)}
-            <span className="border-border text-subtle rounded-control border border-dashed px-2 py-0.5 text-[11px] font-medium">
+            <span className="border-border text-muted rounded-control border border-dashed px-2 py-0.5 text-[11px] font-medium">
               {t("demo")}
             </span>
           </span>
@@ -204,7 +204,7 @@ export function ControlDemo({
               {state === "over" ? t("budget.over") : state === "warn" ? t("budget.warn", { pct }) : t("budget.ok")}
             </small>
           </div>
-          <p className="text-subtle inline-flex items-center gap-2 text-xs">
+          <p className="text-muted inline-flex items-center gap-2 text-xs">
             <Icon name="spreadsheet" size={15} aria-hidden="true" />
             {t("budget.report")}
           </p>

@@ -180,7 +180,7 @@ export function SalesForm({ applyHref }: { applyHref: string }) {
       <Button type="submit" size="lg" block loading={busy} className="sm:col-span-2">
         {t("submit")}
       </Button>
-      <p className="text-subtle text-xs sm:col-span-2">
+      <p className="text-muted text-xs sm:col-span-2">
         {t("pdpa")}{" "}
         <Link href="/legal/privacy" className="text-primary underline underline-offset-4">
           {t("privacy")}

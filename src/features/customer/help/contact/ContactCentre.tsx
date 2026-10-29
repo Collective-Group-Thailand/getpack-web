@@ -286,7 +286,7 @@ export function ContactCentre(props: ContactCentreProps) {
               >
                 <Icon name={ICONS[value]} size={22} aria-hidden="true" className="text-primary" />
                 <b className="text-[15px] font-semibold">{intentTitle(value)}</b>
-                <small className="text-subtle text-[12.5px]">{t(`intents.${value}.body`)}</small>
+                <small className="text-muted text-[12.5px]">{t(`intents.${value}.body`)}</small>
               </button>
             );
           })}
@@ -318,7 +318,7 @@ export function ContactCentre(props: ContactCentreProps) {
                       name="chevron-down"
                       size={16}
                       aria-hidden="true"
-                      className="text-subtle mt-1 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                      className="text-muted mt-1 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none"
                     />
                   </summary>
                   <p className="text-muted mb-3 text-sm">{answer(question)}</p>
@@ -532,7 +532,7 @@ export function ContactCentre(props: ContactCentreProps) {
                   </div>
                 ) : null}
                 {intent === "quote" || intent === "artwork" ? (
-                  <p className="text-subtle inline-flex items-start gap-2 text-[13px]">
+                  <p className="text-muted inline-flex items-start gap-2 text-[13px]">
                     <Icon name="paperclip" size={15} aria-hidden="true" className="mt-0.5 shrink-0" />
                     {t("attachHint")}
                   </p>
@@ -590,7 +590,7 @@ export function ContactCentre(props: ContactCentreProps) {
                   </div>
                 ) : null}
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-subtle text-xs">
+                  <p className="text-muted text-xs">
                     {replyDays !== null ? <>{t("replyTime", { days: replyDays })} · </> : null}
                     {t("pdpa")}{" "}
                     <Link href="/legal/privacy" className="text-primary underline underline-offset-4">

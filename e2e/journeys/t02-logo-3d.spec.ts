@@ -12,8 +12,14 @@ test("T2 put the logo on the top and the front, then see it in 3D", async ({ pag
   j.expectEvents("studio_started");
 
   const focused = (face: string) => page.getByRole("status").filter({ hasText: `กำลังแก้: ${face}` });
-  // Faces are picked on the 3D model itself (U4.3), not from the Box tool.
+  // Faces are picked on the 3D model (U4.3); since C8 the split view's 3D is a small card, so the walk opens the
+  // view bar's "3D" — where the logo is also placed and seen.
   const faces = page.getByRole("group", { name: "เลือกด้านที่จะออกแบบ" });
+  await j.screen(
+    "3D view",
+    () => page.getByRole("toolbar", { name: "มุมมอง" }).getByRole("button", { name: "3D", exact: true }).click(),
+    () => expect(faces).toBeVisible(),
+  );
   await j.decide("focus the top (on the 3D model)", async () => {
     await faces.getByRole("button", { name: /^ฝาบน/ }).first().click();
     await expect(focused("ฝาบน").first()).toBeVisible();
@@ -30,9 +36,6 @@ test("T2 put the logo on the top and the front, then see it in 3D", async ({ pag
     await expect(focused("ด้านหน้า").first()).toBeVisible();
   });
   await j.decide("place the logo again", () => page.getByRole("button", { name: "วางรูปนี้อีกครั้ง" }).click());
-
-  // The studio shows the model beside the sheet (U4.3 split view): no step to reach the 3D.
-  await expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible();
 
   await j.done(() => expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible());
 });

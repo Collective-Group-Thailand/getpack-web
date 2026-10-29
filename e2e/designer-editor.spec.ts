@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { addHeading, openRail } from "./helpers/designer";
+import { addHeading, openRail, pickFace } from "./helpers/designer";
 
 /**
  * F4 Part D end to end: the editor's tools as a customer uses them — the left rail's elements and
@@ -46,11 +46,8 @@ test("adds a QR code, finds it in layers, locks it, and undoes", async ({ page }
 test("focuses a face upright and leaves it with Escape", async ({ page }) => {
   await newDesign(page);
 
-  await openRail(page, "กล่อง");
-  await page
-    .getByRole("region", { name: "กล่อง", exact: true })
-    .getByRole("button", { name: "ด้านหน้า", exact: true })
-    .click();
+  // C8: faces are picked on the 3D view, then the sheet shows the focused face.
+  await pickFace(page, "ด้านหน้า");
   await expect(page.getByRole("status").filter({ hasText: "กำลังแก้: ด้านหน้า" })).toBeVisible();
 
   // A heading added now lands on the focused face.

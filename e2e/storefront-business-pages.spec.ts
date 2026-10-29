@@ -64,7 +64,7 @@ test.describe("/business (C10 Phase 1)", () => {
     await gotoHydrated(page, `${HOSTS.customer}/business`);
     await expect(page.getByText("222 ชั่วโมง")).toBeVisible();
     await expect(page.getByText(/สมมติว่าการอนุมัติในระบบใช้เวลาน้อยกว่าทางแชตรายการละ 15 นาที/)).toBeVisible();
-    await page.getByRole("checkbox", { name: /หนังสือรับรองบริษัท/ }).click();
+    await page.getByRole("checkbox", { name: /^หนังสือรับรองบริษัท/ }).click();
     await page.getByRole("checkbox", { name: /ภ\.พ\.20/ }).click();
     await expect(page.getByText("พร้อม 2 จาก 3 อย่างที่จำเป็น").first()).toBeVisible();
     await page.reload();
@@ -127,7 +127,8 @@ test.describe("/contact (C10 Phase 2)", () => {
     await page.getByRole("button", { name: "ติดตาม", exact: true }).click();
     await page.getByLabel("เบอร์มือถือหรืออีเมล").fill("0899999999");
     await page.getByRole("button", { name: "ดูสถานะ" }).click();
-    await expect(page.getByRole("alert")).toContainText("ไม่พบเรื่องนี้");
+    // Next's route announcer is an (empty) alert too.
+    await expect(page.getByRole("alert").filter({ hasText: "ไม่พบเรื่องนี้" })).toBeVisible();
     await page.getByLabel("เบอร์มือถือหรืออีเมล").fill("081-234-5678");
     await page.getByRole("button", { name: "ดูสถานะ" }).click();
     await expect(page.getByText("ได้รับเรื่อง").first()).toBeVisible();

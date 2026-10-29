@@ -75,7 +75,7 @@ export async function ProductionBoard() {
           <span className="text-muted">{t("repair")}</span>
         </p>
       </div>
-      <figcaption className="text-subtle px-4 pb-3 text-[11.5px]">{t("caption")}</figcaption>
+      <figcaption className="text-muted px-4 pb-3 text-[11.5px]">{t("caption")}</figcaption>
     </figure>
   );
 }
@@ -92,11 +92,11 @@ export async function OperatorPhone() {
         {/* The bezel is always dark; the screen follows the page's theme (it sits outside the dark scope). */}
         <span aria-hidden="true" data-theme="dark" className="bg-bg rounded-panel absolute inset-0" />
         <div className="bg-bg text-fg rounded-card relative overflow-hidden text-[12.5px]">
-          <div className="text-subtle flex justify-between px-4 pt-2.5 pb-1.5 text-[11px] font-semibold">
+          <div className="text-muted flex justify-between px-4 pt-2.5 pb-1.5 text-[11px] font-semibold">
             <span>{t("machine")}</span>
           </div>
           <div className="bg-surface rounded-card mx-3 my-1.5 flex flex-col gap-1.5 p-3.5" aria-hidden="true">
-            <small className="text-subtle">{t("nextGetpack")}</small>
+            <small className="text-muted">{t("nextGetpack")}</small>
             <span className="bg-border-strong rounded-thumb block h-2.5 w-4/5" />
             <span className="bg-border-strong rounded-thumb block h-1.5 w-3/5 opacity-60" />
             <span className="bg-bg-subtle rounded-thumb mt-1 block h-1 overflow-hidden">
@@ -116,7 +116,7 @@ export async function OperatorPhone() {
           </span>
         </div>
       </div>
-      <figcaption className="text-subtle mt-2 text-center text-[11.5px]">{t("caption")}</figcaption>
+      <figcaption className="text-muted mt-2 text-center text-[11.5px]">{t("caption")}</figcaption>
     </figure>
   );
 }

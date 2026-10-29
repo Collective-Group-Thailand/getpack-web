@@ -57,6 +57,11 @@ test.describe("upload page (C9)", () => {
     await gotoHydrated(page, `${HOSTS.customer}/studio/upload`);
     await page.locator('input[type="file"]').first().setInputFiles(PDF);
     await completeSignIn(page);
+    // The sheet waits for its button once the code is in (the sign-in page submits on its own).
+    const confirm = page
+      .getByRole("dialog", { name: "เข้าสู่ระบบ" })
+      .getByRole("button", { name: "ยืนยันและเข้าสู่ระบบ" });
+    if (await confirm.isVisible()) await confirm.click();
     await expect(page).toHaveURL(/\?check=/, { timeout: 30_000 });
   });
 
@@ -79,7 +84,7 @@ test.describe("upload page (C9)", () => {
 
     // The corrected file: a new version, checked again, kept in the history.
     await page.locator('input[type="file"]').last().setInputFiles(FIXED);
-    await expect(page.getByRole("tab", { name: /box-artwork-v2\.pdf/ })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("button", { name: /^box-artwork-v2\.pdf/ })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("ไม่มีข้อที่ต้องแก้").first()).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("ประวัติไฟล์ 2 รุ่น")).toBeVisible();
 

@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { MOCK_BUYER_PHONE, MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
-import { addHeading, openRail } from "./helpers/designer";
+import { addHeading, openRail, saveDesign } from "./helpers/designer";
 
 /**
  * U4.7, collaboration in getpack 3D Studio against the mock API: a comment pinned on the flat sheet,
@@ -100,8 +100,7 @@ test("an edit link saves a new version of the owner's design", async ({ page }) 
   await expect(rail.getByRole("button", { name: "ข้อความ", exact: true })).toBeVisible({ timeout: 15_000 });
   await expect(rail.getByRole("button", { name: "อัปโหลด", exact: true })).toHaveCount(0);
   await addHeading(page);
-  await page.getByRole("button", { name: "บันทึก", exact: true }).click();
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
+  await saveDesign(page);
 
   const after = await (await page.request.get(`${HOSTS.customer}/bff/v1/store/designs/${id}`)).json();
   expect(after.versionNo).toBeGreaterThan(before);

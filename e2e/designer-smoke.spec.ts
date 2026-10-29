@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { addHeading } from "./helpers/designer";
+import { addHeading, saveDesign } from "./helpers/designer";
 
 /**
  * Smoke test for the one flow this app can do today:
@@ -46,8 +46,7 @@ test("designs a box, saves it, finds it again and exports the dieline", async ({
   await page.getByRole("textbox", { name: "ชื่อแบบ" }).fill("กล่องทดสอบ E2E");
   await addHeading(page);
 
-  await page.getByRole("button", { name: "บันทึก", exact: true }).click();
-  await expect(page.getByText("บันทึกแล้ว")).toBeVisible();
+  await saveDesign(page);
   // Saving a brand-new design swaps /studio/new for its real id.
   await expect(page).not.toHaveURL(/\/studio\/new(\?|$)/);
 

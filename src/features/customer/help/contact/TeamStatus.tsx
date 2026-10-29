@@ -53,7 +53,7 @@ export async function TeamStatus({
       />
       <span>
         <b className="block font-semibold">{line}</b>
-        {hours ? <small className="text-subtle block text-[12.5px]">{t("hours", { hours })}</small> : null}
+        {hours ? <small className="text-muted block text-[12.5px]">{t("hours", { hours })}</small> : null}
       </span>
     </div>
   );

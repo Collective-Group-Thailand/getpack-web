@@ -71,7 +71,7 @@ export function DocChecklist() {
                 label={
                   <span>
                     <b className="block text-sm font-semibold">{t(`docs.${key}.title`)}</b>
-                    <small className="text-subtle block text-[12.5px]">{t(`docs.${key}.body`)}</small>
+                    <small className="text-muted block text-[12.5px]">{t(`docs.${key}.body`)}</small>
                   </span>
                 }
               />
@@ -87,7 +87,7 @@ export function DocChecklist() {
           tone="success"
           className="min-w-[120px] flex-1"
         />
-        <span className={cn("text-[13px]", ready === REQUIRED_DOCS.length ? "text-success-subtle-fg" : "text-subtle")}>
+        <span className={cn("text-[13px]", ready === REQUIRED_DOCS.length ? "text-success-subtle-fg" : "text-muted")}>
           {text}
         </span>
       </div>
