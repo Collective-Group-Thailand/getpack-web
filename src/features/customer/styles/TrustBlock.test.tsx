@@ -84,3 +84,31 @@ describe("the trust section (C0)", () => {
     expect(screen.getByAltText("ร้าน C").getAttribute("src")).toBe(`/bff/v1/store/catalog/images/${id}`);
   });
 });
+
+describe("how we work (C12, D-460)", () => {
+  const tolerances = {
+    quantityPct: "5.00",
+    sizeMmMin: "1.00",
+    sizeMmMax: "3.00",
+    colourDeltaE: "3",
+    colourDeltaEFlexo: "5",
+  };
+
+  it("lists the five steps in order, with the default tolerances from the API", async () => {
+    render((await TrustBlock({ trust: null, locale: "th", tolerances }))!);
+    const steps = screen.getAllByRole("listitem").map((li) => li.querySelector("b")?.textContent);
+    expect(steps).toEqual(["ตรวจไฟล์", "อนุมัติแบบ", "ผลิต", "ตรวจคุณภาพ", "จัดส่ง"]);
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("จำนวน ± 5%");
+    expect(text).toContain("ขนาด ± 1–3 มม. ตามชนิดสินค้า");
+    expect(text).toContain("สี ΔE2000 ไม่เกิน 3 (กล่องลูกฟูกพิมพ์เฟล็กโซ 5)");
+    expect(text).not.toMatch(/โรงงาน/);
+  });
+
+  it("leaves out every tolerance without a value, and the line when none has one", async () => {
+    const none = { quantityPct: null, sizeMmMin: null, sizeMmMax: null, colourDeltaE: null, colourDeltaEFlexo: null };
+    render((await TrustBlock({ trust: null, locale: "th", tolerances: none }))!);
+    expect(screen.getByText("ขั้นตอนการทำงาน")).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain("ค่าคลาดเคลื่อนมาตรฐาน");
+  });
+});

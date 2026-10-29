@@ -220,6 +220,8 @@ export const fileCheckHandlers = [
     HttpResponse.json({
       bleedMm: "3",
       safeZoneMm: "3",
+      // C12 (D-460): the reference seed's corrugated print profile.
+      corrugatedSafeZoneMm: "5",
       sizeToleranceMm: "1",
       maxBytes: 209_715_200,
       extensions: [".pdf", ".ai"],

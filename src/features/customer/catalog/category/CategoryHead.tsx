@@ -37,7 +37,7 @@ function Fact({
 
 /**
  * The category head (category Phase 1 items 1–2, prototype `.head`): breadcrumb "หน้าแรก / สินค้าและราคา /
- * {category}", the H1, the approved intro (else a line from how the category is bought), the VAT switch (only when
+ * {category}", the H1, the approved intro followed by a line from how the category is bought, the VAT switch (only when
  * the API sent both figures of every price), the facts from the API (instant: เริ่มต้น · ขั้นต่ำ · ระยะผลิต · จำนวน ·
  * วิธีซื้อ; quote-only: ขั้นต่ำ · ใบเสนอราคาภายในวันทำการ · จำนวน — a fact without data is left out), and every
  * category as one row of chips with this one current — no counts (the old "1 · ประเภท" counted product types).
@@ -72,7 +72,9 @@ export async function CategoryHead({
     : null;
   const quoteOnly = facts.mode === "quote";
   const mode = facts.mode;
-  const lede = intro ?? (mode ? t(`lede.${mode}`) : null);
+  // C12 (§17.3): the approved intro says what the category is; how it is bought stays the API's (mode) line after it.
+  const modeLine = mode ? t(`lede.${mode}`) : null;
+  const lede = [intro, modeLine].filter(Boolean).join(" ") || null;
 
   return (
     <div>

@@ -5,6 +5,7 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import {
   getCatalogueTree,
   getLibraryTotals,
+  getPublicConfig,
   getStyleLibrarySettings,
   getSupportChannels,
   listStyles,
@@ -131,7 +132,7 @@ export default async function StylesPage({
   const raw = await searchParams;
   const variantsView = isVariantsView(raw);
   const query = readParams(raw);
-  const [t, list, jar, origin, format, totals, settings, support] = await Promise.all([
+  const [t, list, jar, origin, format, totals, settings, support, config] = await Promise.all([
     getTranslations("styles"),
     // The variants grid reads its own page; the styles list then is not needed.
     variantsView ? null : listStyles(toQuery(query, PAGE_SIZE * (query.page ?? 1))),
@@ -141,6 +142,7 @@ export default async function StylesPage({
     getLibraryTotals(),
     getStyleLibrarySettings(),
     getSupportChannels(),
+    getPublicConfig(),
   ]);
   const words = t as unknown as StylesT;
   const action = getPathname({ href: STYLES_HREF, locale: locale as Locale });
@@ -391,7 +393,7 @@ export default async function StylesPage({
               />
             )}
 
-            <TrustBlock trust={settings?.trust} locale={locale} />
+            <TrustBlock trust={settings?.trust} locale={locale} tolerances={config?.tolerances ?? null} />
 
             {/* "ไม่เจอแบบที่ต้องการ" (U3.6, D-273): a structure the library lacks, asked of getpack's designers. */}
             <Callout className="mt-6" icon="ruler" title={t("library.notFoundTitle")}>

@@ -11,6 +11,9 @@ import styles from "@/i18n/messages/th/customer/styles.json";
  * from repo facts, waiting for the owner) or `approved`. A draft is shown only while the flag is on (review on
  * UAT), with `noindex`, no FAQPage JSON-LD and no sitemap / llms.txt entry; the owner approves by setting
  * `approved` in both locales.
+ *
+ * C12 (DECISIONS-STAGE-A §17.3, D-460): the eight pages' copy was edited and is `approved` (delegated by the owner
+ * 2026-10-29). The pages still stay unpublished until the owner turns `FEATURE_PACKAGING_LANDINGS` on.
  */
 export const PACKAGING_LANDINGS = [
   { slug: "cake-boxes", useCase: "bakery" },

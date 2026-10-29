@@ -154,6 +154,10 @@ test.describe("/partner-with-us (C10 Phase 3)", () => {
     await expect(page.getByText("กำลังพัฒนา").first()).toBeVisible();
     await expect(page.getByRole("table")).toContainText("บัญชีและบัญชีแยกประเภท");
     const apply = page.locator("#apply");
+    // C12 (D-460, legal draft): the partner agreement's key clauses next to the application.
+    await expect(apply.getByRole("heading", { name: "สาระสำคัญของสัญญาพาร์ตเนอร์" })).toBeVisible();
+    await expect(apply).toContainText("12 เดือน");
+    await expect(page.getByText("รับงานจาก getpack แล้ว ติดต่อลูกค้ารายนั้นเองได้ไหม")).toBeVisible();
     await apply.getByRole("button", { name: "สมัครเป็นโรงงานพาร์ตเนอร์" }).click();
     await expect(apply.getByLabel(/^ชื่อโรงงาน/)).toBeFocused();
     await apply.getByLabel(/^ชื่อโรงงาน/).fill("โรงงานทดสอบอีทูอี");

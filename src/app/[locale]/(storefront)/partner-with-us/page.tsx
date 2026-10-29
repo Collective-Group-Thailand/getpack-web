@@ -40,7 +40,9 @@ const FLOOR: { key: "start" | "photos" | "repair"; icon: IconName }[] = [
 const ROWS = ["cost", "jobs", "fit", "accounting", "start", "status"] as const;
 const TIERS = ["full", "partial", "quote"] as const;
 const SOURCES = ["rate_card", "price_list"] as const;
-const FAQ = ["free", "data", "names", "accounting", "modules"] as const;
+const FAQ = ["free", "data", "names", "nonSolicit", "accounting", "modules"] as const;
+/** C12 (D-460, legal draft pending review by a licensed Thai lawyer): the partner agreement's key clauses. */
+const TERMS = ["counterparty", "nonSolicit", "confidentiality", "whiteLabel"] as const;
 const SECTION = "scroll-mt-24 pt-14 md:pt-16";
 const CARD = "border-border bg-surface rounded-panel border";
 
@@ -354,6 +356,15 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                 {t("applySection.assess")}
               </li>
             </ul>
+            <div className="border-border mt-6 border-t pt-5">
+              <h3 className="text-[15px] font-semibold">{t("applySection.termsTitle")}</h3>
+              <ul className="text-muted mt-2.5 flex list-disc flex-col gap-1.5 pl-5 text-[14px]">
+                {TERMS.map((term) => (
+                  <li key={term}>{t(`applySection.terms.${term}`)}</li>
+                ))}
+              </ul>
+              <p className="text-muted mt-2.5 text-[13px]">{t("applySection.termsNote")}</p>
+            </div>
           </div>
           <FactoryApplyForm
             capabilities={types.map((type) => ({ value: type.code, label: pick(locale, type.nameTh, type.nameEn) }))}

@@ -7,27 +7,37 @@ import type { CategoryContent } from "./schema";
  * the configurator's custom-size step) and their words sit in `catalog.categoryContent.<code>` (th, en).
  * Categories without an entry have no content yet.
  *
- * Approved so far (owner, C2b 2026-10-28 17:48, DECISIONS-STAGE-A §15.1): ONLY the three style-library mappings
- * below — the catalogue and the style library name these categories differently (Q6). Everything else stays draft.
+ * Approved (owner, C2b 2026-10-28 17:48, DECISIONS-STAGE-A §15.1): the three style-library mappings below — the
+ * catalogue and the style library name these categories differently (Q6).
+ * Approved (C12 2026-10-29, DECISIONS-STAGE-A §17.3, D-460 — written and reviewed by the assistant as head of
+ * Marketing, delegated by the owner): every category's intro and FAQ. The intro describes the category only; how it
+ * is bought (instant / quote / mixed) still comes from the API facts (`CategoryHead` adds that line after it).
+ * Use cases, per-product words, size-finder overrides and material guides stay empty (no approved data).
  */
 const OWNER_C2B = { status: "approved", reviewedBy: "Superball (product owner)", reviewedOn: "2026-10-28" } as const;
+const C12 = {
+  status: "approved",
+  reviewedBy: "Assistant as head of Marketing (delegated by Superball, product owner)",
+  reviewedOn: "2026-10-29",
+} as const;
+const approvedCopy = (keys: string[]) => ({ intro: C12, faq: { ...C12, keys } });
 export const CATEGORY_CONTENT: readonly CategoryContent[] = [
+  { categoryCode: "corrugated", ...approvedCopy(["customSize", "fit", "moq", "vat"]) },
+  { categoryCode: "folding_carton", ...approvedCopy(["moq", "vat"]) },
+  { categoryCode: "label_sticker", ...approvedCopy(["moq", "vat"]), styles: { ...OWNER_C2B, styleCategory: "label" } },
+  { categoryCode: "tag_sleeve", ...approvedCopy(["moq", "vat"]) },
   {
-    categoryCode: "corrugated",
-    intro: { status: "draft" },
-    faq: { status: "draft", keys: ["customSize", "vat", "fit"] },
+    categoryCode: "flexible_pouch",
+    ...approvedCopy(["moq", "vat"]),
+    styles: { ...OWNER_C2B, styleCategory: "flexible" },
   },
-  { categoryCode: "folding_carton" },
-  { categoryCode: "label_sticker", styles: { ...OWNER_C2B, styleCategory: "label" } },
-  { categoryCode: "tag_sleeve" },
-  { categoryCode: "flexible_pouch", styles: { ...OWNER_C2B, styleCategory: "flexible" } },
-  { categoryCode: "standard_product" },
-  { categoryCode: "rigid_box", styles: { ...OWNER_C2B, styleCategory: "rigid" } },
-  { categoryCode: "paper_bag" },
-  { categoryCode: "food_packaging" },
-  { categoryCode: "tube" },
-  { categoryCode: "custom_tape" },
-  { categoryCode: "pop_display" },
-  { categoryCode: "other" },
-  { categoryCode: "service" },
+  { categoryCode: "standard_product", ...approvedCopy(["moq", "vat"]) },
+  { categoryCode: "rigid_box", ...approvedCopy(["quote", "vat"]), styles: { ...OWNER_C2B, styleCategory: "rigid" } },
+  { categoryCode: "paper_bag", ...approvedCopy(["quote", "vat"]) },
+  { categoryCode: "food_packaging", ...approvedCopy(["quote", "foodContact", "vat"]) },
+  { categoryCode: "tube", ...approvedCopy(["quote", "vat"]) },
+  { categoryCode: "custom_tape", ...approvedCopy(["quote", "vat"]) },
+  { categoryCode: "pop_display", ...approvedCopy(["quote", "vat"]) },
+  { categoryCode: "other", ...approvedCopy(["quote", "vat"]) },
+  { categoryCode: "service", intro: C12 },
 ];

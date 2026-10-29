@@ -231,6 +231,15 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
       { key: "suppliers", status: "in_development" },
     ],
   },
+  // D-460 (C12): the reference seed's defaults (fulfilment.tolerance_default_pct, dimensional_tolerance_mm,
+  // colour_tolerance_delta_e) as the API states them.
+  tolerances: {
+    quantityPct: "5.00",
+    sizeMmMin: "1.00",
+    sizeMmMax: "3.00",
+    colourDeltaE: "3",
+    colourDeltaEFlexo: "5",
+  },
   paymentMethods: ["bank_transfer_slip", "scb_qr", "card_2c2p"],
   issuer: {
     legalNameTh: "บริษัท ทดสอบระบบ จำกัด (ข้อมูลจำลอง)",
