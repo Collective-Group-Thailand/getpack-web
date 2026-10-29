@@ -114,49 +114,279 @@
     "ctaContact": "Contact us"
   },
   "partner": {
-    "title": "Become a partner factory",
-    "metaTitle": "Become a getpack partner factory — print and packaging jobs ready to produce",
-    "metaDescription": "For printers and packaging factories that want steady work: getpack sends jobs with checked files and approved proofs, with a system for job intake, production planning, QC, shipping and on-time payment. Apply here.",
-    "answer": "getpack partner factories receive jobs whose artwork the customer has approved and whose deposit is paid, through getpack's system: print-ready files, clear specs, an agreed ship date, and payment on a set schedule. getpack is the seller to the customer; the factory focuses on production and quality.",
-    "lead": "You produce; we find the customers, check the files and handle the paperwork — the job that reaches you is ready for the press.",
-    "benefitsTitle": "What partners get",
-    "benefits": [
-      {
-        "title": "Jobs ready to produce",
-        "body": "Every job has been file-checked by prepress and proof-approved by the customer, with the dieline, board spec, quantity and ship date."
+    "title": "getpack Factory — a whole-factory ERP, free",
+    "metaTitle": "getpack Factory — ERP for packaging factories, every module free",
+    "metaDescription": "getpack Factory, the ERP for packaging factories: stock, purchasing, production planning, shop floor, QC, delivery, accounting and the general ledger. Every module free, unlimited users, once you open a factory account and sign the partner agreement with getpack.",
+    "titleStart": "A whole-factory ERP,",
+    "titleEm": "free",
+    "titleEnd": "with new jobs every day",
+    "lede": "Stock, purchasing, production planning, shop floor, QC and delivery, through to accounting and the general ledger, in one system — for jobs from getpack and your own customers.",
+    "apply": "Apply as a partner factory",
+    "modulesCta": "See every module",
+    "offerPrice": "฿0",
+    "offer": "Every module · unlimited users · open an account and sign the partner agreement with getpack",
+    "login": "Partner factory sign-in",
+    "board": {
+      "label": "Illustration of the getpack Factory production board: jobs from getpack and the factory's own customers in one plan",
+      "caption": "Sample screen · illustration, not real data",
+      "title": "Your factory",
+      "view": "Production board",
+      "today": "Today",
+      "machines": "All machines",
+      "columns": {
+        "plan": "To plan",
+        "running": "In production",
+        "qc": "QC",
+        "ready": "Ready to ship"
       },
-      {
-        "title": "A factory system in one place",
-        "body": "Job intake, production planning, stage logging, QC with photos and shipping, in an app that works on a phone on the shop floor, with roles for owner, planner, operators, QC, shipping and accounts."
+      "fromGetpack": "getpack",
+      "own": "Own customer",
+      "stock": "Material running low against the plan",
+      "repair": "Machine repair reported; job moved to another machine"
+    },
+    "sources": {
+      "title": "Jobs from getpack + your own customers, one system",
+      "lead": "No second system: every job goes into the same production plan and stock",
+      "getpack": {
+        "title": "Jobs from getpack",
+        "body": "Checked files, complete specs, agreed prices — accept the job and go"
       },
-      {
-        "title": "Paid on time",
-        "body": "A first payment on job acceptance and the rest after delivery and the guarantee window, on terms agreed per factory, with statements and full tax documents."
+      "own": {
+        "title": "Your own customers",
+        "body": "Quotations, sales orders, sales team and accounting documents; your customers' data is yours"
       },
-      {
-        "title": "Choose your level",
-        "body": "Publish full prices to take instant-quote jobs, publish some, or take quote-only jobs — set it to your capacity."
+      "hub": {
+        "title": "getpack Factory",
+        "body": "One plan, one stock, one set of machines; see real capacity before taking more work"
       }
-    ],
-    "howTitle": "How to apply",
-    "how": [
-      {
-        "title": "Send your factory details",
-        "body": "What you produce, machines, capacity and delivery area."
-      },
-      {
-        "title": "Assessment and trial jobs",
-        "body": "Our team visits or assesses from samples, then runs one or two real jobs with you."
-      },
-      {
-        "title": "Set prices and start",
-        "body": "Set your rate table or use getpack's, open accounts for your team, and start taking jobs through the system."
+    },
+    "modules": {
+      "title": "Everything a packaging factory runs on",
+      "lead": "Switch modules on one at a time; the data is connected",
+      "live": "Available",
+      "in_development": "In development",
+      "items": {
+        "getpack_jobs": {
+          "title": "Jobs from getpack",
+          "body": "Files and specs, accept jobs, update status, ship and follow payments in one place"
+        },
+        "roles": {
+          "title": "6 factory roles",
+          "body": "Owner · planner · machine operator · QC · shipping · accounting"
+        },
+        "stock": {
+          "title": "Stock and warehouse",
+          "body": "Board, ink, materials and finished goods, with a warning before they run out"
+        },
+        "purchasing": {
+          "title": "Purchasing",
+          "body": "Purchase requests, purchase orders and goods receipt, tied to the plan"
+        },
+        "planning": {
+          "title": "Production planning",
+          "body": "Queues by machine and material on hand; free capacity ahead"
+        },
+        "shop_floor": {
+          "title": "Shop floor",
+          "body": "A phone or tablet by the machine: start, pause, done, scrap"
+        },
+        "sales": {
+          "title": "Sales team",
+          "body": "Customers, quotations and sales orders for the factory's own customers"
+        },
+        "accounting": {
+          "title": "Accounting and general ledger",
+          "body": "Chart of accounts, journals, general ledger, receivables, payables and financial statements, posted automatically from sales, purchases and payments"
+        },
+        "documents": {
+          "title": "Document library",
+          "body": "Search the text of every file and document"
+        },
+        "maintenance": {
+          "title": "Machine maintenance",
+          "body": "Report repairs, follow them and move jobs to another machine"
+        },
+        "suppliers": {
+          "title": "Business partners",
+          "body": "Material suppliers, customers and subcontractors in one register"
+        }
       }
-    ],
-    "ctaTitle": "Interested?",
-    "ctaBody": "Send your factory details to the partner team; we reply within business hours.",
-    "ctaContact": "Contact the partner team",
-    "ctaLogin": "Partner factory sign-in"
+    },
+    "floor": {
+      "title": "Made for machine operators from day one",
+      "lead": "Big buttons, Thai, no typing — what happens on the floor becomes the status the job's customer sees",
+      "points": {
+        "start": {
+          "title": "Start, pause, done",
+          "body": "Machine time and output recorded by themselves"
+        },
+        "photos": {
+          "title": "Photos and QC results",
+          "body": "Attached to the order at once"
+        },
+        "repair": {
+          "title": "Report a repair at the machine",
+          "body": "The planner sees it and moves the job"
+        }
+      },
+      "phoneLabel": "Illustration of the operator's phone: next job, Done 1 lot, Pause and Report scrap buttons",
+      "machine": "Machine 1",
+      "done": "Done 1 lot",
+      "pause": "Pause",
+      "scrap": "Report scrap",
+      "caption": "Illustration",
+      "nextGetpack": "Next job · getpack"
+    },
+    "compare": {
+      "title": "How it differs from what factories use today",
+      "caption": "Excel and LINE, a generic ERP and getpack Factory compared",
+      "cols": {
+        "excel": "Excel + LINE",
+        "erp": "A generic ERP",
+        "us": "getpack Factory"
+      },
+      "rows": {
+        "cost": {
+          "label": "System cost",
+          "excel": "None, but time lost daily",
+          "erp": "Licences, set-up and per-user fees",
+          "us": "Every module free, unlimited users"
+        },
+        "jobs": {
+          "label": "New jobs",
+          "excel": "Find customers yourself",
+          "erp": "Find customers yourself",
+          "us": "Jobs from getpack with files and specs"
+        },
+        "fit": {
+          "label": "Built for packaging factories",
+          "excel": "—",
+          "erp": "Needs customising",
+          "us": "Flutes, materials, dielines and ΔE colour built in"
+        },
+        "accounting": {
+          "label": "Accounting and general ledger",
+          "excel": "Separate program, keyed twice",
+          "erp": "Yes; some charge per module",
+          "us": "Built in, posted automatically from sales, purchases and payments"
+        },
+        "start": {
+          "label": "Getting started",
+          "excel": "At once",
+          "erp": "Months",
+          "us": "One module at a time"
+        },
+        "status": {
+          "label": "Customers see status",
+          "excel": "They phone to ask",
+          "erp": "Not connected to customers",
+          "us": "getpack jobs update the customer automatically"
+        }
+      },
+      "note": "Some modules are still in development — see each module's status above"
+    },
+    "tiers": {
+      "title": "Choose the level that suits your factory",
+      "lead": "Two ways to price: getpack's rate card, or your factory's own price list",
+      "level": "Level {n}",
+      "items": {
+        "full": {
+          "title": "Prices for every product",
+          "body": "Customers see a price at once; the most jobs"
+        },
+        "partial": {
+          "title": "Prices for some products",
+          "body": "Price your strengths; quote the rest job by job"
+        },
+        "quote": {
+          "title": "Quotations only",
+          "body": "Take quotation requests; suits special work"
+        }
+      },
+      "sourcesTitle": "Price source",
+      "sources": {
+        "rate_card": {
+          "title": "getpack's rate card",
+          "body": "Use the rate card getpack keeps; no pricing to set up"
+        },
+        "price_list": {
+          "title": "Your factory's price list",
+          "body": "Your own prices for the jobs you take through getpack"
+        }
+      }
+    },
+    "applySection": {
+      "title": "Start with getpack Factory and your first job",
+      "lead": "The partner team calls back to arrange a factory visit, assess the work that suits you and set the system up",
+      "steps": {
+        "apply": "Apply",
+        "agreement": "Factory account and partner agreement",
+        "start": "Use every module"
+      },
+      "stepsLabel": "Steps",
+      "confidential": "Your factory's information stays confidential — never shown to customers or anyone outside",
+      "assess": "The partner team assesses which work suits your factory after you apply",
+      "factory": "Factory name",
+      "contact": "Contact person",
+      "phone": "Mobile",
+      "email": "E-mail (optional)",
+      "province": "Province",
+      "provincePlaceholder": "Choose a province",
+      "capabilities": "What you produce",
+      "capabilitiesHint": "Choose any",
+      "system": "What runs your factory today",
+      "systems": {
+        "spreadsheet": "Excel / paper",
+        "accounting": "Accounting software",
+        "erp": "Another ERP",
+        "none": "No system yet"
+      },
+      "message": "Anything else (optional)",
+      "submit": "Apply as a partner factory",
+      "pdpa": "Used only to assess and contact you about the partnership, under our",
+      "privacy": "privacy policy",
+      "summary": "Partner factory application: {factory}",
+      "errors": {
+        "factory": "Enter the factory name",
+        "contact": "Enter a contact name",
+        "phone": "Enter a valid mobile number",
+        "email": "That e-mail is not valid",
+        "province": "Choose a province",
+        "capabilities": "Choose at least one"
+      },
+      "sentTitle": "Application received — request {ticket}",
+      "sent": "The partner team will get back to you by {date}",
+      "next": "Next: the partner team arranges a call and opens your factory account",
+      "openLine": "Continue on LINE",
+      "failed": "Could not send. Please try again",
+      "rateLimited": "Too many messages — please wait a moment and try again",
+      "required": "(required)"
+    },
+    "faq": {
+      "title": "Questions from factories",
+      "items": {
+        "free": {
+          "q": "Is it really free? What's the condition?",
+          "a": "Every module is free with unlimited users. The condition: open a factory account and sign the partner agreement with getpack before you start."
+        },
+        "data": {
+          "q": "Who owns my factory's customer data?",
+          "a": "Your factory does. The getpack team can look into your system only while the owner grants access, and every look is logged for the owner to see."
+        },
+        "names": {
+          "q": "Does getpack disclose partner factories' names?",
+          "a": "No. Names, locations and factory data are never shown to customers or anyone outside; customer documents are issued in getpack's name. Job terms are in the partner agreement."
+        },
+        "accounting": {
+          "q": "Can it replace our accounting software?",
+          "a": "getpack Factory has accounting and a general ledger built in; sales, purchase and payment documents post automatically. While you move over, use it alongside your current program. See the accounting module's status above."
+        },
+        "modules": {
+          "q": "Can we use only some modules?",
+          "a": "Yes. Start with jobs from getpack and switch other modules on when you are ready."
+        }
+      }
+    }
   },
   "legal": {
     "terms": {
