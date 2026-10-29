@@ -870,7 +870,22 @@
     "body": "The design uses {needed, number} colours, but this price covers {priced, number} spot colours. Choose a print method that prints them all before you order.",
     "toCmyk": "Switch to CMYK",
     "moreColours": "Add colours",
-    "moreQuote": "Corrugated boxes can print more colours; colours beyond the instant price are quoted by the team (request a quotation)."
+    "moreQuote": "Corrugated boxes can print more colours; colours beyond the instant price are quoted by the team (request a quotation).",
+    "cmykConfirm": {
+      "title": "Switch to CMYK (4-colour) printing?",
+      "body": "CMYK prints every colour in your design. See the price before you switch; nothing changes until you confirm.",
+      "confirm": "Switch to CMYK",
+      "cancel": "Not now",
+      "atQuantity": "Price for {quantity, number} pieces",
+      "now": "Price now",
+      "withCmyk": "With CMYK",
+      "perPiece": "{price}/piece",
+      "total": "Total {amount}",
+      "onRequest": "Request a quotation",
+      "noPrice": "No price yet",
+      "calculating": "Calculating the price…",
+      "failed": "The price could not be calculated now; the new price shows on the price bar after you switch."
+    }
   },
   "editor": {
     "order": "Order",

@@ -187,3 +187,48 @@ describe("store.studio.quote and patch autosave (mock)", () => {
     expect(error?.code).toBe("studio.spec_missing");
   });
 });
+
+describe("เปลี่ยนเป็น CMYK priced before it is applied (C11, D-459)", () => {
+  it("prices the same version with CMYK through alternativeSpec, saving nothing", async () => {
+    const { configurator, spec } = await setup();
+    const { withCmyk, stepAt } = await import("./CmykPriceConfirm");
+    const flexo: DesignSpec = { ...spec, studio: { printMethod: "flexo" } };
+    const fields = studioFieldsOf(configurator, flexo, printed)!;
+    const created = await api().POST("/v1/store/designs", {
+      body: {
+        title: "สตูดิโอ CMYK",
+        catalogProductId: configurator.catalogProductId,
+        document: { spec: flexo, content: printed } as unknown as Record<string, never>,
+        schemaVersion: 2,
+        ...fields,
+      },
+    });
+    const id = created.data!.id;
+    const versionNo = created.data!.versionNo!;
+    const now = await api().POST("/v1/store/studio/{designId}/quote", {
+      params: { path: { designId: id } },
+      body: { quantities: [500], versionNo },
+    });
+    const cmykSpec = withCmyk(flexo);
+    expect(cmykSpec.studio?.printMethod).toBe("digital");
+    expect(flexo.studio?.printMethod).toBe("flexo");
+    const alternative = studioFieldsOf(configurator, cmykSpec, printed)!.spec;
+    expect(alternative).not.toEqual(fields.spec);
+    const cmyk = await api().POST("/v1/store/studio/{designId}/quote", {
+      params: { path: { designId: id } },
+      body: { quantities: [500], versionNo, previousSpecHash: now.data!.specHash, alternativeSpec: alternative },
+    });
+    expect(cmyk.data!.mode).toBe("instant");
+    expect(cmyk.data!.cached).toBe(false);
+    expect(cmyk.data!.reasons).toEqual(["print_changed"]);
+    expect(stepAt(cmyk.data!.calculation!.steps, 500)?.unitPrice).toBeTruthy();
+    // Nothing saved: the version's own price is still answered from its snapshot, unchanged.
+    const again = await api().POST("/v1/store/studio/{designId}/quote", {
+      params: { path: { designId: id } },
+      body: { quantities: [500], versionNo },
+    });
+    expect(again.data!.specHash).toBe(now.data!.specHash);
+    expect(again.data!.cached).toBe(true);
+    expect(stepAt(again.data!.calculation!.steps, 500)).toEqual(stepAt(now.data!.calculation!.steps, 500));
+  });
+});
