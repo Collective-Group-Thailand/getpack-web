@@ -22,6 +22,9 @@ test.describe("the category page", () => {
   test("head: breadcrumb, facts, sibling chips and the section bar", async ({ page }) => {
     await gotoHydrated(page, CATEGORY);
     await expect(page.getByRole("heading", { level: 1, name: "กล่องกระดาษลูกฟูก" })).toBeVisible();
+    // C12 (D-460): the approved intro, then how the category is bought (the API's mode).
+    await expect(page.locator("#category-answer")).toContainText("กล่องลูกฟูกสำหรับส่งพัสดุ");
+    await expect(page.locator("#category-answer")).toContainText("เห็นราคาและวันผลิตทันที");
     const crumbs = page.getByRole("navigation", { name: "เส้นทางนำทาง" });
     await expect(crumbs.getByRole("link", { name: "สินค้าและราคา" })).toHaveAttribute("href", "/products");
     const facts = page.getByRole("list", { name: "ข้อมูลสรุปของหมวด" });
@@ -31,7 +34,7 @@ test.describe("the category page", () => {
     await expect(siblings.getByRole("link", { name: "กล่องกระดาษลูกฟูก" })).toHaveAttribute("aria-current", "page");
     await expect(siblings.getByText(/ประเภท/)).toHaveCount(0);
     const bar = page.getByRole("navigation", { name: "ส่วนของหน้า" });
-    for (const name of ["สินค้าในหมวดนี้", "หาเบอร์กล่อง", "เลือกลอน", "สั่งผลิตตามสเปก"])
+    for (const name of ["สินค้าในหมวดนี้", "หาเบอร์กล่อง", "เลือกลอน", "สั่งผลิตตามสเปก", "คำถามที่พบบ่อย"])
       await expect(bar.getByRole("link", { name })).toBeVisible();
   });
 
