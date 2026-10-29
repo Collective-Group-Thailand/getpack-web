@@ -245,7 +245,8 @@ export const storeSupportHandlers = [
     return ticket("contact", body, true, signedIn);
   }),
 
-  // store.support.contactOptions (D-458): the mock's call-back windows are obviously fake; weekdays only.
+  // store.support.contactOptions (D-458): the call-back windows are the decided ones (D-459: 09–12 / 12–15 / 15–18); the
+  // days are the mock's (weekdays only, no national calendar).
   http.get("*/v1/store/support/contact-options", () => HttpResponse.json(contactOptions())),
 
   // store.support.lookupTicket / addInfo (D-458): the sender proves it with the phone or e-mail they left.
