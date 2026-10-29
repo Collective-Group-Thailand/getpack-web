@@ -289,35 +289,66 @@ export function designIssues(input: CheckInput): DesignIssue[] {
     }
   }
 
-  // The spot colours a flexo design uses, counted as getpack-api counts them (every fill, stroke and
-  // background, and the background pattern).
+  // The spot colours a flexo design uses, counted as getpack-api counts them (`documentInks`, D-459): a design
+  // that needs process printing (a gradient, a colour photo) cannot print in spot inks at all.
   const spots = rule("spot_colour_count");
   const maxColours = t("spot_colour_count", "maxColours");
   if (spots && maxColours !== null) {
-    const colours = spotColours(input.elements, input.pattern);
-    if (colours.size > maxColours)
+    const inks = documentInks(input.elements, input.pattern);
+    if (inks.colours.size > maxColours || inks.process)
       out.push({
         ruleId: "spot_colour_count",
         severity: spots.severity,
         elementId: "",
-        data: { colours: colours.size, max: maxColours },
-        fix: "nearest_spot",
+        data: { colours: inks.colours.size, max: maxColours, process: inks.process ? "yes" : "no" },
+        // Merging colours cannot turn a gradient or a photo into spot inks.
+        ...(inks.process ? {} : { fix: "nearest_spot" as const }),
       });
   }
   return out;
 }
 
-/** The distinct colours as the spot-colour rule counts them. */
-export function spotColours(elements: DesignElement[], pattern?: CheckInput["pattern"]): Set<string> {
+/**
+ * The inks a design prints with, as the spot-colour rule counts them — the same arithmetic as getpack-api's
+ * `documentInks` (C8-1, D-459): every flat fill, stroke (of a width above 0) and background of the visible elements and
+ * the background pattern (a solid one: its colour); a gradient's two ends; an open path's fill is not printed; a
+ * one-ink image ("ภาพสีเดียว") is one ink of its own. A gradient or a colour image needs process printing (`process`).
+ */
+export function documentInks(
+  elements: DesignElement[],
+  pattern?: CheckInput["pattern"],
+): { colours: Set<string>; process: boolean } {
   const colours = new Set<string>();
+  let process = false;
   const add = (c: unknown) => {
     if (typeof c === "string" && c !== "" && c !== "transparent") colours.add(c.toLowerCase());
   };
-  for (const el of elements)
-    for (const k of ["fill", "stroke", "background"] as const) add((el as unknown as Record<string, unknown>)[k]);
+  for (const el of elements) {
+    if (el.hidden) continue;
+    if (el.type === "image") {
+      if (el.mono) colours.add("mono-image");
+      else process = true;
+      continue;
+    }
+    const raw = el as unknown as Record<string, unknown>;
+    const gradient = raw.fillGradient as { from?: unknown; to?: unknown } | undefined;
+    if (gradient && typeof gradient === "object") {
+      process = true;
+      add(gradient.from);
+      add(gradient.to);
+    } else if (raw.open !== true) add(raw.fill);
+    const width = typeof raw.strokeWidth === "number" ? raw.strokeWidth : null;
+    if (width === null || width > 0) add(raw.stroke);
+    add(raw.background);
+  }
   if (pattern && pattern.kind !== "none") {
     add(pattern.color);
-    add(pattern.background);
+    if (pattern.kind !== "solid") add(pattern.background);
   }
-  return colours;
+  return { colours, process };
+}
+
+/** The distinct colours as the spot-colour rule counts them. */
+export function spotColours(elements: DesignElement[], pattern?: CheckInput["pattern"]): Set<string> {
+  return documentInks(elements, pattern).colours;
 }

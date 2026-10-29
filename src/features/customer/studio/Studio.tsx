@@ -506,7 +506,7 @@ export function Studio({
               : printMethod === "flexo"
                 ? tool !== "uploads"
                 : true,
-          notice: (
+          notice: (ctx) => (
             <>
               {/* The tour points at the step bar and the stage, which come with a box. */}
               {hasBox ? <StudioGuide signedIn={signedIn} coach={false} /> : null}
@@ -523,7 +523,12 @@ export function Studio({
                 </Badge>
               ) : null}
               {shown === "design" ? (
-                <SpotColourWarning configurator={configurator.data ?? null} maxSpot={maxSpot} />
+                <SpotColourWarning
+                  configurator={configurator.data ?? null}
+                  maxSpot={maxSpot}
+                  quantity={quantity}
+                  persistence={mode === "store" ? ctx.persistence : null}
+                />
               ) : null}
             </>
           ),

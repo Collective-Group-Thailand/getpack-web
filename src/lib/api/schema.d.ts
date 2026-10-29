@@ -33478,9 +33478,9 @@ export interface paths {
         put?: never;
         /**
          * Price my studio design
-         * @description Prices a version of my design (default: the current one) from its calculator spec — checked against its box: style, sizes and basis, material, print sides — through the same engine and rules as `store.quotes.calculate`, and answers the same calculation object with a `specHash`. The same hash is served from its snapshot for 5 minutes. With `previousSpecHash` the answer explains the change (reason codes and unit prices before / now). A type without an instant price answers `mode: rfq` — ask for a quotation instead. Limited to 60 a minute (D-277). The calculation carries `specs` and `specLabel` — the spec priced, in the configurator’s words (e.g. "… · 150 × 100 × 80 มม. (ด้านใน) · … · ไม่พิมพ์" for an empty draft) — from the one store pricing path (D-441).
+         * @description Prices a version of my design (default: the current one) from its calculator spec — checked against its box: style, sizes and basis, material, print sides — through the same engine and rules as `store.quotes.calculate`, and answers the same calculation object with a `specHash`. The same hash is served from its snapshot for 5 minutes. With `previousSpecHash` the answer explains the change (reason codes and unit prices before / now). A type without an instant price answers `mode: rfq` — ask for a quotation instead. Limited to 60 a minute (D-277). The calculation carries `specs` and `specLabel` — the spec priced, in the configurator’s words (e.g. "… · 150 × 100 × 80 มม. (ด้านใน) · … · ไม่พิมพ์" for an empty draft) — from the one store pricing path (D-441). With `alternativeSpec` it prices that spec for the same version instead — a "what if" such as "เปลี่ยนเป็น CMYK" shown before it is applied (D-459): same box checks and pricing path, nothing saved or cached; with `previousSpecHash` (the price on screen) `changes` gives the unit prices now / with the alternative.
          *
-         *     Implements: D-277, D-275, D-051, D-441.
+         *     Implements: D-277, D-275, D-051, D-441, D-459.
          */
         post: operations["store.studio.quote"];
         delete?: never;
@@ -62499,7 +62499,7 @@ export interface components {
         };
         HeroSizeDto: {
             /**
-             * @description The preset size’s index, as `s<index>`
+             * @description The preset size’s index, as `s<index>` (in `standardSizeCodes` when the shape names them, D-459)
              * @example s0
              */
             code: string;
@@ -62514,7 +62514,7 @@ export interface components {
              */
             id: string;
             /**
-             * @description Inside W × D × H in centimetres
+             * @description Inside W × D × H in centimetres; for a shape offering its product’s standard sizes, the catalogue’s own size name, e.g. "เบอร์ A (20×14×6 ซม.)" (D-459)
              * @example 18×12×5 ซม.
              */
             labelTh: string;
@@ -80700,6 +80700,28 @@ export interface components {
             versionNo: number;
         };
         StudioQuoteRequestDto: {
+            /**
+             * @description D-459 (C11) "what if": price this calculator spec for the same design version instead of the version’s own — e.g. the Studio’s "เปลี่ยนเป็น CMYK" before it is applied. Checked against the version’s box like the saved spec (style, sizes, basis, material, print sides). Nothing is saved: no snapshot, no quotation, nothing cached.
+             * @example {
+             *       "d": 60,
+             *       "l": 200,
+             *       "parts": [
+             *         {
+             *           "printFront": [
+             *             {
+             *               "area": "all_round",
+             *               "inkColourId": "0190a1b2-0000-7000-8000-000000000008"
+             *             }
+             *           ]
+             *         }
+             *       ],
+             *       "patternId": "0190a1b2-0000-7000-8000-000000000002",
+             *       "w": 140
+             *     }
+             */
+            alternativeSpec?: {
+                [key: string]: unknown;
+            };
             /**
              * @description Delivery postcode (prices shipping)
              * @example 10110

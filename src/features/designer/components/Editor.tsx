@@ -284,8 +284,8 @@ export interface EditorChrome {
   dock?: (ctx: EditorChromeContext, layout: "rail" | "bar") => React.ReactNode;
   /** Which tools the rail offers (the print method configures the editor, U4.2); all when absent. */
   rail?: (id: RailId) => boolean;
-  /** A note over the canvas — the print mode and its limits. */
-  notice?: React.ReactNode;
+  /** A note over the canvas — the print mode and its limits (with the context: the design's saved version, C11). */
+  notice?: React.ReactNode | ((ctx: EditorChromeContext) => React.ReactNode);
   /** Open the setup dialog by itself when there is no box yet (the studio's ① offers its own ways). */
   autoSetup?: boolean;
   /**
@@ -1262,7 +1262,7 @@ export default function Editor({
         {chrome?.notice ? (
           <div className="pointer-events-none absolute inset-x-0 top-3 z-[6] flex justify-center px-3 max-[899px]:top-auto max-[899px]:bottom-[112px]">
             <div className="pointer-events-auto flex max-w-[min(36rem,100%)] flex-wrap justify-center gap-2 [&>*]:max-w-full [&>*]:text-center [&>*]:whitespace-normal">
-              {chrome.notice}
+              {typeof chrome.notice === "function" ? chrome.notice(chromeContext) : chrome.notice}
             </div>
           </div>
         ) : null}
@@ -1818,7 +1818,7 @@ export default function Editor({
                     <div className="pointer-events-none absolute inset-x-0 top-2 flex justify-center px-3">
                       {/* Notices wrap inside the stage: a long one (a locked version's) was clipped at both edges. */}
                       <div className="pointer-events-auto flex max-w-full flex-wrap justify-center gap-2 [&>*]:max-w-full [&>*]:text-center [&>*]:whitespace-normal">
-                        {chrome.notice}
+                        {typeof chrome.notice === "function" ? chrome.notice(chromeContext) : chrome.notice}
                       </div>
                     </div>
                   ) : null}
