@@ -13,6 +13,8 @@ import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
+import { handOffFiles } from "@/features/customer/upload/files";
+
 import { styleHref } from "@/features/customer/styles/paths";
 
 import { studioHref } from "../paths";
@@ -52,16 +54,19 @@ export function SampleLink({ href, look, children }: { href: string; look?: Look
 }
 
 /**
- * "มีไฟล์แบบแล้ว" with a real drop zone (item 3): choosing or dropping a file starts the upload flow — the
- * own-file product list, told the file's name. The file itself stays on the customer's computer: it is uploaded on
- * the order's artwork page after ordering (GLOBAL-RULES §6), so nothing is sent from here.
+ * "มีไฟล์แบบแล้ว" with a real drop zone (item 3): choosing or dropping files starts the upload flow. C9: the files
+ * themselves go to `/studio/upload` (handed over across the client-side navigation), where they are uploaded,
+ * checked before ordering and carried into the cart and the order's artwork; the name in the address is the fallback
+ * for a full reload.
  */
 export function FileDrop({ label }: { label: string }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
-  const start = (file: File | undefined) => {
+  const start = (files: File[]) => {
     trackStudioHub("studio_path", { path: "file" });
+    const file = files[0];
+    if (file) handOffFiles(files);
     router.push(file ? `/studio/upload?file=${encodeURIComponent(file.name.slice(0, 120))}` : "/studio/upload");
   };
   return (
@@ -77,7 +82,7 @@ export function FileDrop({ label }: { label: string }) {
         onDrop={(event) => {
           event.preventDefault();
           setOver(false);
-          start(event.dataTransfer.files[0]);
+          start([...event.dataTransfer.files]);
         }}
         className={cn(
           "rounded-card text-muted focus-visible:ring-focus-ring relative z-10 mt-auto w-full border-[1.5px] border-dashed px-3 py-3 text-center text-[13px] outline-none focus-visible:ring-2",
@@ -91,8 +96,9 @@ export function FileDrop({ label }: { label: string }) {
         ref={input}
         type="file"
         hidden
-        accept=".pdf,.ai,.eps,.svg,.png,.jpg,.jpeg,.tif,.tiff,.psd"
-        onChange={(event) => start(event.target.files?.[0])}
+        multiple
+        accept=".pdf,.ai,application/pdf,application/postscript,application/illustrator"
+        onChange={(event) => start([...(event.target.files ?? [])])}
       />
     </>
   );
