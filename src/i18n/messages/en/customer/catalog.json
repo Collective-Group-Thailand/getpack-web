@@ -590,21 +590,188 @@
   },
   "categoryContent": {
     "corrugated": {
-      "intro": "DRAFT — Corrugated boxes for shipping, moving and storage. Pick a standard size or set your own in the configurator and see the price straight away",
+      "intro": "Corrugated boxes for parcels, moving and storage, in standard sizes or an inside size of your own.",
       "faq": {
         "customSize": {
-          "q": "DRAFT — Can I set my own box size?",
-          "a": "DRAFT — Yes. Enter the inside length × width × height in the configurator and the price is calculated straight away"
-        },
-        "vat": {
-          "q": "DRAFT — Do prices include VAT and shipping?",
-          "a": "DRAFT — Prices include VAT; shipping is not included"
+          "q": "Can I set my own box size?",
+          "a": "Yes. Enter the inside length × width × height in the configurator and the price for that size is worked out straight away."
         },
         "fit": {
-          "q": "DRAFT — How do I find the box size that fits?",
-          "a": "DRAFT — Enter your product's outside size in \"Find a box size\". We add 0.5 cm on each dimension and suggest the smallest standard size that fits"
+          "q": "How do I find the box size that fits?",
+          "a": "Enter your product's outside size in \"Find a box size\". We add 0.5 cm to each dimension and suggest the smallest standard size that fits."
+        },
+        "moq": {
+          "q": "What is the minimum order?",
+          "a": "The minimum is per size: each size has its own, shown on the product card and in the configurator. One order can hold several sizes, each meeting its own minimum."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
         }
       }
+    },
+    "folding_carton": {
+      "intro": "Printed folding cartons for cosmetics, food, snacks and retail goods, with the closures, board, print and coating each product supports.",
+      "faq": {
+        "moq": {
+          "q": "What is the minimum order?",
+          "a": "The minimum is per size: each size has its own, shown on the product card and in the configurator. One order can hold several sizes, each meeting its own minimum."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "label_sticker": {
+      "intro": "Product labels and logo stickers for boxes, bottles and pouches, and for sealing packs.",
+      "faq": {
+        "moq": {
+          "q": "What is the minimum order?",
+          "a": "The minimum is per size: each size has its own, shown on the product card and in the configurator. One order can hold several sizes, each meeting its own minimum."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "tag_sleeve": {
+      "intro": "Hang tags, cards and paper sleeves for boxes and trays that carry your product and brand details.",
+      "faq": {
+        "moq": {
+          "q": "What is the minimum order?",
+          "a": "The minimum is per size: each size has its own, shown on the product card and in the configurator. One order can hold several sizes, each meeting its own minimum."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "flexible_pouch": {
+      "intro": "Printed flexible pouches such as stand-up, zip-lock and three-side-seal pouches for snacks, coffee and dry goods.",
+      "faq": {
+        "moq": {
+          "q": "What is the minimum order?",
+          "a": "The minimum is per size: each size has its own, shown on the product card and in the configurator. One order can hold several sizes, each meeting its own minimum."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "standard_product": {
+      "intro": "Standard packaging items that need no custom make: choose the item and the quantity.",
+      "faq": {
+        "moq": {
+          "q": "What is the minimum order?",
+          "a": "Each item has its own minimum, shown on its card. The starting price shown is the price per piece at that minimum."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "rigid_box": {
+      "intro": "Paper-wrapped rigid boxes such as lid-and-base, drawer and magnetic-closure boxes for gifts and premium products.",
+      "faq": {
+        "quote": {
+          "q": "How do I get a quotation?",
+          "a": "Choose a product, press \"Request a quotation\" and enter the spec and quantity you need. The team prices that spec and replies with a quotation."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "paper_bag": {
+      "intro": "Printed paper bags with rope or paper handles for shops, events and gifts.",
+      "faq": {
+        "quote": {
+          "q": "How do I get a quotation?",
+          "a": "Choose a product, press \"Request a quotation\" and enter the spec and quantity you need. The team prices that spec and replies with a quotation."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "food_packaging": {
+      "intro": "Printed food packaging such as food boxes, trays and paper cups for restaurants, cafés and ready meals.",
+      "faq": {
+        "quote": {
+          "q": "How do I get a quotation?",
+          "a": "Choose a product, press \"Request a quotation\" and enter the spec and quantity you need. The team prices that spec and replies with a quotation."
+        },
+        "foodContact": {
+          "q": "What if the food touches the packaging directly?",
+          "a": "Say so in your quotation request, and the team advises on a material that suits your use."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "tube": {
+      "intro": "Paper tubes for tea, cosmetics, gifts and other products that suit a round pack.",
+      "faq": {
+        "quote": {
+          "q": "How do I get a quotation?",
+          "a": "Choose a product, press \"Request a quotation\" and enter the spec and quantity you need. The team prices that spec and replies with a quotation."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "custom_tape": {
+      "intro": "Packing tape printed with your logo or message, for sealing parcels.",
+      "faq": {
+        "quote": {
+          "q": "How do I get a quotation?",
+          "a": "Choose a product, press \"Request a quotation\" and enter the spec and quantity you need. The team prices that spec and replies with a quotation."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "pop_display": {
+      "intro": "Paper displays and stands, for the counter or the floor, for shops and events.",
+      "faq": {
+        "quote": {
+          "q": "How do I get a quotation?",
+          "a": "Choose a product, press \"Request a quotation\" and enter the spec and quantity you need. The team prices that spec and replies with a quotation."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "other": {
+      "intro": "Packaging and print that fit none of the categories above; send the team the spec you need.",
+      "faq": {
+        "quote": {
+          "q": "How do I get a quotation?",
+          "a": "Choose a product, press \"Request a quotation\" and enter the spec and quantity you need. The team prices that spec and replies with a quotation."
+        },
+        "vat": {
+          "q": "Do prices include VAT and shipping?",
+          "a": "Prices include VAT. Shipping is shown separately once you enter the delivery address."
+        }
+      }
+    },
+    "service": {
+      "intro": "Services that go with your packaging, such as graphic design, box structure design and samples before production."
     }
   }
 }
