@@ -696,6 +696,7 @@ export const salesHandlers = [
       pendingReprice: null,
       reorderOf: null,
       reusesApprovedArtwork: false,
+      checkedFile: null,
       quantityEditable: true,
       quantityLimits: null,
       tierHint: null,

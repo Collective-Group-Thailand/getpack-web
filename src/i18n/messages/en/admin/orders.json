@@ -273,7 +273,12 @@
         "safe_zone": "Content outside the safe zone",
         "thin_lines": "Lines too thin",
         "overprint": "Overprint set",
-        "ink_coverage": "Ink coverage too high"
+        "ink_coverage": "Ink coverage too high",
+        "ink_count": "Inks do not match the print method",
+        "small_text": "Text too small",
+        "small_text_black": "Small text not black only",
+        "barcode": "Barcode / QR",
+        "die_layer": "Die lines not on a non-printing layer"
       },
       "proofs": "Proofs",
       "openPrepress": "Open in prepress",

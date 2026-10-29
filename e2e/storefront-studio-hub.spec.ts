@@ -58,7 +58,7 @@ test("inline finder suggests boxes with reasons and opens the editor on the size
   await expect(page).toHaveURL(/\/studio\/new\?.*style=.*l=\d+.*step=design/);
 });
 
-test("the file path's drop zone starts the upload flow", async ({ page }) => {
+test("the file path's drop zone carries the file itself into the upload check (C9)", async ({ page }) => {
   await gotoHydrated(page, `${HOSTS.customer}/studio`);
   await page.locator('#paths input[type="file"]').setInputFiles({
     name: "logo-final.pdf",
@@ -66,7 +66,8 @@ test("the file path's drop zone starts the upload flow", async ({ page }) => {
     buffer: Buffer.from("%PDF-1.4"),
   });
   await expect(page).toHaveURL(/\/studio\/upload\?file=logo-final\.pdf/);
-  await expect(page.getByRole("status")).toContainText("logo-final.pdf");
+  // A guest: the handed-over file waits while they sign in over the page, then uploads.
+  await expect(page.getByRole("dialog", { name: "เข้าสู่ระบบ" })).toBeVisible({ timeout: 15_000 });
 });
 
 test("/studio has no axe violations and no horizontal scroll at 390", async ({ page }) => {
