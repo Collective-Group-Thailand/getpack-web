@@ -50,6 +50,8 @@ A journey that a business decision or an API rule keeps over its §2 budget is l
 |---|---|---|---|
 | T1 | 5 steps | Homepage v10 (Studio-first): the hero prices its three standard sizes, so a size of the customer's own is typed in the configurator — one more choice, then D-182's measurement basis | Product owner (homepage v10) · Pricing owner (D-182) |
 | T5 | 6 steps | D-182: the customer must choose the measurement basis before a price (no silent default); the product opens on its standard sizes, so a size of the customer's own is one more choice | Pricing owner (D-182) |
+| T8 | 4 steps | Account redesign (C6, 2026-10-28): an order card shows at most two actions, and a delivered order's are receipt and a claim — reordering is on the order's page, one screen more | Product owner (account redesign C6) |
 | T9 | 7 steps | D-082: a carton photo is required with every claim (store.claims.getForm cartonPhotosMin); D-198: the customer chooses the remedy | CS Lead (D-082 per claim type) · getpack-api |
+| T10 | 3 steps | Account redesign (C6, 2026-10-28): the latest documents left the order list for the account's own documents page (เอกสาร), one screen more | Product owner (account redesign C6) |
 | T11 | 6 taps | getpack-api: factory steps run strictly in order and a photo is taken only when a step finishes | Partner Manager · getpack-api |
 | T12 | 7 steps | D-203 / D-271: the free dieline needs a signed-in customer (2 steps); reaching a style from the home page takes 2 screens — a dieline entry without the library is open | Marketing (D-203) · getpack-web (dieline entry) |

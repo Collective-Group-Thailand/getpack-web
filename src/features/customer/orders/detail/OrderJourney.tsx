@@ -57,7 +57,7 @@ export async function OrderJourney({ detail }: { detail: OrderDetail }) {
   ].filter((id, index, all) => all.indexOf(id) === index);
 
   return (
-    <ol className="flex flex-col">
+    <ol aria-label={t("label")} className="flex flex-col">
       {ORDER_STAGES.map((stage, index) => {
         const at = doneAt(stage, detail);
         const done = cancelled ? Boolean(at) : current !== null && (index < current || Boolean(at && index <= current));
@@ -66,7 +66,11 @@ export async function OrderJourney({ detail }: { detail: OrderDetail }) {
         const state = done ? "done" : now ? "now" : "todo";
         const last = index === ORDER_STAGES.length - 1;
         return (
-          <li key={stage} className="relative grid grid-cols-[2rem_minmax(0,1fr)] gap-3 pb-[1.125rem] last:pb-0">
+          <li
+            key={stage}
+            aria-current={now ? "step" : undefined}
+            className="relative grid grid-cols-[2rem_minmax(0,1fr)] gap-3 pb-[1.125rem] last:pb-0"
+          >
             {!last ? (
               <span
                 aria-hidden="true"

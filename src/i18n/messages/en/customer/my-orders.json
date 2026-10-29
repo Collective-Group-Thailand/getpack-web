@@ -224,6 +224,7 @@
       "close": "Close"
     },
     "journey": {
+      "label": "Order progress",
       "stages": {
         "payment": "Payment",
         "artwork": "Artwork",

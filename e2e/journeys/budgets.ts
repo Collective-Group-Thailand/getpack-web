@@ -152,11 +152,23 @@ export const EXCEPTIONS: Partial<Record<JourneyId, BudgetException>> = {
       "D-182: the customer must choose the measurement basis before a price (no silent default); the product opens on its standard sizes, so a size of the customer's own is one more choice",
     owner: "Pricing owner (D-182)",
   },
+  T8: {
+    ceiling: 4,
+    cause:
+      "Account redesign (C6, 2026-10-28): an order card shows at most two actions, and a delivered order's are receipt and a claim — reordering is on the order's page, one screen more",
+    owner: "Product owner (account redesign C6)",
+  },
   T9: {
     ceiling: 7,
     cause:
       "D-082: a carton photo is required with every claim (store.claims.getForm cartonPhotosMin); D-198: the customer chooses the remedy",
     owner: "CS Lead (D-082 per claim type) · getpack-api",
+  },
+  T10: {
+    ceiling: 3,
+    cause:
+      "Account redesign (C6, 2026-10-28): the latest documents left the order list for the account's own documents page (เอกสาร), one screen more",
+    owner: "Product owner (account redesign C6)",
   },
   T11: {
     ceiling: 6,

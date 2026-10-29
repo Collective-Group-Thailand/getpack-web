@@ -10,7 +10,14 @@ test("T10 get the tax invoice for an order", async ({ page, journey }) => {
   await signInAsCustomer(page, "/account/orders");
   await j.startHere();
 
-  const documents = page.getByRole("region", { name: "เอกสารล่าสุด" });
+  // The latest documents left the order list in the account redesign (C6): they are under "เอกสาร" in the
+  // account menu (scorecard §5 exception).
+  await j.screen(
+    "documents",
+    () => page.getByRole("navigation", { name: "บัญชีของฉัน" }).getByRole("link", { name: "เอกสาร" }).click(),
+    () => expect(page.getByRole("heading", { level: 1, name: "เอกสารของฉัน" })).toBeVisible(),
+  );
+  const documents = page.getByRole("table", { name: "เอกสารของฉัน" });
   // A signed link is asked for, then opened by a second click (api-conventions §3).
   await j.decide("ask for the tax invoice's link", () =>
     documents
