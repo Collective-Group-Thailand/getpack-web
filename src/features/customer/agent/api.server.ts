@@ -1,5 +1,8 @@
 import "server-only";
 
+import { getLocale } from "next-intl/server";
+
+import { redirect } from "@/i18n/navigation";
 import { isApiError, serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
 
@@ -20,6 +23,16 @@ export interface Page<T> {
 export async function getProgramme(): Promise<AgentProgramme> {
   const { data } = await (await serverApi("customer")).GET("/v1/store/agent/programme");
   return data!;
+}
+
+/**
+ * The programme for an agent, or a redirect to `/account/agent` — the offer and the application —
+ * for anyone who is not one yet: the agent's own pages would only get a refusal from the API.
+ */
+export async function requireAgent(): Promise<AgentProgramme> {
+  const programme = await getProgramme();
+  if (programme.state === "agent") return programme;
+  return redirect({ href: "/account/agent", locale: await getLocale() });
 }
 
 /** The latest application, or `null` when there is none (`store.agent.getApplication`). */

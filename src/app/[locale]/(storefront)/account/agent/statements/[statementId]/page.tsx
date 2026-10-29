@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { CertificateButton } from "@/features/customer/agent/AgentActions";
 import { AgentFrame } from "@/features/customer/agent/AgentPieces";
-import { getMyStatement } from "@/features/customer/agent/api.server";
+import { getMyStatement, requireAgent } from "@/features/customer/agent/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getFormat } from "@/features/shared/format/server";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -19,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** One month's statement with its entries, withholding and the 50 ทวิ once paid (D-420, D-421). */
 export default async function Page({ params }: { params: Promise<{ statementId: string }> }) {
   await requireCustomer();
+  await requireAgent();
   const { statementId } = await params;
   const [t, tc, format, s] = await Promise.all([
     getTranslations("agent.statements"),

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { AgentFrame, AgentPager, pageOf } from "@/features/customer/agent/AgentPieces";
-import { getMyStatements } from "@/features/customer/agent/api.server";
+import { getMyStatements, requireAgent } from "@/features/customer/agent/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
@@ -19,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Monthly statements (D-420): approved by Finance, then transferred with tax withheld (D-421). */
 export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   await requireCustomer();
+  await requireAgent();
   const page = pageOf((await searchParams).page);
   const [t, format, list] = await Promise.all([
     getTranslations("agent.statements"),

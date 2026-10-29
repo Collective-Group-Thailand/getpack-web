@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { RegisterLead, WithdrawLead } from "@/features/customer/agent/AgentActions";
 import { AgentFrame, AgentPager, pageOf } from "@/features/customer/agent/AgentPieces";
-import { getAgent, getMyLeads, getProgramme } from "@/features/customer/agent/api.server";
+import { getAgent, getMyLeads, requireAgent } from "@/features/customer/agent/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
@@ -23,12 +23,12 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   await requireCustomer();
+  const programme = await requireAgent();
   const page = pageOf((await searchParams).page);
-  const [t, format, list, programme, agent] = await Promise.all([
+  const [t, format, list, agent] = await Promise.all([
     getTranslations("agent.leads"),
     getFormat(),
     getMyLeads(page),
-    getProgramme(),
     getAgent(),
   ]);
   return (
