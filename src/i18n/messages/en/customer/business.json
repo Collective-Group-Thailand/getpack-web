@@ -14,52 +14,426 @@
     "menuCurrent": "This page: {page}"
   },
   "landing": {
-    "metaTitle": "getpack for business",
-    "title": "Order packaging as a company — the whole team, every branch",
-    "intro": "One company account for your team: set an approver, add PO numbers, tax invoices per branch, and apply for credit terms.",
-    "apply": "Open a company account",
+    "metaTitle": "getpack for business — company account, approvers, credit terms, tax invoices per branch",
+    "metaDescription": "One company account for the whole team: approvers by amount, PO numbers, tax invoices per branch, 15–60 day credit terms and bulk reorders. Opening an account is free.",
+    "intro": "One company account for your whole team: set approvers, add PO numbers, split tax invoices by branch, apply for credit terms and reorder many items at once — real prices every time, no waiting for quotations.",
+    "titleStart": "Your company's packaging,",
+    "titleEm": "managed in one place",
+    "apply": "Open a company account — free",
     "talk": "Talk to sales",
-    "benefits": "What a company account adds",
-    "benefit": {
-      "team": {
-        "title": "The whole team, one account",
-        "body": "Invite members with roles: admin, buyer, approver, accountant"
-      },
-      "approval": {
-        "title": "Approval before ordering",
-        "body": "Orders over your threshold wait for your approver"
-      },
+    "facts": {
       "credit": {
-        "title": "Credit terms",
-        "body": "Start prepaid; apply for 15–60 day terms after 3 paid orders or with financial statements"
+        "value": "15–60 days",
+        "label": "Credit terms"
       },
-      "invoices": {
-        "title": "Tax invoices and statements",
-        "body": "A tax invoice per order and a monthly statement to pay in one go"
+      "review": {
+        "value": "1–2 business days",
+        "label": "Document review"
       },
-      "branches": {
-        "title": "Multiple branches",
-        "body": "Delivery addresses and tax invoices per branch"
-      },
-      "reorder": {
-        "title": "Reorder in bulk",
-        "body": "Upload a CSV of order numbers and quantities, re-priced instantly"
+      "roles": {
+        "value": "4 roles",
+        "label": "In one team"
       }
     },
-    "stepsTitle": "Open an account in 3 steps",
-    "steps": {
-      "one": {
-        "title": "Company details",
-        "body": "Legal name, tax ID, authorised signatory"
+    "screen": {
+      "label": "Illustration of the company account: spend by branch, orders waiting for approval and the credit line",
+      "caption": "Sample screen · illustration, not real data",
+      "company": "Company account",
+      "tabs": {
+        "overview": "Overview",
+        "orders": "Orders",
+        "team": "Team",
+        "statements": "Statements"
       },
-      "two": {
-        "title": "Documents",
-        "body": "Company certificate (within 6 months), ภ.พ.20 and the signatory's ID"
-      },
-      "three": {
-        "title": "We review",
-        "body": "1–2 business days; order prepaid meanwhile"
+      "spend": "Spend by branch",
+      "pending": "Waiting for approval",
+      "approve": "Approve",
+      "credit": "Credit line",
+      "reorder": "Frequent reorders"
+    },
+    "audienceLabel": "Made for",
+    "audience": {
+      "chains": "Multi-branch shops and franchises",
+      "brands": "Online brands with several labels",
+      "food": "Food and beverage",
+      "makers": "Product makers",
+      "agencies": "Design agencies",
+      "procurement": "Companies with a purchasing team"
+    },
+    "before": {
+      "title": "The packaging purchasing work that disappears",
+      "lead": "What purchasing repeats every month, the system does",
+      "was": "Before",
+      "now": "getpack",
+      "items": {
+        "quote": {
+          "before": "Ask 3 suppliers for quotes, wait 2–3 days",
+          "title": "Real prices at once",
+          "body": "Priced by size, material, print and quantity; save it as a quotation with the price held for {days} days",
+          "bodyNoDays": "Priced by size, material, print and quantity; save it as a quotation"
+        },
+        "approval": {
+          "before": "Ask for approval in chat, lose track",
+          "title": "Approval in the system",
+          "body": "Orders over your company's amount wait for an approver, with the full history"
+        },
+        "branches": {
+          "before": "Tax invoice for the wrong branch, reissued",
+          "title": "Branches handled",
+          "body": "Delivery addresses and tax invoices per branch, with a monthly statement"
+        },
+        "reorder": {
+          "before": "Send files and specs again for every reorder",
+          "title": "Reorder many items at once",
+          "body": "Upload a CSV of order numbers and quantities, re-priced instantly"
+        }
       }
+    },
+    "features": {
+      "title": "Everything purchasing, accounting and marketing need",
+      "soon": "Coming soon",
+      "items": {
+        "team": {
+          "title": "The whole team, one account",
+          "body": "Invite members and give them roles"
+        },
+        "reorder": {
+          "title": "Reorder many items at once",
+          "body": "Upload a CSV of order numbers and quantities, re-priced instantly"
+        },
+        "approval": {
+          "title": "Approval before ordering",
+          "body": "Orders over your company's amount wait for an approver"
+        },
+        "credit": {
+          "title": "Credit terms",
+          "body": "Start prepaid; apply for 15–60 day terms after 3 orders or with financial statements"
+        },
+        "invoices": {
+          "title": "Tax invoices and statements",
+          "body": "A tax invoice per order and a monthly statement to pay in one go"
+        },
+        "branches": {
+          "title": "Multiple branches",
+          "body": "Delivery addresses and tax invoices per branch"
+        },
+        "brand_lock": {
+          "title": "Brand lock for branches",
+          "body": "Head office locks the logo and colours; branches edit only their own text"
+        },
+        "stock_alert": {
+          "title": "Reminder before boxes run out",
+          "body": "Estimates the run-out date from your order rhythm and reminds you before the production time"
+        },
+        "production_evidence": {
+          "title": "Production tracking with evidence",
+          "body": "Photos during production and a colour report against the approved sample, for your goods-receipt check"
+        },
+        "etax_export": {
+          "title": "e-Tax Invoice and accounting export",
+          "body": "Electronic tax invoices and export files for your accounting software — no re-keying"
+        },
+        "api": {
+          "title": "Connect your systems",
+          "body": "An API to order and send files from your company's systems"
+        }
+      },
+      "roles": {
+        "admin": {
+          "title": "Admin",
+          "body": "Settings and members"
+        },
+        "buyer": {
+          "title": "Buyer",
+          "body": "Designs and orders"
+        },
+        "approver": {
+          "title": "Approver",
+          "body": "Approves by amount"
+        },
+        "accountant": {
+          "title": "Accounting",
+          "body": "Invoices and payment"
+        }
+      },
+      "csvLabel": "Sample CSV for a reorder",
+      "csvSample": "order_no,qty\nPK-2569-00100,1000\nPK-2569-00142,500"
+    },
+    "sim": {
+      "title": "Who approves — set by amount",
+      "lead": "Move the amount and pick an order to see where it goes",
+      "policy": "Company policy",
+      "threshold": "Approval needed above",
+      "thresholdAll": "Every order",
+      "orders": "Sample orders",
+      "ordersHint": "Real prices from the pricing service, incl. VAT, shipping not included",
+      "order": "{name} · {qty} pcs · {amount}",
+      "noOrders": "No instantly priced product is available for this example yet",
+      "po": "PO number required on every order",
+      "credit": "Pay on credit terms (once approved)",
+      "flowLabel": "Where this order goes",
+      "buyer": {
+        "title": "Buyer",
+        "body": "Creates an order of {amount}",
+        "bodyPo": "Creates an order of {amount} · adds the PO number",
+        "tag": "Start"
+      },
+      "approver": {
+        "title": "Approver",
+        "required": "Over {threshold}: approval first · notified by e-mail and LINE",
+        "auto": "Within the amount: passes automatically",
+        "tagRequired": "Approval needed",
+        "tagAuto": "Automatic"
+      },
+      "accounts": {
+        "title": "Accounting",
+        "credit": "On the monthly statement, paid on credit terms",
+        "prepaid": "Paid before production, tax invoice per branch",
+        "tagCredit": "Credit terms",
+        "tagPrepaid": "Prepaid"
+      },
+      "production": {
+        "title": "Production and delivery",
+        "body": "Production starts after the sample is approved · shipped to the branch",
+        "bodyLead": "{days} business days of production after the sample is approved · shipped to the branch"
+      }
+    },
+    "control": {
+      "title": "Every branch orders on its own, under the same rules",
+      "lead": "A catalogue of approved boxes, and budgets per branch or cost centre",
+      "demo": "How it works",
+      "catalogue": {
+        "title": "Your company's box catalogue",
+        "body": "Admins set the boxes with spec, file and price; branches order them at once without designing or choosing specs",
+        "line": "{qty} pcs · {amount}",
+        "linePlain": "No quantity chosen",
+        "less": "Fewer {name}",
+        "more": "More {name}",
+        "total": "{count} items · {qty} pcs",
+        "hint": "Orders over your company's amount wait for an approver",
+        "only": "Branches may order catalogue items only",
+        "priceNote": "Real prices by quantity from the pricing service, incl. VAT"
+      },
+      "budget": {
+        "title": "Monthly budgets",
+        "body": "Set a monthly budget per branch or department; a reminder at 80% and approval when it is exceeded",
+        "budget": "Budget for the month",
+        "spent": "Spent so far",
+        "unit": "Your branch or department",
+        "ok": "Within budget",
+        "warn": "{pct}% used — the admin has been told",
+        "over": "Over budget — the next order needs approval",
+        "meter": "{pct}% of the budget used",
+        "report": "Spend report by cost centre, exported to Excel"
+      }
+    },
+    "roi": {
+      "title": "How much could your company save?",
+      "lead": "Enter your own numbers; the hours your purchasing team gets back each year",
+      "quotes": "Quotations requested per month",
+      "quotesValue": "{n}",
+      "hours": "Hours per quotation (contact, compare, wait)",
+      "hoursValue": "{n} h",
+      "approvals": "Orders needing approval per month",
+      "approvalsValue": "{n}",
+      "cost": "Hourly cost of your purchasing team",
+      "result": "Time back per year",
+      "resultValue": "{hours} hours",
+      "rowQuotes": "No quotation chasing",
+      "rowApprovals": "Approvals in the system, not chat",
+      "rowMoney": "Worth in staff time",
+      "rowHours": "{n} h",
+      "perYear": "{amount}/year",
+      "formula": "Formula: (quotations × hours each + orders needing approval × 0.25 h) × 12 months · value = hours back × hourly cost",
+      "assumption": "An estimate from your numbers · assumes an approval in the system takes 15 minutes less than in chat"
+    },
+    "credit": {
+      "title": "Order today — credit follows",
+      "steps": {
+        "open": {
+          "when": "Today",
+          "title": "Open a company account",
+          "body": "While we review your documents (1–2 business days), order prepaid"
+        },
+        "prepaid": {
+          "when": "Orders 1–3",
+          "title": "Pay before production",
+          "body": "Tax invoices per branch from the first order"
+        },
+        "apply": {
+          "when": "After 3 orders or with statements",
+          "title": "Apply for credit terms",
+          "body": "Apply from your account; Finance sets the limit and term"
+        },
+        "monthly": {
+          "when": "Once approved",
+          "title": "Pay monthly",
+          "body": "One monthly statement for every order"
+        }
+      },
+      "terms": "Credit terms",
+      "term": "{days} days",
+      "methods": "Payment methods",
+      "method": {
+        "bank_transfer_slip": "Bank transfer",
+        "scb_qr": "PromptPay QR",
+        "scb_qr_cross_bank": "Cross-bank QR",
+        "card_2c2p": "Credit/debit card",
+        "online_banking_2c2p": "Banking app",
+        "scb_direct_debit": "Direct debit",
+        "store_credit": "Account credit",
+        "credit_term_transfer": "Transfer on credit terms",
+        "card_instalment_2c2p": "Instalments"
+      },
+      "issuer": "Tax invoices are issued by {name} under the getpack brand",
+      "issuerPlain": "Tax invoices are issued under the getpack brand"
+    },
+    "applySection": {
+      "title": "About 5 minutes to fill in",
+      "steps": {
+        "one": {
+          "title": "Company details",
+          "body": "Legal name, 13-digit tax ID, head-office address and authorised signatory; you become the account's admin"
+        },
+        "two": {
+          "title": "Documents",
+          "body": "PDF or pictures, up to 20 MB each"
+        },
+        "three": {
+          "title": "Finance reviews them",
+          "body": "1–2 business days; order prepaid in the meantime"
+        }
+      },
+      "open": "Open a company account",
+      "ask": "Questions first? Talk to sales",
+      "docsTitle": "Get your documents ready",
+      "docsLead": "Tick what you have to fill everything in one go (remembered on this device only)",
+      "docs": {
+        "certificate": {
+          "title": "Company certificate",
+          "body": "Issued within 6 months"
+        },
+        "vat": {
+          "title": "ภ.พ.20 (VAT registration)",
+          "body": "For VAT-registered companies"
+        },
+        "id": {
+          "title": "Signatory's ID card",
+          "body": "A person named on the company certificate"
+        },
+        "statements": {
+          "title": "Financial statements (for credit terms at once)",
+          "body": "Optional"
+        }
+      },
+      "progress": "Required documents",
+      "ready": "Ready to open the account",
+      "partial": "{n} of 3 required documents ready",
+      "none": "Nothing ready yet"
+    },
+    "faq": {
+      "title": "Questions from purchasing",
+      "items": {
+        "cost": {
+          "q": "Does a company account cost anything?",
+          "a": "No account fee; you pay for orders only."
+        },
+        "waiting": {
+          "q": "Can we order while documents are reviewed?",
+          "a": "Yes, prepaid, at once. The review takes 1–2 business days."
+        },
+        "credit": {
+          "q": "When can we apply for credit terms?",
+          "a": "After 3 orders, or with financial statements when you apply. Terms of 15–60 days; Finance decides the limit."
+        },
+        "branches": {
+          "q": "Tax invoices per branch?",
+          "a": "Yes. Add branches with their branch numbers; each order picks the branch for delivery and the tax invoice."
+        },
+        "contract": {
+          "q": "Annual price agreements or stock holding?",
+          "a": "Talk to sales about your volumes and ordering pattern; terms are set per company."
+        },
+        "agency": {
+          "q": "Can our design agency work in the account?",
+          "a": "Invite the agency as a member. They design or upload files; your approver approves before ordering."
+        }
+      }
+    },
+    "visibility": {
+      "title": "See every step of your job — no chasing calls",
+      "lead": "Status, quality results and delivery are on the company account's orders",
+      "items": {
+        "status": {
+          "label": "Live status",
+          "title": "Every step updated",
+          "body": "Planned, in production, quality check, ready to ship — notified by e-mail and LINE"
+        },
+        "quality": {
+          "label": "Quality evidence",
+          "title": "Quality results",
+          "body": "The quality check result is attached to the order, for your goods-receipt check"
+        },
+        "delivery": {
+          "label": "Delivery",
+          "title": "Proof of delivery",
+          "body": "Every document in getpack's name, with proof of delivery on the order"
+        }
+      },
+      "bandTitle": "A packaging factory? Work with getpack",
+      "bandBody": "Use getpack Factory — a whole-factory ERP including accounting, free",
+      "bandCta": "See getpack Factory"
+    },
+    "sales": {
+      "title": "Large volumes or several brands? Talk to us first",
+      "lead": "We help choose box styles, plan ordering and delivery, and set up the account for your team",
+      "points": {
+        "reply": "Reply within {days} business days",
+        "specs": "We move your existing box specs into the system",
+        "samples": "Material and print samples before you decide",
+        "line": "Or message us on LINE {hours}"
+      },
+      "company": "Company name",
+      "contact": "Contact name",
+      "email": "Work e-mail",
+      "phone": "Mobile",
+      "reachHint": "An e-mail or a mobile number, at least one",
+      "volume": "Approximate monthly volume",
+      "volumes": {
+        "under_1000": "Under 1,000 boxes",
+        "1000_5000": "1,000–5,000 boxes",
+        "5000_20000": "5,000–20,000 boxes",
+        "over_20000": "Over 20,000 boxes"
+      },
+      "interests": "Interested in",
+      "interest": {
+        "credit": "Credit terms",
+        "branches": "Several branches",
+        "contract": "Price agreement",
+        "design": "Design for us",
+        "custom": "Special boxes",
+        "integration": "System integration"
+      },
+      "message": "Anything else (optional)",
+      "messagePlaceholder": "e.g. 3 box sizes, delivered to 5 branches every month",
+      "submit": "Talk to sales",
+      "pdpa": "Used only to get back to you about this, under our privacy policy",
+      "privacy": "Privacy policy",
+      "errors": {
+        "company": "Enter the company name",
+        "contact": "Enter a contact name",
+        "reach": "An e-mail or a mobile number, at least one",
+        "email": "That e-mail is not valid",
+        "phone": "That mobile number is not valid"
+      },
+      "summary": "Sales: {volume}",
+      "sentTitle": "Received — request {ticket}",
+      "sent": "Sales will get back to you by {date}",
+      "applyWhile": "Open a company account meanwhile",
+      "openLine": "Continue on LINE",
+      "failed": "Could not send. Please try again",
+      "rateLimited": "Too many messages — please wait a moment, or message us on LINE",
+      "required": "(required)"
     }
   },
   "dashboard": {

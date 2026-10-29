@@ -503,7 +503,9 @@
     "request_open": "Request already open"
   },
   "support": {
-    "contact_required": "Contact details required"
+    "contact_required": "Contact details required",
+    "callback_unavailable": "A call back is not available then — pick one of the days and times offered",
+    "ticket_not_found": "Request not found — check the number and the phone or e-mail you sent it with"
   },
   "specs": {
     "basis_not_accepted": "This product does not take that measurement basis",

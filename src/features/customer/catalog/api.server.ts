@@ -309,6 +309,45 @@ export async function getPublicConfig(): Promise<PublicConfig | null> {
   );
 }
 
+export type ContactOptions = Schemas["SupportContactOptionsDto"];
+export type PriceTiers = Schemas["PriceTiersDto"];
+export type Province = Schemas["GeoProvinceDto"];
+
+/**
+ * What the contact form offers now (`store.support.contactOptions`, D-458): reply targets, whether CS answers
+ * now, call-back days and windows; `null` when unavailable — the page then shows none of them.
+ */
+export async function getContactOptions(): Promise<ContactOptions | null> {
+  const api = await publicApi("prices");
+  return orFallback(
+    api.GET("/v1/store/support/contact-options").then(({ data }) => data ?? null),
+    null,
+  );
+}
+
+/**
+ * A product's default spec priced at its quantity presets (`store.catalog.getPriceTiers`, C1-API-2) — the one store
+ * pricing path; `null` when unavailable, empty tiers when the product has no instant default spec.
+ */
+export async function getPriceTiers(slug: string): Promise<PriceTiers | null> {
+  const api = await publicApi("prices");
+  return orFallback(
+    api
+      .GET("/v1/store/catalog/price-hints/{slug}/tiers", { params: { path: { slug } } })
+      .then(({ data }) => data ?? null),
+    null,
+  );
+}
+
+/** Thai provinces (`store.catalog.listProvinces`, D-170) for an address-free province pick; empty when unavailable. */
+export async function getProvinces(): Promise<Province[]> {
+  const api = await publicApi("catalogue");
+  return orFallback(
+    api.GET("/v1/store/catalog/geo/provinces").then(({ data }) => (data ?? []) as Province[]),
+    [],
+  );
+}
+
 /** A category's RFQ form (`store.rfqs.getForm`); `null` for an unknown type. */
 export async function getRfqForm(productTypeCode: string): Promise<RfqForm | null> {
   const api = await publicApi("catalogue");
