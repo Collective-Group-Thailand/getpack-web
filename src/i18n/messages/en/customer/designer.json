@@ -546,7 +546,7 @@
       "hairline": "A {pt} pt line is under {min} pt and may break up",
       "rich_black_small_text": "Small text in a rich black may print out of register",
       "rgb_out_of_gamut": "{colour} is brighter than CMYK inks print; it will come out duller",
-      "spot_colour_count": "{colours} colours, more than flexo prints ({max})",
+      "spot_colour_count": "{process, select, yes {{max} flexo spot inks cannot print colour photos or gradients; they need CMYK printing} other {{colours} colours, more than flexo prints ({max})}}",
       "crosses_crease": "Across a fold — the text will break at the box's edge",
       "crosses_glue": "On the glue flap: it will be covered when the box is glued",
       "barcode_across_fold": "A barcode across a fold will not scan",

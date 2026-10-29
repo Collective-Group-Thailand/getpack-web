@@ -132,7 +132,12 @@ export const storeStudioHandlers = [
     const version = versionBoxOf(row, body.versionNo);
     if (!version) return problem(404, "http.not_found", "ไม่พบเวอร์ชันนี้");
     if (!version.box?.spec) return problem(409, "studio.spec_missing", "แบบนี้ยังไม่มีสเปกสำหรับคำนวณราคา");
-    const { configuration, problems } = configurationOf(version.box, body.quantities);
+    // D-459: `alternativeSpec` prices another spec for the same version ("เปลี่ยนเป็น CMYK" first), nothing saved.
+    const alternative = body.alternativeSpec ? (body.alternativeSpec as Record<string, unknown>) : null;
+    const { configuration, problems } = configurationOf(
+      alternative ? { ...version.box, spec: alternative } : version.box,
+      body.quantities,
+    );
     if (problems.length > 0)
       return problem(
         409,
@@ -167,12 +172,12 @@ export const storeStudioHandlers = [
     const inputs = inputsOf(productTypeCode, configuration);
     if (inputs instanceof Response) return inputs;
     const steps = cached?.steps ?? inputs.quantities.map((q) => stepOf(inputs, q, body.deliveryPostcode));
-    snapshots.set(specHash, { input, steps });
+    if (!alternative) snapshots.set(specHash, { input, steps });
     const before = previous ? unitPrices(previous.steps) : new Map<number, string>();
     const result: Schemas["StudioQuoteDto"] = {
       ...base,
       mode: "instant",
-      cached: !!cached,
+      cached: !!cached && !alternative,
       calculation: {
         calculationId: null,
         calculatorVersion: "mock-0.0.0",
@@ -434,7 +439,10 @@ export function evaluateDocumentLikeTheApi(
   ctx: { undeclared: Set<string> },
 ): Omit<Finding, "acknowledged">[] {
   const content = document.content;
-  const elements = (Array.isArray(content?.elements) ? content.elements : []) as Record<string, unknown>[];
+  // D-459 (C8-1): a hidden element is neither printed, checked nor priced.
+  const elements = ((Array.isArray(content?.elements) ? content.elements : []) as Record<string, unknown>[]).filter(
+    (el) => el.hidden !== true,
+  );
   const out: Omit<Finding, "acknowledged">[] = [];
   const PT = 72 / 25.4;
   const num = (v: unknown): number | null => (v === undefined || v === null || v === "" ? null : Number(v));
@@ -515,22 +523,40 @@ export function evaluateDocumentLikeTheApi(
   const spots = on("spot_colour_count");
   const maxColours = spots ? num(spots.thresholds!.maxColours) : null;
   if (spots && maxColours !== null) {
+    // getpack-api `documentInks` (D-459): gradients' ends, open paths unfilled, strokes of width 0 unpainted, a mono
+    // image one ink; a gradient or a colour image needs process printing.
     const colours = new Set<string>();
+    let process = false;
     const add = (c: unknown) => {
       if (typeof c === "string" && c !== "" && c !== "transparent") colours.add(c.toLowerCase());
     };
-    for (const el of elements) for (const k of ["fill", "stroke", "background"]) add(el[k]);
+    for (const el of elements) {
+      if (el.type === "image") {
+        if (el.mono === true) colours.add("mono-image");
+        else process = true;
+        continue;
+      }
+      const gradient = el.fillGradient as { from?: unknown; to?: unknown } | undefined;
+      if (gradient && typeof gradient === "object") {
+        process = true;
+        add(gradient.from);
+        add(gradient.to);
+      } else if (el.open !== true) add(el.fill);
+      const width = num(el.strokeWidth);
+      if (width === null || width > 0) add(el.stroke);
+      add(el.background);
+    }
     const pattern = content?.pattern as { kind?: string; color?: string; background?: string } | undefined;
     if (pattern && pattern.kind !== "none") {
       add(pattern.color);
-      add(pattern.background);
+      if (pattern.kind !== "solid") add(pattern.background);
     }
-    if (colours.size > maxColours)
+    if (colours.size > maxColours || process)
       out.push({
         ruleId: spots.id,
         severity: spots.severity,
         elementId: "",
-        details: { colours: colours.size, max: maxColours },
+        details: { colours: colours.size, max: maxColours, ...(process ? { process: true } : {}) },
       });
   }
   return out;
