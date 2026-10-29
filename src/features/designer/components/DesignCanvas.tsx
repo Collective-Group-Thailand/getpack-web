@@ -939,8 +939,10 @@ export default function DesignCanvas({
   const onStageDblClick = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (readOnly) return;
     if (pen) {
-      // The double-click's second click added a point: finish without it.
-      finishPen(false, pen.points.slice(0, -1));
+      // Konva calls two quick clicks a double-click wherever they land: only two on the same spot finish the path
+      // (the second click added that spot again, so it is dropped); quick clicks placing points go on.
+      const [a, b] = pen.points.slice(-2);
+      if (a && b && Math.hypot(a[0] - b[0], a[1] - b[1]) * scale < 8) finishPen(false, pen.points.slice(0, -1));
       return;
     }
     // Double-click a text to type in place (C8).

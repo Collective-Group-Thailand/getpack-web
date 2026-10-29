@@ -1278,6 +1278,21 @@ export default function Editor({
           side={side}
           onSide={(next) => void switchSide(next)}
           onFit={() => setFitSignal((n) => n + 1)}
+          softProof={
+            proofProfile
+              ? {
+                  label: t("stage.softProof"),
+                  checked: softProof,
+                  onChange: setSoftProof,
+                  note: rulesQuery.data
+                    ? `${proofTerms(
+                        locale === "en" ? rulesQuery.data.softProof.label.en : rulesQuery.data.softProof.label.th,
+                        "customer",
+                      )}${proofProfile.label ? ` · ${proofProfile.label}` : ""}`
+                    : null,
+                }
+              : null
+          }
           className="absolute bottom-3.5 left-1/2 z-[5] -translate-x-1/2 max-[600px]:bottom-2.5"
         />
       </div>

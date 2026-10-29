@@ -68,7 +68,7 @@ test.describe("/business (C10 Phase 1)", () => {
     await page.getByRole("checkbox", { name: /ภ\.พ\.20/ }).click();
     await expect(page.getByText("พร้อม 2 จาก 3 อย่างที่จำเป็น").first()).toBeVisible();
     await page.reload();
-    await expect(page.getByRole("checkbox", { name: /หนังสือรับรองบริษัท/ })).toBeChecked();
+    await expect(page.getByRole("checkbox", { name: /^หนังสือรับรองบริษัท/ })).toBeChecked();
   });
 
   test("the sales form opens a ticket and offers to open a company account meanwhile", async ({ page }) => {

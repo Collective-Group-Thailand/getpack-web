@@ -55,8 +55,9 @@ test.describe("the account", () => {
       .getByRole("link", { name: /กำลังผลิต/ })
       .click();
     await expect(page).toHaveURL(/tab=in_production/);
-    await expect(page.getByText("PK-2569-00124").first()).toBeVisible();
-    await expect(page.getByText("PK-2569-00100")).toHaveCount(0);
+    // The list's cards (C6); "ต้องทำตอนนี้" above them still lists what is due on any order.
+    await expect(page.getByRole("article").filter({ hasText: "PK-2569-00124" })).toBeVisible();
+    await expect(page.getByRole("article").filter({ hasText: "PK-2569-00100" })).toHaveCount(0);
     await expectNoViolations(page);
   });
 

@@ -1,9 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-import { HOSTS } from "../playwright.config";
 import { MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { addHeading } from "./helpers/designer";
-import { gotoHydrated } from "./helpers/session";
 
 /**
  * C11 (DECISIONS-STAGE-A §16.3, D-459): "เปลี่ยนเป็น CMYK" shows the price now and with CMYK before it is applied —
@@ -13,18 +11,18 @@ import { gotoHydrated } from "./helpers/session";
  */
 
 const STUDIO = /\/studio\/[0-9a-f-]{36}\?/;
+const BOX = "/studio/new?product=shipping-box&style=rsc&l=200&w=150&h=100&step=design";
 
 test("เปลี่ยนเป็น CMYK: the price now and with CMYK first, the switch only on confirm", async ({ page }) => {
-  await signInAsCustomer(page, "/account", MOCK_DESIGNER_PHONE);
-  await gotoHydrated(page, `${HOSTS.customer}/styles/pk-te-01`);
-  await page.getByRole("button", { name: "ออกแบบใน 3D Studio" }).click();
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
-  await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
+  // The mock's shipping box: its corrugate print model prices one spot colour (C0b), so two colours fall short.
+  await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
+  await expect(page).toHaveURL(STUDIO, { timeout: 20_000 });
 
   // Two headings in two flat colours.
   await addHeading(page);
   await addHeading(page);
-  await page.getByRole("tabpanel", { name: "ออกแบบ" }).locator('input[type="color"]').first().fill("#c0392b");
+  // C8's pro inspector: a swatch recolours the selected (second) heading.
+  await page.getByRole("tabpanel", { name: "ออกแบบ" }).getByRole("button", { name: "#e8b04b" }).first().click();
 
   const warning = page.locator("[data-spot-shortfall]");
   await expect(warning).toBeVisible({ timeout: 15_000 });

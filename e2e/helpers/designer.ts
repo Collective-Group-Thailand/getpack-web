@@ -7,12 +7,11 @@ export async function addHeading(page: Page): Promise<void> {
     .getByRole("button", { name: "ข้อความ", exact: true });
   if ((await rail.getAttribute("aria-pressed")) !== "true") await rail.click();
   // C8: the selection shows in the inspector's "ออกแบบ" tab (the pro inspector in e2e's default mode). An edit
-  // link's editor (artwork only) has no step tabs: its inspector shows the selection directly.
-  const inspector = page.getByRole("complementary", { name: "คุณสมบัติ" });
+  // link's editor keeps the earlier layout: the "รายละเอียด" side panel and its "คุณสมบัติ" tab.
+  const inspector = page.getByRole("complementary", { name: /^(คุณสมบัติ|รายละเอียด)$/ });
   await expect(inspector).toBeVisible();
-  const design = inspector.getByRole("tab", { name: "ออกแบบ", exact: true });
-  const tabbed = (await design.count()) > 0;
-  if (tabbed && (await design.getAttribute("aria-selected")) !== "true") await design.click();
+  const tab = inspector.getByRole("tab", { name: /^(ออกแบบ|คุณสมบัติ)$/ });
+  if ((await tab.getAttribute("aria-selected")) !== "true") await tab.click();
   await page.getByRole("button", { name: "เพิ่มหัวข้อ", exact: true }).click();
   await expect(inspector.getByRole("heading", { name: "ข้อความ", exact: true })).toBeVisible();
 }

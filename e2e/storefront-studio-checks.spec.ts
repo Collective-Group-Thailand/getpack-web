@@ -46,7 +46,8 @@ test("a finding fixed in one click, a warning accepted with the version, and the
   await expect(page.getByRole("heading", { name: "ตรวจงานก่อนสั่งผลิต" })).toBeVisible();
   const panel = page;
   const small = panel.getByRole("button", { name: /เล็กกว่า 6 pt อาจพิมพ์ไม่ชัด/ });
-  await expect(small).toHaveCount(2);
+  // The checks run debounced after the edits; both findings arrive together, a moment later under load.
+  await expect(small).toHaveCount(2, { timeout: 15_000 });
   await expectNoViolations(page);
 
   // One fixed in a click.

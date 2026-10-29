@@ -126,7 +126,8 @@ test("studio → order sheet → cart: the version pinned at the studio's price"
   // The order links to the version it locked.
   await page.goto(`${HOSTS.customer}/account/orders/${design.lock!.orderId}`);
   await expect(
-    page.getByRole("link", { name: new RegExp(`เวอร์ชัน ${design.lock!.versionNo} ที่สั่งผลิต`) }),
+    // The order page's "สเปกและแบบ" since C6: "เปิดแบบ “<title>” (ฉบับที่ <n>)".
+    page.getByRole("link", { name: new RegExp(`^เปิดแบบ .*\\(ฉบับที่ ${design.lock!.versionNo}\\)$`) }),
   ).toBeVisible();
 });
 

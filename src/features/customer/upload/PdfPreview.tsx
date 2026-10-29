@@ -102,7 +102,8 @@ export function PdfPreview({
           aspectRatio: `1 / ${ratio ?? fallbackRatio}`,
           maxWidth: `${26 / Math.max(ratio ?? fallbackRatio, 0.05)}rem`,
         }}
-        role="img"
+        // Its markers are buttons, so it is a named group rather than an image (axe nested-interactive).
+        role="group"
         aria-label={label}
       >
         <canvas

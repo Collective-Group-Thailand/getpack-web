@@ -61,7 +61,7 @@ test.describe("upload page (C9)", () => {
     const confirm = page
       .getByRole("dialog", { name: "เข้าสู่ระบบ" })
       .getByRole("button", { name: "ยืนยันและเข้าสู่ระบบ" });
-    if (await confirm.isVisible()) await confirm.click();
+    await confirm.click({ timeout: 10_000 }).catch(() => undefined);
     await expect(page).toHaveURL(/\?check=/, { timeout: 30_000 });
   });
 

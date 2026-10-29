@@ -417,3 +417,22 @@ by CI on `main` at `982e92a` (plain production build, mock mode):
   (header, products hub, menu) — 0.4–11 KB.
 - Raised by the owner's decision for this repair (2026-10-28: "raise ratchets to measured"); the
   targets above are unchanged and this is recorded to be worked down, not absorbed.
+
+## Stage C CI repair 2 — C6–C11 (2026-10-29)
+
+Measured by CI on `main` at `619e3167` (after C6 account, C7/C8 studio, C9 upload, C10 business, C11):
+
+| Set | Heaviest page | Before | Measured | Ratchet |
+|---|---|---|---|---|
+| customer-marketing | `/studio` | 318,500 | 349,499 (`/products/tuck-end-box` 321,863) | 318,500 → **349,900** |
+| studio | `/studio/new?product=tuck-end-box…` | 570,900 | 600,388 | 570,900 → **600,800** |
+| customer-app | `/configure/tuck-end-box` | 380,300 | 385,232 | 380,300 → **385,700** |
+| admin-crud | `/partners` | 509,400 | 512,034 | 509,400 → **512,500** |
+| admin-lists | `/orders`, an order | 394,300 | 396,863 | 394,300 → **397,300** |
+| partner | `/settings` | 309,900 | 312,474 (`/ship` 310,598) | 309,900 → **312,900** |
+
+- **Studio hub (+31 KB)** — C8's `/studio` hub (product finder, start paths, recent designs) is now the heaviest
+  marketing page. **Editor (+30 KB)** — the C8 shell (two modes, inspector tabs, view bar, pro toolbox, chooser).
+  Both are levers to work down: the finder and the recent designs can load on view; the pro toolbox with the mode.
+- The rest is shared-shell growth across C6–C11 (2.5–5 KB per set).
+- Raised under the owner's decision for the Stage C repair ("raise ratchets to measured", 2026-10-28); targets unchanged.

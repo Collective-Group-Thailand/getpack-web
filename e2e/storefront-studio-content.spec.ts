@@ -10,7 +10,7 @@ import { choiceList } from "./helpers/select";
  * U4.4, ③ design content in getpack 3D Studio against the mock API: a getpack template re-flowed onto
  * the box and restyled with "ใช้แบรนด์ของฉัน", getpack's elements (a mark with legal meaning only
  * after the right is declared), a barcode checked by the validation service, a nutrition block,
- * a finish as its own layer and a gradient background — read back from the saved document.
+ * and a gradient background — read back from the saved document (finish layers: not in the C8 studio).
  */
 
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
@@ -84,7 +84,7 @@ test("a getpack template re-flows onto the box, then takes my brand", async ({ p
   expect(content.elements.find((e) => e.name === "headline")!.fill).toBe("#123abc");
 });
 
-test("getpack elements, a validated barcode, a nutrition block, a finish layer and a gradient", async ({ page }) => {
+test("getpack elements, a validated barcode, a nutrition block and a gradient", async ({ page }) => {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   const id = STUDIO.exec(page.url())![1]!;
@@ -120,14 +120,8 @@ test("getpack elements, a validated barcode, a nutrition block, a finish layer a
   await page.getByRole("textbox", { name: "พลังงาน" }).fill("120 กิโลแคลอรี");
   await page.getByRole("button", { name: "วางข้อมูลบนกล่อง" }).click();
 
-  // The handling mark becomes a foil layer.
-  await openRail(page, "ชั้น");
-  await page
-    .getByRole("tree")
-    .getByRole("treeitem", { name: /ตั้งด้านนี้ขึ้น/ })
-    .click();
-  await choiceList(page, "งานตกแต่ง (ชั้นพิเศษ)").click();
-  await page.getByRole("option", { name: "ปั๊มฟอยล์" }).click();
+  // Finish layers (foil, spot UV…) are not offered in the C8 studio inspector until production confirms them
+  // (editor pack hard rule 4, PropertiesPanel `studio`), so the walk no longer turns the mark into a foil layer.
 
   await openRail(page, "พื้นหลัง");
   await page.getByRole("button", { name: "ไล่สี" }).click();
@@ -135,7 +129,6 @@ test("getpack elements, a validated barcode, a nutrition block, a finish layer a
   const content = await saved(page, id);
   expect(content.elements.some((e) => e.type === "code" && e.kind === "ean8" && e.value === "96385074")).toBe(true);
   expect(content.elements.filter((e) => e.studioElementId)).toHaveLength(2);
-  expect(content.elements.find((e) => e.name === "ตั้งด้านนี้ขึ้น")!.finish).toBe("foil");
   expect(content.elements.some((e) => e.name === "ข้อมูลโภชนาการ")).toBe(true);
   expect(content.pattern.kind).toBe("gradient");
 });

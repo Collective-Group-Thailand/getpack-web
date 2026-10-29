@@ -122,7 +122,8 @@ test("steps are the inspector's tabs; the check tab fixes findings, one undo ste
 
 test("pro: toolbox keys draw and revert to select, a guide from the ruler, colours in the job", async ({ page }) => {
   await openEditor(page, "pro");
-  const canvas = page.locator("canvas").first();
+  // The sheet's own canvas (the split view's 3D card and the rulers draw on canvases too).
+  const canvas = page.getByRole("group", { name: "พื้นที่ออกแบบแผ่นคลี่" }).locator("canvas").first();
   const box = (await canvas.boundingBox())!;
   const at = (fx: number, fy: number) => ({ x: box.x + box.width * fx, y: box.y + box.height * fy });
 

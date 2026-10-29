@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 
 import { formatNumber } from "@/i18n/format";
+import { Switch } from "@/ui/components/Switch";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -80,6 +81,7 @@ export function ViewBar({
   side,
   onSide,
   onFit,
+  softProof = null,
   className,
 }: {
   view: StageView;
@@ -87,6 +89,8 @@ export function ViewBar({
   side: "outside" | "inside";
   onSide: (side: "outside" | "inside") => void;
   onFit: () => void;
+  /** The substrate soft proof (U4.5), when the material has a profile: the switch and, while on, what it is. */
+  softProof?: { label: string; checked: boolean; onChange: (checked: boolean) => void; note: string | null } | null;
   className?: string;
 }) {
   const t = useTranslations("designer.shell.view");
@@ -123,6 +127,22 @@ export function ViewBar({
           { value: "inside", label: t("inside") },
         ]}
       />
+      {softProof ? (
+        <>
+          <span aria-hidden="true" className="bg-border mx-1 h-5 w-px shrink-0" />
+          <Switch
+            label={softProof.label}
+            checked={softProof.checked}
+            onCheckedChange={softProof.onChange}
+            className="shrink-0 px-1 text-xs whitespace-nowrap"
+          />
+          {softProof.checked && softProof.note ? (
+            <span role="status" className="text-muted max-w-56 shrink-0 truncate px-1 text-xs" title={softProof.note}>
+              {softProof.note}
+            </span>
+          ) : null}
+        </>
+      ) : null}
       {view !== "3d" ? (
         <>
           <span aria-hidden="true" className="bg-border mx-1 h-5 w-px shrink-0 max-[600px]:hidden" />

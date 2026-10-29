@@ -66,11 +66,13 @@ test("style card → studio → price → quantity → new price, every step rev
   await expect(dock.getByText("ราคารวม VAT ยังไม่รวมค่าจัดส่ง")).toBeVisible();
   const first = await perPiece.textContent();
 
-  // Another quantity: a new price, and the dock says why.
+  // Another quantity: a new price. Since C8 it is read from the dock's own tier table ("ราคาตามจำนวน"), not a new
+  // quote, so there is no "why" to show; a change of the artwork below is re-quoted and says why.
   await choiceList(dock, "จำนวน").click();
   await page.getByRole("option").last().click();
   await expect(perPiece).not.toHaveText(first!, { timeout: 15_000 });
-  await expect(dock.getByText(/เพราะเปลี่ยนจำนวน/)).toBeVisible();
+  await expect(dock.getByText("กำลังคำนวณราคาใหม่")).toHaveCount(0, { timeout: 15_000 });
+  const beforeArtwork = await perPiece.textContent();
 
   // Ordering waits for content (the top bar's สั่งผลิต); the box panel and back keeps the canvas.
   const order = page.getByRole("banner").getByRole("button", { name: /^สั่งผลิต/ });
@@ -82,14 +84,14 @@ test("style card → studio → price → quantity → new price, every step rev
   await expect(order).toBeEnabled();
   // Printing the artwork changes what is priced — read on the สั่งผลิต tab again (adding text opened ออกแบบ).
   await steps.getByRole("button", { name: /สั่งผลิต/ }).click();
-  const second = await perPiece.textContent();
-  await expect(perPiece).not.toHaveText(second!, { timeout: 15_000 });
+  await expect(perPiece).not.toHaveText(beforeArtwork!, { timeout: 15_000 });
   await expect(dock.getByText(/เปลี่ยนการพิมพ์/)).toBeVisible();
 
   await steps.getByRole("button", { name: /ตรวจงาน/ }).click();
   await expect(page.getByRole("heading", { name: "ตรวจงานก่อนสั่งผลิต" })).toBeVisible();
   await expectNoViolations(page);
-  await dock.getByRole("button", { name: "สั่งผลิต" }).click();
+  // C8: the checks tab leads on to the order tab (the dock is on that tab).
+  await page.getByRole("button", { name: "ไปขั้นสั่งผลิต" }).click();
   await expect(page.getByRole("heading", { name: "สั่งผลิตแบบนี้" })).toBeVisible();
   await expect(page).toHaveURL(/step=order/);
 
@@ -99,7 +101,8 @@ test("style card → studio → price → quantity → new price, every step rev
   await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   await page.reload();
   await expect(steps.getByRole("button", { name: /ออกแบบ/ })).toHaveAttribute("aria-current", "step");
-  await expect(perPiece).toBeVisible({ timeout: 15_000 });
+  // On ③ the price is the top bar's chip (the dock is the สั่งผลิต tab's).
+  await expect(page.locator("[data-studio-price-chip]")).toContainText("฿", { timeout: 15_000 });
   await expectNoViolations(page);
 });
 

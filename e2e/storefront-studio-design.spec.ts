@@ -112,13 +112,14 @@ test("clicking the model picks the face under the pointer", async ({ page }) => 
 
 test("the inside is printed after its cost is shown, and its artwork lives on the inside", async ({ page }) => {
   await openStudio(page);
-  const sides = page.getByRole("toolbar", { name: "มุมมอง" });
-  await sides.getByRole("radio", { name: "ด้านใน" }).click();
+  // C8: the view bar's "ด้านที่ออกแบบ" is a pair of pressed buttons.
+  const sides = page.getByRole("toolbar", { name: "มุมมอง" }).getByRole("group", { name: "ด้านที่ออกแบบ" });
+  await sides.getByRole("button", { name: "ด้านใน" }).click();
   const ask = page.getByRole("alertdialog", { name: "พิมพ์ด้านในด้วยไหม?" });
   await expect(ask).toBeVisible();
   await expectNoViolations(page);
   await ask.getByRole("button", { name: "พิมพ์ด้านในด้วย" }).click();
-  await expect(sides.getByRole("radio", { name: "ด้านใน" })).toBeChecked();
+  await expect(sides.getByRole("button", { name: "ด้านใน" })).toHaveAttribute("aria-pressed", "true");
 
   await addHeading(page);
   const rail = page.getByRole("navigation", { name: "เครื่องมือออกแบบ" });
@@ -127,7 +128,7 @@ test("the inside is printed after its cost is shown, and its artwork lives on th
   await expect(tree.getByRole("treeitem", { name: "ด้านใน (1)" })).toBeVisible();
 
   // Back outside: the inside's text is not on the outside's sheet.
-  await sides.getByRole("radio", { name: "ด้านนอก" }).click();
+  await sides.getByRole("button", { name: "ด้านนอก" }).click();
   await expect(page.getByRole("alertdialog")).toHaveCount(0);
   await expect(tree.getByRole("treeitem", { name: "ด้านใน (1)" })).toBeVisible();
 });

@@ -55,7 +55,8 @@ test("inline finder suggests boxes with reasons and opens the editor on the size
   await finder.getByRole("radio", { name: "ซม." }).click();
   await expect(finder.getByLabel("ยาว")).toHaveValue("25");
   await finder.getByRole("link", { name: "ออกแบบแบบนี้" }).first().click();
-  await expect(page).toHaveURL(/\/studio\/new\?.*style=.*l=\d+.*step=design/);
+  // The first autosave may already have given the design its own address.
+  await expect(page).toHaveURL(/\/studio\/(new|[0-9a-f-]{36})\?.*style=.*l=\d+.*step=design/);
 });
 
 test("the file path's drop zone carries the file itself into the upload check (C9)", async ({ page }) => {
@@ -74,6 +75,17 @@ test("/studio has no axe violations and no horizontal scroll at 390", async ({ p
   await page.setViewportSize({ width: 390, height: 844 });
   await gotoHydrated(page, `${HOSTS.customer}/studio`);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  // A section mid fade-in is not what the page settles on (as storefront.spec's axe helper): let the late parts
+  // (recent designs, finder suggestions) arrive and their entrance animations finish.
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => undefined)),
+    ),
+  );
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
   expect(violations.map((v) => v.id)).toEqual([]);
 });
