@@ -326,6 +326,14 @@
       "stepsLabel": "Steps",
       "confidential": "Your factory's information stays confidential — never shown to customers or anyone outside",
       "assess": "The partner team assesses which work suits your factory after you apply",
+      "termsTitle": "Key terms of the partner agreement",
+      "terms": {
+        "counterparty": "getpack is the customer's counterparty: documents and payments are in getpack's name",
+        "nonSolicit": "No direct contact or sale to customers met through getpack jobs, during the agreement and for 12 months after",
+        "confidentiality": "Customer data and artwork are used for that job only, deleted or returned when getpack asks, and handled under the PDPA as a data processor",
+        "whiteLabel": "Nothing that reaches the customer carries the factory's name or logo"
+      },
+      "termsNote": "The full wording is in the partner agreement signed when the factory account is opened.",
       "factory": "Factory name",
       "contact": "Contact person",
       "phone": "Mobile",
@@ -371,11 +379,15 @@
         },
         "data": {
           "q": "Who owns my factory's customer data?",
-          "a": "Your factory does. The getpack team can look into your system only while the owner grants access, and every look is logged for the owner to see."
+          "a": "Customers your factory finds itself and records in getpack Factory are your factory's data; getpack does not use them to contact or sell to anyone. The getpack team can look into your system only while the owner grants access, and every look is logged for the owner to see. Customers that come through getpack jobs are getpack's customers; your factory receives only what it needs to produce that job."
         },
         "names": {
           "q": "Does getpack disclose partner factories' names?",
-          "a": "No. Names, locations and factory data are never shown to customers or anyone outside; customer documents are issued in getpack's name. Job terms are in the partner agreement."
+          "a": "No. Names, locations and factory data are never shown to customers or anyone outside; customer documents are issued in getpack's name, and nothing that reaches the customer carries the factory's name or logo. The full terms are in the partner agreement."
+        },
+        "nonSolicit": {
+          "q": "Can we contact a customer we met through a getpack job?",
+          "a": "No. During the agreement and for 12 months after it ends, your factory may not contact or sell directly to customers it came to know through getpack jobs. Customers your factory finds itself are not covered."
         },
         "accounting": {
           "q": "Can it replace our accounting software?",
@@ -473,7 +485,7 @@
         },
         {
           "title": "6. Retention",
-          "body": "Account data is kept for the life of the account and for a period after closure for claims and disputes. Accounting and tax records are kept for the statutory period. Artwork and designs are kept so you can reorder, and are deleted on request."
+          "body": "Account data is kept for the life of the account and for a period after closure for claims and disputes. Accounting and tax records are kept for the statutory period. Files uploaded for a check and never ordered are deleted automatically 90 days after their last change. The artwork and designs of an order are kept so you can reorder, and as support for accounting and tax records. Your files and designs are deleted on request, except what the law requires us to keep; send the request through the contact page and we answer within 30 days of receiving it."
         },
         {
           "title": "7. Your rights",
