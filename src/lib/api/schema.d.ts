@@ -60616,6 +60616,25 @@ export interface components {
             /** @description Each file is one variant of the same order */
             variants: components["schemas"]["FileCheckVariantDto"][];
         };
+        FileCheckInksDto: {
+            /**
+             * @description Process colour (CMYK with C/M/Y, RGB, colour images) is painted
+             * @example true
+             */
+            process: boolean;
+            /**
+             * @description The method that prints the file as it is: `cmyk` for process work, `spot` for spot or black-only work
+             * @example cmyk
+             */
+            recommended: components["schemas"]["PrintSideMethod"];
+            /**
+             * @description Printed spot colours (die layers excluded)
+             * @example [
+             *       "PANTONE 349 C"
+             *     ]
+             */
+            spotColours: string[];
+        };
         FileCheckItemDto: {
             /** @description Marker position; null for the whole sheet */
             at: components["schemas"]["FileCheckPointDto"] | null;
@@ -60716,6 +60735,8 @@ export interface components {
             counts: components["schemas"]["FileCheckCountsDto"];
             /** @description The blank of the chosen product and size the checks compared with; null when none is chosen */
             expected: components["schemas"]["PreflightSizeDto"] | null;
+            /** @description What the file prints with; null when unreadable */
+            inks: components["schemas"]["FileCheckInksDto"] | null;
             /** @description The 12 checks, in the page’s order */
             items: components["schemas"]["FileCheckItemDto"][];
             page: components["schemas"]["FileCheckPageDto"] | null;
@@ -310252,6 +310273,11 @@ export interface operations {
                      *                 "heightMm": 310,
                      *                 "widthMm": 1035
                      *               },
+                     *               "inks": {
+                     *                 "process": true,
+                     *                 "recommended": "cmyk",
+                     *                 "spotColours": []
+                     *               },
                      *               "items": [
                      *                 {
                      *                   "at": null,
@@ -310453,6 +310479,11 @@ export interface operations {
                      *                 "heightMm": 310,
                      *                 "widthMm": 1035
                      *               },
+                     *               "inks": {
+                     *                 "process": true,
+                     *                 "recommended": "cmyk",
+                     *                 "spotColours": []
+                     *               },
                      *               "items": [
                      *                 {
                      *                   "at": null,
@@ -310639,6 +310670,11 @@ export interface operations {
                      *               "expected": {
                      *                 "heightMm": 310,
                      *                 "widthMm": 1035
+                     *               },
+                     *               "inks": {
+                     *                 "process": true,
+                     *                 "recommended": "cmyk",
+                     *                 "spotColours": []
                      *               },
                      *               "items": [
                      *                 {
@@ -310869,6 +310905,11 @@ export interface operations {
                      *                   "heightMm": 310,
                      *                   "widthMm": 1035
                      *                 },
+                     *                 "inks": {
+                     *                   "process": true,
+                     *                   "recommended": "cmyk",
+                     *                   "spotColours": []
+                     *                 },
                      *                 "items": [
                      *                   {
                      *                     "at": null,
@@ -311087,6 +311128,11 @@ export interface operations {
                      *                 "heightMm": 310,
                      *                 "widthMm": 1035
                      *               },
+                     *               "inks": {
+                     *                 "process": true,
+                     *                 "recommended": "cmyk",
+                     *                 "spotColours": []
+                     *               },
                      *               "items": [
                      *                 {
                      *                   "at": null,
@@ -311298,6 +311344,11 @@ export interface operations {
                      *               "expected": {
                      *                 "heightMm": 310,
                      *                 "widthMm": 1035
+                     *               },
+                     *               "inks": {
+                     *                 "process": true,
+                     *                 "recommended": "cmyk",
+                     *                 "spotColours": []
                      *               },
                      *               "items": [
                      *                 {
